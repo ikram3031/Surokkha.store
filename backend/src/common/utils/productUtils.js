@@ -25,8 +25,8 @@ export const normalizeValue = (value) => {
 // Checks if the image URL matches the placeholder image
 export const isPlaceholderImageUrl = (value) => typeof value === "string" && value.trim() === PLACEHOLDER_IMAGE_URL;
 
-// Serializes a Mongoose product document into a clean API response format with category did support
-export const serializeProduct = (product) => {
+// Serializes a Mongoose product document into a clean API response format with localization and rich specifications support
+export const serializeProduct = (product, lang = "en") => {
   const source = product?.toObject ? product.toObject() : product;
   const { _id, __v, ...rest } = source || {};
   const id = source?._id?.toString?.() ?? source?.id ?? null;
@@ -34,15 +34,23 @@ export const serializeProduct = (product) => {
   const rawCategories = Array.isArray(source?.categories) ? source.categories : [];
   const populatedCategories = rawCategories
     .filter((c) => c && typeof c === "object" && (c.name || c.slug || c.did || c._id))
-    .map((c) => ({
-      id: c._id?.toString?.() ?? c.id ?? null,
-      _id: c._id?.toString?.() ?? c.id ?? null,
-      did: c.did ?? null,
-      name: c.name ?? "",
-      slug: c.slug ?? "",
-      imageUrl: c.imageUrl ?? "",
-      parent: c.parent ?? null,
-    }));
+    .map((c) => {
+      const catName = c.name ?? "";
+      let localizedCatName = catName;
+      if (lang === "bn") {
+        if (catName.toLowerCase() === "condom" || catName.toLowerCase() === "condoms") localizedCatName = "কনডম";
+        else if (catName.toLowerCase() === "combo" || catName.toLowerCase() === "offers") localizedCatName = "কম্বো অফার";
+      }
+      return {
+        id: c._id?.toString?.() ?? c.id ?? null,
+        _id: c._id?.toString?.() ?? c.id ?? null,
+        did: c.did ?? null,
+        name: lang === "bn" ? localizedCatName : catName,
+        slug: c.slug ?? "",
+        imageUrl: c.imageUrl ?? "",
+        parent: c.parent ?? null,
+      };
+    });
 
   const primaryCategory = populatedCategories.length > 0 ? populatedCategories[0] : null;
 
@@ -58,10 +66,36 @@ export const serializeProduct = (product) => {
       }))
     : undefined;
 
+  const bnData = source?.bn && typeof source.bn === "object" ? source.bn : {};
+
+  const isBn = lang === "bn";
+
+  const description = isBn ? (bnData.description || source?.description || "") : (source?.description || "");
+  const longDescription = isBn ? (bnData.longDescription || source?.longDescription || "") : (source?.longDescription || "");
+  const tagline = isBn ? (bnData.tagline || source?.tagline || "") : (source?.tagline || "");
+  const origin = isBn ? (bnData.origin || (source?.origin === "China Imported" ? "চীন থেকে সরাসরি আমদানিকৃত" : source?.origin || "চীন")) : (source?.origin || "China Imported");
+  const expiryDate = isBn ? (bnData.expiryDate || "২০৩০ সাল পর্যন্ত মেয়াদ") : (source?.expiryDate || "2030");
+  const packSize = isBn ? (bnData.packSize || source?.packSize || "") : (source?.packSize || "");
+  const packageContents = isBn ? (bnData.packageContents || source?.packageContents || "") : (source?.packageContents || "");
+  const specifications = isBn ? (bnData.specifications || source?.specifications || {}) : (source?.specifications || {});
+  const benefits = isBn ? (bnData.benefits || source?.benefits || []) : (source?.benefits || []);
+  const sections = isBn ? (bnData.sections || source?.sections || []) : (source?.sections || []);
+
   return {
     ...rest,
     ...(rawVariants !== undefined ? { variants: rawVariants } : {}),
     id,
+    name: source?.name || "",
+    description,
+    longDescription,
+    tagline,
+    origin,
+    expiryDate,
+    packSize,
+    packageContents,
+    specifications,
+    benefits,
+    sections,
     category: primaryCategory,
     categories: populatedCategories.length > 0 ? populatedCategories : rawCategories,
     _populatedCategories: populatedCategories,

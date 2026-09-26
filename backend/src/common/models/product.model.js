@@ -107,6 +107,18 @@ const productSchema = new Schema(
       index: true
     },
 
+    // Rich Specifications & Details
+    origin: { type: String, default: "China Imported", trim: true },
+    expiryDate: { type: String, default: "2030", trim: true },
+    packSize: { type: String, default: "", trim: true },
+    specifications: { type: Schema.Types.Mixed, default: {} },
+    benefits: { type: [Schema.Types.Mixed], default: [] },
+    sections: { type: [Schema.Types.Mixed], default: [] },
+    packageContents: { type: String, default: "", trim: true },
+
+    // Bengali / Multi-language Localization Payload
+    bn: { type: Schema.Types.Mixed, default: {} },
+
     // Audit Fields
     createdBy: {
       type: Schema.Types.ObjectId,

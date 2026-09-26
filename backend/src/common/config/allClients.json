@@ -987,6 +987,12 @@
         "forceMembershipFromOrder": true
       }
     },
+    "multiLanguage": true,
+    "languages": [
+      "en",
+      "bn"
+    ],
+    "defaultLanguage": "en",
     "forceMembershipFromOrder": true,
     "features": {
       "season": false,
@@ -998,7 +1004,8 @@
       "variantImage": false,
       "sizeChart": false,
       "webmail": true,
-      "inStoreOrder": true
+      "inStoreOrder": true,
+      "multiLanguage": true
     },
     "stockManagement": {
       "simpleProduct": true,
