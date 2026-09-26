@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, CheckCircle2, XCircle, Clock, FileText } from 'lucide-react';
@@ -29,30 +30,9 @@ import {
 } from '@/components/ui/pagination';
 import { useBillings } from '@/hooks/use-billings';
 
-function getStatusBadge(status) {
-  switch (status) {
-    case 'Paid':
-      return (
-        <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1" variant="outline">
-          <CheckCircle2 className="h-3 w-3" />Paid
-        </Badge>
-      );
-    case 'Pending':
-      return (
-        <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30 gap-1" variant="outline">
-          <Clock className="h-3 w-3" />Pending
-        </Badge>
-      );
-    case 'Failed':
-      return (
-        <Badge className="bg-red-500/15 text-red-600 border-red-500/30 gap-1" variant="outline">
-          <XCircle className="h-3 w-3" />Failed
-        </Badge>
-      );
-  }
-}
-
+// Renders the bills and invoices management page with status filtering and export
 const BillingsPage = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,7 +62,32 @@ const BillingsPage = () => {
   };
 
   const handleBulkExport = () => {
-    alert(`Exporting ${selectedIds.length} invoices...`);
+    alert(`${t('common.export')} ${selectedIds.length}...`);
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'Paid':
+        return (
+          <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1" variant="outline">
+            <CheckCircle2 className="h-3 w-3" />{t('orders.status_paid')}
+          </Badge>
+        );
+      case 'Pending':
+        return (
+          <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/30 gap-1" variant="outline">
+            <Clock className="h-3 w-3" />{t('orders.status_pending')}
+          </Badge>
+        );
+      case 'Failed':
+        return (
+          <Badge className="bg-red-500/15 text-red-600 border-red-500/30 gap-1" variant="outline">
+            <XCircle className="h-3 w-3" />{t('common.error')}
+          </Badge>
+        );
+      default:
+        return null;
+    }
   };
 
   const isAllPageSelected = invoices.length > 0 && invoices.every(inv => selectedIds.includes(inv.id));
@@ -91,12 +96,12 @@ const BillingsPage = () => {
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Bills & Invoices</h1>
-          <p className="text-sm text-muted-foreground mt-1">View and manage all customer invoices</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('admin.invoices')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('admin.billing')}</p>
         </div>
         <Button variant="outline" size="sm">
           <Download className="h-4 w-4 mr-2" />
-          Export
+          {t('common.export')}
         </Button>
       </div>
 
@@ -105,7 +110,7 @@ const BillingsPage = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by customer name or invoice ID..."
+              placeholder={t('common.search_placeholder')}
               className="pl-9"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
@@ -120,18 +125,18 @@ const BillingsPage = () => {
                 className="flex items-center gap-1.5"
               >
                 <Download className="h-4 w-4" />
-                Export Selected ({selectedIds.length})
+                {t('common.export')} ({selectedIds.length})
               </Button>
             )}
             <Select value={statusFilter} onValueChange={handleStatusFilter}>
               <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('common.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="All">All Status</SelectItem>
-                <SelectItem value="Paid">Paid</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="Failed">Failed</SelectItem>
+                <SelectItem value="All">{t('common.all')}</SelectItem>
+                <SelectItem value="Paid">{t('orders.status_paid')}</SelectItem>
+                <SelectItem value="Pending">{t('orders.status_pending')}</SelectItem>
+                <SelectItem value="Failed">{t('common.error')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -158,13 +163,13 @@ const BillingsPage = () => {
                     }}
                   />
                 </TableHead>
-                <TableHead>Invoice ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('orders.order_id')}</TableHead>
+                <TableHead>{t('orders.customer')}</TableHead>
+                <TableHead>{t('common.date')}</TableHead>
+                <TableHead>{t('common.time')}</TableHead>
+                <TableHead>{t('common.amount')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -186,7 +191,7 @@ const BillingsPage = () => {
               ) : isError ? (
                 <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center text-red-500">
-                    Failed to load billing invoices. Please refresh the page.
+                    {t('common.error')}
                   </TableCell>
                 </TableRow>
               ) : invoices.length > 0 ? (
@@ -225,7 +230,7 @@ const BillingsPage = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                    No invoices found.
+                    {t('common.no_data')}
                   </TableCell>
                 </TableRow>
               )}
@@ -309,6 +314,6 @@ const BillingsPage = () => {
       </div>
     </div>
   );
-}
+};
 
 export default BillingsPage;

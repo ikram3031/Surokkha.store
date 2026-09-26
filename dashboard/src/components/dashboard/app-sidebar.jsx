@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Link, useLocation } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -70,7 +71,6 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { BrandLogo } from "@/components/BrandLogo"
 import { useAuth } from "@/lib/auth-context"
 import { hasMenuAccess } from "@/lib/rbac"
 
@@ -89,6 +89,7 @@ const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
 
 // Main application sidebar rendering organized multi-tenant navigation
 export const AppSidebar = ({ ...props }) => {
+  const { t } = useTranslation()
   const location = useLocation()
   const pathname = location.pathname
   const { user, logout } = useAuth()
@@ -166,11 +167,11 @@ export const AppSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={pathname === "/dashboard"}
-                tooltip="Overview"
+                tooltip={t("nav.overview", "Overview")}
                 render={<Link to="/dashboard" />}
               >
                 <LayoutDashboard className="h-4 w-4" />
-                <span>Overview</span>
+                <span>{t("nav.overview", "Overview")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
@@ -179,11 +180,11 @@ export const AppSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={pathname === "/dashboard/tools/messages" || pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"}
-                tooltip="Webmail"
+                tooltip={t("nav.webmail", "Webmail")}
                 render={<Link to="/dashboard/tools/messages" />}
               >
                 <Mail className="h-4 w-4" />
-                <span>Webmail</span>
+                <span>{t("nav.webmail", "Webmail")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
@@ -192,13 +193,13 @@ export const AppSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={pathname.startsWith("/dashboard/orders")}
-                tooltip="Orders"
+                tooltip={t("nav.orders", "Orders")}
                 onClick={() => toggleMenu("orders")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
                 <div className="flex items-center gap-2">
                   <ShoppingBag className="h-4 w-4" />
-                  <span>Orders</span>
+                  <span>{t("nav.orders", "Orders")}</span>
                 </div>
                 <ChevronRight
                   className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
@@ -215,7 +216,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/orders/new" />}
                       >
                         <PlusCircle className="h-3.5 w-3.5" />
-                        <span>New In-Store Order</span>
+                        <span>{t("nav.new_in_store_order", "New In-Store Order")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -226,7 +227,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/orders" />}
                       >
                         <ListOrdered className="h-3.5 w-3.5" />
-                        <span>Orders List</span>
+                        <span>{t("nav.orders_list", "Orders List")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -237,7 +238,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/orders/in-store" />}
                       >
                         <Store className="h-3.5 w-3.5" />
-                        <span>In-Store Orders</span>
+                        <span>{t("nav.in_store_orders", "In-Store Orders")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -254,13 +255,13 @@ export const AppSidebar = ({ ...props }) => {
                   pathname === "/dashboard/settings/products" ||
                   pathname.startsWith("/dashboard/reviews")
                 }
-                tooltip="Products"
+                tooltip={t("nav.products", "Products")}
                 onClick={() => toggleMenu("products")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
                 <div className="flex items-center gap-2">
                   <Package className="h-4 w-4" />
-                  <span>Products</span>
+                  <span>{t("nav.products", "Products")}</span>
                 </div>
                 <ChevronRight
                   className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
@@ -277,7 +278,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/new" />}
                       >
                         <PlusCircle className="h-3.5 w-3.5" />
-                        <span>Add Product</span>
+                        <span>{t("nav.add_product", "Add Product")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -288,7 +289,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products" />}
                       >
                         <ListOrdered className="h-3.5 w-3.5" />
-                        <span>Product List</span>
+                        <span>{t("nav.product_list", "Product List")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -299,7 +300,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/on-sale" />}
                       >
                         <Tag className="h-3.5 w-3.5" />
-                        <span>On Sale</span>
+                        <span>{t("nav.on_sale", "On Sale")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -310,7 +311,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/miniature" />}
                       >
                         <Sparkles className="h-3.5 w-3.5" />
-                        <span>Miniature</span>
+                        <span>{t("nav.miniature", "Miniature")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -321,7 +322,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/settings/products" />}
                       >
                         <Sparkles className="h-3.5 w-3.5" />
-                        <span>Showcases</span>
+                        <span>{t("nav.showcases", "Showcases")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -332,7 +333,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/categories" />}
                       >
                         <Receipt className="h-3.5 w-3.5" />
-                        <span>Categories</span>
+                        <span>{t("nav.categories", "Categories")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -343,7 +344,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/brands" />}
                       >
                         <CreditCard className="h-3.5 w-3.5" />
-                        <span>Brands</span>
+                        <span>{t("nav.brands", "Brands")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -354,7 +355,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/attributes" />}
                       >
                         <Sliders className="h-3.5 w-3.5" />
-                        <span>Attributes</span>
+                        <span>{t("nav.attributes", "Attributes")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -365,7 +366,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/coupons" />}
                       >
                         <Ticket className="h-3.5 w-3.5" />
-                        <span>Coupons</span>
+                        <span>{t("nav.coupons", "Coupons")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -376,7 +377,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/products/size-charts" />}
                       >
                         <Ruler className="h-3.5 w-3.5" />
-                        <span>Size Charts</span>
+                        <span>{t("nav.size_charts", "Size Charts")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -387,7 +388,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/reviews" />}
                       >
                         <Star className="h-3.5 w-3.5" />
-                        <span>Reviews</span>
+                        <span>{t("nav.reviews", "Reviews")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -400,13 +401,13 @@ export const AppSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={pathname.startsWith("/dashboard/settings") && pathname !== "/dashboard/settings/products"}
-                tooltip="Settings"
+                tooltip={t("nav.settings", "Settings")}
                 onClick={() => toggleMenu("settings")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
                 <div className="flex items-center gap-2">
                   <Settings className="h-4 w-4" />
-                  <span>Settings</span>
+                  <span>{t("nav.settings", "Settings")}</span>
                 </div>
                 <ChevronRight
                   className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
@@ -422,7 +423,7 @@ export const AppSidebar = ({ ...props }) => {
                       render={<Link to="/dashboard/settings/cms-content" />}
                     >
                       <ImageIcon className="h-3.5 w-3.5" />
-                      <span>CMS Content</span>
+                      <span>{t("nav.cms_content", "CMS Content")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
 
@@ -432,7 +433,7 @@ export const AppSidebar = ({ ...props }) => {
                       render={<Link to="/dashboard/settings/seo" />}
                     >
                       <Search className="h-3.5 w-3.5" />
-                      <span>General & SEO</span>
+                      <span>{t("nav.general_seo", "General & SEO")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
 
@@ -442,7 +443,7 @@ export const AppSidebar = ({ ...props }) => {
                       render={<Link to="/dashboard/settings/meta-pixel" />}
                     >
                       <Share2 className="h-3.5 w-3.5" />
-                      <span>Meta Pixel</span>
+                      <span>{t("nav.meta_pixel", "Meta Pixel")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
 
@@ -452,7 +453,7 @@ export const AppSidebar = ({ ...props }) => {
                       render={<Link to="/dashboard/settings/tiktok-pixel" />}
                     >
                       <TikTokIcon className="h-3.5 w-3.5 shrink-0" />
-                      <span>TikTok Pixel</span>
+                      <span>{t("nav.tiktok_pixel", "TikTok Pixel")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
 
@@ -462,7 +463,7 @@ export const AppSidebar = ({ ...props }) => {
                       render={<Link to="/dashboard/settings/google-analytics" />}
                     >
                       <BarChart3 className="h-3.5 w-3.5" />
-                      <span>Google Analytics</span>
+                      <span>{t("nav.google_analytics", "Google Analytics")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>
@@ -482,13 +483,13 @@ export const AppSidebar = ({ ...props }) => {
                   pathname.startsWith("/dashboard/cpanel") ||
                   pathname.startsWith("/dashboard/trash")
                 }
-                tooltip="Admin"
+                tooltip={t("nav.admin", "Admin")}
                 onClick={() => toggleMenu("admin")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4" />
-                  <span>Admin</span>
+                  <span>{t("nav.admin", "Admin")}</span>
                 </div>
                 <ChevronRight
                   className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
@@ -505,7 +506,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/reports" />}
                       >
                         <BarChart3 className="h-3.5 w-3.5" />
-                        <span>Reports</span>
+                        <span>{t("nav.reports", "Reports")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -516,7 +517,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/users" />}
                       >
                         <ShieldAlert className="h-3.5 w-3.5" />
-                        <span>System Users</span>
+                        <span>{t("nav.system_users", "System Users")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -527,7 +528,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/members" />}
                       >
                         <Users className="h-3.5 w-3.5" />
-                        <span>Customer List</span>
+                        <span>{t("nav.customer_list", "Customer List")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -538,7 +539,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/billing/billings" />}
                       >
                         <Receipt className="h-3.5 w-3.5" />
-                        <span>Bills & Invoices</span>
+                        <span>{t("nav.bills_invoices", "Bills & Invoices")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -549,7 +550,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/billing/payments" />}
                       >
                         <CreditCard className="h-3.5 w-3.5" />
-                        <span>Payments</span>
+                        <span>{t("nav.payments", "Payments")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -560,7 +561,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/tools/support" />}
                       >
                         <LifeBuoy className="h-3.5 w-3.5" />
-                        <span>Support Desk</span>
+                        <span>{t("nav.support_desk", "Support Desk")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -571,7 +572,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/cpanel" />}
                       >
                         <Terminal className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="text-emerald-400 font-medium">PPanel / cPanel</span>
+                        <span className="text-emerald-400 font-medium">{t("nav.cpanel", "PPanel / cPanel")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -581,7 +582,7 @@ export const AppSidebar = ({ ...props }) => {
                       render={<Link to="/dashboard/trash" />}
                     >
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                      <span className="text-destructive font-medium">Trash</span>
+                      <span className="text-destructive font-medium">{t("nav.trash", "Trash")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>
@@ -606,13 +607,13 @@ export const AppSidebar = ({ ...props }) => {
                   pathname.startsWith("/dashboard/logs") ||
                   pathname.startsWith("/dashboard/tools/logs")
                 }
-                tooltip="Tools & Media"
+                tooltip={t("nav.tools_media", "Tools & Media")}
                 onClick={() => toggleMenu("tools")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
                 <div className="flex items-center gap-2">
                   <Wrench className="h-4 w-4" />
-                  <span>Tools & Media</span>
+                  <span>{t("nav.tools_media", "Tools & Media")}</span>
                 </div>
                 <ChevronRight
                   className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
@@ -629,7 +630,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/analytics" />}
                       >
                         <BarChart3 className="h-3.5 w-3.5" />
-                        <span>Google Analytics</span>
+                        <span>{t("nav.google_analytics", "Google Analytics")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -640,7 +641,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/cloudflare-analytics" />}
                       >
                         <LineChart className="h-3.5 w-3.5 text-blue-500" />
-                        <span>Cloudflare Analytics</span>
+                        <span>{t("nav.cloudflare_analytics", "Cloudflare Analytics")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -651,7 +652,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/activity-logs" />}
                       >
                         <Activity className="h-3.5 w-3.5" />
-                        <span>Activity Logs</span>
+                        <span>{t("nav.activity_logs", "Activity Logs")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -662,7 +663,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/media" />}
                       >
                         <Images className="h-3.5 w-3.5" />
-                        <span>All Media</span>
+                        <span>{t("nav.all_media", "All Media")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -673,7 +674,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/tools/bulk-image-resize" />}
                       >
                         <ImageDown className="h-3.5 w-3.5" />
-                        <span>Bulk Image Resize</span>
+                        <span>{t("nav.bulk_image_resize", "Bulk Image Resize")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -684,7 +685,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/tools/meta-catalog" />}
                       >
                         <Share2 className="h-3.5 w-3.5" />
-                        <span>Meta Catalog</span>
+                        <span>{t("nav.meta_catalog", "Meta Catalog")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -695,7 +696,7 @@ export const AppSidebar = ({ ...props }) => {
                         render={<Link to="/dashboard/logs" />}
                       >
                         <Terminal className="h-3.5 w-3.5" />
-                        <span>System Logs</span>
+                        <span>{t("nav.system_logs", "System Logs")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -739,7 +740,7 @@ export const AppSidebar = ({ ...props }) => {
                 onClick={() => setProfileModalOpen(true)}
               >
                 <User className="h-4 w-4 text-primary" />
-                <span>Profile</span>
+                <span>{t("nav.profile", "Profile")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -748,7 +749,7 @@ export const AppSidebar = ({ ...props }) => {
             type="button"
             onClick={() => setLogoutConfirmOpen(true)}
             className="h-8 w-8 shrink-0 rounded-xl bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
-            title="Logout"
+            title={t("nav.logout", "Logout")}
             aria-label="Logout"
           >
             <LogOut className="h-4 w-4 text-white" />
@@ -775,7 +776,7 @@ export const AppSidebar = ({ ...props }) => {
                 onClick={() => setProfileModalOpen(true)}
               >
                 <User className="h-4 w-4 text-primary" />
-                <span>Profile</span>
+                <span>{t("nav.profile", "Profile")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -784,7 +785,7 @@ export const AppSidebar = ({ ...props }) => {
             type="button"
             onClick={() => setLogoutConfirmOpen(true)}
             className="h-8 w-8 rounded-xl bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
-            title="Logout"
+            title={t("nav.logout", "Logout")}
             aria-label="Logout"
           >
             <LogOut className="h-4 w-4 text-white" />
@@ -801,10 +802,10 @@ export const AppSidebar = ({ ...props }) => {
               <LogOut className="h-6 w-6" />
             </div>
             <DialogTitle className="text-lg font-bold text-foreground text-center">
-              Do you want to log out?
+              {t("nav.logout_confirm_title", "Do you want to log out?")}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground text-center">
-              Are you sure you want to end your current session? You will need to sign in again to access the dashboard.
+              {t("nav.logout_confirm_desc", "Are you sure you want to end your current session? You will need to sign in again to access the dashboard.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -815,7 +816,7 @@ export const AppSidebar = ({ ...props }) => {
               onClick={() => setLogoutConfirmOpen(false)}
               className="flex-1 bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/40 hover:border-destructive/60 font-semibold cursor-pointer text-xs"
             >
-              No
+              {t("common.no", "No")}
             </Button>
 
             <Button
@@ -823,7 +824,7 @@ export const AppSidebar = ({ ...props }) => {
               onClick={handleConfirmLogout}
               className="flex-1 bg-amber-500 hover:bg-amber-600 text-black dark:text-neutral-950 font-bold shadow-sm cursor-pointer text-xs"
             >
-              Yes
+              {t("common.yes", "Yes")}
             </Button>
           </div>
         </DialogContent>
@@ -849,20 +850,20 @@ export const AppSidebar = ({ ...props }) => {
 
           <div className="space-y-2.5 py-3 border-y border-border text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Role</span>
+              <span className="text-muted-foreground">{t("admin.user_role", "Role")}</span>
               <span className="font-semibold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 capitalize">
                 {user?.role || "Frontdesk"}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Store Brand</span>
+              <span className="text-muted-foreground">{t("settings.store_name", "Store Brand")}</span>
               <span className="font-semibold text-foreground">{brandName || "Store"}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Status</span>
+              <span className="text-muted-foreground">{t("common.status", "Status")}</span>
               <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                Active
+                {t("common.active", "Active")}
               </span>
             </div>
           </div>
@@ -874,7 +875,7 @@ export const AppSidebar = ({ ...props }) => {
               onClick={() => setProfileModalOpen(false)}
               className="w-full text-xs font-semibold cursor-pointer"
             >
-              Close
+              {t("common.close", "Close")}
             </Button>
           </DialogFooter>
         </DialogContent>

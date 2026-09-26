@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CouponsTable } from '@/components/dashboard/coupons-table';
 import { CouponDialog } from '@/components/dashboard/coupon-dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Trash2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -21,12 +22,13 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
-import { Trash2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+// Renders the coupons management page with discount rules, status filters, and creation dialog
 const CouponsPage = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
@@ -75,12 +77,12 @@ const CouponsPage = () => {
       await Promise.all(
         selectedIds.map((id) => apiClient.delete(`/api/v1/coupons/${id}`))
       );
-      toast.success('Selected coupons deleted successfully.');
+      toast.success(t('common.saved'));
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
       setSelectedIds([]);
       setBulkDeleteOpen(false);
     } catch {
-      toast.error('Failed to delete some coupons.');
+      toast.error(t('common.error'));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -90,14 +92,14 @@ const CouponsPage = () => {
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Coupons & Promotions</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t('categories_brands.coupon_title')}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage discount codes, product restrictions, and usage limits.
+            {t('products.subtitle')}
           </p>
         </div>
         <Button onClick={handleOpenAddDialog} className="shadow transition-all hover:scale-[1.02] cursor-pointer">
           <Plus className="mr-2 h-4 w-4" />
-          Add Coupon
+          {t('categories_brands.add_coupon')}
         </Button>
       </div>
 
@@ -106,7 +108,7 @@ const CouponsPage = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search coupon codes..."
+            placeholder={t('common.search_placeholder')}
             className="pl-8"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
@@ -121,28 +123,28 @@ const CouponsPage = () => {
               className="flex items-center gap-1 mr-2 text-xs"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              Delete Selected ({selectedIds.length})
+              {t('common.delete')} ({selectedIds.length})
             </Button>
           )}
           <Select value={statusFilter} onValueChange={handleStatusFilter}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t('common.status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="Active">Active Only</SelectItem>
-              <SelectItem value="Inactive">Inactive Only</SelectItem>
+              <SelectItem value="All">{t('common.all')}</SelectItem>
+              <SelectItem value="Active">{t('common.active')}</SelectItem>
+              <SelectItem value="Inactive">{t('common.inactive')}</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={typeFilter} onValueChange={handleTypeFilter}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Type" />
+              <SelectValue placeholder={t('categories_brands.discount_type')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Types</SelectItem>
-              <SelectItem value="Percentage">Percentage</SelectItem>
-              <SelectItem value="Fixed">Fixed Amount</SelectItem>
+              <SelectItem value="All">{t('common.all')}</SelectItem>
+              <SelectItem value="Percentage">{t('categories_brands.percentage')}</SelectItem>
+              <SelectItem value="Fixed">{t('categories_brands.fixed_amount')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -239,11 +241,11 @@ const CouponsPage = () => {
         onOpenChange={setBulkDeleteOpen}
         onConfirm={handleBulkDelete}
         isDeleting={isBulkDeleting}
-        title="Delete Selected Coupons"
-        description={`Are you sure you want to permanently delete the ${selectedIds.length} selected coupons? This action cannot be undone.`}
+        title={t('common.delete')}
+        description={`${t('common.confirm_delete')} (${selectedIds.length})`}
       />
     </div>
   );
-}
+};
 
 export default CouponsPage;

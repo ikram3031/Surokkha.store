@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,7 +32,9 @@ import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
 
-export default function AllMediaPage() {
+// Renders the all media assets gallery with grid preview, copy direct URL, and modal inspection
+const AllMediaPage = () => {
+  const { t } = useTranslation();
   const [mediaList, setMediaList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,7 +62,7 @@ export default function AllMediaPage() {
       setTotalPages(meta.totalPages || 1);
       setTotalFiles(meta.total || data.length);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to fetch media assets'));
+      toast.error(getApiErrorMessage(err, t('common.error')));
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +83,7 @@ export default function AllMediaPage() {
     const fullUrl = resolveImageUrl(url);
     navigator.clipboard.writeText(fullUrl);
     setCopied(true);
-    toast.success('Media link copied to clipboard!');
+    toast.success(t('common.copied'));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -94,7 +97,6 @@ export default function AllMediaPage() {
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto w-full">
-      {/* Header & Search Bar */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -102,33 +104,31 @@ export default function AllMediaPage() {
           </div>
           <div>
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              All Media Assets
+              {t('admin.all_media')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Explore and preview all uploaded assets and copy their direct URLs ({totalFiles} files).
+              {totalFiles} {t('common.entries')}
             </p>
           </div>
         </div>
 
-        {/* Search Input (Press Enter or click to search) */}
         <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2 w-full sm:w-80">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search filename... (Press Enter)"
+              placeholder={t('common.search_placeholder')}
               className="pl-9 text-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <Button type="submit" size="sm" variant="secondary" className="cursor-pointer text-xs font-semibold shrink-0">
-            Search
+            {t('common.search')}
           </Button>
         </form>
       </div>
 
-      {/* Grid View: 5 Cards Per Row (20 Cards Total = 4 Rows) */}
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {Array.from({ length: 20 }).map((_, i) => (
@@ -138,10 +138,7 @@ export default function AllMediaPage() {
       ) : mediaList.length === 0 ? (
         <div className="p-16 text-center text-muted-foreground border border-dashed rounded-2xl bg-card">
           <ImageIcon className="h-12 w-12 mx-auto mb-3 opacity-30 text-primary" />
-          <p className="text-base font-bold text-foreground">No media assets found</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {activeSearch ? `No results matching "${activeSearch}"` : 'Upload images across products or attributes to view them here.'}
-          </p>
+          <p className="text-base font-bold text-foreground">{t('common.no_data')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -167,7 +164,7 @@ export default function AllMediaPage() {
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-black/60 border border-white/20 backdrop-blur-xs">
-                    View &amp; Copy
+                    {t('common.view')} &amp; {t('common.copy')}
                   </span>
                 </div>
               </div>
@@ -186,7 +183,6 @@ export default function AllMediaPage() {
         </div>
       )}
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center pt-4">
           <Pagination>
@@ -238,18 +234,16 @@ export default function AllMediaPage() {
         </div>
       )}
 
-      {/* Media Detail & Copy Link Modal */}
       <Dialog open={!!selectedMedia} onOpenChange={(open) => !open && setSelectedMedia(null)}>
         <DialogContent className="sm:max-w-3xl md:max-w-4xl p-0 max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader className="p-4 sm:p-5 border-b shrink-0">
             <DialogTitle className="text-base font-bold text-foreground truncate pr-6">
-              {selectedMedia?.filename || 'Media Preview'}
+              {selectedMedia?.filename || t('common.preview')}
             </DialogTitle>
           </DialogHeader>
 
           {selectedMedia && (
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-              {/* Media Preview Box (Spacious, elegant background and crisp display) */}
               <div className="relative w-full min-h-[220px] max-h-[380px] rounded-2xl border border-border/70 bg-neutral-900/60 dark:bg-neutral-950/80 backdrop-blur-xs flex items-center justify-center overflow-hidden p-3 shadow-inner">
                 {selectedMedia.url.match(/\.(jpeg|jpg|png|webp|gif|svg|avif)$/i) ? (
                   <img
@@ -268,19 +262,18 @@ export default function AllMediaPage() {
                 )}
               </div>
 
-              {/* Metadata Badges */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="flex items-center gap-2.5 p-3 rounded-xl border bg-card/60">
                   <HardDrive className="h-4 w-4 text-primary shrink-0" />
                   <div>
-                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">File Size</p>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('common.quantity')}</p>
                     <p className="font-semibold text-foreground font-mono mt-0.5">{formatFileSize(selectedMedia.size)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5 p-3 rounded-xl border bg-card/60">
                   <Calendar className="h-4 w-4 text-primary shrink-0" />
                   <div>
-                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Last Modified</p>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('common.date')}</p>
                     <p className="font-semibold text-foreground font-mono mt-0.5">
                       {new Date(selectedMedia.updatedAt || selectedMedia.createdAt).toLocaleString()}
                     </p>
@@ -288,10 +281,9 @@ export default function AllMediaPage() {
                 </div>
               </div>
 
-              {/* URL Input with Copy Link & Open in New Tab */}
               <div className="space-y-1.5 pt-1">
                 <label className="text-xs font-semibold text-foreground block">
-                  Media Direct URL
+                  {t('products.slug')}
                 </label>
                 <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <Input
@@ -303,16 +295,16 @@ export default function AllMediaPage() {
                     type="button"
                     onClick={() => handleCopyLink(selectedMedia.url)}
                     className="h-9 px-4 bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 font-semibold gap-1.5 cursor-pointer text-xs shrink-0 transition-all"
-                    title="Copy Direct URL"
+                    title={t('common.copy')}
                   >
                     {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                    <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                    <span>{copied ? t('common.copied') : t('common.copy')}</span>
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     className="h-9 px-3 border-border hover:border-primary/40 cursor-pointer text-xs shrink-0"
-                    title="Open in new tab"
+                    title={t('common.view')}
                     asChild
                   >
                     <a
@@ -331,4 +323,6 @@ export default function AllMediaPage() {
       </Dialog>
     </div>
   );
-}
+};
+
+export default AllMediaPage;

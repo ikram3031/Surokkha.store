@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
@@ -46,6 +47,7 @@ const ProductAddDialog = ({
   onClose,
   onAddToCart,
 }) => {
+  const { t } = useTranslation();
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
@@ -101,8 +103,8 @@ const ProductAddDialog = ({
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             {isVariant
-              ? "Select a size / variation to add to cart"
-              : "Confirm quantity to add"}
+              ? t("products.attributes_variations", "Select a size / variation to add to cart")
+              : t("orders.select_product", "Confirm quantity to add")}
           </DialogDescription>
         </DialogHeader>
 
@@ -129,11 +131,11 @@ const ProductAddDialog = ({
               >
                 {isVariant ? (
                   <>
-                    <Layers className="h-2.5 w-2.5" /> Variable
+                    <Layers className="h-2.5 w-2.5" /> {t("products.attributes_variations", "Variable")}
                   </>
                 ) : (
                   <>
-                    <Tag className="h-2.5 w-2.5" /> Simple
+                    <Tag className="h-2.5 w-2.5" /> {t("products.stock_status", "Simple")}
                   </>
                 )}
               </Badge>
@@ -156,21 +158,21 @@ const ProductAddDialog = ({
                 )}
             </div>
             <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Stock Status</p>
-            <Badge
-              variant={(product.stock ?? 0) > 0 ? "secondary" : "destructive"}
-              className="text-xs"
-            >
-              {(product.stock ?? 0) > 0 ? `${product.stock} in stock` : "Out of Stock"}
-            </Badge>
-          </div>
+              <p className="text-sm font-medium mr-2">{t("products.stock_status", "Stock Status")}</p>
+              <Badge
+                variant={(product.stock ?? 0) > 0 ? "secondary" : "destructive"}
+                className="text-xs"
+              >
+                {(product.stock ?? 0) > 0 ? `${product.stock} ${t("products.in_stock", "in stock")}` : t("products.out_of_stock", "Out of Stock")}
+              </Badge>
+            </div>
           </div>
         )}
 
         {isVariant && (
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Select Size / Variation
+              {t("products.attributes_variations", "Select Size / Variation")}
             </p>
             <div className="grid grid-cols-1 gap-2">
               {[...(product.variants || [])]
@@ -220,7 +222,7 @@ const ProductAddDialog = ({
                             variant="destructive"
                             className="text-[10px] px-1.5 py-0 font-medium"
                           >
-                            Out of Stock
+                            {t("products.out_of_stock", "Out of Stock")}
                           </Badge>
                         )}
                       </div>
@@ -243,11 +245,11 @@ const ProductAddDialog = ({
 
         <div className="border-t border-border pt-4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Quantity</p>
+            <p className="text-sm font-medium">{t("common.quantity", "Quantity")}</p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="h-7 w-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                className="h-7 w-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
               >
                 <Minus className="h-3 w-3" />
               </button>
@@ -256,7 +258,7 @@ const ProductAddDialog = ({
               </span>
               <button
                 onClick={() => setQuantity((q) => q + 1)}
-                className="h-7 w-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                className="h-7 w-7 rounded-md border border-border flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
               </button>
@@ -265,7 +267,7 @@ const ProductAddDialog = ({
 
           {lineTotal !== null && (
             <div className="flex items-center justify-between bg-primary/5 rounded-lg px-3 py-2">
-              <p className="text-sm text-muted-foreground">Subtotal</p>
+              <p className="text-sm text-muted-foreground">{t("common.subtotal", "Subtotal")}</p>
               <p className="text-base font-bold text-primary">
                 {formatBDT(lineTotal)}
               </p>
@@ -274,17 +276,19 @@ const ProductAddDialog = ({
         </div>
 
         <DialogFooter showCloseButton>
-          <Button disabled={!canAdd} onClick={handleAdd} className="gap-2">
+          <Button disabled={!canAdd} onClick={handleAdd} className="gap-2 cursor-pointer">
             <ShoppingBag className="h-4 w-4" />
-            Add to Cart
+            {t("orders.add_to_cart", "Add to Cart")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};
 
+// Main container component creating a POS manual/in-store sale order
 const NewInStoreOrderPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -327,8 +331,8 @@ const NewInStoreOrderPage = () => {
       }
       return [...prev, item];
     });
-    toast.success(`${item.name} added to cart`);
-  }, []);
+    toast.success(`${item.name} ${t("orders.add_to_cart", "added to cart")}`);
+  }, [t]);
 
   const updateQty = useCallback((id, delta) => {
     setCart((prev) =>
@@ -363,11 +367,11 @@ const NewInStoreOrderPage = () => {
 
   const handleSubmit = async () => {
     if (cart.length === 0) {
-      toast.error("Cart is empty. Add at least one product.");
+      toast.error(t("orders.cart_empty", "Cart is empty. Add at least one product."));
       return;
     }
     if (!customerName.trim()) {
-      toast.error("Customer Name is required.");
+      toast.error(t("common.required", "Customer Name is required."));
       return;
     }
     if (customerPhone.trim().length !== 10) {
@@ -461,13 +465,13 @@ const NewInStoreOrderPage = () => {
       });
 
       toast.success(
-        "In-store order created successfully.",
+        t("orders.order_created_success", "In-store order created successfully."),
       );
     } catch (err) {
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.errors?.join(", ") ||
-        "Failed to create order.";
+        t("common.error", "Failed to create order.");
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -490,16 +494,16 @@ const NewInStoreOrderPage = () => {
           variant="outline"
           size="icon"
           onClick={() => window.history.back()}
-          className="h-9 w-9"
+          className="h-9 w-9 cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
           <h2 className="text-3xl font-bold tracking-tight">
-            New In-Store Order
+            {t("nav.new_in_store_order", "New In-Store Order")}
           </h2>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Walk-in counter sale — order ID prefixed with{" "}
+            {t("orders.pos_title", "Walk-in counter sale — order ID prefixed with")}{" "}
             <span className="font-mono font-semibold text-primary">S</span>
           </p>
         </div>
@@ -510,7 +514,7 @@ const NewInStoreOrderPage = () => {
           <div className="bg-card border rounded-xl p-5 shadow-sm">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <Package className="h-5 w-5 text-primary" />
-              Product Catalogue
+              {t("nav.products", "Product Catalogue")}
             </h3>
 
             <div className="flex gap-2 mb-3">
@@ -518,11 +522,11 @@ const NewInStoreOrderPage = () => {
                 value={categoryFilter}
                 onValueChange={(v) => setCategoryFilter(v ?? "All")}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Category" />
+                <SelectTrigger className="w-full cursor-pointer">
+                  <SelectValue placeholder={t("products.category", "Category")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="All">All Categories</SelectItem>
+                  <SelectItem value="All">{t("common.all", "All Categories")}</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat.did} value={cat.slug || cat.did}>
                       {cat.name}
@@ -535,11 +539,11 @@ const NewInStoreOrderPage = () => {
                 value={brandFilter}
                 onValueChange={(v) => setBrandFilter(v ?? "All")}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Brand" />
+                <SelectTrigger className="w-full cursor-pointer">
+                  <SelectValue placeholder={t("products.brand", "Brand")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="All">All Brands</SelectItem>
+                  <SelectItem value="All">{t("common.all", "All Brands")}</SelectItem>
                   {brands.map((brand) => (
                     <SelectItem key={brand.did} value={brand.slug || brand.did}>
                       {brand.name}
@@ -552,14 +556,14 @@ const NewInStoreOrderPage = () => {
             <div className="relative mb-4">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search products by name or SKU..."
+                placeholder={t("products.search_products", "Search products by name or SKU...")}
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
                 <button
-                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   onClick={() => setSearchQuery("")}
                 >
                   <X className="h-4 w-4" />
@@ -579,7 +583,7 @@ const NewInStoreOrderPage = () => {
             ) : products.length === 0 ? (
               <div className="py-16 text-center text-muted-foreground">
                 <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                <p>No products found</p>
+                <p>{t("common.no_data", "No products found")}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[540px] overflow-y-auto pr-1">
@@ -631,7 +635,7 @@ const NewInStoreOrderPage = () => {
                         <div className="flex items-center gap-1.5 mt-1">
                           <span className="text-sm font-semibold text-primary">
                             {isVariant
-                              ? `from ${formatBDT(displayPrice)}`
+                              ? `${formatBDT(displayPrice)}`
                               : formatBDT(displayPrice)}
                           </span>
                           {isVariant && (
@@ -640,7 +644,7 @@ const NewInStoreOrderPage = () => {
                               className="text-[10px] px-1 py-0 gap-0.5"
                             >
                               <Layers className="h-2.5 w-2.5" />{" "}
-                              {product.variants?.length ?? 0} sizes
+                              {product.variants?.length ?? 0} {t("products.attributes_variations", "sizes")}
                             </Badge>
                           )}
                         </div>
@@ -658,14 +662,14 @@ const NewInStoreOrderPage = () => {
                             !isOutOfStock && setDialogProduct(product)
                           }
                           className={`
-                            h-8 w-8 rounded-lg flex items-center justify-center transition-all
+                            h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer
                             ${
                               isOutOfStock
                                 ? "bg-muted cursor-not-allowed text-muted-foreground"
                                 : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-sm"
                             }
                           `}
-                          title={isOutOfStock ? "Out of Stock" : "Add to cart"}
+                          title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
                         >
                           <Plus className="h-4 w-4" />
                         </button>
@@ -680,21 +684,21 @@ const NewInStoreOrderPage = () => {
 
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-card border rounded-xl p-5 shadow-sm">
-            <h3 className="font-semibold text-base mb-3">Customer Info</h3>
+            <h3 className="font-semibold text-base mb-3">{t("orders.customer_info", "Customer Info")}</h3>
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
-                  Customer Name <span className="text-destructive">*</span>
+                  {t("orders.customer_name", "Customer Name")} <span className="text-destructive">*</span>
                 </label>
                 <Input
-                  placeholder="Walk-in Customer"
+                  placeholder={t("orders.customer", "Walk-in Customer")}
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                 />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
-                  Phone Number <span className="text-destructive">*</span>
+                  {t("common.phone", "Phone Number")} <span className="text-destructive">*</span>
                 </label>
                 <div className="flex items-center h-8 w-full rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 overflow-hidden">
                   <span className="bg-muted/50 h-full flex items-center px-2.5 text-sm text-muted-foreground border-r border-input select-none font-medium">
@@ -718,7 +722,7 @@ const NewInStoreOrderPage = () => {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-muted-foreground block">
-                    Email (Optional)
+                    {t("common.email", "Email")} ({t("common.optional", "Optional")})
                   </label>
                   {isEmailInvalid && (
                     <span className="text-[11px] text-destructive font-medium">
@@ -728,7 +732,7 @@ const NewInStoreOrderPage = () => {
                 </div>
                 <Input
                   type="email"
-                  placeholder="email@example.com (optional)"
+                  placeholder="email@example.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   className={isEmailInvalid ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -736,10 +740,10 @@ const NewInStoreOrderPage = () => {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
-                  Address
+                  {t("common.address", "Address")}
                 </label>
                 <Input
-                  placeholder="Customer Address"
+                  placeholder={t("orders.shipping_address", "Customer Address")}
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
                 />
@@ -750,10 +754,10 @@ const NewInStoreOrderPage = () => {
           <div className="bg-card border rounded-xl p-5 shadow-sm">
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
               <ShoppingBag className="h-4 w-4 text-primary" />
-              Cart
+              {t("orders.cart_items", "Cart")}
               {cart.length > 0 && (
                 <Badge variant="secondary" className="ml-auto text-xs">
-                  {cart.reduce((s, c) => s + c.quantity, 0)} items
+                  {cart.reduce((s, c) => s + c.quantity, 0)} {t("orders.items", "items")}
                 </Badge>
               )}
             </h3>
@@ -761,8 +765,8 @@ const NewInStoreOrderPage = () => {
             {cart.length === 0 ? (
               <div className="py-10 text-center text-muted-foreground">
                 <ShoppingBag className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No items added yet</p>
-                <p className="text-xs mt-1">Click + on a product to add it</p>
+                <p className="text-sm">{t("orders.cart_empty", "No items added yet")}</p>
+                <p className="text-xs mt-1">{t("orders.select_product", "Click + on a product to add it")}</p>
               </div>
             ) : (
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
@@ -798,7 +802,7 @@ const NewInStoreOrderPage = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => updateQty(item.id, -1)}
-                        className="h-6 w-6 rounded border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                        className="h-6 w-6 rounded border border-border flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
                       >
                         <Minus className="h-3 w-3" />
                       </button>
@@ -807,13 +811,13 @@ const NewInStoreOrderPage = () => {
                       </span>
                       <button
                         onClick={() => updateQty(item.id, 1)}
-                        className="h-6 w-6 rounded border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                        className="h-6 w-6 rounded border border-border flex items-center justify-center hover:bg-muted transition-colors cursor-pointer"
                       >
                         <Plus className="h-3 w-3" />
                       </button>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="h-6 w-6 rounded flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors ml-1"
+                        className="h-6 w-6 rounded flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors ml-1 cursor-pointer"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -826,12 +830,12 @@ const NewInStoreOrderPage = () => {
             {cart.length > 0 && (
               <div className="mt-4 pt-3 border-t border-border space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Subtotal</span>
+                  <span>{t("common.subtotal", "Subtotal")}</span>
                   <span>{formatBDT(subtotal)}</span>
                 </div>
 
                 <div className="flex items-center justify-between gap-2 py-1">
-                  <span className="text-xs text-muted-foreground font-medium">Discount (৳)</span>
+                  <span className="text-xs text-muted-foreground font-medium">{t("common.discount", "Discount")} (৳)</span>
                   <div className="w-28">
                     <Input
                       type="text"
@@ -849,13 +853,13 @@ const NewInStoreOrderPage = () => {
 
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-xs text-emerald-600 font-medium">
-                    <span>Discount Applied</span>
+                    <span>{t("common.discount", "Discount Applied")}</span>
                     <span>- {formatBDT(discountAmount)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-base font-bold mt-2 pt-2 border-t border-border">
-                  <span>Total</span>
+                  <span>{t("common.total", "Total")}</span>
                   <span className="text-primary">{formatBDT(finalTotal)}</span>
                 </div>
               </div>
@@ -864,7 +868,7 @@ const NewInStoreOrderPage = () => {
 
           <div className="bg-card border rounded-xl p-5 shadow-sm">
             <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-              Payment Method
+              {t("orders.payment_method", "Payment Method")}
             </h3>
             <div className="space-y-3">
               <Select
@@ -873,8 +877,8 @@ const NewInStoreOrderPage = () => {
                   setPaymentMethod(v ?? "cash");
                 }}
               >
-                <SelectTrigger className="h-8 w-full">
-                  <SelectValue placeholder="Select Payment Method">
+                <SelectTrigger className="h-8 w-full cursor-pointer">
+                  <SelectValue placeholder={t("orders.payment_method", "Select Payment Method")}>
                     {(val) => getPaymentMethodLabel(val || paymentMethod)}
                   </SelectValue>
                 </SelectTrigger>
@@ -892,15 +896,15 @@ const NewInStoreOrderPage = () => {
           <div className="bg-muted/50 border border-border rounded-xl p-4">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                <span className="font-semibold text-foreground">Payment:</span>{" "}
+                <span className="font-semibold text-foreground">{t("orders.payment_method", "Payment")}:</span>{" "}
                 <span className="font-medium">{getPaymentMethodLabel(paymentMethod)}</span>
               </p>
               <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px] font-semibold">
-                Paid (In-Store)
+                {t("orders.status_paid", "Paid")} ({t("orders.in_store", "In-Store")})
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Order ID prefix:{" "}
+              {t("orders.order_id", "Order ID prefix")}:{" "}
               <span className="font-mono font-semibold text-primary">
                 IS
               </span>{" "}
@@ -909,19 +913,19 @@ const NewInStoreOrderPage = () => {
           </div>
 
           <Button
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 text-base font-semibold cursor-pointer"
             onClick={handleSubmit}
             disabled={isSubmitting || cart.length === 0}
           >
             {isSubmitting ? (
               <>
                 <div className="h-4 w-4 mr-2 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                Creating Order...
+                {t("common.creating", "Creating Order...")}
               </>
             ) : (
               <>
                 <CheckCircle className="h-5 w-5 mr-2" />
-                Confirm &amp; Create Order
+                {t("orders.create_order", "Confirm & Create Order")}
               </>
             )}
           </Button>
@@ -943,10 +947,10 @@ const NewInStoreOrderPage = () => {
         <DialogContent className="sm:max-w-md" showCloseButton>
           <DialogHeader>
             <DialogTitle className="text-base font-semibold leading-snug">
-              Order Completed
+              {t("orders.order_created_success", "Order Completed")}
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              In-store order has been created. Invoice generation is ready.
+              {t("orders.order_created_success", "In-store order has been created. Invoice generation is ready.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -956,7 +960,7 @@ const NewInStoreOrderPage = () => {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Order ID
+                      {t("orders.order_id", "Order ID")}
                     </p>
                     <p className="font-semibold">
                       {completedOrder.orderNumber}
@@ -964,7 +968,7 @@ const NewInStoreOrderPage = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Total
+                      {t("common.total", "Total")}
                     </p>
                     <p className="font-semibold text-primary">
                       {formatBDT(completedOrder.totalAmount)}
@@ -974,27 +978,27 @@ const NewInStoreOrderPage = () => {
                 <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Customer
+                      {t("orders.customer", "Customer")}
                     </p>
                     <p>{completedOrder.customerName}</p>
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Payment
+                      {t("orders.payment_method", "Payment")}
                     </p>
                     <p className="font-medium">{getPaymentMethodLabel(completedOrder.paymentMethod)}</p>
                   </div>
                   {completedOrder.customerEmail ? (
                     <div>
                       <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                        Email
+                        {t("common.email", "Email")}
                       </p>
                       <p>{completedOrder.customerEmail}</p>
                     </div>
                   ) : null}
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Phone
+                      {t("common.phone", "Phone")}
                     </p>
                     <p>{completedOrder.customerPhone}</p>
                   </div>
@@ -1002,7 +1006,7 @@ const NewInStoreOrderPage = () => {
               </div>
 
               <div className="space-y-1 text-sm">
-                <p className="font-medium">Invoice</p>
+                <p className="font-medium">{t("orders.print_invoice", "Invoice")}</p>
                 <p className="text-xs text-muted-foreground">
                   The invoice is generated and ready to download or print.
                 </p>
@@ -1011,24 +1015,24 @@ const NewInStoreOrderPage = () => {
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Button
                   variant="default"
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   onClick={handleDownloadInvoice}
                 >
-                  Download / Print Invoice
+                  {t("orders.print_invoice", "Download / Print Invoice")}
                 </Button>
               </div>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="secondary" onClick={closeCompletedDialog}>
-              Close
+            <Button variant="secondary" onClick={closeCompletedDialog} className="cursor-pointer">
+              {t("common.close", "Close")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
-}
+};
 
 export default NewInStoreOrderPage;

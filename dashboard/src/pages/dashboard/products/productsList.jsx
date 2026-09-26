@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ProductsTable } from '@/components/dashboard/products-table';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, Trash2, PackageX, X } from 'lucide-react';
@@ -35,7 +36,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // Renders the products management interface with search, filters, pagination, and bulk stock controls
-const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = 'Products & Inventory' }) => {
+const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null }) => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
@@ -80,7 +82,6 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
     });
   };
 
-  // Sync search input if URL changes externally (e.g. browser back/forward)
   useEffect(() => {
     setSearchInput(urlSearch);
     setDebouncedSearch(urlSearch);
@@ -138,12 +139,12 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
       await Promise.all(
         selectedIds.map((id) => apiClient.delete(`/api/v1/products/${id}`))
       );
-      toast.success('Selected products deleted successfully.');
+      toast.success(t('products.selected_deleted_success', 'Selected products deleted successfully.'));
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setSelectedIds([]);
       setBulkDeleteOpen(false);
     } catch {
-      toast.error('Failed to delete some products.');
+      toast.error(t('products.selected_delete_failed', 'Failed to delete some products.'));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -158,21 +159,25 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
         )
       );
       toast.success(
-        `Selected products marked as ${status === 'instock' ? 'In Stock' : 'Out of Stock'}.`
+        status === 'instock'
+          ? t('products.in_stock')
+          : t('products.out_of_stock')
       );
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setSelectedIds([]);
     } catch {
-      toast.error('Failed to update stock status for some products.');
+      toast.error(t('common.error'));
     } finally {
       setIsBulkStockUpdating(false);
     }
   };
 
+  const resolvedTitle = pageTitle || t('products.title');
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">{pageTitle}</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{resolvedTitle}</h2>
         <Link
           to={
             fixedCategory
@@ -182,7 +187,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
           className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add New Product
+          {t('products.add_new_product')}
         </Link>
       </div>
 
@@ -191,7 +196,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search products..."
+            placeholder={t('products.search_products')}
             className="pl-8 pr-8 h-9 text-xs"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -210,11 +215,13 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
           {selectedIds.length === 0 && (
             <>
               <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-md border text-xs font-medium shrink-0">
-                <span className="text-[11px] text-muted-foreground px-1.5 font-semibold">Stock:</span>
+                <span className="text-[11px] text-muted-foreground px-1.5 font-semibold">
+                  {t('products.stock_status')}:
+                </span>
                 {[
-                  { value: 'all', label: 'All', width: 'w-[52px]' },
-                  { value: 'instock', label: 'In Stock', width: 'w-[84px]' },
-                  { value: 'outofstock', label: 'Out of Stock', width: 'w-[106px]' },
+                  { value: 'all', label: t('common.all'), width: 'w-[52px]' },
+                  { value: 'instock', label: t('products.in_stock'), width: 'w-[84px]' },
+                  { value: 'outofstock', label: t('products.out_of_stock'), width: 'w-[106px]' },
                 ].map((item) => (
                   <label
                     key={item.value}
@@ -239,15 +246,19 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
 
               {fixedCategory ? (
                 <div className="flex items-center h-9 px-3 border rounded-md bg-muted/50 text-xs font-medium text-foreground shrink-0 select-none">
-                  <span>Category: {categoryFilter}</span>
+                  <span>{t('products.category')}: {categoryFilter}</span>
                 </div>
               ) : (
                 <Select value={categoryFilter} onValueChange={handleCategory}>
                   <SelectTrigger className="w-[160px] h-9 cursor-pointer text-xs">
-                    <span>{categoryFilter === 'All' ? 'Category: All' : `Category: ${categoryFilter}`}</span>
+                    <span>
+                      {categoryFilter === 'All'
+                        ? `${t('products.category')}: ${t('common.all')}`
+                        : `${t('products.category')}: ${categoryFilter}`}
+                    </span>
                   </SelectTrigger>
                   <SelectContent className="bg-popover border shadow-md" side="bottom">
-                    <SelectItem value="All">Category: All</SelectItem>
+                    <SelectItem value="All">{`${t('products.category')}: ${t('common.all')}`}</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat.did} value={cat.name}>{cat.name}</SelectItem>
                     ))}
@@ -257,10 +268,14 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
 
               <Select value={brandFilter} onValueChange={handleBrand}>
                 <SelectTrigger className="w-[160px] h-9 cursor-pointer text-xs">
-                  <span>{brandFilter === 'All' ? 'Brand: All' : `Brand: ${brandFilter}`}</span>
+                  <span>
+                    {brandFilter === 'All'
+                      ? `${t('products.brand')}: ${t('common.all')}`
+                      : `${t('products.brand')}: ${brandFilter}`}
+                  </span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="All">Brand: All</SelectItem>
+                  <SelectItem value="All">{`${t('products.brand')}: ${t('common.all')}`}</SelectItem>
                   {brands.map((brand) => (
                     <SelectItem key={brand.did} value={brand.name}>{brand.name}</SelectItem>
                   ))}
@@ -271,7 +286,9 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
 
           {selectedIds.length > 0 && (
             <div className="flex gap-2 items-center">
-              <span className="text-xs text-muted-foreground whitespace-nowrap">{selectedIds.length} selected:</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {t('products.selected_count', { count: selectedIds.length })}
+              </span>
               <Select
                 value=""
                 onValueChange={(val) => {
@@ -284,15 +301,15 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
                 <SelectTrigger className="w-[145px] h-9 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium cursor-pointer text-xs">
                   <div className="flex items-center gap-1.5 truncate">
                     <PackageX className="h-4 w-4 flex-shrink-0" />
-                    <span>Change Stock</span>
+                    <span>{t('products.change_stock')}</span>
                   </div>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
                   <SelectItem value="instock" className="cursor-pointer text-xs">
-                    Mark In Stock
+                    {t('products.mark_in_stock')}
                   </SelectItem>
                   <SelectItem value="outofstock" className="cursor-pointer text-xs">
-                    Mark Out of Stock
+                    {t('products.mark_out_of_stock')}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -302,7 +319,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
                 size="icon"
                 onClick={() => setBulkDeleteOpen(true)}
                 className="h-9 w-9 flex items-center justify-center shrink-0 cursor-pointer"
-                title={`Delete Selected (${selectedIds.length})`}
+                title={`${t('common.delete')} (${selectedIds.length})`}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -401,12 +418,12 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
       <Dialog open={!!bulkStockConfirmStatus} onOpenChange={(open) => !open && setBulkStockConfirmStatus(null)}>
         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
           <DialogHeader>
-            <DialogTitle>Confirm Stock Status Change</DialogTitle>
+            <DialogTitle>{t('products.confirm_stock_change')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to mark the <span className="font-semibold text-foreground">{selectedIds.length}</span> selected products as{' '}
-              <span className="font-semibold text-foreground">
-                {bulkStockConfirmStatus === 'instock' ? 'In Stock' : 'Out of Stock'}
-              </span>?
+              {t('products.confirm_stock_change_desc', {
+                count: selectedIds.length,
+                status: bulkStockConfirmStatus === 'instock' ? t('products.in_stock') : t('products.out_of_stock')
+              })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -415,7 +432,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
               onClick={() => setBulkStockConfirmStatus(null)}
               disabled={isBulkStockUpdating}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
@@ -427,7 +444,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
               }}
               disabled={isBulkStockUpdating}
             >
-              {isBulkStockUpdating ? 'Updating...' : 'Yes, Change Status'}
+              {isBulkStockUpdating ? t('common.updating') : t('common.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -438,11 +455,11 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = '
         onOpenChange={setBulkDeleteOpen}
         onConfirm={handleBulkDelete}
         isDeleting={isBulkDeleting}
-        title="Delete Selected Products"
-        description={`Are you sure you want to delete the ${selectedIds.length} selected products? This action cannot be undone.`}
+        title={t('products.delete_selected_products')}
+        description={t('products.delete_selected_desc', { count: selectedIds.length })}
       />
     </div>
   );
-}
+};
 
 export default ProductsPage;

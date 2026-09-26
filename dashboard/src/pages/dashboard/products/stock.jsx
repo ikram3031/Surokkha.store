@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -21,7 +22,9 @@ import { Search, Package, AlertTriangle, CheckCircle2, XCircle, TrendingDown } f
 import { useProducts } from '@/hooks/use-products';
 import { useCategories, useBrands } from '@/lib/category-cache';
 
+// Renders the product stock management dashboard with stock status breakdown and filter controls
 const StockManagementPage = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [brandFilter, setBrandFilter] = useState('All');
@@ -54,12 +57,12 @@ const StockManagementPage = () => {
 
   const getStockBadge = (product) => {
     if (product.status === 'Out of Stock' || (product.stock ?? 0) === 0) {
-      return <Badge variant="destructive" className="w-[100px] inline-flex items-center justify-center gap-1 text-[10px] whitespace-nowrap shrink-0"><XCircle className="h-3 w-3" />Out of Stock</Badge>;
+      return <Badge variant="destructive" className="w-[100px] inline-flex items-center justify-center gap-1 text-[10px] whitespace-nowrap shrink-0"><XCircle className="h-3 w-3" />{t('products.out_of_stock')}</Badge>;
     }
     if ((product.stock ?? 0) < 10) {
-      return <Badge variant="outline" className="w-[100px] inline-flex items-center justify-center gap-1 text-[10px] border-amber-500 text-amber-500 whitespace-nowrap shrink-0"><AlertTriangle className="h-3 w-3" />Low Stock</Badge>;
+      return <Badge variant="outline" className="w-[100px] inline-flex items-center justify-center gap-1 text-[10px] border-amber-500 text-amber-500 whitespace-nowrap shrink-0"><AlertTriangle className="h-3 w-3" />{t('products.low_stock')}</Badge>;
     }
-    return <Badge variant="outline" className="w-[100px] inline-flex items-center justify-center gap-1 text-[10px] border-emerald-500 text-emerald-500 whitespace-nowrap shrink-0"><CheckCircle2 className="h-3 w-3" />In Stock</Badge>;
+    return <Badge variant="outline" className="w-[100px] inline-flex items-center justify-center gap-1 text-[10px] border-emerald-500 text-emerald-500 whitespace-nowrap shrink-0"><CheckCircle2 className="h-3 w-3" />{t('products.in_stock')}</Badge>;
   };
 
   const getTotalVariantStock = (product) => {
@@ -70,8 +73,8 @@ const StockManagementPage = () => {
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Stock Management</h2>
-        <p className="text-muted-foreground text-sm mt-1">Monitor inventory levels across all products and variations</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t('products.stock_management')}</h2>
+        <p className="text-muted-foreground text-sm mt-1">{t('products.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -82,7 +85,7 @@ const StockManagementPage = () => {
         >
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium mb-1">
             <Package className="h-3.5 w-3.5" />
-            Total Products
+            {t('products.title')}
           </div>
           <p className="text-2xl font-bold">{isLoading ? '—' : totalProducts}</p>
         </button>
@@ -93,7 +96,7 @@ const StockManagementPage = () => {
         >
           <div className="flex items-center gap-2 text-emerald-600 text-xs font-medium mb-1">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            In Stock
+            {t('products.in_stock')}
           </div>
           <p className="text-2xl font-bold text-emerald-600">{isLoading ? '—' : inStockCount}</p>
         </button>
@@ -104,7 +107,7 @@ const StockManagementPage = () => {
         >
           <div className="flex items-center gap-2 text-amber-600 text-xs font-medium mb-1">
             <TrendingDown className="h-3.5 w-3.5" />
-            Low Stock
+            {t('products.low_stock')}
           </div>
           <p className="text-2xl font-bold text-amber-600">{isLoading ? '—' : lowStockCount}</p>
         </button>
@@ -115,7 +118,7 @@ const StockManagementPage = () => {
         >
           <div className="flex items-center gap-2 text-destructive text-xs font-medium mb-1">
             <XCircle className="h-3.5 w-3.5" />
-            Out of Stock
+            {t('products.out_of_stock')}
           </div>
           <p className="text-2xl font-bold text-destructive">{isLoading ? '—' : outOfStockCount}</p>
         </button>
@@ -126,7 +129,7 @@ const StockManagementPage = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search products..."
+            placeholder={t('products.search_products')}
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -135,10 +138,10 @@ const StockManagementPage = () => {
         <div className="flex gap-2">
           <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value ?? 'All')}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder={t('products.category')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Categories</SelectItem>
+              <SelectItem value="All">{`${t('products.category')}: ${t('common.all')}`}</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat.did} value={cat.name}>{cat.name}</SelectItem>
               ))}
@@ -147,10 +150,10 @@ const StockManagementPage = () => {
 
           <Select value={brandFilter} onValueChange={(value) => setBrandFilter(value ?? 'All')}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Brand" />
+              <SelectValue placeholder={t('products.brand')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Brands</SelectItem>
+              <SelectItem value="All">{`${t('products.brand')}: ${t('common.all')}`}</SelectItem>
               {brands.map((brand) => (
                 <SelectItem key={brand.did} value={brand.name}>{brand.name}</SelectItem>
               ))}
@@ -165,12 +168,12 @@ const StockManagementPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-center">Stock Qty</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead>Variant Breakdown</TableHead>
+                  <TableHead>{t('products.product_name')}</TableHead>
+                  <TableHead>{t('products.sku')}</TableHead>
+                  <TableHead>{t('common.details')}</TableHead>
+                  <TableHead className="text-center">{t('products.stock_quantity')}</TableHead>
+                  <TableHead className="text-center">{t('common.status')}</TableHead>
+                  <TableHead>{t('products.attributes_variations')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -248,7 +251,7 @@ const StockManagementPage = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
-                      No products found matching the selected filters.
+                      {t('products.no_products_found')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -259,6 +262,6 @@ const StockManagementPage = () => {
       </div>
     </div>
   );
-}
+};
 
 export default StockManagementPage;
