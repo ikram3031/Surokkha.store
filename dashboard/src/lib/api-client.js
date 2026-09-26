@@ -6,14 +6,20 @@ import clientConfig from '@/clientConfig';
 export const getApiBaseUrl = () => {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname.toLowerCase();
+    if (host.startsWith('admin.') || host.startsWith('dashboard.')) {
+      return window.location.origin;
+    }
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      return 'http://localhost:4002';
+    }
     if (host.includes('surokkha')) {
-      return 'https://service.surokkha.store';
+      return window.location.origin;
     }
     if (host.includes('engulfic')) {
-      return 'https://service.engulfic.com';
+      return window.location.origin;
     }
     if (host.includes('decantre')) {
-      return 'https://service.decantrebd.com';
+      return window.location.origin;
     }
   }
   return (
@@ -22,7 +28,7 @@ export const getApiBaseUrl = () => {
     clientConfig?.dashboardApiUrl ||
     clientConfig?.serviceApiBaseUrl ||
     clientConfig?.apiBaseUrl ||
-    'https://service.surokkha.store'
+    'https://admin.surokkha.store'
   );
 };
 
