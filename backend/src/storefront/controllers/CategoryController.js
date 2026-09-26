@@ -3,7 +3,7 @@ import { CategoryModel } from "../../common/models/category.model.js";
 // GET /api/v1/categories
 export const getAllCategories = async (req, res) => {
   try {
-    const categories = await CategoryModel.find({ isActive: true }).sort({ sortOrder: 1, name: 1 }).lean();
+    const categories = await CategoryModel.find({ isActive: { $ne: false } }).sort({ sortOrder: 1, name: 1 }).lean();
     res.json({ status: "success", data: categories });
   } catch (err) {
     res.status(500).json({ status: "error", message: "Unable to retrieve categories" });

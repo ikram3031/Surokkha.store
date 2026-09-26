@@ -991,8 +991,8 @@
     "features": {
       "season": false,
       "brand": false,
-      "category": false,
-      "categories": false,
+      "category": true,
+      "categories": true,
       "attribute": false,
       "attributes": false,
       "variantImage": false,
