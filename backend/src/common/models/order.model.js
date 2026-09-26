@@ -74,7 +74,7 @@ const orderSchema = new Schema(
     shippingTotalAmount: { type: Number, default: 0, min: 0 },
     discountTotalAmount: { type: Number, default: 0, min: 0 },
     couponCode: { type: String, default: null, trim: true, uppercase: true },
-    orderType: { type: String, enum: ["online", "instore"], default: "online", index: true },
+    orderType: { type: String, enum: ["online", "instore", "custom"], default: "online", index: true },
     items: { type: [orderItemSchema], required: true, validate: [(items) => items.length > 0, "items must contain at least one item"] },
     totals: { type: orderTotalsSchema, required: true },
     active: { type: Boolean, default: true, index: true },

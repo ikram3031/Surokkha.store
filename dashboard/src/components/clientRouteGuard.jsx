@@ -7,6 +7,8 @@ const getRequiredPermission = (pathname) => {
   const cleanPath = pathname.replace(/\/$/, '');
 
   if (cleanPath === '/dashboard') return 'overview';
+  if (cleanPath === '/dashboard/orders/custom/new' || cleanPath === '/dashboard/orders/custom-new') return 'orders.custom-new';
+  if (cleanPath === '/dashboard/orders/custom') return 'orders.custom';
   if (cleanPath === '/dashboard/orders/new') return 'orders.new';
   if (cleanPath === '/dashboard/orders/in-store' || cleanPath === '/dashboard/orders/instore') return 'orders.instore';
   if (cleanPath.startsWith('/dashboard/orders')) return 'orders.list';
@@ -52,6 +54,10 @@ export const ClientRouteGuard = ({ children }) => {
   }
 
   if ((requiredPermission === 'orders.instore' || requiredPermission === 'orders.new') && features?.inStoreOrder === false) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if ((requiredPermission === 'orders.custom' || requiredPermission === 'orders.custom-new') && !features?.customOrders) {
     return <Navigate to="/dashboard" replace />;
   }
 

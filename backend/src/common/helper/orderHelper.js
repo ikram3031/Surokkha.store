@@ -11,8 +11,9 @@ export const validateOrderPayload = (body) => {
   }
 
   const isInstore = body.orderType === 'instore';
+  const isCustom = body.orderType === 'custom';
 
-  // 1. Validate billingInfo (Mandatory for online orders)
+  // 1. Validate billingInfo (Mandatory for online and custom orders)
   const billing = body.billingInfo || {};
   
   // Fallback to root level fields if billingInfo is completely missing (backward compatibility)
@@ -30,7 +31,8 @@ export const validateOrderPayload = (body) => {
     errors.push('billingInfo.phone is required');
   }
 
-  if (!isInstore) {
+  if (!isInstore && !isCustom) {
+    // Online customer storefront orders require email, address, district
     if (typeof email !== 'string' || email.trim() === '') {
       errors.push('billingInfo.email is required');
     } else if (!isValidEmail(email)) {
@@ -42,6 +44,19 @@ export const validateOrderPayload = (body) => {
     }
     if (typeof district !== 'string' || district.trim() === '') {
       errors.push('billingInfo.district is required');
+    }
+  } else if (isCustom) {
+    // Custom orders require address & district for delivery, email is optional but validated if provided
+    if (typeof address !== 'string' || address.trim() === '') {
+      errors.push('billingInfo.address is required');
+    }
+    if (typeof district !== 'string' || district.trim() === '') {
+      errors.push('billingInfo.district is required');
+    }
+    if (email && typeof email === 'string' && email.trim() !== '') {
+      if (!isValidEmail(email)) {
+        errors.push('billingInfo.email must be a valid email address');
+      }
     }
   } else if (email && typeof email === 'string' && email.trim() !== '') {
     if (!isValidEmail(email)) {
@@ -81,11 +96,19 @@ export const validateOrderPayload = (body) => {
   return errors;
 };
 
-export const buildOrderNumber = async (isInstore = false) => {
+export const buildOrderNumber = async (orderTypeParam = false) => {
   const now = new Date();
   const shortYear = String(now.getFullYear()).slice(-2);
   const month = String(now.getMonth() + 1).padStart(2, '0');
-  const prefix = `${isInstore ? 'IS' : 'D'}${shortYear}${month}`;
+  
+  let prefixType = 'D';
+  if (orderTypeParam === 'custom' || orderTypeParam === 'co') {
+    prefixType = 'CO';
+  } else if (orderTypeParam === true || orderTypeParam === 'instore' || orderTypeParam === 'is') {
+    prefixType = 'IS';
+  }
+
+  const prefix = `${prefixType}${shortYear}${month}`;
 
   const lastOrder = await OrderModel.findOne({
     orderNumber: { $regex: `^${prefix}` }

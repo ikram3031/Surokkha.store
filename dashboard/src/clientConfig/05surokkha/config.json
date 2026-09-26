@@ -38,7 +38,8 @@
     "variantImage": false,
     "sizeChart": false,
     "webmail": true,
-    "inStoreOrder": false
+    "inStoreOrder": false,
+    "customOrders": true
   },
   "stockManagement": {
     "simpleProduct": true,
@@ -46,6 +47,7 @@
   },
   "reports": {
     "enableInStoreFilter": false,
+    "enableCustomOrderFilter": true,
     "enableExport": true,
     "enabledTabs": ["sales", "products", "payments", "inventory"]
   },
@@ -104,6 +106,8 @@
     "orders",
     "orders.new",
     "orders.list",
+    "orders.custom",
+    "orders.custom-new",
     "products",
     "products.new",
     "products.list",

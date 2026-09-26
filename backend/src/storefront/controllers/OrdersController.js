@@ -107,7 +107,12 @@ export const createOrder = async (req, res, next) => {
       String(createdOrder.orderNumber || "").startsWith("IS") ||
       String(createdOrder.billingInfo?.email || "").includes("instore@");
 
-    if (!isInstoreOrder) {
+    const isCustomOrder =
+      payload.orderType === "custom" ||
+      createdOrder.orderType === "custom" ||
+      String(createdOrder.orderNumber || "").startsWith("CO");
+
+    if (!isInstoreOrder && !isCustomOrder) {
       sendServerPurchaseEvent(createdOrder, req);
       sendTikTokServerPurchaseEvent(createdOrder, req);
     }

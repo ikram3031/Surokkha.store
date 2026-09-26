@@ -34,6 +34,9 @@ const RoleGuard = ({ menuKey, children }) => {
   if ((menuKey === 'orders.instore' || menuKey === 'orders.new') && features?.inStoreOrder === false) {
     return <NotFound />;
   }
+  if ((menuKey === 'orders.custom' || menuKey === 'orders.custom-new') && !features?.customOrders) {
+    return <NotFound />;
+  }
 
   const userRole = user?.role || 'Marketing Expert';
   const isAllowed = hasMenuAccess(userRole, menuKey);

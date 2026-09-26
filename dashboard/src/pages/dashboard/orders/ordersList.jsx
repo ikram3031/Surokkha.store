@@ -172,7 +172,13 @@ const OrdersPage = () => {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">{t('orders.title', 'Orders Management')}</h2>
         <div className="flex items-center gap-2">
-          {clientConfig?.features?.inStoreOrder !== false && (
+          {clientConfig?.features?.customOrders && (
+            <Button variant="outline" nativeButton={false} render={<Link to="/dashboard/orders/custom/new" />}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('orders.new_custom_order', 'New Custom Order')}
+            </Button>
+          )}
+          {clientConfig?.features?.inStoreOrder !== false && !clientConfig?.features?.customOrders && (
             <Button variant="outline" nativeButton={false} render={<Link to="/dashboard/orders/new" />}>
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('orders.new_order', 'New In-Store Order')}

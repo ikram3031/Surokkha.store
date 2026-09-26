@@ -3,6 +3,8 @@
     "overview": "Overview",
     "webmail": "Webmail",
     "orders": "Orders",
+    "new_custom_order": "New Custom Order",
+    "custom_orders": "Custom Orders",
     "new_in_store_order": "New In-Store Order",
     "orders_list": "Orders List",
     "in_store_orders": "In-Store Orders",

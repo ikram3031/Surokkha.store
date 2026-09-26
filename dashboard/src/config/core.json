@@ -20,6 +20,8 @@
         "orders.new",
         "orders.list",
         "orders.instore",
+        "orders.custom",
+        "orders.custom-new",
         "products",
         "products.new",
         "products.list",

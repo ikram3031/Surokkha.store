@@ -83,12 +83,15 @@ export const buildOrderDocument = async (payload) => {
     : { ...billingInfo };
 
   const isInstore = payload.orderType === 'instore';
+  const isCustom = payload.orderType === 'custom';
   const initialStatus = payload.status 
     ? String(payload.status).toLowerCase() 
     : (isInstore ? 'completed' : 'processing');
 
+  const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
+
   return {
-    orderNumber: await buildOrderNumber(isInstore),
+    orderNumber: await buildOrderNumber(resolvedOrderType),
     status: ['processing', 'shipped', 'completed', 'cancelled'].includes(initialStatus) ? initialStatus : 'processing',
     createdBy: createdByUserId,
     updatedBy: null,
@@ -96,16 +99,16 @@ export const buildOrderDocument = async (payload) => {
     billingInfo,
     shippingInfo,
     paymentMethod: normalizeText(payload.paymentMethod),
-    shippingTotalAmount: Number(payload.shippingTotalAmount || 0),
+    shippingTotalAmount: Number(payload.shippingTotalAmount || payload.shippingFee || 0),
     discountTotalAmount: Number(payload.discountTotalAmount || 0),
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
-    orderType: isInstore ? 'instore' : 'online',
+    orderType: resolvedOrderType,
     items: normalizeOrderItems(payload.items),
     totals: {
       subtotal: Number(payload.subtotal || payload.subTotal || 0),
       shippingFee: Number(payload.shippingFee || payload.shippingTotalAmount || payload.shipping || 0),
       tax: Number(payload.tax || 0),
-      total: Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || 0) - Number(payload.discountTotalAmount || 0))),
+      total: Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0))),
     },
   };
 };

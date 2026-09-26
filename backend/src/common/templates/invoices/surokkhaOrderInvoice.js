@@ -59,12 +59,13 @@ export const buildSurokkhaOrderInvoiceHtml = ({
 
   const deliveryAddressStr = formatAddress(finalShipping);
   const isPaid = status === "completed" || paymentMethod.toLowerCase().includes("paid");
-  const isInstore = orderType === "instore" || String(orderId).startsWith("IS") || paymentMethod.toLowerCase().includes("instore") || paymentMethod.toLowerCase().includes("office");
+  const isCustom = orderType === "custom" || String(orderId).startsWith("CO");
+  const isInstore = !isCustom && (orderType === "instore" || String(orderId).startsWith("IS") || paymentMethod.toLowerCase().includes("instore") || paymentMethod.toLowerCase().includes("office"));
 
-  let statusBadgeText = "✓ ORDER CONFIRMED";
-  let statusBadgeBg = "#FFF1F2";
-  let statusBadgeColor = "#9F1239";
-  let statusBadgeBorder = "#FECDD3";
+  let statusBadgeText = isCustom ? "✓ CUSTOM ORDER" : "✓ ORDER CONFIRMED";
+  let statusBadgeBg = isCustom ? "#EFF6FF" : "#FFF1F2";
+  let statusBadgeColor = isCustom ? "#1D4ED8" : "#9F1239";
+  let statusBadgeBorder = isCustom ? "#BFDBFE" : "#FECDD3";
 
   if (status === "completed" || isPaid) {
     statusBadgeText = "✓ ORDER COMPLETED";

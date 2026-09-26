@@ -113,11 +113,16 @@ export const createOrder = async (req, res, next) => {
       String(createdOrder.orderNumber || "").startsWith("IS") ||
       String(createdOrder.billingInfo?.email || "").includes("instore@");
 
-    if (!isInstoreOrder) {
-      // Safely dispatch server-side Meta Conversions API (CAPI) Purchase event for online customer orders only
+    const isCustomOrder =
+      payload.orderType === "custom" ||
+      createdOrder.orderType === "custom" ||
+      String(createdOrder.orderNumber || "").startsWith("CO");
+
+    if (!isInstoreOrder && !isCustomOrder) {
+      // Safely dispatch server-side Meta Conversions API (CAPI) Purchase event for online customer storefront orders only
       sendServerPurchaseEvent(createdOrder, req);
 
-      // Safely dispatch server-side TikTok Events API CompletePayment event for online customer orders only
+      // Safely dispatch server-side TikTok Events API CompletePayment event for online customer storefront orders only
       sendTikTokServerPurchaseEvent(createdOrder, req);
     }
 
@@ -127,11 +132,12 @@ export const createOrder = async (req, res, next) => {
         createdOrder.billingInfo?.fullName ||
         createdOrder.shippingInfo?.fullName ||
         "Customer";
-      const actorDid = req.user?.did || "storefront";
+      const actorDid = req.user?.did || "staff";
+      const orderTypeLabel = isCustomOrder ? "custom order" : isInstoreOrder ? "in-store order" : "order";
       const log = await LogModel.create({
         type: "newOrder",
         typeDid: "111",
-        description: `${customerName} placed a new order #${createdOrder.orderNumber}`,
+        description: `${customerName} placed a new ${orderTypeLabel} #${createdOrder.orderNumber}`,
         readStatus: false,
         active: true,
         createdBy: actorDid,
@@ -172,7 +178,14 @@ export const listOrders = async (req, res, next) => {
       andConditions.push({ status: req.query.status.toLowerCase() });
     }
 
-    if (req.query.orderType === 'instore') {
+    if (req.query.orderType === 'custom') {
+      andConditions.push({
+        $or: [
+          { orderType: 'custom' },
+          { orderNumber: { $regex: '^CO', $options: 'i' } }
+        ]
+      });
+    } else if (req.query.orderType === 'instore') {
       andConditions.push({
         $or: [
           { orderType: 'instore' },
@@ -182,8 +195,8 @@ export const listOrders = async (req, res, next) => {
     } else if (req.query.orderType === 'online') {
       andConditions.push({
         $and: [
-          { orderType: { $ne: 'instore' } },
-          { orderNumber: { $not: { $regex: '^IS', $options: 'i' } } }
+          { orderType: { $nin: ['instore', 'custom'] } },
+          { orderNumber: { $not: { $regex: '^(IS|CO)', $options: 'i' } } }
         ]
       });
     }

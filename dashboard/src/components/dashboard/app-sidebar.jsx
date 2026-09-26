@@ -122,6 +122,7 @@ export const AppSidebar = ({ ...props }) => {
     if ((menuKey === "tools.messages" || menuKey === "webmail") && features?.webmail === false) return false
     if (menuKey === "products.size-charts" && !features?.sizeChart) return false
     if ((menuKey === "orders.instore" || menuKey === "orders.new") && features?.inStoreOrder === false) return false
+    if ((menuKey === "orders.custom" || menuKey === "orders.custom-new") && !features?.customOrders) return false
     if (menuKey === "cpanel" && (clientConfig?.modules?.cpanelAccess === false || features?.cpanelAccess === false)) return false
 
     return hasMenuAccess(userRole, menuKey)
@@ -209,6 +210,17 @@ export const AppSidebar = ({ ...props }) => {
               </SidebarMenuButton>
               {openMenu === "orders" && (
                 <SidebarMenuSub>
+                  {isAllowed("orders.custom-new") && (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        isActive={pathname === "/dashboard/orders/custom/new" || pathname === "/dashboard/orders/custom-new"}
+                        render={<Link to="/dashboard/orders/custom/new" />}
+                      >
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span>{t("nav.new_custom_order", "New Custom Order")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )}
                   {isAllowed("orders.new") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
@@ -228,6 +240,17 @@ export const AppSidebar = ({ ...props }) => {
                       >
                         <ListOrdered className="h-3.5 w-3.5" />
                         <span>{t("nav.orders_list", "Orders List")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )}
+                  {isAllowed("orders.custom") && (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        isActive={pathname === "/dashboard/orders/custom"}
+                        render={<Link to="/dashboard/orders/custom" />}
+                      >
+                        <ShoppingBag className="h-3.5 w-3.5" />
+                        <span>{t("nav.custom_orders", "Custom Orders")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
