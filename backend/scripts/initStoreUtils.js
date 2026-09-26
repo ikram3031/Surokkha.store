@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { StoreUtilsModel } from "../src/models/storeUtils.model.js";
-import { env } from "../src/config/env.js";
+import { StoreUtilsModel } from "../src/common/models/storeUtils.model.js";
+import { env } from "../src/common/config/env.js";
 
 async function ensureDefaultStoreUtils() {
   try {

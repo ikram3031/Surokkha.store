@@ -63,13 +63,19 @@ Every git commit must strictly adhere to the format:
 
 ---
 
-## 5. Branch Strategy & Live Development Workflow
-- **Active Working Branch: `Live`**:
-  - All feature additions, updates, and rapid bug fixes are now performed directly on the **`Live`** branch to ensure rapid turnaround.
-  - Work directly on `Live` without switching to temporary/dev branches unless explicitly asked.
+## 5. Git Branching, Push & Merge Policy (STRICT)
+- **Always Push to `dev` Branch**:
+  - All feature work, bug fixes, refactoring, and daily changes must **ALWAYS** be committed and pushed strictly to the **`dev`** branch.
+- **NEVER Push to `Live` or `master` Directly**:
+  - Direct pushing to `Live` or `master` is strictly prohibited.
+- **Manual Code Merge by User**:
+  - Code merging from `dev` into `Live` or `master` will strictly be performed manually by the user. AI must never automatically merge branches into `Live` or `master`.
 
 ---
 
-## 6. Deployment Guardrails
-- **NEVER execute VPS build, `docker compose up --build`, or deployment commands without explicit user instruction.**
-- Only when user explicitly commands *"ডিপ্লয় দাও"* (or equivalent direct deployment request), execute the deployment commands using tools.
+## 6. Deployment Guardrails (STRICT)
+- **Deploy Source is `Live` Branch ONLY**:
+  - Production deployments must strictly pull and build from the **`Live`** branch (never from `dev` or feature branches).
+- **Zero Deployment Without Explicit Command**:
+  - **NEVER** execute VPS build, deployment commands, service restarts, or push to production without explicit user instruction.
+  - Only when the user explicitly commands *"ডিপ্লয় দাও"* (or equivalent direct deployment command), proceed with deployment from the `Live` branch.

@@ -35,9 +35,11 @@ dash_old/
 # old-dashboard/
 PIG/
 
-# Backups
+# Backups & Local Data
 backups/
 **/backups/
+data/
+**/data/
 *.gz
 *.archive
 *.dump

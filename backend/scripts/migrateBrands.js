@@ -1,6 +1,6 @@
-import { connectDatabase, closeDatabase } from '../src/database/index.js';
-import { BrandModel } from '../src/models/brand.model.js';
-import { ProductModel } from '../src/models/product.model.js';
+import { connectDatabase, closeDatabase } from '../src/common/database/index.js';
+import { BrandModel } from '../src/common/models/brand.model.js';
+import { ProductModel } from '../src/common/models/product.model.js';
 
 const MASTER_BRANDS = {
   niche: {

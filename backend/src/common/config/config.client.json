@@ -1,0 +1,259 @@
+{
+  "clientId": "05",
+  "clientKey": "surokkha",
+  "brandName": "Surokkha",
+  "domain": "surokkha.store",
+  "supportEmail": "support@surokkha.store",
+  "phone": "01600905774",
+  "supportPhone": "01600905774",
+  "whatsappNumber": "01600905774",
+  "apiBaseUrl": "https://api.surokkha.store",
+  "dashboardUrl": "https://admin.surokkha.store",
+  "storefrontUrl": "https://surokkha.store",
+  "policies": {
+    "stock": {
+      "mode": "product_wise",
+      "trackQuantity": true,
+      "lowStockThreshold": 5,
+      "allowPreorder": false
+    },
+    "pricing": {
+      "mode": "simple",
+      "allowOfferPrice": true
+    },
+    "variants": {
+      "enabled": false,
+      "allowVariantImages": false,
+      "supportedDimensions": [],
+      "defaultUnit": "piece"
+    },
+    "specifications": {
+      "material": true,
+      "packSize": true,
+      "origin": true
+    },
+    "members": {
+      "forceMembershipFromOrder": true
+    }
+  },
+  "forceMembershipFromOrder": true,
+  "features": {
+    "season": false,
+    "brand": false,
+    "category": false,
+    "categories": false,
+    "attribute": false,
+    "attributes": false,
+    "variantImage": false,
+    "sizeChart": false,
+    "webmail": true,
+    "inStoreOrder": true
+  },
+  "stockManagement": {
+    "simpleProduct": true,
+    "variableProduct": false
+  },
+  "reports": {
+    "enableInStoreFilter": true,
+    "enableExport": true,
+    "enabledTabs": [
+      "sales",
+      "products",
+      "payments",
+      "inventory"
+    ]
+  },
+  "cloudFlareAnalytics": {
+    "active": true,
+    "zoneId": "bd131177db6d610b5d4e5beb0142108b",
+    "domain": "surokkha.store",
+    "accountEmail": "plexivia@gmail.com"
+  },
+  "googleAnalytics": {
+    "measurementId": "G-3JHW9WK6GG",
+    "googleTagId": "GT-5DH5WGNX",
+    "gtmId": "",
+    "propertyId": "555476258",
+    "streamId": "15828364152",
+    "streamName": "surokkha",
+    "lookerStudioEmbedUrl": "",
+    "isVerified": true,
+    "enhancedMeasurement": true
+  },
+  "logoUrl": "/uploads/assets/logo.png",
+  "siteIconUrl": "/uploads/assets/favicon.ico",
+  "assetsConfig": {
+    "sections": [
+      {
+        "id": "hero-sliders",
+        "title": "Hero Slider Carousel",
+        "description": "Main sliding banners displayed on store homepage (Recommended: 1920x650 px, max 2MB)",
+        "slots": [
+          {
+            "key": "slider-1",
+            "label": "Slide 1",
+            "filename": "slider-1.webp",
+            "recommendedSize": "1920x650"
+          },
+          {
+            "key": "slider-2",
+            "label": "Slide 2",
+            "filename": "slider-2.webp",
+            "recommendedSize": "1920x650"
+          },
+          {
+            "key": "slider-3",
+            "label": "Slide 3",
+            "filename": "slider-3.webp",
+            "recommendedSize": "1920x650"
+          }
+        ]
+      },
+      {
+        "id": "promo-banners",
+        "title": "Promotional Banners",
+        "description": "Special campaign and announcement banner images",
+        "slots": [
+          {
+            "key": "banner-main",
+            "label": "Main Promo Banner",
+            "filename": "banner-main.webp",
+            "recommendedSize": "1200x400"
+          }
+        ]
+      },
+      {
+        "id": "brand-identity",
+        "title": "Brand & Identity",
+        "description": "Brand logo and browser favicon files",
+        "slots": [
+          {
+            "key": "logo",
+            "label": "Dashboard Logo",
+            "filename": "logo.webp",
+            "recommendedSize": "500x200"
+          },
+          {
+            "key": "favicon",
+            "label": "Favicon Icon",
+            "filename": "favicon.ico",
+            "recommendedSize": "64x64"
+          }
+        ]
+      }
+    ]
+  },
+  "allowedMenus": [
+    "*",
+    "overview",
+    "orders",
+    "orders.new",
+    "orders.list",
+    "orders.instore",
+    "products",
+    "products.new",
+    "products.list",
+    "products.categories",
+    "products.coupons",
+    "reviews",
+    "members",
+    "billing",
+    "billing.billings",
+    "billing.payments",
+    "admin",
+    "reports",
+    "analytics",
+    "studio",
+    "studio.batch-images",
+    "activity-logs",
+    "users",
+    "developer",
+    "tools",
+    "tools.messages",
+    "tools.assets",
+    "tools.bulk-image-resize",
+    "tools.meta-catalog",
+    "logs",
+    "system-logs",
+    "trash",
+    "settings"
+  ],
+  "theme": {
+    "light": {
+      "--background": "oklch(0.99 0.005 15)",
+      "--foreground": "oklch(0.15 0.02 15)",
+      "--card": "oklch(1 0 0)",
+      "--card-foreground": "oklch(0.15 0.02 15)",
+      "--popover": "oklch(1 0 0)",
+      "--popover-foreground": "oklch(0.15 0.02 15)",
+      "--primary": "oklch(0.50 0.22 15)",
+      "--primary-foreground": "#ffffff",
+      "--secondary": "oklch(0.95 0.03 15)",
+      "--secondary-foreground": "oklch(0.25 0.08 15)",
+      "--muted": "oklch(0.97 0.01 15)",
+      "--muted-foreground": "oklch(0.55 0.03 15)",
+      "--accent": "oklch(0.92 0.06 15)",
+      "--accent-foreground": "oklch(0.25 0.08 15)",
+      "--destructive": "oklch(0.577 0.245 27.325)",
+      "--destructive-foreground": "#ffffff",
+      "--border": "oklch(0.92 0.02 15)",
+      "--input": "oklch(0.92 0.02 15)",
+      "--ring": "oklch(0.50 0.22 15)",
+      "--chart-1": "oklch(0.50 0.22 15)",
+      "--chart-2": "oklch(0.65 0.18 350)",
+      "--chart-3": "oklch(0.70 0.15 40)",
+      "--chart-4": "oklch(0.80 0.14 80)",
+      "--chart-5": "oklch(0.60 0.20 280)",
+      "--sidebar": "oklch(0.15 0.02 15 / 95%)",
+      "--sidebar-foreground": "oklch(0.95 0.02 15)",
+      "--sidebar-primary": "oklch(0.50 0.22 15)",
+      "--sidebar-primary-foreground": "#ffffff",
+      "--sidebar-accent": "oklch(0.25 0.03 15)",
+      "--sidebar-accent-foreground": "oklch(0.95 0.02 15)",
+      "--sidebar-border": "oklch(1 0 0 / 10%)",
+      "--sidebar-ring": "oklch(0.50 0.22 15)",
+      "--font-sans": "'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+      "--font-serif": "Georgia, serif",
+      "--font-mono": "ui-monospace, monospace",
+      "--radius": "0.75rem"
+    },
+    "dark": {
+      "--background": "oklch(0.14 0.02 15)",
+      "--foreground": "oklch(0.98 0.01 15)",
+      "--card": "oklch(0.18 0.02 15)",
+      "--card-foreground": "oklch(0.98 0.01 15)",
+      "--popover": "oklch(0.20 0.02 15)",
+      "--popover-foreground": "oklch(0.98 0.01 15)",
+      "--primary": "oklch(0.60 0.22 15)",
+      "--primary-foreground": "#ffffff",
+      "--secondary": "oklch(0.28 0.05 15)",
+      "--secondary-foreground": "oklch(0.95 0.02 15)",
+      "--muted": "oklch(0.22 0.02 15)",
+      "--muted-foreground": "oklch(0.70 0.03 15)",
+      "--accent": "oklch(0.28 0.06 15)",
+      "--accent-foreground": "oklch(0.95 0.02 15)",
+      "--destructive": "oklch(0.704 0.191 22.216)",
+      "--destructive-foreground": "#ffffff",
+      "--border": "oklch(1 0 0 / 12%)",
+      "--input": "oklch(1 0 0 / 15%)",
+      "--ring": "oklch(0.60 0.22 15)",
+      "--chart-1": "oklch(0.60 0.22 15)",
+      "--chart-2": "oklch(0.75 0.18 350)",
+      "--chart-3": "oklch(0.70 0.15 40)",
+      "--chart-4": "oklch(0.80 0.14 80)",
+      "--chart-5": "oklch(0.60 0.20 280)",
+      "--sidebar": "oklch(0.12 0.02 15 / 95%)",
+      "--sidebar-foreground": "oklch(0.95 0.02 15)",
+      "--sidebar-primary": "oklch(0.60 0.22 15)",
+      "--sidebar-primary-foreground": "#ffffff",
+      "--sidebar-accent": "oklch(0.22 0.03 15)",
+      "--sidebar-accent-foreground": "oklch(0.95 0.02 15)",
+      "--sidebar-border": "oklch(1 0 0 / 10%)",
+      "--sidebar-ring": "oklch(0.60 0.22 15)",
+      "--font-sans": "'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+      "--font-serif": "Georgia, serif",
+      "--font-mono": "ui-monospace, monospace",
+      "--radius": "0.75rem"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { sendOtpEmail } from "../../src/utils/otpDelivery.js";
+import { sendOtpEmail } from "../../src/common/utils/otpDelivery.js";
 
 async function run() {
   console.log("SMTP_HOST:", process.env.SMTP_HOST);

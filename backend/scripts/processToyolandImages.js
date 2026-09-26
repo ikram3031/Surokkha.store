@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import mongoose from 'mongoose';
-import { ProductModel } from '../src/models/product.model.js';
+import { ProductModel } from '../src/common/models/product.model.js';
 
 const MONGODB_URI = 'mongodb://admin:toyoland_dev_pass_2026@144.79.218.112:27018/toyoland-db?authSource=admin';
 const imgSourceDir = 'C:\\Users\\dev\\Downloads\\Toyoland-20260828T093952Z-1-001\\Toyoland';

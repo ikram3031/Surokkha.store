@@ -2,12 +2,12 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
-import { CategoryModel } from "../backend/src/models/category.model.js";
-import { ProductModel } from "../backend/src/models/product.model.js";
-import { MemberModel } from "../backend/src/models/member.model.js";
-import { OrderModel } from "../backend/src/models/order.model.js";
-import { CouponModel } from "../backend/src/models/coupon.model.js";
-import { UserModel } from "../backend/src/models/user.model.js";
+import { CategoryModel } from "../backend/src/common/models/category.model.js";
+import { ProductModel } from "../backend/src/common/models/product.model.js";
+import { MemberModel } from "../backend/src/common/models/member.model.js";
+import { OrderModel } from "../backend/src/common/models/order.model.js";
+import { CouponModel } from "../backend/src/common/models/coupon.model.js";
+import { UserModel } from "../backend/src/common/models/user.model.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

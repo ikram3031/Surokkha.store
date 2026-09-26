@@ -1,5 +1,5 @@
-import { connectDatabase, closeDatabase } from "../src/database/index.js";
-import { ProductModel } from "../src/models/product.model.js";
+import { connectDatabase, closeDatabase } from "../src/common/database/index.js";
+import { ProductModel } from "../src/common/models/product.model.js";
 
 /**
  * Normalizes and splits combined tag strings (hyphenated or space-delimited)

@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function downloadLogo() {
   const url = "https://decantrebd.com/wp-content/uploads/2026/03/decantre-color-logo-transparent.webp";
-  const destDir = path.join(__dirname, "../../src/assets");
+  const destDir = path.join(__dirname, "../../src/common/assets");
   
   if (!fs.existsSync(destDir)) {
     fs.mkdirSync(destDir, { recursive: true });

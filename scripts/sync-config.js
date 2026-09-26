@@ -106,8 +106,8 @@ const syncClientConfig = () => {
   const rawConfig = fs.readFileSync(sourceConfigPath, "utf8");
   const parsed = JSON.parse(rawConfig);
 
-  const backendConfigTarget = path.join(rootDir, "backend", "src", "config", "config.client.json");
-  const backendActiveTarget = path.join(rootDir, "backend", "src", "config", "activeClient.json");
+  const backendConfigTarget = path.join(rootDir, "backend", "src", "common", "config", "config.client.json");
+  const backendActiveTarget = path.join(rootDir, "backend", "src", "common", "config", "activeClient.json");
   const dashboardActiveTarget = path.join(rootDir, "dashboard", "src", "clientConfig", "activeConfig.json");
 
   [backendConfigTarget, backendActiveTarget, dashboardActiveTarget].forEach((tgt) => {
@@ -121,7 +121,7 @@ const syncClientConfig = () => {
   fs.writeFileSync(backendActiveTarget, JSON.stringify(parsed, null, 2), "utf8");
   fs.writeFileSync(dashboardActiveTarget, JSON.stringify(parsed, null, 2), "utf8");
 
-  const allClientsTarget = path.join(rootDir, "backend", "src", "config", "allClients.json");
+  const allClientsTarget = path.join(rootDir, "backend", "src", "common", "config", "allClients.json");
   const allConfigs = {};
   const configsDir = path.join(rootDir, "configs");
   if (fs.existsSync(configsDir)) {

@@ -2,8 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
-import { connectDatabase, closeDatabase } from '../src/database/index.js';
-import { ProductModel } from '../src/models/product.model.js';
+import { connectDatabase, closeDatabase } from '../src/common/database/index.js';
+import { ProductModel } from '../src/common/models/product.model.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');

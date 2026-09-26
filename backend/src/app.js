@@ -1,19 +1,17 @@
 import express from "express";
 import path from "path";
 import cors from "cors";
-import { errorHandler } from "./middlewares/errorHandler.js";
-import { authenticateToken, authorizeRoles } from "./middlewares/auth.middleware.js";
 import fs from "fs";
-import { logger } from "./config/logger.js";
+import { errorHandler } from "./common/middlewares/errorHandler.js";
+import { authenticateToken, authorizeRoles } from "./common/middlewares/auth.middleware.js";
+import { logger } from "./common/config/logger.js";
 import coreRouter from "./routesIndex.js";
-import storefrontRouter from "./routes/storefrontRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
-import attributeRouter from "./dashboard/routes/attribute.route.js";
-import mediaAuditRouter from "./dashboard/routes/mediaAuditRoute.js";
-import developerRouter, { broadcastLogToClients } from "./routes/DeveloperRoute.js";
-import swaggerRouter from "./routes/SwaggerRoute.js";
-import { env } from "./config/env.js";
-import { getDynamicCorsConfig } from "./config/index.js";
+import storefrontRouter from "./storefront/routes.js";
+import serviceRouter from "./service/routes.js";
+import developerRouter, { broadcastLogToClients } from "./service/routes/DeveloperRoute.js";
+import swaggerRouter from "./service/routes/SwaggerRoute.js";
+import { env } from "./common/config/env.js";
+import { getDynamicCorsConfig } from "./common/config/index.js";
 
 // Creates and configures Express application based on server role
 export const createApp = async (options = {}) => {
@@ -74,16 +72,16 @@ export const createApp = async (options = {}) => {
   app.use("/src/uploads", express.static(path.join(process.cwd(), "uploads"), staticAssetOptions));
 
   // Helper to format transfer byte size
-  function formatBytes(bytes) {
+  const formatBytes = (bytes) => {
     if (!bytes || isNaN(bytes) || bytes === 0) return "0 B";
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-  }
+  };
 
   // Helper to detect request origin source
-  function getRequestSource(req) {
+  const getRequestSource = (req) => {
     const origin = (req.headers["origin"] || req.headers["referer"] || "").toLowerCase();
 
     const dashboardKeywords = env.DASHBOARD_DOMAIN_KEYWORDS
@@ -105,7 +103,7 @@ export const createApp = async (options = {}) => {
     }
 
     return "EXTERNAL";
-  }
+  };
 
   app.use((req, res, next) => {
     // Ignore internal developer log telemetry endpoints from being logged to prevent feedback loops
@@ -224,39 +222,42 @@ export const createApp = async (options = {}) => {
     });
   });
 
-  // Swagger Documentation Routes
-  app.use("/api-docs", swaggerRouter);
-  app.use("/docs", swaggerRouter);
-  app.use("/swagger", swaggerRouter);
-  app.use("/api/v1/docs", swaggerRouter);
-  app.use("/api/v1/swagger", swaggerRouter);
-  app.get("/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
-  app.get("/api/v1/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
-
   if (role === "storefront") {
     app.use("/api/v1", storefrontRouter);
-  } else if (role === "dashboard") {
-    app.use("/api/v1", dashboardRoutes);
-    app.use("/api/v1", attributeRouter);
-    app.use("/api/v1/developer", developerRouter);
-    app.use("/v1/api/admin/media-audit", mediaAuditRouter);
-    app.use("/api/v1/admin/media-audit", mediaAuditRouter);
   } else {
-    app.use("/api/v1", coreRouter);
-    app.use("/api/v1", attributeRouter);
-    app.use("/api/v1/developer", developerRouter);
-    app.use("/v1/api/admin/media-audit", mediaAuditRouter);
-    app.use("/api/v1/admin/media-audit", mediaAuditRouter);
+    // Swagger Documentation Routes protected for Owner/Admin only
+    app.use("/api-docs", swaggerRouter);
+    app.use("/docs", swaggerRouter);
+    app.use("/swagger", swaggerRouter);
+    app.use("/api/v2/docs", swaggerRouter);
+    app.use("/api/v2/swagger", swaggerRouter);
+    app.use("/api/v1/docs", swaggerRouter);
+    app.use("/api/v1/swagger", swaggerRouter);
+    app.get("/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
+    app.get("/api/v2/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
+    app.get("/api/v1/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
+
+    if (role === "dashboard" || role === "service") {
+      app.use("/api/v2", serviceRouter);
+      app.use("/api/v1", serviceRouter);
+    } else {
+      app.use("/api/v2", serviceRouter);
+      app.use("/api/v1", coreRouter);
+      app.use("/api/v1/developer", developerRouter);
+    }
   }
 
-  app.get("/api/v1/version", authenticateToken, authorizeRoles("Owner", "Admin"), (req, res) => {
+  const getVersionHandler = (req, res) => {
     try {
       const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8"));
       res.json({ status: "success", version: packageJson.version });
     } catch (error) {
       res.status(500).json({ status: "error", message: "Could not read version" });
     }
-  });
+  };
+
+  app.get("/api/v2/version", authenticateToken, authorizeRoles("Owner", "Admin"), getVersionHandler);
+  app.get("/api/v1/version", authenticateToken, authorizeRoles("Owner", "Admin"), getVersionHandler);
 
   app.use((req, res) => {
     res.status(404).json({ status: "error", message: "Resource not found" });

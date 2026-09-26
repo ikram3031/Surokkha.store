@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { connectDatabase } from "../src/database/index.js";
-import { OrderModel } from "../src/core/models/order.model.js";
+import { connectDatabase } from "../src/common/database/index.js";
+import { OrderModel } from "../src/common/models/order.model.js";
 
 async function runMigration() {
   try {

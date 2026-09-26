@@ -94,9 +94,12 @@ export const apiClient = axios.create({
   },
 });
 
-// Request Interceptor: Ensure dynamic baseURL and attach Bearer Token if available
+// Request Interceptor: Ensure dynamic baseURL, route to /api/v2/, and attach Bearer Token if available
 apiClient.interceptors.request.use((config) => {
   config.baseURL = getApiBaseUrl();
+  if (config.url && config.url.startsWith('/api/v1/')) {
+    config.url = config.url.replace(/^\/api\/v1\//, '/api/v2/');
+  }
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -130,7 +133,9 @@ apiClient.interceptors.response.use(
       requestUrl.includes('/auth/login') ||
       requestUrl.includes('/auth/refresh-token') ||
       requestUrl.includes('/api/v1/auth/login') ||
-      requestUrl.includes('/api/v1/auth/refresh-token');
+      requestUrl.includes('/api/v1/auth/refresh-token') ||
+      requestUrl.includes('/api/v2/auth/login') ||
+      requestUrl.includes('/api/v2/auth/refresh-token');
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {
@@ -156,7 +161,7 @@ apiClient.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('Session expired. Please sign in again.');
 
-        const res = await axios.post(`${baseURL}/api/v1/auth/refresh-token`, {
+        const res = await axios.post(`${getApiBaseUrl()}/api/v2/auth/refresh-token`, {
           refreshToken,
         });
 

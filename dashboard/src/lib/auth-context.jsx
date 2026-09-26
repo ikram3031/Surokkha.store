@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { getGenericErrorMessage } from '@/lib/error-handler';
-import { apiClient, baseURL } from '@/lib/api-client';
+import { apiClient, baseURL, getApiBaseUrl } from '@/lib/api-client';
 
 const AuthContext = createContext(undefined);
 
 // Helper to check if a JWT token is expired (with 10-second safety buffer)
-function isJwtExpired(token) {
+const isJwtExpired = (token) => {
   if (!token || typeof token !== 'string') return true;
   try {
     const parts = token.split('.');
@@ -25,7 +25,7 @@ function isJwtExpired(token) {
   } catch {
     return true;
   }
-}
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         // 2. If accessToken is expired, try to refresh BEFORE showing any dashboard content
         if (storedRefreshToken) {
           try {
-            const res = await axios.post(`${baseURL}/api/v1/auth/refresh-token`, {
+            const res = await axios.post(`${getApiBaseUrl()}/api/v2/auth/refresh-token`, {
               refreshToken: storedRefreshToken,
             });
 
