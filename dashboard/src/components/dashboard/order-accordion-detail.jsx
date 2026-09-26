@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +15,6 @@ import {
   User,
   Phone,
   Mail,
-  MapPin,
   CreditCard,
   Truck,
   Calendar,
@@ -43,6 +43,7 @@ import {
 
 // Renders an expanded accordion panel containing full order details and inline status management
 export const OrderAccordionDetail = ({ order }) => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -97,7 +98,7 @@ export const OrderAccordionDetail = ({ order }) => {
         description: `Order #${order.orderNumber} status changed to "${orderStatus}" and payment to "${paymentStatus}" by "${user?.name || 'Admin'}"`,
       });
 
-      toast.success(`Order #${order.orderNumber} updated successfully.`);
+      toast.success(t('orders.order_updated_success', `Order #${order.orderNumber} updated successfully.`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['order', order.id] });
       queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
@@ -126,6 +127,8 @@ export const OrderAccordionDetail = ({ order }) => {
     navigate(`/dashboard/orders/${order.id}?edit=true`);
   };
 
+  const locale = i18n.language?.startsWith('bn') ? 'bn-BD' : undefined;
+
   return (
     <div className="p-4 md:p-6 bg-muted/20 border-t border-b border-border/80 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
@@ -134,16 +137,16 @@ export const OrderAccordionDetail = ({ order }) => {
             to={`/dashboard/orders/${order.id}`}
             className="text-sm font-bold text-foreground hover:text-primary hover:underline transition-colors"
           >
-            Order #{order.orderNumber}
+            {t('orders.order_id', 'Order')} #{order.orderNumber}
           </Link>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
-            {new Date(order.createdAt || order.date).toLocaleString()}
+            {new Date(order.createdAt || order.date).toLocaleString(locale)}
           </span>
           {order.couponCode && (
             <Badge variant="outline" className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono font-bold text-[11px] py-0.5 px-2">
               <Tag className="h-3 w-3 text-emerald-500" />
-              Coupon: {order.couponCode}
+              {t('categories_brands.coupon_code', 'Coupon')}: {order.couponCode}
             </Badge>
           )}
         </div>
@@ -156,7 +159,7 @@ export const OrderAccordionDetail = ({ order }) => {
             onClick={handleOpenInvoice}
           >
             <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-            Print Invoice
+            {t('orders.print_invoice', 'Print Invoice')}
           </Button>
           <Button
             variant="outline"
@@ -165,7 +168,7 @@ export const OrderAccordionDetail = ({ order }) => {
             onClick={handleEditOrder}
           >
             <Edit3 className="h-3.5 w-3.5 text-muted-foreground" />
-            Edit Order
+            {t('common.edit', 'Edit Order')}
           </Button>
           <Button
             variant="secondary"
@@ -174,7 +177,7 @@ export const OrderAccordionDetail = ({ order }) => {
             onClick={handleViewFullPage}
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            Full Details
+            {t('common.details', 'Full Details')}
           </Button>
         </div>
       </div>
@@ -185,7 +188,7 @@ export const OrderAccordionDetail = ({ order }) => {
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <Package className="h-4 w-4 text-primary" />
-                Ordered Items ({items.length})
+                {t('orders.items', 'Ordered Items')} ({items.length})
               </h4>
             </div>
 
@@ -228,16 +231,16 @@ export const OrderAccordionDetail = ({ order }) => {
                 ))
               ) : (
                 <div className="py-6 text-center text-xs text-muted-foreground">
-                  No item breakdown recorded for this order.
+                  {t('common.no_data', 'No item breakdown recorded for this order.')}
                 </div>
               )}
             </div>
           </div>
 
           <div className="pt-2 border-t border-border/50 flex justify-between items-center text-xs">
-            <span className="text-muted-foreground font-medium">Total Quantity</span>
+            <span className="text-muted-foreground font-medium">{t('common.quantity', 'Total Quantity')}</span>
             <span className="font-bold text-foreground">
-              {items.reduce((acc, curr) => acc + (curr.quantity || 1), 0)} items
+              {items.reduce((acc, curr) => acc + (curr.quantity || 1), 0)} {t('orders.items', 'items')}
             </span>
           </div>
         </div>
@@ -247,11 +250,11 @@ export const OrderAccordionDetail = ({ order }) => {
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <User className="h-4 w-4 text-primary" />
-                {isInStore ? 'Customer Info' : 'Billing & Shipping'}
+                {isInStore ? t('orders.customer_info', 'Customer Info') : t('orders.shipping_address', 'Billing & Shipping')}
               </h4>
               {isInStore && (
                 <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
-                  In-Store
+                  {t('orders.in_store', 'In-Store')}
                 </Badge>
               )}
             </div>
@@ -261,8 +264,8 @@ export const OrderAccordionDetail = ({ order }) => {
                 <div className="flex items-start gap-2">
                   <User className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Customer Name</span>
-                    <span className="font-semibold text-foreground">{billing.fullName || 'Walk-in Customer'}</span>
+                    <span className="text-[10px] text-muted-foreground block">{t('orders.customer_name', 'Customer Name')}</span>
+                    <span className="font-semibold text-foreground">{billing.fullName || t('orders.customer', 'Walk-in Customer')}</span>
                   </div>
                 </div>
 
@@ -270,7 +273,7 @@ export const OrderAccordionDetail = ({ order }) => {
                   <div className="flex items-start gap-2">
                     <Phone className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
-                      <span className="text-[10px] text-muted-foreground block">Phone</span>
+                      <span className="text-[10px] text-muted-foreground block">{t('common.phone', 'Phone')}</span>
                       <a
                         href={`tel:+880${cleanPhone}`}
                         className="font-semibold text-primary hover:underline"
@@ -285,7 +288,7 @@ export const OrderAccordionDetail = ({ order }) => {
                   <div className="flex items-start gap-2">
                     <Mail className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
-                      <span className="text-[10px] text-muted-foreground block">Email</span>
+                      <span className="text-[10px] text-muted-foreground block">{t('common.email', 'Email')}</span>
                       <a
                         href={`mailto:${emailAddr}`}
                         className="font-medium text-foreground hover:underline truncate block max-w-[200px]"
@@ -299,8 +302,8 @@ export const OrderAccordionDetail = ({ order }) => {
                 <div className="flex items-start gap-2">
                   <Tag className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-muted-foreground block">Order Channel</span>
-                    <span className="text-foreground font-medium">In-Store / POS Sale</span>
+                    <span className="text-[10px] text-muted-foreground block">{t('common.status', 'Order Channel')}</span>
+                    <span className="text-foreground font-medium">{t('orders.pos_title', 'In-Store / POS Sale')}</span>
                   </div>
                 </div>
               </div>
@@ -309,22 +312,22 @@ export const OrderAccordionDetail = ({ order }) => {
                 {/* Billing Details */}
                 <div className="space-y-1.5 border-b border-border/40 pb-2.5">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <FileText className="h-3 w-3 text-primary" /> Billing Address
+                    <FileText className="h-3 w-3 text-primary" /> {t('orders.customer_info', 'Billing Address')}
                   </span>
                   <div className="pl-4 space-y-1">
                     <p className="font-semibold text-foreground">{billing.fullName || 'N/A'}</p>
                     {phoneNum && (
                       <p className="text-muted-foreground">
-                        Phone: <a href={`tel:+880${cleanPhone}`} className="text-primary hover:underline font-medium">+880{cleanPhone}</a>
+                        {t('common.phone', 'Phone')}: <a href={`tel:+880${cleanPhone}`} className="text-primary hover:underline font-medium">+880{cleanPhone}</a>
                       </p>
                     )}
                     {emailAddr && (
                       <p className="text-muted-foreground truncate">
-                        Email: <span className="text-foreground">{emailAddr}</span>
+                        {t('common.email', 'Email')}: <span className="text-foreground">{emailAddr}</span>
                       </p>
                     )}
                     <p className="text-muted-foreground leading-tight">
-                      Address: <span className="text-foreground">{billingAddressText || 'N/A'}</span>
+                      {t('common.address', 'Address')}: <span className="text-foreground">{billingAddressText || 'N/A'}</span>
                     </p>
                   </div>
                 </div>
@@ -332,20 +335,20 @@ export const OrderAccordionDetail = ({ order }) => {
                 {/* Shipping Details */}
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <Truck className="h-3 w-3 text-primary" /> Shipping Address
+                    <Truck className="h-3 w-3 text-primary" /> {t('orders.shipping_address', 'Shipping Address')}
                   </span>
                   <div className="pl-4 space-y-1">
                     <p className="font-semibold text-foreground">{shipping.fullName || billing.fullName || 'N/A'}</p>
                     {(shipping.phone || phoneNum) && (
                       <p className="text-muted-foreground">
-                        Phone: <a href={`tel:${shipping.phone || phoneNum}`} className="text-primary hover:underline font-medium">{shipping.phone || phoneNum}</a>
+                        {t('common.phone', 'Phone')}: <a href={`tel:${shipping.phone || phoneNum}`} className="text-primary hover:underline font-medium">{shipping.phone || phoneNum}</a>
                       </p>
                     )}
                     <p className="text-muted-foreground leading-tight">
-                      Destination: <span className="text-foreground">{shippingAddressText || billingAddressText || 'N/A'}</span>
+                      {t('common.address', 'Destination')}: <span className="text-foreground">{shippingAddressText || billingAddressText || 'N/A'}</span>
                     </p>
                     <p className="text-muted-foreground">
-                      Delivery: <span className="text-foreground">{shippingFee === 0 ? 'Free Delivery' : 'Standard Delivery'}</span>
+                      {t('orders.delivery_charge', 'Delivery')}: <span className="text-foreground">{shippingFee === 0 ? t('settings.free_delivery_min', 'Free Delivery') : t('orders.delivery_charge', 'Standard Delivery')}</span>
                     </p>
                   </div>
                 </div>
@@ -355,10 +358,10 @@ export const OrderAccordionDetail = ({ order }) => {
 
           <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs">
             <span className="text-muted-foreground font-medium flex items-center gap-1">
-              <CreditCard className="h-3.5 w-3.5" /> Payment Method:
+              <CreditCard className="h-3.5 w-3.5" /> {t('orders.payment_method', 'Payment Method')}:
             </span>
             <span className="font-bold text-foreground capitalize">
-              {order.paymentMethod || 'Cash on Delivery'}
+              {order.paymentMethod || t('orders.cash_on_delivery', 'Cash on Delivery')}
             </span>
           </div>
         </div>
@@ -368,33 +371,33 @@ export const OrderAccordionDetail = ({ order }) => {
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                Status & Billing
+                {t('orders.payment_status', 'Status & Billing')}
               </h4>
             </div>
 
             <div className="space-y-1.5 text-xs bg-muted/40 p-2.5 rounded-lg border border-border/40">
               <div className="flex justify-between text-muted-foreground">
-                <span>Subtotal:</span>
+                <span>{t('common.subtotal', 'Subtotal')}:</span>
                 <span className="font-medium text-foreground">{formatBDT(subtotal)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
-                <span>Shipping:</span>
+                <span>{t('orders.delivery_charge', 'Shipping')}:</span>
                 <span className="font-medium text-foreground">{formatBDT(shippingFee)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <span>Discount:</span>
+                  <span>{t('common.discount', 'Discount')}:</span>
                   <span>-{formatBDT(discount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm font-bold text-foreground pt-1.5 border-t border-border/40">
-                <span>Total Amount:</span>
+                <span>{t('common.total', 'Total Amount')}:</span>
                 <span className="text-primary font-bold">{formatBDT(grandTotal)}</span>
               </div>
               <div className="flex justify-between text-[11px] pt-1">
-                <span className="text-muted-foreground">Paid: {formatBDT(paidAmount)}</span>
+                <span className="text-muted-foreground">{t('orders.advance_paid', 'Paid')}: {formatBDT(paidAmount)}</span>
                 <span className={`font-semibold ${pendingAmount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                  Pending: {formatBDT(pendingAmount)}
+                  {t('orders.due_amount', 'Pending')}: {formatBDT(pendingAmount)}
                 </span>
               </div>
             </div>
@@ -403,34 +406,34 @@ export const OrderAccordionDetail = ({ order }) => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">
-                    Order Status
+                    {t('orders.order_status', 'Order Status')}
                   </label>
                   <Select value={orderStatus} onValueChange={(val) => val && setOrderStatus(val)}>
                     <SelectTrigger className="h-8 text-xs cursor-pointer w-full bg-background">
-                      <SelectValue placeholder="Order Status" />
+                      <SelectValue placeholder={t('orders.order_status', 'Order Status')} />
                     </SelectTrigger>
                     <SelectContent side="bottom" className="bg-popover border shadow-md">
-                      <SelectItem value="Processing" className="cursor-pointer text-xs">Processing</SelectItem>
-                      <SelectItem value="Shipped" className="cursor-pointer text-xs">Shipped</SelectItem>
-                      <SelectItem value="Completed" className="cursor-pointer text-xs">Completed</SelectItem>
-                      <SelectItem value="Cancelled" className="cursor-pointer text-xs text-destructive">Cancelled</SelectItem>
+                      <SelectItem value="Processing" className="cursor-pointer text-xs">{t('orders.status_processing', 'Processing')}</SelectItem>
+                      <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                      <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                      <SelectItem value="Cancelled" className="cursor-pointer text-xs text-destructive">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">
-                    Payment Status
+                    {t('orders.payment_status', 'Payment Status')}
                   </label>
                   <Select value={paymentStatus} onValueChange={(val) => val && setPaymentStatus(val)}>
                     <SelectTrigger className="h-8 text-xs cursor-pointer w-full bg-background">
-                      <SelectValue placeholder="Payment Status" />
+                      <SelectValue placeholder={t('orders.payment_status', 'Payment Status')} />
                     </SelectTrigger>
                     <SelectContent side="bottom" className="bg-popover border shadow-md">
-                      <SelectItem value="Paid" className="cursor-pointer text-xs">Paid</SelectItem>
-                      <SelectItem value="Pending" className="cursor-pointer text-xs">Pending</SelectItem>
-                      <SelectItem value="Failed" className="cursor-pointer text-xs text-destructive">Failed</SelectItem>
-                      <SelectItem value="Partial" className="cursor-pointer text-xs">Partial</SelectItem>
+                      <SelectItem value="Paid" className="cursor-pointer text-xs">{t('orders.status_paid', 'Paid')}</SelectItem>
+                      <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
+                      <SelectItem value="Failed" className="cursor-pointer text-xs text-destructive">{t('common.error', 'Failed')}</SelectItem>
+                      <SelectItem value="Partial" className="cursor-pointer text-xs">{t('orders.status_partial', 'Partial')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -451,12 +454,12 @@ export const OrderAccordionDetail = ({ order }) => {
               {isUpdating ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                  Updating Status...
+                  {t('common.updating', 'Updating Status...')}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                  {hasStatusChanged ? 'Save New Status' : 'Update Status'}
+                  {hasStatusChanged ? t('common.save_changes', 'Save New Status') : t('orders.change_status', 'Update Status')}
                 </>
               )}
             </Button>

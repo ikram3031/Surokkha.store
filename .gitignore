@@ -52,4 +52,9 @@ frontend/
 *.bundle
 .wrangler/
 **/.wrangler/
+
+# Local Database runtime files
+data/
+**/data/
+backend/data/
 

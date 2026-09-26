@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -22,9 +22,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, ImageIcon, PackageX, Trash2, Eye, Copy, Check, X } from 'lucide-react';
+import { MoreHorizontal, ImageIcon, PackageX, Trash2, Eye, Copy, Check, X, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -40,14 +39,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useDashboardStore } from '@/store/use-dashboard-store';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
-export function ProductsTable({
+// Renders the products data table with status badges, variant stock controls, quick actions, and pagination
+export const ProductsTable = ({
   searchQuery,
   categoryFilter,
   brandFilter,
@@ -57,7 +56,8 @@ export function ProductsTable({
   selectedIds,
   onSelectedIdsChange,
   fixedOnSale = false,
-}) {
+}) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setDuplicateDraft } = useDashboardStore();
@@ -73,7 +73,7 @@ export function ProductsTable({
       setDuplicateDraft(fullProduct);
       navigate('/dashboard/products/new');
     } catch {
-      toast.error(`Failed to duplicate "${product.name}". Please try again.`);
+      toast.error(t('products.duplicate_failed', { name: product.name, defaultValue: `Failed to duplicate "${product.name}". Please try again.` }));
     } finally {
       setDuplicatingId(null);
     }
@@ -106,12 +106,12 @@ export function ProductsTable({
     setIsDeleting(true);
     try {
       await apiClient.delete(`/api/v1/products/${deleteTarget.id}`);
-      toast.success(`Product "${deleteTarget.name}" deleted.`);
+      toast.success(t('products.product_deleted', { name: deleteTarget.name, defaultValue: `Product "${deleteTarget.name}" deleted.` }));
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onSelectedIdsChange(selectedIds.filter(id => id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch {
-      toast.error('Failed to delete product.');
+      toast.error(t('common.error'));
     } finally {
       setIsDeleting(false);
     }
@@ -138,21 +138,18 @@ export function ProductsTable({
     }
   }, [stockTarget]);
 
-  // Updates availability status for a specific product variation
   const handleVariantStockChange = (size, newStatus) => {
     setTargetVariants((prev) =>
       prev.map((v) => (v.size === size ? { ...v, stockStatus: newStatus } : v))
     );
   };
 
-  // Bulk marks all product variations to the target stock status
   const handleMarkAllVariants = (status) => {
     setTargetVariants((prev) =>
       prev.map((v) => ({ ...v, stockStatus: status }))
     );
   };
 
-  // Persists product or variation stock status updates to backend API
   const handleUpdateStockStatus = async () => {
     if (!stockTarget) return;
     setIsUpdatingStock(true);
@@ -168,11 +165,11 @@ export function ProductsTable({
           stockStatus: targetStockStatus,
         });
       }
-      toast.success(`Stock status of "${stockTarget.name}" updated successfully.`);
+      toast.success(t('products.stock_updated_success', { name: stockTarget.name, defaultValue: `Stock status of "${stockTarget.name}" updated successfully.` }));
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setStockTarget(null);
     } catch {
-      toast.error('Failed to update stock status.');
+      toast.error(t('common.error'));
     } finally {
       setIsUpdatingStock(false);
     }
@@ -182,9 +179,9 @@ export function ProductsTable({
     return (
       <Alert variant="destructive" className="my-4">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
+        <AlertTitle>{t('common.error')}</AlertTitle>
         <AlertDescription>
-          Failed to fetch products. {error instanceof Error ? error.message : 'Unknown error occurred.'}
+          {error instanceof Error ? error.message : t('common.error')}
         </AlertDescription>
       </Alert>
     );
@@ -214,13 +211,13 @@ export function ProductsTable({
                 }}
               />
             </TableHead>
-            <TableHead className="w-[280px] min-w-[180px]">Product</TableHead>
-            <TableHead className="w-[120px]">SKU</TableHead>
-            <TableHead className="w-[140px]">Category</TableHead>
-            <TableHead className="w-[120px]">Brand</TableHead>
-            <TableHead className="w-[100px]">Price</TableHead>
-            <TableHead className="w-[120px] min-w-[120px]">Status</TableHead>
-            <TableHead className="w-[60px] text-right">Actions</TableHead>
+            <TableHead className="w-[280px] min-w-[180px]">{t('products.product_name')}</TableHead>
+            <TableHead className="w-[120px]">{t('products.sku')}</TableHead>
+            <TableHead className="w-[140px]">{t('products.category')}</TableHead>
+            <TableHead className="w-[120px]">{t('products.brand')}</TableHead>
+            <TableHead className="w-[100px]">{t('common.price')}</TableHead>
+            <TableHead className="w-[120px] min-w-[120px]">{t('common.status')}</TableHead>
+            <TableHead className="w-[60px] text-right">{t('common.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -261,7 +258,6 @@ export function ProductsTable({
                     }}
                   />
                 </TableCell>
-                {/* Product name + image */}
                 <TableCell className="max-w-[200px]">
                   <Link to={`/dashboard/products/${product.id}`} className="flex items-center gap-3 min-w-0 hover:underline">
                     {product.image ? (
@@ -277,42 +273,36 @@ export function ProductsTable({
                   </Link>
                 </TableCell>
 
-                {/* SKU */}
                 <TableCell className="max-w-[120px]">
                   <span className="text-muted-foreground truncate block" title={product.sku}>{product.sku}</span>
                 </TableCell>
 
-                {/* Category */}
                 <TableCell className="max-w-[140px]">
                   <span className="truncate block" title={getCategoryName(product.category) || product.category}>
                     {getCategoryName(product.category) || product.category}
                   </span>
                 </TableCell>
 
-                {/* Brand */}
                 <TableCell className="max-w-[120px]">
                   <span className="truncate block text-muted-foreground" title={product.brand ? (getBrandName(product.brand) || product.brand) : '—'}>
                     {product.brand ? (getBrandName(product.brand) || product.brand) : '—'}
                   </span>
                 </TableCell>
 
-                {/* Price */}
                 <TableCell className="w-[100px] font-medium">৳{product.price.toFixed(2)}</TableCell>
 
-                {/* Stock status */}
                 <TableCell className="w-[120px] min-w-[120px]">
                   {product.status === 'In Stock' ? (
                     <Badge className="w-[100px] inline-flex items-center justify-center text-center bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 whitespace-nowrap shrink-0" variant="outline">
-                      In Stock
+                      {t('products.in_stock')}
                     </Badge>
                   ) : (
                     <Badge variant="destructive" className="w-[100px] inline-flex items-center justify-center text-center bg-destructive/10 text-destructive border-destructive/20 whitespace-nowrap shrink-0">
-                      Out of Stock
+                      {t('products.out_of_stock')}
                     </Badge>
                   )}
                 </TableCell>
 
-                {/* Actions */}
                 <TableCell className="text-right w-[60px]">
                   <DropdownMenu>
                     <DropdownMenuTrigger render={
@@ -322,11 +312,11 @@ export function ProductsTable({
                       </Button>
                     } />
                     <DropdownMenuContent align="end" className="min-w-[150px]">
-                      <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
+                      <DropdownMenuLabel className="text-xs">{t('common.actions')}</DropdownMenuLabel>
                       <DropdownMenuItem render={
                         <Link to={`/dashboard/products/${product.id}`} className="cursor-pointer text-xs flex items-center gap-2">
                           <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                          View / Edit Product
+                          {t('products.view_edit_product', 'View / Edit Product')}
                         </Link>
                       } />
                       <DropdownMenuItem
@@ -334,7 +324,7 @@ export function ProductsTable({
                         onClick={() => setStockTarget(product)}
                       >
                         <PackageX className="h-3.5 w-3.5 text-muted-foreground" />
-                        Change Stock
+                        {t('products.change_stock')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="cursor-pointer text-xs flex items-center gap-2"
@@ -342,7 +332,7 @@ export function ProductsTable({
                         disabled={duplicatingId === product.id}
                       >
                         <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                        {duplicatingId === product.id ? 'Duplicating...' : 'Duplicate Product'}
+                        {duplicatingId === product.id ? t('products.duplicating', 'Duplicating...') : t('products.duplicate_product', 'Duplicate Product')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -350,7 +340,7 @@ export function ProductsTable({
                         onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        Delete Product
+                        {t('products.delete_product', 'Delete Product')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -360,7 +350,7 @@ export function ProductsTable({
           ) : (
             <TableRow>
               <TableCell colSpan={8} className="h-24 text-center">
-                No products found.
+                {t('products.no_products_found', 'No products found.')}
               </TableCell>
             </TableRow>
           )}
@@ -371,10 +361,10 @@ export function ProductsTable({
         <DialogContent className={stockTarget?.type === 'variant' && targetVariants.length > 0 ? "sm:max-w-[520px]" : "sm:max-w-[420px]"}>
           <DialogHeader>
             <DialogTitle>
-              {stockTarget?.type === 'variant' && targetVariants.length > 0 ? 'Change Variation Stock' : 'Change Stock Status'}
+              {stockTarget?.type === 'variant' && targetVariants.length > 0 ? t('products.change_variation_stock', 'Change Variation Stock') : t('products.change_stock')}
             </DialogTitle>
             <DialogDescription>
-              Update availability status for <span className="font-semibold text-foreground">{stockTarget?.name}</span>.
+              {t('products.update_availability_for', { name: stockTarget?.name, defaultValue: `Update availability status for ${stockTarget?.name}.` })}
             </DialogDescription>
           </DialogHeader>
 
@@ -382,7 +372,7 @@ export function ProductsTable({
             <div className="space-y-3.5 py-1">
               <div className="flex items-center justify-between bg-muted/30 px-3 py-2 rounded-lg border text-xs">
                 <span className="font-medium text-muted-foreground">
-                  Status: <span className="font-semibold text-foreground">{targetVariants.filter((v) => v.stockStatus === 'instock').length}</span> of {targetVariants.length} In Stock
+                  {t('common.status')}: <span className="font-semibold text-foreground">{targetVariants.filter((v) => v.stockStatus === 'instock').length}</span> {t('common.of')} {targetVariants.length} {t('products.in_stock')}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <Button
@@ -392,7 +382,7 @@ export function ProductsTable({
                     className="h-7 text-[11px] px-2 gap-1 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
                     onClick={() => handleMarkAllVariants('instock')}
                   >
-                    <Check className="h-3 w-3" /> All In
+                    <Check className="h-3 w-3" /> {t('products.all_in', 'All In')}
                   </Button>
                   <Button
                     type="button"
@@ -401,7 +391,7 @@ export function ProductsTable({
                     className="h-7 text-[11px] px-2 gap-1 text-red-600 border-red-500/30 hover:bg-red-500/10 cursor-pointer"
                     onClick={() => handleMarkAllVariants('outofstock')}
                   >
-                    <X className="h-3 w-3" /> All Out
+                    <X className="h-3 w-3" /> {t('products.all_out', 'All Out')}
                   </Button>
                 </div>
               </div>
@@ -426,13 +416,13 @@ export function ProductsTable({
                           <SelectItem value="instock" className="text-xs cursor-pointer">
                             <span className="flex items-center gap-1.5 font-medium text-emerald-600">
                               <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                              In Stock
+                              {t('products.in_stock')}
                             </span>
                           </SelectItem>
                           <SelectItem value="outofstock" className="text-xs cursor-pointer">
                             <span className="flex items-center gap-1.5 font-medium text-red-600">
                               <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
-                              Out of Stock
+                              {t('products.out_of_stock')}
                             </span>
                           </SelectItem>
                         </SelectContent>
@@ -445,24 +435,24 @@ export function ProductsTable({
           ) : (
             <div className="space-y-4 py-2">
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-muted-foreground">Current Status:</span>
+                <span className="text-xs font-semibold text-muted-foreground">{t('products.current_status', 'Current Status:')}</span>
                 <span className="text-sm font-semibold">
                   {stockTarget?.status === 'In Stock' ? (
-                    <span className="text-emerald-600">In Stock</span>
+                    <span className="text-emerald-600">{t('products.in_stock')}</span>
                   ) : (
-                    <span className="text-red-600">Out of Stock</span>
+                    <span className="text-red-600">{t('products.out_of_stock')}</span>
                   )}
                 </span>
               </div>
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-muted-foreground">New Availability:</span>
+                <span className="text-xs font-semibold text-muted-foreground">{t('products.new_availability', 'New Availability:')}</span>
                 <Select value={targetStockStatus} onValueChange={(val) => setTargetStockStatus(val || "")}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={t('common.select_option')} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border shadow-md">
-                    <SelectItem value="instock" className="cursor-pointer">In Stock</SelectItem>
-                    <SelectItem value="outofstock" className="cursor-pointer">Out of Stock</SelectItem>
+                    <SelectItem value="instock" className="cursor-pointer">{t('products.in_stock')}</SelectItem>
+                    <SelectItem value="outofstock" className="cursor-pointer">{t('products.out_of_stock')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -475,14 +465,14 @@ export function ProductsTable({
               onClick={() => setStockTarget(null)}
               disabled={isUpdatingStock}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
               onClick={handleUpdateStockStatus}
               disabled={isUpdatingStock}
             >
-              {isUpdatingStock ? 'Updating...' : 'Update Status'}
+              {isUpdatingStock ? t('common.updating') : t('common.update')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -493,9 +483,9 @@ export function ProductsTable({
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={handleDeleteProduct}
         isDeleting={isDeleting}
-        title="Delete Product"
-        description={`Are you sure you want to delete "${deleteTarget?.name ?? ''}"? This cannot be undone.`}
+        title={t('products.delete_product', 'Delete Product')}
+        description={t('products.delete_confirm_desc', { name: deleteTarget?.name ?? '', defaultValue: `Are you sure you want to delete "${deleteTarget?.name ?? ''}"? This cannot be undone.` })}
       />
     </div>
   );
-}
+};

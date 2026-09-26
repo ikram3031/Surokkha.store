@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { toast } from 'sonner';
 
 // Renders the cache purge button on the navbar to clear edge and dashboard caches
 export const CacheCleanButton = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isPurging, setIsPurging] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -22,12 +24,12 @@ export const CacheCleanButton = () => {
 
       setIsSuccess(true);
       const cfPurged = res.data?.data?.cloudflarePurged;
-      const details = res.data?.data?.details || 'Cache purged successfully.';
+      const details = res.data?.data?.details || t('nav.cache_cleaned', 'Cache Cleaned Successfully');
 
       toast.success(
         cfPurged
           ? 'Cloudflare Edge & Dashboard cache cleaned!'
-          : `Cache refreshed: ${details}`
+          : `${t('nav.cache_cleaned', 'Cache Cleaned Successfully')}: ${details}`
       );
 
       setTimeout(() => {
@@ -54,7 +56,7 @@ export const CacheCleanButton = () => {
           ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/10'
           : 'text-muted-foreground hover:text-foreground'
       }`}
-      title="Purge Cloudflare Edge & Dashboard Cache"
+      title={t('nav.clean_cache', 'Clean Cache')}
       aria-label="Clean cache"
     >
       {isPurging ? (
@@ -65,7 +67,7 @@ export const CacheCleanButton = () => {
         <Sparkles className="h-3.5 w-3.5 text-orange-500 hover:scale-110 transition-transform" />
       )}
       <span className="hidden sm:inline">
-        {isPurging ? 'Cleaning...' : isSuccess ? 'Cleaned' : 'Clean Cache'}
+        {isPurging ? t('common.loading', 'Cleaning...') : isSuccess ? t('common.saved', 'Cleaned') : t('nav.clean_cache', 'Clean Cache')}
       </span>
     </Button>
   );

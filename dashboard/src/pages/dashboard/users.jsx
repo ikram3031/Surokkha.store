@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SystemUsersTable } from '@/components/dashboard/system-users-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
 
+// Renders the system users and staff management dashboard with invite modal and role controls
 const UsersPage = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
@@ -79,7 +82,6 @@ const UsersPage = () => {
     });
   };
 
-  // Sync search input if URL changes externally (e.g. browser back/forward)
   useEffect(() => {
     setSearchInput(urlSearch);
     setDebouncedSearch(urlSearch);
@@ -109,7 +111,7 @@ const UsersPage = () => {
   const handleInviteUser = async (e) => {
     e.preventDefault();
     if (!newUserName.trim() || !newUserEmail.trim()) {
-      toast.error('Please provide both full name and email address.');
+      toast.error(t('common.required'));
       return;
     }
 
@@ -123,7 +125,7 @@ const UsersPage = () => {
         domain: window.location.origin,
       });
 
-      toast.success(response.data?.message || `Invitation sent to ${newUserEmail}!`);
+      toast.success(response.data?.message || t('common.saved'));
       queryClient.invalidateQueries({ queryKey: ['system-users'] });
       setIsInviteOpen(false);
       setNewUserName('');
@@ -131,7 +133,7 @@ const UsersPage = () => {
       setNewUserPassword('');
       setNewUserRole('Marketing Expert');
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to invite user.'));
+      toast.error(getApiErrorMessage(err, t('common.error')));
     } finally {
       setIsSubmitting(false);
     }
@@ -143,12 +145,12 @@ const UsersPage = () => {
       await Promise.all(
         selectedIds.map((id) => apiClient.delete(`/api/v1/users/${id}`))
       );
-      toast.success('Selected users deleted successfully.');
+      toast.success(t('common.saved'));
       queryClient.invalidateQueries({ queryKey: ['system-users'] });
       setSelectedIds([]);
       setBulkDeleteOpen(false);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to delete some users.'));
+      toast.error(getApiErrorMessage(err, t('common.error')));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -157,26 +159,26 @@ const UsersPage = () => {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">System Users</h2>
+        <h2 className="text-3xl font-bold tracking-tight">{t('admin.system_users')}</h2>
         <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
           <DialogTrigger
             render={
               <Button>
                 <UserPlus className="mr-2 h-4 w-4" />
-                Invite New User
+                {t('admin.add_user')}
               </Button>
             }
           />
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Invite New User</DialogTitle>
+              <DialogTitle>{t('admin.add_user')}</DialogTitle>
               <DialogDescription>
-                Fill in details to grant dashboard access to a new user.
+                {t('admin.title')}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleInviteUser} className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Full Name</label>
+                <label className="text-xs font-semibold">{t('admin.user_name')}</label>
                 <Input
                   required
                   placeholder="e.g. Sarah Smith"
@@ -185,7 +187,7 @@ const UsersPage = () => {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Email Address</label>
+                <label className="text-xs font-semibold">{t('admin.user_email')}</label>
                 <Input
                   type="email"
                   required
@@ -196,34 +198,34 @@ const UsersPage = () => {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold">
-                  Temporary Password <span className="text-muted-foreground font-normal">(Optional - user can set via invite link)</span>
+                  {t('admin.password')} <span className="text-muted-foreground font-normal">({t('common.optional')})</span>
                 </label>
                 <Input
                   type="password"
-                  placeholder="Leave blank to invite via email"
+                  placeholder={t('admin.password')}
                   value={newUserPassword}
                   onChange={(e) => setNewUserPassword(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Assigned Role</label>
-                <Select value={newUserRole} onValueChange={(val) => setNewUserRole(val ?? 'Marketing Expert')}>
+                <label className="text-xs font-semibold">{t('admin.user_role')}</label>
+                <Select value={newUserRole} onValueChange={(val) => setNewUserRole(val ?? 'Admin')}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Role" />
+                    <SelectValue placeholder={t('admin.user_role')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Manager">Manager</SelectItem>
-                    <SelectItem value="Marketing Expert">Marketing Expert</SelectItem>
+                    <SelectItem value="Admin">{t('admin.role_admin')}</SelectItem>
+                    <SelectItem value="Manager">{t('admin.role_manager')}</SelectItem>
+                    <SelectItem value="Marketing Expert">{t('admin.role_marketing')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Sending Invite...' : 'Send Invite'}
+                  {isSubmitting ? t('common.submitting') : t('common.submit')}
                 </Button>
               </div>
             </form>
@@ -236,7 +238,7 @@ const UsersPage = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search users..."
+            placeholder={t('common.search_placeholder')}
             className="pl-8 pr-8 h-9 text-xs"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -259,18 +261,18 @@ const UsersPage = () => {
               className="flex items-center gap-1.5"
             >
               <Trash2 className="h-4 w-4" />
-              Revoke Selected ({selectedIds.length})
+              {t('common.delete')} ({selectedIds.length})
             </Button>
           )}
           <Select value={roleFilter} onValueChange={handleRoleFilter}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Role" />
+              <SelectValue placeholder={t('admin.user_role')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Roles</SelectItem>
-              <SelectItem value="Admin">Admin</SelectItem>
-              <SelectItem value="Manager">Manager</SelectItem>
-              <SelectItem value="Marketing Expert">Marketing Expert</SelectItem>
+              <SelectItem value="All">{t('common.all')}</SelectItem>
+              <SelectItem value="Admin">{t('admin.role_admin')}</SelectItem>
+              <SelectItem value="Manager">{t('admin.role_manager')}</SelectItem>
+              <SelectItem value="Marketing Expert">{t('admin.role_marketing')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -365,11 +367,11 @@ const UsersPage = () => {
         onOpenChange={setBulkDeleteOpen}
         onConfirm={handleBulkDelete}
         isDeleting={isBulkDeleting}
-        title="Revoke Access for Selected Users"
-        description={`Are you sure you want to revoke access for ${selectedIds.length} selected users? This action cannot be undone.`}
+        title={t('common.delete')}
+        description={`${t('common.confirm_delete')} (${selectedIds.length})`}
       />
     </div>
   );
-}
+};
 
 export default UsersPage;

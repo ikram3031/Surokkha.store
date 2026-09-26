@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -55,6 +56,7 @@ export const OrdersTable = ({
   onSelectedIdsChange,
   orderType = 'online',
 }) => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -109,7 +111,7 @@ export const OrdersTable = ({
         status: targetOrderStatus.toLowerCase(),
         paymentStatus: targetPaymentStatus.toLowerCase(),
       });
-      toast.success(`Status for order #${statusTarget.orderNumber} updated successfully.`);
+      toast.success(t('orders.order_updated_success', `Status for order #${statusTarget.orderNumber} updated successfully.`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['order', statusTarget.id] });
       setStatusTarget(null);
@@ -127,7 +129,7 @@ export const OrdersTable = ({
     setIsDeleting(true);
     try {
       await apiClient.delete(`/api/v1/orders/${deleteTarget.id}`);
-      toast.success(`Order ${deleteTarget.orderNumber} deleted successfully.`);
+      toast.success(t('common.deleted', `Order ${deleteTarget.orderNumber} deleted successfully.`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       setDeleteTarget(null);
     } catch (err) {
@@ -152,11 +154,11 @@ export const OrdersTable = ({
   const getPaymentBadge = (status) => {
     switch (String(status).toLowerCase()) {
       case 'paid':
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600">Paid</Badge>;
+        return <Badge className="bg-emerald-500 hover:bg-emerald-600">{t('orders.status_paid', 'Paid')}</Badge>;
       case 'pending':
-        return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400">Pending</Badge>;
+        return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400">{t('orders.status_pending', 'Pending')}</Badge>;
       case 'failed':
-        return <Badge variant="destructive">Failed</Badge>;
+        return <Badge variant="destructive">{t('common.error', 'Failed')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -167,16 +169,19 @@ export const OrdersTable = ({
     switch (String(status).toLowerCase()) {
       case 'delivered':
       case 'completed':
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600">Completed</Badge>;
+        return <Badge className="bg-emerald-500 hover:bg-emerald-600">{t('orders.status_delivered', 'Completed')}</Badge>;
       case 'shipped':
-        return <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-600 hover:bg-indigo-500/30 dark:text-indigo-400">Shipped</Badge>;
+        return <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-600 hover:bg-indigo-500/30 dark:text-indigo-400">{t('orders.status_shipped', 'Shipped')}</Badge>;
       case 'processing':
-        return <Badge variant="secondary" className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400">Processing</Badge>;
+        return <Badge variant="secondary" className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400">{t('orders.status_processing', 'Processing')}</Badge>;
       case 'cancelled':
-        return <Badge variant="destructive">Cancelled</Badge>;
+      case 'canceled':
+        return <Badge variant="destructive">{t('orders.status_canceled', 'Cancelled')}</Badge>;
+      case 'returned':
+        return <Badge variant="destructive" className="bg-pink-500/20 text-pink-600">{t('orders.status_returned', 'Returned')}</Badge>;
       case 'pending':
       case 'unfulfilled':
-        return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400">Pending</Badge>;
+        return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400">{t('orders.status_pending', 'Pending')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -186,15 +191,16 @@ export const OrdersTable = ({
     return (
       <Alert variant="destructive" className="my-4">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
+        <AlertTitle>{t('common.error', 'Error')}</AlertTitle>
         <AlertDescription>
-          Failed to fetch orders. {error instanceof Error ? error.message : 'Unknown error occurred.'}
+          {t('common.error', 'Failed to fetch orders.')} {error instanceof Error ? error.message : ''}
         </AlertDescription>
       </Alert>
     );
   }
 
   const isAllPageSelected = orders.length > 0 && orders.every(order => selectedIds.includes(order.id));
+  const locale = i18n.language?.startsWith('bn') ? 'bn-BD' : undefined;
 
   return (
     <div className="rounded-md border overflow-hidden">
@@ -219,13 +225,13 @@ export const OrdersTable = ({
                 }}
               />
             </TableHead>
-            <TableHead className="w-[150px]">Order ID</TableHead>
-            <TableHead className="w-[180px]">Customer Name</TableHead>
-            <TableHead className="w-[110px]">Date</TableHead>
-            <TableHead className="w-[120px]">Total Amount</TableHead>
-            <TableHead className="w-[100px]">Payment</TableHead>
-            <TableHead className="w-[120px]">Status</TableHead>
-            <TableHead className="w-[60px] text-right">Actions</TableHead>
+            <TableHead className="w-[150px]">{t('orders.order_id', 'Order ID')}</TableHead>
+            <TableHead className="w-[180px]">{t('orders.customer_name', 'Customer Name')}</TableHead>
+            <TableHead className="w-[110px]">{t('common.date', 'Date')}</TableHead>
+            <TableHead className="w-[120px]">{t('common.total', 'Total Amount')}</TableHead>
+            <TableHead className="w-[100px]">{t('orders.payment_status', 'Payment')}</TableHead>
+            <TableHead className="w-[120px]">{t('common.status', 'Status')}</TableHead>
+            <TableHead className="w-[60px] text-right">{t('common.actions', 'Actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -310,10 +316,10 @@ export const OrdersTable = ({
                       <span className="truncate block" title={order.customerName}>{order.customerName}</span>
                     </TableCell>
                     <TableCell className="w-[110px] text-muted-foreground whitespace-nowrap">
-                      {new Date(order.date).toLocaleDateString()}
+                      {new Date(order.date).toLocaleDateString(locale)}
                     </TableCell>
                     <TableCell className="w-[120px] font-medium whitespace-nowrap">
-                      <span>৳{order.totalAmount.toFixed(2)}</span>
+                      <span>৳{Number(order.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       {order.couponCode && (
                         <span className="flex items-center gap-0.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">
                           <Tag className="h-2.5 w-2.5" />
@@ -335,22 +341,22 @@ export const OrdersTable = ({
                           </Button>
                         } />
                         <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuLabel>{t('common.actions', 'Actions')}</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => handleViewDetails(order)}>
-                            View Details
+                            {t('common.details', 'View Details')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditOrderClick(order)}>
-                            Edit Order
+                            {t('common.edit', 'Edit Order')}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOpenStatusModal(order)}>
-                            Change Status
+                            {t('orders.change_status', 'Change Status')}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive cursor-pointer"
                             onClick={() => setDeleteTarget({ id: order.id, orderNumber: order.orderNumber })}
                           >
-                            Delete Order
+                            {t('common.delete', 'Delete Order')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -369,8 +375,8 @@ export const OrdersTable = ({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center">
-                No orders found.
+              <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+                {t('overview.no_recent_orders', 'No orders found.')}
               </TableCell>
             </TableRow>
           )}
@@ -380,38 +386,38 @@ export const OrdersTable = ({
       <Dialog open={!!statusTarget} onOpenChange={(open) => !open && setStatusTarget(null)}>
         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
           <DialogHeader>
-            <DialogTitle>Change Status</DialogTitle>
+            <DialogTitle>{t('orders.change_status', 'Change Status')}</DialogTitle>
             <DialogDescription>
-              Update order and payment status for <span className="font-semibold text-foreground">{statusTarget?.orderNumber}</span>.
+              {t('orders.order_details', 'Update order and payment status for')} <span className="font-semibold text-foreground">{statusTarget?.orderNumber}</span>.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Order Status</label>
+              <label className="text-xs font-semibold text-muted-foreground">{t('orders.order_status', 'Order Status')}</label>
               <Select value={targetOrderStatus} onValueChange={(val) => setTargetOrderStatus(val || "Not found")}>
                 <SelectTrigger className="w-full h-9 cursor-pointer">
-                  <SelectValue placeholder="Order status" />
+                  <SelectValue placeholder={t('orders.order_status', 'Order status')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Processing">Processing</SelectItem>
-                  <SelectItem value="Shipped">Shipped</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  <SelectItem value="Processing">{t('orders.status_processing', 'Processing')}</SelectItem>
+                  <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                  <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                  <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Payment Status</label>
+              <label className="text-xs font-semibold text-muted-foreground">{t('orders.payment_status', 'Payment Status')}</label>
               <Select value={targetPaymentStatus} onValueChange={(val) => setTargetPaymentStatus(val || "Pending")}>
                 <SelectTrigger className="w-full h-9 cursor-pointer">
-                  <SelectValue placeholder="Payment status" />
+                  <SelectValue placeholder={t('orders.payment_status', 'Payment status')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Paid">Paid</SelectItem>
-                  <SelectItem value="Partial">Partial</SelectItem>
+                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
+                  <SelectItem value="Partial">{t('orders.status_partial', 'Partial')}</SelectItem>
                   <SelectItem value="N/A">N/A</SelectItem>
                 </SelectContent>
               </Select>
@@ -420,14 +426,14 @@ export const OrdersTable = ({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setStatusTarget(null)} disabled={isUpdatingStatus}>
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
               onClick={handleUpdateStatus}
               disabled={isUpdatingStatus}
             >
-              {isUpdatingStatus ? 'Saving...' : 'Save Changes'}
+              {isUpdatingStatus ? t('common.saving', 'Saving...') : t('common.save_changes', 'Save Changes')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -438,8 +444,8 @@ export const OrdersTable = ({
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={handleDeleteOrder}
         isDeleting={isDeleting}
-        title="Delete Order"
-        description={`Are you sure you want to delete order ${deleteTarget?.orderNumber ?? ''}?`}
+        title={t('common.delete', 'Delete Order')}
+        description={`${t('common.confirm_delete', 'Are you sure you want to delete order')} ${deleteTarget?.orderNumber ?? ''}?`}
       />
     </div>
   );

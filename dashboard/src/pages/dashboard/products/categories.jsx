@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCategories } from '@/lib/category-cache';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +43,9 @@ function slugify(text) {
     .replace(/^-+|-+$/g, '');
 }
 
+// Renders the categories management page with parent-child relationships, creation dialog, and hierarchy list
 const CategoriesPage = () => {
+  const { t } = useTranslation();
   const { data: categories = [], isLoading } = useCategories();
   const queryClient = useQueryClient();
 
@@ -50,7 +53,6 @@ const CategoriesPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
-  // Form Fields
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [slugManual, setSlugManual] = useState(false);
@@ -85,7 +87,6 @@ const CategoriesPage = () => {
     setSlugManual(true);
     setDescription(category.description || '');
 
-    // Resolve parent ID accurately matching the Select values (c.did)
     const rawParent = category.parent;
     let matchedParentDid = '';
     if (rawParent) {
@@ -112,7 +113,7 @@ const CategoriesPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !slug.trim()) {
-      toast.error('Name and slug are required');
+      toast.error(t('common.required'));
       return;
     }
 
@@ -127,16 +128,16 @@ const CategoriesPage = () => {
 
       if (editingCategory) {
         await apiClient.put(`/api/v1/categories/${editingCategory.did}`, body);
-        toast.success('Category updated successfully');
+        toast.success(t('common.saved'));
       } else {
         await apiClient.post('/api/v1/categories', body);
-        toast.success('Category created successfully');
+        toast.success(t('common.saved'));
       }
 
       queryClient.invalidateQueries({ queryKey: ['categories-cache'] });
       setIsOpen(false);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to save category'));
+      toast.error(getApiErrorMessage(err, t('common.error')));
     } finally {
       setIsSubmitting(false);
     }
@@ -150,11 +151,11 @@ const CategoriesPage = () => {
     setIsDeleting(true);
     try {
       await apiClient.delete(`/api/v1/categories/${deleteTarget.did}`);
-      toast.success('Category deleted successfully');
+      toast.success(t('common.saved'));
       queryClient.invalidateQueries({ queryKey: ['categories-cache'] });
       setDeleteTarget(null);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to delete category'));
+      toast.error(getApiErrorMessage(err, t('common.error')));
     } finally {
       setIsDeleting(false);
     }
@@ -181,13 +182,13 @@ const CategoriesPage = () => {
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between border-b pb-4">
         <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight">Categories</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t('categories_brands.category_title')}</h2>
           <p className="text-sm text-muted-foreground">
-            Manage your product categories and hierarchy settings.
+            {t('products.subtitle')}
           </p>
         </div>
         <Button onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" /> Add Category
+          <Plus className="mr-2 h-4 w-4" /> {t('categories_brands.add_category')}
         </Button>
       </div>
 
@@ -195,7 +196,7 @@ const CategoriesPage = () => {
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search categories..."
+          placeholder={t('common.search_placeholder')}
           className="pl-8"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -203,18 +204,18 @@ const CategoriesPage = () => {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-12">Loading categories...</div>
+        <div className="text-center py-12">{t('common.loading')}</div>
       ) : filteredCategories.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">No categories found.</div>
+        <div className="text-center py-12 text-muted-foreground">{t('common.no_data')}</div>
       ) : (
         <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead>Parent Category</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('common.name')}</TableHead>
+                <TableHead>{t('products.slug')}</TableHead>
+                <TableHead>{t('categories_brands.parent_category')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -265,14 +266,14 @@ const CategoriesPage = () => {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{editingCategory ? 'Edit Category' : 'Add Category'}</DialogTitle>
+            <DialogTitle>{editingCategory ? t('categories_brands.edit_category') : t('categories_brands.add_category')}</DialogTitle>
             <DialogDescription>
-              Fill in the category information below.
+              {t('products.subtitle')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Category Name</label>
+              <label className="text-xs font-semibold">{t('categories_brands.category_name')}</label>
               <Input
                 required
                 placeholder="e.g. Fragrance"
@@ -283,7 +284,7 @@ const CategoriesPage = () => {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold">Slug</label>
+                <label className="text-xs font-semibold">{t('products.slug')}</label>
                 <button
                   type="button"
                   className="text-[10px] text-muted-foreground underline"
@@ -306,22 +307,22 @@ const CategoriesPage = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Description</label>
+              <label className="text-xs font-semibold">{t('common.description')}</label>
               <Textarea
-                placeholder="Description of the category"
+                placeholder={t('common.description')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Parent Category</label>
+              <label className="text-xs font-semibold">{t('categories_brands.parent_category')}</label>
               <Select
                 value={parentId || '__none__'}
                 onValueChange={(val) => setParentId(val === '__none__' ? '' : (val ?? ''))}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select parent category">
+                  <SelectValue placeholder={t('common.select_option')}>
                     {parentId && parentId !== '__none__'
                       ? categories.find((c) => c.did === parentId || c.slug === parentId || c._id === parentId || c.id === parentId)?.name || parentId
                       : 'None'}
@@ -332,7 +333,7 @@ const CategoriesPage = () => {
                   {categories
                     .filter(
                       (c) =>
-                        !c.parent && // Only root/parent categories (not sub-categories)
+                        !c.parent &&
                         (!editingCategory || c.did !== editingCategory.did)
                     )
                     .map((c) => (
@@ -346,10 +347,10 @@ const CategoriesPage = () => {
 
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </form>
@@ -361,11 +362,11 @@ const CategoriesPage = () => {
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={handleDelete}
         isDeleting={isDeleting}
-        title="Delete Category"
-        description={`Are you sure you want to delete category "${deleteTarget?.name ?? ''}"?`}
+        title={t('common.delete')}
+        description={`${t('common.confirm_delete')} (${deleteTarget?.name ?? ''})`}
       />
     </div>
   );
-}
+};
 
 export default CategoriesPage;

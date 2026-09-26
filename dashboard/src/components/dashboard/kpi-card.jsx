@@ -1,7 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-export function KpiCard({ title, value, icon: Icon, trend, trendDirection }) {
+// Renders individual key performance indicator summary card with trend styling
+export const KpiCard = ({ title, value, icon: Icon, trend, trendDirection, subtext }) => {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -19,9 +23,9 @@ export function KpiCard({ title, value, icon: Icon, trend, trendDirection }) {
           )}
         >
           {trendDirection === 'up' ? '+' : trendDirection === 'down' ? '-' : ''}
-          {trend} from last month
+          {trend} {subtext || t('overview.growth', 'from last month')}
         </p>
       </CardContent>
     </Card>
   );
-}
+};

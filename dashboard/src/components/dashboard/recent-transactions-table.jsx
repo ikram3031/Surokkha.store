@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -12,7 +13,9 @@ import { useOrders } from '@/hooks/use-orders';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 
-export function RecentTransactionsTable() {
+// Renders the recent orders table snippet on the dashboard overview
+export const RecentTransactionsTable = () => {
+  const { t } = useTranslation();
   const { data: ordersData, isLoading } = useOrders({ limit: 5, page: 1 });
   const orders = ordersData?.data || [];
 
@@ -21,17 +24,46 @@ export function RecentTransactionsTable() {
     switch (s) {
       case 'paid':
       case 'completed':
-        return <Badge className="bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 dark:text-emerald-400 border-0">Completed</Badge>;
+      case 'delivered':
+        return (
+          <Badge className="bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 dark:text-emerald-400 border-0">
+            {t('orders.status_delivered', 'Completed')}
+          </Badge>
+        );
       case 'processing':
+        return (
+          <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400 border-0">
+            {t('orders.status_processing', 'Processing')}
+          </Badge>
+        );
       case 'pending':
-        return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400 border-0">Processing</Badge>;
+        return (
+          <Badge variant="outline" className="border-amber-500/40 text-amber-600">
+            {t('orders.status_pending', 'Pending')}
+          </Badge>
+        );
       case 'shipped':
-        return <Badge className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400 border-0">Shipped</Badge>;
+        return (
+          <Badge className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400 border-0">
+            {t('orders.status_shipped', 'Shipped')}
+          </Badge>
+        );
       case 'failed':
       case 'cancelled':
-        return <Badge variant="destructive" className="border-0">Cancelled</Badge>;
+      case 'canceled':
+        return (
+          <Badge variant="destructive" className="border-0">
+            {t('orders.status_canceled', 'Cancelled')}
+          </Badge>
+        );
+      case 'returned':
+        return (
+          <Badge variant="destructive" className="bg-pink-500/20 text-pink-600 border-0">
+            {t('orders.status_returned', 'Returned')}
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">{status || 'Pending'}</Badge>;
+        return <Badge variant="outline">{status || t('orders.status_pending', 'Pending')}</Badge>;
     }
   };
 
@@ -39,24 +71,24 @@ export function RecentTransactionsTable() {
     <Card className="col-span-1 lg:col-span-3">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div>
-          <CardTitle>Recent Orders</CardTitle>
-          <CardDescription>Latest orders placed in the store.</CardDescription>
+          <CardTitle>{t('overview.recent_orders', 'Recent Orders')}</CardTitle>
+          <CardDescription>{t('orders.subtitle', 'Latest orders placed in the store.')}</CardDescription>
         </div>
         <Link
           to="/dashboard/orders"
           className="text-xs text-primary hover:underline font-medium"
         >
-          View all
+          {t('common.view_all', 'View all')}
         </Link>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Order ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-[100px]">{t('orders.order_id', 'Order ID')}</TableHead>
+              <TableHead>{t('orders.customer', 'Customer')}</TableHead>
+              <TableHead>{t('common.status', 'Status')}</TableHead>
+              <TableHead className="text-right">{t('common.amount', 'Amount')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,7 +121,7 @@ export function RecentTransactionsTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center text-muted-foreground text-sm">
-                  No orders found.
+                  {t('overview.no_recent_orders', 'No orders found.')}
                 </TableCell>
               </TableRow>
             )}
@@ -98,4 +130,4 @@ export function RecentTransactionsTable() {
       </CardContent>
     </Card>
   );
-}
+};

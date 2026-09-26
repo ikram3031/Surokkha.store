@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { OrdersTable } from '@/components/dashboard/orders-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select';
 import {
   Pagination,
@@ -39,6 +39,7 @@ import { useAuth } from '@/lib/auth-context';
 
 // Renders the dedicated management page for in-store walk-in counter orders
 const InStoreOrdersPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -81,7 +82,6 @@ const InStoreOrdersPage = () => {
     });
   };
 
-  // Sync search input if URL changes externally (e.g. browser back/forward)
   useEffect(() => {
     setSearchInput(urlSearch);
     setDebouncedSearch(urlSearch);
@@ -120,13 +120,13 @@ const InStoreOrdersPage = () => {
         type: 'deleted',
         description: `${selectedIds.length} in-store order(s) deleted by "${user?.name || 'Admin'}"`,
       });
-      toast.success('Selected in-store orders deleted successfully.');
+      toast.success(t('orders.order_updated_success', 'Selected in-store orders deleted successfully.'));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       setSelectedIds([]);
       setBulkDeleteOpen(false);
     } catch {
-      toast.error('Failed to delete some in-store orders.');
+      toast.error(t('common.error', 'Failed to delete some in-store orders.'));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -140,12 +140,12 @@ const InStoreOrdersPage = () => {
         type: 'updated',
         description: `${selectedIds.length} in-store order(s) status updated to "${status}" by "${user?.name || 'Admin'}"`,
       });
-      toast.success(`Selected in-store orders updated to status "${status}".`);
+      toast.success(t('orders.order_updated_success', `Selected in-store orders updated to status "${status}".`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       setSelectedIds([]);
     } catch {
-      toast.error('Failed to update in-store orders.');
+      toast.error(t('common.error', 'Failed to update in-store orders.'));
     }
   };
 
@@ -157,12 +157,12 @@ const InStoreOrdersPage = () => {
         type: 'updated',
         description: `${selectedIds.length} in-store order(s) payment status updated to "${paymentStatus}" by "${user?.name || 'Admin'}"`,
       });
-      toast.success(`Selected in-store orders updated to payment status "${paymentStatus}".`);
+      toast.success(t('orders.order_updated_success', `Selected in-store orders updated to payment status "${paymentStatus}".`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
       setSelectedIds([]);
     } catch {
-      toast.error('Failed to update in-store orders.');
+      toast.error(t('common.error', 'Failed to update in-store orders.'));
     }
   };
 
@@ -170,19 +170,19 @@ const InStoreOrdersPage = () => {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">In-Store Orders</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t('nav.in_store_orders', 'In-Store Orders')}</h2>
           <p className="text-muted-foreground text-sm mt-0.5">
-            Manage POS walk-in counter sales and in-store pickup orders
+            {t('orders.pos_title', 'Manage POS walk-in counter sales and in-store pickup orders')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" nativeButton={false} render={<Link to="/dashboard/orders/new" />}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            New In-Store Order
+            {t('orders.new_order', 'New In-Store Order')}
           </Button>
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
-            Export Orders
+            {t('common.export', 'Export Orders')}
           </Button>
         </div>
       </div>
@@ -192,7 +192,7 @@ const InStoreOrdersPage = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search by customer name, phone or order ID..."
+            placeholder={t('orders.search_orders', 'Search by customer name, phone or order ID...')}
             className="pl-8 pr-8 h-9 text-xs"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -212,26 +212,34 @@ const InStoreOrdersPage = () => {
             <div className="flex gap-2 items-center w-full sm:w-auto">
               <Select value={statusFilter} onValueChange={handleStatus}>
                 <SelectTrigger className="w-[180px] h-9 cursor-pointer text-xs">
-                  <span>{statusFilter === 'All' ? 'Order Status: All' : `Order Status: ${statusFilter}`}</span>
+                  <span>
+                    {statusFilter === 'All'
+                      ? `${t('orders.order_status', 'Order Status')}: ${t('common.all', 'All')}`
+                      : `${t('orders.order_status', 'Order Status')}: ${statusFilter}`}
+                  </span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="All">Order Status: All</SelectItem>
-                  <SelectItem value="Processing">Processing</SelectItem>
-                  <SelectItem value="Shipped">Shipped</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  <SelectItem value="All">{t('orders.order_status', 'Order Status')}: {t('common.all', 'All')}</SelectItem>
+                  <SelectItem value="Processing">{t('orders.status_processing', 'Processing')}</SelectItem>
+                  <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                  <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                  <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={paymentFilter} onValueChange={handlePayment}>
                 <SelectTrigger className="w-[160px] h-9 cursor-pointer text-xs">
-                  <span>{paymentFilter === 'All' ? 'Payment: All' : `Payment: ${paymentFilter}`}</span>
+                  <span>
+                    {paymentFilter === 'All'
+                      ? `${t('orders.payment_status', 'Payment')}: ${t('common.all', 'All')}`
+                      : `${t('orders.payment_status', 'Payment')}: ${paymentFilter}`}
+                  </span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="All">Payment: All</SelectItem>
-                  <SelectItem value="Paid">Paid</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Failed">Failed</SelectItem>
+                  <SelectItem value="All">{t('orders.payment_status', 'Payment')}: {t('common.all', 'All')}</SelectItem>
+                  <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
+                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Failed">{t('common.error', 'Failed')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -239,29 +247,31 @@ const InStoreOrdersPage = () => {
 
           {selectedIds.length > 0 && (
             <div className="flex gap-1.5 items-center ml-2">
-              <span className="text-xs text-muted-foreground whitespace-nowrap hidden md:inline">{selectedIds.length} selected:</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap hidden md:inline">
+                {selectedIds.length} {t('common.selected', 'selected')}:
+              </span>
 
               <Select value="" onValueChange={(val) => val && setBulkPaymentTarget(val)}>
                 <SelectTrigger className="w-[145px] h-9 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium cursor-pointer text-xs">
-                  <span>Payment Status</span>
+                  <span>{t('orders.payment_status', 'Payment Status')}</span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Paid" className="cursor-pointer text-xs">Paid</SelectItem>
-                  <SelectItem value="Pending" className="cursor-pointer text-xs">Pending</SelectItem>
-                  <SelectItem value="Failed" className="cursor-pointer text-xs">Failed</SelectItem>
-                  <SelectItem value="Refunded" className="cursor-pointer text-xs">Refunded</SelectItem>
+                  <SelectItem value="Paid" className="cursor-pointer text-xs">{t('orders.status_paid', 'Paid')}</SelectItem>
+                  <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Failed" className="cursor-pointer text-xs">{t('common.error', 'Failed')}</SelectItem>
+                  <SelectItem value="Refunded" className="cursor-pointer text-xs">{t('orders.status_returned', 'Refunded')}</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value="" onValueChange={(val) => val && setBulkStatusTarget(val)}>
                 <SelectTrigger className="w-[135px] h-9 border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer text-xs">
-                  <span>Order Status</span>
+                  <span>{t('orders.order_status', 'Order Status')}</span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Processing" className="cursor-pointer text-xs">Processing</SelectItem>
-                  <SelectItem value="Shipped" className="cursor-pointer text-xs">Shipped</SelectItem>
-                  <SelectItem value="Completed" className="cursor-pointer text-xs">Completed</SelectItem>
-                  <SelectItem value="Cancelled" className="cursor-pointer text-xs">Cancelled</SelectItem>
+                  <SelectItem value="Processing" className="cursor-pointer text-xs">{t('orders.status_processing', 'Processing')}</SelectItem>
+                  <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                  <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                  <SelectItem value="Cancelled" className="cursor-pointer text-xs">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -270,7 +280,7 @@ const InStoreOrdersPage = () => {
                 size="icon"
                 onClick={() => setBulkDeleteOpen(true)}
                 className="h-9 w-9 flex items-center justify-center shrink-0 cursor-pointer"
-                title={`Delete Selected (${selectedIds.length})`}
+                title={`${t('common.delete', 'Delete Selected')} (${selectedIds.length})`}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -361,14 +371,14 @@ const InStoreOrdersPage = () => {
       <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => !open && setBulkStatusTarget(null)}>
         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
           <DialogHeader>
-            <DialogTitle>Confirm Order Status Change</DialogTitle>
+            <DialogTitle>{t('orders.change_status', 'Confirm Order Status Change')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to update the Order Status of <span className="font-semibold text-foreground">{selectedIds.length}</span> selected in-store orders to <span className="font-semibold text-foreground">"{bulkStatusTarget}"</span>?
+              {t('orders.change_status_desc', `Are you sure you want to update the Order Status of ${selectedIds.length} selected in-store orders to "${bulkStatusTarget}"?`)}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBulkStatusTarget(null)} disabled={isUpdatingBulk}>
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
@@ -382,7 +392,7 @@ const InStoreOrdersPage = () => {
               }}
               disabled={isUpdatingBulk}
             >
-              {isUpdatingBulk ? 'Updating...' : 'Yes, Change Status'}
+              {isUpdatingBulk ? t('common.updating', 'Updating...') : t('common.confirm', 'Yes, Change Status')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -391,14 +401,14 @@ const InStoreOrdersPage = () => {
       <Dialog open={!!bulkPaymentTarget} onOpenChange={(open) => !open && setBulkPaymentTarget(null)}>
         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
           <DialogHeader>
-            <DialogTitle>Confirm Payment Status Change</DialogTitle>
+            <DialogTitle>{t('orders.change_status', 'Confirm Payment Status Change')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to update the Payment Status of <span className="font-semibold text-foreground">{selectedIds.length}</span> selected in-store orders to <span className="font-semibold text-foreground">"{bulkPaymentTarget}"</span>?
+              {t('orders.change_status_desc', `Are you sure you want to update the Payment Status of ${selectedIds.length} selected in-store orders to "${bulkPaymentTarget}"?`)}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBulkPaymentTarget(null)} disabled={isUpdatingBulk}>
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
@@ -412,7 +422,7 @@ const InStoreOrdersPage = () => {
               }}
               disabled={isUpdatingBulk}
             >
-              {isUpdatingBulk ? 'Updating...' : 'Yes, Change Status'}
+              {isUpdatingBulk ? t('common.updating', 'Updating...') : t('common.confirm', 'Yes, Change Status')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -423,8 +433,8 @@ const InStoreOrdersPage = () => {
         onOpenChange={setBulkDeleteOpen}
         onConfirm={handleBulkDelete}
         isDeleting={isBulkDeleting}
-        title="Delete Selected In-Store Orders"
-        description={`Are you sure you want to permanently delete the ${selectedIds.length} selected in-store orders? This action cannot be undone.`}
+        title={t('common.delete', 'Delete Selected In-Store Orders')}
+        description={`${t('common.confirm_delete_desc', 'Are you sure you want to permanently delete the selected in-store orders?')} (${selectedIds.length})`}
       />
     </div>
   );

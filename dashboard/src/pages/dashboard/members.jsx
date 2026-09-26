@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MembersTable } from '@/components/dashboard/members-table';
 import { Input } from '@/components/ui/input';
 import { Search, Trash2, UserMinus, X } from 'lucide-react';
@@ -33,7 +34,9 @@ import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+// Renders the customers directory page with pagination, search, segment filtering, and bulk actions
 const MembersPage = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
@@ -74,7 +77,6 @@ const MembersPage = () => {
     });
   };
 
-  // Sync search input if URL changes externally (e.g. browser back/forward)
   useEffect(() => {
     setSearchInput(urlSearch);
     setDebouncedSearch(urlSearch);
@@ -107,12 +109,12 @@ const MembersPage = () => {
       await Promise.all(
         selectedIds.map((id) => apiClient.delete(`/api/v1/members/${id}`))
       );
-      toast.success('Selected members deleted successfully.');
+      toast.success(t('common.saved'));
       queryClient.invalidateQueries({ queryKey: ['members'] });
       setSelectedIds([]);
       setBulkDeleteOpen(false);
     } catch {
-      toast.error('Failed to delete some members.');
+      toast.error(t('common.error'));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -126,12 +128,12 @@ const MembersPage = () => {
           apiClient.put(`/api/v1/members/${id}`, { active: false })
         )
       );
-      toast.success('Selected members marked as Inactive.');
+      toast.success(t('common.saved'));
       queryClient.invalidateQueries({ queryKey: ['members'] });
       setSelectedIds([]);
       setBulkInactiveOpen(false);
     } catch {
-      toast.error('Failed to update status for some members.');
+      toast.error(t('common.error'));
     } finally {
       setIsBulkInactiveUpdating(false);
     }
@@ -141,9 +143,9 @@ const MembersPage = () => {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Members & Customers</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('admin.customer_list')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Showing 15 members per page
+            {t('common.showing')} {t('common.entries')}
           </p>
         </div>
       </div>
@@ -153,7 +155,7 @@ const MembersPage = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder={t('common.search_placeholder')}
             className="pl-8 pr-8 h-9 text-xs"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -178,7 +180,7 @@ const MembersPage = () => {
                 className="flex items-center gap-1 text-xs"
               >
                 <UserMinus className="h-3.5 w-3.5" />
-                Deactivate Selected
+                {t('common.disabled')} ({selectedIds.length})
               </Button>
               <Button
                 variant="destructive"
@@ -187,16 +189,16 @@ const MembersPage = () => {
                 className="flex items-center gap-1 text-xs"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                Delete Selected ({selectedIds.length})
+                {t('common.delete')} ({selectedIds.length})
               </Button>
             </div>
           )}
           <Select value={segmentFilter} onValueChange={handleSegment}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Segment" />
+              <SelectValue placeholder={t('common.filter')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All Segments</SelectItem>
+              <SelectItem value="All">{t('common.all')}</SelectItem>
               <SelectItem value="VIP">VIP</SelectItem>
               <SelectItem value="New">New</SelectItem>
               <SelectItem value="Returning">Returning</SelectItem>
@@ -294,8 +296,8 @@ const MembersPage = () => {
         onOpenChange={setBulkDeleteOpen}
         onConfirm={handleBulkDelete}
         isDeleting={isBulkDeleting}
-        title="Delete Selected Members"
-        description={`Are you sure you want to delete the ${selectedIds.length} selected members? This action cannot be undone.`}
+        title={t('common.delete')}
+        description={`${t('common.confirm_delete')} (${selectedIds.length})`}
       />
 
       <Dialog open={bulkInactiveOpen} onOpenChange={setBulkInactiveOpen}>
@@ -303,10 +305,10 @@ const MembersPage = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserMinus className="h-5 w-5 text-destructive" />
-              Deactivate Selected Members
+              {t('common.disabled')}
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to mark the {selectedIds.length} selected members as <span className="font-semibold text-destructive">Inactive</span>?
+              {t('common.confirm_delete_desc')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -315,20 +317,20 @@ const MembersPage = () => {
               onClick={() => setBulkInactiveOpen(false)}
               disabled={isBulkInactiveUpdating}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
               onClick={handleBulkInactive}
               disabled={isBulkInactiveUpdating}
             >
-              {isBulkInactiveUpdating ? 'Updating...' : 'Yes, Deactivate'}
+              {isBulkInactiveUpdating ? t('common.updating') : t('common.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
-}
+};
 
 export default MembersPage;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { LogIn, Mail, Lock, Eye, EyeOff, Shield, QrCode, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -8,11 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { handleGlobalError } from '@/lib/error-handler';
 import { toast } from 'sonner';
-import { BrandLogo } from '@/components/BrandLogo';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import plexiviaLogo from '@/assets/plexivia.png';
+import { clientConfig } from '@/clientConfig';
 
-
+// Renders the secure store administration authentication and 2FA verification portal
 const LoginPage = () => {
+  const { t } = useTranslation();
   const { user, login, verify2fa, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,12 +25,10 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 2FA state variables
-  const [step, setStep] = useState(1); // 1: Credentials, 2: 2FA Screen
+  const [step, setStep] = useState(1);
   const [otpCode, setOtpCode] = useState('');
   const [is2faVerifying, setIs2faVerifying] = useState(false);
   const [isRequestingQr, setIsRequestingQr] = useState(false);
-
 
   useEffect(() => {
     if (!isAuthLoading && user) {
@@ -38,7 +39,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error('Please enter both email and password.');
+      toast.error(t('auth.invalid_credentials', 'Please enter both email and password.'));
       return;
     }
 
@@ -49,7 +50,7 @@ const LoginPage = () => {
         setStep(2);
         toast.info('Verification required. Enter the code from your Google Authenticator app.');
       } else {
-        toast.success('Logged in successfully.');
+        toast.success(t('auth.welcome_back', 'Logged in successfully.'));
       }
     } catch (err) {
       handleGlobalError(err);
@@ -69,7 +70,7 @@ const LoginPage = () => {
     setIs2faVerifying(true);
     try {
       await verify2fa(email, password, cleanCode);
-      toast.success('2FA verified. Welcome to the Dashboard.');
+      toast.success(t('auth.welcome_back', '2FA verified. Welcome to the Dashboard.'));
     } catch (err) {
       handleGlobalError(err);
     } finally {
@@ -94,23 +95,26 @@ const LoginPage = () => {
     setOtpCode('');
   };
 
-
   if (isAuthLoading) {
     return (
       <div className="min-h-screen w-screen bg-slate-950 flex flex-col items-center justify-center gap-3 text-slate-400">
         <div className="h-8 w-8 border-3 border-slate-700 border-t-rose-500 rounded-full animate-spin" />
-        <span className="text-xs font-medium font-sans">Booting secure session...</span>
+        <span className="text-xs font-medium font-sans">{t('common.loading', 'Booting secure session...')}</span>
       </div>
     );
   }
 
+  const brandName = clientConfig?.brandName || 'Surokkha';
+
   return (
     <div className="min-h-screen w-screen max-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-rose-500/40 selection:text-white">
-      {/* Background ambient lighting */}
+      <div className="absolute top-4 right-4 z-30">
+        <LanguageToggle className="bg-slate-900/80 border-slate-800 text-slate-200 hover:bg-slate-800" />
+      </div>
+
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-rose-600/15 rounded-full blur-[140px] pointer-events-none opacity-60 animate-pulse [animation-duration:8s]" />
       <div className="absolute top-1/4 left-1/3 w-[400px] h-[400px] bg-brand-600/15 rounded-full blur-[120px] pointer-events-none opacity-40 animate-pulse [animation-duration:12s]" />
 
-      {/* Grid Pattern overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <motion.div
@@ -125,7 +129,7 @@ const LoginPage = () => {
               {step === 1 ? (
                 <div className="flex flex-col items-center justify-center my-1 gap-1">
                   <span className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight leading-tight">
-                    Surokkha
+                    {brandName}
                   </span>
                   <span className="text-xs font-mono font-medium text-slate-400">
                     v{__APP_VERSION__}
@@ -136,7 +140,7 @@ const LoginPage = () => {
               )}
             </CardTitle>
             <CardDescription className="text-xs text-slate-400 mt-1 font-medium">
-              {step === 1 ? 'Secure Store Administration Portal' : 'Google Authenticator Verification'}
+              {step === 1 ? t('auth.sign_in_desc', 'Secure Store Administration Portal') : 'Google Authenticator Verification'}
             </CardDescription>
           </CardHeader>
 
@@ -145,7 +149,7 @@ const LoginPage = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-semibold text-slate-300">
-                    Email Address
+                    {t('auth.email', 'Email Address')}
                   </label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
@@ -165,10 +169,10 @@ const LoginPage = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-semibold text-slate-300">
-                      Password
+                      {t('auth.password', 'Password')}
                     </label>
                     <a href="#" className="text-xs font-medium text-rose-400 hover:text-rose-300 hover:underline transition">
-                      Forgot?
+                      {t('auth.forgot_password', 'Forgot?')}
                     </a>
                   </div>
                   <div className="relative">
@@ -210,7 +214,7 @@ const LoginPage = () => {
                     ) : (
                       <LogIn className="h-4 w-4 mr-1.5" />
                     )}
-                    {isSubmitting ? 'Signing In…' : 'Log In'}
+                    {isSubmitting ? t('auth.logging_in', 'Signing In…') : t('auth.login_button', 'Log In')}
                   </Button>
                 </div>
               </form>
@@ -248,7 +252,7 @@ const LoginPage = () => {
                     ) : (
                       <Shield className="h-4 w-4 mr-1.5" />
                     )}
-                    {is2faVerifying ? 'Verifying…' : 'Verify Code'}
+                    {is2faVerifying ? t('common.loading', 'Verifying…') : t('common.confirm', 'Verify Code')}
                   </Button>
 
                   <Button
@@ -273,7 +277,7 @@ const LoginPage = () => {
                     className="w-full h-9 flex items-center justify-center font-semibold text-xs text-slate-400 hover:text-white hover:bg-slate-800/40 transition cursor-pointer rounded-xl"
                   >
                     <ArrowLeft className="h-4 w-4 mr-1.5" />
-                    Cancel
+                    {t('common.cancel', 'Cancel')}
                   </Button>
                 </div>
               </form>
