@@ -237,13 +237,18 @@ export const updateMemberTotals = async (memberId) => {
 // Keep the member's embedded orders list in sync with the latest order reference.
 export const updateMemberOrderReference = async (memberId, orderDid, orderValue) => {
   if (!memberId) return;
-  await MemberModel.updateOne(
-    { _id: memberId },
-    {
-      $pull: { orders: { did: orderDid } },
-      $addToSet: { orders: { did: orderDid, value: orderValue } },
-    },
-  );
+  try {
+    await MemberModel.updateOne(
+      { _id: memberId },
+      { $pull: { orders: { did: orderDid } } },
+    );
+    await MemberModel.updateOne(
+      { _id: memberId },
+      { $addToSet: { orders: { did: orderDid, value: orderValue } } },
+    );
+  } catch (err) {
+    console.error(`[updateMemberOrderReference] Error syncing order reference for member ${memberId}:`, err);
+  }
 };
 
 // Resolves or creates a Member record if the client has forceMembershipFromOrder enabled.
