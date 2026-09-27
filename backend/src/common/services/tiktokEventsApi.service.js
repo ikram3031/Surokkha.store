@@ -245,3 +245,96 @@ export const sendTikTokServerPurchaseEvent = async (order, req = null) => {
     console.warn("[TikTok Events API] Request builder exception:", err.message);
   }
 };
+
+// Sends server-side AddToCart event to TikTok Events API using product.did as canonical content_id
+export const sendTikTokServerAddToCartEvent = async ({
+  product,
+  quantity = 1,
+  currency = "BDT",
+  req = null,
+  eventId = "",
+  user = {},
+}) => {
+  try {
+    const tiktokConfig = await getTikTokPixelConfig();
+
+    if (!tiktokConfig.isEnabled || !tiktokConfig.enableEventsApi) {
+      return;
+    }
+
+    const { pixelId, accessToken, testEventCode, advancedMatching } = tiktokConfig;
+
+    if (!pixelId || !accessToken) {
+      return;
+    }
+
+    const clientIp =
+      req?.headers?.["x-forwarded-for"]?.split(",")?.[0]?.trim() ||
+      req?.socket?.remoteAddress ||
+      "";
+    const clientUserAgent = req?.headers?.["user-agent"] || "";
+
+    const userObj = {
+      ...(clientUserAgent ? { user_agent: clientUserAgent } : {}),
+      ...(clientIp ? { ip: clientIp } : {}),
+      ...(advancedMatching && user.email ? { email: sha256(user.email) } : {}),
+      ...(advancedMatching && user.phone ? { phone: sha256(normalizePhone(user.phone)) } : {}),
+    };
+
+    const price = Number(product?.offerPrice || product?.price || 0);
+    const productId = String(product?.did || product?._id || product?.id || "");
+    const productName = product?.name || "";
+    const qty = Number(quantity || 1);
+
+    const eventPayload = {
+      event_source: "web",
+      event_source_id: pixelId,
+      ...(testEventCode ? { test_event_code: testEventCode } : {}),
+      data: [
+        {
+          event: "AddToCart",
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: eventId || `atc_${productId}_${Date.now()}`,
+          user: userObj,
+          properties: {
+            currency,
+            value: price * qty,
+            content_type: "product",
+            contents: productId
+              ? [
+                  {
+                    content_id: productId,
+                    content_name: productName,
+                    quantity: qty,
+                    price,
+                  },
+                ]
+              : [],
+          },
+        },
+      ],
+    };
+
+    const endpoint = "https://business-api.tiktok.com/open_api/v1.3/event/track/";
+
+    fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Token": accessToken,
+      },
+      body: JSON.stringify(eventPayload),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errData = await res.text();
+          console.warn("[TikTok Events API AddToCart] Response error:", errData);
+        }
+      })
+      .catch((err) => {
+        console.warn("[TikTok Events API AddToCart] Network error:", err.message);
+      });
+  } catch (err) {
+    console.warn("[TikTok Events API AddToCart] Request builder exception:", err.message);
+  }
+};

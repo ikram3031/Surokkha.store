@@ -7,6 +7,12 @@
   "apiBaseUrl": "https://server.toyoland.shop",
   "dashboardUrl": "https://admin.toyoland.shop",
   "storefrontUrl": "https://toyoland.shop",
+  "routes": {
+    "shop": "/shop",
+    "category": "/shop/:category",
+    "brand": "/brand/:brand",
+    "product": "/shop/:category/:slug"
+  },
   "policies": {
     "stock": {
       "mode": "variant_wise",

@@ -3,6 +3,13 @@
   "clientKey": "engulfic",
   "brandName": "Engulfic",
   "apiBaseUrl": "https://server.engulfic.com",
+  "storefrontUrl": "https://engulfic.com",
+  "routes": {
+    "shop": "/shop",
+    "category": "/shop/:category",
+    "brand": "/brand/:brand",
+    "product": "/shop/:category/:slug"
+  },
   "features": {
     "season": false,
     "brand": false,
