@@ -40,6 +40,11 @@ export const createStorefrontApp = async () => {
       "Origin",
       "Access-Control-Request-Method",
       "Access-Control-Request-Headers",
+      "Accept-Language",
+      "X-Language",
+      "X-Client-Key",
+      "x-language",
+      "accept-language"
     ],
     credentials: true,
     optionsSuccessStatus: 204,
