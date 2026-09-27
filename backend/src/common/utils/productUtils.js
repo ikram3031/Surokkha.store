@@ -128,7 +128,7 @@ export const buildProductFilter = async (input = {}) => {
   });
 
   Object.entries(source).forEach(([key, value]) => {
-    if (["q", "search", "keyword", "page", "skip", "offset", "limit", "sort", "sortBy", "sortby", "order", "filter", "category", "categories", "brand", "brands", "minPrice", "maxPrice", "min_price", "max_price", "rating"].includes(key)) {
+    if (["q", "search", "keyword", "page", "skip", "offset", "limit", "sort", "sortBy", "sortby", "order", "filter", "category", "categories", "brand", "brands", "minPrice", "maxPrice", "min_price", "max_price", "rating", "lang", "language", "locale", "v", "cb", "_"].includes(key)) {
       return;
     }
 
