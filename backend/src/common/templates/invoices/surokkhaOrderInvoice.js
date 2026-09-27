@@ -20,8 +20,12 @@
 export const buildSurokkhaOrderInvoiceHtml = ({
   order = {},
   isPrintView = false,
-  logoUrl = "https://admin.surokkha.store/logo.png",
+  logoUrl = "https://admin.surokkha.store/surokkha_logo.png",
 }) => {
+  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
+    ? "https://admin.surokkha.store/surokkha_logo.png"
+    : logoUrl;
+
   const {
     orderId = "N/A",
     status = "processing",
@@ -410,7 +414,13 @@ export const buildSurokkhaOrderInvoiceHtml = ({
 
     <!-- Centered Header Section -->
     <div class="invoice-header-center">
-      <img src="${logoUrl}" alt="Surokkha Logo" class="invoice-logo-img" />
+      <img
+        src="${cleanLogoUrl}"
+        alt="Surokkha"
+        class="invoice-logo-img"
+        height="48"
+        style="max-height: 48px; height: 48px; width: auto; max-width: 220px; object-fit: contain; display: block; margin: 0 auto 14px auto; border: 0; outline: none;"
+      />
       <div class="invoice-id-line">INVOICE <span>#${orderId}</span></div>
       <div>
         <span class="invoice-status-badge">${statusBadgeText}</span>

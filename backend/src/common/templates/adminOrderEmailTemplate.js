@@ -8,8 +8,11 @@
  */
 export const buildAdminOrderEmailHtml = ({
   order = {},
-  logoUrl = "https://server.decantrebd.com/uploads/decantre_logo.png"
+  logoUrl = "https://admin.surokkha.store/surokkha_logo.png"
 }) => {
+  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
+    ? "https://admin.surokkha.store/surokkha_logo.png"
+    : logoUrl;
   const {
     orderId = "3870",
     createdAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
@@ -64,8 +67,7 @@ export const buildAdminOrderEmailHtml = ({
   const billingStr = formatAddr(billingAddress);
   const shippingStr = formatAddr(finalShipping);
 
-  // Exact 1250x200 Aspect Ratio (6.25:1) => width: 187.5px, height: 30px
-  const logoMarkup = `<img class="logo" src="${logoUrl}" alt="Decantre Dev" width="187.5" height="30" style="width: 187.5px; height: 30px; max-width: 187.5px; max-height: 30px; display: block; margin: 0 auto; border: 0; outline: none;" />`;
+  const logoMarkup = `<img class="logo" src="${cleanLogoUrl}" alt="Surokkha" height="40" style="max-height: 40px; height: 40px; width: auto; max-width: 200px; object-fit: contain; display: block; margin: 0 auto; border: 0; outline: none;" />`;
 
   const itemRows = items.map((item, idx) => `
     <tr style="border-bottom: 1px solid #27272A; ${idx % 2 === 1 ? 'background-color: #18181B;' : 'background-color: #121215;'}">

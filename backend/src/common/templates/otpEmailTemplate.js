@@ -10,8 +10,11 @@
 export const buildOtpEmailHtml = ({
   name,
   otp,
-  logoUrl = "https://server.decantrebd.com/uploads/logo_horizontal.png"
+  logoUrl = "https://admin.surokkha.store/surokkha_logo.png"
 }) => {
+  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
+    ? "https://admin.surokkha.store/surokkha_logo.png"
+    : logoUrl;
   const finalName = name || "Valued Customer";
 
   return `
@@ -148,7 +151,7 @@ export const buildOtpEmailHtml = ({
       
       <!-- Black Header with Gold Accent Line & Logo -->
       <div class="header">
-        <img class="logo" src="${logoUrl}" alt="Decantre" width="187.5" height="30" style="width: 187.5px; height: 30px; max-width: 187.5px; max-height: 30px; display: block; margin: 0 auto; border: 0;" />
+        <img class="logo" src="${cleanLogoUrl}" alt="Surokkha" height="36" style="max-height: 36px; height: 36px; width: auto; max-width: 180px; object-fit: contain; display: block; margin: 0 auto; border: 0;" />
       </div>
 
       <!-- Main Body Content -->

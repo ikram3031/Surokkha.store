@@ -180,10 +180,14 @@ export const sendOrderEmailsAsynchronously = (order) => {
         paymentMethod
       };
 
+      const emailLogoUrl = (config.logoUrl && config.logoUrl.startsWith("http"))
+        ? config.logoUrl
+        : "https://admin.surokkha.store/surokkha_logo.png";
+
       const invoiceHtml = getClientInvoiceHtml({
         order: formattedOrderData,
         client: activeClientKey,
-        logoUrl: config.logoUrl || undefined,
+        logoUrl: emailLogoUrl,
       });
 
       // 1. Send Customer Order Confirmation Email (to customer email)
