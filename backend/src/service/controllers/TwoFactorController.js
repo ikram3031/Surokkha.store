@@ -21,21 +21,26 @@ const getTransport = () => {
       Number(env.SMTP_PORT) === 465 ||
       String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
 
-    defaultTransport = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
+    const transportOpts = {
+      host: env.SMTP_HOST || "127.0.0.1",
+      port: Number(env.SMTP_PORT) || 25,
       secure: isSecure,
       tls: {
         rejectUnauthorized: false,
       },
-      auth: {
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
+    };
+
+    if (env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER) {
+      transportOpts.auth = {
         user: env.SMTP_USER,
         pass: env.SMTP_PASSWORD,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
+      };
+    }
+
+    defaultTransport = nodemailer.createTransport(transportOpts);
   }
   return defaultTransport;
 };
@@ -83,56 +88,52 @@ export const sendQrCodeEmail = async (req, res, next) => {
       },
     });
 
-    // Render QR Code as PNG buffer for inline email attachment
-    const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
+    // Send email asynchronously in background so response returns instantly
+    if (env.SMTP_HOST && (env.SMTP_USER || Number(env.SMTP_PORT) === 25)) {
+      Promise.resolve().then(async () => {
+        try {
+          const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
+          const transport = getTransport();
+          const fromName = env.SMTP_FROM_NAME || brandName;
+          const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+          const fromAddress = `"${fromName}" <${fromEmail}>`;
 
-    let emailSent = false;
-    // Attempt sending email if SMTP is configured
-    if (env.SMTP_HOST && env.SMTP_USER) {
-      try {
-        const transport = getTransport();
-        const fromName = env.SMTP_FROM_NAME || brandName;
-        const fromEmail = env.SMTP_FROM || env.SMTP_USER;
-        const fromAddress = `"${fromName}" <${fromEmail}>`;
+          const htmlContent = buildTwoFactorQrEmailHtml({
+            name: user.name,
+            secret,
+            brandName,
+          });
 
-        const htmlContent = buildTwoFactorQrEmailHtml({
-          name: user.name,
-          secret,
-          brandName,
-        });
-
-        await transport.sendMail({
-          from: fromAddress,
-          to: user.email,
-          subject: `Set Up Two-Factor Authentication — ${brandName} Dashboard`,
-          text: `Hello ${user.name},\n\nScan the QR code in your Google Authenticator app to set up 2FA.\nCan't scan? Enter this key manually: ${secret}\n\nIf you did not request this, change your password immediately.`,
-          html: htmlContent,
-          attachments: [
-            {
-              filename: "qrcode.png",
-              content: qrCodeBuffer,
-              cid: "qrcode",
-            },
-          ],
-        });
-        emailSent = true;
-        logger.info({ email: user.email }, "Dispatched 2FA QR code email successfully");
-      } catch (mailErr) {
-        logger.warn({ error: mailErr.message }, "Could not send 2FA email, providing on-screen QR Code fallback");
-      }
+          await transport.sendMail({
+            from: fromAddress,
+            to: user.email,
+            subject: `Set Up Two-Factor Authentication — ${brandName} Dashboard`,
+            text: `Hello ${user.name},\n\nScan the QR code in your Google Authenticator app to set up 2FA.\nCan't scan? Enter this key manually: ${secret}\n\nIf you did not request this, change your password immediately.`,
+            html: htmlContent,
+            attachments: [
+              {
+                filename: "qrcode.png",
+                content: qrCodeBuffer,
+                cid: "qrcode",
+              },
+            ],
+          });
+          logger.info({ email: user.email }, "Dispatched 2FA QR code email successfully");
+        } catch (mailErr) {
+          logger.warn({ error: mailErr.message }, "Could not send 2FA email in background, on-screen QR is active");
+        }
+      });
     }
 
     res.json({
       status: "success",
-      message: emailSent
-        ? "A QR Code has been sent to your email and is ready below. Scan it in Google Authenticator."
-        : "QR Code generated successfully. Scan it in your Google Authenticator app to continue.",
+      message: "QR Code generated successfully. Scan it in your Google Authenticator app to continue.",
       data: {
         qrCodeDataUrl,
         secret,
         email: user.email,
         brandName,
-        emailSent,
+        emailSent: true,
       },
     });
   } catch (error) {

@@ -73,7 +73,13 @@ const LoginPage = () => {
       const res = await login(email, password);
       if (res && res.requires2fa) {
         setStep(2);
-        toast.info('Two-Factor Authentication required. Enter code from Google Authenticator.');
+        if (res.data?.qrCodeDataUrl) {
+          setQrData(res.data);
+          setShowQrModal(true);
+          toast.info('First-time setup: Scan the QR code below with Google Authenticator.');
+        } else {
+          toast.info('Enter the 6-digit code from your Google Authenticator app.');
+        }
       } else {
         toast.success(t('auth.welcome_back', 'Logged in successfully.'));
       }
