@@ -287,6 +287,9 @@ export const getCloudflareAnalytics = async (req, res, next) => {
     let cachedBytes = 0;
     let cachedRequests = 0;
     let threatsBlocked = 0;
+    let desktopCount = 0;
+    let mobileCount = 0;
+    let tabletCount = 0;
     const countryTotals = {};
     const statusTotals = { '2xx': 0, '3xx': 0, '4xx': 0, '5xx': 0 };
     const requestsOverTime = [];
