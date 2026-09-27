@@ -24,6 +24,7 @@ import TikTokPixelPage from './pages/dashboard/settings/tiktokPixel';
 import CMSContentPage from './pages/dashboard/settings/cmsContent';
 import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
+import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
 import AllMedia from './pages/dashboard/allMedia';
 
 // Products
@@ -250,6 +251,15 @@ export const router = createBrowserRouter([
               </RoleGuard>
             ),
           },
+          {
+            path: 'pathao-courier',
+            element: (
+              <RoleGuard menuKey="settings">
+                <PathaoCourierPage />
+              </RoleGuard>
+            ),
+          },
+          { path: 'pathao', element: <Navigate to="pathao-courier" replace /> },
         ],
       },
       {

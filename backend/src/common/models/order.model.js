@@ -54,6 +54,28 @@ const orderTotalsSchema = new Schema(
   { _id: false },
 );
 
+// Schema defining courier shipment and live tracking details
+const courierInfoSchema = new Schema(
+  {
+    provider: { type: String, default: "pathao", trim: true },
+    consignmentId: { type: String, default: null, trim: true, index: true },
+    merchantOrderId: { type: String, default: null, trim: true },
+    trackingCode: { type: String, default: null, trim: true },
+    deliveryFee: { type: Number, default: 0 },
+    orderStatus: { type: String, default: null, trim: true },
+    orderStatusSlug: { type: String, default: null, trim: true },
+    storeId: { type: Number, default: null },
+    recipientCityId: { type: Number, default: null },
+    recipientZoneId: { type: Number, default: null },
+    recipientAreaId: { type: Number, default: null },
+    dispatchedAt: { type: Date, default: null },
+    itemWeight: { type: Number, default: 0.5 },
+    rawResponse: { type: Schema.Types.Mixed, default: null },
+    history: { type: [Schema.Types.Mixed], default: [] },
+  },
+  { _id: false },
+);
+
 // Unified Order schema for transaction tracking
 const orderSchema = new Schema(
   {
@@ -77,6 +99,7 @@ const orderSchema = new Schema(
     orderType: { type: String, enum: ["online", "instore", "custom"], default: "online", index: true },
     items: { type: [orderItemSchema], required: true, validate: [(items) => items.length > 0, "items must contain at least one item"] },
     totals: { type: orderTotalsSchema, required: true },
+    courier: { type: courierInfoSchema, default: () => ({}) },
     active: { type: Boolean, default: true, index: true },
   },
   {

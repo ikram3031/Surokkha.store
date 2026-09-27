@@ -32,6 +32,7 @@ import telemetryRouter from "./routes/TelemetryRoute.js";
 import attributeRouter from "./routes/attribute.route.js";
 import mediaAuditRouter from "./routes/mediaAuditRoute.js";
 import developerRouter from "./routes/DeveloperRoute.js";
+import courierRouter from "./routes/CourierRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
 const serviceRouter = Router();
@@ -69,6 +70,7 @@ serviceRouter.use("/reports", reportsRouter);
 serviceRouter.use("/studio", express.json({ limit: "60mb" }), studioRouter);
 serviceRouter.use("/developer", developerRouter);
 serviceRouter.use("/attribute", attributeRouter);
+serviceRouter.use("/courier", courierRouter);
 serviceRouter.use("/admin/media-audit", mediaAuditRouter);
 serviceRouter.get("/search-products", searchProducts);
 

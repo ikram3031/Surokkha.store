@@ -8,6 +8,7 @@ import { apiClient, baseURL } from "@/lib/api-client";
 import { logActivity } from "@/lib/activity-logger";
 import { toast } from "sonner";
 import { clientConfig } from "@/clientConfig";
+import PathaoCourierCard from "@/components/dashboard/orders/PathaoCourierCard";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -915,6 +916,9 @@ const OrderDetailsPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Pathao Courier Dispatch & Tracking Card */}
+                <PathaoCourierCard order={order} />
               </>
             )}
 

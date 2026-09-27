@@ -188,6 +188,93 @@ const storeSettingsSchema = new Schema(
         trim: true,
       },
     },
+    pathaoCourier: {
+      baseUrl: {
+        type: String,
+        default: "https://api-hermes.pathao.com",
+        trim: true,
+      },
+      environment: {
+        type: String,
+        enum: ["sandbox", "production"],
+        default: "production",
+      },
+      clientId: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      clientSecret: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      username: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      password: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      storeId: {
+        type: Number,
+        default: null,
+      },
+      storeName: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      storeAddress: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      defaultItemWeight: {
+        type: Number,
+        default: 0.5,
+      },
+      defaultItemType: {
+        type: Number,
+        default: 2,
+      },
+      defaultDeliveryType: {
+        type: Number,
+        default: 48,
+      },
+      isEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      accessToken: {
+        type: String,
+        default: "",
+      },
+      refreshToken: {
+        type: String,
+        default: "",
+      },
+      tokenExpiresAt: {
+        type: Date,
+        default: null,
+      },
+      lastTestedAt: {
+        type: Date,
+        default: null,
+      },
+      lastTestStatus: {
+        type: String,
+        enum: ["connected", "failed", "untested"],
+        default: "untested",
+      },
+      lastTestMessage: {
+        type: String,
+        default: "",
+      },
+    },
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Tag, ChevronDown, ChevronRight } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Tag, ChevronDown, ChevronRight, Truck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -311,6 +311,12 @@ export const OrdersTable = ({
                       >
                         {order.orderNumber}
                       </Link>
+                      {order.courier?.consignmentId && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground bg-primary/5 border border-primary/20 px-1 py-0.5 rounded mt-0.5" title={`Pathao Consignment: ${order.courier.consignmentId}`}>
+                          <Truck className="h-2.5 w-2.5 text-primary" />
+                          {order.courier.consignmentId}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="max-w-[180px]">
                       <span className="truncate block" title={order.customerName}>{order.customerName}</span>

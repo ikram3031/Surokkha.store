@@ -38,6 +38,7 @@ import {
   Ruler,
   Store,
   Search,
+  Truck,
 } from "lucide-react"
 
 import {
@@ -487,6 +488,16 @@ export const AppSidebar = ({ ...props }) => {
                     >
                       <BarChart3 className="h-3.5 w-3.5" />
                       <span>{t("nav.google_analytics", "Google Analytics")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname.startsWith("/dashboard/settings/pathao-courier") || pathname.startsWith("/dashboard/settings/pathao")}
+                      render={<Link to="/dashboard/settings/pathao-courier" />}
+                    >
+                      <Truck className="h-3.5 w-3.5 text-red-500" />
+                      <span>{t("nav.pathao_courier", "Pathao Courier")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>
