@@ -99,7 +99,9 @@ export const login = async (req, res, next) => {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
 
-    if (user.twoFactorEnabled) {
+    // Enforce 2FA/MFA for all admin/management roles and when twoFactorEnabled is true
+    const requiresMfa = user.twoFactorEnabled !== false || ["Owner", "Admin", "Super_Admin", "Manager"].includes(user.role);
+    if (requiresMfa) {
       return res.json({
         status: "success",
         requires2fa: true,

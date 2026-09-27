@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'motion/react';
-import { LogIn, Mail, Lock, Eye, EyeOff, Shield, QrCode, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  LogIn,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Shield,
+  QrCode,
+  ArrowLeft,
+  Copy,
+  Check,
+  Smartphone,
+  Key,
+} from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +25,7 @@ import { toast } from 'sonner';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import plexiviaLogo from '@/assets/plexivia.png';
 import { clientConfig } from '@/clientConfig';
+import { apiClient } from '@/lib/api-client';
 
 // Renders the secure store administration authentication and 2FA verification portal
 const LoginPage = () => {
@@ -29,12 +43,23 @@ const LoginPage = () => {
   const [otpCode, setOtpCode] = useState('');
   const [is2faVerifying, setIs2faVerifying] = useState(false);
   const [isRequestingQr, setIsRequestingQr] = useState(false);
+  const [qrData, setQrData] = useState(null); // { qrCodeDataUrl, secret, emailSent }
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [copiedSecret, setCopiedSecret] = useState(false);
+
+  const otpInputRef = useRef(null);
 
   useEffect(() => {
     if (!isAuthLoading && user) {
       navigate('/dashboard');
     }
   }, [user, isAuthLoading, navigate]);
+
+  useEffect(() => {
+    if (step === 2 && otpInputRef.current) {
+      otpInputRef.current.focus();
+    }
+  }, [step]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +73,7 @@ const LoginPage = () => {
       const res = await login(email, password);
       if (res && res.requires2fa) {
         setStep(2);
-        toast.info('Verification required. Enter the code from your Google Authenticator app.');
+        toast.info('Two-Factor Authentication required. Enter code from Google Authenticator.');
       } else {
         toast.success(t('auth.welcome_back', 'Logged in successfully.'));
       }
@@ -60,7 +85,7 @@ const LoginPage = () => {
   };
 
   const handleVerify2FA = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const cleanCode = otpCode.trim();
     if (!cleanCode || cleanCode.length !== 6) {
       toast.error('Please enter the full 6-digit OTP code.');
@@ -78,11 +103,38 @@ const LoginPage = () => {
     }
   };
 
+  const handleOtpChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setOtpCode(val);
+    if (val.length === 6) {
+      // Auto-trigger verification once 6 digits are typed
+      setTimeout(() => {
+        handleAutoVerify(val);
+      }, 100);
+    }
+  };
+
+  const handleAutoVerify = async (codeToVerify) => {
+    if (is2faVerifying) return;
+    setIs2faVerifying(true);
+    try {
+      await verify2fa(email, password, codeToVerify);
+      toast.success(t('auth.welcome_back', '2FA verified. Welcome to the Dashboard.'));
+    } catch (err) {
+      handleGlobalError(err);
+    } finally {
+      setIs2faVerifying(false);
+    }
+  };
+
   const handleSendQrCode = async () => {
     setIsRequestingQr(true);
     try {
       const response = await apiClient.post('/api/v1/auth/2fa/send-qr', { email, password });
-      toast.success(response.data?.message || 'QR Code has been sent to your email.');
+      const data = response.data?.data || {};
+      setQrData(data);
+      setShowQrModal(true);
+      toast.success(response.data?.message || 'QR Code ready. Scan it in your Google Authenticator app.');
     } catch (err) {
       handleGlobalError(err);
     } finally {
@@ -90,9 +142,18 @@ const LoginPage = () => {
     }
   };
 
+  const handleCopySecret = () => {
+    if (!qrData?.secret) return;
+    navigator.clipboard.writeText(qrData.secret);
+    setCopiedSecret(true);
+    toast.success('Setup key copied to clipboard.');
+    setTimeout(() => setCopiedSecret(false), 2500);
+  };
+
   const handleCancel2FA = () => {
     setStep(1);
     setOtpCode('');
+    setShowQrModal(false);
   };
 
   if (isAuthLoading) {
@@ -121,7 +182,7 @@ const LoginPage = () => {
         initial={{ opacity: 0, y: 8, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="w-full max-w-[420px] relative z-10 my-auto"
+        className="w-full max-w-[440px] relative z-10 my-auto"
       >
         <Card className="shadow-2xl shadow-black/80 border border-slate-800/90 bg-slate-900/95 text-white backdrop-blur-2xl overflow-hidden rounded-2xl ring-1 ring-white/10">
           <CardHeader className="px-6 pt-6 pb-4 text-center border-b border-slate-800/80 bg-slate-950/50">
@@ -136,11 +197,16 @@ const LoginPage = () => {
                   </span>
                 </div>
               ) : (
-                '2FA VERIFICATION'
+                <div className="flex items-center gap-2 text-rose-400 text-lg font-bold tracking-wider">
+                  <Shield className="h-5 w-5 text-rose-500" />
+                  TWO-FACTOR AUTH
+                </div>
               )}
             </CardTitle>
             <CardDescription className="text-xs text-slate-400 mt-1 font-medium">
-              {step === 1 ? t('auth.sign_in_desc', 'Secure Store Administration Portal') : 'Google Authenticator Verification'}
+              {step === 1
+                ? t('auth.sign_in_desc', 'Secure Store Administration Portal')
+                : 'Enter the 6-digit code from Google Authenticator'}
             </CardDescription>
           </CardHeader>
 
@@ -219,68 +285,135 @@ const LoginPage = () => {
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleVerify2FA} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-300">
-                    Google Authenticator Code
-                  </label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                      <Shield className="h-4 w-4 text-rose-500" />
-                    </span>
-                    <Input
-                      type="text"
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                      className="pl-9.5 h-10 text-sm bg-slate-950/80 border border-slate-700/80 text-white focus:border-rose-500 placeholder:text-slate-500 rounded-xl tracking-[0.4em] text-center font-bold"
-                      placeholder="000000"
-                      required
-                    />
+              <div className="space-y-4">
+                {/* QR Code Setup Card (if expanded or requested) */}
+                <AnimatePresence>
+                  {showQrModal && qrData && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden bg-slate-950/90 border border-rose-500/30 rounded-xl p-4 space-y-3"
+                    >
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                          <Smartphone className="h-3.5 w-3.5" /> Scan in Google Authenticator
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowQrModal(false)}
+                          className="text-[11px] text-slate-400 hover:text-white underline cursor-pointer"
+                        >
+                          Hide QR
+                        </button>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center bg-white p-2.5 rounded-lg w-fit mx-auto shadow-md">
+                        {qrData.qrCodeDataUrl ? (
+                          <img
+                            src={qrData.qrCodeDataUrl}
+                            alt="2FA QR Code"
+                            className="w-40 h-40 object-contain block"
+                          />
+                        ) : (
+                          <div className="w-40 h-40 flex items-center justify-center bg-slate-100 text-slate-500 text-xs text-center p-2">
+                            QR Code Ready
+                          </div>
+                        )}
+                      </div>
+
+                      {qrData.secret && (
+                        <div className="space-y-1">
+                          <span className="text-[11px] text-slate-400 block text-center">
+                            Can't scan? Enter key manually:
+                          </span>
+                          <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1.5 font-mono text-xs text-amber-400">
+                            <span className="tracking-widest font-bold truncate select-all">{qrData.secret}</span>
+                            <button
+                              type="button"
+                              onClick={handleCopySecret}
+                              className="ml-2 text-slate-400 hover:text-white transition shrink-0 cursor-pointer"
+                              title="Copy Secret"
+                            >
+                              {copiedSecret ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <form onSubmit={handleVerify2FA} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-semibold text-slate-300">
+                        6-Digit Security Code
+                      </label>
+                      <span className="text-[11px] text-slate-400">{email}</span>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                        <Key className="h-4 w-4 text-rose-500" />
+                      </span>
+                      <Input
+                        ref={otpInputRef}
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        value={otpCode}
+                        onChange={handleOtpChange}
+                        className="pl-9.5 h-11 text-base bg-slate-950/90 border border-slate-700 text-white focus:border-rose-500 placeholder:text-slate-600 rounded-xl tracking-[0.5em] text-center font-mono font-bold shadow-inner"
+                        placeholder="••••••"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2 pt-1">
-                  <Button
-                    type="submit"
-                    disabled={is2faVerifying}
-                    size="default"
-                    className="w-full h-10 flex items-center justify-center font-bold text-sm bg-rose-600 hover:bg-rose-500 text-white transition cursor-pointer shadow-lg shadow-rose-950/50 rounded-xl"
-                  >
-                    {is2faVerifying ? (
-                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                    ) : (
-                      <Shield className="h-4 w-4 mr-1.5" />
-                    )}
-                    {is2faVerifying ? t('common.loading', 'Verifying…') : t('common.confirm', 'Verify Code')}
-                  </Button>
+                  <div className="space-y-2 pt-1">
+                    <Button
+                      type="submit"
+                      disabled={is2faVerifying || otpCode.length !== 6}
+                      size="default"
+                      className="w-full h-10 flex items-center justify-center font-bold text-sm bg-rose-600 hover:bg-rose-500 text-white transition cursor-pointer shadow-lg shadow-rose-950/50 rounded-xl border border-rose-500/40"
+                    >
+                      {is2faVerifying ? (
+                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                      ) : (
+                        <Shield className="h-4 w-4 mr-1.5" />
+                      )}
+                      {is2faVerifying ? t('common.loading', 'Verifying…') : t('common.confirm', 'Verify & Sign In')}
+                    </Button>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isRequestingQr}
-                    onClick={handleSendQrCode}
-                    className="w-full h-10 flex items-center justify-center font-semibold text-xs border border-slate-700 bg-slate-950/60 hover:bg-slate-800 text-slate-200 transition cursor-pointer rounded-xl"
-                  >
-                    {isRequestingQr ? (
-                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                    ) : (
-                      <QrCode className="h-4 w-4 mr-1.5" />
-                    )}
-                    Get QR Code via Email
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isRequestingQr}
+                      onClick={handleSendQrCode}
+                      className="w-full h-9.5 flex items-center justify-center font-semibold text-xs border border-slate-700 bg-slate-950/60 hover:bg-slate-800 text-slate-200 transition cursor-pointer rounded-xl"
+                    >
+                      {isRequestingQr ? (
+                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                      ) : (
+                        <QrCode className="h-3.5 w-3.5 mr-1.5 text-rose-400" />
+                      )}
+                      {showQrModal ? 'Resend / Refresh QR Code' : 'First Time? Set Up Authenticator (QR Code)'}
+                    </Button>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handleCancel2FA}
-                    className="w-full h-9 flex items-center justify-center font-semibold text-xs text-slate-400 hover:text-white hover:bg-slate-800/40 transition cursor-pointer rounded-xl"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-1.5" />
-                    {t('common.cancel', 'Cancel')}
-                  </Button>
-                </div>
-              </form>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleCancel2FA}
+                      className="w-full h-8.5 flex items-center justify-center font-semibold text-xs text-slate-400 hover:text-white hover:bg-slate-800/40 transition cursor-pointer rounded-xl"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+                      {t('common.cancel', 'Back to Password Login')}
+                    </Button>
+                  </div>
+                </form>
+              </div>
             )}
           </CardContent>
         </Card>

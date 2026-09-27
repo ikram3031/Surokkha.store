@@ -11,6 +11,7 @@
 export const buildTwoFactorQrEmailHtml = ({
   name,
   secret,
+  brandName = "Surokkha",
   logoUrl = "https://server.decantrebd.com/uploads/logo_horizontal.png",
 }) => {
   const finalName = name || "Dashboard User";

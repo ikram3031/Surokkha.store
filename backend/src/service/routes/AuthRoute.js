@@ -8,7 +8,8 @@ import {
   verifyInviteToken,
   acceptInvite,
 } from "../controllers/AuthController.js";
-import { sendQrCodeEmail, verify2fa } from "../controllers/TwoFactorController.js";
+import { sendQrCodeEmail, verify2fa, resetUser2fa } from "../controllers/TwoFactorController.js";
+import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
 
 const authRouter = Router();
 
@@ -18,6 +19,7 @@ authRouter.post("/refresh-token", refreshToken);
 authRouter.post("/logout", logout);
 authRouter.post("/2fa/send-qr", sendQrCodeEmail);
 authRouter.post("/2fa/verify", verify2fa);
+authRouter.post("/2fa/reset", authenticateToken, authorizeRoles("Owner", "Admin"), resetUser2fa);
 
 // User Invitation & Onboarding Endpoints
 authRouter.get("/invite/verify", verifyInviteToken);
