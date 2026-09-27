@@ -70,8 +70,10 @@ function SidebarProvider({
   )
 
   const toggleSidebar = React.useCallback(() => {
-    return setOpen((open) => !open)
-  }, [setOpen])
+    return isMobile
+      ? setOpenMobile((open) => !open)
+      : setOpen((open) => !open)
+  }, [isMobile, setOpen, setOpenMobile])
 
   React.useEffect(() => {
     const handleKeyDown = (event) => {
@@ -137,6 +139,27 @@ function Sidebar({
   ...props
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+
+  if (isMobile) {
+    return (
+      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <SheetContent
+          data-sidebar="sidebar"
+          data-slot="sidebar-mobile"
+          data-mobile="true"
+          className="w-[280px] sm:w-[320px] max-w-[85vw] bg-sidebar p-0 text-sidebar-foreground z-50 border-r border-sidebar-border"
+          side={side}
+          showCloseButton={false}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Navigation Menu</SheetTitle>
+            <SheetDescription>Main application navigation drawer</SheetDescription>
+          </SheetHeader>
+          <div className="flex h-full w-full flex-col overflow-y-auto">{children}</div>
+        </SheetContent>
+      </Sheet>
+    )
+  }
 
   if (collapsible === "none") {
     return (

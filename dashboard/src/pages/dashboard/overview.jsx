@@ -34,15 +34,15 @@ const DashboardPage = () => {
   const trendText = t('overview.growth', 'vs last period');
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">{t('nav.overview', 'Dashboard')}</h2>
-        <span className="text-sm text-muted-foreground">
+    <div className="flex-1 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t('nav.overview', 'Dashboard')}</h2>
+        <span className="text-xs sm:text-sm text-muted-foreground font-medium">
           {t('overview.this_month', 'Last 30 Days')} ({dateRangeLabel})
         </span>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title={t('overview.total_revenue', 'Total Sales')}
           value={isLoading ? <Skeleton className="h-8 w-24" /> : `৳${(stats?.sales ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}

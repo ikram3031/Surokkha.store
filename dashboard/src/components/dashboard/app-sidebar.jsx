@@ -94,12 +94,19 @@ export const AppSidebar = ({ ...props }) => {
   const location = useLocation()
   const pathname = location.pathname
   const { user, logout } = useAuth()
-  const { state, setOpen } = useSidebar()
+  const { state, setOpen, isMobile, setOpenMobile, toggleSidebar } = useSidebar()
   const { brandName, features } = clientConfig
 
   const [openMenu, setOpenMenu] = React.useState(null)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false)
   const [profileModalOpen, setProfileModalOpen] = React.useState(false)
+
+  // Auto-close mobile navigation drawer on route transition
+  React.useEffect(() => {
+    if (isMobile && setOpenMobile) {
+      setOpenMobile(false)
+    }
+  }, [pathname, isMobile, setOpenMobile])
 
   // Toggles single accordion menu state
   const toggleMenu = (menuKey) => {
@@ -110,6 +117,14 @@ export const AppSidebar = ({ ...props }) => {
   const handleConfirmLogout = () => {
     setLogoutConfirmOpen(false)
     logout()
+  }
+
+  const handleCloseSidebar = () => {
+    if (isMobile) {
+      setOpenMobile(false)
+    } else {
+      setOpen(false)
+    }
   }
 
   const userRole = user?.role || "Marketing Expert"
@@ -133,19 +148,20 @@ export const AppSidebar = ({ ...props }) => {
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
-          {state === "expanded" ? (
+          {state === "expanded" || isMobile ? (
             <>
               <div className="flex flex-col items-start gap-0.5 overflow-hidden">
                 <span className="text-xl font-heading font-extrabold text-white tracking-tight leading-tight">
                   {brandName || "Admin"}
                 </span>
                 <span className="text-[11px] font-mono font-medium text-slate-400 tracking-wider">
-                  v{pkg.version || "3.03.07"}
+                  v{pkg.version || "3.04.03"}
                 </span>
               </div>
               <button
-                onClick={() => setOpen(false)}
-                className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0"
+                type="button"
+                onClick={handleCloseSidebar}
+                className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
                 title="Close Sidebar"
               >
                 <X className="h-3.5 w-3.5" />
@@ -153,8 +169,9 @@ export const AppSidebar = ({ ...props }) => {
             </>
           ) : (
             <button
+              type="button"
               onClick={() => setOpen(true)}
-              className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0"
+              className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
               title="Open Sidebar"
             >
               <Menu className="h-3.5 w-3.5" />
