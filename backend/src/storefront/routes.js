@@ -14,6 +14,7 @@ import subscriberRouter from "./routes/SubscriberRoute.js";
 import contactRouter from "./routes/ContactRoute.js";
 import storeUtilsRouter from "./routes/StoreUtilsRoute.js";
 import sizeChartRouter from "./routes/SizeChartRoute.js";
+import pixelEventsRouter from "./routes/PixelEventsRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
 const storefrontRouter = Router();
@@ -33,6 +34,7 @@ storefrontRouter.use("/subscribers", subscriberRouter);
 storefrontRouter.use("/contact", contactRouter);
 storefrontRouter.use("/store-utils", storeUtilsRouter);
 storefrontRouter.use("/search", searchRouter);
+storefrontRouter.use("/events", pixelEventsRouter);
 storefrontRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket

@@ -418,3 +418,109 @@ export const sendServerViewContentEvent = async ({
   }
 };
 
+// Sends server-side AddToCart event to Meta Conversions API using product.did as canonical content_id
+export const sendServerAddToCartEvent = async ({
+  product,
+  quantity = 1,
+  currency = "BDT",
+  req = null,
+  eventId = "",
+  eventSourceUrl = "",
+  user = {},
+}) => {
+  try {
+    const metaConfig = await getMetaPixelConfig();
+
+    if (!metaConfig.isEnabled || !metaConfig.enableCapi) {
+      return;
+    }
+
+    const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
+
+    if (!pixelId || !accessToken) {
+      return;
+    }
+
+    const clientIp = extractClientIp(req);
+    const clientUserAgent = req?.headers?.["user-agent"] || "";
+    const fbp = getCookie(req, "_fbp") || req?.body?.fbp || "";
+    const fbc = getCookie(req, "_fbc") || req?.body?.fbc || "";
+
+    const userData = {
+      ...(clientIp ? { client_ip_address: clientIp } : {}),
+      ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
+      ...(fbp ? { fbp } : {}),
+      ...(fbc ? { fbc } : {}),
+    };
+
+    if (advancedMatching && user) {
+      const email = user.email || "";
+      const phone = user.phone || "";
+      if (email) userData.em = [sha256(email)];
+      if (phone) userData.ph = [sha256(normalizePhone(phone))];
+      if (user.memberId || user.did) {
+        userData.external_id = [sha256(String(user.memberId || user.did))];
+      }
+    }
+
+    const price = Number(product?.offerPrice || product?.price || 0);
+    const productId = String(product?.did || product?._id || product?.id || "");
+    const productName = product?.name || "";
+    const category = product?.category?.name || product?.category || "";
+    const qty = Number(quantity || 1);
+
+    const customData = {
+      currency,
+      value: price * qty,
+      content_name: productName,
+      content_category: category,
+      content_ids: productId ? [productId] : [],
+      content_type: "product",
+      contents: productId
+        ? [
+            {
+              id: productId,
+              quantity: qty,
+              item_price: price,
+            },
+          ]
+        : [],
+    };
+
+    const eventPayload = {
+      event_name: "AddToCart",
+      event_time: Math.floor(Date.now() / 1000),
+      event_id: eventId || `atc_${productId}_${Date.now()}`,
+      action_source: "website",
+      ...(eventSourceUrl ? { event_source_url: eventSourceUrl } : {}),
+      user_data: userData,
+      custom_data: customData,
+    };
+
+    const requestBody = {
+      data: [eventPayload],
+      ...(testEventCode ? { test_event_code: testEventCode } : {}),
+    };
+
+    const endpoint = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
+
+    fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errData = await res.text();
+          console.warn("[Meta CAPI AddToCart] Response error:", errData);
+        }
+      })
+      .catch((err) => {
+        console.warn("[Meta CAPI AddToCart] Network error:", err.message);
+      });
+  } catch (err) {
+    console.warn("[Meta CAPI AddToCart] Request builder exception:", err.message);
+  }
+};
