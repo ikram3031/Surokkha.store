@@ -4,6 +4,7 @@ import { UserModel } from "../../common/models/user.model.js";
 import { AssetModel } from "../../common/models/asset.model.js";
 import { hashPassword } from "../../common/utils/password.js";
 import { env } from "../../common/config/env.js";
+import { config as clientConfig } from "../../common/config/index.js";
 import { renderUserInviteEmail } from "../../common/templates/userInviteEmailTemplate.js";
 import {
   validateCreateUserPayload,
@@ -19,21 +20,26 @@ const getTransport = () => {
       Number(env.SMTP_PORT) === 465 ||
       String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
 
-    defaultTransport = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
+    const transportOpts = {
+      host: env.SMTP_HOST || "127.0.0.1",
+      port: Number(env.SMTP_PORT) || 25,
       secure: isSecure,
       tls: {
         rejectUnauthorized: false,
       },
-      auth: {
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
+    };
+
+    if (env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER) {
+      transportOpts.auth = {
         user: env.SMTP_USER,
         pass: env.SMTP_PASSWORD,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
+      };
+    }
+
+    defaultTransport = nodemailer.createTransport(transportOpts);
   }
   return defaultTransport;
 };
@@ -117,7 +123,7 @@ export const createUser = async (req, res, next) => {
 
     // Resolve white-label domain for invitation link
     const origin = req.headers.origin || req.headers.referer || "";
-    let domainUrl = "https://decantrebd.com";
+    let domainUrl = "https://admin.surokkha.store";
     if (payload.domain) {
       domainUrl = payload.domain.startsWith("http") ? payload.domain : `https://${payload.domain}`;
     } else if (origin) {
@@ -127,25 +133,33 @@ export const createUser = async (req, res, next) => {
     }
     const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
 
-    // Send invitation email if SMTP configured
-    if (env.SMTP_USER && env.SMTP_PASSWORD) {
-      try {
-        const transport = getTransport();
-        const brandName = env.SMTP_FROM_NAME || "Store Team";
-        await transport.sendMail({
-          from: `"${brandName}" <${env.SMTP_FROM || env.SMTP_USER}>`,
-          to: user.email,
-          subject: `You're invited to join ${brandName} as ${user.role}`,
-          html: renderUserInviteEmail({
-            name: user.name,
-            role: user.role,
-            inviteUrl,
-            brandName,
-          }),
-        });
-      } catch (mailErr) {
-        console.error("[UsersController] Failed to send invitation email:", mailErr);
-      }
+    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const logoUrl = "https://admin.surokkha.store/surokkha_logo.png";
+    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromAddress = `"${brandName}" <${fromEmail}>`;
+
+    // Send invitation email non-blockingly if SMTP is available
+    if (env.SMTP_HOST && (env.SMTP_USER || Number(env.SMTP_PORT) === 25)) {
+      Promise.resolve().then(async () => {
+        try {
+          const transport = getTransport();
+          await transport.sendMail({
+            from: fromAddress,
+            to: user.email,
+            subject: `You're invited to join ${brandName} as ${user.role}`,
+            html: renderUserInviteEmail({
+              name: user.name,
+              role: user.role,
+              inviteUrl,
+              brandName,
+              logoUrl,
+            }),
+          });
+          console.log(`[UsersController] Invitation email successfully dispatched to ${user.email}`);
+        } catch (mailErr) {
+          console.error("[UsersController] Failed to send invitation email:", mailErr);
+        }
+      });
     }
 
     res.status(201).json({
