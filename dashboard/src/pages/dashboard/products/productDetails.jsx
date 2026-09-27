@@ -16,7 +16,7 @@ import {
   SidebarCards,
 } from "@/components/dashboard/products";
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB limit
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
 const emptyVariant = () => ({
   size: "",
@@ -371,7 +371,7 @@ const EditProductPage = () => {
     const file = files[0];
     if (file.size > MAX_IMAGE_SIZE) {
       setMainImageError(
-        "Maximum size exceeded. Please upload an image under 2MB."
+        "Maximum size exceeded. Please upload an image under 10MB."
       );
       setImagePreview("");
       setMainImageFile(null);
@@ -402,8 +402,8 @@ const EditProductPage = () => {
     if (oversizedFiles.length > 0) {
       toast.error(
         oversizedFiles.length === 1
-          ? `"${oversizedFiles[0].name}" exceeds 2MB limit. Please upload images under 2MB.`
-          : `${oversizedFiles.length} images exceed the 2MB limit and were skipped.`
+          ? `"${oversizedFiles[0].name}" exceeds 10MB limit. Please upload images under 10MB.`
+          : `${oversizedFiles.length} images exceed the 10MB limit and were skipped.`
       );
     }
 
@@ -450,7 +450,7 @@ const EditProductPage = () => {
       updateVariant(
         index,
         "imageError",
-        "Maximum size exceeded. Image must be under 2MB."
+        "Maximum size exceeded. Image must be under 10MB."
       );
       updateVariant(index, "imageFile", null);
       updateVariant(index, "imagePreview", "");
