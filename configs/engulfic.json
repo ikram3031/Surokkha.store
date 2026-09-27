@@ -7,6 +7,12 @@
   "apiBaseUrl": "https://server.engulfic.com",
   "dashboardUrl": "https://admin.engulfic.com",
   "storefrontUrl": "https://engulfic.com",
+  "routes": {
+    "shop": "/shop",
+    "category": "/shop/:category",
+    "brand": "/brand/:brand",
+    "product": "/shop/:category/:slug"
+  },
   "policies": {
     "stock": {
       "mode": "variant_wise",

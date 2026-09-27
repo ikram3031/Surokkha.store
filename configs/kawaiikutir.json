@@ -9,6 +9,12 @@
   "apiBaseUrl": "https://server.kawaiikutir.shop",
   "dashboardUrl": "https://admin.kawaiikutir.shop",
   "storefrontUrl": "https://kawaiikutir.shop",
+  "routes": {
+    "shop": "/shop",
+    "category": "/shop/:category",
+    "brand": "/brand/:brand",
+    "product": "/shop/:category/:slug"
+  },
   "policies": {
     "stock": {
       "mode": "variant_wise",

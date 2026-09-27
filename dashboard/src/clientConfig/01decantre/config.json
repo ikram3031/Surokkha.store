@@ -5,6 +5,13 @@
   "supportPhone": "01869151550",
   "whatsappNumber": "01869151550",
   "apiBaseUrl": "https://server.decantrebd.com",
+  "storefrontUrl": "https://decantrebd.com",
+  "routes": {
+    "shop": "/shop",
+    "category": "/shop/:category",
+    "brand": "/brand/:brand",
+    "product": "/shop/:category/:slug"
+  },
   "features": {
     "season": true,
     "brand": true,

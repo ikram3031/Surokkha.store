@@ -3,6 +3,13 @@
   "clientKey": "kawaiikutir",
   "brandName": "Kawaii Kutir",
   "apiBaseUrl": "https://server.kawaiikutir.shop",
+  "storefrontUrl": "https://kawaiikutir.shop",
+  "routes": {
+    "shop": "/shop",
+    "category": "/shop/:category",
+    "brand": "/brand/:brand",
+    "product": "/shop/:category/:slug"
+  },
   "features": {
     "season": false,
     "brand": false,

@@ -10,6 +10,12 @@
     "apiBaseUrl": "https://server.decantrebd.com",
     "dashboardUrl": "https://admin.decantrebd.com",
     "storefrontUrl": "https://decantrebd.com",
+    "routes": {
+      "shop": "/shop",
+      "category": "/shop/:category",
+      "brand": "/brand/:brand",
+      "product": "/shop/:category/:slug"
+    },
     "policies": {
       "stock": {
         "mode": "product_wise",
@@ -259,6 +265,12 @@
     "apiBaseUrl": "https://api.plexivia.online",
     "dashboardUrl": "https://dashboard.plexivia.online",
     "storefrontUrl": "https://store.plexivia.online",
+    "routes": {
+      "shop": "/shop",
+      "category": "/shop/:category",
+      "brand": "/brand/:brand",
+      "product": "/shop/:category/:slug"
+    },
     "policies": {
       "stock": {
         "mode": "variant_wise",
@@ -490,6 +502,12 @@
     "apiBaseUrl": "https://server.engulfic.com",
     "dashboardUrl": "https://admin.engulfic.com",
     "storefrontUrl": "https://engulfic.com",
+    "routes": {
+      "shop": "/shop",
+      "category": "/shop/:category",
+      "brand": "/brand/:brand",
+      "product": "/shop/:category/:slug"
+    },
     "policies": {
       "stock": {
         "mode": "variant_wise",
@@ -726,6 +744,12 @@
     "apiBaseUrl": "https://server.kawaiikutir.shop",
     "dashboardUrl": "https://admin.kawaiikutir.shop",
     "storefrontUrl": "https://kawaiikutir.shop",
+    "routes": {
+      "shop": "/shop",
+      "category": "/shop/:category",
+      "brand": "/brand/:brand",
+      "product": "/shop/:category/:slug"
+    },
     "policies": {
       "stock": {
         "mode": "variant_wise",
@@ -961,6 +985,12 @@
     "apiBaseUrl": "https://api.surokkha.store",
     "dashboardUrl": "https://admin.surokkha.store",
     "storefrontUrl": "https://surokkha.store",
+    "routes": {
+      "shop": "/shop",
+      "category": "/shop/:category",
+      "brand": "/brand/:brand",
+      "product": "/shop/:category/:slug"
+    },
     "policies": {
       "stock": {
         "mode": "product_wise",
@@ -1227,6 +1257,12 @@
     "apiBaseUrl": "https://server.toyoland.shop",
     "dashboardUrl": "https://admin.toyoland.shop",
     "storefrontUrl": "https://toyoland.shop",
+    "routes": {
+      "shop": "/shop",
+      "category": "/shop/:category",
+      "brand": "/brand/:brand",
+      "product": "/shop/:category/:slug"
+    },
     "policies": {
       "stock": {
         "mode": "variant_wise",

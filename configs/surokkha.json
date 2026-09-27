@@ -10,6 +10,12 @@
   "apiBaseUrl": "https://api.surokkha.store",
   "dashboardUrl": "https://admin.surokkha.store",
   "storefrontUrl": "https://surokkha.store",
+  "routes": {
+    "shop": "/shop",
+    "category": "/shop/:category",
+    "brand": "/brand/:brand",
+    "product": "/shop/:category/:slug"
+  },
   "policies": {
     "stock": {
       "mode": "product_wise",

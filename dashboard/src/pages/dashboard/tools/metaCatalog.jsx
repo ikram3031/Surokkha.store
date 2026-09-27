@@ -92,6 +92,46 @@ const escapeCsvCell = (str) => {
   return s;
 };
 
+// Helper to convert text to URL slug
+const slugify = (text) => {
+  if (!text) return 'general';
+  return String(text)
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'general';
+};
+
+// Helper to construct full product URL based on dynamic pattern
+const buildProductUrl = (pattern, product, siteUrl) => {
+  const cleanSiteUrl = (siteUrl || '').replace(/\/$/, '');
+  const catSlug = product.primaryCategorySlug || slugify(product.primaryCategory || 'general');
+  const brandSlug = product.brandSlug || slugify(product.brand || 'brand');
+  const pSlug = product.slug || product.did || product.id || '';
+
+  const routePattern = pattern || clientConfig?.routes?.product || '/shop/:category/:slug';
+
+  if (!routePattern.includes(':') && !routePattern.includes('{')) {
+    const cleanPrefix = routePattern.startsWith('/') ? routePattern : `/${routePattern}`;
+    const fmtPrefix = cleanPrefix.endsWith('/') ? cleanPrefix : `${cleanPrefix}/`;
+    return `${cleanSiteUrl}${fmtPrefix}${pSlug}`;
+  }
+
+  let path = routePattern
+    .replace(':category', catSlug)
+    .replace('{category}', catSlug)
+    .replace(':brand', brandSlug)
+    .replace('{brand}', brandSlug)
+    .replace(':slug', pSlug)
+    .replace('{slug}', pSlug)
+    .replace(':productSlug', pSlug)
+    .replace('{productSlug}', pSlug);
+
+  if (!path.startsWith('/')) path = '/' + path;
+  return `${cleanSiteUrl}${path}`;
+};
+
 const getDynamicDefaults = () => {
   const detectedStorefront =
     clientConfig?.storefrontUrl ||
@@ -108,10 +148,12 @@ const getDynamicDefaults = () => {
       : 'https://server.decantrebd.com')
   ).replace(/\/$/, '');
 
+  const defaultProductPattern = clientConfig?.routes?.product || '/shop/:category/:slug';
+
   return {
     siteUrl: detectedStorefront.replace(/\/$/, ''),
     imageBaseUrl: detectedApiBase,
-    productPathPrefix: '/product/',
+    productPathPrefix: defaultProductPattern,
     idMapping: 'did',
     defaultCondition: 'new',
     googleCategory: '',
@@ -360,6 +402,15 @@ const MetaCatalogGenerator = () => {
 
       const imgUrl = resolveAbsoluteImageUrl(imgRaw);
 
+      // Extract category slug
+      let primaryCategorySlug = '';
+      if (Array.isArray(p.categories) && p.categories.length > 0) {
+        const first = p.categories[0];
+        if (typeof first === 'object' && first?.slug) primaryCategorySlug = first.slug;
+      } else if (p.category && typeof p.category === 'object' && p.category.slug) {
+        primaryCategorySlug = p.category.slug;
+      }
+
       return {
         id,
         did,
@@ -368,6 +419,7 @@ const MetaCatalogGenerator = () => {
         slug,
         categories: catList,
         primaryCategory: catList[0] || 'General',
+        primaryCategorySlug,
         brand: brandName,
         price: minPrice,
         maxPrice,
@@ -613,8 +665,7 @@ const MetaCatalogGenerator = () => {
     stagedMap.forEach((p) => {
       const cleanDesc = stripHtml(p.description || p.name || 'Quality product.');
       const brandName = p.brand || clientConfig?.brandName || 'Store';
-      const productSlug = p.slug || p.did || p.id || '';
-      const productLink = `${siteUrl.replace(/\/$/, '')}${cleanPrefix}${productSlug}`;
+      const productLink = buildProductUrl(productPathPrefix, p, siteUrl);
       const formatImageForMeta = (img) => {
         if (!img) return '';
         return img.endsWith('.webp') ? img.replace(/\.webp$/, '.jpg') : img;
