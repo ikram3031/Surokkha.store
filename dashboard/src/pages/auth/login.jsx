@@ -9,12 +9,10 @@ import {
   Eye,
   EyeOff,
   Shield,
-  QrCode,
   ArrowLeft,
-  Copy,
-  Check,
-  Smartphone,
   Key,
+  MailCheck,
+  RotateCw,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -42,10 +40,7 @@ const LoginPage = () => {
   const [step, setStep] = useState(1);
   const [otpCode, setOtpCode] = useState('');
   const [is2faVerifying, setIs2faVerifying] = useState(false);
-  const [isRequestingQr, setIsRequestingQr] = useState(false);
-  const [qrData, setQrData] = useState(null); // { qrCodeDataUrl, secret, emailSent }
-  const [showQrModal, setShowQrModal] = useState(false);
-  const [copiedSecret, setCopiedSecret] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
 
   const otpInputRef = useRef(null);
 
@@ -73,10 +68,8 @@ const LoginPage = () => {
       const res = await login(email, password);
       if (res && res.requires2fa) {
         setStep(2);
-        if (res.data?.qrCodeDataUrl) {
-          setQrData(res.data);
-          setShowQrModal(true);
-          toast.info('First-time setup: Scan the QR code below with Google Authenticator.');
+        if (res.isFirstTime) {
+          toast.info('A 2FA setup QR code has been emailed to your registered email address.');
         } else {
           toast.info('Enter the 6-digit code from your Google Authenticator app.');
         }
@@ -133,33 +126,23 @@ const LoginPage = () => {
     }
   };
 
-  const handleSendQrCode = async () => {
-    setIsRequestingQr(true);
+  const handleResendSetupEmail = async () => {
+    setIsResendingEmail(true);
     try {
       const response = await apiClient.post('/api/v1/auth/2fa/send-qr', { email, password });
-      const data = response.data?.data || {};
-      setQrData(data);
-      setShowQrModal(true);
-      toast.success(response.data?.message || 'QR Code ready. Scan it in your Google Authenticator app.');
+      toast.success(
+        response.data?.message || `A setup QR code and key have been emailed to ${email}. Please check your inbox.`
+      );
     } catch (err) {
       handleGlobalError(err);
     } finally {
-      setIsRequestingQr(false);
+      setIsResendingEmail(false);
     }
-  };
-
-  const handleCopySecret = () => {
-    if (!qrData?.secret) return;
-    navigator.clipboard.writeText(qrData.secret);
-    setCopiedSecret(true);
-    toast.success('Setup key copied to clipboard.');
-    setTimeout(() => setCopiedSecret(false), 2500);
   };
 
   const handleCancel2FA = () => {
     setStep(1);
     setOtpCode('');
-    setShowQrModal(false);
   };
 
   if (isAuthLoading) {
@@ -292,63 +275,18 @@ const LoginPage = () => {
               </form>
             ) : (
               <div className="space-y-4">
-                {/* QR Code Setup Card (if expanded or requested) */}
-                <AnimatePresence>
-                  {showQrModal && qrData && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden bg-slate-950/90 border border-rose-500/30 rounded-xl p-4 space-y-3"
-                    >
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                        <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
-                          <Smartphone className="h-3.5 w-3.5" /> Scan in Google Authenticator
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setShowQrModal(false)}
-                          className="text-[11px] text-slate-400 hover:text-white underline cursor-pointer"
-                        >
-                          Hide QR
-                        </button>
-                      </div>
-
-                      <div className="flex flex-col items-center justify-center bg-white p-2.5 rounded-lg w-fit mx-auto shadow-md">
-                        {qrData.qrCodeDataUrl ? (
-                          <img
-                            src={qrData.qrCodeDataUrl}
-                            alt="2FA QR Code"
-                            className="w-40 h-40 object-contain block"
-                          />
-                        ) : (
-                          <div className="w-40 h-40 flex items-center justify-center bg-slate-100 text-slate-500 text-xs text-center p-2">
-                            QR Code Ready
-                          </div>
-                        )}
-                      </div>
-
-                      {qrData.secret && (
-                        <div className="space-y-1">
-                          <span className="text-[11px] text-slate-400 block text-center">
-                            Can't scan? Enter key manually:
-                          </span>
-                          <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1.5 font-mono text-xs text-amber-400">
-                            <span className="tracking-widest font-bold truncate select-all">{qrData.secret}</span>
-                            <button
-                              type="button"
-                              onClick={handleCopySecret}
-                              className="ml-2 text-slate-400 hover:text-white transition shrink-0 cursor-pointer"
-                              title="Copy Secret"
-                            >
-                              {copiedSecret ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Secure Notice Card */}
+                <div className="bg-slate-950/70 border border-rose-500/20 rounded-xl p-3.5 flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 shrink-0 mt-0.5">
+                    <MailCheck className="h-4 w-4" />
+                  </div>
+                  <div className="text-xs text-slate-300 space-y-1">
+                    <div className="font-semibold text-white">Setup sent to registered email</div>
+                    <div className="text-slate-400 text-[11px] leading-relaxed">
+                      The QR code &amp; setup key are emailed to <span className="text-rose-300 font-mono font-medium">{email}</span>. Scan it with Google Authenticator and enter the 6-digit code below.
+                    </div>
+                  </div>
+                </div>
 
                 <form onSubmit={handleVerify2FA} className="space-y-4">
                   <div className="space-y-1.5">
@@ -356,7 +294,7 @@ const LoginPage = () => {
                       <label className="block text-xs font-semibold text-slate-300">
                         6-Digit Security Code
                       </label>
-                      <span className="text-[11px] text-slate-400">{email}</span>
+                      <span className="text-[11px] text-slate-400 font-mono">{email}</span>
                     </div>
 
                     <div className="relative">
@@ -396,16 +334,16 @@ const LoginPage = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={isRequestingQr}
-                      onClick={handleSendQrCode}
+                      disabled={isResendingEmail}
+                      onClick={handleResendSetupEmail}
                       className="w-full h-9.5 flex items-center justify-center font-semibold text-xs border border-slate-700 bg-slate-950/60 hover:bg-slate-800 text-slate-200 transition cursor-pointer rounded-xl"
                     >
-                      {isRequestingQr ? (
+                      {isResendingEmail ? (
                         <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
                       ) : (
-                        <QrCode className="h-3.5 w-3.5 mr-1.5 text-rose-400" />
+                        <RotateCw className="h-3.5 w-3.5 mr-1.5 text-rose-400" />
                       )}
-                      {showQrModal ? 'Resend / Refresh QR Code' : 'First Time? Set Up Authenticator (QR Code)'}
+                      Resend Setup Email
                     </Button>
 
                     <Button

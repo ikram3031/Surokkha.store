@@ -15,7 +15,7 @@ authenticator.options = { window: 1 };
 let defaultTransport;
 
 // Helper to initialize or retrieve SMTP transport
-const getTransport = () => {
+export const getTransport = () => {
   if (!defaultTransport) {
     const isSecure =
       Number(env.SMTP_PORT) === 465 ||
@@ -45,7 +45,54 @@ const getTransport = () => {
   return defaultTransport;
 };
 
-// Generates/retrieves TOTP secret, generates QR Code, and emails it to user
+// Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
+export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
+  try {
+    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const otpauth = authenticator.keyuri(user.email, brandName, secret);
+    const qrCodeBuffer = await QRCode.toBuffer(otpauth, {
+      width: 240,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#ffffff",
+      },
+    });
+
+    const transport = getTransport();
+    const fromName = env.SMTP_FROM_NAME || brandName;
+    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromAddress = `"${fromName}" <${fromEmail}>`;
+
+    const htmlContent = buildTwoFactorQrEmailHtml({
+      name: user.name,
+      secret,
+      brandName,
+    });
+
+    await transport.sendMail({
+      from: fromAddress,
+      to: user.email,
+      subject: `Set Up Two-Factor Authentication — ${brandName} Dashboard`,
+      text: `Hello ${user.name},\n\nScan the QR code in your Google Authenticator app to set up 2FA.\nCan't scan? Enter this key manually: ${secret}\n\nIf you did not request this, change your password immediately.`,
+      html: htmlContent,
+      attachments: [
+        {
+          filename: "qrcode.png",
+          content: qrCodeBuffer,
+          cid: "qrcode",
+        },
+      ],
+    });
+    logger.info({ email: user.email }, "Dispatched 2FA setup email with QR code successfully");
+    return true;
+  } catch (err) {
+    logger.error({ email: user.email, error: err.message }, "Failed to send 2FA setup email");
+    return false;
+  }
+};
+
+// Generates/retrieves TOTP secret and emails QR Code strictly to the user's verified inbox
 export const sendQrCodeEmail = async (req, res, next) => {
   try {
     const { email, password } = req.body ?? {};
@@ -73,66 +120,17 @@ export const sendQrCodeEmail = async (req, res, next) => {
       await user.save();
     }
 
-    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
-
-    // Generate OTPAuth URI for the TOTP app (e.g. Google Authenticator)
-    const otpauth = authenticator.keyuri(user.email, brandName, secret);
-
-    // Generate DataURL for instant on-screen rendering
-    const qrCodeDataUrl = await QRCode.toDataURL(otpauth, {
-      width: 240,
-      margin: 2,
-      color: {
-        dark: "#000000",
-        light: "#ffffff",
-      },
+    // Send email asynchronously in background
+    Promise.resolve().then(async () => {
+      await dispatchTwoFactorSetupEmail({ user, secret });
     });
 
-    // Send email asynchronously in background so response returns instantly
-    if (env.SMTP_HOST && (env.SMTP_USER || Number(env.SMTP_PORT) === 25)) {
-      Promise.resolve().then(async () => {
-        try {
-          const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
-          const transport = getTransport();
-          const fromName = env.SMTP_FROM_NAME || brandName;
-          const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
-          const fromAddress = `"${fromName}" <${fromEmail}>`;
-
-          const htmlContent = buildTwoFactorQrEmailHtml({
-            name: user.name,
-            secret,
-            brandName,
-          });
-
-          await transport.sendMail({
-            from: fromAddress,
-            to: user.email,
-            subject: `Set Up Two-Factor Authentication — ${brandName} Dashboard`,
-            text: `Hello ${user.name},\n\nScan the QR code in your Google Authenticator app to set up 2FA.\nCan't scan? Enter this key manually: ${secret}\n\nIf you did not request this, change your password immediately.`,
-            html: htmlContent,
-            attachments: [
-              {
-                filename: "qrcode.png",
-                content: qrCodeBuffer,
-                cid: "qrcode",
-              },
-            ],
-          });
-          logger.info({ email: user.email }, "Dispatched 2FA QR code email successfully");
-        } catch (mailErr) {
-          logger.warn({ error: mailErr.message }, "Could not send 2FA email in background, on-screen QR is active");
-        }
-      });
-    }
-
+    // Strictly return NO sensitive secret or QR dataUrl in HTTP response
     res.json({
       status: "success",
-      message: "QR Code generated successfully. Scan it in your Google Authenticator app to continue.",
+      message: "Setup QR code and instructions have been sent to your registered email address.",
       data: {
-        qrCodeDataUrl,
-        secret,
         email: user.email,
-        brandName,
         emailSent: true,
       },
     });
@@ -163,7 +161,7 @@ export const verify2fa = async (req, res, next) => {
     }
 
     if (!user.twoFactorSecret) {
-      return res.status(400).json({ status: "error", message: "2FA has not been set up yet. Please request a QR Code first." });
+      return res.status(400).json({ status: "error", message: "2FA has not been set up yet. Please request a setup email first." });
     }
 
     // Verify TOTP code
@@ -237,7 +235,7 @@ export const resetUser2fa = async (req, res, next) => {
 
     res.json({
       status: "success",
-      message: `2FA reset for ${targetUser.name || targetUser.email}. They will be prompted to scan a new QR code on their next login.`,
+      message: `2FA reset for ${targetUser.name || targetUser.email}. A new setup QR code will be emailed upon their next login.`,
     });
   } catch (error) {
     next(error);

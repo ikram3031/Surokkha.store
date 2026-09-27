@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { authenticator } from "otplib";
-import QRCode from "qrcode";
 import { UserModel } from "../../common/models/user.model.js";
 import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { comparePassword, hashPassword } from "../../common/utils/password.js";
 import { config as clientConfig } from "../../common/config/index.js";
+import { dispatchTwoFactorSetupEmail } from "./TwoFactorController.js";
 
 export const createAccessToken = (user) => {
   return jwt.sign(
@@ -105,11 +105,10 @@ export const login = async (req, res, next) => {
     // Enforce 2FA/MFA for all admin/management roles and when twoFactorEnabled is true
     const requiresMfa = user.twoFactorEnabled !== false || ["Owner", "Admin", "Super_Admin", "Manager"].includes(user.role);
     if (requiresMfa) {
-      let qrCodeDataUrl = null;
       let secret = user.twoFactorSecret;
       const isFirstTime = !user.twoFactorSecret || !user.twoFactorEnabled;
 
-      // If secret doesn't exist yet, generate it and QR code immediately
+      // If secret doesn't exist yet, generate it
       if (!secret) {
         secret = authenticator.generateSecret();
         user.twoFactorSecret = secret;
@@ -117,15 +116,9 @@ export const login = async (req, res, next) => {
       }
 
       if (isFirstTime) {
-        const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
-        const otpauth = authenticator.keyuri(user.email, brandName, secret);
-        qrCodeDataUrl = await QRCode.toDataURL(otpauth, {
-          width: 240,
-          margin: 2,
-          color: {
-            dark: "#000000",
-            light: "#ffffff",
-          },
+        // Dispatch 2FA setup QR code and instructions strictly to user's email in background
+        Promise.resolve().then(async () => {
+          await dispatchTwoFactorSetupEmail({ user, secret });
         });
       }
 
@@ -134,11 +127,9 @@ export const login = async (req, res, next) => {
         requires2fa: true,
         email: user.email,
         isFirstTime,
-        data: {
-          qrCodeDataUrl,
-          secret: isFirstTime ? secret : undefined,
-          isFirstTime,
-        },
+        message: isFirstTime
+          ? "A 2FA setup QR code and key have been emailed to your registered email address."
+          : "Please enter the 6-digit code from your Google Authenticator app.",
       });
     }
 
