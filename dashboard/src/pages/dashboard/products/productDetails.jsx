@@ -165,6 +165,11 @@ const EditProductPage = () => {
   }, [brandSlug, brands]);
 
   useEffect(() => {
+    const hasAttribute =
+      clientConfig?.features?.attribute !== false &&
+      clientConfig?.features?.attributes !== false;
+    if (!hasAttribute) return;
+
     const fetchAttributes = async () => {
       try {
         const res = await apiClient.get("/api/v1/dashboard/attributes");

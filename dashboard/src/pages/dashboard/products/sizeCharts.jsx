@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useCategories } from '@/lib/category-cache';
 import { apiClient } from '@/lib/api-client';
+import { clientConfig } from '@/clientConfig';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
@@ -96,6 +97,9 @@ const SizeChartsPage = () => {
 
   // Fetches available attributes from backend API
   const fetchAttributes = async () => {
+    if (clientConfig?.features?.attribute === false || clientConfig?.features?.attributes === false) {
+      return [];
+    }
     try {
       const res = await apiClient.get('/api/v1/dashboard/attributes');
       const loaded = res.data?.data || [];

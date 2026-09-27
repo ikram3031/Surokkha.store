@@ -5,8 +5,11 @@ import {
   updateAttribute,
   deleteAttribute,
 } from "../controllers/attribute.controller.js";
+import { requireFeature } from "../../common/middlewares/feature.middleware.js";
 
 const router = Router();
+
+router.use(requireFeature("attribute"));
 
 router.route("/attributes")
   .get(getAttributes);

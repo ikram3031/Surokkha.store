@@ -45,6 +45,8 @@ import { toast } from 'sonner';
 import { useDashboardStore } from '@/store/use-dashboard-store';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
+import { clientConfig } from '@/clientConfig';
+
 // Renders the products data table with status badges, variant stock controls, quick actions, and pagination
 export const ProductsTable = ({
   searchQuery,
@@ -61,6 +63,7 @@ export const ProductsTable = ({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setDuplicateDraft } = useDashboardStore();
+  const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
 
   const [duplicatingId, setDuplicatingId] = useState(null);
 
@@ -214,8 +217,9 @@ export const ProductsTable = ({
             <TableHead className="w-[280px] min-w-[180px]">{t('products.product_name')}</TableHead>
             <TableHead className="w-[120px]">{t('products.sku')}</TableHead>
             <TableHead className="w-[140px]">{t('products.category')}</TableHead>
-            <TableHead className="w-[120px]">{t('products.brand')}</TableHead>
+            {hasBrand && <TableHead className="w-[120px]">{t('products.brand')}</TableHead>}
             <TableHead className="w-[100px]">{t('common.price')}</TableHead>
+            <TableHead className="w-[100px]">{t('products.offer_price', 'Offer Price')}</TableHead>
             <TableHead className="w-[120px] min-w-[120px]">{t('common.status')}</TableHead>
             <TableHead className="w-[60px] text-right">{t('common.actions')}</TableHead>
           </TableRow>
@@ -235,7 +239,8 @@ export const ProductsTable = ({
                 </TableCell>
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                {hasBrand && <TableCell><Skeleton className="h-4 w-20" /></TableCell>}
+                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></TableCell>
@@ -283,13 +288,21 @@ export const ProductsTable = ({
                   </span>
                 </TableCell>
 
-                <TableCell className="max-w-[120px]">
-                  <span className="truncate block text-muted-foreground" title={product.brand ? (getBrandName(product.brand) || product.brand) : '—'}>
-                    {product.brand ? (getBrandName(product.brand) || product.brand) : '—'}
-                  </span>
-                </TableCell>
+                {hasBrand && (
+                  <TableCell className="max-w-[120px]">
+                    <span className="truncate block text-muted-foreground" title={product.brand ? (getBrandName(product.brand) || product.brand) : '—'}>
+                      {product.brand ? (getBrandName(product.brand) || product.brand) : '—'}
+                    </span>
+                  </TableCell>
+                )}
 
                 <TableCell className="w-[100px] font-medium">৳{product.price.toFixed(2)}</TableCell>
+
+                <TableCell className="w-[100px] font-medium text-muted-foreground">
+                  {product.offerPrice != null && product.offerPrice > 0
+                    ? `৳${product.offerPrice.toFixed(2)}`
+                    : '—'}
+                </TableCell>
 
                 <TableCell className="w-[120px] min-w-[120px]">
                   {product.status === 'In Stock' ? (
@@ -349,7 +362,7 @@ export const ProductsTable = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center">
+              <TableCell colSpan={hasBrand ? 9 : 8} className="h-24 text-center">
                 {t('products.no_products_found', 'No products found.')}
               </TableCell>
             </TableRow>

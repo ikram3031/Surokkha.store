@@ -21,10 +21,12 @@ import {
 import { Search, Package, AlertTriangle, CheckCircle2, XCircle, TrendingDown } from 'lucide-react';
 import { useProducts } from '@/hooks/use-products';
 import { useCategories, useBrands } from '@/lib/category-cache';
+import { clientConfig } from '@/clientConfig';
 
 // Renders the product stock management dashboard with stock status breakdown and filter controls
 const StockManagementPage = () => {
   const { t } = useTranslation();
+  const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [brandFilter, setBrandFilter] = useState('All');
@@ -148,17 +150,19 @@ const StockManagementPage = () => {
             </SelectContent>
           </Select>
 
-          <Select value={brandFilter} onValueChange={(value) => setBrandFilter(value ?? 'All')}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder={t('products.brand')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">{`${t('products.brand')}: ${t('common.all')}`}</SelectItem>
-              {brands.map((brand) => (
-                <SelectItem key={brand.did} value={brand.name}>{brand.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {hasBrand && (
+            <Select value={brandFilter} onValueChange={(value) => setBrandFilter(value ?? 'All')}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder={t('products.brand')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">{`${t('products.brand')}: ${t('common.all')}`}</SelectItem>
+                {brands.map((brand) => (
+                  <SelectItem key={brand.did} value={brand.name}>{brand.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 

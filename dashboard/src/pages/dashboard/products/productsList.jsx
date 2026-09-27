@@ -34,10 +34,12 @@ import {
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { clientConfig } from '@/clientConfig';
 
 // Renders the products management interface with search, filters, pagination, and bulk stock controls
 const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null }) => {
   const { t } = useTranslation();
+  const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
@@ -266,21 +268,23 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = n
                 </Select>
               )}
 
-              <Select value={brandFilter} onValueChange={handleBrand}>
-                <SelectTrigger className="w-[160px] h-9 cursor-pointer text-xs">
-                  <span>
-                    {brandFilter === 'All'
-                      ? `${t('products.brand')}: ${t('common.all')}`
-                      : `${t('products.brand')}: ${brandFilter}`}
-                  </span>
-                </SelectTrigger>
-                <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="All">{`${t('products.brand')}: ${t('common.all')}`}</SelectItem>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand.did} value={brand.name}>{brand.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {hasBrand && (
+                <Select value={brandFilter} onValueChange={handleBrand}>
+                  <SelectTrigger className="w-[160px] h-9 cursor-pointer text-xs">
+                    <span>
+                      {brandFilter === 'All'
+                        ? `${t('products.brand')}: ${t('common.all')}`
+                        : `${t('products.brand')}: ${brandFilter}`}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border shadow-md" side="bottom">
+                    <SelectItem value="All">{`${t('products.brand')}: ${t('common.all')}`}</SelectItem>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.did} value={brand.name}>{brand.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </>
           )}
 

@@ -4,6 +4,7 @@ import { useProducts } from "@/hooks/use-products";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useCategories, useBrands } from "@/lib/category-cache";
+import { clientConfig } from "@/clientConfig";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +39,6 @@ import {
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
-import { clientConfig } from "@/clientConfig";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
 
 // Renders the modal dialog for selecting product variant and quantity before adding to cart
@@ -290,6 +290,7 @@ const ProductAddDialog = ({
 const NewInStoreOrderPage = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -535,22 +536,24 @@ const NewInStoreOrderPage = () => {
                 </SelectContent>
               </Select>
 
-              <Select
-                value={brandFilter}
-                onValueChange={(v) => setBrandFilter(v ?? "All")}
-              >
-                <SelectTrigger className="w-full cursor-pointer">
-                  <SelectValue placeholder={t("products.brand", "Brand")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">{t("common.all", "All Brands")}</SelectItem>
-                  {brands.map((brand) => (
-                    <SelectItem key={brand.did} value={brand.slug || brand.did}>
-                      {brand.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {hasBrand && (
+                <Select
+                  value={brandFilter}
+                  onValueChange={(v) => setBrandFilter(v ?? "All")}
+                >
+                  <SelectTrigger className="w-full cursor-pointer">
+                    <SelectValue placeholder={t("products.brand", "Brand")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">{t("common.all", "All Brands")}</SelectItem>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.did} value={brand.slug || brand.did}>
+                        {brand.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="relative mb-4">

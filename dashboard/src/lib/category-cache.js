@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import clientConfig from '@/clientConfig';
 
 const CATEGORY_STORAGE_KEY = 'decantre_category_cache';
 const BRAND_STORAGE_KEY = 'decantre_brand_cache';
@@ -119,6 +120,7 @@ export function useCategories() {
 }
 
 export function useBrands() {
+  const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
   return useQuery({
     queryKey: ['brands-cache'],
     queryFn: async () => {
@@ -143,6 +145,7 @@ export function useBrands() {
       }
       return brands;
     },
+    enabled: hasBrand,
     staleTime: CACHE_TTL_MS,
   });
 }

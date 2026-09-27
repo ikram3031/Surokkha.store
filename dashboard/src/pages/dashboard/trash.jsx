@@ -41,12 +41,14 @@ import {
 } from 'lucide-react';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { useCategories, useBrands, getCategoryName, getBrandName } from '@/lib/category-cache';
+import { clientConfig } from '@/clientConfig';
 import { toast } from 'sonner';
 import { useNavigate, Link } from 'react-router-dom';
 
 const TrashPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
 
   // Mode: 'products' | 'orders'
   const [trashType, setTrashType] = useState('products');
@@ -452,7 +454,7 @@ const TrashPage = () => {
                 <TableHead className="hidden md:table-cell">SKU</TableHead>
                 <TableHead className="hidden sm:table-cell">Type</TableHead>
                 <TableHead>Price</TableHead>
-                <TableHead className="hidden lg:table-cell">Category & Brand</TableHead>
+                <TableHead className="hidden lg:table-cell">{hasBrand ? 'Category & Brand' : 'Category'}</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -543,9 +545,11 @@ const TrashPage = () => {
                           <p className="font-medium truncate max-w-[150px]">
                             📁 {getCategoryName(product.category || product.categories?.[0], categories)}
                           </p>
-                          <p className="text-[11px] truncate max-w-[150px]">
-                            🏷️ {getBrandName(product.brand || product.brands?.[0], brands)}
-                          </p>
+                          {hasBrand && (
+                            <p className="text-[11px] truncate max-w-[150px]">
+                              🏷️ {getBrandName(product.brand || product.brands?.[0], brands)}
+                            </p>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>

@@ -248,6 +248,7 @@
     "barcode": "বারকোড / ইএএন",
     "regular_price": "নিয়মিত মূল্য",
     "sale_price": "অফার মূল্য",
+    "offer_price": "অফার মূল্য",
     "stock_quantity": "স্টক সংখ্যা",
     "stock_status": "স্টক স্ট্যাটাস",
     "in_stock": "স্টকে আছে",

@@ -248,6 +248,7 @@
     "barcode": "Barcode / EAN",
     "regular_price": "Regular Price",
     "sale_price": "Sale Price",
+    "offer_price": "Offer Price",
     "stock_quantity": "Stock Quantity",
     "stock_status": "Stock Status",
     "in_stock": "In Stock",

@@ -7,8 +7,11 @@ import {
   deleteBrand,
 } from "../controllers/BrandController.js";
 import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { requireFeature } from "../../common/middlewares/feature.middleware.js";
 
 const router = express.Router();
+
+router.use(requireFeature("brand"));
 
 // GET /api/v1/brands
 router.get("/", getBrands);
