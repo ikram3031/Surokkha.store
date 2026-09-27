@@ -615,7 +615,11 @@ const MetaCatalogGenerator = () => {
       const brandName = p.brand || clientConfig?.brandName || 'Store';
       const productSlug = p.slug || p.did || p.id || '';
       const productLink = `${siteUrl.replace(/\/$/, '')}${cleanPrefix}${productSlug}`;
-      const mainImage = p.imageUrl;
+      const formatImageForMeta = (img) => {
+        if (!img) return '';
+        return img.endsWith('.webp') ? img.replace(/\.webp$/, '.jpg') : img;
+      };
+      const mainImage = formatImageForMeta(p.imageUrl);
       const productTypeCategory = p.primaryCategory || 'General';
 
       let contentId = p.did || p.id;
@@ -635,7 +639,7 @@ const MetaCatalogGenerator = () => {
             availability: (v.stockQuantity ?? 1) > 0 ? 'in stock' : 'out of stock',
             condition: defaultCondition,
             link: productLink,
-            image_link: v.imageUrl || mainImage,
+            image_link: formatImageForMeta(v.imageUrl) || mainImage,
             brand: brandName,
             price: `${varPrice.toFixed(2)} ${currency}`,
             google_product_category: googleCategory || '',
