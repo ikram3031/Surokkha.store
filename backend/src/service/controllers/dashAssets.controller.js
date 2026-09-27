@@ -3,17 +3,27 @@ import sharp from "sharp";
 import path from "path";
 import fs from "fs";
 
+import { execFile } from "child_process";
+import { promisify } from "util";
+import os from "os";
+
+const execFileAsync = promisify(execFile);
+
 const storage = multer.memoryStorage();
 
-// Middleware: Restricts upload size up to 5MB for slider and banner assets
+// Middleware: Restricts upload size up to 100MB for video and image assets
 export const assetUploadMiddleware = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max upload limit
+    fileSize: 100 * 1024 * 1024, // 100MB max upload limit (supports video)
   },
   fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith("image/") && !file.originalname.endsWith(".ico")) {
-      return cb(new Error("Only image files (JPG, PNG, WebP, SVG, ICO) are allowed!"), false);
+    if (
+      !file.mimetype.startsWith("image/") &&
+      !file.mimetype.startsWith("video/") &&
+      !file.originalname.endsWith(".ico")
+    ) {
+      return cb(new Error("Only image and video files are allowed!"), false);
     }
     cb(null, true);
   },
@@ -55,6 +65,57 @@ const compressToTargetWebP = async (inputBuffer, targetMaxBytes = 230 * 1024) =>
   }
 
   return outputBuffer;
+};
+
+// Helper: Compresses video buffer using ffmpeg with H.264 CRF 26 + AAC while preserving visual quality and web streaming
+const compressVideoWithFFmpeg = async (inputBuffer, destinationPath) => {
+  const tempInputPath = path.join(
+    os.tmpdir(),
+    `upload_video_${Date.now()}_${Math.random().toString(36).substring(7)}.tmp`
+  );
+  const tempOutputPath = path.join(
+    os.tmpdir(),
+    `compressed_video_${Date.now()}_${Math.random().toString(36).substring(7)}.mp4`
+  );
+
+  try {
+    await fs.promises.writeFile(tempInputPath, inputBuffer);
+
+    // Run ffmpeg:
+    // -c:v libx264 -crf 26 -preset medium: excellent compression with high visual fidelity
+    // -pix_fmt yuv420p: universal browser compatibility
+    // -movflags +faststart: allows instant web playback without downloading the whole file first
+    // -c:a aac -b:a 128k: high quality stereo audio
+    // -vf "scale='min(1920,iw)':-2": caps maximum resolution at 1080p full HD
+    const args = [
+      "-y",
+      "-i", tempInputPath,
+      "-c:v", "libx264",
+      "-crf", "26",
+      "-preset", "medium",
+      "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart",
+      "-c:a", "aac",
+      "-b:a", "128k",
+      "-vf", "scale='min(1920,iw)':-2",
+      tempOutputPath,
+    ];
+
+    await execFileAsync("ffmpeg", args);
+
+    // Move compressed video to destination path
+    await fs.promises.copyFile(tempOutputPath, destinationPath);
+  } catch (err) {
+    // If ffmpeg fails (or isn't installed locally), fallback to writing original buffer safely
+    console.warn("[dashAssets] ffmpeg compression failed or not available, writing original file:", err.message);
+    await fs.promises.writeFile(destinationPath, inputBuffer);
+  } finally {
+    // Cleanup temporary files
+    try {
+      if (fs.existsSync(tempInputPath)) await fs.promises.unlink(tempInputPath);
+      if (fs.existsSync(tempOutputPath)) await fs.promises.unlink(tempOutputPath);
+    } catch (_) {}
+  }
 };
 
 // Removes solid or near-solid backgrounds from logo buffer with feathering and trims borders
@@ -183,10 +244,23 @@ export const uploadSlotAsset = async (req, res, next) => {
     const isLogo = req.body.slotKey === "logo" || cleanBaseName.toLowerCase().includes("logo");
     
     let targetFilename = cleanBaseName;
+    const isVideo =
+      req.file.mimetype.startsWith("video/") ||
+      cleanBaseName.endsWith(".mp4") ||
+      cleanBaseName.endsWith(".webm") ||
+      cleanBaseName.endsWith(".mov") ||
+      req.body.slotKey?.toLowerCase().includes("video");
+
     const isIco = cleanBaseName.endsWith(".ico") || req.file.mimetype === "image/x-icon";
     const isSvg = cleanBaseName.endsWith(".svg") || req.file.mimetype === "image/svg+xml";
 
-    if (!isIco && !isSvg) {
+    if (isVideo) {
+      // Standardize promo videos to MP4 format for universal web playback
+      if (!cleanBaseName.toLowerCase().endsWith(".mp4")) {
+        cleanBaseName = cleanBaseName.replace(/\.[^/.]+$/, "");
+        targetFilename = `${cleanBaseName}.mp4`;
+      }
+    } else if (!isIco && !isSvg) {
       if (isLogo) {
         targetFilename = "logo.webp";
       } else if (!cleanBaseName.toLowerCase().endsWith(".webp")) {
@@ -198,7 +272,9 @@ export const uploadSlotAsset = async (req, res, next) => {
     const assetsDir = await getAssetsDirectory();
     const destinationPath = path.join(assetsDir, targetFilename);
 
-    if (isIco || isSvg) {
+    if (isVideo) {
+      await compressVideoWithFFmpeg(req.file.buffer, destinationPath);
+    } else if (isIco || isSvg) {
       await fs.promises.writeFile(destinationPath, req.file.buffer);
     } else if (isLogo) {
       const backgroundlessBuffer = await removeImageBackground(req.file.buffer);

@@ -96,6 +96,7 @@ async function runServiceTests() {
     // Seed Admin User
     const hashedPassword = await bcrypt.hash('AdminPassword123!', 10);
     const adminUser = await UserModel.create({
+      name: 'Admin User',
       username: 'adminuser',
       email: 'admin@example.com',
       password: hashedPassword,
@@ -129,6 +130,8 @@ async function runServiceTests() {
       productDid: 'prod-srv-001',
       title: 'Nike Air Max',
       name: 'Nike Air Max',
+      description: 'Nike Air Max shoes',
+      imageUrl: 'https://images.unsplash.com/nike.jpg',
       slug: 'nike-air-max',
       sku: 'SKU-NIKE-001',
       price: 4500,
@@ -140,51 +143,75 @@ async function runServiceTests() {
       brand: 'Nike',
       is_active: true,
       status: 'publish',
-      images: [{ src: 'https://images.unsplash.com/nike.jpg' }]
+      images: ['https://images.unsplash.com/nike.jpg']
     });
 
     const testMember = await MemberModel.create({
       name: 'VIP Client',
       email: 'vip@example.com',
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       phone: '01711223344',
       isActive: true,
       emailVerified: true
     });
 
     const testOrder = await OrderModel.create({
-      orderId: 'ORD-SRV-1001',
-      id: 2001,
-      customer: { name: 'VIP Client', phone: '01711223344', email: 'vip@example.com', address: 'Banani, Dhaka' },
-      items: [{ product: testProduct._id, name: testProduct.title, price: 4500, quantity: 1, total: 4500 }],
+      orderNumber: 'ORD-SRV-1001',
+      billingInfo: {
+        fullName: 'VIP Client',
+        phone: '01711223344',
+        email: 'vip@example.com',
+        address: 'Banani, Dhaka',
+        district: 'Dhaka',
+        zip: '1213'
+      },
+      shippingInfo: {
+        fullName: 'VIP Client',
+        phone: '01711223344',
+        address: 'Banani, Dhaka',
+        district: 'Dhaka',
+        zip: '1213'
+      },
+      totals: {
+        subtotal: 4500,
+        shippingFee: 60,
+        tax: 0,
+        total: 4560
+      },
+      items: [{ productDid: 'prod-srv-001', name: 'Nike Air Max', unitPrice: 4500, quantity: 1 }],
       paymentMethod: 'bkash',
-      status: 'pending',
-      totalAmount: 4560,
-      total: 4560
+      status: 'processing',
+      orderType: 'online'
     });
 
     const testPayment = await PaymentModel.create({
-      orderId: testOrder._id.toString(),
+      orderId: testOrder._id,
       amount: 4560,
-      method: 'bkash',
-      status: 'completed',
-      transactionId: 'TRX-SRV-001'
+      totalAmount: 4560,
+      paidAmount: 4560,
+      pendingAmount: 0,
+      paymentMethod: 'bkash',
+      status: 'paid'
     });
 
     const testCoupon = await CouponModel.create({
       code: 'PROMO20',
       discountType: 'percentage',
-      discountAmount: 20,
+      discountValue: 20,
       minimumSpend: 1000,
       isActive: true,
       expiryDate: new Date(Date.now() + 86400000)
     });
 
     const testBilling = await BillingModel.create({
-      customerName: 'VIP Client',
-      customerEmail: 'vip@example.com',
-      orderId: testOrder._id.toString(),
+      billingPhone: '01711223344',
+      billingEmail: 'vip@example.com',
+      billingMethod: 'bkash',
+      orderId: testOrder._id,
       amount: 4560,
+      totalAmount: 4560,
+      paidAmount: 4560,
+      pendingAmount: 0,
       status: 'paid'
     });
 
@@ -196,7 +223,8 @@ async function runServiceTests() {
     const testAttribute = await AttributeModel.create({
       name: 'Color',
       slug: 'color',
-      values: ['Black', 'White', 'Blue']
+      values: [{ name: 'Black', slug: 'black' }, { name: 'White', slug: 'white' }],
+      createdBy: adminUser._id
     });
 
     const testSizeChart = await SizeChartModel.create({
@@ -216,6 +244,7 @@ async function runServiceTests() {
     await LogModel.create({
       type: 'newOrder',
       message: 'New order ORD-SRV-1001 placed',
+      description: 'New order ORD-SRV-1001 placed',
       active: true,
       isRead: false
     });

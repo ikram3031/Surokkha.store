@@ -39,6 +39,10 @@ import {
   Store,
   Search,
   Truck,
+  Landmark,
+  Wallet,
+  TrendingUp,
+  Scale,
 } from "lucide-react"
 
 import {
@@ -522,14 +526,129 @@ export const AppSidebar = ({ ...props }) => {
             </SidebarMenuItem>
           )}
 
-          {(isAllowed("admin") || isAllowed("reports") || isAllowed("users") || isAllowed("customers") || isAllowed("members") || isAllowed("trash") || isAllowed("billing") || isAllowed("billing.billings") || isAllowed("billing.payments") || isAllowed("cpanel")) && (
+          {(isAllowed("accounts") || isAllowed("accounts.bills") || isAllowed("accounts.payments") || isAllowed("accounts.investors") || isAllowed("accounts.investments") || isAllowed("accounts.balance") || isAllowed("billing") || isAllowed("admin")) && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={
+                  pathname.startsWith("/dashboard/accounts") ||
+                  pathname.startsWith("/dashboard/billing")
+                }
+                tooltip={t("nav.accounts", "Accounts")}
+                onClick={() => toggleMenu("accounts")}
+                className="cursor-pointer flex items-center justify-between w-full"
+              >
+                <div className="flex items-center gap-2">
+                  <Landmark className="h-4 w-4" />
+                  <span>{t("nav.accounts", "Accounts")}</span>
+                </div>
+                <ChevronRight
+                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
+                    openMenu === "accounts" ? "rotate-90 text-primary" : ""
+                  }`}
+                />
+              </SidebarMenuButton>
+              {openMenu === "accounts" && (
+                <SidebarMenuSub>
+                  {/* Account Balance */}
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/balance" || pathname === "/dashboard/accounts" || pathname === "/dashboard/billing"}
+                      render={<Link to="/dashboard/accounts/balance" />}
+                    >
+                      <Scale className="h-3.5 w-3.5 text-blue-500" />
+                      <span>{t("nav.account_balance", "Account Balance")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+
+                  {/* Bills Submenu Group */}
+                  <div className="px-2 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+                    {t("nav.bills", "Bills")}
+                  </div>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/bills/new"}
+                      render={<Link to="/dashboard/accounts/bills/new" />}
+                    >
+                      <PlusCircle className="h-3.5 w-3.5 text-red-500" />
+                      <span>{t("nav.add_bill", "Add New")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/bills/types"}
+                      render={<Link to="/dashboard/accounts/bills/types" />}
+                    >
+                      <Tag className="h-3.5 w-3.5 text-amber-500" />
+                      <span>{t("nav.bill_types", "Bill Types")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/bills" || pathname === "/dashboard/billing/billings"}
+                      render={<Link to="/dashboard/accounts/bills" />}
+                    >
+                      <Receipt className="h-3.5 w-3.5 text-red-500" />
+                      <span>{t("nav.all_bills", "All Bills")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+
+                  {/* Payments Submenu Group */}
+                  <div className="px-2 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+                    {t("nav.payments", "Payments")}
+                  </div>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/payments/new"}
+                      render={<Link to="/dashboard/accounts/payments/new" />}
+                    >
+                      <PlusCircle className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>{t("nav.add_payment", "Add New")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/payments" || pathname === "/dashboard/billing/payments"}
+                      render={<Link to="/dashboard/accounts/payments" />}
+                    >
+                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>{t("nav.all_payments", "All Payments")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+
+                  {/* Investments Submenu Group */}
+                  <div className="px-2 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+                    {t("nav.investments", "Investments")}
+                  </div>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/investors"}
+                      render={<Link to="/dashboard/accounts/investors" />}
+                    >
+                      <Users className="h-3.5 w-3.5 text-purple-500" />
+                      <span>{t("nav.investors", "Investors")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/investments"}
+                      render={<Link to="/dashboard/accounts/investments" />}
+                    >
+                      <TrendingUp className="h-3.5 w-3.5 text-purple-500" />
+                      <span>{t("nav.investments_list", "Investments")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              )}
+            </SidebarMenuItem>
+          )}
+
+          {(isAllowed("admin") || isAllowed("reports") || isAllowed("users") || isAllowed("customers") || isAllowed("members") || isAllowed("trash") || isAllowed("cpanel")) && (
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={
                   pathname.startsWith("/dashboard/reports") ||
                   pathname.startsWith("/dashboard/users") ||
                   pathname.startsWith("/dashboard/members") ||
-                  pathname.startsWith("/dashboard/billing") ||
                   pathname.startsWith("/dashboard/tools/support") ||
                   pathname.startsWith("/dashboard/cpanel") ||
                   pathname.startsWith("/dashboard/trash")
@@ -580,28 +699,6 @@ export const AppSidebar = ({ ...props }) => {
                       >
                         <Users className="h-3.5 w-3.5" />
                         <span>{t("nav.customer_list", "Customer List")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("billing.billings") || isAllowed("billing") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/billing/billings"}
-                        render={<Link to="/dashboard/billing/billings" />}
-                      >
-                        <Receipt className="h-3.5 w-3.5" />
-                        <span>{t("nav.bills_invoices", "Bills & Invoices")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("billing.payments") || isAllowed("billing") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/billing/payments"}
-                        render={<Link to="/dashboard/billing/payments" />}
-                      >
-                        <CreditCard className="h-3.5 w-3.5" />
-                        <span>{t("nav.payments", "Payments")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}

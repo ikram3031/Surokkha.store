@@ -1,15 +1,20 @@
 import mongoose, { Schema, model } from "mongoose";
 import { generateDid } from "../utils/generateDid.js";
 
+const { models } = mongoose;
+
 const billingSchema = new Schema(
   {
     orderId: { type: Schema.Types.ObjectId, ref: "Order", required: false, index: true },
+    billTypeId: { type: Schema.Types.ObjectId, ref: "BillType", default: null, index: true },
+    title: { type: String, trim: true, default: "" },
+    name: { type: String, trim: true, default: "" },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
-    billingMethod: { type: String, required: true, trim: true },
+    billingMethod: { type: String, trim: true, default: "manual" },
     billingPhone: { type: String, trim: true, default: "" },
     billingEmail: { type: String, trim: true, lowercase: true, default: "" },
     billingDate: { type: Date, default: () => new Date() },
-    dueDate: { type: Date },
+    dueDate: { type: Date, default: null },
     totalAmount: { type: Number, required: true, min: 0 },
     paidAmount: { type: Number, required: true, min: 0, default: 0 },
     pendingAmount: { type: Number, required: true, min: 0, default: 0 },
@@ -17,7 +22,7 @@ const billingSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: ["paid", "partial", "pending", "failed"],
+      enum: ["paid", "pending", "partial", "returned", "active", "cancelled", "failed"],
       default: "pending",
     },
     notes: { type: String, trim: true, default: "" },
@@ -30,7 +35,9 @@ const billingSchema = new Schema(
     toJSON: {
       virtuals: true,
       transform: (_doc, ret) => {
-        ret.id = ret._id?.toString();
+        if (ret._id) {
+          ret.id = ret._id.toString();
+        }
         delete ret._id;
         return ret;
       },
@@ -38,4 +45,4 @@ const billingSchema = new Schema(
   }
 );
 
-export const BillingModel = mongoose.models.Billing || model("Billing", billingSchema);
+export const BillingModel = models.Billing || model("Billing", billingSchema);

@@ -49,7 +49,15 @@ import InStoreOrders from './pages/dashboard/orders/inStoreOrders';
 import CustomOrders from './pages/dashboard/orders/customOrders';
 import NewCustomOrder from './pages/dashboard/orders/newCustomOrder';
 
-// Billing
+// Accounts
+import BalanceOverview from './pages/dashboard/accounts/balanceOverview';
+import AllBills from './pages/dashboard/accounts/allBills';
+import AddNewBill from './pages/dashboard/accounts/addNewBill';
+import BillTypes from './pages/dashboard/accounts/billTypes';
+import AllPayments from './pages/dashboard/accounts/allPayments';
+import AddNewPayment from './pages/dashboard/accounts/addNewPayment';
+import Investors from './pages/dashboard/accounts/investors';
+import InvestmentsList from './pages/dashboard/accounts/investmentsList';
 import BillingOverview from './pages/dashboard/billing/billingOverview';
 import Payments from './pages/dashboard/billing/payments';
 import Billings from './pages/dashboard/billing/billings';
@@ -520,32 +528,91 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        path: 'billing',
+        path: 'accounts',
         children: [
+          { path: '', element: <Navigate to="balance" replace /> },
           {
-            path: '',
+            path: 'balance',
             element: (
-              <RoleGuard menuKey="billing">
-                <BillingOverview />
+              <RoleGuard menuKey="accounts.balance">
+                <BalanceOverview />
               </RoleGuard>
             ),
+          },
+          {
+            path: 'bills',
+            children: [
+              {
+                path: '',
+                element: (
+                  <RoleGuard menuKey="accounts.bills">
+                    <AllBills />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'new',
+                element: (
+                  <RoleGuard menuKey="accounts.bills.new">
+                    <AddNewBill />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'types',
+                element: (
+                  <RoleGuard menuKey="accounts.bills.types">
+                    <BillTypes />
+                  </RoleGuard>
+                ),
+              },
+            ],
           },
           {
             path: 'payments',
+            children: [
+              {
+                path: '',
+                element: (
+                  <RoleGuard menuKey="accounts.payments">
+                    <AllPayments />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'new',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.new">
+                    <AddNewPayment />
+                  </RoleGuard>
+                ),
+              },
+            ],
+          },
+          {
+            path: 'investors',
             element: (
-              <RoleGuard menuKey="billing.payments">
-                <Payments />
+              <RoleGuard menuKey="accounts.investors">
+                <Investors />
               </RoleGuard>
             ),
           },
           {
-            path: 'billings',
+            path: 'investments',
             element: (
-              <RoleGuard menuKey="billing.billings">
-                <Billings />
+              <RoleGuard menuKey="accounts.investments">
+                <InvestmentsList />
               </RoleGuard>
             ),
           },
+        ],
+      },
+      {
+        path: 'billing',
+        children: [
+          { path: '', element: <Navigate to="/dashboard/accounts/balance" replace /> },
+          { path: 'payments', element: <Navigate to="/dashboard/accounts/payments" replace /> },
+          { path: 'billings', element: <Navigate to="/dashboard/accounts/bills" replace /> },
         ],
       },
       {

@@ -1,12 +1,16 @@
 import mongoose, { Schema, model } from "mongoose";
 import { generateDid } from "../utils/generateDid.js";
 
+const { models } = mongoose;
+
 const paymentSchema = new Schema(
   {
-    orderId: { type: Schema.Types.ObjectId, ref: "Order", required: true, index: true },
+    orderId: { type: Schema.Types.ObjectId, ref: "Order", required: false, default: null, index: true },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     paymentMethod: { type: String, required: true, trim: true },
     paymentPhone: { type: String, trim: true, default: "" },
+    paymentEmail: { type: String, trim: true, lowercase: true, default: "" },
+    paymentDate: { type: Date, default: () => new Date() },
     totalAmount: { type: Number, required: true, min: 0 },
     paidAmount: { type: Number, required: true, min: 0 },
     pendingAmount: { type: Number, required: true, min: 0 },
@@ -14,9 +18,10 @@ const paymentSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: ["paid", "partial", "pending", "n-a"],
+      enum: ["paid", "partial", "pending", "failed", "n-a", "returned", "active", "cancelled"],
       default: "pending",
     },
+    notes: { type: String, trim: true, default: "" },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
@@ -26,7 +31,9 @@ const paymentSchema = new Schema(
     toJSON: {
       virtuals: true,
       transform: (_doc, ret) => {
-        ret.id = ret._id?.toString();
+        if (ret._id) {
+          ret.id = ret._id.toString();
+        }
         delete ret._id;
         return ret;
       },
@@ -34,4 +41,4 @@ const paymentSchema = new Schema(
   }
 );
 
-export const PaymentModel = mongoose.models.Payment || model("Payment", paymentSchema);
+export const PaymentModel = models.Payment || model("Payment", paymentSchema);

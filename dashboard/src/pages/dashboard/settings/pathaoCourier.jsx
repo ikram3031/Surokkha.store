@@ -612,7 +612,7 @@ export default function PathaoCourierSettingsPage() {
               {/* City Selection */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-medium">Recipient City</Label>
+                  <label className="text-xs font-medium">Recipient City</label>
                   {cities.length === 0 && (
                     <Button
                       type="button"
@@ -643,7 +643,7 @@ export default function PathaoCourierSettingsPage() {
               {/* Zone Selection */}
               {calcCity && (
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">Zone</Label>
+                  <label className="text-xs font-medium">Zone</label>
                   <Select value={calcZone} onValueChange={handleZoneChange} disabled={loadingZones}>
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder={loadingZones ? 'Loading zones...' : 'Select Zone'} />
@@ -662,7 +662,7 @@ export default function PathaoCourierSettingsPage() {
               {/* Area Selection */}
               {calcZone && areas.length > 0 && (
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">Area / Thana</Label>
+                  <label className="text-xs font-medium">Area / Thana</label>
                   <Select value={calcArea} onValueChange={setCalcArea} disabled={loadingAreas}>
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Select Specific Area" />
@@ -681,7 +681,7 @@ export default function PathaoCourierSettingsPage() {
               {/* Weight & Calc Button */}
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">Weight (KG)</Label>
+                  <label className="text-xs font-medium">Weight (KG)</label>
                   <Input
                     type="number"
                     step="0.1"

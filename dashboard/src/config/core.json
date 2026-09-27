@@ -48,7 +48,8 @@
         "tools.messages",
         "tools.assets",
         "tools.support",
-        "logs"
+        "logs",
+        "accounts"
       ]
     },
     "Marketing Expert": {

@@ -1100,6 +1100,20 @@
           ]
         },
         {
+          "id": "promo-video",
+          "title": "Promotional Video",
+          "description": "Featured storefront promo video with automated H.264 web compression (Max 100MB, MP4/WebM/MOV)",
+          "slots": [
+            {
+              "key": "promo-video",
+              "label": "Promo Video",
+              "filename": "promo-video.mp4",
+              "recommendedSize": "1080p / 720p MP4",
+              "type": "video"
+            }
+          ]
+        },
+        {
           "id": "promo-banners",
           "title": "Promotional Banners",
           "description": "Special campaign and announcement banner images",

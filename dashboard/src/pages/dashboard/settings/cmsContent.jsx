@@ -16,23 +16,39 @@ import {
   Info,
   Loader2,
   HardDrive,
+  Video,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import clientConfig from '@/clientConfig';
 import { toast } from 'sonner';
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
 
 const DEFAULT_ASSET_SECTIONS = [
   {
     id: 'hero-sliders',
     title: 'Hero Slider Carousel',
-    description: 'Main sliding banner carousel displayed on homepage (Recommended: 1920x650 px, max 5MB, optimized to < 230KB)',
+    description: 'Main sliding banner carousel displayed on homepage (Recommended: 1920x650 px, max 10MB, optimized to < 230KB)',
     slots: [
       { key: 'slider-1', label: 'Slide 1', filename: 'slider-1.webp', recommendedSize: '1920x650' },
       { key: 'slider-2', label: 'Slide 2', filename: 'slider-2.webp', recommendedSize: '1920x650' },
       { key: 'slider-3', label: 'Slide 3', filename: 'slider-3.webp', recommendedSize: '1920x650' },
+    ],
+  },
+  {
+    id: 'promo-video',
+    title: 'Promotional Video',
+    description: 'Featured storefront promo video with automated H.264 web compression (Max 100MB, MP4/WebM/MOV)',
+    slots: [
+      {
+        key: 'promo-video',
+        label: 'Promo Video',
+        filename: 'promo-video.mp4',
+        recommendedSize: '1080p / 720p MP4',
+        type: 'video',
+      },
     ],
   },
   {
@@ -192,9 +208,17 @@ const CMSContentPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > MAX_FILE_SIZE_BYTES) {
+    const isVideoSlot =
+      slot.type === 'video' ||
+      slot.filename?.endsWith('.mp4') ||
+      slot.key?.includes('video');
+
+    const maxLimit = isVideoSlot ? MAX_VIDEO_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES;
+    const limitLabel = isVideoSlot ? '100MB' : '10MB';
+
+    if (file.size > maxLimit) {
       toast.error(
-        `File size (${formatBytes(file.size)}) exceeds the maximum 5MB limit. Please select an image under 5MB.`
+        `File size (${formatBytes(file.size)}) exceeds the maximum ${limitLabel} limit. Please select a file under ${limitLabel}.`
       );
       e.target.value = '';
       return;
@@ -307,8 +331,12 @@ const CMSContentPage = () => {
                   assetsMap.get(withoutExt) ||
                   (slot.key === 'logo' ? assetsMap.get('logo.webp') || assetsMap.get('logo') : null) ||
                   (slot.key === 'favicon' ? assetsMap.get('favicon.ico') || assetsMap.get('favicon') : null);
-                const isUploadingThisSlot =
-                  activeUploadingSlot === slot.key && uploadMutation.isPending;
+                const isVideoSlot =
+                  slot.type === 'video' ||
+                  slot.filename?.endsWith('.mp4') ||
+                  slot.key?.includes('video');
+                const isVideoAsset =
+                  currentAsset?.filename?.match(/\.(mp4|webm|mov)$/i);
 
                 return (
                   <div
@@ -318,17 +346,20 @@ const CMSContentPage = () => {
                     <input
                       type="file"
                       ref={(el) => (fileInputRefs.current[slot.key] = el)}
-                      accept="image/*,.ico"
+                      accept={isVideoSlot ? "video/mp4,video/webm,video/quicktime,video/*" : "image/*,.ico"}
                       className="hidden"
                       onChange={(e) => handleFileChange(e, slot)}
                     />
 
                     <div className="p-3.5 border-b border-border/60 flex items-center justify-between bg-muted/30">
-                      <div>
-                        <h4 className="text-xs font-bold text-foreground">{slot.label}</h4>
-                        <p className="text-[11px] font-mono text-muted-foreground truncate">
-                          {slot.filename}
-                        </p>
+                      <div className="flex items-center gap-2">
+                        {isVideoSlot && <Video className="h-4 w-4 text-primary shrink-0" />}
+                        <div>
+                          <h4 className="text-xs font-bold text-foreground">{slot.label}</h4>
+                          <p className="text-[11px] font-mono text-muted-foreground truncate">
+                            {slot.filename}
+                          </p>
+                        </div>
                       </div>
                       {slot.recommendedSize && (
                         <Badge
@@ -345,25 +376,33 @@ const CMSContentPage = () => {
                         <div className="flex flex-col items-center justify-center p-4 text-center gap-2">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                           <span className="text-xs font-medium text-muted-foreground">
-                            Compressing to WebP (&lt;230KB) & saving...
+                            {isVideoSlot ? 'Compressing video (H.264 Web) & saving...' : 'Compressing to WebP (<230KB) & saving...'}
                           </span>
                         </div>
                       ) : isAssetsLoading ? (
                         <Skeleton className="h-full w-full" />
                       ) : currentAsset ? (
                         <>
-                          <img
-                            src={resolveImageUrl(currentAsset.url || currentAsset.relativePath)}
-                            alt={slot.label}
-                            className={
-                              slot.key === 'logo' || slot.filename?.includes('logo')
-                                ? "h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
-                                : "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            }
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
+                          {isVideoAsset ? (
+                            <video
+                              src={resolveImageUrl(currentAsset.url || currentAsset.relativePath)}
+                              controls
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <img
+                              src={resolveImageUrl(currentAsset.url || currentAsset.relativePath)}
+                              alt={slot.label}
+                              className={
+                                slot.key === 'logo' || slot.filename?.includes('logo')
+                                  ? "h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
+                                  : "h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              }
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          )}
                           <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between px-2 py-1 rounded bg-black/70 backdrop-blur-xs text-[10px] font-mono text-white pointer-events-none">
                             <span>{currentAsset.sizeFormatted || formatBytes(currentAsset.size)}</span>
                             <span className="text-emerald-400 font-semibold">Active</span>
@@ -374,12 +413,16 @@ const CMSContentPage = () => {
                           onClick={() => handleSlotClick(slot.key)}
                           className="flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:bg-muted/70 transition-colors w-full h-full"
                         >
-                          <UploadCloud className="h-8 w-8 text-muted-foreground/60 mb-2" />
+                          {isVideoSlot ? (
+                            <Video className="h-8 w-8 text-muted-foreground/60 mb-2" />
+                          ) : (
+                            <UploadCloud className="h-8 w-8 text-muted-foreground/60 mb-2" />
+                          )}
                           <p className="text-xs font-semibold text-foreground">
                             Click to upload {slot.label}
                           </p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
-                            Max 5MB • Compresses to &lt;230KB WebP
+                            {isVideoSlot ? 'Max 100MB • Auto compresses with H.264' : 'Max 10MB • Compresses to <230KB WebP'}
                           </p>
                         </div>
                       )}
@@ -470,14 +513,22 @@ const CMSContentPage = () => {
                   className="group rounded-lg border border-border overflow-hidden bg-card flex flex-col transition-all hover:border-primary/40"
                 >
                   <div className="relative aspect-square bg-muted/30 overflow-hidden flex items-center justify-center">
-                    <img
-                      src={resolveImageUrl(asset.url || asset.relativePath)}
-                      alt={asset.filename}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
+                    {asset.filename.match(/\.(mp4|webm|mov)$/i) ? (
+                      <video
+                        src={resolveImageUrl(asset.url || asset.relativePath)}
+                        className="h-full w-full object-cover"
+                        controls
+                      />
+                    ) : (
+                      <img
+                        src={resolveImageUrl(asset.url || asset.relativePath)}
+                        alt={asset.filename}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    )}
                   </div>
                   <div className="p-2 flex flex-col gap-1 border-t border-border">
                     <p className="text-[11px] font-mono font-medium truncate" title={asset.filename}>

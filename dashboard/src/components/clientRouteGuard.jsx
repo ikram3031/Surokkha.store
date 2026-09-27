@@ -25,6 +25,16 @@ const getRequiredPermission = (pathname) => {
 
   if (cleanPath.startsWith('/dashboard/members') || cleanPath.startsWith('/dashboard/customers')) return 'members';
 
+  if (cleanPath === '/dashboard/accounts/bills/new') return 'accounts.bills.new';
+  if (cleanPath === '/dashboard/accounts/bills/types') return 'accounts.bills.types';
+  if (cleanPath === '/dashboard/accounts/bills') return 'accounts.bills';
+  if (cleanPath === '/dashboard/accounts/payments/new') return 'accounts.payments.new';
+  if (cleanPath === '/dashboard/accounts/payments') return 'accounts.payments';
+  if (cleanPath === '/dashboard/accounts/investors') return 'accounts.investors';
+  if (cleanPath === '/dashboard/accounts/investments') return 'accounts.investments';
+  if (cleanPath === '/dashboard/accounts/balance' || cleanPath === '/dashboard/accounts') return 'accounts.balance';
+  if (cleanPath.startsWith('/dashboard/accounts')) return 'accounts';
+
   if (cleanPath === '/dashboard/billing/billings') return 'billing.billings';
   if (cleanPath === '/dashboard/billing/payments') return 'billing.payments';
   if (cleanPath.startsWith('/dashboard/billing')) return 'billing';
