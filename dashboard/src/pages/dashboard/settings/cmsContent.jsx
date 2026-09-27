@@ -337,6 +337,8 @@ const CMSContentPage = () => {
                   slot.key?.includes('video');
                 const isVideoAsset =
                   currentAsset?.filename?.match(/\.(mp4|webm|mov)$/i);
+                const isUploadingThisSlot =
+                  uploadMutation.isPending && activeUploadingSlot === slot.key;
 
                 return (
                   <div
