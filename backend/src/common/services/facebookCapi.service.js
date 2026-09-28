@@ -3,6 +3,7 @@ import { env } from "../config/env.js";
 import { config as clientConfig } from "../config/index.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { MemberModel } from "../models/member.model.js";
+import { ProductModel } from "../models/product.model.js";
 
 // Computes SHA-256 hash for CAPI user data normalization
 const sha256 = (value) => {
@@ -346,7 +347,15 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       item_price: Number(item.unitPrice || 0),
     }));
 
-    const contentIds = contents.map((c) => c.id).filter(Boolean);
+    // Fetch product slugs dynamically to ensure Purchase event matches catalog exported with slug mapping
+    const productMongoIds = items.map(i => i.productId).filter(Boolean);
+    let extraSlugs = [];
+    if (productMongoIds.length > 0) {
+      const dbProducts = await ProductModel.find({ _id: { $in: productMongoIds } }, 'slug did _id').lean();
+      extraSlugs = dbProducts.map(p => p.slug || p.did || String(p._id));
+    }
+
+    const contentIds = [...new Set([...contents.map((c) => c.id).filter(Boolean), ...extraSlugs.filter(Boolean)])];
 
     const orderTotalAmount = Number(
       order.totals?.total ?? order.total ?? order.totalAmount ?? 0

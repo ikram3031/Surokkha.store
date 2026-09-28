@@ -676,6 +676,7 @@ const MetaCatalogGenerator = () => {
       let contentId = p.did || p.id;
       if (idMapping === 'sku' && p.sku) contentId = p.sku;
       else if (idMapping === 'id' && p.id) contentId = String(p.id);
+      else if (idMapping === 'slug' && p.slug) contentId = String(p.slug);
 
       if (includeVariants && p.hasVariants && p.variants.length > 0) {
         p.variants.forEach((v) => {
@@ -1341,7 +1342,7 @@ const MetaCatalogGenerator = () => {
                           </td>
 
                           <td className="p-3 font-mono text-[11px] text-muted-foreground">
-                            {idMapping === 'sku' ? p.sku : idMapping === 'id' ? p.id : p.did}
+                            {idMapping === 'sku' ? p.sku : idMapping === 'id' ? p.id : idMapping === 'slug' ? p.slug : p.did}
                           </td>
 
                           <td className="p-3 font-mono font-semibold">
@@ -1517,6 +1518,7 @@ const MetaCatalogGenerator = () => {
                   <option value="did">product.did (Recommended for Meta Pixel)</option>
                   <option value="sku">product.sku</option>
                   <option value="id">product.id (MongoDB ObjectID)</option>
+                  <option value="slug">product.slug (URL Path)</option>
                 </select>
               </div>
 
