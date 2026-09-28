@@ -79,3 +79,49 @@ Every git commit must strictly adhere to the format:
 - **Zero Deployment Without Explicit Command**:
   - **NEVER** execute VPS build, deployment commands, service restarts, or push to production without explicit user instruction ("ami na bolle deploy dibana").
   - Only when the user explicitly commands *"ডিপ্লয় দাও"* (or equivalent direct deployment command), proceed with deployment from the `Live` branch.
+
+---
+
+## 7. Infrastructure, VPS Servers & Deployment Inventory (From Inventory Sheet)
+*Reference: `J:\My Drive\assets.docs.plexivia\Plexivia_VPS_Containers_and_Domains_Inventory.xlsx`*
+
+### Server 1: Plexivia Self-Owned Dedicated VPS Node 1
+- **IP Address**: `14.128.14.223` | **Hostname**: `s.plexihub.space` | **OS**: Ubuntu 24.04 LTS
+- **SSH Command**: `ssh -i ~/.ssh/id_ed25519_plexivia root@14.128.14.223`
+- **SSH Key**: `C:\Users\mdikr\.ssh\id_ed25519_plexivia`
+- **Hosted Platforms & Clients**:
+  1. **PlexiHub Platform**:
+     - Core API: `plexivia-backend.service` (Port 5095) $\rightarrow$ `api.plexivia.com`
+     - Auth: `plexivia-auth.service` (Port 5001), Hub: `plexivia-hub.service` (Port 5002), Agency: `plexivia-agency.service` (Port 5003), Finance: `plexivia-finance.service` (Port 5004)
+     - Websites: `plexivia.com`, `admin.plexivia.com`, `portal.plexihub.space`
+     - Database: `plexivia-mongodb-live` (Port 27017)
+  2. **Surokkha White-Label E-Commerce**:
+     - **Storefront Website**: `/opt/clients/surokkha/dist` $\rightarrow$ `surokkha.store`, `www.surokkha.store`
+     - **Admin Dashboard**: `/var/www/admin.surokkha.store/dist` $\rightarrow$ `admin.surokkha.store`
+     - **Storefront API Instance**: systemd `surokkha-storefront.service` (Port 5094, `src/server.storefront.js`) $\rightarrow$ `api.surokkha.store`, `server.surokkha.store`
+     - **Dashboard API Instance**: systemd `surokkha-dashboard.service` (Port 5096, `src/server.dashboard.js`) $\rightarrow$ `service.surokkha.store`
+     - **Database**: Docker `surokkha-mongodb-live` (127.0.0.1:27019 $\rightarrow$ container 27017, DB: `surokkha-db`)
+     - **Backend Working Dir**: `/opt/clients/surokkha/backend`
+  3. **Southern Hermain Overseas (MAT ERP)**:
+     - API: Docker `southernhermain-backend-live` (Port 5093) $\rightarrow$ `api.southernhermainoverseas.site`
+     - Dashboards: `southernhermain-dashboard-admin-live` (Port 8017), `southernhermain-dashboard-live` (Port 8015)
+     - Database: Docker `southernhermain-mongodb-live` (Port 27018 $\rightarrow$ container 27017)
+
+### Server 2: CaresBD Production VPS
+- **IP Address**: `144.79.218.122` | **Hostname**: `server.caresbd.com` | **OS**: Ubuntu 24.04 LTS
+- **SSH Command**: `ssh -i ~/.ssh/id_ed25519_plexivia root@144.79.218.122`
+- **SSH Key**: `C:\Users\mdikr\.ssh\id_ed25519_plexivia`
+- **Hosted Clients**:
+  - **Cares Bangladesh** (26FS04): `cares-web` (3000), `cares-server` (5092), `cares-admin` (8005), `cares-mongodb` (27017)
+  - **Toyoland** (WL03): `toyoland-frontend` (8007), `toyoland-backend-live` (5093), `toyoland-dashboard-live` (8006), `toyoland-mongodb-live` (27018)
+  - **System Services**: `cares-cpanel` (8090) $\rightarrow$ `cpanel.caresbangladesh.com`, `gitea.service` (3002) $\rightarrow$ `git.plexivia.online`
+
+### Server 3: Engulfic Production VPS
+- **IP Address**: `144.79.218.112` | **Hostname**: `plexivia.server.com` | **OS**: Ubuntu 22.04 LTS
+- **SSH Command**: `ssh -i ~/.ssh/engulfic root@144.79.218.112`
+- **SSH Key**: `C:\Users\mdikr\.ssh\engulfic`
+- **Hosted Clients**:
+  - **Engulfic** (WL02): `engulfic-backend-live` (5094), `engulfic-dashboard-live` (8015), `engulfic-mongodb-live` (27017), Storefront Nginx Static (/dist)
+  - **TestEnv ERP**: `testenv-erp-backend-live` (5092), `testenv-erp-dashboard-admin-live` (8007), `testenv-erp-dashboard-live` (8005), `testenv-erp-mongodb-live` (27018)
+  - **Plexivia Demo**: API (Port 5095), DB (Port 27019) $\rightarrow$ `api.plexivia.online`, `dashboard.plexivia.online`
+
