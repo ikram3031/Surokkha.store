@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 // Renders an accessible language selection dropdown toggling English and Bengali
-export const LanguageToggle = ({ variant = "outline", size = "icon", className = "" }) => {
+export const LanguageToggle = ({ variant = "outline", className = "" }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language || "en";
 
@@ -26,13 +26,12 @@ export const LanguageToggle = ({ variant = "outline", size = "icon", className =
         render={
           <Button
             variant={variant}
-            size={size}
-            className={`relative h-9 px-2.5 flex items-center gap-1.5 font-medium cursor-pointer ${className}`}
+            className={`relative h-8 px-2.5 flex items-center gap-1.5 text-xs font-semibold rounded-lg border-border/80 text-foreground hover:bg-muted/80 cursor-pointer shrink-0 ${className}`}
             title={t("language.switch_language", "Change Language / ভাষা পরিবর্তন")}
             aria-label="Language Selector"
           >
-            <Globe className="h-4 w-4 text-primary" />
-            <span className="text-xs font-bold uppercase tracking-wider">
+            <Globe className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="text-[11px] font-bold uppercase tracking-wider">
               {currentLang.startsWith("bn") ? "বাং" : "EN"}
             </span>
           </Button>
