@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { env } from "../config/env.js";
 import { config as clientConfig } from "../config/index.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
+import { MemberModel } from "../models/member.model.js";
 
 // Computes SHA-256 hash for CAPI user data normalization
 const sha256 = (value) => {
@@ -195,8 +196,8 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     const clientIp = extractClientIp(req);
     const clientUserAgent = req?.headers?.["user-agent"] || "";
 
-    const fbp = getCookie(req, "_fbp") || req?.body?.fbp || "";
-    const fbc = getCookie(req, "_fbc") || req?.body?.fbc || "";
+    const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || "";
+    const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || "";
 
     const rawEmail = (
       customer.email ||
@@ -237,8 +238,32 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       const hashedPhone = sha256(normalizedPhoneNum);
       const hashedFn = sha256(firstName);
       const hashedLn = sha256(lastName);
-      const hashedCity = sha256(customer.district || customer.thana || req?.body?.billingInfo?.district || "");
-      const hashedZip = sha256(customer.zip || req?.body?.billingInfo?.zip || "");
+
+      const rawCity = (
+        customer.city ||
+        customer.district ||
+        customer.thana ||
+        req?.body?.billingInfo?.city ||
+        req?.body?.billingInfo?.district ||
+        "dhaka"
+      );
+      const hashedCity = sha256(rawCity);
+
+      const rawState = (
+        customer.state ||
+        customer.division ||
+        customer.district ||
+        req?.body?.billingInfo?.state ||
+        req?.body?.billingInfo?.division ||
+        req?.body?.billingInfo?.district ||
+        req?.body?.state ||
+        req?.body?.division ||
+        req?.body?.district ||
+        "dhaka"
+      );
+      const hashedState = sha256(rawState);
+
+      const rawZip = customer.zip || req?.body?.billingInfo?.zip || "";
       const hashedCountry = sha256("bd");
 
       if (hashedEmail) userData.em = [hashedEmail];
@@ -246,11 +271,71 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       if (hashedFn) userData.fn = [hashedFn];
       if (hashedLn) userData.ln = [hashedLn];
       if (hashedCity) userData.ct = [hashedCity];
-      if (hashedZip) userData.zp = [hashedZip];
+      if (hashedState) userData.st = [hashedState];
+      if (rawZip) userData.zp = [sha256(rawZip)];
       if (hashedCountry) userData.country = [hashedCountry];
 
-      if (order.member || order.customerDid) {
-        userData.external_id = [sha256(String(order.member || order.customerDid))];
+      // Attempt to enrich ge (gender) and db (date of birth) from linked member record or req.body
+      try {
+        const memberId = order.member || req?.body?.memberId || req?.body?.member || null;
+        const memberEmail = rawEmail || "";
+
+        // Prefer req.body signals (passed from storefront at checkout time)
+        const rawGender = (req?.body?.gender || req?.body?.gen || "").toLowerCase().trim();
+        const rawDob = req?.body?.dob || req?.body?.dateOfBirth || req?.body?.db || "";
+
+        let resolvedGender = rawGender;
+        let resolvedDob = rawDob;
+
+        // If not in req.body, try member database lookup
+        if ((!resolvedGender || !resolvedDob) && (memberId || memberEmail)) {
+          const query = memberId
+            ? { _id: memberId }
+            : { email: memberEmail.toLowerCase() };
+          const memberDoc = await MemberModel.findOne(query).select("gender dob dateOfBirth").lean().catch(() => null);
+          if (memberDoc) {
+            if (!resolvedGender && memberDoc.gender) resolvedGender = String(memberDoc.gender).toLowerCase().trim();
+            if (!resolvedDob && (memberDoc.dob || memberDoc.dateOfBirth)) {
+              resolvedDob = memberDoc.dob || memberDoc.dateOfBirth;
+            }
+          }
+        }
+
+        // ge: normalize to "m" or "f" for Meta CAPI
+        if (resolvedGender) {
+          const genderNorm = resolvedGender.startsWith("m") ? "m" : resolvedGender.startsWith("f") ? "f" : "";
+          if (genderNorm) userData.ge = [sha256(genderNorm)];
+        }
+
+        // db: normalize to YYYYMMDD for Meta CAPI
+        if (resolvedDob) {
+          const dobStr = String(resolvedDob).replace(/\D/g, "");
+          if (dobStr.length === 8) {
+            // Already YYYYMMDD
+            userData.db = [sha256(dobStr)];
+          } else {
+            const dobDate = new Date(resolvedDob);
+            if (!isNaN(dobDate.getTime())) {
+              const y = dobDate.getFullYear();
+              const m = String(dobDate.getMonth() + 1).padStart(2, "0");
+              const d = String(dobDate.getDate()).padStart(2, "0");
+              userData.db = [sha256(`${y}${m}${d}`)];
+            }
+          }
+        }
+      } catch (_enrichErr) {
+        // Non-fatal: skip ge/db enrichment if lookup fails
+      }
+
+      const rawExtId = (
+        order.member ||
+        order.customerDid ||
+        req?.body?.externalId ||
+        req?.body?.external_id ||
+        String(order.orderNumber || order._id || "")
+      );
+      if (rawExtId) {
+        userData.external_id = [sha256(String(rawExtId))];
       }
     }
 
@@ -337,8 +422,8 @@ export const sendServerViewContentEvent = async ({
 
     const clientIp = extractClientIp(req);
     const clientUserAgent = req?.headers?.["user-agent"] || "";
-    const fbp = getCookie(req, "_fbp") || req?.body?.fbp || "";
-    const fbc = getCookie(req, "_fbc") || req?.body?.fbc || "";
+    const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || "";
+    const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || "";
 
     const userData = {
       ...(clientIp ? { client_ip_address: clientIp } : {}),
@@ -352,8 +437,22 @@ export const sendServerViewContentEvent = async ({
       const phone = user.phone || "";
       if (email) userData.em = [sha256(email)];
       if (phone) userData.ph = [sha256(normalizePhone(phone))];
-      if (user.memberId || user.did) {
-        userData.external_id = [sha256(String(user.memberId || user.did))];
+
+      const name = (user.name || user.fullName || "").trim();
+      if (name) {
+        const parts = name.split(/\s+/);
+        if (parts[0]) userData.fn = [sha256(parts[0])];
+        if (parts.length > 1) userData.ln = [sha256(parts.slice(1).join(" "))];
+      } else {
+        if (user.fn) userData.fn = [sha256(user.fn)];
+        if (user.ln) userData.ln = [sha256(user.ln)];
+      }
+
+      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
+      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      userData.country = [sha256("bd")];
+      if (user.memberId || user.did || user.externalId) {
+        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
       }
     }
 
@@ -443,8 +542,8 @@ export const sendServerAddToCartEvent = async ({
 
     const clientIp = extractClientIp(req);
     const clientUserAgent = req?.headers?.["user-agent"] || "";
-    const fbp = getCookie(req, "_fbp") || req?.body?.fbp || "";
-    const fbc = getCookie(req, "_fbc") || req?.body?.fbc || "";
+    const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || "";
+    const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || "";
 
     const userData = {
       ...(clientIp ? { client_ip_address: clientIp } : {}),
@@ -458,8 +557,22 @@ export const sendServerAddToCartEvent = async ({
       const phone = user.phone || "";
       if (email) userData.em = [sha256(email)];
       if (phone) userData.ph = [sha256(normalizePhone(phone))];
-      if (user.memberId || user.did) {
-        userData.external_id = [sha256(String(user.memberId || user.did))];
+
+      const name = (user.name || user.fullName || "").trim();
+      if (name) {
+        const parts = name.split(/\s+/);
+        if (parts[0]) userData.fn = [sha256(parts[0])];
+        if (parts.length > 1) userData.ln = [sha256(parts.slice(1).join(" "))];
+      } else {
+        if (user.fn) userData.fn = [sha256(user.fn)];
+        if (user.ln) userData.ln = [sha256(user.ln)];
+      }
+
+      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
+      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      userData.country = [sha256("bd")];
+      if (user.memberId || user.did || user.externalId) {
+        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
       }
     }
 

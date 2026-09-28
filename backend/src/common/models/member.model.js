@@ -58,6 +58,8 @@ const memberSchema = new Schema(
     totalOrderAmount: { type: Number, default: 0, min: 0 },
     totalPendingAmount: { type: Number, default: 0, min: 0 },
     totalPaidAmount: { type: Number, default: 0, min: 0 },
+    gender: { type: String, trim: true, lowercase: true, default: null }, // "m" or "f" — used for Meta CAPI ge parameter
+    dob: { type: Date, default: null }, // Date of birth — used for Meta CAPI db parameter (YYYYMMDD)
     refreshToken: { type: String, trim: true, select: false },
     refreshTokenExpiresAt: { type: Date, select: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
