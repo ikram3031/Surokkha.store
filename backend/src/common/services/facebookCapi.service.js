@@ -280,7 +280,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     const eventPayload = {
       event_name: "Purchase",
       event_time: Math.floor(Date.now() / 1000),
-      event_id: `purchase_${order.orderNumber || order._id}`,
+      event_id: String(order.orderNumber || order.orderId || order._id),
       action_source: "website",
       user_data: userData,
       custom_data: customData,

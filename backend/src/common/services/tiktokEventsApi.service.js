@@ -209,7 +209,7 @@ export const sendTikTokServerPurchaseEvent = async (order, req = null) => {
         {
           event: "CompletePayment",
           event_time: Math.floor(Date.now() / 1000),
-          event_id: `purchase_${order.orderNumber || order._id}`,
+          event_id: String(order.orderNumber || order.orderId || order._id),
           user: userObj,
           properties: {
             currency: "BDT",
