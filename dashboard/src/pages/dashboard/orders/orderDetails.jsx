@@ -69,6 +69,8 @@ import {
   getPaymentMethodLabel,
   getBillingInfo,
   getShippingInfo,
+  getWhatsAppLink,
+  WhatsAppIcon,
 } from "@/utils/orderDetailsHelper";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -756,9 +758,23 @@ const OrderDetailsPage = () => {
                       <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
                       <div>
                         <span className="text-xs text-muted-foreground block">Phone</span>
-                        <span className="font-medium text-foreground">
-                          {order.billingInfo?.phone || order.customer?.phone}
-                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <a
+                            href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
+                            className="font-semibold text-primary hover:underline"
+                          >
+                            {order.billingInfo?.phone || order.customer?.phone}
+                          </a>
+                          <a
+                            href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                            title="Message on WhatsApp"
+                          >
+                            <WhatsAppIcon className="h-3.5 w-3.5" />
+                          </a>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -802,12 +818,23 @@ const OrderDetailsPage = () => {
                       <div>
                         <span className="text-xs text-muted-foreground block">Phone</span>
                         {order.billingInfo?.phone || order.customer?.phone ? (
-                          <a
-                            href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
-                            className="font-semibold text-primary hover:underline"
-                          >
-                            {order.billingInfo?.phone || order.customer?.phone}
-                          </a>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <a
+                              href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
+                              className="font-semibold text-primary hover:underline"
+                            >
+                              {order.billingInfo?.phone || order.customer?.phone}
+                            </a>
+                            <a
+                              href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Message on WhatsApp"
+                            >
+                              <WhatsAppIcon className="h-3.5 w-3.5" />
+                            </a>
+                          </div>
                         ) : (
                           <span className="font-medium text-foreground">N/A</span>
                         )}
@@ -876,12 +903,23 @@ const OrderDetailsPage = () => {
                       <div>
                         <span className="text-xs text-muted-foreground block">Phone</span>
                         {order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone ? (
-                          <a
-                            href={`tel:${order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}`}
-                            className="font-semibold text-primary hover:underline"
-                          >
-                            {order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}
-                          </a>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <a
+                              href={`tel:${order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}`}
+                              className="font-semibold text-primary hover:underline"
+                            >
+                              {order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}
+                            </a>
+                            <a
+                              href={getWhatsAppLink(order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Message on WhatsApp"
+                            >
+                              <WhatsAppIcon className="h-3.5 w-3.5" />
+                            </a>
+                          </div>
                         ) : (
                           <span className="font-medium text-foreground">N/A</span>
                         )}
