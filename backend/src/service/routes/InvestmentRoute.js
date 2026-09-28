@@ -5,12 +5,17 @@ import {
   getInvestmentById,
   listInvestments,
   updateInvestment,
+  bulkUpdateInvestments,
+  bulkDeleteInvestments,
 } from "../controllers/InvestmentController.js";
 import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
 
 const investmentRouter = Router();
 
 investmentRouter.use(authenticateToken);
+
+investmentRouter.post("/bulk-update", bulkUpdateInvestments);
+investmentRouter.post("/bulk-delete", bulkDeleteInvestments);
 
 investmentRouter.post("/", createInvestment);
 investmentRouter.get("/", listInvestments);

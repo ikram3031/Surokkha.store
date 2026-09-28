@@ -127,7 +127,13 @@ export const useInvestments = (params = {}) => {
 
   const addInvestmentMutation = useMutation({
     mutationFn: async (newInv) => {
-      const res = await apiClient.post('/api/v1/investments', newInv);
+      const payload = {
+        ...newInv,
+        takenAmount: Number(newInv.takenAmount),
+        returnedAmount: newInv.returnedAmount !== undefined ? Number(newInv.returnedAmount) : 0,
+        status: newInv.status ? String(newInv.status).toLowerCase() : 'active',
+      };
+      const res = await apiClient.post('/api/v1/investments', payload);
       return res.data?.data || res.data;
     },
     onSuccess: () => {
@@ -142,7 +148,17 @@ export const useInvestments = (params = {}) => {
 
   const updateInvestmentMutation = useMutation({
     mutationFn: async ({ id, ...updates }) => {
-      const res = await apiClient.put(`/api/v1/investments/${id}`, updates);
+      const payload = { ...updates };
+      if (payload.takenAmount !== undefined) {
+        payload.takenAmount = Number(payload.takenAmount);
+      }
+      if (payload.returnedAmount !== undefined) {
+        payload.returnedAmount = Number(payload.returnedAmount);
+      }
+      if (payload.status !== undefined) {
+        payload.status = String(payload.status).toLowerCase();
+      }
+      const res = await apiClient.put(`/api/v1/investments/${id}`, payload);
       return res.data?.data || res.data;
     },
     onSuccess: () => {
@@ -191,6 +207,36 @@ export const useInvestments = (params = {}) => {
     },
   });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ ids, status }) => {
+      const res = await apiClient.post('/api/v1/investments/bulk-update', { ids, status });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['investments'] });
+      queryClient.invalidateQueries({ queryKey: ['investors'] });
+      toast.success('Investments updated successfully');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to bulk update investments');
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      const res = await apiClient.post('/api/v1/investments/bulk-delete', { ids });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['investments'] });
+      queryClient.invalidateQueries({ queryKey: ['investors'] });
+      toast.success('Investments deleted successfully');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to bulk delete investments');
+    },
+  });
+
   return {
     ...query,
     investments: query.data?.items || [],
@@ -201,8 +247,12 @@ export const useInvestments = (params = {}) => {
     updateInvestment: updateInvestmentMutation.mutateAsync,
     recordReturn: recordReturnMutation.mutateAsync,
     deleteInvestment: deleteInvestmentMutation.mutateAsync,
+    bulkUpdateInvestments: bulkUpdateMutation.mutateAsync,
+    bulkDeleteInvestments: bulkDeleteMutation.mutateAsync,
     isAdding: addInvestmentMutation.isPending,
     isUpdating: updateInvestmentMutation.isPending,
     isDeleting: deleteInvestmentMutation.isPending,
+    isBulkUpdating: bulkUpdateMutation.isPending,
+    isBulkDeleting: bulkDeleteMutation.isPending,
   };
 };
