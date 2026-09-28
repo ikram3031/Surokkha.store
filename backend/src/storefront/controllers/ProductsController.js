@@ -1,3 +1,4 @@
+import { config } from "../../common/config/index.js";
 import { ProductModel } from "../../common/models/product.model.js";
 import {
   serializeProduct,
@@ -63,6 +64,82 @@ export const getSingleProduct = async (req, res, next) => {
       data: serializeProduct(product, "en"),
       data_bn: serializeProduct(product, "bn"),
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Dynamically generates and returns a CSV file for Meta Commerce Manager Catalog Feed
+export const getMetaCatalogCsv = async (req, res, next) => {
+  try {
+    const products = await ProductModel.find({ isActive: true }).lean();
+    
+    // Set headers for CSV download
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="meta_catalog_feed.csv"');
+
+    // Define CSV header matching Facebook/Meta requirements
+    const headers = [
+      'id', 'title', 'description', 'availability', 'condition',
+      'link', 'image_link', 'brand', 'price', 'google_product_category',
+      'fb_product_category', 'product_type', 'quantity_to_sell_on_facebook',
+      'sale_price', 'sale_price_effective_date', 'item_group_id', 'gender',
+      'color', 'size', 'age_group', 'material', 'pattern', 'shipping',
+      'shipping_weight', 'custom_label_0', 'custom_label_1', 'custom_label_2',
+      'custom_label_3', 'custom_label_4', 'offer_disclaimer', 'offer_disclaimer_url',
+      'video[0].url', 'video[0].tag[0]', 'gtin', 'product_tags[0]', 'product_tags[1]', 'style[0]'
+    ];
+    
+    let csvData = headers.join(',') + '\n';
+    
+    // Construct rows
+    products.forEach((p) => {
+      const id = p.did || String(p._id);
+      const title = p.name ? p.name.replace(/"/g, '""') : '';
+      const description = p.description ? `"${p.description.replace(/"/g, '""')}"` : '';
+      const availability = p.stockStatus === 'outofstock' ? 'out of stock' : 'in stock';
+      const condition = 'new';
+      
+      const link = `${config.storefrontUrl || 'https://' + (config.domain || 'localhost')}/product/${p.slug}`;
+      const imageLink = p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : `${config.apiBaseUrl || 'https://api.' + (config.domain || 'localhost')}${p.imageUrl}`) : '';
+      
+      const brand = config.brandName || 'Store';
+      const price = `${(p.price || 0).toFixed(2)} BDT`;
+      
+      const salePrice = p.offerPrice ? `${p.offerPrice.toFixed(2)} BDT` : '';
+      const quantity = 150; // default for catalog
+      const productType = p.category ? 'Product' : 'Product';
+      const gender = 'unisex';
+      const ageGroup = 'adult';
+      
+      const row = [
+        id,
+        `"${title}"`,
+        description,
+        availability,
+        condition,
+        link,
+        imageLink,
+        brand,
+        price,
+        '', // google_product_category
+        '', // fb_product_category
+        productType,
+        quantity,
+        salePrice,
+        '', // sale_price_effective_date
+        '', // item_group_id
+        gender,
+        '', // color
+        '', // size
+        ageGroup,
+        '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+      ];
+      
+      csvData += row.join(',') + '\n';
+    });
+    
+    res.send(csvData);
   } catch (err) {
     next(err);
   }
