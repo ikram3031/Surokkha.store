@@ -60,24 +60,31 @@ export const BillTypesPage = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '', preset: 'all' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   // Modal States
   const [modalOpen, setModalOpen] = useState(false);
   const [editingType, setEditingType] = useState(null);
   const [typeForm, setTypeForm] = useState({ name: '', description: '', status: 'Active' });
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const {
     billTypes = [],
     allBillTypes = [],
     meta = { totalPages: 1, total: 0 },
     isLoading,
+    refetch,
     addBillType,
     updateBillType,
     deleteBillType,
+    bulkUpdateBillTypes,
+    bulkDeleteBillTypes,
     isAdding,
     isUpdating,
     isDeleting,
+    isBulkUpdating,
+    isBulkDeleting,
   } = useBillTypes({
     search: searchQuery || undefined,
     status: statusFilter !== 'All' ? statusFilter : undefined,
@@ -102,6 +109,49 @@ export const BillTypesPage = () => {
   }, [allBillings]);
 
   const totalPages = meta?.totalPages || 1;
+
+  const isAllPageSelected = billTypes.length > 0 && billTypes.every((t) => selectedIds.includes(t.id));
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const pageIds = billTypes.map((t) => t.id);
+      setSelectedIds(Array.from(new Set([...selectedIds, ...pageIds])));
+    } else {
+      const pageIds = billTypes.map((t) => t.id);
+      setSelectedIds(selectedIds.filter((id) => !pageIds.includes(id)));
+    }
+  };
+
+  const handleBulkStatusChange = async (targetStatus) => {
+    if (!targetStatus || targetStatus === 'placeholder' || selectedIds.length === 0) return;
+    try {
+      if (bulkUpdateBillTypes) {
+        await bulkUpdateBillTypes({ ids: selectedIds, status: targetStatus });
+      } else {
+        await Promise.all(selectedIds.map((id) => updateBillType({ id, status: targetStatus })));
+      }
+      setSelectedIds([]);
+      if (refetch) refetch();
+    } catch {
+      toast.error('Failed to update bill categories');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      if (bulkDeleteBillTypes) {
+        await bulkDeleteBillTypes(selectedIds);
+      } else {
+        await Promise.all(selectedIds.map((id) => deleteBillType(id)));
+      }
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+      if (refetch) refetch();
+    } catch {
+      toast.error('Failed to delete selected bill categories');
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingType(null);
@@ -171,7 +221,7 @@ export const BillTypesPage = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
             onClick={handleOpenAdd}
-            className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{t('accounts.add_bill_type_btn', 'Add Bill Type')}</span>
@@ -192,35 +242,69 @@ export const BillTypesPage = () => {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
+                setSelectedIds([]);
               }}
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => {
-                setStatusFilter(v || 'All');
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="h-9 text-xs w-[130px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+            {selectedIds.length === 0 ? (
+              <>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v) => {
+                    setStatusFilter(v || 'All');
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs w-[130px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Status</SelectItem>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <DateRangeFilter
-              value={dateRange.preset}
-              onChange={(range) => {
-                setDateRange(range);
-                setCurrentPage(1);
-              }}
-            />
+                <DateRangeFilter
+                  value={dateRange.preset}
+                  onChange={(range) => {
+                    setDateRange(range);
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <span className="text-xs font-semibold text-muted-foreground mr-1">
+                  {selectedIds.length} selected:
+                </span>
+                <Select value="placeholder" onValueChange={handleBulkStatusChange}>
+                  <SelectTrigger className="h-9 text-xs w-[140px] border-primary/30 bg-primary/5 text-primary">
+                    <SelectValue placeholder="Bulk Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">
+                      Bulk Status
+                    </SelectItem>
+                    <SelectItem value="Active">Mark as Active</SelectItem>
+                    <SelectItem value="Inactive">Mark as Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => setBulkDeleteOpen(true)}
+                  className="h-9 w-9 shrink-0 cursor-pointer"
+                  title="Delete Selected"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -229,6 +313,14 @@ export const BillTypesPage = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <TableHead className="w-[45px] px-4">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                    checked={isAllPageSelected}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                </TableHead>
                 <TableHead className="text-xs">Category Name</TableHead>
                 <TableHead className="text-xs">Description</TableHead>
                 <TableHead className="text-xs">Linked Bills</TableHead>
@@ -242,6 +334,7 @@ export const BillTypesPage = () => {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
+                    <TableCell className="px-4"><span className="h-4 w-4 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-48 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-12 block bg-muted animate-pulse rounded" /></TableCell>
@@ -259,6 +352,20 @@ export const BillTypesPage = () => {
 
                   return (
                     <TableRow key={type.id} className="hover:bg-muted/30">
+                      <TableCell className="w-[45px] px-4">
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                          checked={selectedIds.includes(type.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedIds([...selectedIds, type.id]);
+                            } else {
+                              setSelectedIds(selectedIds.filter((id) => id !== type.id));
+                            }
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-semibold text-xs text-foreground">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-primary" />
@@ -297,7 +404,7 @@ export const BillTypesPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                            className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 cursor-pointer"
                             onClick={() => handleOpenEdit(type)}
                             title="Edit Category"
                           >
@@ -306,7 +413,7 @@ export const BillTypesPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                             onClick={() => setDeleteTarget(type)}
                             title="Delete Category"
                           >
@@ -319,7 +426,7 @@ export const BillTypesPage = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
+                  <TableCell colSpan={8} className="h-28 text-center text-muted-foreground text-xs">
                     No bill categories found matching your query.
                   </TableCell>
                 </TableRow>
@@ -446,6 +553,16 @@ export const BillTypesPage = () => {
         isDeleting={isDeleting}
         title="Delete Bill Category"
         description={`Are you sure you want to delete "${deleteTarget?.name}"? Any existing bills linked to this type will remain intact.`}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={handleBulkDelete}
+        isDeleting={isBulkDeleting}
+        title={`Delete ${selectedIds.length} Selected Categories?`}
+        description={`Are you sure you want to delete the ${selectedIds.length} selected bill categories? Any bills linked to these categories will remain intact.`}
       />
     </div>
   );

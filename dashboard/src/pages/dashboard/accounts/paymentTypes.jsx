@@ -99,6 +99,7 @@ export const PaymentTypesPage = () => {
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '', preset: 'all' });
   const [currentPage, setCurrentPage] = useState(1);
   const [copiedId, setCopiedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   // Modal States
   const [modalOpen, setModalOpen] = useState(false);
@@ -107,18 +108,24 @@ export const PaymentTypesPage = () => {
   const [editingType, setEditingType] = useState(null);
   const [typeForm, setTypeForm] = useState(INITIAL_FORM);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const {
     paymentTypes = [],
     allPaymentTypes = [],
     meta = { totalPages: 1, total: 0 },
     isLoading,
+    refetch,
     addPaymentType,
     updatePaymentType,
     deletePaymentType,
+    bulkUpdatePaymentTypes,
+    bulkDeletePaymentTypes,
     isAdding,
     isUpdating,
     isDeleting,
+    isBulkUpdating,
+    isBulkDeleting,
   } = usePaymentTypes({
     search: searchQuery || undefined,
     category: categoryFilter !== 'All' ? categoryFilter.toLowerCase() : undefined,
@@ -154,6 +161,49 @@ export const PaymentTypesPage = () => {
   }, [allPaymentTypes, typeStats]);
 
   const totalPages = meta?.totalPages || 1;
+
+  const isAllPageSelected = paymentTypes.length > 0 && paymentTypes.every((t) => selectedIds.includes(t.id));
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const pageIds = paymentTypes.map((t) => t.id);
+      setSelectedIds(Array.from(new Set([...selectedIds, ...pageIds])));
+    } else {
+      const pageIds = paymentTypes.map((t) => t.id);
+      setSelectedIds(selectedIds.filter((id) => !pageIds.includes(id)));
+    }
+  };
+
+  const handleBulkStatusChange = async (targetStatus) => {
+    if (!targetStatus || targetStatus === 'placeholder' || selectedIds.length === 0) return;
+    try {
+      if (bulkUpdatePaymentTypes) {
+        await bulkUpdatePaymentTypes({ ids: selectedIds, status: targetStatus });
+      } else {
+        await Promise.all(selectedIds.map((id) => updatePaymentType({ id, status: targetStatus })));
+      }
+      setSelectedIds([]);
+      if (refetch) refetch();
+    } catch {
+      toast.error('Failed to update payment methods');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      if (bulkDeletePaymentTypes) {
+        await bulkDeletePaymentTypes(selectedIds);
+      } else {
+        await Promise.all(selectedIds.map((id) => deletePaymentType(id)));
+      }
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+      if (refetch) refetch();
+    } catch {
+      toast.error('Failed to delete selected payment methods');
+    }
+  };
 
   const handleCopy = (text, id) => {
     if (!text) return;
@@ -329,56 +379,91 @@ export const PaymentTypesPage = () => {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
+                setSelectedIds([]);
               }}
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={categoryFilter}
-              onValueChange={(v) => {
-                setCategoryFilter(v || 'All');
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="h-9 text-xs w-[140px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Categories</SelectItem>
-                <SelectItem value="mfs">MFS / Wallet</SelectItem>
-                <SelectItem value="bank">Bank Account</SelectItem>
-                <SelectItem value="cash">Cash / COD</SelectItem>
-                <SelectItem value="card">Card / POS</SelectItem>
-                <SelectItem value="gateway">Gateway</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            {selectedIds.length === 0 ? (
+              <>
+                <Select
+                  value={categoryFilter}
+                  onValueChange={(v) => {
+                    setCategoryFilter(v || 'All');
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs w-[140px]">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Categories</SelectItem>
+                    <SelectItem value="mfs">MFS / Wallet</SelectItem>
+                    <SelectItem value="bank">Bank Account</SelectItem>
+                    <SelectItem value="cash">Cash / COD</SelectItem>
+                    <SelectItem value="card">Card / POS</SelectItem>
+                    <SelectItem value="gateway">Gateway</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => {
-                setStatusFilter(v || 'All');
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="h-9 text-xs w-[120px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v) => {
+                    setStatusFilter(v || 'All');
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs w-[120px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Status</SelectItem>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <DateRangeFilter
-              value={dateRange.preset}
-              onChange={(range) => {
-                setDateRange(range);
-                setCurrentPage(1);
-              }}
-            />
+                <DateRangeFilter
+                  value={dateRange.preset}
+                  onChange={(range) => {
+                    setDateRange(range);
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <span className="text-xs font-semibold text-muted-foreground mr-1">
+                  {selectedIds.length} selected:
+                </span>
+                <Select value="placeholder" onValueChange={handleBulkStatusChange}>
+                  <SelectTrigger className="h-9 text-xs w-[140px] border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
+                    <SelectValue placeholder="Bulk Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">
+                      Bulk Status
+                    </SelectItem>
+                    <SelectItem value="Active">Mark as Active</SelectItem>
+                    <SelectItem value="Inactive">Mark as Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => setBulkDeleteOpen(true)}
+                  className="h-9 w-9 shrink-0 cursor-pointer"
+                  title="Delete Selected"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -387,6 +472,14 @@ export const PaymentTypesPage = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <TableHead className="w-[45px] px-4">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
+                    checked={isAllPageSelected}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                </TableHead>
                 <TableHead className="text-xs font-semibold">Payment Method</TableHead>
                 <TableHead className="text-xs font-semibold">Category</TableHead>
                 <TableHead className="text-xs font-semibold">Account / Wallet Details</TableHead>
@@ -401,6 +494,7 @@ export const PaymentTypesPage = () => {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
+                    <TableCell className="px-4"><span className="h-4 w-4 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-5 w-24 block bg-muted animate-pulse rounded-full" /></TableCell>
                     <TableCell><span className="h-4 w-40 block bg-muted animate-pulse rounded" /></TableCell>
@@ -413,7 +507,7 @@ export const PaymentTypesPage = () => {
                 ))
               ) : paymentTypes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-48 text-center">
+                  <TableCell colSpan={9} className="h-48 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                       <div className="p-3 bg-muted/40 rounded-full">
                         <CreditCard className="w-8 h-8 opacity-40" />
@@ -441,6 +535,22 @@ export const PaymentTypesPage = () => {
 
                   return (
                     <TableRow key={type.id} className="hover:bg-muted/30 transition-colors">
+                      {/* Selection Checkbox */}
+                      <TableCell className="w-[45px] px-4">
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
+                          checked={selectedIds.includes(type.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedIds([...selectedIds, type.id]);
+                            } else {
+                              setSelectedIds(selectedIds.filter((id) => id !== type.id));
+                            }
+                          }}
+                        />
+                      </TableCell>
+
                       {/* Method Name & Provider */}
                       <TableCell className="font-semibold text-xs text-foreground">
                         <div className="flex items-center gap-2.5">
@@ -985,6 +1095,16 @@ export const PaymentTypesPage = () => {
         title="Delete Payment Method?"
         description={`Are you sure you want to delete "${deleteTarget?.name}"? Linked payment records will retain their history.`}
         isLoading={isDeleting}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={handleBulkDelete}
+        title="Delete Selected Payment Methods?"
+        description={`Are you sure you want to delete ${selectedIds.length} selected payment method(s)? Linked payment records will retain their history.`}
+        isLoading={isBulkDeleting}
       />
     </div>
   );

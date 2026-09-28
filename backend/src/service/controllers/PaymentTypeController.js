@@ -258,3 +258,72 @@ export const deletePaymentType = async (req, res, next) => {
     next(error);
   }
 };
+
+// Batch updates status for multiple payment methods
+export const bulkUpdatePaymentTypes = async (req, res, next) => {
+  try {
+    const { ids, status } = req.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ status: "error", message: "ids array is required" });
+    }
+
+    const objectIds = ids.filter((id) => Types.ObjectId.isValid(id));
+    const dids = ids.filter((id) => !Types.ObjectId.isValid(id));
+
+    const query = {
+      $or: [
+        { _id: { $in: objectIds } },
+        { did: { $in: dids } },
+      ],
+    };
+
+    const update = {
+      updatedBy: req.user?.userId || null,
+    };
+    if (status !== undefined) {
+      update.status = status.toLowerCase() === "inactive" ? "inactive" : "active";
+    }
+
+    const result = await PaymentTypeModel.updateMany(query, { $set: update });
+
+    return res.json({
+      status: "success",
+      message: `Successfully updated ${result.modifiedCount} payment methods`,
+      data: { modifiedCount: result.modifiedCount },
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to bulk update payment methods");
+    next(error);
+  }
+};
+
+// Batch deletes multiple payment methods
+export const bulkDeletePaymentTypes = async (req, res, next) => {
+  try {
+    const { ids } = req.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ status: "error", message: "ids array is required" });
+    }
+
+    const objectIds = ids.filter((id) => Types.ObjectId.isValid(id));
+    const dids = ids.filter((id) => !Types.ObjectId.isValid(id));
+
+    const query = {
+      $or: [
+        { _id: { $in: objectIds } },
+        { did: { $in: dids } },
+      ],
+    };
+
+    const result = await PaymentTypeModel.deleteMany(query);
+
+    return res.json({
+      status: "success",
+      message: `Successfully deleted ${result.deletedCount} payment methods`,
+      data: { deletedCount: result.deletedCount },
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to bulk delete payment methods");
+    next(error);
+  }
+};

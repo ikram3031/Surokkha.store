@@ -138,6 +138,34 @@ export const usePaymentTypes = (params = {}) => {
     },
   });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ ids, status }) => {
+      const res = await apiClient.post('/api/v1/payment-types/bulk-update', { ids, status });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payment-types'] });
+      toast.success('Payment methods updated successfully');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to bulk update payment methods');
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      const res = await apiClient.post('/api/v1/payment-types/bulk-delete', { ids });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payment-types'] });
+      toast.success('Payment methods deleted successfully');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to bulk delete payment methods');
+    },
+  });
+
   return {
     ...query,
     paymentTypes: query.data?.items || [],
@@ -151,9 +179,15 @@ export const usePaymentTypes = (params = {}) => {
     addPaymentMethod: addTypeMutation.mutateAsync,
     updatePaymentMethod: updateTypeMutation.mutateAsync,
     deletePaymentMethod: deleteTypeMutation.mutateAsync,
+    bulkUpdatePaymentTypes: bulkUpdateMutation.mutateAsync,
+    bulkDeletePaymentTypes: bulkDeleteMutation.mutateAsync,
+    bulkUpdatePaymentMethods: bulkUpdateMutation.mutateAsync,
+    bulkDeletePaymentMethods: bulkDeleteMutation.mutateAsync,
     isAdding: addTypeMutation.isPending,
     isUpdating: updateTypeMutation.isPending,
     isDeleting: deleteTypeMutation.isPending,
+    isBulkUpdating: bulkUpdateMutation.isPending,
+    isBulkDeleting: bulkDeleteMutation.isPending,
   };
 };
 
