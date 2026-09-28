@@ -137,16 +137,25 @@ export const buildDecantreOrderInvoiceHtml = ({
       color: #0F172A;
       margin: 0;
       padding: 24px 12px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
     }
     .invoice-wrapper {
       max-width: 680px;
+      width: 100%;
+      min-height: calc(100vh - 80px);
       margin: 0 auto;
       background-color: #FFFFFF;
       border: 1px solid #E2E8F0;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     .gold-header-bar {
       height: 6px;
@@ -206,6 +215,7 @@ export const buildDecantreOrderInvoiceHtml = ({
     }
     .items-container {
       padding: 24px 32px;
+      flex: 1 0 auto;
     }
     .items-table {
       width: 100%;
@@ -275,7 +285,7 @@ export const buildDecantreOrderInvoiceHtml = ({
     
     /* Decant Care Box */
     .decant-care-box {
-      margin: 24px 32px;
+      margin: 16px 32px;
       padding: 14px 18px;
       background-color: #FEFCE8;
       border: 1px solid #FEF08A;
@@ -298,6 +308,10 @@ export const buildDecantreOrderInvoiceHtml = ({
       line-height: 1.4;
     }
     
+    .invoice-footer-wrapper {
+      margin-top: auto;
+      width: 100%;
+    }
     .invoice-footer {
       padding: 24px 32px;
       background-color: #0F172A;
@@ -353,25 +367,44 @@ export const buildDecantreOrderInvoiceHtml = ({
       background-color: #1E293B;
     }
 
+    @page {
+      size: A4 portrait;
+      margin: 6mm 8mm;
+    }
     @media print {
-      @page {
-        size: A4 portrait;
-        margin: 6mm 8mm;
-      }
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      body {
+      html, body {
         background-color: #FFFFFF !important;
         padding: 0 !important;
         margin: 0 !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        width: 100% !important;
       }
       .invoice-wrapper {
         border: none !important;
         box-shadow: none !important;
         max-width: 100% !important;
+        width: 100% !important;
         border-radius: 0 !important;
+        min-height: calc(297mm - 14mm) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      .items-container {
+        flex: 1 0 auto !important;
+      }
+      .invoice-footer-wrapper {
+        margin-top: auto !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
       .actions-bar {
         display: none !important;
@@ -463,22 +496,25 @@ export const buildDecantreOrderInvoiceHtml = ({
       </div>
     </div>
 
-    <!-- Decant Care & Rest Notice -->
-    <div class="decant-care-box">
-      <div style="font-size: 18px; line-height: 1;">✨</div>
-      <div>
-        <h5>Decant Resting & Storage Instructions</h5>
-        <p>Due to transit temperature shifts, please allow your decants to rest for <strong>24 hours</strong> at room temperature in a dark place before first spray for true scent notes and maximum longevity.</p>
+    <!-- Bottom Footer Wrapper fixed at bottom -->
+    <div class="invoice-footer-wrapper">
+      <!-- Decant Care & Rest Notice -->
+      <div class="decant-care-box">
+        <div style="font-size: 18px; line-height: 1;">✨</div>
+        <div>
+          <h5>Decant Resting & Storage Instructions</h5>
+          <p>Due to transit temperature shifts, please allow your decants to rest for <strong>24 hours</strong> at room temperature in a dark place before first spray for true scent notes and maximum longevity.</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Luxury Footer -->
-    <div class="invoice-footer">
-      <div class="authenticity-seal">✦ 100% Authentic Flacon Decant Guarantee ✦</div>
-      <p>Thank you for choosing <strong>Decantre</strong> — Your Premier Destination for Luxury Perfumes.</p>
-      <p style="margin-top: 4px; font-size: 11px; color: #64748B;">
-        For questions or returns, reach out via WhatsApp at <strong>01869151550</strong> or email <a href="mailto:support@decantrebd.com">support@decantrebd.com</a>.
-      </p>
+      <!-- Luxury Footer -->
+      <div class="invoice-footer">
+        <div class="authenticity-seal">✦ 100% Authentic Flacon Decant Guarantee ✦</div>
+        <p>Thank you for choosing <strong>Decantre</strong> — Your Premier Destination for Luxury Perfumes.</p>
+        <p style="margin-top: 4px; font-size: 11px; color: #64748B;">
+          For questions or returns, reach out via WhatsApp at <strong>01869151550</strong> or email <a href="mailto:support@decantrebd.com">support@decantrebd.com</a>.
+        </p>
+      </div>
     </div>
   </div>
 

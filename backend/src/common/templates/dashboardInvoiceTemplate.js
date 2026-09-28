@@ -83,14 +83,23 @@ export const buildDashboardInvoiceHtml = ({
       color: #1F2937;
       -webkit-font-smoothing: antialiased;
       padding: 32px 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     .invoice-container {
       max-width: 800px;
+      width: 100%;
+      min-height: calc(100vh - 80px);
       margin: 0 auto;
       background-color: #FFFFFF;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     /* Dark header with golden logo */
     .invoice-header {
@@ -115,6 +124,7 @@ export const buildDashboardInvoiceHtml = ({
     /* Body content */
     .invoice-body {
       padding: 36px 40px 28px;
+      flex: 1 0 auto;
     }
     /* Meta row: Invoice number, date, payment */
     .meta-grid {
@@ -229,6 +239,7 @@ export const buildDashboardInvoiceHtml = ({
     }
     /* Footer */
     .invoice-footer {
+      margin-top: auto;
       text-align: center;
       padding: 20px 40px;
       border-top: 1px solid #E5E7EB;
@@ -251,10 +262,12 @@ export const buildDashboardInvoiceHtml = ({
       margin: 8mm;
     }
     @media print {
-      body {
+      html, body {
         background-color: #FFFFFF !important;
         padding: 0 !important;
         margin: 0 !important;
+        height: 100% !important;
+        min-height: 100% !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
@@ -263,15 +276,25 @@ export const buildDashboardInvoiceHtml = ({
         border-radius: 0 !important;
         max-width: 100% !important;
         width: 100% !important;
+        min-height: calc(297mm - 18mm) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-after: avoid;
+        break-after: avoid;
       }
       .invoice-body {
         padding: 24px 28px 20px !important;
+        flex: 1 0 auto !important;
       }
       .invoice-header {
         padding: 18px 28px !important;
       }
       .invoice-footer {
         padding: 14px 28px !important;
+        margin-top: auto !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
     }
   </style>

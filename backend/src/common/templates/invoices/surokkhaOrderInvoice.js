@@ -145,16 +145,25 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       color: #0F172A;
       margin: 0;
       padding: 24px 12px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
     }
     .invoice-wrapper {
       max-width: 680px;
+      width: 100%;
+      min-height: calc(100vh - 80px);
       margin: 0 auto;
       background-color: #FFFFFF;
       border: 1px solid #E2E8F0;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     .brand-header-bar {
       height: 5px;
@@ -226,6 +235,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     .items-container {
       padding: 24px 32px;
       background-color: #FFFFFF;
+      flex: 1 0 auto;
     }
     .items-table {
       width: 100%;
@@ -325,8 +335,12 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     }
     
     /* Clean Light Footer */
+    .invoice-footer-wrapper {
+      margin-top: auto;
+      width: 100%;
+    }
     .invoice-footer-light {
-      padding: 24px 32px;
+      padding: 20px 32px;
       background-color: #F8FAFC;
       border-top: 1px solid #E2E8F0;
       color: #475569;
@@ -382,25 +396,44 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       background-color: #9F1239;
     }
 
+    @page {
+      size: A4 portrait;
+      margin: 6mm 8mm;
+    }
     @media print {
-      @page {
-        size: A4 portrait;
-        margin: 6mm 8mm;
-      }
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      body {
+      html, body {
         background-color: #FFFFFF !important;
         padding: 0 !important;
         margin: 0 !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        width: 100% !important;
       }
       .invoice-wrapper {
         border: none !important;
         box-shadow: none !important;
         max-width: 100% !important;
+        width: 100% !important;
         border-radius: 0 !important;
+        min-height: calc(297mm - 14mm) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      .items-container {
+        flex: 1 0 auto !important;
+      }
+      .invoice-footer-wrapper {
+        margin-top: auto !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
       .actions-bar {
         display: none !important;
@@ -488,16 +521,19 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       </div>
     </div>
 
-    <!-- Thank you message above footer -->
-    <div style="padding: 16px 32px; text-align: center; font-size: 12.5px; color: #334155; border-top: 1px solid #F1F5F9;">
-      Thank you for choosing <a href="https://surokkha.store" target="_blank" style="color: #BE123C; text-decoration: none; font-weight: 700;"><strong>Surokkha.store</strong></a> — Trusted Destination for Personal Wellness
-    </div>
+    <!-- Bottom Footer Wrapper fixed at bottom -->
+    <div class="invoice-footer-wrapper">
+      <!-- Thank you message above footer -->
+      <div style="padding: 16px 32px; text-align: center; font-size: 12.5px; color: #334155; border-top: 1px solid #F1F5F9; background-color: #FFFFFF;">
+        Thank you for choosing <a href="https://surokkha.store" target="_blank" style="color: #BE123C; text-decoration: none; font-weight: 700;"><strong>Surokkha.store</strong></a> — Trusted Destination for Personal Wellness
+      </div>
 
-    <!-- Surokkha Clean Light Footer -->
-    <div class="invoice-footer-light">
-      <p style="font-size: 11.5px; color: #64748B;">
-        For questions or assistance, reach out via WhatsApp at <a href="https://wa.me/8801600905774" target="_blank" style="text-decoration: underline;">01600905774</a> or email <a href="mailto:support@surokkha.store">support@surokkha.store</a>.
-      </p>
+      <!-- Surokkha Clean Light Footer -->
+      <div class="invoice-footer-light">
+        <p style="font-size: 11.5px; color: #64748B; margin: 0;">
+          For questions or assistance, reach out via WhatsApp at <a href="https://wa.me/8801600905774" target="_blank" style="text-decoration: underline;">01600905774</a> or email <a href="mailto:support@surokkha.store">support@surokkha.store</a>.
+        </p>
+      </div>
     </div>
   </div>
 
