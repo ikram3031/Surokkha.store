@@ -133,11 +133,19 @@ export const createOrder = async (req, res, next) => {
         createdOrder.shippingInfo?.fullName ||
         "Customer";
       const actorDid = req.user?.did || "staff";
-      const orderTypeLabel = isCustomOrder ? "custom order" : isInstoreOrder ? "in-store order" : "order";
+      const actorName = req.user?.name || "System Admin";
+      let descriptionStr = `${customerName} placed a new order #${createdOrder.orderNumber}`;
+      
+      if (isCustomOrder) {
+        descriptionStr = `${actorName} added a new custom order #${createdOrder.orderNumber}`;
+      } else if (isInstoreOrder) {
+        descriptionStr = `${actorName} added a new in-store order #${createdOrder.orderNumber}`;
+      }
+
       const log = await LogModel.create({
         type: "newOrder",
         typeDid: "111",
-        description: `${customerName} placed a new ${orderTypeLabel} #${createdOrder.orderNumber}`,
+        description: descriptionStr,
         readStatus: false,
         active: true,
         createdBy: actorDid,
