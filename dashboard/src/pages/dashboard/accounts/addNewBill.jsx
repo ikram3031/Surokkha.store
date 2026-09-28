@@ -55,7 +55,7 @@ export const AddNewBillPage = () => {
 
   const [formData, setFormData] = useState({
     title: '',
-    billType: 'Office Rent & Space',
+    billType: '',
     vendor: '',
     billingPhone: '',
     billingEmail: '',
@@ -72,6 +72,16 @@ export const AddNewBillPage = () => {
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeDesc, setNewTypeDesc] = useState('');
 
+  // Set default bill type when bill types load
+  useEffect(() => {
+    if (!formData.billType && allBillTypes.length > 0 && !editId) {
+      setFormData((prev) => ({
+        ...prev,
+        billType: allBillTypes[0].name,
+      }));
+    }
+  }, [allBillTypes, editId, formData.billType]);
+
   // Pre-fill form if editing
   useEffect(() => {
     if (editId && allBillings.length > 0) {
@@ -79,7 +89,7 @@ export const AddNewBillPage = () => {
       if (existing) {
         setFormData({
           title: existing.title || '',
-          billType: existing.billType || 'Office Rent & Space',
+          billType: existing.billType || (allBillTypes[0]?.name || ''),
           vendor: existing.vendor || existing.customerName || '',
           billingPhone: existing.billingPhone || '',
           billingEmail: existing.billingEmail || '',
@@ -238,11 +248,17 @@ export const AddNewBillPage = () => {
                       <SelectValue placeholder="Select Bill Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {allBillTypes.map((bt) => (
-                        <SelectItem key={bt.id} value={bt.name}>
-                          {bt.name}
+                      {allBillTypes.length > 0 ? (
+                        allBillTypes.map((bt) => (
+                          <SelectItem key={bt.id} value={bt.name}>
+                            {bt.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>
+                          No categories found. Click Add Category.
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient, getWebSocketUrl } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +22,57 @@ export const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMarkingRead, setIsMarkingRead] = useState(false);
 
-  // Poll only when authenticated token/user is present
+  // Real-time WebSocket connection for live notification alerts
+  useEffect(() => {
+    if (!user) return;
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    let ws = null;
+    let reconnectTimeout = null;
+
+    // Connects to server websocket for real-time notifications
+    const connectWs = () => {
+      try {
+        const wsUrl = `${getWebSocketUrl()}?token=${encodeURIComponent(token)}`;
+        ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.event === 'NEW_NOTIFICATION') {
+              queryClient.invalidateQueries({ queryKey: ['notification-logs'] });
+              queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
+              queryClient.invalidateQueries({ queryKey: ['orders'] });
+              toast.info(msg.data?.log?.description || 'New order placed!');
+            } else if (msg.event === 'NOTIFICATION_READ_UPDATE') {
+              queryClient.invalidateQueries({ queryKey: ['notification-logs'] });
+            }
+          } catch (_) {}
+        };
+
+        ws.onclose = () => {
+          reconnectTimeout = setTimeout(connectWs, 10000);
+        };
+
+        ws.onerror = () => {
+          if (ws) ws.close();
+        };
+      } catch (_) {}
+    };
+
+    connectWs();
+
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (ws) {
+        ws.onclose = null;
+        ws.close();
+      }
+    };
+  }, [user, queryClient]);
+
+  // Poll notification logs with fallback
   const { data: notificationData } = useQuery({
     queryKey: ['notification-logs'],
     queryFn: async () => {
@@ -30,7 +80,7 @@ export const NotificationBell = () => {
       return res.data;
     },
     enabled: Boolean(user),
-    refetchInterval: 120000, // 2 minutes polling fallback
+    refetchInterval: 30000,
     refetchOnWindowFocus: true,
   });
 

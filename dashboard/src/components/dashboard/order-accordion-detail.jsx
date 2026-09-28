@@ -40,6 +40,7 @@ import {
   getShippingInfo,
   formatFullAddress,
 } from '@/utils/orderDetailsHelper';
+import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 
 // Renders an expanded accordion panel containing full order details and inline status management
 export const OrderAccordionDetail = ({ order }) => {
@@ -152,6 +153,12 @@ export const OrderAccordionDetail = ({ order }) => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <PathaoCourierCard
+            order={order}
+            triggerOnly
+            triggerButtonVariant="outline"
+            triggerButtonClassName="h-8 text-xs bg-background"
+          />
           <Button
             variant="outline"
             size="sm"

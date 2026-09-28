@@ -612,6 +612,12 @@ const OrderDetailsPage = () => {
             </>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
+              <PathaoCourierCard
+                order={order}
+                triggerOnly
+                triggerButtonVariant="outline"
+                triggerButtonClassName="h-9 text-xs bg-background shadow-sm"
+              />
               <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={handleOpenInvoice}>
                 <FileText className="h-4 w-4 text-muted-foreground" /> Print Invoice
               </Button>

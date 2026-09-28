@@ -220,22 +220,35 @@ export const AddNewPaymentPage = () => {
                       <SelectValue placeholder="Search or select registered customer..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="group-members" disabled className="font-bold text-[11px] text-muted-foreground">
-                        -- Customer Directory --
-                      </SelectItem>
-                      {membersList.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.name || 'Unnamed Member'} ({m.phone || m.email || m.did})
+                      {membersList.length > 0 && (
+                        <>
+                          <SelectItem value="group-members" disabled className="font-bold text-[11px] text-muted-foreground">
+                            -- Customer Directory --
+                          </SelectItem>
+                          {membersList.map((m) => (
+                            <SelectItem key={m.id} value={m.id}>
+                              {m.name || 'Unnamed Member'} ({m.phone || m.email || m.did})
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+                      {usersList.length > 0 && (
+                        <>
+                          <SelectItem value="group-users" disabled className="font-bold text-[11px] text-muted-foreground">
+                            -- System Users --
+                          </SelectItem>
+                          {usersList.map((u) => (
+                            <SelectItem key={u.id} value={u.id}>
+                              {u.name} ({u.role} - {u.email})
+                            </SelectItem>
+                          ))}
+                        </>
+                      )}
+                      {membersList.length === 0 && usersList.length === 0 && (
+                        <SelectItem value="none" disabled>
+                          No registered members or users found.
                         </SelectItem>
-                      ))}
-                      <SelectItem value="group-users" disabled className="font-bold text-[11px] text-muted-foreground">
-                        -- System Users --
-                      </SelectItem>
-                      {usersList.map((u) => (
-                        <SelectItem key={u.id} value={u.id}>
-                          {u.name} ({u.role} - {u.email})
-                        </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

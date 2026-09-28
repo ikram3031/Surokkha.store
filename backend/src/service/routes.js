@@ -60,6 +60,8 @@ serviceRouter.use("/accounts", accountsRouter);
 serviceRouter.use("/accounts/bill-types", billTypeRouter);
 serviceRouter.use("/accounts/investors", investorRouter);
 serviceRouter.use("/accounts/investments", investmentRouter);
+serviceRouter.use("/investors", investorRouter);
+serviceRouter.use("/investments", investmentRouter);
 serviceRouter.use("/accounts/balance", accountBalanceRouter);
 serviceRouter.use("/categories", categoriesRouter);
 serviceRouter.use("/brands", brandRouter);

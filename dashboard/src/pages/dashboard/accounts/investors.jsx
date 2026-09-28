@@ -80,7 +80,7 @@ export const InvestorsPage = () => {
 
   // Modal States
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [modalOption, setModalOption] = useState('existing'); // 'existing' | 'manual'
+  const [modalOption, setModalOption] = useState('existing');
   const [editingInvestor, setEditingInvestor] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
