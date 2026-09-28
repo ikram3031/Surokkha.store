@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { BillingModel } from "../../common/models/billing.model.js";
+import { BillTypeModel } from "../../common/models/billType.model.js";
 import { logger } from "../../common/config/logger.js";
 
 const { Types } = mongoose;
@@ -22,6 +23,7 @@ export const createBilling = async (req, res, next) => {
     const {
       orderId,
       billTypeId,
+      billType,
       title,
       name,
       billingMethod,
@@ -47,6 +49,14 @@ export const createBilling = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Valid amount is required" });
     }
 
+    let resolvedBillTypeId = billTypeId || null;
+    if (!resolvedBillTypeId && billType && typeof billType === "string") {
+      const found = await BillTypeModel.findOne({ name: { $regex: `^${billType.trim()}$`, $options: "i" } }).lean();
+      if (found) {
+        resolvedBillTypeId = found._id;
+      }
+    }
+
     const totalAmount = Number(requestedTotalAmount ?? amount);
     const paidAmount = Number(requestedPaidAmount ?? amount);
     const pendingAmount = Number(requestedPendingAmount ?? Math.max(0, totalAmount - paidAmount));
@@ -54,7 +64,7 @@ export const createBilling = async (req, res, next) => {
 
     const billingData = {
       orderId: orderId || null,
-      billTypeId: billTypeId || null,
+      billTypeId: resolvedBillTypeId,
       title: (title || name || "").toString().trim(),
       name: (name || title || "").toString().trim(),
       billingMethod: billingMethod?.trim() || "manual",
@@ -235,6 +245,11 @@ export const updateBilling = async (req, res, next) => {
         return res.status(400).json({ status: "error", message: "Invalid billTypeId" });
       }
       allowedUpdates.billTypeId = payload.billTypeId || null;
+    } else if (payload.billType && typeof payload.billType === "string" && !payload.billTypeId) {
+      const found = await BillTypeModel.findOne({ name: { $regex: `^${payload.billType.trim()}$`, $options: "i" } }).lean();
+      if (found) {
+        allowedUpdates.billTypeId = found._id;
+      }
     }
     if (payload.billingMethod !== undefined) {
       allowedUpdates.billingMethod = payload.billingMethod.trim();

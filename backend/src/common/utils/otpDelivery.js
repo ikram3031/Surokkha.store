@@ -1,34 +1,7 @@
 import nodemailer from "nodemailer";
 import { buildOtpEmailHtml } from "../templates/otpEmailTemplate.js";
 import { env } from "../config/env.js";
-
-let defaultTransport;
-
-// Dynamically retrieve or initialize SMTP transport
-const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    defaultTransport = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      auth: {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
-  }
-  return defaultTransport;
-};
+import { getSmtpTransport } from "../services/smtpConfig.service.js";
 
 // Sends OTP verification or password reset email
 export const sendOtpEmail = async ({
@@ -39,9 +12,11 @@ export const sendOtpEmail = async ({
   transport,
   log = console,
 }) => {
-  const activeTransport = transport || getTransport();
+  const smtpResult = await getSmtpTransport();
+  const activeTransport = transport || smtpResult.transport;
+  const smtpConfig = smtpResult.config;
 
-  if (!env.SMTP_USER || !env.SMTP_PASSWORD) {
+  if (!smtpConfig.isConfigured) {
     return {
       delivered: false,
       reason: "SMTP credentials are not configured",
@@ -57,8 +32,8 @@ export const sendOtpEmail = async ({
     : `Hello ${name || "there"},\n\nYour OTP verification code is ${otp}.\nThis code will expire in 3 minutes.\n\nThank you.`;
 
   const html = buildOtpEmailHtml({ name, otp, type });
-  const fromName = env.SMTP_FROM_NAME || "Decantre BD";
-  const fromEmail = env.SMTP_FROM || env.SMTP_USER;
+  const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Decantre BD";
+  const fromEmail = smtpConfig.fromEmail || smtpConfig.user;
   const fromAddress = `"${fromName}" <${fromEmail}>`;
 
   try {

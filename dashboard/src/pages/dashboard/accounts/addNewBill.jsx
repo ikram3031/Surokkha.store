@@ -160,9 +160,13 @@ export const AddNewBillPage = () => {
       return;
     }
 
+    const selectedType = allBillTypes.find((t) => t.name === formData.billType);
+    const billTypeId = selectedType ? selectedType.id : null;
+
     const payload = {
       title: formData.title.trim(),
       billType: formData.billType,
+      billTypeId: billTypeId,
       vendor: formData.vendor.trim() || formData.title.trim(),
       customerName: formData.vendor.trim() || formData.title.trim(),
       billingPhone: formData.billingPhone.trim(),

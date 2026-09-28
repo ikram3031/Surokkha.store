@@ -49,7 +49,6 @@ import {
 } from '@/components/ui/dialog';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { useBillTypes } from '@/hooks/use-bill-types';
-import { useBillings } from '@/hooks/use-billings';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { toast } from 'sonner';
 
@@ -93,20 +92,6 @@ export const BillTypesPage = () => {
     page: currentPage,
     limit: 10,
   });
-
-  const { allBillings = [] } = useBillings();
-
-  // Compute bill stats per type
-  const typeStats = useMemo(() => {
-    const counts = {};
-    const volumes = {};
-    allBillings.forEach((b) => {
-      const type = b.billType || 'General Expense';
-      counts[type] = (counts[type] || 0) + 1;
-      volumes[type] = (volumes[type] || 0) + (Number(b.totalAmount) || 0);
-    });
-    return { counts, volumes };
-  }, [allBillings]);
 
   const totalPages = meta?.totalPages || 1;
 
@@ -346,8 +331,8 @@ export const BillTypesPage = () => {
                 ))
               ) : billTypes.length > 0 ? (
                 billTypes.map((type) => {
-                  const billCount = typeStats.counts[type.name] || 0;
-                  const volume = typeStats.volumes[type.name] || 0;
+                  const billCount = type.linkedBillsCount || 0;
+                  const volume = type.totalIncurred || 0;
                   const isActive = type.status === 'Active';
 
                   return (

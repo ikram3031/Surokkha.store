@@ -25,6 +25,7 @@ import CMSContentPage from './pages/dashboard/settings/cmsContent';
 import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
+import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import AllMedia from './pages/dashboard/allMedia';
 
 // Products
@@ -269,6 +270,14 @@ export const router = createBrowserRouter([
             ),
           },
           { path: 'pathao', element: <Navigate to="pathao-courier" replace /> },
+          {
+            path: 'smtp',
+            element: (
+              <RoleGuard menuKey="settings">
+                <SmtpSettingsPage />
+              </RoleGuard>
+            ),
+          },
         ],
       },
       {

@@ -188,6 +188,74 @@ const storeSettingsSchema = new Schema(
         trim: true,
       },
     },
+    smtp: {
+      host: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      port: {
+        type: Number,
+        default: 465,
+      },
+      secure: {
+        type: Boolean,
+        default: true,
+      },
+      user: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      password: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      senderName: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      senderEmail: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      isEnabled: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    imap: {
+      host: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      port: {
+        type: Number,
+        default: 993,
+      },
+      secure: {
+        type: Boolean,
+        default: true,
+      },
+      user: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      password: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      isEnabled: {
+        type: Boolean,
+        default: false,
+      },
+    },
     pathaoCourier: {
       baseUrl: {
         type: String,

@@ -521,6 +521,16 @@ export const AppSidebar = ({ ...props }) => {
                       <span>{t("nav.pathao_courier", "Pathao Courier")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname.startsWith("/dashboard/settings/smtp")}
+                      render={<Link to="/dashboard/settings/smtp" />}
+                    >
+                      <Mail className="h-3.5 w-3.5 text-indigo-500" />
+                      <span>{t("nav.email_server_setup", "Email Server Setup")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
                 </SidebarMenuSub>
               )}
             </SidebarMenuItem>

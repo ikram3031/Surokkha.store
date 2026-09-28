@@ -12,6 +12,11 @@ import {
   updateGoogleAnalyticsSettings,
   getSeoSettings,
   updateSeoSettings,
+  getSmtpSettings,
+  updateSmtpSettings,
+  testSmtpConnection,
+  getImapSettings,
+  updateImapSettings,
 } from "../controllers/SettingsController.js";
 import {
   authenticateToken,
@@ -98,6 +103,43 @@ settingsRouter.put(
   authenticateToken,
   authorizeRoles("Owner", "Admin"),
   updateSeoSettings
+);
+
+// Protected SMTP administration endpoints
+settingsRouter.get(
+  "/smtp",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  getSmtpSettings
+);
+
+settingsRouter.put(
+  "/smtp",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  updateSmtpSettings
+);
+
+settingsRouter.post(
+  "/smtp/test",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  testSmtpConnection
+);
+
+// Protected IMAP administration endpoints
+settingsRouter.get(
+  "/imap",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  getImapSettings
+);
+
+settingsRouter.put(
+  "/imap",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  updateImapSettings
 );
 
 export default settingsRouter;

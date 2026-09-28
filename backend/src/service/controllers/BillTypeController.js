@@ -24,11 +24,34 @@ export const listBillTypes = async (req, res, next) => {
     }
 
     const total = await BillTypeModel.countDocuments(filter);
-    const billTypes = await BillTypeModel.find(filter)
-      .sort({ isDefault: -1, createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
+    
+    // Fetch bill types and aggregate linked bills stats
+    const billTypes = await BillTypeModel.aggregate([
+      { $match: filter },
+      { $sort: { isDefault: -1, createdAt: -1 } },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "billings",
+          localField: "_id",
+          foreignField: "billTypeId",
+          as: "linkedBills"
+        }
+      },
+      {
+        $addFields: {
+          id: { $toString: "$_id" },
+          linkedBillsCount: { $size: "$linkedBills" },
+          totalIncurred: { $sum: "$linkedBills.totalAmount" }
+        }
+      },
+      {
+        $project: {
+          linkedBills: 0
+        }
+      }
+    ]);
 
     return res.json({
       status: "success",

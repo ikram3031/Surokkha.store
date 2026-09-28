@@ -10,14 +10,24 @@ import { broadcastLiveNotification } from "../websocket.js";
 let isSyncing = false;
 let idleClient = null;
 
+import { StoreSettingsModel } from "../models/storeSettings.model.js";
+import { decryptText } from "../utils/crypto.util.js";
+
 // Creates a new configured ImapFlow client instance
-const createImapClient = () => {
-  const user = env.IMAP_USER || env.SMTP_USER;
-  const pass = env.IMAP_PASSWORD || env.SMTP_PASSWORD;
+const createImapClient = async () => {
+  const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+  const dbImap = doc?.imap || {};
+
+  const host = dbImap.isEnabled ? dbImap.host : env.IMAP_HOST;
+  const port = dbImap.isEnabled ? dbImap.port : env.IMAP_PORT;
+  const secure = dbImap.isEnabled ? dbImap.secure : env.IMAP_SECURE;
+  const user = dbImap.isEnabled ? dbImap.user : (env.IMAP_USER || env.SMTP_USER);
+  const pass = dbImap.isEnabled ? decryptText(dbImap.password) : (env.IMAP_PASSWORD || env.SMTP_PASSWORD);
+
   return new ImapFlow({
-    host: env.IMAP_HOST,
-    port: env.IMAP_PORT,
-    secure: env.IMAP_SECURE,
+    host,
+    port,
+    secure,
     auth: {
       user,
       pass,
@@ -196,9 +206,11 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
 
 // Synchronizes messages from a specific IMAP folder into the database
 export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
+  // We can let IMAP check be bypassed since it might be controlled in UI now,
+  // but env.IMAP_SYNC_ENABLED is a master switch.
   if (!env.IMAP_SYNC_ENABLED) return { count: 0 };
 
-  const client = createImapClient();
+  const client = await createImapClient();
   let processedCount = 0;
 
   try {
@@ -285,7 +297,7 @@ export const startImapIdleListener = async () => {
     }
   }
 
-  const client = createImapClient();
+  const client = await createImapClient();
   idleClient = client;
 
   try {
@@ -336,7 +348,7 @@ export const startImapIdleListener = async () => {
 export const appendEmailToSentFolder = async (rawMimeBuffer) => {
   if (!env.IMAP_SYNC_ENABLED) return;
 
-  const client = createImapClient();
+  const client = await createImapClient();
   try {
     await client.connect();
 
