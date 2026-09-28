@@ -55,6 +55,7 @@ export const OrdersTable = ({
   selectedIds,
   onSelectedIdsChange,
   orderType = 'online',
+  isReadOnly = false,
 }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -351,19 +352,27 @@ export const OrdersTable = ({
                           <DropdownMenuItem onClick={() => handleViewDetails(order)}>
                             {t('common.details', 'View Details')}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditOrderClick(order)}>
-                            {t('common.edit', 'Edit Order')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenStatusModal(order)}>
-                            {t('orders.change_status', 'Change Status')}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive cursor-pointer"
-                            onClick={() => setDeleteTarget({ id: order.id, orderNumber: order.orderNumber })}
-                          >
-                            {t('common.delete', 'Delete Order')}
-                          </DropdownMenuItem>
+                          {!isReadOnly && (
+                            <DropdownMenuItem onClick={() => handleEditOrderClick(order)}>
+                              {t('common.edit', 'Edit Order')}
+                            </DropdownMenuItem>
+                          )}
+                          {!isReadOnly && (
+                            <DropdownMenuItem onClick={() => handleOpenStatusModal(order)}>
+                              {t('orders.change_status', 'Change Status')}
+                            </DropdownMenuItem>
+                          )}
+                          {!isReadOnly && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive cursor-pointer"
+                                onClick={() => setDeleteTarget({ id: order.id, orderNumber: order.orderNumber })}
+                              >
+                                {t('common.delete', 'Delete Order')}
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

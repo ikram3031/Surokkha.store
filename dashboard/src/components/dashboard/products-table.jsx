@@ -58,6 +58,7 @@ export const ProductsTable = ({
   selectedIds,
   onSelectedIdsChange,
   fixedOnSale = false,
+  isReadOnly = false,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -332,29 +333,37 @@ export const ProductsTable = ({
                           {t('products.view_edit_product', 'View / Edit Product')}
                         </Link>
                       } />
-                      <DropdownMenuItem
-                        className="cursor-pointer text-xs flex items-center gap-2"
-                        onClick={() => setStockTarget(product)}
-                      >
-                        <PackageX className="h-3.5 w-3.5 text-muted-foreground" />
-                        {t('products.change_stock')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="cursor-pointer text-xs flex items-center gap-2"
-                        onClick={() => handleDuplicate(product)}
-                        disabled={duplicatingId === product.id}
-                      >
-                        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                        {duplicatingId === product.id ? t('products.duplicating', 'Duplicating...') : t('products.duplicate_product', 'Duplicate Product')}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive cursor-pointer text-xs flex items-center gap-2"
-                        onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        {t('products.delete_product', 'Delete Product')}
-                      </DropdownMenuItem>
+                      {!isReadOnly && (
+                        <DropdownMenuItem
+                          className="cursor-pointer text-xs flex items-center gap-2"
+                          onClick={() => setStockTarget(product)}
+                        >
+                          <PackageX className="h-3.5 w-3.5 text-muted-foreground" />
+                          {t('products.change_stock')}
+                        </DropdownMenuItem>
+                      )}
+                      {!isReadOnly && (
+                        <DropdownMenuItem
+                          className="cursor-pointer text-xs flex items-center gap-2"
+                          onClick={() => handleDuplicate(product)}
+                          disabled={duplicatingId === product.id}
+                        >
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                          {duplicatingId === product.id ? t('products.duplicating', 'Duplicating...') : t('products.duplicate_product', 'Duplicate Product')}
+                        </DropdownMenuItem>
+                      )}
+                      {!isReadOnly && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive cursor-pointer text-xs flex items-center gap-2"
+                            onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            {t('products.delete_product', 'Delete Product')}
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

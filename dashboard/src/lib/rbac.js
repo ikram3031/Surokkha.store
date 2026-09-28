@@ -63,3 +63,9 @@ export const getDefaultRedirect = (role) => {
   return '/dashboard';
 };
 
+// Returns true if the role is read-only (Investor) — cannot delete, edit, or create anything
+export const isReadOnlyRole = (role) => {
+  if (!role) return false;
+  const lower = String(role).trim().toLowerCase();
+  return lower === 'investor';
+};

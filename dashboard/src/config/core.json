@@ -85,6 +85,21 @@
         "settings.tiktok-pixel",
         "settings.google-analytics"
       ]
+    },
+    "Investor": {
+      "name": "Investor",
+      "allowedMenus": [
+        "overview",
+        "webmail",
+        "orders",
+        "orders.list",
+        "products",
+        "products.list",
+        "reports",
+        "accounts",
+        "accounts.balance",
+        "accounts.investments"
+      ]
     }
   }
 }
