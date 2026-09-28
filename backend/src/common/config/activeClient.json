@@ -1,6 +1,7 @@
 {
   "clientId": "05",
   "clientKey": "surokkha",
+  "orderPrefix": "SU",
   "brandName": "Surokkha",
   "domain": "surokkha.store",
   "supportEmail": "support@surokkha.store",
