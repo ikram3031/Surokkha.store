@@ -11,7 +11,7 @@ export function runDeployCommand(target, makeCommand) {
   console.log(`🔗 Connecting to ${config.user}@${config.host}...`);
   
   try {
-    const sshCommand = `ssh root@${config.host} && cd ${config.deployPath} && ${makeCommand}`;
+    const sshCommand = `ssh root@${config.host} "cd ${config.deployPath} && ${makeCommand}"`;
     execSync(sshCommand, { stdio: 'inherit' });
     console.log(`✅ Deployment for ${target} completed successfully!\n`);
   } catch (error) {

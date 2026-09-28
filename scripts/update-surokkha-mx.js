@@ -1,4 +1,4 @@
-﻿import fs from "fs";
+import fs from "fs";
 
 const zoneId = "bd131177db6d610b5d4e5beb0142108b";
 const raw = fs.readFileSync("J:\\My Drive\\CLIENTS\\Cloudflare.txt", "utf8");
@@ -65,12 +65,65 @@ async function manageDNS() {
   const data2 = await add2.json();
   console.log("Added mx2.hostinger.com:", data2.success, data2.errors || "");
 
-  console.log("\nVerifying updated MX records...");
-  const verifyRes = await fetch("https://api.cloudflare.com/client/v4/zones/" + zoneId + "/dns_records?type=MX", {
+  console.log("\nFetching current TXT records for SPF...");
+  const txtRes = await fetch("https://api.cloudflare.com/client/v4/zones/" + zoneId + "/dns_records?type=TXT", {
     headers: { Authorization: "Bearer " + token }
   });
-  const verifyData = await verifyRes.json();
-  console.log("Verified MX Records:\n", JSON.stringify(verifyData.result, null, 2));
+  const txtData = await txtRes.json();
+  
+  for (const record of txtData.result) {
+    if (record.content.includes("v=spf1")) {
+      console.log("Deleting old SPF record: " + record.content + "...");
+      await fetch("https://api.cloudflare.com/client/v4/zones/" + zoneId + "/dns_records/" + record.id, {
+        method: "DELETE",
+        headers: { Authorization: "Bearer " + token }
+      });
+    }
+  }
+
+  console.log("Adding Hostinger SPF record...");
+  const spfRes = await fetch("https://api.cloudflare.com/client/v4/zones/" + zoneId + "/dns_records", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      type: "TXT",
+      name: "surokkha.store",
+      content: "v=spf1 include:_spf.mail.hostinger.com ~all",
+      ttl: 14400
+    })
+  });
+  const spfData = await spfRes.json();
+  console.log("Added SPF:", spfData.success, spfData.errors || "");
+
+  console.log("Adding DKIM CNAME records...");
+  const dkimRecords = [
+    { name: "hostingermail-a._domainkey", content: "hostingermail-a.dkim.mail.hostinger.com" },
+    { name: "hostingermail-b._domainkey", content: "hostingermail-b.dkim.mail.hostinger.com" },
+    { name: "hostingermail-c._domainkey", content: "hostingermail-c.dkim.mail.hostinger.com" }
+  ];
+
+  for (const rec of dkimRecords) {
+    console.log("Adding DKIM: " + rec.name);
+    const dRes = await fetch("https://api.cloudflare.com/client/v4/zones/" + zoneId + "/dns_records", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        type: "CNAME",
+        name: rec.name,
+        content: rec.content,
+        ttl: 14400,
+        proxied: false
+      })
+    });
+    const dData = await dRes.json();
+    console.log("Added DKIM " + rec.name + ":", dData.success, dData.errors || "");
+  }
 }
 
 manageDNS();

@@ -77,5 +77,5 @@ Every git commit must strictly adhere to the format:
 - **Deploy Source is `Live` Branch ONLY**:
   - Production deployments must strictly pull and build from the **`Live`** branch (never from `dev` or feature branches).
 - **Zero Deployment Without Explicit Command**:
-  - **NEVER** execute VPS build, deployment commands, service restarts, or push to production without explicit user instruction.
+  - **NEVER** execute VPS build, deployment commands, service restarts, or push to production without explicit user instruction ("ami na bolle deploy dibana").
   - Only when the user explicitly commands *"ডিপ্লয় দাও"* (or equivalent direct deployment command), proceed with deployment from the `Live` branch.
