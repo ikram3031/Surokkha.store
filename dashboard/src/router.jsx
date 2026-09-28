@@ -567,6 +567,22 @@ export const router = createBrowserRouter([
                   </RoleGuard>
                 ),
               },
+              {
+                path: 'payment-methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
             ],
           },
           {
@@ -596,7 +612,31 @@ export const router = createBrowserRouter([
                   </RoleGuard>
                 ),
               },
+              {
+                path: 'methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'payment-methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
             ],
+          },
+          {
+            path: 'payment-methods',
+            element: (
+              <RoleGuard menuKey="accounts.payments.types">
+                <PaymentTypes />
+              </RoleGuard>
+            ),
           },
           {
             path: 'investors',

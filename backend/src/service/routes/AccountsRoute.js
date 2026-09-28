@@ -12,6 +12,7 @@ accountsRouter.use("/bills", billingRouter);
 accountsRouter.use("/billing", billingRouter);
 accountsRouter.use("/bill-types", billTypeRouter);
 accountsRouter.use("/payment-types", paymentTypeRouter);
+accountsRouter.use("/payment-methods", paymentTypeRouter);
 accountsRouter.use("/investors", investorRouter);
 accountsRouter.use("/investments", investmentRouter);
 accountsRouter.use("/balance", accountBalanceRouter);

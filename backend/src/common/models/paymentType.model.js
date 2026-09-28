@@ -6,6 +6,22 @@ const { models } = mongoose;
 const paymentTypeSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
+    category: {
+      type: String,
+      enum: ["mfs", "bank", "cash", "card", "gateway", "other"],
+      default: "mfs",
+    },
+    provider: { type: String, trim: true, default: "" },
+    accountNumber: { type: String, trim: true, default: "" },
+    accountName: { type: String, trim: true, default: "" },
+    accountType: { type: String, trim: true, default: "Personal" },
+    branchName: { type: String, trim: true, default: "" },
+    routingNumber: { type: String, trim: true, default: "" },
+    chargePercent: { type: Number, default: 0 },
+    chargeFixed: { type: Number, default: 0 },
+    instructions: { type: String, trim: true, default: "" },
+    icon: { type: String, trim: true, default: "" },
+    qrCode: { type: String, trim: true, default: "" },
     description: { type: String, trim: true, default: "" },
     status: {
       type: String,
@@ -34,3 +50,4 @@ const paymentTypeSchema = new Schema(
 );
 
 export const PaymentTypeModel = models.PaymentType || model("PaymentType", paymentTypeSchema);
+export const PaymentMethodModel = PaymentTypeModel;

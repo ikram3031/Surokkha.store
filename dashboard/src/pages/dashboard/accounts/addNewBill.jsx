@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dialog';
 import { useBillings } from '@/hooks/use-billings';
 import { useBillTypes } from '@/hooks/use-bill-types';
+import { usePaymentTypes } from '@/hooks/use-payment-types';
 import { toast } from 'sonner';
 
 const formatCurrency = (val) => {
@@ -52,6 +53,17 @@ export const AddNewBillPage = () => {
 
   const { allBillings = [], createBilling, updateBilling, isCreating, isUpdating } = useBillings();
   const { allBillTypes = [], addBillType } = useBillTypes();
+  const { allPaymentTypes = [] } = usePaymentTypes();
+
+  const defaultBillingMethods = ['Bank Transfer', 'Cash', 'Card', 'bKash', 'Nagad', 'Cheque', 'Other'];
+  const availableBillingMethods = React.useMemo(() => {
+    const customNames = allPaymentTypes
+      .filter((t) => t.status === 'Active')
+      .map((t) => t.name.trim())
+      .filter(Boolean);
+    const combined = Array.from(new Set([...defaultBillingMethods, ...customNames]));
+    return combined;
+  }, [allPaymentTypes]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -385,13 +397,11 @@ export const AddNewBillPage = () => {
                       <SelectValue placeholder="Payment Method" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                      <SelectItem value="Cash">Cash</SelectItem>
-                      <SelectItem value="Card">Card</SelectItem>
-                      <SelectItem value="bKash">bKash</SelectItem>
-                      <SelectItem value="Nagad">Nagad</SelectItem>
-                      <SelectItem value="Cheque">Cheque</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      {availableBillingMethods.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

@@ -584,6 +584,20 @@ export const AppSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
+                      isActive={
+                        pathname === "/dashboard/accounts/payments/methods" ||
+                        pathname === "/dashboard/accounts/payments/types" ||
+                        pathname === "/dashboard/accounts/bills/payment-methods" ||
+                        pathname === "/dashboard/accounts/payment-methods"
+                      }
+                      render={<Link to="/dashboard/accounts/payments/methods" />}
+                    >
+                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>{t("nav.payment_methods", "Payment Methods")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
                       isActive={pathname === "/dashboard/accounts/bills" || pathname === "/dashboard/billing/billings"}
                       render={<Link to="/dashboard/accounts/bills" />}
                     >
@@ -607,11 +621,16 @@ export const AppSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/payments/types"}
-                      render={<Link to="/dashboard/accounts/payments/types" />}
+                      isActive={
+                        pathname === "/dashboard/accounts/payments/methods" ||
+                        pathname === "/dashboard/accounts/payments/types" ||
+                        pathname === "/dashboard/accounts/bills/payment-methods" ||
+                        pathname === "/dashboard/accounts/payment-methods"
+                      }
+                      render={<Link to="/dashboard/accounts/payments/methods" />}
                     >
-                      <Tag className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>{t("nav.payment_types", "Payment Types")}</span>
+                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>{t("nav.payment_methods", "Payment Methods")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
@@ -619,7 +638,7 @@ export const AppSidebar = ({ ...props }) => {
                       isActive={pathname === "/dashboard/accounts/payments" || pathname === "/dashboard/billing/payments"}
                       render={<Link to="/dashboard/accounts/payments" />}
                     >
-                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
+                      <Receipt className="h-3.5 w-3.5 text-emerald-500" />
                       <span>{t("nav.all_payments", "All Payments")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
