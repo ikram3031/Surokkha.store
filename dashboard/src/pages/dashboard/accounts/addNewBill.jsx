@@ -305,7 +305,7 @@ export const AddNewBillPage = () => {
             <CardHeader className="pb-3 border-b bg-muted/20">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-emerald-500" />
-                Payment & Billing Amounts
+                Billing Amount
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5 space-y-4">
