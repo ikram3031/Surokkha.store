@@ -29,6 +29,7 @@ const getRequiredPermission = (pathname) => {
   if (cleanPath === '/dashboard/accounts/bills/types') return 'accounts.bills.types';
   if (cleanPath === '/dashboard/accounts/bills') return 'accounts.bills';
   if (cleanPath === '/dashboard/accounts/payments/new') return 'accounts.payments.new';
+  if (cleanPath === '/dashboard/accounts/payments/types') return 'accounts.payments.types';
   if (cleanPath === '/dashboard/accounts/payments') return 'accounts.payments';
   if (cleanPath === '/dashboard/accounts/investors') return 'accounts.investors';
   if (cleanPath === '/dashboard/accounts/investments') return 'accounts.investments';

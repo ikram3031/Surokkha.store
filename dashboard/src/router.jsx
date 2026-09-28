@@ -56,6 +56,7 @@ import AddNewBill from './pages/dashboard/accounts/addNewBill';
 import BillTypes from './pages/dashboard/accounts/billTypes';
 import AllPayments from './pages/dashboard/accounts/allPayments';
 import AddNewPayment from './pages/dashboard/accounts/addNewPayment';
+import PaymentTypes from './pages/dashboard/accounts/paymentTypes';
 import Investors from './pages/dashboard/accounts/investors';
 import InvestmentsList from './pages/dashboard/accounts/investmentsList';
 import BillingOverview from './pages/dashboard/billing/billingOverview';
@@ -584,6 +585,14 @@ export const router = createBrowserRouter([
                 element: (
                   <RoleGuard menuKey="accounts.payments.new">
                     <AddNewPayment />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'types',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
                   </RoleGuard>
                 ),
               },

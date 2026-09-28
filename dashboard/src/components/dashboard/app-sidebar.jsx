@@ -607,6 +607,15 @@ export const AppSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
+                      isActive={pathname === "/dashboard/accounts/payments/types"}
+                      render={<Link to="/dashboard/accounts/payments/types" />}
+                    >
+                      <Tag className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>{t("nav.payment_types", "Payment Types")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
                       isActive={pathname === "/dashboard/accounts/payments" || pathname === "/dashboard/billing/payments"}
                       render={<Link to="/dashboard/accounts/payments" />}
                     >

@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { usePayments } from '@/hooks/use-payments';
+import { usePaymentTypes } from '@/hooks/use-payment-types';
 import { useMembers } from '@/hooks/use-members';
 import { useSystemUsers } from '@/hooks/use-users';
 import { toast } from 'sonner';
@@ -43,11 +44,25 @@ export const AddNewPaymentPage = () => {
   const editId = searchParams.get('edit');
 
   const { allPayments = [], createPayment, updatePayment, isCreating, isUpdating } = usePayments();
+  const { allPaymentTypes = [] } = usePaymentTypes();
   const { data: membersResponse } = useMembers({ limit: 50 });
   const { data: usersResponse } = useSystemUsers({ limit: 50 });
 
   const membersList = membersResponse?.data || [];
   const usersList = usersResponse?.data || [];
+
+  const defaultMethods = ['bKash', 'Nagad', 'Cash', 'Card', 'Bank Transfer', 'COD'];
+  const availableMethods = React.useMemo(() => {
+    const customNames = allPaymentTypes
+      .filter((t) => t.status === 'Active')
+      .map((t) => t.name.trim())
+      .filter(Boolean);
+    const combined = Array.from(new Set([...defaultMethods, ...customNames]));
+    if (formData.paymentMethod && !combined.includes(formData.paymentMethod)) {
+      combined.push(formData.paymentMethod);
+    }
+    return combined;
+  }, [allPaymentTypes, formData.paymentMethod]);
 
   const [customerSelectionType, setCustomerSelectionType] = useState('manual');
   const [formData, setFormData] = useState({
@@ -336,11 +351,11 @@ export const AddNewPaymentPage = () => {
                       <SelectValue placeholder="Payment Method" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="bKash">bKash</SelectItem>
-                      <SelectItem value="Nagad">Nagad</SelectItem>
-                      <SelectItem value="Cash">Cash</SelectItem>
-                      <SelectItem value="Card">Card</SelectItem>
-                      <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                      {availableMethods.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
