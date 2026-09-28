@@ -28,12 +28,20 @@ export const createPayment = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Valid referenced order not found" });
     }
 
+    const orderDoc = await OrderModel.findById(resolvedOrderId).lean();
+    let netAmount = Number(amount || 0);
+    if (orderDoc) {
+      const rawTotal = Number(amount !== undefined ? amount : (orderDoc.totals?.total || 0));
+      const shippingFee = Number(orderDoc.totals?.shippingFee ?? orderDoc.shippingTotalAmount ?? 0);
+      netAmount = Math.max(0, rawTotal - shippingFee);
+    }
+
     const payment = await PaymentModel.create({
       orderId: resolvedOrderId,
-      amount: Number(amount || 0),
-      totalAmount: Number(amount || 0),
-      paidAmount: status === "paid" ? Number(amount || 0) : 0,
-      pendingAmount: status === "paid" ? 0 : Number(amount || 0),
+      amount: netAmount,
+      totalAmount: netAmount,
+      paidAmount: status === "paid" ? netAmount : 0,
+      pendingAmount: status === "paid" ? 0 : netAmount,
       paymentMethod: paymentMethod || "Cash on Delivery",
       paymentPhone: paymentPhone || "",
       transactionId: transactionId || "",

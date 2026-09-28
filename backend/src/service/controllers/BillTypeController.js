@@ -24,11 +24,34 @@ export const listBillTypes = async (req, res, next) => {
     }
 
     const total = await BillTypeModel.countDocuments(filter);
-    const billTypes = await BillTypeModel.find(filter)
-      .sort({ isDefault: -1, createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
+    
+    // Fetch bill types and aggregate linked bills stats
+    const billTypes = await BillTypeModel.aggregate([
+      { $match: filter },
+      { $sort: { isDefault: -1, createdAt: -1 } },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "billings",
+          localField: "_id",
+          foreignField: "billTypeId",
+          as: "linkedBills"
+        }
+      },
+      {
+        $addFields: {
+          id: { $toString: "$_id" },
+          linkedBillsCount: { $size: "$linkedBills" },
+          totalIncurred: { $sum: "$linkedBills.totalAmount" }
+        }
+      },
+      {
+        $project: {
+          linkedBills: 0
+        }
+      }
+    ]);
 
     return res.json({
       status: "success",
@@ -166,6 +189,75 @@ export const deleteBillType = async (req, res, next) => {
     });
   } catch (error) {
     logger.error({ error }, "Failed to delete bill type");
+    next(error);
+  }
+};
+
+// Batch updates status for multiple bill types
+export const bulkUpdateBillTypes = async (req, res, next) => {
+  try {
+    const { ids, status } = req.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ status: "error", message: "ids array is required" });
+    }
+
+    const objectIds = ids.filter((id) => Types.ObjectId.isValid(id));
+    const dids = ids.filter((id) => !Types.ObjectId.isValid(id));
+
+    const query = {
+      $or: [
+        { _id: { $in: objectIds } },
+        { did: { $in: dids } },
+      ],
+    };
+
+    const update = {
+      updatedBy: req.user?.userId || null,
+    };
+    if (status !== undefined) {
+      update.status = status.toLowerCase() === "inactive" ? "inactive" : "active";
+    }
+
+    const result = await BillTypeModel.updateMany(query, { $set: update });
+
+    return res.json({
+      status: "success",
+      message: `Successfully updated ${result.modifiedCount} bill types`,
+      data: { modifiedCount: result.modifiedCount },
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to bulk update bill types");
+    next(error);
+  }
+};
+
+// Batch deletes multiple bill types
+export const bulkDeleteBillTypes = async (req, res, next) => {
+  try {
+    const { ids } = req.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ status: "error", message: "ids array is required" });
+    }
+
+    const objectIds = ids.filter((id) => Types.ObjectId.isValid(id));
+    const dids = ids.filter((id) => !Types.ObjectId.isValid(id));
+
+    const query = {
+      $or: [
+        { _id: { $in: objectIds } },
+        { did: { $in: dids } },
+      ],
+    };
+
+    const result = await BillTypeModel.deleteMany(query);
+
+    return res.json({
+      status: "success",
+      message: `Successfully deleted ${result.deletedCount} bill types`,
+      data: { deletedCount: result.deletedCount },
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to bulk delete bill types");
     next(error);
   }
 };

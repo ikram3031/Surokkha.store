@@ -35,10 +35,14 @@ import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { clientConfig } from '@/clientConfig';
+import { useAuth } from '@/lib/auth-context';
+import { isReadOnlyRole } from '@/lib/rbac';
 
 // Renders the products management interface with search, filters, pagination, and bulk stock controls
 const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isReadOnly = isReadOnlyRole(user?.role);
   const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -180,17 +184,19 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = n
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">{resolvedTitle}</h2>
-        <Link
-          to={
-            fixedCategory
-              ? `/dashboard/products/new?category=${encodeURIComponent(fixedCategory.toLowerCase())}`
-              : '/dashboard/products/new'
-          }
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t('products.add_new_product')}
-        </Link>
+        {!isReadOnly && (
+          <Link
+            to={
+              fixedCategory
+                ? `/dashboard/products/new?category=${encodeURIComponent(fixedCategory.toLowerCase())}`
+                : '/dashboard/products/new'
+            }
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t('products.add_new_product')}
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -288,7 +294,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = n
             </>
           )}
 
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 0 && !isReadOnly && (
             <div className="flex gap-2 items-center">
               <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {t('products.selected_count', { count: selectedIds.length })}
@@ -344,6 +350,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = n
             selectedIds={selectedIds}
             onSelectedIdsChange={setSelectedIds}
             fixedOnSale={fixedOnSale}
+            isReadOnly={isReadOnly}
           />
 
           {totalPages > 1 && (

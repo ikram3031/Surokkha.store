@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dialog';
 import { useBillings } from '@/hooks/use-billings';
 import { useBillTypes } from '@/hooks/use-bill-types';
+import { usePaymentTypes } from '@/hooks/use-payment-types';
 import { toast } from 'sonner';
 
 const formatCurrency = (val) => {
@@ -52,10 +53,21 @@ export const AddNewBillPage = () => {
 
   const { allBillings = [], createBilling, updateBilling, isCreating, isUpdating } = useBillings();
   const { allBillTypes = [], addBillType } = useBillTypes();
+  const { allPaymentTypes = [] } = usePaymentTypes();
+
+  const defaultBillingMethods = ['Bank Transfer', 'Cash', 'Card', 'bKash', 'Nagad', 'Cheque', 'Other'];
+  const availableBillingMethods = React.useMemo(() => {
+    const customNames = allPaymentTypes
+      .filter((t) => t.status === 'Active')
+      .map((t) => t.name.trim())
+      .filter(Boolean);
+    const combined = Array.from(new Set([...defaultBillingMethods, ...customNames]));
+    return combined;
+  }, [allPaymentTypes]);
 
   const [formData, setFormData] = useState({
     title: '',
-    billType: 'Office Rent & Space',
+    billType: '',
     vendor: '',
     billingPhone: '',
     billingEmail: '',
@@ -72,6 +84,16 @@ export const AddNewBillPage = () => {
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeDesc, setNewTypeDesc] = useState('');
 
+  // Set default bill type when bill types load
+  useEffect(() => {
+    if (!formData.billType && allBillTypes.length > 0 && !editId) {
+      setFormData((prev) => ({
+        ...prev,
+        billType: allBillTypes[0].name,
+      }));
+    }
+  }, [allBillTypes, editId, formData.billType]);
+
   // Pre-fill form if editing
   useEffect(() => {
     if (editId && allBillings.length > 0) {
@@ -79,7 +101,7 @@ export const AddNewBillPage = () => {
       if (existing) {
         setFormData({
           title: existing.title || '',
-          billType: existing.billType || 'Office Rent & Space',
+          billType: existing.billType || (allBillTypes[0]?.name || ''),
           vendor: existing.vendor || existing.customerName || '',
           billingPhone: existing.billingPhone || '',
           billingEmail: existing.billingEmail || '',
@@ -138,9 +160,13 @@ export const AddNewBillPage = () => {
       return;
     }
 
+    const selectedType = allBillTypes.find((t) => t.name === formData.billType);
+    const billTypeId = selectedType ? selectedType.id : null;
+
     const payload = {
       title: formData.title.trim(),
       billType: formData.billType,
+      billTypeId: billTypeId,
       vendor: formData.vendor.trim() || formData.title.trim(),
       customerName: formData.vendor.trim() || formData.title.trim(),
       billingPhone: formData.billingPhone.trim(),
@@ -238,11 +264,17 @@ export const AddNewBillPage = () => {
                       <SelectValue placeholder="Select Bill Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {allBillTypes.map((bt) => (
-                        <SelectItem key={bt.id} value={bt.name}>
-                          {bt.name}
+                      {allBillTypes.length > 0 ? (
+                        allBillTypes.map((bt) => (
+                          <SelectItem key={bt.id} value={bt.name}>
+                            {bt.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>
+                          No categories found. Click Add Category.
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -289,7 +321,7 @@ export const AddNewBillPage = () => {
             <CardHeader className="pb-3 border-b bg-muted/20">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-emerald-500" />
-                Payment & Billing Amounts
+                Billing Amount
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5 space-y-4">
@@ -369,13 +401,11 @@ export const AddNewBillPage = () => {
                       <SelectValue placeholder="Payment Method" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                      <SelectItem value="Cash">Cash</SelectItem>
-                      <SelectItem value="Card">Card</SelectItem>
-                      <SelectItem value="bKash">bKash</SelectItem>
-                      <SelectItem value="Nagad">Nagad</SelectItem>
-                      <SelectItem value="Cheque">Cheque</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      {availableBillingMethods.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

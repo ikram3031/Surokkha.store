@@ -59,7 +59,8 @@ const mapBilling = (billing) => {
     invoiceId,
     did: billing.did || invoiceId,
     title: billing.title || customerName,
-    billType: billing.billType || billing.billingMethod || 'General Expense',
+    billTypeId: billing.billTypeId?.id || billing.billTypeId?._id || billing.billTypeId || null,
+    billType: billing.billTypeId?.name || billing.billType || billing.billingMethod || 'General Expense',
     vendor: billing.vendor || customerName,
     customerName,
     billingMethod: billing.billingMethod || 'Cash',
@@ -138,6 +139,7 @@ const fetchBillings = async (params = {}) => {
 
     const total = response.data?.meta?.total ?? filtered.length;
     const page = params.page || 1;
+    const limit = params.limit || 15;
     const totalPages = (response.data?.meta?.totalPages ?? Math.ceil(total / limit)) || 1;
     const paginated = response.data?.meta ? filtered : filtered.slice((page - 1) * limit, page * limit);
 

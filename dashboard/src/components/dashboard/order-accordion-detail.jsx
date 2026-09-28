@@ -39,7 +39,10 @@ import {
   getBillingInfo,
   getShippingInfo,
   formatFullAddress,
+  getWhatsAppLink,
+  WhatsAppIcon,
 } from '@/utils/orderDetailsHelper';
+import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 
 // Renders an expanded accordion panel containing full order details and inline status management
 export const OrderAccordionDetail = ({ order }) => {
@@ -152,6 +155,12 @@ export const OrderAccordionDetail = ({ order }) => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <PathaoCourierCard
+            order={order}
+            triggerOnly
+            triggerButtonVariant="outline"
+            triggerButtonClassName="h-8 text-xs bg-background"
+          />
           <Button
             variant="outline"
             size="sm"
@@ -274,12 +283,24 @@ export const OrderAccordionDetail = ({ order }) => {
                     <Phone className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <span className="text-[10px] text-muted-foreground block">{t('common.phone', 'Phone')}</span>
-                      <a
-                        href={`tel:+880${cleanPhone}`}
-                        className="font-semibold text-primary hover:underline"
-                      >
-                        +880{cleanPhone}
-                      </a>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <a
+                          href={`tel:+880${cleanPhone}`}
+                          className="font-semibold text-primary hover:underline"
+                        >
+                          +880{cleanPhone}
+                        </a>
+                        <a
+                          href={getWhatsAppLink(phoneNum)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                          title="Message on WhatsApp"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <WhatsAppIcon className="h-3 w-3" />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -317,9 +338,20 @@ export const OrderAccordionDetail = ({ order }) => {
                   <div className="pl-4 space-y-1">
                     <p className="font-semibold text-foreground">{billing.fullName || 'N/A'}</p>
                     {phoneNum && (
-                      <p className="text-muted-foreground">
-                        {t('common.phone', 'Phone')}: <a href={`tel:+880${cleanPhone}`} className="text-primary hover:underline font-medium">+880{cleanPhone}</a>
-                      </p>
+                      <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                        <span>{t('common.phone', 'Phone')}:</span>
+                        <a href={`tel:+880${cleanPhone}`} className="text-primary hover:underline font-medium">+880{cleanPhone}</a>
+                        <a
+                          href={getWhatsAppLink(phoneNum)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          title="Message on WhatsApp"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <WhatsAppIcon className="h-2.5 w-2.5" />
+                        </a>
+                      </div>
                     )}
                     {emailAddr && (
                       <p className="text-muted-foreground truncate">
@@ -340,9 +372,20 @@ export const OrderAccordionDetail = ({ order }) => {
                   <div className="pl-4 space-y-1">
                     <p className="font-semibold text-foreground">{shipping.fullName || billing.fullName || 'N/A'}</p>
                     {(shipping.phone || phoneNum) && (
-                      <p className="text-muted-foreground">
-                        {t('common.phone', 'Phone')}: <a href={`tel:${shipping.phone || phoneNum}`} className="text-primary hover:underline font-medium">{shipping.phone || phoneNum}</a>
-                      </p>
+                      <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                        <span>{t('common.phone', 'Phone')}:</span>
+                        <a href={`tel:${shipping.phone || phoneNum}`} className="text-primary hover:underline font-medium">{shipping.phone || phoneNum}</a>
+                        <a
+                          href={getWhatsAppLink(shipping.phone || phoneNum)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          title="Message on WhatsApp"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <WhatsAppIcon className="h-2.5 w-2.5" />
+                        </a>
+                      </div>
                     )}
                     <p className="text-muted-foreground leading-tight">
                       {t('common.address', 'Destination')}: <span className="text-foreground">{shippingAddressText || billingAddressText || 'N/A'}</span>

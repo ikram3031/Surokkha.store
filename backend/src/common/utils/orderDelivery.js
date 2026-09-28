@@ -5,42 +5,7 @@ import { getClientInvoiceHtml } from "../templates/invoices/index.js";
 import { buildAdminOrderEmailHtml } from "../templates/adminOrderEmailTemplate.js";
 import { env } from "../config/env.js";
 import { config } from "../config/index.js";
-
-let defaultTransport;
-
-// Dynamically retrieve or initialize SMTP transport
-const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    const isLocalhost = env.SMTP_HOST === "127.0.0.1" || env.SMTP_HOST === "localhost";
-    const hasAuth = !isLocalhost && env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER;
-
-    const transportConfig = {
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    };
-
-    if (hasAuth) {
-      transportConfig.auth = {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      };
-    }
-
-    defaultTransport = nodemailer.createTransport(transportConfig);
-  }
-  return defaultTransport;
-};
+import { getSmtpTransport } from "../services/smtpConfig.service.js";
 
 // Validates whether the given email address is deliverable rather than dummy or system-generated
 const isValidCustomerEmail = (email) => {
@@ -61,16 +26,18 @@ const isValidCustomerEmail = (email) => {
 export const sendOrderEmailsAsynchronously = (order) => {
   setImmediate(async () => {
     try {
-      if (!env.SMTP_USER) {
-        console.warn("[Email Notification] SMTP credentials not configured. Skipping email dispatch.");
+      const { transport: activeTransport, config: smtpConfig } = await getSmtpTransport();
+
+      if (!smtpConfig.isConfigured) {
+        console.warn(`[Email Notification] SMTP credentials not fully configured (host: ${smtpConfig.host}, user: ${smtpConfig.user || 'none'}). Skipping email dispatch.`);
         return;
       }
 
-      const activeTransport = getTransport();
       const activeClientKey = (order.client || config.clientKey || process.env.CLIENT_NAME || env.CLIENT_NAME || "surokkha").toLowerCase().trim();
-      const brandDisplayName = env.SMTP_FROM_NAME || config.brandName || (activeClientKey === "surokkha" ? "Surokkha" : "Decantre BD");
-      const fromEmail = env.SMTP_FROM || env.SMTP_USER;
+      const brandDisplayName = smtpConfig.fromName || config.brandName || (activeClientKey === "surokkha" ? "Surokkha" : "Decantre BD");
+      const fromEmail = smtpConfig.fromEmail || smtpConfig.user;
       const fromAddress = { name: brandDisplayName, address: fromEmail };
+      console.log(`[Email Notification] Preparing order emails via Hostinger/SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
 
       // Extract order details with complete alignment to OrderModel schema
       const orderId = order.orderNumber || order.did || order._id?.toString()?.slice(-6) || "N/A";

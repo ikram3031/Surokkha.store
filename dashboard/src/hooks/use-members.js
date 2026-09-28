@@ -68,9 +68,10 @@ const fetchMembers = async (params) => {
   };
 };
 
-export function useMembers(params) {
+// React hook for members list
+export const useMembers = (params) => {
   return useQuery({
     queryKey: ['members', params],
     queryFn: () => fetchMembers(params),
   });
-}
+};

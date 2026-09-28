@@ -49,7 +49,8 @@ const METHOD_COLORS = {
   Card: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
 };
 
-function getStatusBadge(status) {
+// Returns badge component corresponding to payment status
+const getStatusBadge = (status) => {
   switch (status) {
     case 'Completed':
       return (
@@ -69,14 +70,18 @@ function getStatusBadge(status) {
           <XCircle className="h-3 w-3" />Failed
         </Badge>
       );
+    default:
+      return null;
   }
-}
+};
 
-function getMethodBadge(method) {
+// Returns badge component corresponding to payment method
+const getMethodBadge = (method) => {
   const cls = METHOD_COLORS[method] ?? 'bg-muted text-muted-foreground';
   return <Badge className={`${cls} gap-1`} variant="outline">{method}</Badge>;
-}
+};
 
+// Renders the payments transaction management page
 const PaymentsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -102,29 +107,9 @@ const PaymentsPage = () => {
   const meta = paymentsResponse?.meta;
   const totalPages = meta?.totalPages ?? 1;
 
-  const totalCollected = useMemo(
-    () =>
-      payments
-        .filter((p) => p.status === 'Completed')
-        .reduce((s, p) => s + p.amount, 0),
-    [payments]
-  );
-
-  const totalPending = useMemo(
-    () =>
-      payments
-        .filter((p) => p.status === 'Pending')
-        .reduce((s, p) => s + p.amount, 0),
-    [payments]
-  );
-
-  const totalFailed = useMemo(
-    () =>
-      payments
-        .filter((p) => p.status === 'Failed')
-        .reduce((s, p) => s + p.amount, 0),
-    [payments]
-  );
+  const totalCollected = paymentsResponse?.summary?.totalCollected ?? 0;
+  const totalPending = paymentsResponse?.summary?.totalPending ?? 0;
+  const totalFailed = paymentsResponse?.summary?.totalFailed ?? 0;
 
   const handleSearch = (q) => {
     setSearchQuery(q);

@@ -217,6 +217,7 @@ const UsersPage = () => {
                     <SelectItem value="Admin">{t('admin.role_admin')}</SelectItem>
                     <SelectItem value="Manager">{t('admin.role_manager')}</SelectItem>
                     <SelectItem value="Marketing Expert">{t('admin.role_marketing')}</SelectItem>
+                    <SelectItem value="Investor">Investor (Read-Only)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -273,6 +274,7 @@ const UsersPage = () => {
               <SelectItem value="Admin">{t('admin.role_admin')}</SelectItem>
               <SelectItem value="Manager">{t('admin.role_manager')}</SelectItem>
               <SelectItem value="Marketing Expert">{t('admin.role_marketing')}</SelectItem>
+              <SelectItem value="Investor">Investor</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -9,8 +9,12 @@ import {
   bulkDeletePayments,
 } from "../controllers/PaymentsController.js";
 import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import paymentTypeRouter from "./PaymentTypeRoute.js";
 
 const paymentsRouter = Router();
+
+// Sub-routes for payment types/categories
+paymentsRouter.use("/types", paymentTypeRouter);
 
 // CRUD endpoints for payments, authenticated by JWT
 paymentsRouter.use(authenticateToken);

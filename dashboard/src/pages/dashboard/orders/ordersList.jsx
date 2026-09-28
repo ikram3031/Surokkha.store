@@ -36,12 +36,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { logActivity } from '@/lib/activity-logger';
 import { useAuth } from '@/lib/auth-context';
+import { isReadOnlyRole } from '@/lib/rbac';
 import { clientConfig } from '@/clientConfig';
 
 // Renders orders list management dashboard page
 const OrdersPage = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const isReadOnly = isReadOnlyRole(user?.role);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
@@ -172,13 +174,13 @@ const OrdersPage = () => {
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">{t('orders.title', 'Orders Management')}</h2>
         <div className="flex items-center gap-2">
-          {clientConfig?.features?.customOrders && (
+          {!isReadOnly && clientConfig?.features?.customOrders && (
             <Button variant="outline" nativeButton={false} render={<Link to="/dashboard/orders/custom/new" />}>
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('orders.new_custom_order', 'New Custom Order')}
             </Button>
           )}
-          {clientConfig?.features?.inStoreOrder !== false && !clientConfig?.features?.customOrders && (
+          {!isReadOnly && clientConfig?.features?.inStoreOrder !== false && !clientConfig?.features?.customOrders && (
             <Button variant="outline" nativeButton={false} render={<Link to="/dashboard/orders/new" />}>
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('orders.new_order', 'New In-Store Order')}
@@ -249,7 +251,7 @@ const OrdersPage = () => {
             </div>
           )}
 
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 0 && !isReadOnly && (
             <div className="flex gap-1.5 items-center ml-2">
               <span className="text-xs text-muted-foreground whitespace-nowrap hidden md:inline">
                 {selectedIds.length} {t('common.selected', 'selected')}:
@@ -304,6 +306,7 @@ const OrdersPage = () => {
             selectedIds={selectedIds}
             onSelectedIdsChange={setSelectedIds}
             orderType="online"
+            isReadOnly={isReadOnly}
           />
 
           <div className="border-t mt-4 pt-3">

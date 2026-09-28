@@ -41,11 +41,16 @@ const mapPayment = (payment) => {
     'Customer';
 
   const method = payment.paymentMethod || payment.method || order.paymentMethod || 'Cash';
+  const orderShippingFee = Number(order.totals?.shippingFee ?? order.shippingTotalAmount ?? 0);
+  const orderNetAmount = typeof order.totals?.total === 'number' && order.totals.total > 0
+    ? Math.max(0, order.totals.total - orderShippingFee)
+    : 0;
+
   const amount =
     typeof payment.totalAmount === 'number' && payment.totalAmount > 0
       ? payment.totalAmount
-      : typeof order.totals?.total === 'number' && order.totals.total > 0
-      ? order.totals.total
+      : orderNetAmount > 0
+      ? orderNetAmount
       : typeof payment.amount === 'number' && payment.amount > 0
       ? payment.amount
       : typeof payment.paidAmount === 'number' && payment.paidAmount > 0

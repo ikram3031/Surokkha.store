@@ -579,7 +579,9 @@ export const bulkUpdateOrders = async (req, res, next) => {
       // If a specific paymentStatus is requested in bulk payload, update the linked payment document
       if (paymentStatus) {
         const pStatus = paymentStatus.toLowerCase();
-        const totalAmount = Number(updatedOrder.totals?.total || 0);
+        const rawTotal = Number(updatedOrder.totals?.total || 0);
+        const shippingFee = Number(updatedOrder.totals?.shippingFee ?? updatedOrder.shippingTotalAmount ?? 0);
+        const totalAmount = Math.max(0, rawTotal - shippingFee);
         const paidAmount = pStatus === 'paid' ? totalAmount : 0;
         const pendingAmount = Math.max(0, totalAmount - paidAmount);
 

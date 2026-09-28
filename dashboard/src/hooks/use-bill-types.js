@@ -126,6 +126,34 @@ export const useBillTypes = (params = {}) => {
     },
   });
 
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ ids, status }) => {
+      const res = await apiClient.post('/api/v1/bill-types/bulk-update', { ids, status });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bill-types'] });
+      toast.success('Bill types updated successfully');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to bulk update bill types');
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      const res = await apiClient.post('/api/v1/bill-types/bulk-delete', { ids });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bill-types'] });
+      toast.success('Bill types deleted successfully');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to bulk delete bill types');
+    },
+  });
+
   return {
     ...query,
     billTypes: query.data?.items || [],
@@ -134,8 +162,12 @@ export const useBillTypes = (params = {}) => {
     addBillType: addTypeMutation.mutateAsync,
     updateBillType: updateTypeMutation.mutateAsync,
     deleteBillType: deleteTypeMutation.mutateAsync,
+    bulkUpdateBillTypes: bulkUpdateMutation.mutateAsync,
+    bulkDeleteBillTypes: bulkDeleteMutation.mutateAsync,
     isAdding: addTypeMutation.isPending,
     isUpdating: updateTypeMutation.isPending,
     isDeleting: deleteTypeMutation.isPending,
+    isBulkUpdating: bulkUpdateMutation.isPending,
+    isBulkDeleting: bulkDeleteMutation.isPending,
   };
 };

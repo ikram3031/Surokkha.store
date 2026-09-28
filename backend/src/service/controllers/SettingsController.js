@@ -8,6 +8,8 @@ import {
   testTikTokEventsApiConnection,
 } from "../../common/services/tiktokEventsApi.service.js";
 import { config as clientConfig } from "../../common/config/index.js";
+import nodemailer from "nodemailer";
+import { encryptText, decryptText } from "../../common/utils/crypto.util.js";
 
 // Retrieves full Meta Pixel and Conversions API settings for Dashboard administration
 export const getMetaPixelSettings = async (req, res, next) => {
@@ -442,3 +444,190 @@ export const updateSeoSettings = async (req, res, next) => {
     next(error);
   }
 };
+
+// Retrieves SMTP settings from database
+export const getSmtpSettings = async (req, res, next) => {
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+    const dbSmtp = doc?.smtp || {};
+
+    const data = {
+      host: dbSmtp.host || "",
+      port: dbSmtp.port || 465,
+      secure: dbSmtp.secure ?? true,
+      user: dbSmtp.user || "",
+      password: decryptText(dbSmtp.password || ""),
+      senderName: dbSmtp.senderName || "",
+      senderEmail: dbSmtp.senderEmail || "",
+      isEnabled: dbSmtp.isEnabled ?? false,
+      isPersistedInDb: Boolean(doc?.smtp?.host),
+    };
+
+    return res.json({
+      status: "success",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Persists updated SMTP settings to database
+export const updateSmtpSettings = async (req, res, next) => {
+  try {
+    const {
+      host = "",
+      port = 465,
+      secure = true,
+      user = "",
+      password = "",
+      senderName = "",
+      senderEmail = "",
+      isEnabled = false,
+    } = req.body || {};
+
+    const updatePayload = {
+      "smtp.host": String(host).trim(),
+      "smtp.port": Number(port),
+      "smtp.secure": Boolean(secure),
+      "smtp.user": String(user).trim(),
+      "smtp.password": password ? encryptText(String(password).trim()) : "",
+      "smtp.senderName": String(senderName).trim(),
+      "smtp.senderEmail": String(senderEmail).trim(),
+      "smtp.isEnabled": Boolean(isEnabled),
+      updatedBy: req.user?.userId || null,
+    };
+
+    const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $set: updatePayload },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    return res.json({
+      status: "success",
+      message: "SMTP settings saved successfully.",
+      data: {
+        ...updatedDoc.smtp,
+        password: decryptText(updatedDoc.smtp.password || ""),
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Executes a live test connection for SMTP
+export const testSmtpConnection = async (req, res, next) => {
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+    const currentConfig = doc?.smtp || {};
+
+    const targetHost = (req.body?.host || currentConfig.host || "").trim();
+    const targetPort = Number(req.body?.port || currentConfig.port || 465);
+    const targetSecure = req.body?.secure !== undefined ? Boolean(req.body.secure) : (currentConfig.secure ?? true);
+    const targetUser = (req.body?.user || currentConfig.user || "").trim();
+    const targetPassword = (req.body?.password || decryptText(currentConfig.password || "")).trim();
+
+    if (!targetHost || !targetUser || !targetPassword) {
+      return res.status(400).json({
+        status: "error",
+        message: "Host, user, and password are required to test the connection.",
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: targetHost,
+      port: targetPort,
+      secure: targetSecure,
+      auth: {
+        user: targetUser,
+        pass: targetPassword,
+      },
+    });
+
+    try {
+      await transporter.verify();
+      return res.json({
+        status: "success",
+        message: "SMTP connection verified successfully.",
+      });
+    } catch (err) {
+      return res.status(400).json({
+        status: "error",
+        message: err.message || "Failed to verify SMTP connection.",
+        details: err,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Retrieves IMAP settings from database
+export const getImapSettings = async (req, res, next) => {
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+    const dbImap = doc?.imap || {};
+
+    const data = {
+      host: dbImap.host || "",
+      port: dbImap.port || 993,
+      secure: dbImap.secure ?? true,
+      user: dbImap.user || "",
+      password: decryptText(dbImap.password || ""),
+      isEnabled: dbImap.isEnabled ?? false,
+      isPersistedInDb: Boolean(doc?.imap?.host),
+    };
+
+    return res.json({
+      status: "success",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Persists updated IMAP settings to database
+export const updateImapSettings = async (req, res, next) => {
+  try {
+    const {
+      host = "",
+      port = 993,
+      secure = true,
+      user = "",
+      password = "",
+      isEnabled = false,
+    } = req.body || {};
+
+    const updatePayload = {
+      "imap.host": String(host).trim(),
+      "imap.port": Number(port),
+      "imap.secure": Boolean(secure),
+      "imap.user": String(user).trim(),
+      "imap.password": password ? encryptText(String(password).trim()) : "",
+      "imap.isEnabled": Boolean(isEnabled),
+      updatedBy: req.user?.userId || null,
+    };
+
+    const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $set: updatePayload },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    return res.json({
+      status: "success",
+      message: "IMAP settings saved successfully.",
+      data: {
+        ...updatedDoc.imap,
+        password: decryptText(updatedDoc.imap.password || ""),
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+

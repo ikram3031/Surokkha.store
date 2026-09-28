@@ -1,42 +1,7 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
 import { UserModel } from "../models/user.model.js";
-
-let defaultTransport;
-
-// Dynamically retrieve or initialize SMTP transport
-const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    const isLocalhost = env.SMTP_HOST === "127.0.0.1" || env.SMTP_HOST === "localhost";
-    const hasAuth = !isLocalhost && env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER;
-
-    const transportConfig = {
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    };
-
-    if (hasAuth) {
-      transportConfig.auth = {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      };
-    }
-
-    defaultTransport = nodemailer.createTransport(transportConfig);
-  }
-  return defaultTransport;
-};
+import { getSmtpTransport } from "../services/smtpConfig.service.js";
 
 const lightThemeHtml = (title, body) => `
 <!DOCTYPE html>

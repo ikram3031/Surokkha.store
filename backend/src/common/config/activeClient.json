@@ -1,6 +1,7 @@
 {
   "clientId": "05",
   "clientKey": "surokkha",
+  "orderPrefix": "SU",
   "brandName": "Surokkha",
   "domain": "surokkha.store",
   "supportEmail": "support@surokkha.store",
@@ -94,6 +95,14 @@
     "lookerStudioEmbedUrl": "",
     "isVerified": true,
     "enhancedMeasurement": true
+  },
+  "metaPixel": {
+    "pixelId": "1086570487291746",
+    "accessToken": "EAAYhPCm6R1gBSgATyaVVWn0mt98n2oZAz5D3vUcZAdkaM0sXeDwDVe9wBoAK9F6jvjM1XZCxsbehTYUBlDVIPCaozQ7WtG1emsj9sUewKEIexoXjPLRg4INW7YooTin5qqAGGOF8GGzAJfGZA5RJKZBgStebLuTf0WZBQLmZCoHk2VoRJeMaELEH0FwusltQAZDZD",
+    "isEnabled": true,
+    "enableBrowserPixel": true,
+    "enableCapi": true,
+    "advancedMatching": true
   },
   "logoUrl": "/uploads/assets/logo.png",
   "siteIconUrl": "/uploads/assets/favicon.ico",

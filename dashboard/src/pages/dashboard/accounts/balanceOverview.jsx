@@ -167,18 +167,12 @@ export const BalanceOverview = () => {
     });
 
     const sortedDays = Object.keys(dayMap).sort();
-    if (sortedDays.length === 0) {
-      // Provide clean default points if empty
-      const today = new Date().toISOString().slice(0, 10);
-      return [{ date: today, payments: totalReceipt, bills: totalBills }];
-    }
-
     return sortedDays.map((d) => ({
       date: d,
       payments: dayMap[d].payments,
       bills: dayMap[d].bills,
     }));
-  }, [filteredPayments, filteredBills, totalReceipt, totalBills]);
+  }, [filteredPayments, filteredBills]);
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
@@ -431,70 +425,73 @@ export const BalanceOverview = () => {
           </CardHeader>
 
           <CardContent className="p-4 pt-6 flex-1 min-h-[360px] flex flex-col justify-center">
-            <ResponsiveContainer width="100%" height={340}>
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <defs>
-                  {/* Green gradient for payments */}
-                  <linearGradient id="paymentsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                  </linearGradient>
-                  {/* Red gradient for bills */}
-                  <linearGradient id="billsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
+            {chartData.length === 0 ? (
+              <div className="h-[340px] flex flex-col items-center justify-center text-muted-foreground text-xs space-y-2">
+                <Scale className="w-8 h-8 opacity-30" />
+                <p>No payment or bill transactions found for the selected date range.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={340}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="paymentsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="billsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
 
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.6} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                  tickFormatter={(val) => {
-                    if (!val) return '';
-                    const d = new Date(val);
-                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                  }}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                  tickFormatter={(val) => `৳${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
-                />
-                <Tooltip content={<CustomChartTooltip />} />
-                <Legend
-                  verticalAlign="top"
-                  align="right"
-                  iconType="circle"
-                  wrapperStyle={{ fontSize: '11px', paddingBottom: '12px' }}
-                />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.6} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    tickFormatter={(val) => {
+                      if (!val) return '';
+                      const d = new Date(val);
+                      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    tickFormatter={(val) => `৳${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`}
+                  />
+                  <Tooltip content={<CustomChartTooltip />} />
+                  <Legend
+                    verticalAlign="top"
+                    align="right"
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: '11px', paddingBottom: '12px' }}
+                  />
 
-                {/* Payments graph line: Green (#10b981) */}
-                <Area
-                  type="monotone"
-                  dataKey="payments"
-                  name="Payments (Inflow)"
-                  stroke="#10b981"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#paymentsGradient)"
-                />
+                  <Area
+                    type="monotone"
+                    dataKey="payments"
+                    name="Payments (Inflow)"
+                    stroke="#10b981"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#paymentsGradient)"
+                  />
 
-                {/* Bills graph line: Red (#ef4444) */}
-                <Area
-                  type="monotone"
-                  dataKey="bills"
-                  name="Bills (Outflow)"
-                  stroke="#ef4444"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#billsGradient)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+                  <Area
+                    type="monotone"
+                    dataKey="bills"
+                    name="Bills (Outflow)"
+                    stroke="#ef4444"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#billsGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>

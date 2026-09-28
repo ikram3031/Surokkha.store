@@ -13,6 +13,8 @@ const ZONE_MAP = {
   "decantre": "532fc0163ee268da83584fe3be20e3bc",
   "toyoland.com": "6e159fb7a28e83161c565d3ecad4e565",
   "toyoland": "6e159fb7a28e83161c565d3ecad4e565",
+  "surokkha.store": "bd131177db6d610b5d4e5beb0142108b",
+  "surokkha": "bd131177db6d610b5d4e5beb0142108b",
 };
 
 const resolveToken = () => {

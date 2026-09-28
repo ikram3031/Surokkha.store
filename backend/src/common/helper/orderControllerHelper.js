@@ -116,7 +116,17 @@ export const buildOrderDocument = async (payload) => {
 // Upsert the linked payment record so it reflects the created order totals.
 // Supports advance, partial, and full payments for COD, Cash, bKash, Nagad, Bank, Card.
 export const syncPaymentDocument = async (orderData, payload = {}) => {
-  const totalAmount = Number(orderData.totals?.total || 0);
+  const rawTotal = Number(orderData.totals?.total || 0);
+  const shippingFee = Number(
+    orderData.totals?.shippingFee ??
+    orderData.shippingTotalAmount ??
+    orderData.shippingFee ??
+    payload.shippingFee ??
+    payload.shippingTotalAmount ??
+    payload.shipping ??
+    0
+  );
+  const totalAmount = Math.max(0, rawTotal - shippingFee);
 
   const isInstore = 
     (payload.orderType === 'instore') || 
@@ -209,13 +219,15 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
 
 // Recalculate the aggregate order, paid, and pending totals for a member.
 export const computeMemberTotals = async (memberId) => {
-  const orders = await OrderModel.find({ member: memberId }).select('paymentMethod totals.total').lean();
+  const orders = await OrderModel.find({ member: memberId }).select('paymentMethod totals shippingTotalAmount').lean();
   let totalOrderAmount = 0;
   let totalPaidAmount = 0;
   let totalPendingAmount = 0;
 
   for (const order of orders) {
-    const amount = Number(order?.totals?.total || 0);
+    const rawTotal = Number(order?.totals?.total || 0);
+    const shippingFee = Number(order?.totals?.shippingFee ?? order?.shippingTotalAmount ?? 0);
+    const amount = Math.max(0, rawTotal - shippingFee);
     totalOrderAmount += amount;
     if (isPaidPaymentMethod(order.paymentMethod)) {
       totalPaidAmount += amount;

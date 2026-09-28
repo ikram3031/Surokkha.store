@@ -83,6 +83,7 @@ export const InvestmentsListPage = () => {
   const [investorFilter, setInvestorFilter] = useState(initialInvestorId);
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '', preset: 'all' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   // Modal States
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -91,6 +92,7 @@ export const InvestmentsListPage = () => {
   const [repayAmount, setRepayAmount] = useState('');
   const [repayNotes, setRepayNotes] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   // Form State for Add / Edit
   const [formData, setFormData] = useState({
@@ -112,13 +114,18 @@ export const InvestmentsListPage = () => {
     summary = { totalTaken: 0, totalReturned: 0, netOutstanding: 0 },
     meta = { totalPages: 1, total: 0 },
     isLoading,
+    refetch,
     addInvestment,
     updateInvestment,
     recordReturn,
     deleteInvestment,
+    bulkUpdateInvestments,
+    bulkDeleteInvestments,
     isAdding,
     isUpdating,
     isDeleting,
+    isBulkUpdating,
+    isBulkDeleting,
   } = useInvestments({
     search: searchQuery || undefined,
     status: statusFilter !== 'All' ? statusFilter : undefined,
@@ -136,6 +143,49 @@ export const InvestmentsListPage = () => {
   }, [initialInvestorId]);
 
   const totalPages = meta?.totalPages || 1;
+
+  const isAllPageSelected = investments.length > 0 && investments.every((inv) => selectedIds.includes(inv.id));
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const pageIds = investments.map((inv) => inv.id);
+      setSelectedIds(Array.from(new Set([...selectedIds, ...pageIds])));
+    } else {
+      const pageIds = investments.map((inv) => inv.id);
+      setSelectedIds(selectedIds.filter((id) => !pageIds.includes(id)));
+    }
+  };
+
+  const handleBulkStatusChange = async (targetStatus) => {
+    if (!targetStatus || targetStatus === 'placeholder' || selectedIds.length === 0) return;
+    try {
+      if (bulkUpdateInvestments) {
+        await bulkUpdateInvestments({ ids: selectedIds, status: targetStatus });
+      } else {
+        await Promise.all(selectedIds.map((id) => updateInvestment({ id, status: targetStatus })));
+      }
+      setSelectedIds([]);
+      if (refetch) refetch();
+    } catch {
+      toast.error('Failed to update investments');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      if (bulkDeleteInvestments) {
+        await bulkDeleteInvestments(selectedIds);
+      } else {
+        await Promise.all(selectedIds.map((id) => deleteInvestment(id)));
+      }
+      setSelectedIds([]);
+      setBulkDeleteOpen(false);
+      if (refetch) refetch();
+    } catch {
+      toast.error('Failed to delete selected investments');
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingInv(null);
@@ -183,24 +233,36 @@ export const InvestmentsListPage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.investorId || !formData.investorName) {
+    if (!formData.investorId) {
       toast.error('Please select an investor');
       return;
     }
-    if (!formData.takenAmount || Number(formData.takenAmount) <= 0) {
+    const taken = Number(formData.takenAmount);
+    if (!formData.takenAmount || isNaN(taken) || taken <= 0) {
       toast.error('Please enter a valid taken investment amount');
       return;
     }
 
+    const payload = {
+      investorId: formData.investorId,
+      takenAmount: taken,
+      returnedAmount: Number(formData.returnedAmount) || 0,
+      takenDate: formData.takenDate || new Date().toISOString().slice(0, 10),
+      returnedDate: formData.returnedDate || null,
+      paymentMethod: formData.paymentMethod || 'Bank Transfer',
+      status: formData.status ? formData.status.toLowerCase() : 'active',
+      notes: formData.notes ? formData.notes.trim() : '',
+    };
+
     try {
       if (editingInv) {
-        await updateInvestment({ id: editingInv.id, ...formData });
+        await updateInvestment({ id: editingInv.id, ...payload });
       } else {
-        await addInvestment(formData);
+        await addInvestment(payload);
       }
       setAddModalOpen(false);
     } catch {
-      toast.error('Failed to save investment record');
+      // Toast error is handled by mutation onError
     }
   };
 
@@ -345,57 +407,94 @@ export const InvestmentsListPage = () => {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
+                setSelectedIds([]);
               }}
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={investorFilter}
-              onValueChange={(v) => {
-                setInvestorFilter(v || 'All');
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="h-9 text-xs w-[140px]">
-                <SelectValue placeholder="Investor" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Investors</SelectItem>
-                {allInvestors.map((i) => (
-                  <SelectItem key={i.id} value={i.id}>
-                    {i.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {selectedIds.length === 0 ? (
+              <>
+                <Select
+                  value={investorFilter}
+                  onValueChange={(v) => {
+                    setInvestorFilter(v || 'All');
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs w-[140px]">
+                    <SelectValue placeholder="Investor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Investors</SelectItem>
+                    {allInvestors.map((i) => (
+                      <SelectItem key={i.id} value={i.id}>
+                        {i.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => {
-                setStatusFilter(v || 'All');
-                setCurrentPage(1);
-              }}
-            >
-              <SelectTrigger className="h-9 text-xs w-[130px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Partial">Partial Return</SelectItem>
-                <SelectItem value="Returned">Returned</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v) => {
+                    setStatusFilter(v || 'All');
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs w-[130px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Status</SelectItem>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Partial">Partial Return</SelectItem>
+                    <SelectItem value="Returned">Returned</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <DateRangeFilter
-              value={dateRange.preset}
-              onChange={(range) => {
-                setDateRange(range);
-                setCurrentPage(1);
-              }}
-            />
+                <DateRangeFilter
+                  value={dateRange.preset}
+                  onChange={(range) => {
+                    setDateRange(range);
+                    setCurrentPage(1);
+                    setSelectedIds([]);
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <span className="text-xs font-semibold text-muted-foreground mr-1">
+                  {selectedIds.length} selected:
+                </span>
+                <Select value="placeholder" onValueChange={handleBulkStatusChange}>
+                  <SelectTrigger className="h-9 text-xs w-[140px] border-purple-500/30 bg-purple-500/5 text-purple-600 dark:text-purple-400">
+                    <SelectValue placeholder="Bulk Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">
+                      Bulk Status
+                    </SelectItem>
+                    <SelectItem value="Active">Mark as Active</SelectItem>
+                    <SelectItem value="Partial">Mark as Partial</SelectItem>
+                    <SelectItem value="Returned">Mark as Returned</SelectItem>
+                    <SelectItem value="Pending">Mark as Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => setBulkDeleteOpen(true)}
+                  className="h-9 w-9 shrink-0 cursor-pointer"
+                  title="Delete Selected"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -404,6 +503,14 @@ export const InvestmentsListPage = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <TableHead className="w-[45px] px-4">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
+                    checked={isAllPageSelected}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                </TableHead>
                 <TableHead className="text-xs">Tranche Ref</TableHead>
                 <TableHead className="text-xs">Investor</TableHead>
                 <TableHead className="text-xs">Taken Amount</TableHead>
@@ -420,6 +527,7 @@ export const InvestmentsListPage = () => {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
+                    <TableCell className="px-4"><span className="h-4 w-4 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
@@ -440,6 +548,20 @@ export const InvestmentsListPage = () => {
 
                   return (
                     <TableRow key={inv.id} className="hover:bg-muted/30">
+                      <TableCell className="w-[45px] px-4">
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
+                          checked={selectedIds.includes(inv.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedIds([...selectedIds, inv.id]);
+                            } else {
+                              setSelectedIds(selectedIds.filter((id) => id !== inv.id));
+                            }
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-mono text-xs font-semibold text-foreground">
                         {inv.id}
                       </TableCell>
@@ -510,7 +632,7 @@ export const InvestmentsListPage = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-28 text-center text-muted-foreground text-xs">
+                  <TableCell colSpan={11} className="h-28 text-center text-muted-foreground text-xs">
                     No investment records found matching your filters.
                   </TableCell>
                 </TableRow>
@@ -776,6 +898,16 @@ export const InvestmentsListPage = () => {
         isDeleting={isDeleting}
         title="Delete Investment Record"
         description={`Are you sure you want to delete investment record ${deleteTarget?.id} for "${deleteTarget?.investorName}"?`}
+      />
+
+      {/* Bulk Delete Confirmation */}
+      <ConfirmDeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={handleBulkDelete}
+        isDeleting={isBulkDeleting}
+        title="Delete Selected Investment Records"
+        description={`Are you sure you want to delete ${selectedIds.length} selected investment record(s)?`}
       />
     </div>
   );

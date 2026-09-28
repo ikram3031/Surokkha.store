@@ -55,6 +55,7 @@ export const OrdersTable = ({
   selectedIds,
   onSelectedIdsChange,
   orderType = 'online',
+  isReadOnly = false,
 }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -312,8 +313,8 @@ export const OrdersTable = ({
                         {order.orderNumber}
                       </Link>
                       {order.courier?.consignmentId && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground bg-primary/5 border border-primary/20 px-1 py-0.5 rounded mt-0.5" title={`Pathao Consignment: ${order.courier.consignmentId}`}>
-                          <Truck className="h-2.5 w-2.5 text-primary" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded mt-0.5 font-medium" title={`Pathao Consignment: ${order.courier.consignmentId}`}>
+                          <Truck className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
                           {order.courier.consignmentId}
                         </span>
                       )}
@@ -351,19 +352,27 @@ export const OrdersTable = ({
                           <DropdownMenuItem onClick={() => handleViewDetails(order)}>
                             {t('common.details', 'View Details')}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditOrderClick(order)}>
-                            {t('common.edit', 'Edit Order')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenStatusModal(order)}>
-                            {t('orders.change_status', 'Change Status')}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive cursor-pointer"
-                            onClick={() => setDeleteTarget({ id: order.id, orderNumber: order.orderNumber })}
-                          >
-                            {t('common.delete', 'Delete Order')}
-                          </DropdownMenuItem>
+                          {!isReadOnly && (
+                            <DropdownMenuItem onClick={() => handleEditOrderClick(order)}>
+                              {t('common.edit', 'Edit Order')}
+                            </DropdownMenuItem>
+                          )}
+                          {!isReadOnly && (
+                            <DropdownMenuItem onClick={() => handleOpenStatusModal(order)}>
+                              {t('orders.change_status', 'Change Status')}
+                            </DropdownMenuItem>
+                          )}
+                          {!isReadOnly && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive cursor-pointer"
+                                onClick={() => setDeleteTarget({ id: order.id, orderNumber: order.orderNumber })}
+                              >
+                                {t('common.delete', 'Delete Order')}
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

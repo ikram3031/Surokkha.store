@@ -67,28 +67,28 @@ export const buildSurokkhaOrderInvoiceHtml = ({
   const isInstore = !isCustom && (orderType === "instore" || String(orderId).startsWith("IS") || paymentMethod.toLowerCase().includes("instore") || paymentMethod.toLowerCase().includes("office"));
 
   let statusBadgeText = isCustom ? "✓ CUSTOM ORDER" : "✓ ORDER CONFIRMED";
-  let statusBadgeBg = isCustom ? "#EFF6FF" : "#FFF1F2";
+  let statusBadgeBg = isCustom ? "#FFFFFF" : "#FFFFFF";
   let statusBadgeColor = isCustom ? "#1D4ED8" : "#9F1239";
   let statusBadgeBorder = isCustom ? "#BFDBFE" : "#FECDD3";
 
   if (status === "completed" || isPaid) {
     statusBadgeText = "✓ ORDER COMPLETED";
-    statusBadgeBg = "#DCFCE7";
+    statusBadgeBg = "#FFFFFF";
     statusBadgeColor = "#166534";
     statusBadgeBorder = "#BBF7D0";
   } else if (status === "shipped") {
     statusBadgeText = "🚚 IN TRANSIT / SHIPPED";
-    statusBadgeBg = "#E0E7FF";
+    statusBadgeBg = "#FFFFFF";
     statusBadgeColor = "#3730A3";
     statusBadgeBorder = "#C7D2FE";
   } else if (status === "cancelled") {
     statusBadgeText = "✕ CANCELLED";
-    statusBadgeBg = "#FEE2E2";
+    statusBadgeBg = "#FFFFFF";
     statusBadgeColor = "#991B1B";
     statusBadgeBorder = "#FECACA";
   } else if (isInstore) {
     statusBadgeText = "🏢 IN-STORE ORDER";
-    statusBadgeBg = "#FEF3C7";
+    statusBadgeBg = "#FFFFFF";
     statusBadgeColor = "#92400E";
     statusBadgeBorder = "#FDE68A";
   }
@@ -98,7 +98,6 @@ export const buildSurokkhaOrderInvoiceHtml = ({
 
   // Build product item rows
   const itemRowsHtml = items.map((item, index) => {
-    const isEven = index % 2 === 1;
     const itemName = item.productName || item.name || "MO Wellness Product";
     const variantParts = [item.size, item.variant, item.variantName, item.packType].filter(Boolean);
     const variant = [...new Set(variantParts)].join(" • ") || item.variantName || item.size || "Standard Pack";
@@ -107,15 +106,15 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     const itemTotal = Number(item.subtotal || (unitPrice * qty) || 0);
 
     return `
-      <tr style="background-color: ${isEven ? "#FFF5F7" : "#FFFFFF"}; border-bottom: 1px solid #F1F5F9;">
+      <tr style="background-color: #FFFFFF; border-bottom: 1px solid #F1F5F9;">
         <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #0F172A; vertical-align: top;">
           <strong style="color: #0F172A; font-weight: 700; font-size: 14px;">${itemName}</strong>
           ${variant ? `<div style="font-size: 11.5px; color: #9F1239; font-weight: 600; margin-top: 3px;">✦ ${variant}</div>` : ""}
         </td>
-        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #334155; text-align: center; vertical-align: top;">
+        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #1E293B; text-align: center; vertical-align: top;">
           ${qty}
         </td>
-        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #334155; text-align: right; vertical-align: top; white-space: nowrap;">
+        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #1E293B; text-align: right; vertical-align: top; white-space: nowrap;">
           ৳${unitPrice.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
         <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #881337; font-weight: 700; text-align: right; vertical-align: top; white-space: nowrap;">
@@ -145,16 +144,25 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       color: #0F172A;
       margin: 0;
       padding: 24px 12px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
       -webkit-font-smoothing: antialiased;
     }
     .invoice-wrapper {
       max-width: 680px;
+      width: 100%;
+      min-height: calc(100vh - 80px);
       margin: 0 auto;
       background-color: #FFFFFF;
       border: 1px solid #E2E8F0;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
     .brand-header-bar {
       height: 5px;
@@ -205,13 +213,13 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
       padding: 24px 32px;
-      background-color: #FAFAFA;
-      border-bottom: 1px solid #F1F5F9;
+      background-color: #FFFFFF;
+      border-bottom: 1px solid #E2E8F0;
     }
     .meta-card h4 {
       font-size: 11px;
       font-weight: 700;
-      color: #64748B;
+      color: #475569;
       text-transform: uppercase;
       letter-spacing: 0.75px;
       margin-bottom: 8px;
@@ -219,13 +227,14 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     .meta-card p {
       font-size: 13px;
       line-height: 1.5;
-      color: #1E293B;
+      color: #0F172A;
     }
     
     /* Items Section */
     .items-container {
       padding: 24px 32px;
       background-color: #FFFFFF;
+      flex: 1 0 auto;
     }
     .items-table {
       width: 100%;
@@ -303,7 +312,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     .discreet-notice-box {
       margin: 10px 32px 24px 32px;
       padding: 14px 18px;
-      background-color: #FFF1F2;
+      background-color: #FFFFFF;
       border: 1px solid #FECDD3;
       border-radius: 12px;
       display: flex;
@@ -320,14 +329,18 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     }
     .discreet-notice-box p {
       font-size: 11.5px;
-      color: #4C0519;
+      color: #334155;
       line-height: 1.45;
     }
     
     /* Clean Light Footer */
+    .invoice-footer-wrapper {
+      margin-top: auto;
+      width: 100%;
+    }
     .invoice-footer-light {
-      padding: 24px 32px;
-      background-color: #F8FAFC;
+      padding: 20px 32px;
+      background-color: #FFFFFF;
       border-top: 1px solid #E2E8F0;
       color: #475569;
       text-align: center;
@@ -346,7 +359,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       border: 1px solid #FECDD3;
       border-radius: 9999px;
       color: #9F1239;
-      background-color: #FFF1F2;
+      background-color: #FFFFFF;
       font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
@@ -382,25 +395,44 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       background-color: #9F1239;
     }
 
+    @page {
+      size: A4 portrait;
+      margin: 6mm 8mm;
+    }
     @media print {
-      @page {
-        size: A4 portrait;
-        margin: 6mm 8mm;
-      }
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      body {
+      html, body {
         background-color: #FFFFFF !important;
         padding: 0 !important;
         margin: 0 !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        width: 100% !important;
       }
       .invoice-wrapper {
         border: none !important;
         box-shadow: none !important;
         max-width: 100% !important;
+        width: 100% !important;
         border-radius: 0 !important;
+        min-height: calc(297mm - 14mm) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+      .items-container {
+        flex: 1 0 auto !important;
+      }
+      .invoice-footer-wrapper {
+        margin-top: auto !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
       }
       .actions-bar {
         display: none !important;
@@ -488,16 +520,19 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       </div>
     </div>
 
-    <!-- Thank you message above footer -->
-    <div style="padding: 16px 32px; text-align: center; font-size: 12.5px; color: #334155; border-top: 1px solid #F1F5F9;">
-      Thank you for choosing <a href="https://surokkha.store" target="_blank" style="color: #BE123C; text-decoration: none; font-weight: 700;"><strong>Surokkha.store</strong></a> — Trusted Destination for Personal Wellness
-    </div>
+    <!-- Bottom Footer Wrapper fixed at bottom -->
+    <div class="invoice-footer-wrapper">
+      <!-- Thank you message above footer -->
+      <div style="padding: 16px 32px; text-align: center; font-size: 12.5px; color: #334155; border-top: 1px solid #F1F5F9; background-color: #FFFFFF;">
+        Thank you for choosing <a href="https://surokkha.store" target="_blank" style="color: #BE123C; text-decoration: none; font-weight: 700;"><strong>Surokkha.store</strong></a> — Trusted Destination for Personal Wellness
+      </div>
 
-    <!-- Surokkha Clean Light Footer -->
-    <div class="invoice-footer-light">
-      <p style="font-size: 11.5px; color: #64748B;">
-        For questions or assistance, reach out via WhatsApp at <a href="https://wa.me/8801600905774" target="_blank" style="text-decoration: underline;">01600905774</a> or email <a href="mailto:support@surokkha.store">support@surokkha.store</a>.
-      </p>
+      <!-- Surokkha Clean Light Footer -->
+      <div class="invoice-footer-light">
+        <p style="font-size: 11.5px; color: #64748B; margin: 0;">
+          For questions or assistance, reach out via WhatsApp at <a href="https://wa.me/8801600905774" target="_blank" style="text-decoration: underline;">01600905774</a> or email <a href="mailto:support@surokkha.store">support@surokkha.store</a>.
+        </p>
+      </div>
     </div>
   </div>
 

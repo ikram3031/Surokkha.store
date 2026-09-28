@@ -1,5 +1,6 @@
 // Generic order domain utilities: validation and number generation.
 import { OrderModel } from '../models/order.model.js';
+import { config } from '../config/index.js';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -100,8 +101,12 @@ export const buildOrderNumber = async (orderTypeParam = false) => {
   const now = new Date();
   const shortYear = String(now.getFullYear()).slice(-2);
   const month = String(now.getMonth() + 1).padStart(2, '0');
-  
-  let prefixType = 'D';
+
+  // Resolve online order prefix from client configuration (e.g. "SU", "D").
+  // Falls back to "PX" when no client prefix is configured.
+  const clientPrefix = (config.orderPrefix || 'PX').toUpperCase().trim();
+
+  let prefixType = clientPrefix;
   if (orderTypeParam === 'custom' || orderTypeParam === 'co') {
     prefixType = 'CO';
   } else if (orderTypeParam === true || orderTypeParam === 'instore' || orderTypeParam === 'is') {

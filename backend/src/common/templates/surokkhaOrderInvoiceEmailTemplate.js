@@ -56,7 +56,6 @@ export const buildSurokkhaOrderInvoiceEmailHtml = ({
 
   // Build item rows
   const itemRowsHtml = items.map((item, index) => {
-    const isEven = index % 2 === 1;
     const itemName = item.productName || item.name || "MO Wellness Product";
     const variantParts = [item.size, item.variant, item.variantName, item.packType].filter(Boolean);
     const variant = [...new Set(variantParts)].join(" • ") || item.variantName || item.size || "Standard Pack";
@@ -65,15 +64,15 @@ export const buildSurokkhaOrderInvoiceEmailHtml = ({
     const itemTotal = Number(item.subtotal || (unitPrice * qty) || 0);
 
     return `
-      <tr style="background-color: ${isEven ? "#FFF5F7" : "#FFFFFF"}; border-bottom: 1px solid #F1F5F9;">
+      <tr style="background-color: #FFFFFF; border-bottom: 1px solid #F1F5F9;">
         <td style="padding: 12px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #0F172A; vertical-align: top;">
           <strong style="color: #0F172A; font-weight: 700; font-size: 13.5px;">${itemName}</strong>
           ${variant ? `<div style="font-size: 11px; color: #9F1239; font-weight: 600; margin-top: 2px;">✦ ${variant}</div>` : ""}
         </td>
-        <td style="padding: 12px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #334155; text-align: center; vertical-align: top;">
+        <td style="padding: 12px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #1E293B; text-align: center; vertical-align: top;">
           ${qty}
         </td>
-        <td style="padding: 12px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #334155; text-align: right; vertical-align: top; white-space: nowrap;">
+        <td style="padding: 12px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #1E293B; text-align: right; vertical-align: top; white-space: nowrap;">
           ৳${unitPrice.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
         <td style="padding: 12px 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; color: #881337; font-weight: 700; text-align: right; vertical-align: top; white-space: nowrap;">
@@ -108,34 +107,34 @@ export const buildSurokkhaOrderInvoiceEmailHtml = ({
               <img src="${cleanLogoUrl}" alt="Surokkha" height="48" style="max-height: 48px; height: 48px; width: auto; max-width: 220px; object-fit: contain; display: block; margin: 0 auto 14px auto; border: 0; outline: none;" />
               <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: #0F172A; margin-bottom: 8px;">INVOICE <span style="color: #BE123C;">#${orderId}</span></div>
               <div>
-                <span style="display: inline-block; padding: 5px 16px; background-color: #FFF1F2; color: #9F1239; border: 1px solid #FECDD3; border-radius: 9999px; font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.75px;">✓ ORDER CONFIRMED</span>
+                <span style="display: inline-block; padding: 5px 16px; background-color: #FFFFFF; color: #9F1239; border: 1px solid #FECDD3; border-radius: 9999px; font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.75px;">✓ ORDER CONFIRMED</span>
               </div>
             </td>
           </tr>
 
           <!-- Customer & Order Meta Information -->
           <tr>
-            <td style="padding: 24px 32px; background-color: #FAFAFA; border-bottom: 1px solid #F1F5F9;">
+            <td style="padding: 24px 32px; background-color: #FFFFFF; border-bottom: 1px solid #E2E8F0;">
               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td width="50%" style="vertical-align: top; padding-right: 12px;">
-                    <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 6px;">Customer & Delivery Details</div>
-                    <div style="font-size: 13.5px; font-weight: 700; color: #1E293B;">${customerName}</div>
-                    <div style="font-size: 13px; color: #64748B; margin-top: 2px;">${customerPhone}</div>
-                    ${customerEmail ? `<div style="font-size: 12px; color: #64748B; margin-top: 1px;">${customerEmail}</div>` : ""}
-                    <div style="margin-top: 8px; font-size: 12.5px; color: #1E293B; line-height: 1.4;">
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 6px;">Customer & Delivery Details</div>
+                    <div style="font-size: 13.5px; font-weight: 700; color: #0F172A;">${customerName}</div>
+                    <div style="font-size: 13px; color: #475569; margin-top: 2px;">${customerPhone}</div>
+                    ${customerEmail ? `<div style="font-size: 12px; color: #475569; margin-top: 1px;">${customerEmail}</div>` : ""}
+                    <div style="margin-top: 8px; font-size: 12.5px; color: #0F172A; line-height: 1.4;">
                       <strong style="color: #475569; font-size: 11px; text-transform: uppercase;">Shipping Coordinates:</strong><br />
                       ${deliveryAddressStr}
                     </div>
                   </td>
                   <td width="50%" style="vertical-align: top; padding-left: 12px;">
-                    <div style="font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 6px;">Order & Payment Info</div>
-                    <div style="font-size: 13px; color: #1E293B; line-height: 1.5;">
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 6px;">Order & Payment Info</div>
+                    <div style="font-size: 13px; color: #0F172A; line-height: 1.5;">
                       <strong>Order Date:</strong> ${createdAt}<br />
                       <strong>Payment Method:</strong> ${paymentMethod}<br />
                       <strong>Payment Status:</strong> <span style="color: #15803D; font-weight: 700;">Pending (COD)</span>
                     </div>
-                    <div style="margin-top: 8px; font-size: 12.5px; color: #1E293B; line-height: 1.4;">
+                    <div style="margin-top: 8px; font-size: 12.5px; color: #0F172A; line-height: 1.4;">
                       <strong style="color: #475569; font-size: 11px; text-transform: uppercase;">Customer Helpline:</strong><br />
                       <a href="https://wa.me/8801600905774" target="_blank" style="color: #BE123C; text-decoration: none; font-weight: 700;">01600905774</a> (WhatsApp)
                     </div>
@@ -201,7 +200,7 @@ export const buildSurokkhaOrderInvoiceEmailHtml = ({
 
           <!-- Clean Light Footer -->
           <tr>
-            <td style="padding: 20px 32px; background-color: #F8FAFC; border-top: 1px solid #E2E8F0; color: #475569; text-align: center; font-size: 11.5px; line-height: 1.6;">
+            <td style="padding: 20px 32px; background-color: #FFFFFF; border-top: 1px solid #E2E8F0; color: #475569; text-align: center; font-size: 11.5px; line-height: 1.6;">
               <div>
                 Helpline (WhatsApp): <a href="https://wa.me/8801600905774" target="_blank" style="color: #BE123C; text-decoration: underline; font-weight: 700;">01600905774</a> | Email: <a href="mailto:support@surokkha.store" style="color: #BE123C; text-decoration: none; font-weight: 600;">support@surokkha.store</a>
               </div>

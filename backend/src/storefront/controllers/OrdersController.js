@@ -15,6 +15,8 @@ import { config } from '../../common/config/index.js';
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
 import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
+import { LogModel } from '../../common/models/log.model.js';
+import { broadcastLiveNotification } from '../../common/websocket.js';
 
 const { Types } = mongoose;
 
@@ -115,6 +117,31 @@ export const createOrder = async (req, res, next) => {
     if (!isInstoreOrder && !isCustomOrder) {
       sendServerPurchaseEvent(createdOrder, req);
       sendTikTokServerPurchaseEvent(createdOrder, req);
+    }
+
+    // Automatically record newOrder activity log and broadcast live notification
+    try {
+      const customerName =
+        createdOrder.shippingInfo?.fullName ||
+        createdOrder.billingInfo?.fullName ||
+        "Customer";
+      const actorDid = "customer";
+      const orderTypeLabel = isCustomOrder ? "custom order" : isInstoreOrder ? "in-store order" : "order";
+      const log = await LogModel.create({
+        type: "newOrder",
+        typeDid: "111",
+        description: `${customerName} placed a new ${orderTypeLabel} #${createdOrder.orderNumber}`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+
+      broadcastLiveNotification(log).catch((err) => {
+        console.error("Non-blocking WS live notification error on storefront order:", err);
+      });
+    } catch (logErr) {
+      console.error("Non-blocking storefront order log creation error:", logErr);
     }
 
     return res.status(201).json({

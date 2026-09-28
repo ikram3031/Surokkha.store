@@ -8,41 +8,9 @@ import {
   appendEmailToSentFolder,
 } from "../../common/services/imapSync.service.js";
 
-let defaultTransport = null;
-
-// Returns configured nodemailer transport for sending outbound webmail
-const getSmtpTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    const isLocalhost = env.SMTP_HOST === "127.0.0.1" || env.SMTP_HOST === "localhost";
-    const hasAuth = !isLocalhost && env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER;
-
-    const transportConfig = {
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    };
-
-    if (hasAuth) {
-      transportConfig.auth = {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      };
-    }
-
-    defaultTransport = nodemailer.createTransport(transportConfig);
-  }
-  return defaultTransport;
-};
+import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
+import { decryptText } from "../../common/utils/crypto.util.js";
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
 // Lists webmail messages with folder, status filtering, search, and pagination
 export const listWebmailMessages = async (req, res, next) => {
@@ -170,9 +138,7 @@ export const sendWebmailMessage = async (req, res, next) => {
       });
     }
 
-    const transport = getSmtpTransport();
-    const fromName = env.SMTP_FROM_NAME || "Decantre BD";
-    const fromAddress = env.SMTP_FROM || env.SMTP_USER;
+    const { transport, fromName, fromAddress } = await getSmtpTransport();
 
     const toAddresses = Array.isArray(to)
       ? to.map((t) => (typeof t === "string" ? t : t.address)).filter(Boolean)

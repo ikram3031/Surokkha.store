@@ -146,33 +146,59 @@ export const createInvestment = async (req, res, next) => {
       notes,
     } = req.body ?? {};
 
-    if (!investorId || !Types.ObjectId.isValid(investorId)) {
-      return res.status(400).json({ status: "error", message: "Valid investorId is required" });
+    if (!investorId) {
+      return res.status(400).json({ status: "error", message: "investorId is required" });
     }
 
-    const investor = await InvestorModel.findById(investorId).lean();
+    let investor = null;
+    if (Types.ObjectId.isValid(investorId)) {
+      investor = await InvestorModel.findById(investorId).lean();
+    }
     if (!investor) {
-      return res.status(404).json({ status: "error", message: "Investor not found" });
+      investor = await InvestorModel.findOne({ did: investorId }).lean();
+    }
+    if (!investor) {
+      return res.status(404).json({ status: "error", message: "Investor not found. Please select a valid investor." });
     }
 
-    if (takenAmount === undefined || typeof takenAmount !== "number" || takenAmount < 0) {
+    const numTakenAmount = Number(takenAmount);
+    if (takenAmount === undefined || takenAmount === null || takenAmount === "" || isNaN(numTakenAmount) || numTakenAmount < 0) {
       return res.status(400).json({ status: "error", message: "Valid takenAmount is required" });
     }
 
-    const resolvedTakenAmount = Number(takenAmount);
-    const resolvedReturnedAmount = Number(returnedAmount ?? 0);
-    const resolvedStatus = deriveInvestmentStatus(status, resolvedTakenAmount, resolvedReturnedAmount);
+    const numReturnedAmount = returnedAmount !== undefined && returnedAmount !== null && returnedAmount !== "" ? Number(returnedAmount) : 0;
+    if (isNaN(numReturnedAmount) || numReturnedAmount < 0) {
+      return res.status(400).json({ status: "error", message: "Valid returnedAmount is required" });
+    }
+
+    let resolvedTakenDate = new Date();
+    if (takenDate) {
+      const d = new Date(takenDate);
+      if (!isNaN(d.getTime())) {
+        resolvedTakenDate = d;
+      }
+    }
+
+    let resolvedReturnedDate = null;
+    if (returnedDate) {
+      const d = new Date(returnedDate);
+      if (!isNaN(d.getTime())) {
+        resolvedReturnedDate = d;
+      }
+    }
+
+    const resolvedStatus = deriveInvestmentStatus(status, numTakenAmount, numReturnedAmount);
 
     const investmentData = {
-      investorId,
-      takenAmount: resolvedTakenAmount,
-      returnedAmount: resolvedReturnedAmount,
-      takenDate: takenDate ? new Date(takenDate) : new Date(),
-      returnedDate: returnedDate ? new Date(returnedDate) : null,
+      investorId: investor._id,
+      takenAmount: numTakenAmount,
+      returnedAmount: numReturnedAmount,
+      takenDate: resolvedTakenDate,
+      returnedDate: resolvedReturnedDate,
       status: resolvedStatus,
-      paymentMethod: paymentMethod?.trim() || "",
-      notes: notes?.trim() || "",
-      createdBy: req.user?.userId || null,
+      paymentMethod: paymentMethod ? String(paymentMethod).trim() : "",
+      notes: notes ? String(notes).trim() : "",
+      createdBy: (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null,
     };
 
     const investment = await InvestmentModel.create(investmentData);
@@ -200,54 +226,73 @@ export const updateInvestment = async (req, res, next) => {
     const allowedUpdates = {};
 
     if (payload.investorId !== undefined) {
-      if (!payload.investorId || !Types.ObjectId.isValid(payload.investorId)) {
-        return res.status(400).json({ status: "error", message: "Valid investorId is required" });
+      let investor = null;
+      if (Types.ObjectId.isValid(payload.investorId)) {
+        investor = await InvestorModel.findById(payload.investorId).lean();
       }
-      allowedUpdates.investorId = payload.investorId;
+      if (!investor) {
+        investor = await InvestorModel.findOne({ did: payload.investorId }).lean();
+      }
+      if (!investor) {
+        return res.status(404).json({ status: "error", message: "Investor not found" });
+      }
+      allowedUpdates.investorId = investor._id;
     }
 
     if (payload.takenAmount !== undefined) {
-      if (typeof payload.takenAmount !== "number" || payload.takenAmount < 0) {
+      const numTaken = Number(payload.takenAmount);
+      if (payload.takenAmount === null || payload.takenAmount === "" || isNaN(numTaken) || numTaken < 0) {
         return res.status(400).json({ status: "error", message: "Valid takenAmount is required" });
       }
-      allowedUpdates.takenAmount = payload.takenAmount;
+      allowedUpdates.takenAmount = numTaken;
     }
 
     if (payload.returnedAmount !== undefined) {
-      if (typeof payload.returnedAmount !== "number" || payload.returnedAmount < 0) {
+      const numReturned = Number(payload.returnedAmount);
+      if (payload.returnedAmount === null || payload.returnedAmount === "" || isNaN(numReturned) || numReturned < 0) {
         return res.status(400).json({ status: "error", message: "Valid returnedAmount is required" });
       }
-      allowedUpdates.returnedAmount = payload.returnedAmount;
+      allowedUpdates.returnedAmount = numReturned;
     }
 
     if (payload.takenDate !== undefined) {
-      allowedUpdates.takenDate = payload.takenDate ? new Date(payload.takenDate) : new Date();
+      if (payload.takenDate) {
+        const d = new Date(payload.takenDate);
+        allowedUpdates.takenDate = !isNaN(d.getTime()) ? d : new Date();
+      } else {
+        allowedUpdates.takenDate = new Date();
+      }
     }
 
     if (payload.returnedDate !== undefined) {
-      allowedUpdates.returnedDate = payload.returnedDate ? new Date(payload.returnedDate) : null;
+      if (payload.returnedDate) {
+        const d = new Date(payload.returnedDate);
+        allowedUpdates.returnedDate = !isNaN(d.getTime()) ? d : null;
+      } else {
+        allowedUpdates.returnedDate = null;
+      }
     }
 
     if (payload.paymentMethod !== undefined) {
-      allowedUpdates.paymentMethod = payload.paymentMethod.trim();
+      allowedUpdates.paymentMethod = payload.paymentMethod ? String(payload.paymentMethod).trim() : "";
     }
 
     if (payload.notes !== undefined) {
-      allowedUpdates.notes = payload.notes.trim();
+      allowedUpdates.notes = payload.notes ? String(payload.notes).trim() : "";
     }
 
     if (payload.status !== undefined) {
-      allowedUpdates.status = payload.status.trim().toLowerCase();
+      allowedUpdates.status = String(payload.status).trim().toLowerCase();
     } else if (payload.takenAmount !== undefined || payload.returnedAmount !== undefined) {
       const existing = await InvestmentModel.findOne(query).lean();
       if (existing) {
-        const taken = payload.takenAmount !== undefined ? payload.takenAmount : existing.takenAmount;
-        const returned = payload.returnedAmount !== undefined ? payload.returnedAmount : existing.returnedAmount;
+        const taken = payload.takenAmount !== undefined ? allowedUpdates.takenAmount : existing.takenAmount;
+        const returned = payload.returnedAmount !== undefined ? allowedUpdates.returnedAmount : existing.returnedAmount;
         allowedUpdates.status = deriveInvestmentStatus(null, taken, returned);
       }
     }
 
-    allowedUpdates.updatedBy = req.user?.userId || null;
+    allowedUpdates.updatedBy = (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null;
 
     const updated = await InvestmentModel.findOneAndUpdate(query, allowedUpdates, {
       new: true,
@@ -288,6 +333,58 @@ export const deleteInvestment = async (req, res, next) => {
     });
   } catch (error) {
     logger.error({ error }, "Failed to delete investment");
+    next(error);
+  }
+};
+
+// Bulk updates status of multiple investments
+export const bulkUpdateInvestments = async (req, res, next) => {
+  try {
+    const { ids, status } = req.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ status: "error", message: "ids array is required" });
+    }
+    const normalizedStatus = status ? String(status).toLowerCase() : "active";
+    const objectIds = ids.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
+    const dids = ids.filter((id) => typeof id === "string");
+
+    const result = await InvestmentModel.updateMany(
+      { $or: [{ _id: { $in: objectIds } }, { did: { $in: dids } }] },
+      { $set: { status: normalizedStatus, updatedBy: (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null } }
+    );
+
+    return res.json({
+      status: "success",
+      message: `Updated ${result.modifiedCount} investment(s)`,
+      data: result,
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to bulk update investments");
+    next(error);
+  }
+};
+
+// Bulk deletes multiple investments
+export const bulkDeleteInvestments = async (req, res, next) => {
+  try {
+    const { ids } = req.body ?? {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ status: "error", message: "ids array is required" });
+    }
+    const objectIds = ids.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
+    const dids = ids.filter((id) => typeof id === "string");
+
+    const result = await InvestmentModel.deleteMany({
+      $or: [{ _id: { $in: objectIds } }, { did: { $in: dids } }],
+    });
+
+    return res.json({
+      status: "success",
+      message: `Deleted ${result.deletedCount} investment(s)`,
+      data: result,
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to bulk delete investments");
     next(error);
   }
 };

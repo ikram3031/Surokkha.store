@@ -41,7 +41,15 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatBDT } from "@/utils/orderHelper";
 
-export default function PathaoCourierCard({ order, onOrderUpdated }) {
+// Handles Pathao courier dispatch and consignment tracking for orders
+const PathaoCourierCard = ({
+  order,
+  onOrderUpdated,
+  triggerOnly = false,
+  triggerButtonVariant = "default",
+  triggerButtonSize = "default",
+  triggerButtonClassName = "",
+}) => {
   const queryClient = useQueryClient();
   const [isDispatchOpen, setIsDispatchOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -72,31 +80,85 @@ export default function PathaoCourierCard({ order, onOrderUpdated }) {
   const courier = order?.courier || {};
   const hasConsignment = Boolean(courier?.consignmentId);
 
+  // Calculates estimated delivery fee automatically using Pathao Price Plan API
+  const calculateRateAutomatically = async (storeId, cityId, zoneId, weight, dType, iType) => {
+    if (!storeId || !cityId || !zoneId) return;
+    try {
+      setIsCalculatingRate(true);
+      const res = await apiClient.post("/api/v1/courier/pathao/price-plan", {
+        store_id: Number(storeId),
+        item_type: Number(iType ?? itemType ?? 2),
+        delivery_type: Number(dType ?? deliveryType ?? 48),
+        item_weight: Number(weight ?? itemWeight) || 0.5,
+        recipient_city: Number(cityId),
+        recipient_zone: Number(zoneId),
+      });
+      const price = res.data?.data?.price ?? res.data?.price ?? null;
+      setEstimatedPrice(price);
+    } catch (err) {
+      console.warn("Auto rate calculation error:", err);
+    } finally {
+      setIsCalculatingRate(false);
+    }
+  };
+
   // Initialize dispatch form when dialog opens
   const handleOpenDispatch = async () => {
     setIsDispatchOpen(true);
+    setEstimatedPrice(null);
 
-    const sInfo = order?.shippingInfo || order?.billingInfo || {};
+    const sInfo = order?.shippingInfo || {};
     const bInfo = order?.billingInfo || {};
 
-    const name = sInfo.fullName || bInfo.fullName || order?.customer?.fullName || order?.customerName || "";
-    let rawPhone = sInfo.phone || bInfo.phone || order?.customer?.phone || "";
-    // Normalize BD phone
+    const name =
+      sInfo.fullName?.trim() ||
+      bInfo.fullName?.trim() ||
+      order?.customer?.fullName?.trim() ||
+      order?.customerName?.trim() ||
+      "";
+
+    let rawPhone =
+      sInfo.phone?.trim() ||
+      bInfo.phone?.trim() ||
+      order?.customer?.phone?.trim() ||
+      order?.phone?.trim() ||
+      "";
+
+    // Normalize BD phone to 11 digits (01XXXXXXXXX)
     let clean = rawPhone.replace(/\D/g, "");
     if (clean.startsWith("880")) clean = clean.slice(2);
     if (clean.length === 10 && !clean.startsWith("0")) clean = `0${clean}`;
 
     setRecipientName(name);
     setRecipientPhone(clean);
-    setRecipientAddress(sInfo.address || bInfo.address || order?.customer?.address || "");
+
+    const fullAddr = [
+      sInfo.address || bInfo.address || order?.customer?.address,
+      sInfo.thana || bInfo.thana,
+      sInfo.district || bInfo.district || sInfo.city || bInfo.city,
+      sInfo.zip || bInfo.zip ? `Zip: ${sInfo.zip || bInfo.zip}` : "",
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    setRecipientAddress(
+      sInfo.address?.trim() ||
+      bInfo.address?.trim() ||
+      fullAddr ||
+      order?.customer?.address?.trim() ||
+      ""
+    );
 
     // Calculate COD amount: if paid, 0; else remaining total
     const total = order?.totals?.total ?? order?.totalAmount ?? 0;
-    const paid = order?.paymentDetails?.paidAmount ?? order?.paidAmount ?? (order?.paymentStatus === "Paid" ? total : 0);
+    const paid =
+      order?.paymentDetails?.paidAmount ??
+      order?.paidAmount ??
+      (String(order?.paymentStatus).toLowerCase() === "paid" ? total : 0);
     const pending = Math.max(0, total - paid);
     setAmountToCollect(pending);
 
-    // Load Pathao stores and cities
+    // Load Pathao stores, config, and cities
     try {
       const [configRes, storesRes, citiesRes] = await Promise.all([
         apiClient.get("/api/v1/courier/pathao/config").catch(() => ({ data: {} })),
@@ -111,25 +173,94 @@ export default function PathaoCourierCard({ order, onOrderUpdated }) {
       setStores(stList);
       setCities(cityList);
 
+      let effectiveStoreId = "";
       if (cfg.storeId) {
-        setSelectedStoreId(String(cfg.storeId));
+        effectiveStoreId = String(cfg.storeId);
       } else if (stList.length > 0) {
-        setSelectedStoreId(String(stList[0].store_id));
+        effectiveStoreId = String(stList[0].store_id);
       }
+      setSelectedStoreId(effectiveStoreId);
 
-      setItemWeight(cfg.defaultItemWeight ?? 0.5);
-      setDeliveryType(cfg.defaultDeliveryType ?? 48);
-      setItemType(cfg.defaultItemType ?? 2);
+      const effectiveWeight = cfg.defaultItemWeight ?? 0.5;
+      const effectiveDelType = cfg.defaultDeliveryType ?? 48;
+      const effectiveItmType = cfg.defaultItemType ?? 2;
+      setItemWeight(effectiveWeight);
+      setDeliveryType(effectiveDelType);
+      setItemType(effectiveItmType);
 
-      // Try auto-matching city if address has district
-      const targetDistrict = (sInfo.district || bInfo.district || "").toLowerCase().trim();
+      // Auto-match city & zone from destination shipping address (or billing fallback)
+      const targetDistrict = (
+        sInfo.district ||
+        bInfo.district ||
+        sInfo.city ||
+        bInfo.city ||
+        "Dhaka"
+      )
+        .toLowerCase()
+        .trim();
+
       if (targetDistrict && cityList.length > 0) {
-        const matchedCity = cityList.find((c) =>
-          c.city_name.toLowerCase().includes(targetDistrict) ||
-          targetDistrict.includes(c.city_name.toLowerCase())
-        );
+        const matchedCity =
+          cityList.find(
+            (c) =>
+              c.city_name.toLowerCase().trim() === targetDistrict ||
+              c.city_name.toLowerCase().includes(targetDistrict) ||
+              targetDistrict.includes(c.city_name.toLowerCase())
+          ) ||
+          cityList.find((c) => c.city_name.toLowerCase().includes("dhaka"));
+
         if (matchedCity) {
-          handleCityChange(String(matchedCity.city_id));
+          const matchedCityId = String(matchedCity.city_id);
+          setSelectedCity(matchedCityId);
+
+          const zonesRes = await apiClient.get(`/api/v1/courier/pathao/zones/${matchedCityId}`).catch(() => ({ data: {} }));
+          const zList = zonesRes.data?.data || [];
+          setZones(zList);
+
+          const targetThana = (
+            sInfo.thana ||
+            bInfo.thana ||
+            ""
+          )
+            .toLowerCase()
+            .trim();
+
+          let matchedZoneId = "";
+          if (targetThana && zList.length > 0) {
+            const matchedZone = zList.find(
+              (z) =>
+                z.zone_name.toLowerCase().trim() === targetThana ||
+                z.zone_name.toLowerCase().includes(targetThana) ||
+                targetThana.includes(z.zone_name.toLowerCase())
+            );
+            if (matchedZone) {
+              matchedZoneId = String(matchedZone.zone_id);
+            }
+          }
+
+          if (!matchedZoneId && zList.length > 0) {
+            matchedZoneId = String(zList[0].zone_id);
+          }
+
+          if (matchedZoneId) {
+            setSelectedZone(matchedZoneId);
+
+            apiClient
+              .get(`/api/v1/courier/pathao/areas/${matchedZoneId}`)
+              .then((res) => setAreas(res.data?.data || []))
+              .catch(() => {});
+
+            if (effectiveStoreId) {
+              calculateRateAutomatically(
+                effectiveStoreId,
+                matchedCityId,
+                matchedZoneId,
+                effectiveWeight,
+                effectiveDelType,
+                effectiveItmType
+              );
+            }
+          }
         }
       }
     } catch (e) {
@@ -151,23 +282,32 @@ export default function PathaoCourierCard({ order, onOrderUpdated }) {
       const zList = res.data?.data || [];
       setZones(zList);
 
-      // Try matching zone by thana if available
-      const thana = (order?.shippingInfo?.thana || order?.billingInfo?.thana || "").toLowerCase().trim();
-      if (thana && zList.length > 0) {
-        const matched = zList.find((z) =>
-          z.zone_name.toLowerCase().includes(thana) ||
-          thana.includes(z.zone_name.toLowerCase())
+      const targetThana = (order?.shippingInfo?.thana || order?.billingInfo?.thana || "").toLowerCase().trim();
+      let autoZoneId = "";
+      if (targetThana && zList.length > 0) {
+        const matched = zList.find(
+          (z) =>
+            z.zone_name.toLowerCase().includes(targetThana) ||
+            targetThana.includes(z.zone_name.toLowerCase())
         );
         if (matched) {
-          handleZoneChange(String(matched.zone_id));
+          autoZoneId = String(matched.zone_id);
         }
+      }
+
+      if (!autoZoneId && zList.length > 0) {
+        autoZoneId = String(zList[0].zone_id);
+      }
+
+      if (autoZoneId) {
+        handleZoneChange(autoZoneId, cityId);
       }
     } catch (err) {
       console.warn("Failed to load zones", err);
     }
   };
 
-  const handleZoneChange = async (zoneId) => {
+  const handleZoneChange = async (zoneId, cityIdOverride) => {
     setSelectedZone(zoneId);
     setSelectedArea("");
     setAreas([]);
@@ -177,6 +317,11 @@ export default function PathaoCourierCard({ order, onOrderUpdated }) {
     try {
       const res = await apiClient.get(`/api/v1/courier/pathao/areas/${zoneId}`);
       setAreas(res.data?.data || []);
+
+      const cityId = cityIdOverride || selectedCity;
+      if (selectedStoreId && cityId) {
+        calculateRateAutomatically(selectedStoreId, cityId, zoneId, itemWeight, deliveryType, itemType);
+      }
     } catch (err) {
       console.warn("Failed to load areas", err);
     }
@@ -187,23 +332,7 @@ export default function PathaoCourierCard({ order, onOrderUpdated }) {
       toast.error("Please select Pickup Store, City, and Zone to estimate rate.");
       return;
     }
-
-    try {
-      setIsCalculatingRate(true);
-      const res = await apiClient.post("/api/v1/courier/pathao/price-plan", {
-        store_id: Number(selectedStoreId),
-        item_type: Number(itemType),
-        delivery_type: Number(deliveryType),
-        item_weight: Number(itemWeight) || 0.5,
-        recipient_city: Number(selectedCity),
-        recipient_zone: Number(selectedZone),
-      });
-      setEstimatedPrice(res.data?.data?.price ?? res.data?.price ?? null);
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to calculate delivery rate.");
-    } finally {
-      setIsCalculatingRate(false);
-    }
+    calculateRateAutomatically(selectedStoreId, selectedCity, selectedZone, itemWeight, deliveryType, itemType);
   };
 
   const handleSubmitDispatch = async (e) => {
@@ -287,6 +416,249 @@ export default function PathaoCourierCard({ order, onOrderUpdated }) {
     toast.success("Consignment ID copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const renderDispatchDialog = () => (
+    <Dialog open={isDispatchOpen} onOpenChange={setIsDispatchOpen}>
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Truck className="h-5 w-5 text-primary" /> Dispatch Order #{order?.orderNumber} to Pathao
+          </DialogTitle>
+          <DialogDescription>
+            Verify recipient address and select delivery options to generate Pathao consignment.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmitDispatch} className="space-y-4 py-2">
+          {/* Store Selection */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold">Pickup Store <span className="text-destructive">*</span></label>
+            {stores.length > 0 ? (
+              <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Select Pickup Store" />
+                </SelectTrigger>
+                <SelectContent>
+                  {stores.map((s) => (
+                    <SelectItem key={s.store_id} value={String(s.store_id)}>
+                      {s.store_name} ({s.store_address})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                value={selectedStoreId}
+                onChange={(e) => setSelectedStoreId(e.target.value)}
+                placeholder="Enter Store ID"
+                className="h-9 text-xs font-mono"
+              />
+            )}
+          </div>
+
+          {/* Recipient Info */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">Recipient Name <span className="text-destructive">*</span></label>
+              <Input
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="Customer Full Name"
+                className="h-9 text-xs"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">Recipient Phone (11-digit) <span className="text-destructive">*</span></label>
+              <Input
+                value={recipientPhone}
+                onChange={(e) => setRecipientPhone(e.target.value)}
+                placeholder="017XXXXXXXX"
+                className="h-9 text-xs font-mono"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Delivery Address */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold">Delivery Address <span className="text-destructive">*</span></label>
+            <Textarea
+              value={recipientAddress}
+              onChange={(e) => setRecipientAddress(e.target.value)}
+              placeholder="House, Road, Area, Landmark"
+              className="text-xs min-h-[60px]"
+              required
+            />
+          </div>
+
+          {/* City / Zone / Area Selectors */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">City <span className="text-destructive">*</span></label>
+              <Select value={selectedCity} onValueChange={handleCityChange}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Select City" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {cities.map((c) => (
+                    <SelectItem key={c.city_id} value={String(c.city_id)}>
+                      {c.city_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">Zone <span className="text-destructive">*</span></label>
+              <Select value={selectedZone} onValueChange={handleZoneChange} disabled={!selectedCity || zones.length === 0}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder={!selectedCity ? "Select city first" : "Select Zone"} />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {zones.map((z) => (
+                    <SelectItem key={z.zone_id} value={String(z.zone_id)}>
+                      {z.zone_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">Area / Thana</label>
+              <Select value={selectedArea} onValueChange={setSelectedArea} disabled={!selectedZone || areas.length === 0}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue placeholder="Select Area" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {areas.map((a) => (
+                    <SelectItem key={a.area_id} value={String(a.area_id)}>
+                      {a.area_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Parcel Attributes & Amount */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">Weight (KG)</label>
+              <Input
+                type="number"
+                step="0.1"
+                min="0.1"
+                value={itemWeight}
+                onChange={(e) => setItemWeight(e.target.value)}
+                className="h-9 text-xs font-mono"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">Delivery Speed</label>
+              <Select value={String(deliveryType)} onValueChange={(v) => setDeliveryType(Number(v))}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="48">Normal (48h)</SelectItem>
+                  <SelectItem value="12">On Demand</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">Amount to Collect (COD ৳)</label>
+              <Input
+                type="number"
+                min="0"
+                value={amountToCollect}
+                onChange={(e) => setAmountToCollect(e.target.value)}
+                className="h-9 text-xs font-mono font-bold text-primary"
+              />
+            </div>
+          </div>
+
+          {/* Special Instructions */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold">Special Instruction (Optional)</label>
+            <Input
+              value={specialInstruction}
+              onChange={(e) => setSpecialInstruction(e.target.value)}
+              placeholder="e.g. Call before delivery, handle with care"
+              className="h-9 text-xs"
+            />
+          </div>
+
+          {/* Estimated Delivery Fee & Price Calc */}
+          <div className="p-3 rounded-lg bg-muted/60 border border-border/80 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-muted-foreground block">Estimated Delivery Fee</span>
+              <span className="text-sm font-bold text-foreground">
+                {estimatedPrice != null ? `৳${estimatedPrice}` : "Not calculated"}
+              </span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleEstimateRate}
+              disabled={isCalculatingRate || !selectedCity || !selectedZone}
+              className="h-7 text-xs gap-1"
+            >
+              <RefreshCw className={`h-3 w-3 ${isCalculatingRate ? "animate-spin" : ""}`} />
+              Check Rate
+            </Button>
+          </div>
+
+          <DialogFooter className="pt-3 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDispatchOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !selectedCity || !selectedZone || !selectedStoreId}
+              className="gap-1.5 font-semibold shadow-sm"
+            >
+              {isSubmitting ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              Confirm & Dispatch
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+
+  if (triggerOnly) {
+    return (
+      <>
+        <Button
+          type="button"
+          variant={triggerButtonVariant}
+          size={triggerButtonSize}
+          onClick={handleOpenDispatch}
+          className={`gap-1.5 cursor-pointer font-medium ${triggerButtonClassName}`}
+        >
+          <Truck className="h-3.5 w-3.5 text-primary" />
+          {hasConsignment ? "Pathao Dispatched" : "Send with Pathao"}
+        </Button>
+        {renderDispatchDialog()}
+      </>
+    );
+  }
 
   return (
     <>
@@ -389,229 +761,9 @@ export default function PathaoCourierCard({ order, onOrderUpdated }) {
         )}
       </div>
 
-      {/* Dispatch Modal Dialog */}
-      <Dialog open={isDispatchOpen} onOpenChange={setIsDispatchOpen}>
-        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-primary" /> Dispatch Order #{order?.orderNumber} to Pathao
-            </DialogTitle>
-            <DialogDescription>
-              Verify recipient address and select delivery options to generate Pathao consignment.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmitDispatch} className="space-y-4 py-2">
-            {/* Store Selection */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Pickup Store <span className="text-destructive">*</span></label>
-              {stores.length > 0 ? (
-                <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue placeholder="Select Pickup Store" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stores.map((s) => (
-                      <SelectItem key={s.store_id} value={String(s.store_id)}>
-                        {s.store_name} ({s.store_address})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  value={selectedStoreId}
-                  onChange={(e) => setSelectedStoreId(e.target.value)}
-                  placeholder="Enter Store ID"
-                  className="h-9 text-xs font-mono"
-                />
-              )}
-            </div>
-
-            {/* Recipient Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Recipient Name <span className="text-destructive">*</span></label>
-                <Input
-                  value={recipientName}
-                  onChange={(e) => setRecipientName(e.target.value)}
-                  placeholder="Customer Full Name"
-                  className="h-9 text-xs"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Recipient Phone (11-digit) <span className="text-destructive">*</span></label>
-                <Input
-                  value={recipientPhone}
-                  onChange={(e) => setRecipientPhone(e.target.value)}
-                  placeholder="017XXXXXXXX"
-                  className="h-9 text-xs font-mono"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Delivery Address */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Delivery Address <span className="text-destructive">*</span></label>
-              <Textarea
-                value={recipientAddress}
-                onChange={(e) => setRecipientAddress(e.target.value)}
-                placeholder="House, Road, Area, Landmark"
-                className="text-xs min-h-[60px]"
-                required
-              />
-            </div>
-
-            {/* City / Zone / Area Selectors */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">City <span className="text-destructive">*</span></label>
-                <Select value={selectedCity} onValueChange={handleCityChange}>
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue placeholder="Select City" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-56">
-                    {cities.map((c) => (
-                      <SelectItem key={c.city_id} value={String(c.city_id)}>
-                        {c.city_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Zone <span className="text-destructive">*</span></label>
-                <Select value={selectedZone} onValueChange={handleZoneChange} disabled={!selectedCity || zones.length === 0}>
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue placeholder={!selectedCity ? "Select city first" : "Select Zone"} />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-56">
-                    {zones.map((z) => (
-                      <SelectItem key={z.zone_id} value={String(z.zone_id)}>
-                        {z.zone_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Area / Thana</label>
-                <Select value={selectedArea} onValueChange={setSelectedArea} disabled={!selectedZone || areas.length === 0}>
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue placeholder="Select Area" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-56">
-                    {areas.map((a) => (
-                      <SelectItem key={a.area_id} value={String(a.area_id)}>
-                        {a.area_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Parcel Attributes & Amount */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Weight (KG)</label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="0.1"
-                  value={itemWeight}
-                  onChange={(e) => setItemWeight(e.target.value)}
-                  className="h-9 text-xs font-mono"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Delivery Speed</label>
-                <Select value={String(deliveryType)} onValueChange={(v) => setDeliveryType(Number(v))}>
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="48">Normal (48h)</SelectItem>
-                    <SelectItem value="12">On Demand</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold">Amount to Collect (COD ৳)</label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={amountToCollect}
-                  onChange={(e) => setAmountToCollect(e.target.value)}
-                  className="h-9 text-xs font-mono font-bold text-primary"
-                />
-              </div>
-            </div>
-
-            {/* Special Instructions */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Special Instruction (Optional)</label>
-              <Input
-                value={specialInstruction}
-                onChange={(e) => setSpecialInstruction(e.target.value)}
-                placeholder="e.g. Call before delivery, handle with care"
-                className="h-9 text-xs"
-              />
-            </div>
-
-            {/* Estimated Delivery Fee & Price Calc */}
-            <div className="p-3 rounded-lg bg-muted/60 border border-border/80 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-muted-foreground block">Estimated Delivery Fee</span>
-                <span className="text-sm font-bold text-foreground">
-                  {estimatedPrice != null ? `৳${estimatedPrice}` : "Not calculated"}
-                </span>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleEstimateRate}
-                disabled={isCalculatingRate || !selectedCity || !selectedZone}
-                className="h-7 text-xs gap-1"
-              >
-                <RefreshCw className={`h-3 w-3 ${isCalculatingRate ? "animate-spin" : ""}`} />
-                Check Rate
-              </Button>
-            </div>
-
-            <DialogFooter className="pt-3 gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsDispatchOpen(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !selectedCity || !selectedZone || !selectedStoreId}
-                className="gap-1.5 font-semibold shadow-sm"
-              >
-                {isSubmitting ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                Confirm & Dispatch
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {renderDispatchDialog()}
     </>
   );
-}
+};
+
+export default PathaoCourierCard;

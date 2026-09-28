@@ -2,6 +2,7 @@
   "decantre": {
     "clientId": "01",
     "clientKey": "decantre",
+    "orderPrefix": "D",
     "brandName": "Decantre",
     "domain": "decantrebd.com",
     "supportEmail": "support@decantrebd.com",

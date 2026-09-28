@@ -25,6 +25,7 @@ import CMSContentPage from './pages/dashboard/settings/cmsContent';
 import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
+import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import AllMedia from './pages/dashboard/allMedia';
 
 // Products
@@ -56,6 +57,7 @@ import AddNewBill from './pages/dashboard/accounts/addNewBill';
 import BillTypes from './pages/dashboard/accounts/billTypes';
 import AllPayments from './pages/dashboard/accounts/allPayments';
 import AddNewPayment from './pages/dashboard/accounts/addNewPayment';
+import PaymentTypes from './pages/dashboard/accounts/paymentTypes';
 import Investors from './pages/dashboard/accounts/investors';
 import InvestmentsList from './pages/dashboard/accounts/investmentsList';
 import BillingOverview from './pages/dashboard/billing/billingOverview';
@@ -268,6 +270,14 @@ export const router = createBrowserRouter([
             ),
           },
           { path: 'pathao', element: <Navigate to="pathao-courier" replace /> },
+          {
+            path: 'smtp',
+            element: (
+              <RoleGuard menuKey="settings">
+                <SmtpSettingsPage />
+              </RoleGuard>
+            ),
+          },
         ],
       },
       {
@@ -566,6 +576,22 @@ export const router = createBrowserRouter([
                   </RoleGuard>
                 ),
               },
+              {
+                path: 'payment-methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
             ],
           },
           {
@@ -587,7 +613,39 @@ export const router = createBrowserRouter([
                   </RoleGuard>
                 ),
               },
+              {
+                path: 'types',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'payment-methods',
+                element: (
+                  <RoleGuard menuKey="accounts.payments.types">
+                    <PaymentTypes />
+                  </RoleGuard>
+                ),
+              },
             ],
+          },
+          {
+            path: 'payment-methods',
+            element: (
+              <RoleGuard menuKey="accounts.payments.types">
+                <PaymentTypes />
+              </RoleGuard>
+            ),
           },
           {
             path: 'investors',
