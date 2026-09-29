@@ -9,6 +9,7 @@ import { CacheCleanButton } from './CacheCleanButton';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useDashboardStore } from '@/store/use-dashboard-store';
 import { clientConfig } from '@/clientConfig';
+import { BrandLogo } from '@/components/BrandLogo';
 
 // Renders the top navigation header containing sidebar trigger, search, cache clean, theme toggle, and language selector
 export const Header = () => {
@@ -20,9 +21,9 @@ export const Header = () => {
     <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center justify-between gap-2 sm:gap-4 border-b bg-background/95 backdrop-blur-md px-3 sm:px-6">
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <SidebarTrigger className="h-8.5 w-8.5 rounded-lg border border-border/50 text-foreground hover:bg-muted/80 shrink-0 cursor-pointer" />
-        <span className="md:hidden font-heading font-bold text-sm sm:text-base text-foreground tracking-tight truncate max-w-[120px] sm:max-w-[160px]">
-          {brandName || 'Surokkha'}
-        </span>
+        <div className="md:hidden flex items-center">
+          <BrandLogo className="w-[85px] sm:w-[110px] h-auto" />
+        </div>
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3 min-w-0">

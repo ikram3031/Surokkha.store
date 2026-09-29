@@ -104,8 +104,8 @@
     "enableCapi": true,
     "advancedMatching": true
   },
-  "logoUrl": "/uploads/assets/logo.png",
-  "siteIconUrl": "/uploads/assets/favicon.ico",
+  "logoUrl": "",
+  "siteIconUrl": "",
   "assetsConfig": {
     "sections": [
       {

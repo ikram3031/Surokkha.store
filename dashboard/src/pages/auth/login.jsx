@@ -22,6 +22,7 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import plexiviaLogo from '@/assets/plexivia.png';
 import { clientConfig } from '@/clientConfig';
 import { apiClient } from '@/lib/api-client';
+import { BrandLogo } from '@/components/BrandLogo';
 
 // Renders the secure store administration authentication and MFA/OTP verification portal
 const LoginPage = () => {
@@ -225,8 +226,8 @@ const LoginPage = () => {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen w-screen bg-slate-950 flex flex-col items-center justify-center gap-3 text-slate-400">
-        <div className="h-8 w-8 border-3 border-slate-700 border-t-cyan-400 rounded-full animate-spin" />
+      <div className="min-h-screen w-screen bg-background flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <div className="h-8 w-8 border-3 border-border border-t-primary rounded-full animate-spin" />
         <span className="text-xs font-medium font-sans">{t('common.loading', 'Booting secure session...')}</span>
       </div>
     );
@@ -235,15 +236,10 @@ const LoginPage = () => {
   const brandName = clientConfig?.brandName || 'Surokkha';
 
   return (
-    <div className="min-h-screen w-screen max-h-screen bg-[#070b13] text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-cyan-500/40 selection:text-white">
+    <div className="min-h-screen w-screen max-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-primary/30 selection:text-primary-foreground">
       <div className="absolute top-4 right-4 z-30">
-        <LanguageToggle className="bg-slate-900/80 border-slate-800 text-slate-200 hover:bg-slate-800" />
+        <LanguageToggle className="bg-muted/80 border-border text-muted-foreground hover:bg-muted" />
       </div>
-
-      {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-cyan-600/15 rounded-full blur-[150px] pointer-events-none opacity-60 animate-pulse [animation-duration:9s]" />
-      <div className="absolute top-1/4 left-1/3 w-[450px] h-[450px] bg-blue-600/15 rounded-full blur-[130px] pointer-events-none opacity-40 animate-pulse [animation-duration:12s]" />
-      <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -251,78 +247,71 @@ const LoginPage = () => {
         transition={{ duration: 0.35, ease: 'easeOut' }}
         className="w-full max-w-[430px] relative z-10 my-auto"
       >
-        <Card className="shadow-2xl shadow-black/90 border border-slate-800/90 bg-[#0c121e]/95 text-white backdrop-blur-2xl overflow-hidden rounded-3xl ring-1 ring-white/10">
+        <Card className="shadow-2xl border border-border bg-card text-card-foreground backdrop-blur-2xl overflow-hidden rounded-3xl">
           
           {step === 1 ? (
             /* ========================================================================= */
             /* STEP 1: PASSWORD LOGIN SCREEN                                             */
             /* ========================================================================= */
             <>
-              <CardHeader className="px-6 pt-7 pb-4 text-center border-b border-slate-800/80 bg-slate-950/40">
-                <CardTitle className="text-xl font-bold tracking-tight flex flex-col items-center justify-center text-white">
-                  <div className="flex flex-col items-center justify-center my-1 gap-1">
-                    <span className="text-2xl sm:text-3xl font-heading font-extrabold text-white tracking-tight leading-tight">
-                      {brandName}
-                    </span>
-                    <span className="text-xs font-mono font-medium text-slate-400">
-                      v{__APP_VERSION__}
-                    </span>
-                  </div>
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-400 mt-1 font-medium">
-                  {t('auth.sign_in_desc', 'Secure Store Administration Portal')}
-                </CardDescription>
-              </CardHeader>
+              <div className="px-6 pt-6 pb-4 text-center border-b border-border/50">
+                <div className="flex flex-col items-center justify-center gap-1.5">
+                  <BrandLogo className="h-[40px] w-auto mx-auto" centered />
+                  <span className="text-[12px] font-medium text-muted-foreground mt-3">
+                    {t('auth.sign_in_desc', 'Enter your credentials to manage your store.')}
+                  </span>
+                </div>
+              </div>
 
               <CardContent className="p-6 sm:p-7 space-y-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-300">
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-muted-foreground">
                       {t('auth.email', 'Email Address')}
                     </label>
                     <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                        <Mail className="h-4 w-4" />
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
+                        <Mail className="h-[18px] w-[18px]" />
                       </span>
                       <Input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-9.5 h-11 text-sm bg-slate-950/90 border border-slate-700/80 text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 placeholder:text-slate-500 rounded-xl transition shadow-inner"
-                        placeholder="name@example.com"
+                        className="pl-11 h-11 text-sm bg-muted/50 border-transparent text-foreground focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50 rounded-xl transition-all"
+                        placeholder="ikramul.web@gmail.com"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold text-slate-300">
+                      <label className="block text-xs font-bold text-muted-foreground">
                         {t('auth.password', 'Password')}
                       </label>
-                      <a href="#" className="text-xs font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition">
-                        {t('auth.forgot_password', 'Forgot?')}
+                      <a href="#" className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors">
+                        {t('auth.forgot_password', 'Forgot Password?')}
                       </a>
                     </div>
                     <div className="relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                        <Lock className="h-4 w-4" />
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
+                        <Lock className="h-[18px] w-[18px]" />
                       </span>
                       <Input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-9.5 pr-10 h-11 text-sm bg-slate-950/90 border border-slate-700/80 text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 placeholder:text-slate-500 rounded-xl transition shadow-inner"
+                        className="pl-11 pr-11 h-11 text-sm bg-muted/50 border-transparent text-foreground focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50 rounded-xl transition-all font-medium tracking-widest"
                         placeholder="••••••••"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-white transition cursor-pointer"
+                        className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                         title={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
                       </button>
                     </div>
                   </div>
@@ -331,25 +320,24 @@ const LoginPage = () => {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      size="default"
-                      className="w-full h-11 flex items-center justify-center font-bold text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-950/60 rounded-xl transition cursor-pointer border border-cyan-400/30"
+                      className="w-full h-11 flex items-center justify-center font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl transition-all cursor-pointer shadow-sm"
                     >
                       {isSubmitting ? (
-                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
                       ) : (
-                        <LogIn className="h-4 w-4 mr-1.5" />
+                        <LogIn className="h-[18px] w-[18px] mr-2" />
                       )}
-                      {isSubmitting ? t('auth.logging_in', 'Signing In…') : t('auth.login_button', 'Log In')}
+                      {isSubmitting ? t('auth.logging_in', 'Signing In…') : t('auth.login_button', 'Sign In')}
                     </Button>
                   </div>
                 </form>
 
                 {/* Explicit "Login with OTP" Option */}
-                <div className="pt-2 text-center border-t border-slate-800/80">
+                <div className="pt-1 text-center">
                   <button
                     type="button"
                     onClick={handleDirectOtpScreen}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline transition cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                   >
                     <KeyRound className="h-3.5 w-3.5" />
                     <span>Login with OTP / MFA</span>
@@ -366,16 +354,16 @@ const LoginPage = () => {
               {/* Top Shield Icon */}
               <div className="flex justify-center pt-2">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center">
-                  <Shield className="w-12 h-12 text-cyan-400 stroke-[2]" />
+                  <Shield className="w-12 h-12 text-primary stroke-[2]" />
                 </div>
               </div>
 
               {/* Title & Description */}
               <div className="text-center space-y-2">
-                <h2 className="text-2xl sm:text-[26px] font-extrabold text-white tracking-tight">
+                <h2 className="text-2xl sm:text-[26px] font-extrabold text-foreground tracking-tight">
                   Verify MFA Code
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-[320px] mx-auto">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-[320px] mx-auto">
                   To finish signing in, enter the code from your MFA device below.
                 </p>
               </div>
@@ -393,53 +381,55 @@ const LoginPage = () => {
                       value={digit}
                       onChange={(e) => handleDigitChange(idx, e)}
                       onKeyDown={(e) => handleKeyDown(idx, e)}
-                      className="w-11 h-12 sm:w-12 sm:h-13 bg-[#111827] border border-slate-700/80 rounded-xl text-center text-xl font-bold text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 outline-none transition shadow-inner select-all"
+                      className="w-11 h-12 sm:w-12 sm:h-13 bg-muted/50 border border-border rounded-xl text-center text-xl font-bold text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-inner select-all"
                     />
                   ))}
                 </div>
 
                 {/* Resend OTP countdown timer */}
                 <div className="text-right max-w-[340px] mx-auto pt-1">
-                  <span className="text-xs text-slate-400">
-                    Resend OTP in <strong className="text-white font-mono">{formatTimer(timeLeft)}</strong>
+                  <span className="text-xs text-muted-foreground">
+                    Resend OTP in <strong className="text-foreground font-mono">{formatTimer(timeLeft)}</strong>
                   </span>
                 </div>
               </div>
 
-              {/* Action Buttons Matching Screenshot */}
+              {/* Action Buttons */}
               <div className="space-y-3 pt-1 max-w-[340px] mx-auto">
                 
-                {/* 1. Verify Button (Cyan/Blue Gradient) */}
+                {/* 1. Verify Button */}
                 <Button
                   type="button"
                   disabled={is2faVerifying || otpDigits.join('').length !== 6}
                   onClick={handleVerifyButtonClick}
-                  className="w-full h-11.5 flex items-center justify-center font-bold text-sm sm:text-base bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-950/60 rounded-xl transition cursor-pointer border border-cyan-400/40"
+                  className="w-full h-12 flex items-center justify-center font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   {is2faVerifying ? (
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
                   ) : null}
                   {is2faVerifying ? 'Verifying…' : 'Verify'}
                 </Button>
 
-                {/* 2. Cancel Button (Red/Rose) */}
+                {/* 2. Cancel Button */}
                 <Button
                   type="button"
                   onClick={handleCancel}
-                  className="w-full h-11.5 flex items-center justify-center font-bold text-sm sm:text-base bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-950/60 rounded-xl transition cursor-pointer border border-rose-500/40"
+                  variant="outline"
+                  className="w-full h-12 flex items-center justify-center font-bold text-sm bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30 rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   Cancel
                 </Button>
 
-                {/* 3. Get QRCode Via Email Button (Cyan/Blue Gradient) */}
+                {/* 3. Get QRCode Via Email Button */}
                 <Button
                   type="button"
+                  variant="outline"
                   disabled={isRequestingQr}
                   onClick={handleGetQrCodeViaEmail}
-                  className="w-full h-11.5 flex items-center justify-center font-bold text-sm sm:text-base bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-950/60 rounded-xl transition cursor-pointer border border-cyan-400/40"
+                  className="w-full h-12 flex items-center justify-center font-bold text-sm border-primary/30 text-primary hover:bg-primary/10 rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   {isRequestingQr ? (
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                    <div className="h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin mr-2" />
                   ) : null}
                   {isRequestingQr ? 'Sending Email…' : 'Get QRCode Via Email'}
                 </Button>
@@ -451,12 +441,12 @@ const LoginPage = () => {
       </motion.div>
 
       {/* Footer Version & Branding */}
-      <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs text-slate-500 font-mono z-20 select-none">
+      <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-mono z-20 select-none">
         v{__APP_VERSION__}
       </p>
 
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-20 flex flex-col items-end gap-1 select-none pointer-events-auto">
-        <span className="text-xs font-semibold tracking-wide text-slate-400">
+        <span className="text-xs font-semibold tracking-wide text-muted-foreground/70">
           Powered By
         </span>
         <img

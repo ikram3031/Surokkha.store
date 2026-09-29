@@ -84,7 +84,7 @@ export const BrandLogo = ({
 
   if (currentSrc && !imageError) {
     return (
-      <div className={`relative overflow-hidden flex items-center shrink-0 ${isCentered ? 'justify-center' : 'justify-start'} ${className}`}>
+      <div className={`relative flex items-center shrink-0 ${isCentered ? 'justify-center' : 'justify-start'} ${className}`}>
         <img
           src={currentSrc}
           alt={alt || brandName}
