@@ -6,41 +6,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 
-const ZONE_MAP = {
-  "engulfic.com": "b8baf3af57594678d588a9391b3a7023",
-  "engulfic": "b8baf3af57594678d588a9391b3a7023",
-  "decantre.com": "532fc0163ee268da83584fe3be20e3bc",
-  "decantre": "532fc0163ee268da83584fe3be20e3bc",
-  "toyoland.com": "6e159fb7a28e83161c565d3ecad4e565",
-  "toyoland": "6e159fb7a28e83161c565d3ecad4e565",
-  "surokkha.store": "bd131177db6d610b5d4e5beb0142108b",
-  "surokkha": "bd131177db6d610b5d4e5beb0142108b",
-};
+const ZONE_MAP = {};
 
 const resolveToken = () => {
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_API_TOKEN.trim()) {
     return process.env.CLOUDFLARE_API_TOKEN.trim();
   }
-
-  // Check VPS backend.env
-  const vpsEnv = "/engulfic/opt/configs/backend.env";
-  if (fs.existsSync(vpsEnv)) {
-    try {
-      const content = fs.readFileSync(vpsEnv, "utf8");
-      const match = content.match(/CLOUDFLARE_API_TOKEN=([^\r\n]+)/);
-      if (match && match[1].trim()) return match[1].trim();
-    } catch {}
-  }
-
-  const vaultPath = "J:\\My Drive\\CLIENTS\\Cloudflare.txt";
-  if (fs.existsSync(vaultPath)) {
-    try {
-      const raw = fs.readFileSync(vaultPath, "utf8");
-      const match = raw.match(/cfat_[A-Za-z0-9_-]+/);
-      if (match) return match[0];
-    } catch {}
-  }
-
   return "";
 };
 

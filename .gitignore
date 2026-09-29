@@ -48,6 +48,16 @@ data/
 # Frontend split repository folder
 frontend/
 
+# Client-specific configs and secrets (Only demo and template tracked)
+configs/*.json
+!configs/demo.json
+!configs/client.template.json
+
+dashboard/src/clientConfig/*
+!dashboard/src/clientConfig/00demo/
+!dashboard/src/clientConfig/index.js
+!dashboard/src/clientConfig/activeConfig.json
+
 .agents
 *.bundle
 .wrangler/
@@ -57,4 +67,5 @@ frontend/
 data/
 **/data/
 backend/data/
+
 

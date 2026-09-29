@@ -679,3 +679,163 @@ export const sendServerAddToCartEvent = async ({
     console.warn("[Meta CAPI AddToCart] Request builder exception:", err.message);
   }
 };
+
+// Sends server-side InitiateCheckout event to Meta Conversions API
+export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, eventId = '', eventSourceUrl = '', user = {} }) => {
+  try {
+    const metaConfig = await getMetaPixelConfig();
+    if (!metaConfig.isEnabled || !metaConfig.enableCapi) return;
+    const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
+    if (!pixelId || !accessToken) return;
+
+    const clientIp = extractClientIp(req);
+    const clientUserAgent = req?.headers?.['user-agent'] || '';
+    const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, '_fbp') || '';
+    const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, '_fbc') || '';
+
+    const userData = {
+      ...(clientIp ? { client_ip_address: clientIp } : {}),
+      ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
+      ...(fbp ? { fbp } : {}),
+      ...(fbc ? { fbc } : {}),
+    };
+
+    if (advancedMatching && user) {
+      const email = user.email || '';
+      const phone = user.phone || '';
+      if (email) userData.em = [sha256(email)];
+      if (phone) userData.ph = [sha256(normalizePhone(phone))];
+
+      const name = (user.name || user.fullName || '').trim();
+      if (name) {
+        const parts = name.split(/\s+/);
+        if (parts[0]) userData.fn = [sha256(parts[0])];
+        if (parts.length > 1) userData.ln = [sha256(parts.slice(1).join(' '))];
+      } else {
+        if (user.fn) userData.fn = [sha256(user.fn)];
+        if (user.ln) userData.ln = [sha256(user.ln)];
+      }
+
+      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
+      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      userData.country = [sha256('bd')];
+      if (user.memberId || user.did || user.externalId) {
+        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
+      }
+    }
+
+    const eventData = [
+      {
+        event_name: 'InitiateCheckout',
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: 'website',
+        ...(eventSourceUrl ? { event_source_url: eventSourceUrl } : {}),
+        ...(eventId ? { event_id: eventId } : {}),
+        user_data: userData,
+        custom_data: customData,
+      },
+    ];
+
+    const payload = {
+      data: eventData,
+      ...(testEventCode ? { test_event_code: testEventCode } : {}),
+    };
+
+    fetch(`https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errData = await response.json();
+          console.warn('[Meta CAPI InitiateCheckout] Response error:', errData);
+        }
+      })
+      .catch((err) => {
+        console.warn('[Meta CAPI InitiateCheckout] Network error:', err.message);
+      });
+  } catch (err) {
+    console.warn('[Meta CAPI InitiateCheckout] Request builder exception:', err.message);
+  }
+};
+
+// Sends server-side AddPaymentInfo event to Meta Conversions API
+export const sendServerAddPaymentInfoEvent = async ({ customData, req = null, eventId = '', eventSourceUrl = '', user = {} }) => {
+  try {
+    const metaConfig = await getMetaPixelConfig();
+    if (!metaConfig.isEnabled || !metaConfig.enableCapi) return;
+    const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
+    if (!pixelId || !accessToken) return;
+
+    const clientIp = extractClientIp(req);
+    const clientUserAgent = req?.headers?.['user-agent'] || '';
+    const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, '_fbp') || '';
+    const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, '_fbc') || '';
+
+    const userData = {
+      ...(clientIp ? { client_ip_address: clientIp } : {}),
+      ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
+      ...(fbp ? { fbp } : {}),
+      ...(fbc ? { fbc } : {}),
+    };
+
+    if (advancedMatching && user) {
+      const email = user.email || '';
+      const phone = user.phone || '';
+      if (email) userData.em = [sha256(email)];
+      if (phone) userData.ph = [sha256(normalizePhone(phone))];
+
+      const name = (user.name || user.fullName || '').trim();
+      if (name) {
+        const parts = name.split(/\s+/);
+        if (parts[0]) userData.fn = [sha256(parts[0])];
+        if (parts.length > 1) userData.ln = [sha256(parts.slice(1).join(' '))];
+      } else {
+        if (user.fn) userData.fn = [sha256(user.fn)];
+        if (user.ln) userData.ln = [sha256(user.ln)];
+      }
+
+      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
+      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      userData.country = [sha256('bd')];
+      if (user.memberId || user.did || user.externalId) {
+        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
+      }
+    }
+
+    const eventData = [
+      {
+        event_name: 'AddPaymentInfo',
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: 'website',
+        ...(eventSourceUrl ? { event_source_url: eventSourceUrl } : {}),
+        ...(eventId ? { event_id: eventId } : {}),
+        user_data: userData,
+        custom_data: customData,
+      },
+    ];
+
+    const payload = {
+      data: eventData,
+      ...(testEventCode ? { test_event_code: testEventCode } : {}),
+    };
+
+    fetch(`https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errData = await response.json();
+          console.warn('[Meta CAPI AddPaymentInfo] Response error:', errData);
+        }
+      })
+      .catch((err) => {
+        console.warn('[Meta CAPI AddPaymentInfo] Network error:', err.message);
+      });
+  } catch (err) {
+    console.warn('[Meta CAPI AddPaymentInfo] Request builder exception:', err.message);
+  }
+};
