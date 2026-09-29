@@ -7,6 +7,8 @@ export const USER_ROLES = ["Owner", "Admin", "Manager", "Marketing-Expert", "Mar
 
 const userSchema = new Schema(
   {
+    firstName: { type: String, trim: true, default: "" },
+    lastName: { type: String, trim: true, default: "" },
     name: { type: String, required: true, trim: true },
     email: {
       type: String,
@@ -19,6 +21,8 @@ const userSchema = new Schema(
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     passwordHash: { type: String, required: false, trim: true, select: false },
     phone: { type: String, required: false, trim: true, index: true, default: "" },
+    address: { type: String, trim: true, default: "" },
+    avatar: { type: String, trim: true, default: "" },
     refreshToken: { type: String, select: false },
     refreshTokenExpiresAt: { type: Date, select: false },
     emailOtp: { type: String, trim: true, select: false },

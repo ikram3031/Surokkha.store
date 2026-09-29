@@ -1,12 +1,16 @@
 import { Router } from "express";
 
-import { createUser, deleteUser, getUserById, listUsers, updateUser } from "../controllers/UsersController.js";
+import { createUser, deleteUser, getUserById, listUsers, updateUser, getProfile, updateProfile } from "../controllers/UsersController.js";
 import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
 
 const usersRouter = Router();
 
 // Require authentication for user management endpoints
 usersRouter.use(authenticateToken);
+
+// User's own profile routes
+usersRouter.get("/me", getProfile);
+usersRouter.put("/me", updateProfile);
 
 // Only Owner and Admin may manage users
 usersRouter.get("/", authorizeRoles("Owner", "Admin"), listUsers);
