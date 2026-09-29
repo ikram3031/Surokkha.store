@@ -11,6 +11,7 @@ import InvitePage from './pages/invite';
 import Overview from './pages/dashboard/overview';
 import Analytics from './pages/dashboard/analytics';
 import CloudflareAnalytics from './pages/dashboard/cloudflareAnalytics';
+import UserProfile from './pages/dashboard/profile';
 import Users from './pages/dashboard/users';
 import Reports from './pages/dashboard/reportsV2';
 import Members from './pages/dashboard/members';
@@ -110,6 +111,10 @@ export const router = createBrowserRouter([
             <Overview />
           </RoleGuard>
         ),
+      },
+      {
+        path: 'profile',
+        element: <UserProfile />,
       },
       {
         path: 'cpanel',
