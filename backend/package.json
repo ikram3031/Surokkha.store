@@ -1,0 +1,57 @@
+{
+	"name": "Backend",
+	"version": "3.1.00",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": ">=22"
+	},
+	"scripts": {
+		"dev": "node --watch-path=src src/server.js",
+		"dev:all": "node --watch-path=src src/server.js",
+		"dev:storefront": "node --watch-path=src/storefront --watch-path=src/common src/storefront/server.js",
+		"dev:service": "node --watch-path=src/service --watch-path=src/common src/service/server.js",
+		"dev:dashboard": "node --watch-path=src/service --watch-path=src/common src/service/server.js",
+		"prod": "node src/server.js",
+		"prod:all": "node src/server.js",
+		"prod:storefront": "node src/storefront/server.js",
+		"prod:service": "node src/service/server.js",
+		"prod:dashboard": "node src/service/server.js",
+		"mongo": "node scripts/start-local-mongo.js",
+		"img": "node scripts/check-img-urls.js",
+		"lint": "eslint .",
+		"format": "prettier --write ."
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.1116.0",
+		"@google/genai": "^2.17.1",
+		"bcrypt": "^6.0.0",
+		"cors": "^2.8.6",
+		"csv-parser": "^3.2.1",
+		"dotenv": "^17.2.1",
+		"express": "^5.1.0",
+		"imapflow": "^1.7.6",
+		"jsonwebtoken": "^9.0.3",
+		"mailparser": "^3.9.17",
+		"mongodb": "7.5",
+		"mongoose": "^8.17.2",
+		"multer": "^2.2.0",
+		"nodemailer": "^9.0.3",
+		"otplib": "^12.0.1",
+		"pino": "^10.1.0",
+		"potrace": "^2.1.8",
+		"qrcode": "^1.5.4",
+		"sharp": "^0.35.3",
+		"swagger-ui-express": "^5.0.1",
+		"zod": "^4.0.17"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.34.0",
+		"eslint": "^10.8.0",
+		"mongodb-memory-server": "^11.3.0",
+		"prettier": "^3.6.2"
+	}
+}

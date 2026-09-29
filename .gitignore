@@ -1,0 +1,60 @@
+# Environment files & server markers
+.env
+.env.*
+**/.env
+**/.env.*
+.client
+.client.*
+
+# Node / package managers
+node_modules/
+**/node_modules/
+
+# Build output
+/dist/
+/build/
+**/dist/
+**/build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Exclude old dashboard directories from git tracking & VPS copy
+dash_old/
+# old-dashboard/
+PIG/
+
+# Backups & Local Data
+backups/
+**/backups/
+data/
+**/data/
+*.gz
+*.archive
+*.dump
+*.tar
+
+# Frontend split repository folder
+frontend/
+
+.agents
+*.bundle
+.wrangler/
+**/.wrangler/
+
+# Local Database runtime files
+data/
+**/data/
+backend/data/
+

@@ -1,0 +1,6 @@
+# Keep branch-specific dashboard Dockerfile, docker-compose, nginx, and env configs intact during merges
+Dockerfile* merge=ours
+.dockerignore merge=ours
+docker-compose*.yml merge=ours
+nginx*.conf merge=ours
+.env* merge=ours

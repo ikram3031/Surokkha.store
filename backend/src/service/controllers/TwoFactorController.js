@@ -1,0 +1,243 @@
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
+import nodemailer from "nodemailer";
+import { UserModel } from "../../common/models/user.model.js";
+import { comparePassword } from "../../common/utils/password.js";
+import { createAccessToken, createRefreshToken, setAuthCookies } from "./AuthController.js";
+import { env } from "../../common/config/env.js";
+import { logger } from "../../common/config/logger.js";
+import { config as clientConfig } from "../../common/config/index.js";
+import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
+
+// Configure authenticator with a 1-step window to accommodate minor time drift
+authenticator.options = { window: 1 };
+
+let defaultTransport;
+
+// Helper to initialize or retrieve SMTP transport
+export const getTransport = () => {
+  if (!defaultTransport) {
+    const isSecure =
+      Number(env.SMTP_PORT) === 465 ||
+      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
+
+    const transportOpts = {
+      host: env.SMTP_HOST || "127.0.0.1",
+      port: Number(env.SMTP_PORT) || 25,
+      secure: isSecure,
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
+    };
+
+    if (env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER) {
+      transportOpts.auth = {
+        user: env.SMTP_USER,
+        pass: env.SMTP_PASSWORD,
+      };
+    }
+
+    defaultTransport = nodemailer.createTransport(transportOpts);
+  }
+  return defaultTransport;
+};
+
+// Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
+export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
+  try {
+    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const otpauth = authenticator.keyuri(user.email, brandName, secret);
+    const qrCodeBuffer = await QRCode.toBuffer(otpauth, {
+      width: 240,
+      margin: 2,
+      color: {
+        dark: "#000000",
+        light: "#ffffff",
+      },
+    });
+
+    const transport = getTransport();
+    const fromName = env.SMTP_FROM_NAME || brandName;
+    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromAddress = `"${fromName}" <${fromEmail}>`;
+
+    const htmlContent = buildTwoFactorQrEmailHtml({
+      name: user.name,
+      secret,
+      brandName,
+    });
+
+    await transport.sendMail({
+      from: fromAddress,
+      to: user.email,
+      subject: `Set Up Two-Factor Authentication — ${brandName} Dashboard`,
+      text: `Hello ${user.name},\n\nScan the QR code in your Google Authenticator app to set up 2FA.\nCan't scan? Enter this key manually: ${secret}\n\nIf you did not request this, change your password immediately.`,
+      html: htmlContent,
+      attachments: [
+        {
+          filename: "qrcode.png",
+          content: qrCodeBuffer,
+          cid: "qrcode",
+        },
+      ],
+    });
+    logger.info({ email: user.email }, "Dispatched 2FA setup email with QR code successfully");
+    return true;
+  } catch (err) {
+    logger.error({ email: user.email, error: err.message }, "Failed to send 2FA setup email");
+    return false;
+  }
+};
+
+// Generates/retrieves TOTP secret and emails QR Code strictly to the user's verified inbox
+export const sendQrCodeEmail = async (req, res, next) => {
+  try {
+    const { email, password } = req.body ?? {};
+    const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : "";
+
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ status: "error", message: "Email and password are required" });
+    }
+
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret");
+    if (!user || !user.passwordHash) {
+      return res.status(401).json({ status: "error", message: "Invalid credentials" });
+    }
+
+    const isPasswordValid = await comparePassword(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return res.status(401).json({ status: "error", message: "Invalid credentials" });
+    }
+
+    // Generate secret if not already set
+    let secret = user.twoFactorSecret;
+    if (!secret) {
+      secret = authenticator.generateSecret();
+      user.twoFactorSecret = secret;
+      await user.save();
+    }
+
+    // Send email asynchronously in background
+    Promise.resolve().then(async () => {
+      await dispatchTwoFactorSetupEmail({ user, secret });
+    });
+
+    // Strictly return NO sensitive secret or QR dataUrl in HTTP response
+    res.json({
+      status: "success",
+      message: "Setup QR code and instructions have been sent to your registered email address.",
+      data: {
+        email: user.email,
+        emailSent: true,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Verifies TOTP code, enables 2FA, sets SSO cookies, and completes login by issuing tokens
+export const verify2fa = async (req, res, next) => {
+  try {
+    const { email, password, code } = req.body ?? {};
+    const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : "";
+    const trimmedCode = typeof code === "string" ? code.trim() : "";
+
+    if (!normalizedEmail || !password || !trimmedCode) {
+      return res.status(400).json({ status: "error", message: "Email, password, and 2FA code are required" });
+    }
+
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret");
+    if (!user || !user.passwordHash) {
+      return res.status(401).json({ status: "error", message: "Invalid credentials" });
+    }
+
+    const isPasswordValid = await comparePassword(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return res.status(401).json({ status: "error", message: "Invalid credentials" });
+    }
+
+    if (!user.twoFactorSecret) {
+      return res.status(400).json({ status: "error", message: "2FA has not been set up yet. Please request a setup email first." });
+    }
+
+    // Verify TOTP code
+    const isTokenValid = authenticator.verify({
+      token: trimmedCode,
+      secret: user.twoFactorSecret,
+    });
+
+    if (!isTokenValid) {
+      return res.status(400).json({ status: "error", message: "Invalid or expired 2FA code. Please check your authenticator app and try again." });
+    }
+
+    // Mark 2FA as fully enabled and activated
+    user.twoFactorEnabled = true;
+
+    // Issue tokens and update login stats
+    const refreshToken = createRefreshToken();
+    const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
+    user.lastLogin = new Date();
+    user.refreshToken = refreshToken;
+    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    await user.save();
+
+    const accessToken = createAccessToken(user);
+
+    // Set SSO cookies
+    setAuthCookies(res, req, accessToken, refreshToken);
+
+    logger.info({ userId: user.id }, "2FA verified, issued auth tokens and SSO cookies successfully");
+
+    res.json({
+      status: "success",
+      data: {
+        user: {
+          id: user.id,
+          did: user.did,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          lastLogin: user.lastLogin,
+        },
+        accessToken,
+        accessTokenExpiresIn: env.ACCESS_TOKEN_EXPIRES_IN,
+        refreshToken,
+        refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin reset 2FA secret for a user if they lost their device
+export const resetUser2fa = async (req, res, next) => {
+  try {
+    const { targetUserId } = req.body ?? {};
+    if (!targetUserId) {
+      return res.status(400).json({ status: "error", message: "targetUserId is required" });
+    }
+
+    const targetUser = await UserModel.findById(targetUserId);
+    if (!targetUser) {
+      return res.status(404).json({ status: "error", message: "Target user not found" });
+    }
+
+    targetUser.twoFactorSecret = undefined;
+    targetUser.twoFactorEnabled = true; // Still keep 2FA enforced, but prompt new QR scan on next login
+    await targetUser.save();
+
+    logger.info({ adminId: req.user?.userId, targetUserId }, "Admin reset 2FA for user");
+
+    res.json({
+      status: "success",
+      message: `2FA reset for ${targetUser.name || targetUser.email}. A new setup QR code will be emailed upon their next login.`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

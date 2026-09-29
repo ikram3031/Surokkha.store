@@ -1,0 +1,102 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: ${MONGODB_CONTAINER_NAME}
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    # MongoDB exposed strictly on localhost (127.0.0.1) for local backup scripts and SSH tunnels
+    ports:
+      - "127.0.0.1:${MONGODB_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - client-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${BACKEND_CONTAINER_NAME}
+    restart: always
+    # .env ফাইল VPS এর dynamically specified path বা default path থেকে mount করা হচ্ছে
+    volumes:
+      - ${CLIENT_CONFIG_PATH:-/opt/${CLIENT_NAME}/configs}/backend.env:/app/.env:ro
+      - ${PUBLIC_UPLOADS_PATH:-/var/www/uploads}:/app/uploads
+    environment:
+      PORT: ${BACKEND_PORT:-5092}
+    # Backend bound to localhost only (reverse proxied via Nginx)
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-5092}:${BACKEND_PORT:-5092}"
+    depends_on:
+      - mongodb
+    networks:
+      - client-network
+
+  backend-storefront:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${STOREFRONT_BACKEND_CONTAINER_NAME:-${CLIENT_NAME}-backend-storefront}
+    restart: always
+    volumes:
+      - ${CLIENT_CONFIG_PATH:-/opt/${CLIENT_NAME}/configs}/backend.env:/app/.env:ro
+      - ${PUBLIC_UPLOADS_PATH:-/var/www/uploads}:/app/uploads
+    environment:
+      APP_ROLE: storefront
+      PORT: ${STOREFRONT_BACKEND_PORT:-4001}
+    command: ["node", "src/server.storefront.js"]
+    ports:
+      - "127.0.0.1:${STOREFRONT_BACKEND_PORT:-4001}:${STOREFRONT_BACKEND_PORT:-4001}"
+    depends_on:
+      - mongodb
+    networks:
+      - client-network
+
+  backend-dashboard:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${DASHBOARD_BACKEND_CONTAINER_NAME:-${CLIENT_NAME}-backend-dashboard}
+    restart: always
+    volumes:
+      - ${CLIENT_CONFIG_PATH:-/opt/${CLIENT_NAME}/configs}/backend.env:/app/.env:ro
+      - ${PUBLIC_UPLOADS_PATH:-/var/www/uploads}:/app/uploads
+    environment:
+      APP_ROLE: dashboard
+      PORT: ${DASHBOARD_BACKEND_PORT:-4002}
+    command: ["node", "src/server.dashboard.js"]
+    ports:
+      - "127.0.0.1:${DASHBOARD_BACKEND_PORT:-4002}:${DASHBOARD_BACKEND_PORT:-4002}"
+    depends_on:
+      - mongodb
+    networks:
+      - client-network
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+        - VITE_CLIENT=${VITE_CLIENT:-engulfic}
+    container_name: ${DASHBOARD_CONTAINER_NAME}
+    restart: always
+    # dashboard এর .env ও dynamically specified path বা default path থেকে mount
+    volumes:
+      - ${CLIENT_CONFIG_PATH:-/opt/${CLIENT_NAME}/configs}/dashboard.env:/app/.env:ro
+    # Dashboard bound to localhost only (reverse proxied via Nginx)
+    ports:
+      - "127.0.0.1:${DASHBOARD_PORT:-8005}:8005"
+    networks:
+      - client-network
+
+networks:
+  client-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+    driver: local

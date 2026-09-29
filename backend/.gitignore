@@ -1,0 +1,47 @@
+# Node dependencies
+node_modules/
+.node_modules/
+node_modules*
+
+
+# Build output
+dist/
+wp_db/
+img/
+RawUploads/
+RawUpload/
+
+# Runtime files
+.env
+.env.development
+.env.production
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache
+.npm
+
+# Optional REPL history
+.node_repl_history
+uploads/
+src/uploads/
+src/uploads_*.zip
+
+# Client Specific Config
+src/config/config.client.json

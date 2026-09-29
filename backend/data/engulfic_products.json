@@ -1,0 +1,1588 @@
+[
+  {
+    "name": "Unisex Baggy Sweatpants - MAUVE PINK",
+    "slug": "engulfic-unisex-baggy-sweatpants-mauve-pink",
+    "description": "<p>ENGULFIC. UNISEX BAGGY SWEATPANTS - MAUVE PINK</p>",
+    "longDescription": "<p>Details:</p><p>  • 100% premium terry cotton</p><p>  • 300+ GSM lightweight fabric</p><p>  • Oversized fit for ultimate comfort</p><p> • Ribbed cuffs &amp; hem to keep you warm</p><p> • Unique mauve pink colour</p><p> • Available in 4 sizes</p><p> • 3 Spacious pockets</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "S",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "M",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 3,
+        "imageUrl": null
+      }
+    ],
+    "season": [
+      "All-Season"
+    ],
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f15806cb27019830ecb78",
+        "name": "Baggy Sweatpants",
+        "slug": "baggy-sweatpants",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 2,
+        "parent": "6a7f15766cb27019830ecb70",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "6e7973eb693106da",
+        "createdAt": "2026-08-14T13:17:52.745Z",
+        "updatedAt": "2026-08-14T13:17:52.745Z",
+        "product_count": 2
+      },
+      {
+        "_id": "6a7f15766cb27019830ecb70",
+        "name": "Baggy Pants",
+        "slug": "baggy-pants",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 2,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "0207bacb717d50c2",
+        "createdAt": "2026-08-14T13:17:42.319Z",
+        "updatedAt": "2026-08-14T13:17:42.319Z",
+        "product_count": 2
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants-mauve-pink_main_1786829593369.webp",
+    "thumbnailUrl": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants-mauve-pink_main_1786829593369.webp",
+    "images": [
+      "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants-mauve-pink_main_1786829593786.webp",
+      "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants-mauve-pink_main_1786829594212.webp",
+      "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants-mauve-pink_main_1786829594690.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "f5af910ca73291cf",
+    "createdAt": "2026-08-15T21:33:15.018Z",
+    "updatedAt": "2026-08-26T08:56:19.976Z",
+    "id": "6a80db1b457bdb4813fb5d19",
+    "created_at": "2026-08-15T21:33:15.018Z",
+    "updated_at": "2026-08-26T08:56:19.976Z",
+    "image_url": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants-mauve-pink_main_1786829593369.webp",
+    "thumbnail_url": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants-mauve-pink_main_1786829593369.webp"
+  },
+  {
+    "name": "Unisex Baggy Sweatpants-Black",
+    "slug": "engulfic-unisex-baggy-sweatpants",
+    "description": "<p>Relaxed silhouette. Minimal detailing. Effortless movement.<br>Designed to bring comfort and a clean streetwear edge to your everyday wardrobe.</p>",
+    "longDescription": "<p>Details:</p><p>  • 100% premium terry cotton</p><p>  • 300+ GSM lightweight fabric</p><p>  • Oversized fit for ultimate comfort</p><p> • Ribbed cuffs &amp; hem to keep you warm</p><p> • Unique mauve pink colour</p><p> • Available in 4 sizes</p><p> • 3 Spacious pockets</p><p></p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "S",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "M",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 900,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 3,
+        "imageUrl": null
+      }
+    ],
+    "season": [
+      "All-Season"
+    ],
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f15806cb27019830ecb78",
+        "name": "Baggy Sweatpants",
+        "slug": "baggy-sweatpants",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 2,
+        "parent": "6a7f15766cb27019830ecb70",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "6e7973eb693106da",
+        "createdAt": "2026-08-14T13:17:52.745Z",
+        "updatedAt": "2026-08-14T13:17:52.745Z",
+        "product_count": 2
+      },
+      {
+        "_id": "6a7f15766cb27019830ecb70",
+        "name": "Baggy Pants",
+        "slug": "baggy-pants",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 2,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "0207bacb717d50c2",
+        "createdAt": "2026-08-14T13:17:42.319Z",
+        "updatedAt": "2026-08-14T13:17:42.319Z",
+        "product_count": 2
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants_main_1786829069140.webp",
+    "thumbnailUrl": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants_main_1786829069140.webp",
+    "images": [
+      "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants_main_1786829069665.webp",
+      "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants_main_1786829070196.webp",
+      "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants_main_1786829070693.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "8c9b7838f7ba36c1",
+    "createdAt": "2026-08-15T21:24:31.193Z",
+    "updatedAt": "2026-08-26T09:21:52.366Z",
+    "id": "6a80d90f457bdb4813fb5cfb",
+    "created_at": "2026-08-15T21:24:31.193Z",
+    "updated_at": "2026-08-26T09:21:52.366Z",
+    "image_url": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants_main_1786829069140.webp",
+    "thumbnail_url": "/uploads/2608/260815/engulfic-unisex-baggy-sweatpants_main_1786829069140.webp"
+  },
+  {
+    "name": "The Essential Unisex Shirt – Taupe",
+    "slug": "the-essential-unisex-shirt-taupe",
+    "description": "<p>A refined Taupe unisex shirt with a clean silhouette and neutral tone, designed for effortless everyday styling.</p>",
+    "longDescription": "<p>THE ESSENTIAL SHIRT – TAUPE brings a warm, understated tone to a timeless everyday silhouette. Featuring a classic button-down collar, full sleeves, and a clean solid-color finish, it is designed to work across both casual and smart-casual looks. The unisex design makes it versatile and easy to style with black, denim, or neutral bottoms. A dependable essential for a minimal and modern wardrobe.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "M",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": [
+      "All-Season"
+    ],
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16256cb27019830ecb99",
+        "name": "Casual Shirt",
+        "slug": "casual-shirt",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": "6a7f160c6cb27019830ecb89",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "fb6aba203c869200",
+        "createdAt": "2026-08-14T13:20:37.193Z",
+        "updatedAt": "2026-08-14T13:20:37.193Z",
+        "product_count": 6
+      },
+      {
+        "_id": "6a7f160c6cb27019830ecb89",
+        "name": "Shirts",
+        "slug": "shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "b302361261d74360",
+        "createdAt": "2026-08-14T13:20:12.143Z",
+        "updatedAt": "2026-08-14T13:20:12.143Z",
+        "product_count": 6
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828155512.webp",
+    "thumbnailUrl": "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828155512.webp",
+    "images": [
+      "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828155927.webp",
+      "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828156341.webp",
+      "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828156809.webp",
+      "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828157229.webp",
+      "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828157629.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "bc5a663ad0ff9fb8",
+    "createdAt": "2026-08-15T21:09:17.928Z",
+    "updatedAt": "2026-08-26T09:21:41.691Z",
+    "id": "6a80d57d457bdb4813fb5cdf",
+    "created_at": "2026-08-15T21:09:17.928Z",
+    "updated_at": "2026-08-26T09:21:41.691Z",
+    "image_url": "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828155512.webp",
+    "thumbnail_url": "/uploads/2608/260815/the-essential-unisex-shirt-taupe_main_1786828155512.webp"
+  },
+  {
+    "name": "The Essential Unisex Shirt – Navy",
+    "slug": "the-essential-unisex-shirt-navy",
+    "description": "<p>A classic Navy unisex shirt with a clean button-down design, offering an effortless balance of simplicity and everyday sophistication.&nbsp;</p>",
+    "longDescription": "<p>The Essential Shirt – Navy is a timeless wardrobe staple built around a clean, minimal aesthetic. The deep navy tone gives the shirt a versatile and polished appearance, while the classic collar, button-front construction, and long sleeves keep it practical for everyday wear. Designed as a unisex shirt, it transitions easily from casual daytime styling to a more refined evening look.</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16256cb27019830ecb99",
+        "name": "Casual Shirt",
+        "slug": "casual-shirt",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": "6a7f160c6cb27019830ecb89",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "fb6aba203c869200",
+        "createdAt": "2026-08-14T13:20:37.193Z",
+        "updatedAt": "2026-08-14T13:20:37.193Z",
+        "product_count": 6
+      },
+      {
+        "_id": "6a7f160c6cb27019830ecb89",
+        "name": "Shirts",
+        "slug": "shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "b302361261d74360",
+        "createdAt": "2026-08-14T13:20:12.143Z",
+        "updatedAt": "2026-08-14T13:20:12.143Z",
+        "product_count": 6
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/the-essential-unisex-shirt-navy_main_1786827752618.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_the-essential-unisex-shirt-navy_main_1786827752618.webp",
+    "images": [
+      "/uploads/2608/260815/the-essential-unisex-shirt-navy_main_1786827753190.webp",
+      "/uploads/2608/260815/the-essential-unisex-shirt-navy_main_1786827753764.webp",
+      "/uploads/2608/260815/the-essential-unisex-shirt-navy_main_1786827754320.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "6edfa559299c5e87",
+    "createdAt": "2026-08-15T21:02:34.807Z",
+    "updatedAt": "2026-08-15T21:02:34.807Z",
+    "id": "6a80d3ea457bdb4813fb5ccc",
+    "created_at": "2026-08-15T21:02:34.807Z",
+    "updated_at": "2026-08-15T21:02:34.807Z",
+    "image_url": "/uploads/2608/260815/the-essential-unisex-shirt-navy_main_1786827752618.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_the-essential-unisex-shirt-navy_main_1786827752618.webp"
+  },
+  {
+    "name": "The Essential Striped Unisex Shirt – Sky Blue",
+    "slug": "the-essential-striped-unisex-shirt-sky-blue",
+    "description": "<p>A fresh Sky Blue striped unisex shirt with a classic silhouette that adds a clean and relaxed touch to everyday outfits.</p>",
+    "longDescription": "<p>The Essential Striped Shirt – Sky Blue is designed for a fresh, understated look. Fine vertical stripes add subtle character while the classic button-down collar and full sleeves keep the overall style timeless. Its unisex design makes it easy to wear and style across different looks, whether paired with relaxed trousers, denim, or layered casually. A versatile choice for a clean and effortless wardrobe.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16256cb27019830ecb99",
+        "name": "Casual Shirt",
+        "slug": "casual-shirt",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": "6a7f160c6cb27019830ecb89",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "fb6aba203c869200",
+        "createdAt": "2026-08-14T13:20:37.193Z",
+        "updatedAt": "2026-08-14T13:20:37.193Z",
+        "product_count": 6
+      },
+      {
+        "_id": "6a7f160c6cb27019830ecb89",
+        "name": "Shirts",
+        "slug": "shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "b302361261d74360",
+        "createdAt": "2026-08-14T13:20:12.143Z",
+        "updatedAt": "2026-08-14T13:20:12.143Z",
+        "product_count": 6
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/the-essential-striped-unisex-shirt-sky-blue_main_1786827426348.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_the-essential-striped-unisex-shirt-sky-blue_main_1786827426348.webp",
+    "images": [
+      "/uploads/2608/260815/the-essential-striped-unisex-shirt-sky-blue_main_1786827426750.webp",
+      "/uploads/2608/260815/the-essential-striped-unisex-shirt-sky-blue_main_1786827427171.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "172eaf5026b6c327",
+    "createdAt": "2026-08-15T20:57:07.489Z",
+    "updatedAt": "2026-08-15T20:57:07.489Z",
+    "id": "6a80d2a3457bdb4813fb5cb9",
+    "created_at": "2026-08-15T20:57:07.489Z",
+    "updated_at": "2026-08-15T20:57:07.489Z",
+    "image_url": "/uploads/2608/260815/the-essential-striped-unisex-shirt-sky-blue_main_1786827426348.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_the-essential-striped-unisex-shirt-sky-blue_main_1786827426348.webp"
+  },
+  {
+    "name": "The Essential Striped Unisex Shirt – Ivory",
+    "slug": "the-essential-striped-unisex-shirt-ivory",
+    "description": "<p>A clean and versatile unisex striped shirt in Ivory, made for effortless styling from everyday outings to smart-casual occasions.</p>",
+    "longDescription": "<p>The Essential Striped Shirt – Ivory combines a soft, minimal color palette with a classic vertical stripe design. Its button-down collar, long sleeves, and clean silhouette create a timeless look that is easy to dress up or down. Designed for everyone, this unisex shirt pairs naturally with black trousers, denim, or neutral bottoms, making it a dependable piece for everyday wardrobes.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "M",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16256cb27019830ecb99",
+        "name": "Casual Shirt",
+        "slug": "casual-shirt",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": "6a7f160c6cb27019830ecb89",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "fb6aba203c869200",
+        "createdAt": "2026-08-14T13:20:37.193Z",
+        "updatedAt": "2026-08-14T13:20:37.193Z",
+        "product_count": 6
+      },
+      {
+        "_id": "6a7f160c6cb27019830ecb89",
+        "name": "Shirts",
+        "slug": "shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "b302361261d74360",
+        "createdAt": "2026-08-14T13:20:12.143Z",
+        "updatedAt": "2026-08-14T13:20:12.143Z",
+        "product_count": 6
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/the-essential-striped-unisex-shirt-ivory_main_1786827044249.webp",
+    "thumbnailUrl": "/uploads/2608/260815/the-essential-striped-unisex-shirt-ivory_main_1786827044249.webp",
+    "images": [
+      "/uploads/2608/260815/the-essential-striped-unisex-shirt-ivory_main_1786827044634.webp",
+      "/uploads/2608/260815/the-essential-striped-unisex-shirt-ivory_main_1786827045058.webp",
+      "/uploads/2608/260815/the-essential-striped-unisex-shirt-ivory_main_1786827045536.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "f108bee6566657c7",
+    "createdAt": "2026-08-15T20:50:45.873Z",
+    "updatedAt": "2026-08-15T20:51:09.850Z",
+    "id": "6a80d125457bdb4813fb5c9b",
+    "created_at": "2026-08-15T20:50:45.873Z",
+    "updated_at": "2026-08-15T20:51:09.850Z",
+    "image_url": "/uploads/2608/260815/the-essential-striped-unisex-shirt-ivory_main_1786827044249.webp",
+    "thumbnail_url": "/uploads/2608/260815/the-essential-striped-unisex-shirt-ivory_main_1786827044249.webp"
+  },
+  {
+    "name": "The Essential Striped Unisex Shirt – Denim Blue",
+    "slug": "the-essential-striped-unisex-shirt-denim-blue",
+    "description": "<p>A timeless unisex striped shirt in Denim Blue, designed for effortless everyday styling with a clean and versatile look.</p>",
+    "longDescription": "<p>The Essential Striped Shirt – Denim Blue brings a refined take on everyday dressing. Featuring a subtle vertical stripe pattern, classic button-down collar, full sleeves, and a clean silhouette, it works effortlessly for both casual and smart-casual outfits. Designed as a unisex piece, it can be styled with trousers, denim, or relaxed bottoms for a polished yet comfortable look. A versatile wardrobe essential made for easy, everyday wear.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "M",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": [
+      "All-Season"
+    ],
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16256cb27019830ecb99",
+        "name": "Casual Shirt",
+        "slug": "casual-shirt",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": "6a7f160c6cb27019830ecb89",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "fb6aba203c869200",
+        "createdAt": "2026-08-14T13:20:37.193Z",
+        "updatedAt": "2026-08-14T13:20:37.193Z",
+        "product_count": 6
+      },
+      {
+        "_id": "6a7f160c6cb27019830ecb89",
+        "name": "Shirts",
+        "slug": "shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "b302361261d74360",
+        "createdAt": "2026-08-14T13:20:12.143Z",
+        "updatedAt": "2026-08-14T13:20:12.143Z",
+        "product_count": 6
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/the-essential-striped-unisex-shirt-denim-blue_main_1786826751496.webp",
+    "thumbnailUrl": "/uploads/2608/260815/the-essential-striped-unisex-shirt-denim-blue_main_1786826751496.webp",
+    "images": [
+      "/uploads/2608/260815/the-essential-striped-unisex-shirt-denim-blue_main_1786826751946.webp",
+      "/uploads/2608/260815/the-essential-striped-unisex-shirt-denim-blue_main_1786826752366.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "1e6ffaac70f07966",
+    "createdAt": "2026-08-15T20:45:52.661Z",
+    "updatedAt": "2026-08-26T09:36:56.646Z",
+    "id": "6a80d000457bdb4813fb5c8b",
+    "created_at": "2026-08-15T20:45:52.661Z",
+    "updated_at": "2026-08-26T09:36:56.646Z",
+    "image_url": "/uploads/2608/260815/the-essential-striped-unisex-shirt-denim-blue_main_1786826751496.webp",
+    "thumbnail_url": "/uploads/2608/260815/the-essential-striped-unisex-shirt-denim-blue_main_1786826751496.webp"
+  },
+  {
+    "name": "The Essential Shirt – Black",
+    "slug": "the-essential-shirt-black",
+    "description": "<p>A timeless Black unisex shirt featuring a clean silhouette and classic button-down styling for effortless everyday wear.</p>",
+    "longDescription": "<p>The Essential Shirt – Black delivers a sharp, minimal look that never goes out of style. The classic button-down collar, long sleeves, and solid black finish make it an easy foundation for countless outfits. Designed as a unisex piece, it can be worn casually with relaxed bottoms or styled in a more refined way for evenings and occasions. Simple, versatile, and easy to make your own.</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 1000,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16256cb27019830ecb99",
+        "name": "Casual Shirt",
+        "slug": "casual-shirt",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": "6a7f160c6cb27019830ecb89",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "fb6aba203c869200",
+        "createdAt": "2026-08-14T13:20:37.193Z",
+        "updatedAt": "2026-08-14T13:20:37.193Z",
+        "product_count": 6
+      },
+      {
+        "_id": "6a7f160c6cb27019830ecb89",
+        "name": "Shirts",
+        "slug": "shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 6,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "b302361261d74360",
+        "createdAt": "2026-08-14T13:20:12.143Z",
+        "updatedAt": "2026-08-14T13:20:12.143Z",
+        "product_count": 6
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/the-essential-shirt-black_main_1786826335271.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_the-essential-shirt-black_main_1786826335271.webp",
+    "images": [
+      "/uploads/2608/260815/the-essential-shirt-black_main_1786826335797.webp",
+      "/uploads/2608/260815/the-essential-shirt-black_main_1786826336322.webp",
+      "/uploads/2608/260815/the-essential-shirt-black_main_1786826336850.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "8cf0b8b3452f8cd6",
+    "createdAt": "2026-08-15T20:38:57.379Z",
+    "updatedAt": "2026-08-15T20:38:57.379Z",
+    "id": "6a80ce61457bdb4813fb5c79",
+    "created_at": "2026-08-15T20:38:57.379Z",
+    "updated_at": "2026-08-15T20:38:57.379Z",
+    "image_url": "/uploads/2608/260815/the-essential-shirt-black_main_1786826335271.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_the-essential-shirt-black_main_1786826335271.webp"
+  },
+  {
+    "name": "Luffy Gear 5 Oversized Unisex T-Shirt – Black & White",
+    "slug": "luffy-gear-5-oversized-unisex-t-shirt-black-white",
+    "description": "<p>Premium 200 GSM cotton oversized T-shirt featuring a bold Luffy Gear 5 graphic. Designed for comfort and everyday streetwear.&nbsp;</p>",
+    "longDescription": "<p>Step into your streetwear era with the Luffy Gear 5 Oversized T-Shirt. Made from premium 200 GSM cotton, this tee features a bold anime-inspired Gear 5 graphic with a relaxed oversized fit. The breathable fabric and drop shoulder silhouette make it perfect for everyday wear while keeping your look effortlessly bold.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/luffy-gear-5-oversized-unisex-t-shirt-black-white_main_1786825774125.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_luffy-gear-5-oversized-unisex-t-shirt-black-white_main_1786825774125.webp",
+    "images": [
+      "/uploads/2608/260815/luffy-gear-5-oversized-unisex-t-shirt-black-white_main_1786825774534.webp",
+      "/uploads/2608/260815/luffy-gear-5-oversized-unisex-t-shirt-black-white_main_1786825774935.webp",
+      "/uploads/2608/260815/luffy-gear-5-oversized-unisex-t-shirt-black-white_main_1786825775359.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "8d315f31d724d4b2",
+    "createdAt": "2026-08-15T20:29:35.645Z",
+    "updatedAt": "2026-08-15T20:29:35.645Z",
+    "id": "6a80cc2f457bdb4813fb5c65",
+    "created_at": "2026-08-15T20:29:35.645Z",
+    "updated_at": "2026-08-15T20:29:35.645Z",
+    "image_url": "/uploads/2608/260815/luffy-gear-5-oversized-unisex-t-shirt-black-white_main_1786825774125.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_luffy-gear-5-oversized-unisex-t-shirt-black-white_main_1786825774125.webp"
+  },
+  {
+    "name": "Wings Oversized Unisex T-Shirt – Brown",
+    "slug": "wings-oversized-unisex-t-shirt-brown",
+    "description": "<p>The signature Engulfic Wings graphic in a warm brown tone, finished with a relaxed oversized silhouette.&nbsp;</p>",
+    "longDescription": "<p>Add a subtle statement to your wardrobe with the Wings Oversized T-Shirt in Brown. Made from premium 200 GSM cotton, it combines the signature Engulfic Wings graphic with a comfortable drop shoulder fit for effortless everyday styling.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/wings-oversized-unisex-t-shirt-brown_main_1786825547634.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_wings-oversized-unisex-t-shirt-brown_main_1786825547634.webp",
+    "images": [
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-brown_main_1786825548011.webp",
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-brown_main_1786825548443.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "da44b2ec60044f5b",
+    "createdAt": "2026-08-15T20:25:48.757Z",
+    "updatedAt": "2026-08-15T20:25:48.757Z",
+    "id": "6a80cb4c457bdb4813fb5c52",
+    "created_at": "2026-08-15T20:25:48.757Z",
+    "updated_at": "2026-08-15T20:25:48.757Z",
+    "image_url": "/uploads/2608/260815/wings-oversized-unisex-t-shirt-brown_main_1786825547634.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_wings-oversized-unisex-t-shirt-brown_main_1786825547634.webp"
+  },
+  {
+    "name": "Wings Oversized Unisex T-Shirt – Maroon",
+    "slug": "wings-oversized-unisex-t-shirt-maroon",
+    "description": "<p>A rich maroon oversized tee featuring the signature Engulfic Wings graphic for a bold streetwear look.&nbsp;</p>",
+    "longDescription": "<p>Make your everyday fit stand out with the Wings Oversized T-Shirt in Maroon. Crafted from premium 200 GSM cotton, this tee combines a signature graphic with a relaxed oversized silhouette for comfort and effortless streetwear style.</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/wings-oversized-unisex-t-shirt-maroon_main_1786824678453.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_wings-oversized-unisex-t-shirt-maroon_main_1786824678453.webp",
+    "images": [
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-maroon_main_1786824678863.webp",
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-maroon_main_1786824679288.webp",
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-maroon_main_1786824679683.webp",
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-maroon_main_1786824680102.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "1963ddd370393486",
+    "createdAt": "2026-08-15T20:11:20.389Z",
+    "updatedAt": "2026-08-15T20:11:20.389Z",
+    "id": "6a80c7e8457bdb4813fb5c2f",
+    "created_at": "2026-08-15T20:11:20.389Z",
+    "updated_at": "2026-08-15T20:11:20.389Z",
+    "image_url": "/uploads/2608/260815/wings-oversized-unisex-t-shirt-maroon_main_1786824678453.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_wings-oversized-unisex-t-shirt-maroon_main_1786824678453.webp"
+  },
+  {
+    "name": "Wings Oversized Unisex T-Shirt – Black",
+    "slug": "wings-oversized-unisex-t-shirt-black",
+    "description": "<p>A clean yet bold oversized tee featuring the signature Engulfic Wings graphic on premium cotton</p>",
+    "longDescription": "<p>Keep your style bold and effortless with the Wings Oversized T-Shirt. Made with premium 200 GSM cotton, this tee features the signature Wings graphic and a relaxed drop shoulder fit for a modern streetwear silhouette.</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/wings-oversized-unisex-t-shirt-black_main_1786824308226.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_wings-oversized-unisex-t-shirt-black_main_1786824308226.webp",
+    "images": [
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-black_main_1786824308745.webp",
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-black_main_1786824309280.webp",
+      "/uploads/2608/260815/wings-oversized-unisex-t-shirt-black_main_1786824309788.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "f21c5d72a38f45fc",
+    "createdAt": "2026-08-15T20:05:10.269Z",
+    "updatedAt": "2026-08-15T20:05:10.269Z",
+    "id": "6a80c676457bdb4813fb5c1b",
+    "created_at": "2026-08-15T20:05:10.269Z",
+    "updated_at": "2026-08-15T20:05:10.269Z",
+    "image_url": "/uploads/2608/260815/wings-oversized-unisex-t-shirt-black_main_1786824308226.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_wings-oversized-unisex-t-shirt-black_main_1786824308226.webp"
+  },
+  {
+    "name": "Moonlit Eagle Oversized Unisex T-Shirt – Black",
+    "slug": "moonlit-eagle-oversized-unisex-t-shirt-black",
+    "description": "<p>A dark and striking oversized tee featuring a detailed Moonlit Eagle graphic, built for modern streetwear.&nbsp;</p>",
+    "longDescription": "<p>Inspired by the freedom and strength of the eagle, the Moonlit Eagle Oversized T-Shirt brings a powerful graphic to a relaxed everyday silhouette. Made from premium 200 GSM cotton, it delivers comfort, breathability, and a bold streetwear aesthetic.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": [
+      "All-Season"
+    ],
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/moonlit-eagle-oversized-unisex-t-shirt-black_main_1786823845789.webp",
+    "thumbnailUrl": "/uploads/2608/260815/moonlit-eagle-oversized-unisex-t-shirt-black_main_1786823845789.webp",
+    "images": [
+      "/uploads/2608/260815/moonlit-eagle-oversized-unisex-t-shirt-black_main_1786823846304.webp",
+      "/uploads/2608/260815/moonlit-eagle-oversized-unisex-t-shirt-black_main_1786823846992.webp",
+      "/uploads/2608/260815/moonlit-eagle-oversized-unisex-t-shirt-black_main_1786823847482.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "104bc93534c37145",
+    "createdAt": "2026-08-15T19:57:27.907Z",
+    "updatedAt": "2026-08-25T08:52:06.581Z",
+    "id": "6a80c4a7457bdb4813fb5bec",
+    "created_at": "2026-08-15T19:57:27.907Z",
+    "updated_at": "2026-08-25T08:52:06.581Z",
+    "image_url": "/uploads/2608/260815/moonlit-eagle-oversized-unisex-t-shirt-black_main_1786823845789.webp",
+    "thumbnail_url": "/uploads/2608/260815/moonlit-eagle-oversized-unisex-t-shirt-black_main_1786823845789.webp"
+  },
+  {
+    "name": "Hot Outside Oversized Unisex T-Shirt – Maroon",
+    "slug": "hot-outside-oversized-unisex-t-shirt-maroon",
+    "description": "<p>A statement oversized tee with a bold graphic aesthetic, designed for comfortable everyday streetwear.&nbsp;</p>",
+    "longDescription": "<p>Make a statement without trying too hard. The Hot Outside Oversized T-Shirt features a bold graphic design on premium 200 GSM cotton. Its relaxed drop shoulder fit delivers an effortless streetwear look while keeping you comfortable throughout the day.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "offerPrice": null,
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/hot-outside-oversized-unisex-t-shirt-maroon_main_1786823464115.webp",
+    "thumbnailUrl": "/uploads/2608/260815/thumb_hot-outside-oversized-unisex-t-shirt-maroon_main_1786823464115.webp",
+    "images": [
+      "/uploads/2608/260815/hot-outside-oversized-unisex-t-shirt-maroon_main_1786823464664.webp",
+      "/uploads/2608/260815/hot-outside-oversized-unisex-t-shirt-maroon_main_1786823465165.webp",
+      "/uploads/2608/260815/hot-outside-oversized-unisex-t-shirt-maroon_main_1786823465666.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": null,
+    "did": "aae58816641504d8",
+    "createdAt": "2026-08-15T19:51:06.154Z",
+    "updatedAt": "2026-08-15T19:51:06.154Z",
+    "id": "6a80c32a457bdb4813fb5bdb",
+    "created_at": "2026-08-15T19:51:06.154Z",
+    "updated_at": "2026-08-15T19:51:06.154Z",
+    "image_url": "/uploads/2608/260815/hot-outside-oversized-unisex-t-shirt-maroon_main_1786823464115.webp",
+    "thumbnail_url": "/uploads/2608/260815/thumb_hot-outside-oversized-unisex-t-shirt-maroon_main_1786823464115.webp"
+  },
+  {
+    "name": "Friends Oversized Unisex T-Shirt – Brown",
+    "slug": "friends-oversized-unisex-t-shirt-brown",
+    "description": "<p>A bold graphic oversized tee featuring a playful Friends-inspired back print, made for relaxed everyday streetwear.&nbsp;</p><p></p>",
+    "longDescription": "<p>Bring personality to your everyday wardrobe with the Friends Oversized T-Shirt. Crafted from premium 200 GSM cotton, it combines a relaxed oversized silhouette with a bold graphic print for a comfortable yet standout streetwear look.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786812117607.webp",
+    "thumbnailUrl": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786812117607.webp",
+    "images": [
+      "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786812118399.webp",
+      "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786812118978.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "377a55fa076e3098",
+    "createdAt": "2026-08-15T16:41:59.468Z",
+    "updatedAt": "2026-08-15T16:44:28.477Z",
+    "id": "6a8096d7457bdb4813fb5b2a",
+    "created_at": "2026-08-15T16:41:59.468Z",
+    "updated_at": "2026-08-15T16:44:28.477Z",
+    "image_url": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786812117607.webp",
+    "thumbnail_url": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786812117607.webp"
+  },
+  {
+    "name": "Luffy Graphic Oversized Unisex T-Shirt – White",
+    "slug": "luffy-graphic-oversized-unisex-t-shirt-white",
+    "description": "<p>A clean white oversized tee featuring a bold Luffy graphic, designed for anime lovers and streetwear enthusiasts.&nbsp;</p>",
+    "longDescription": "<p>Bring anime energy to your everyday style with the Luffy Pink Graphic Oversized T-Shirt. Made from premium 200 GSM cotton, it features a distinctive Luffy graphic with a relaxed oversized fit that keeps your look comfortable and effortlessly stylish.&nbsp;</p>",
+    "chargeTax": false,
+    "taxRate": null,
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "variant",
+    "variants": [
+      {
+        "size": "M",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 0,
+        "imageUrl": null
+      },
+      {
+        "size": "L",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 1,
+        "imageUrl": null
+      },
+      {
+        "size": "XL",
+        "price": 500,
+        "offerPrice": null,
+        "sku": "",
+        "sortOrder": 2,
+        "imageUrl": null
+      }
+    ],
+    "season": "All-Season",
+    "tags": [],
+    "notes": [],
+    "brand": [],
+    "categories": [
+      {
+        "_id": "6a7f16586cb27019830ecbb5",
+        "name": "Graphic Drop Shoulder Tee",
+        "slug": "graphic-drop-shoulder-tee",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": "6a7f16466cb27019830ecba5",
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "8f47b3a84298ea09",
+        "createdAt": "2026-08-14T13:21:28.774Z",
+        "updatedAt": "2026-08-14T13:21:28.774Z",
+        "product_count": 8
+      },
+      {
+        "_id": "6a7f16466cb27019830ecba5",
+        "name": "Drop Shoulder T-Shirts",
+        "slug": "drop-shoulder-t-shirts",
+        "description": "",
+        "imageUrl": "",
+        "productCount": 8,
+        "parent": null,
+        "createdBy": "6a7e1cb910f06c8eb4ea0a66",
+        "updatedBy": null,
+        "did": "1100f05eb7949225",
+        "createdAt": "2026-08-14T13:21:10.270Z",
+        "updatedAt": "2026-08-14T13:21:10.270Z",
+        "product_count": 8
+      }
+    ],
+    "imageUrl": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811406300.webp",
+    "thumbnailUrl": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811406300.webp",
+    "images": [
+      "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811422854.webp",
+      "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811442101.webp",
+      "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811444761.webp",
+      "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811459799.webp"
+    ],
+    "stockStatus": "instock",
+    "stockAmount": 0,
+    "createdBy": "6a7e1cb910f06c8eb4ea0a67",
+    "updatedBy": "6a7e1cb910f06c8eb4ea0a67",
+    "did": "1118b007d63054fd",
+    "createdAt": "2026-08-15T16:30:07.473Z",
+    "updatedAt": "2026-08-15T16:44:17.067Z",
+    "id": "6a80940f457bdb4813fb5ace",
+    "created_at": "2026-08-15T16:30:07.473Z",
+    "updated_at": "2026-08-15T16:44:17.067Z",
+    "image_url": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811406300.webp",
+    "thumbnail_url": "/uploads/2608/260815/friends-oversized-unisex-t-shirt-brown_main_1786811406300.webp"
+  }
+]

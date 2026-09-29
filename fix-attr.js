@@ -1,0 +1,1 @@
+const fs=require('fs'); const file='/opt/clients/surokkha-mtEcom/configs/surokkha.json'; let data=JSON.parse(fs.readFileSync(file)); if(data.features) { data.features.attribute = true; data.features.attributes = true; } fs.writeFileSync(file, JSON.stringify(data,null,2));

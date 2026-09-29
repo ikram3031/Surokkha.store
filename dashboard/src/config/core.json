@@ -1,0 +1,105 @@
+{
+  "brandName": "Decantre",
+  "domain": "decantrebd.com",
+  "supportEmail": "support@decantrebd.com",
+  "userRoles": {
+    "Owner": {
+      "name": "Store Owner",
+      "allowedMenus": ["*"]
+    },
+    "Admin": {
+      "name": "Administrator",
+      "allowedMenus": ["*"]
+    },
+    "Manager": {
+      "name": "Manager",
+      "allowedMenus": [
+        "overview",
+        "webmail",
+        "orders",
+        "orders.new",
+        "orders.list",
+        "orders.instore",
+        "orders.custom",
+        "orders.custom-new",
+        "products",
+        "products.new",
+        "products.list",
+        "products.on-sale",
+        "products.miniature",
+        "products.showcases",
+        "products.categories",
+        "products.brands",
+        "products.attributes",
+        "products.coupons",
+        "products.size-charts",
+        "products.reviews",
+        "reviews",
+        "customers",
+        "customers.members",
+        "members",
+        "analytics-reports",
+        "analytics",
+        "reports",
+        "tools",
+        "tools.media",
+        "tools.bulk-image-resize",
+        "tools.meta-catalog",
+        "tools.messages",
+        "tools.assets",
+        "tools.support",
+        "logs",
+        "accounts"
+      ]
+    },
+    "Marketing Expert": {
+      "name": "Marketing Expert",
+      "allowedMenus": [
+        "overview",
+        "products",
+        "products.list",
+        "products.on-sale",
+        "products.miniature",
+        "products.showcases",
+        "products.categories",
+        "products.brands",
+        "products.attributes",
+        "products.coupons",
+        "products.size-charts",
+        "products.reviews",
+        "reviews",
+        "customers",
+        "customers.members",
+        "members",
+        "analytics-reports",
+        "analytics",
+        "tools",
+        "tools.media",
+        "tools.bulk-image-resize",
+        "tools.meta-catalog",
+        "tools.support",
+        "settings",
+        "settings.cms-content",
+        "settings.seo",
+        "settings.meta-pixel",
+        "settings.tiktok-pixel",
+        "settings.google-analytics"
+      ]
+    },
+    "Investor": {
+      "name": "Investor",
+      "allowedMenus": [
+        "overview",
+        "webmail",
+        "orders",
+        "orders.list",
+        "products",
+        "products.list",
+        "reports",
+        "accounts",
+        "accounts.balance",
+        "accounts.investments"
+      ]
+    }
+  }
+}
