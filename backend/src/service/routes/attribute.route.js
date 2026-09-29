@@ -9,17 +9,17 @@ import { requireFeature } from "../../common/middlewares/feature.middleware.js";
 
 const router = Router();
 
-router.use(requireFeature("attribute"));
+const guard = requireFeature("attribute");
 
 router.route("/attributes")
-  .get(getAttributes);
+  .get(guard, getAttributes);
 
 router.route("/dashboard/attributes")
-  .get(getAttributes)
-  .post(createAttribute);
+  .get(guard, getAttributes)
+  .post(guard, createAttribute);
 
 router.route("/dashboard/attributes/:id")
-  .put(updateAttribute)
-  .delete(deleteAttribute);
+  .put(guard, updateAttribute)
+  .delete(guard, deleteAttribute);
 
 export default router;

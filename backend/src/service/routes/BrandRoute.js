@@ -11,18 +11,18 @@ import { requireFeature } from "../../common/middlewares/feature.middleware.js";
 
 const router = express.Router();
 
-router.use(requireFeature("brand"));
+const guard = requireFeature("brand");
 
 // GET /api/v1/brands
-router.get("/", getBrands);
+router.get("/", guard, getBrands);
 
 // POST /api/v1/brands
-router.post("/", authenticateToken, authorizeRoles("Owner", "Admin"), createBrand);
+router.post("/", guard, authenticateToken, authorizeRoles("Owner", "Admin"), createBrand);
 
 // PUT /api/v1/brands/:id
-router.put("/:id", authenticateToken, authorizeRoles("Owner", "Admin"), updateBrand);
+router.put("/:id", guard, authenticateToken, authorizeRoles("Owner", "Admin"), updateBrand);
 
 // DELETE /api/v1/brands/:id
-router.delete("/:id", authenticateToken, authorizeRoles("Owner", "Admin"), deleteBrand);
+router.delete("/:id", guard, authenticateToken, authorizeRoles("Owner", "Admin"), deleteBrand);
 
 export default router;

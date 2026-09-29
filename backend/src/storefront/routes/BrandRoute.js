@@ -4,8 +4,8 @@ import { requireFeature } from "../../common/middlewares/feature.middleware.js";
 
 const router = express.Router();
 
-router.use(requireFeature("brand"));
+const guard = requireFeature("brand");
 
-router.get("/", getBrands);
+router.get("/", guard, getBrands);
 
 export default router;
