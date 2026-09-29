@@ -45,8 +45,11 @@ data/
 *.dump
 *.tar
 
-# Frontend split repository folder
-frontend/
+# Client-specific configs and secrets (Only demo and template tracked in upstream)
+configs/*.json
+!configs/demo.json
+!configs/client.template.json
+!configs/surokkha.json
 
 .agents
 *.bundle
@@ -57,4 +60,3 @@ frontend/
 data/
 **/data/
 backend/data/
-
