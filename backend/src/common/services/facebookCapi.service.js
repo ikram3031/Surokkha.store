@@ -3,6 +3,7 @@ import { env } from "../config/env.js";
 import { config as clientConfig } from "../config/index.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { MemberModel } from "../models/member.model.js";
+import { ProductModel } from "../models/product.model.js";
 
 // Computes SHA-256 hash for CAPI user data normalization
 const sha256 = (value) => {
@@ -340,13 +341,39 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     }
 
     const items = Array.isArray(order.items) ? order.items : [];
-    const contents = items.map((item) => ({
-      id: String(item.productDid || item.sku || item.productId || item.name || ""),
-      quantity: item.quantity || 1,
-      item_price: Number(item.unitPrice || 0),
-    }));
+    const productDids = items.map((i) => i.productDid).filter(Boolean);
+    const productNames = items.map((i) => i.name).filter(Boolean);
+    const validMongoIds = items.map((i) => i.productId).filter((id) => mongoose.Types.ObjectId.isValid(id));
 
-    const contentIds = contents.map((c) => c.id).filter(Boolean);
+    const dbProducts = await ProductModel.find(
+      {
+        $or: [
+          ...(validMongoIds.length ? [{ _id: { $in: validMongoIds } }] : []),
+          ...(productDids.length ? [{ did: { $in: productDids } }, { slug: { $in: productDids } }] : []),
+          ...(productNames.length ? [{ name: { $in: productNames } }] : []),
+        ],
+      },
+      'slug did _id sku name'
+    ).lean();
+
+    const dbMap = new Map();
+    dbProducts.forEach((p) => {
+      if (p.did) dbMap.set(p.did, p);
+      if (p.slug) dbMap.set(p.slug, p);
+      if (p.name) dbMap.set(p.name, p);
+    });
+
+    const contents = items.map((item) => {
+      const matched = dbMap.get(item.productDid) || dbMap.get(item.name);
+      return {
+        id: String(matched?.did || item.productDid || item.name || ""),
+        quantity: item.quantity || 1,
+        item_price: Number(item.unitPrice || 0),
+      };
+    });
+
+    const allMatchedIds = dbProducts.flatMap((p) => [p.did, p.slug, p.sku, String(p._id)]).filter(Boolean);
+    const contentIds = [...new Set([...contents.map((c) => c.id).filter(Boolean), ...productDids, ...allMatchedIds])];
 
     const orderTotalAmount = Number(
       order.totals?.total ?? order.total ?? order.totalAmount ?? 0
@@ -461,17 +488,24 @@ export const sendServerViewContentEvent = async ({
     const productName = product?.name || "";
     const category = product?.category?.name || product?.category || "";
 
+    const contentIds = [...new Set([
+      product?.did,
+      product?.slug,
+      product?._id ? String(product._id) : "",
+      product?.id ? String(product.id) : "",
+    ].filter(Boolean))];
+
     const customData = {
       currency: "BDT",
       value: price,
       content_name: productName,
       content_category: category,
-      content_ids: productId ? [productId] : [],
+      content_ids: contentIds.length ? contentIds : (productId ? [productId] : []),
       content_type: "product",
       contents: productId
         ? [
             {
-              id: productId,
+              id: String(product?.did || productId),
               quantity: 1,
               item_price: price,
             },
@@ -582,22 +616,30 @@ export const sendServerAddToCartEvent = async ({
     const category = product?.category?.name || product?.category || "";
     const qty = Number(quantity || 1);
 
+    const atcContentIds = [...new Set([
+      product?.did,
+      product?.slug,
+      product?._id ? String(product._id) : "",
+      product?.id ? String(product.id) : "",
+    ].filter(Boolean))];
+
     const customData = {
       currency,
       value: price * qty,
       content_name: productName,
       content_category: category,
-      content_ids: productId ? [productId] : [],
+      content_ids: atcContentIds.length ? atcContentIds : (productId ? [productId] : []),
       content_type: "product",
       contents: productId
         ? [
             {
-              id: productId,
+              id: String(product?.did || productId),
               quantity: qty,
               item_price: price,
             },
           ]
         : [],
+      num_items: qty,
     };
 
     const eventPayload = {

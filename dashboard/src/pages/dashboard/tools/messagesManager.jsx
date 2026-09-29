@@ -44,6 +44,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatDate, formatDateTime } from '@/utils/dateHelper';
 
 // Calculates relative time strings
 const formatTimeAgo = (dateStr) => {
@@ -56,24 +57,10 @@ const formatTimeAgo = (dateStr) => {
   if (diffHours < 24) return `${diffHours}h ago`;
   const diffDays = Math.floor(diffHours / 24);
   if (diffDays < 7) return `${diffDays}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return formatDate(dateStr);
 };
 
-// Formats full local date and time string
-const formatDateTime = (dateStr) => {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+
 
 // Encapsulated Email HTML Preview with Auto-Height and Zero CSS Leaks
 const EmailHtmlPreview = ({ html }) => {

@@ -44,6 +44,7 @@ import {
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { OrderAccordionDetail } from '@/components/dashboard/order-accordion-detail';
+import { formatDate } from '@/utils/dateHelper';
 
 // Renders the orders table with expandable accordion rows, filtering, batch selection, and inline actions
 export const OrdersTable = ({
@@ -155,11 +156,11 @@ export const OrdersTable = ({
   const getPaymentBadge = (status) => {
     switch (String(status).toLowerCase()) {
       case 'paid':
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600">{t('orders.status_paid', 'Paid')}</Badge>;
+        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white">{t('orders.status_paid', 'Paid')}</Badge>;
       case 'pending':
-        return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400">{t('orders.status_pending', 'Pending')}</Badge>;
+        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white">{t('orders.status_pending', 'Pending')}</Badge>;
       case 'failed':
-        return <Badge variant="destructive">{t('common.error', 'Failed')}</Badge>;
+        return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 text-white">{t('common.error', 'Failed')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -170,19 +171,19 @@ export const OrdersTable = ({
     switch (String(status).toLowerCase()) {
       case 'delivered':
       case 'completed':
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600">{t('orders.status_delivered', 'Completed')}</Badge>;
+        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent">{t('orders.status_delivered', 'Completed')}</Badge>;
       case 'shipped':
-        return <Badge variant="secondary" className="bg-indigo-500/20 text-indigo-600 hover:bg-indigo-500/30 dark:text-indigo-400">{t('orders.status_shipped', 'Shipped')}</Badge>;
+        return <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white border-transparent">{t('orders.status_shipped', 'Shipped')}</Badge>;
       case 'processing':
-        return <Badge variant="secondary" className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400">{t('orders.status_processing', 'Processing')}</Badge>;
+        return <Badge className="bg-blue-500 hover:bg-blue-600 text-white border-transparent">{t('orders.status_processing', 'Processing')}</Badge>;
       case 'cancelled':
       case 'canceled':
-        return <Badge variant="destructive">{t('orders.status_canceled', 'Cancelled')}</Badge>;
+        return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 text-white border-transparent">{t('orders.status_canceled', 'Cancelled')}</Badge>;
       case 'returned':
-        return <Badge variant="destructive" className="bg-pink-500/20 text-pink-600">{t('orders.status_returned', 'Returned')}</Badge>;
+        return <Badge className="bg-pink-500 hover:bg-pink-600 text-white border-transparent">{t('orders.status_returned', 'Returned')}</Badge>;
       case 'pending':
       case 'unfulfilled':
-        return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400">{t('orders.status_pending', 'Pending')}</Badge>;
+        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-transparent">{t('orders.status_pending', 'Pending')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -323,7 +324,7 @@ export const OrdersTable = ({
                       <span className="truncate block" title={order.customerName}>{order.customerName}</span>
                     </TableCell>
                     <TableCell className="w-[110px] text-muted-foreground whitespace-nowrap">
-                      {new Date(order.date).toLocaleDateString(locale)}
+                      {formatDate(order.date)}
                     </TableCell>
                     <TableCell className="w-[120px] font-medium whitespace-nowrap">
                       <span>৳{Number(order.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>

@@ -24,7 +24,7 @@ import { dirname, join } from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-dotenv.config({ path: join(__dirname, "../backend/.env") });
+dotenv.config({ path: join(__dirname, "../.env") });
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/perfume-store";
 

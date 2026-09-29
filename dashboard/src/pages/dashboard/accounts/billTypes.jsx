@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Tag,
@@ -51,6 +51,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { useBillTypes } from '@/hooks/use-bill-types';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { toast } from 'sonner';
+import { formatDate } from '@/utils/dateHelper';
 
 export const BillTypesPage = () => {
   const { t } = useTranslation();
@@ -382,7 +383,7 @@ export const BillTypesPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {type.createdAt ? new Date(type.createdAt).toLocaleDateString() : '—'}
+                        {type.createdAt ? formatDate(type.createdAt) : '—'}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">

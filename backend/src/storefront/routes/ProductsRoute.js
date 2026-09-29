@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getSingleProduct,
+  getMetaCatalogCsv,
   listProducts,
 } from "../controllers/ProductsController.js";
 
@@ -13,6 +14,10 @@ productsRouter.get("/", listProducts);
 productsRouter.post("/search", listProducts);
 
 // GET /api/v1/products/:identifier : Retrieves details of a single product by ObjectId or Slug
+
+// GET /api/v1/products/feed/meta-catalog.csv : Dynamic CSV feed for Meta Commerce Manager
+productsRouter.get("/feed/meta-catalog.csv", getMetaCatalogCsv);
+
 productsRouter.get("/:identifier", getSingleProduct);
 
 export default productsRouter;

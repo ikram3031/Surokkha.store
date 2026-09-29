@@ -73,8 +73,8 @@
     "isVerified": true,
     "enhancedMeasurement": true
   },
-  "logoUrl": "/uploads/assets/logo.png",
-  "siteIconUrl": "/uploads/assets/favicon.ico",
+  "logoUrl": "",
+  "siteIconUrl": "",
   "assetsConfig": {
     "sections": [
       {

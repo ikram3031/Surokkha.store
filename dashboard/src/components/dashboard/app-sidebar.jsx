@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
   LayoutDashboard,
@@ -62,6 +62,7 @@ import {
 import { Button } from "@/components/ui/button"
 import pkg from "../../../package.json"
 import { clientConfig } from "@/clientConfig"
+import { BrandLogo } from "@/components/BrandLogo"
 import {
   Sidebar,
   SidebarContent,
@@ -96,6 +97,7 @@ const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
 export const AppSidebar = ({ ...props }) => {
   const { t } = useTranslation()
   const location = useLocation()
+  const navigate = useNavigate()
   const pathname = location.pathname
   const { user, logout } = useAuth()
   const { state, setOpen, isMobile, setOpenMobile, toggleSidebar } = useSidebar()
@@ -103,7 +105,6 @@ export const AppSidebar = ({ ...props }) => {
 
   const [openMenu, setOpenMenu] = React.useState(null)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false)
-  const [profileModalOpen, setProfileModalOpen] = React.useState(false)
 
   // Auto-close mobile navigation drawer on route transition
   React.useEffect(() => {
@@ -154,11 +155,9 @@ export const AppSidebar = ({ ...props }) => {
         <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
           {state === "expanded" || isMobile ? (
             <>
-              <div className="flex flex-col items-start gap-0.5 overflow-hidden">
-                <span className="text-xl font-heading font-extrabold text-white tracking-tight leading-tight">
-                  {brandName || "Admin"}
-                </span>
-                <span className="text-[11px] font-mono font-medium text-slate-400 tracking-wider">
+              <div className="flex flex-col items-start gap-1 overflow-hidden">
+                <BrandLogo className="w-24 h-auto" />
+                <span className="text-[10px] font-mono font-medium text-slate-400 tracking-wider uppercase ml-1">
                   v{pkg.version || "3.04.03"}
                 </span>
               </div>
@@ -502,15 +501,6 @@ export const AppSidebar = ({ ...props }) => {
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
 
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/google-analytics")}
-                      render={<Link to="/dashboard/settings/google-analytics" />}
-                    >
-                      <BarChart3 className="h-3.5 w-3.5" />
-                      <span>{t("nav.google_analytics", "Google Analytics")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
@@ -528,7 +518,7 @@ export const AppSidebar = ({ ...props }) => {
                       render={<Link to="/dashboard/settings/smtp" />}
                     >
                       <Mail className="h-3.5 w-3.5 text-indigo-500" />
-                      <span>{t("nav.email_server_setup", "Email Server Setup")}</span>
+                      <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>
@@ -809,17 +799,7 @@ export const AppSidebar = ({ ...props }) => {
               </SidebarMenuButton>
               {openMenu === "tools" && (
                 <SidebarMenuSub>
-                  {(isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/analytics") || pathname.startsWith("/dashboard/tools/analytics")}
-                        render={<Link to="/dashboard/analytics" />}
-                      >
-                        <BarChart3 className="h-3.5 w-3.5" />
-                        <span>{t("nav.google_analytics", "Google Analytics")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
+
                   {Boolean(clientConfig?.cloudFlareAnalytics?.active || clientConfig?.clientKey === "surokkha") && (isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
@@ -959,7 +939,7 @@ export const AppSidebar = ({ ...props }) => {
             <DropdownMenuContent side="right" align="end" sideOffset={12} className="w-48 p-1.5 shadow-xl rounded-xl border border-border/80 bg-popover">
               <DropdownMenuItem
                 className="cursor-pointer flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg hover:bg-accent focus:bg-accent text-foreground"
-                onClick={() => setProfileModalOpen(true)}
+                onClick={() => navigate('/dashboard/profile')}
               >
                 <User className="h-4 w-4 text-primary" />
                 <span>{t("nav.profile", "Profile")}</span>
@@ -984,11 +964,11 @@ export const AppSidebar = ({ ...props }) => {
       <Dialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
         <DialogContent className="sm:max-w-[420px] p-6 text-center">
           <DialogHeader className="space-y-2">
-            <div className="mx-auto h-12 w-12 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 mb-1">
+            <div className="mx-auto h-12 w-12 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-primary mb-1">
               <LogOut className="h-6 w-6" />
             </div>
             <DialogTitle className="text-lg font-bold text-foreground text-center">
-              {t("nav.logout_confirm_title", "Do you want to log out?")}
+              {t("nav.logout_confirm_title", "Confirm Logout")}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground text-center">
               {t("nav.logout_confirm_desc", "Are you sure you want to end your current session? You will need to sign in again to access the dashboard.")}
@@ -1008,7 +988,7 @@ export const AppSidebar = ({ ...props }) => {
             <Button
               type="button"
               onClick={handleConfirmLogout}
-              className="flex-1 bg-amber-500 hover:bg-amber-600 text-black dark:text-neutral-950 font-bold shadow-sm cursor-pointer text-xs"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-sm cursor-pointer text-xs"
             >
               {t("common.yes", "Yes")}
             </Button>
@@ -1016,56 +996,7 @@ export const AppSidebar = ({ ...props }) => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={profileModalOpen} onOpenChange={setProfileModalOpen}>
-        <DialogContent className="sm:max-w-[420px] p-6">
-          <DialogHeader className="space-y-3 text-center sm:text-left">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-lg">
-                {user?.name?.charAt(0)?.toUpperCase() || "B"}
-              </div>
-              <div className="text-left">
-                <DialogTitle className="text-base font-bold text-foreground">
-                  {user?.name || "Bithy Akther"}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
-                  {user?.email || "user@example.com"}
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
 
-          <div className="space-y-2.5 py-3 border-y border-border text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("admin.user_role", "Role")}</span>
-              <span className="font-semibold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 capitalize">
-                {user?.role || "Frontdesk"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("settings.store_name", "Store Brand")}</span>
-              <span className="font-semibold text-foreground">{brandName || "Store"}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("common.status", "Status")}</span>
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                {t("common.active", "Active")}
-              </span>
-            </div>
-          </div>
-
-          <DialogFooter className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setProfileModalOpen(false)}
-              className="w-full text-xs font-semibold cursor-pointer"
-            >
-              {t("common.close", "Close")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </Sidebar>
   )
 }

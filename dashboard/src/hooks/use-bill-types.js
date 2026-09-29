@@ -11,6 +11,8 @@ const mapBillType = (item) => ({
   status: (item.status || 'active').charAt(0).toUpperCase() + (item.status || 'active').slice(1).toLowerCase(),
   color: item.color || 'blue',
   isDefault: item.isDefault ?? false,
+  linkedBillsCount: item.linkedBillsCount || 0,
+  totalIncurred: item.totalIncurred || 0,
   createdAt: item.createdAt || new Date().toISOString(),
 });
 

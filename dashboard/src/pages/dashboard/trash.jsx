@@ -44,6 +44,7 @@ import { useCategories, useBrands, getCategoryName, getBrandName } from '@/lib/c
 import { clientConfig } from '@/clientConfig';
 import { toast } from 'sonner';
 import { useNavigate, Link } from 'react-router-dom';
+import { formatDate } from '@/utils/dateHelper';
 
 const TrashPage = () => {
   const navigate = useNavigate();
@@ -681,7 +682,7 @@ const TrashPage = () => {
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '—'}
+                        {order.createdAt ? formatDate(order.createdAt) : '—'}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-xs font-semibold">
                         {order.items?.length || 1} item(s)

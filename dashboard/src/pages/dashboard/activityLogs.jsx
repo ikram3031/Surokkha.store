@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { toast } from 'sonner';
+import { formatDateTime } from '@/utils/dateHelper';
 
 const ActivityLogsPage = () => {
   const queryClient = useQueryClient();
@@ -413,10 +414,7 @@ const ActivityLogsPage = () => {
                         <Clock className="h-3 w-3 shrink-0 text-muted-foreground/60" />
                         <span>
                           {log.createdAt
-                            ? new Date(log.createdAt).toLocaleString([], {
-                                dateStyle: 'medium',
-                                timeStyle: 'short',
-                              })
+                            ? formatDateTime(log.createdAt)
                             : '—'}
                         </span>
                       </div>

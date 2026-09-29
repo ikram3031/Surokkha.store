@@ -73,6 +73,7 @@ import {
   WhatsAppIcon,
 } from "@/utils/orderDetailsHelper";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatDateTime } from '@/utils/dateHelper';
 
 const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -588,7 +589,7 @@ const OrderDetailsPage = () => {
             </div>
             <p className="text-muted-foreground text-xs mt-1 flex items-center gap-1.5">
               <Calendar className="h-3 w-3" />
-              Placed on {new Date(order.createdAt || order.date).toLocaleString()}
+              Placed on {formatDateTime(order.createdAt || order.date)}
             </p>
           </div>
         </div>

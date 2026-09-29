@@ -29,13 +29,12 @@ export const sendOrderEmailsAsynchronously = (order) => {
       const { transport: activeTransport, config: smtpConfig } = await getSmtpTransport();
 
       if (!smtpConfig.isConfigured) {
-        console.warn(`[Email Notification] SMTP credentials not fully configured (host: ${smtpConfig.host}, user: ${smtpConfig.user || 'none'}). Skipping email dispatch.`);
-        return;
+        console.warn(`[Email Notification] SMTP credentials not fully configured (host: ${smtpConfig.host}, user: ${smtpConfig.user || 'none'}). Skipping SMTP dispatch, but proceeding with Dashboard INBOX ingestion.`);
       }
 
       const activeClientKey = (order.client || config.clientKey || process.env.CLIENT_NAME || env.CLIENT_NAME || "surokkha").toLowerCase().trim();
       const brandDisplayName = smtpConfig.fromName || config.brandName || (activeClientKey === "surokkha" ? "Surokkha" : "Decantre BD");
-      const fromEmail = smtpConfig.fromEmail || smtpConfig.user;
+      const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
       const fromAddress = { name: brandDisplayName, address: fromEmail };
       console.log(`[Email Notification] Preparing order emails via Hostinger/SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
 
@@ -158,7 +157,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
       });
 
       // 1. Send Customer Order Confirmation Email (to customer email)
-      if (isValidCustomerEmail(customerEmail)) {
+      if (smtpConfig.isConfigured && isValidCustomerEmail(customerEmail)) {
         try {
           await activeTransport.sendMail({
             from: fromAddress,
@@ -182,6 +181,9 @@ export const sendOrderEmailsAsynchronously = (order) => {
         const adminRecipientsSet = new Set();
         if (activeClientKey === "decantre") {
           adminRecipientsSet.add("decantre.store@gmail.com");
+        } else if (activeClientKey === "surokkha") {
+          adminRecipientsSet.add("support@surokkha.store");
+          adminRecipientsSet.add("contact@surokkha.store");
         }
 
         try {
@@ -213,7 +215,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
         console.log(`[Email Notification] Admin notification targets: ${adminRecipients.join(", ")}`);
 
         // Send Admin New Order Notification Email to all resolved admin emails
-        if (adminRecipients.length > 0) {
+        if (smtpConfig.isConfigured && adminRecipients.length > 0) {
           try {
             await activeTransport.sendMail({
               from: fromAddress,

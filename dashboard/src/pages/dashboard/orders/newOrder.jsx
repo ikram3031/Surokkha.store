@@ -481,7 +481,9 @@ const NewInStoreOrderPage = () => {
 
   const handleDownloadInvoice = () => {
     if (!completedOrder) return;
-    window.open(completedOrder.invoiceUrl, "_blank");
+    const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://server.decantrebd.com').replace(/\/$/, '');
+    const orderIdentifier = completedOrder?.order?._id || completedOrder?.order?.id || completedOrder?.order?.did || completedOrder?.orderNumber;
+    window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
   };
 
   const closeCompletedDialog = () => {

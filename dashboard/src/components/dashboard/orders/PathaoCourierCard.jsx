@@ -40,6 +40,7 @@ import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatBDT } from "@/utils/orderHelper";
+import { formatDateTime } from '@/utils/dateHelper';
 
 // Handles Pathao courier dispatch and consignment tracking for orders
 const PathaoCourierCard = ({
@@ -728,7 +729,7 @@ const PathaoCourierCard = ({
 
             {courier.dispatchedAt && (
               <div className="text-xs text-muted-foreground flex items-center gap-1 pt-1 border-t border-border/60">
-                <Clock className="h-3 w-3" /> Dispatched on {new Date(courier.dispatchedAt).toLocaleString()}
+                <Clock className="h-3 w-3" /> Dispatched on {formatDateTime(courier.dispatchedAt)}
               </div>
             )}
 

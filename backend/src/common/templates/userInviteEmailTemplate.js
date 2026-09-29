@@ -65,7 +65,7 @@ export function renderUserInviteEmail({
     }
     .accent-bar {
       height: 4px;
-      background: linear-gradient(90deg, #881337 0%, #E11D48 50%, #FDA4AF 100%);
+      background: #E2E8F0;
     }
     .header {
       padding: 32px 28px 24px 28px;
@@ -85,8 +85,8 @@ export function renderUserInviteEmail({
       display: inline-block;
       padding: 4px 14px;
       background-color: #FFF1F2;
-      color: #BE123C;
-      border: 1px solid #FECDD3;
+      color: #0F172A;
+      border: 1px solid #E2E8F0;
       border-radius: 9999px;
       font-size: 11.5px;
       font-weight: 700;
@@ -121,7 +121,7 @@ export function renderUserInviteEmail({
     .role-label {
       font-size: 11px;
       font-weight: 700;
-      color: #64748B;
+      color: #334155;
       text-transform: uppercase;
       letter-spacing: 0.75px;
       margin-bottom: 4px;
@@ -139,7 +139,7 @@ export function renderUserInviteEmail({
       display: inline-block;
       padding: 14px 36px;
       background-color: #E11D48;
-      color: #FFFFFF !important;
+      color: #334155 !important;
       text-decoration: none;
       font-weight: 700;
       font-size: 14.5px;
@@ -149,7 +149,7 @@ export function renderUserInviteEmail({
     }
     .notice {
       font-size: 12px;
-      color: #64748B;
+      color: #334155;
       line-height: 1.5;
       margin: 0 0 12px 0;
       text-align: center;

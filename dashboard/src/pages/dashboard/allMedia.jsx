@@ -31,6 +31,7 @@ import {
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { formatDate, formatDateTime } from '@/utils/dateHelper';
 
 // Renders the all media assets gallery with grid preview, copy direct URL, and modal inspection
 const AllMediaPage = () => {
@@ -175,7 +176,7 @@ const AllMediaPage = () => {
                 </p>
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono mt-1">
                   <span>{formatFileSize(item.size)}</span>
-                  <span>{new Date(item.updatedAt || item.createdAt).toLocaleDateString()}</span>
+                  <span>{formatDate(item.updatedAt || item.createdAt)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -275,7 +276,7 @@ const AllMediaPage = () => {
                   <div>
                     <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('common.date')}</p>
                     <p className="font-semibold text-foreground font-mono mt-0.5">
-                      {new Date(selectedMedia.updatedAt || selectedMedia.createdAt).toLocaleString()}
+                      {formatDateTime(selectedMedia.updatedAt || selectedMedia.createdAt)}
                     </p>
                   </div>
                 </div>

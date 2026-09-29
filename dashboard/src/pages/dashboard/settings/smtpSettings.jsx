@@ -167,7 +167,7 @@ const EmailServerSettingsPage = () => {
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <Mail className="h-7 w-7 text-indigo-600" />
-            Email Server Setup
+            SMTP Configuration
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
             Configure system notification emails and Webmail Inbox Synchronization.

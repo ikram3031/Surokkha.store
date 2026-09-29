@@ -33,14 +33,14 @@ export const buildOtpEmailHtml = ({
       margin: 0;
       padding: 0;
       font-family: 'Geist Mono';
-      background-color: #F5F5F5;
-      color: #E4E4E7;
+      background-color: #F8FAFC;
+      color: #334155;
       -webkit-font-smoothing: antialiased;
     }
     .wrapper {
       width: 100%;
       table-layout: fixed;
-      background-color: #F5F5F5;
+      background-color: #F8FAFC;
       padding-top: 40px;
       padding-bottom: 40px;
       font-family: 'Geist Mono';
@@ -48,17 +48,17 @@ export const buildOtpEmailHtml = ({
     .container {
       max-width: 600px;
       margin: 0 auto;
-      background-color: #121215;
+      background-color: #FFFFFF;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      border: 1px solid #27272A;
+      border: 1px solid #E2E8F0;
     }
     .header {
-      background-color: #050505;
+      background-color: #FFFFFF;
       padding: 32px 20px;
       text-align: center;
-      border-bottom: 3px solid #C5A059;
+      border-bottom: 3px solid #E2E8F0;
     }
     .logo {
       vertical-align: middle;
@@ -72,7 +72,7 @@ export const buildOtpEmailHtml = ({
     .title {
       font-family: 'Marcellus';
       font-size: 24px;
-      color: #FFFFFF;
+      color: #334155;
       margin-top: 0;
       margin-bottom: 20px;
       font-weight: 500;
@@ -81,14 +81,14 @@ export const buildOtpEmailHtml = ({
     }
     .greeting {
       font-size: 15px;
-      color: #E4E4E7;
+      color: #334155;
       margin-bottom: 15px;
       text-align: center;
       font-family: 'Geist Mono';
     }
     .message-text {
       font-size: 14px;
-      color: #A1A1AA;
+      color: #334155;
       margin-bottom: 25px;
       text-align: center;
       font-family: 'Geist Mono';
@@ -96,15 +96,15 @@ export const buildOtpEmailHtml = ({
     .otp-container {
       margin: 25px 0;
       padding: 22px 30px;
-      background-color: #18181B;
-      border: 1px dashed #C5A059;
+      background-color: #FFFFFF;
+      border: 1px dashed #E2E8F0;
       border-radius: 6px;
       display: inline-block;
     }
     .otp-code {
       font-size: 34px;
       font-weight: 700;
-      color: #C5A059;
+      color: #0F172A;
       letter-spacing: 10px;
       margin: 0;
       padding-left: 10px;
@@ -112,7 +112,7 @@ export const buildOtpEmailHtml = ({
     }
     .expiry-text {
       font-size: 13px;
-      color: #A1A1AA;
+      color: #334155;
       margin-top: 15px;
       font-style: italic;
       text-align: center;
@@ -128,16 +128,16 @@ export const buildOtpEmailHtml = ({
       font-family: 'Geist Mono';
     }
     .footer {
-      background-color: #050505;
+      background-color: #FFFFFF;
       padding: 30px 20px;
       text-align: center;
       font-size: 12px;
-      color: #A1A1AA;
-      border-top: 1px solid #18181B;
+      color: #334155;
+      border-top: 1px solid #E2E8F0;
       font-family: 'Geist Mono';
     }
     .footer a {
-      color: #C5A059;
+      color: #0F172A;
       text-decoration: none;
     }
     .footer p {

@@ -89,7 +89,7 @@ export const buildTwoFactorQrEmailHtml = ({
     }
     .subtitle {
       font-size: 14px;
-      color: #64748B;
+      color: #334155;
       margin: 0 0 24px 0;
       line-height: 1.5;
     }
@@ -155,7 +155,7 @@ export const buildTwoFactorQrEmailHtml = ({
     }
     .secret-label {
       font-size: 12px;
-      color: #64748B;
+      color: #334155;
       font-weight: 500;
       margin-bottom: 8px;
     }
@@ -193,7 +193,7 @@ export const buildTwoFactorQrEmailHtml = ({
       border-top: 1px solid #F1F5F9;
     }
     .footer a {
-      color: #64748B;
+      color: #334155;
       text-decoration: underline;
     }
     .footer p {

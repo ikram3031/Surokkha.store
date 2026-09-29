@@ -1,3 +1,4 @@
+import { formatDate } from '@/utils/dateHelper';
 const STORAGE_KEY = 'studio_custom_presets_v1';
 
 export const DEFAULT_SAVED_PRESETS = [
@@ -78,7 +79,7 @@ export const saveCustomPreset = (name, settings) => {
 
   const newPreset = {
     id: `custom-preset-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-    name: name.trim() || `Preset ${new Date().toLocaleDateString()}`,
+    name: name.trim() || `Preset ${formatDate(Date.now())}`,
     createdAt: Date.now(),
     prompt: settings.globalPrompt,
     aspectRatio: settings.aspectRatio,

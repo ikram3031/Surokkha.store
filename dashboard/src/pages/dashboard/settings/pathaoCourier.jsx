@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { formatDateTime } from '@/utils/dateHelper';
 
 export default function PathaoCourierSettingsPage() {
   const queryClient = useQueryClient();
@@ -352,7 +353,7 @@ export default function PathaoCourierSettingsPage() {
                 {configData?.lastTestMessage || 'Save your API credentials and run Test Connection to verify authentication.'}
                 {configData?.lastTestedAt && (
                   <span className="ml-1 opacity-80 font-mono">
-                    (Last checked: {new Date(configData.lastTestedAt).toLocaleString()})
+                    (Last checked: {formatDateTime(configData.lastTestedAt)})
                   </span>
                 )}
               </p>

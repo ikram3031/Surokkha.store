@@ -109,7 +109,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       <tr style="background-color: #FFFFFF; border-bottom: 1px solid #F1F5F9;">
         <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #0F172A; vertical-align: top;">
           <strong style="color: #0F172A; font-weight: 700; font-size: 14px;">${itemName}</strong>
-          ${variant ? `<div style="font-size: 11.5px; color: #9F1239; font-weight: 600; margin-top: 3px;">✦ ${variant}</div>` : ""}
+          ${variant ? `<div style="font-size: 11.5px; color: #0F172A; font-weight: 600; margin-top: 3px;">✦ ${variant}</div>` : ""}
         </td>
         <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #1E293B; text-align: center; vertical-align: top;">
           ${qty}
@@ -117,7 +117,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
         <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #1E293B; text-align: right; vertical-align: top; white-space: nowrap;">
           ৳${unitPrice.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
-        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #881337; font-weight: 700; text-align: right; vertical-align: top; white-space: nowrap;">
+        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #0F172A; font-weight: 700; text-align: right; vertical-align: top; white-space: nowrap;">
           ৳${itemTotal.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </td>
       </tr>
@@ -166,7 +166,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     }
     .brand-header-bar {
       height: 5px;
-      background: linear-gradient(90deg, #881337 0%, #BE123C 50%, #FDA4AF 100%);
+      background: #E2E8F0;
     }
     
     /* Centered Header Section */
@@ -192,7 +192,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       margin-bottom: 8px;
     }
     .invoice-id-line span {
-      color: #BE123C;
+      color: #0F172A;
     }
     .invoice-status-badge {
       display: inline-block;
@@ -242,8 +242,8 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       margin-top: 4px;
     }
     .items-table th {
-      background-color: #881337;
-      color: #FFFFFF;
+      background-color: #FFFFFF;
+      color: #334155;
       font-size: 11.5px;
       font-weight: 700;
       text-transform: uppercase;
@@ -262,7 +262,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     
     .totals-container {
       margin-top: 20px;
-      border-top: 2px solid #881337;
+      border-top: 2px solid #E2E8F0;
       padding-top: 14px;
       display: flex;
       justify-content: flex-end;
@@ -303,7 +303,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       color: #0F172A;
     }
     .totals-table tr.grand-total td.amount {
-      color: #881337;
+      color: #0F172A;
       font-size: 19px;
       font-weight: 800;
     }
@@ -313,7 +313,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       margin: 10px 32px 24px 32px;
       padding: 14px 18px;
       background-color: #FFFFFF;
-      border: 1px solid #FECDD3;
+      border: 1px solid #E2E8F0;
       border-radius: 12px;
       display: flex;
       gap: 12px;
@@ -322,7 +322,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     .discreet-notice-box h5 {
       font-size: 12px;
       font-weight: 700;
-      color: #881337;
+      color: #0F172A;
       margin-bottom: 3px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -348,7 +348,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       line-height: 1.6;
     }
     .invoice-footer-light a {
-      color: #BE123C;
+      color: #0F172A;
       text-decoration: none;
       font-weight: 700;
     }
@@ -356,9 +356,9 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       display: inline-block;
       margin-bottom: 8px;
       padding: 4px 14px;
-      border: 1px solid #FECDD3;
+      border: 1px solid #E2E8F0;
       border-radius: 9999px;
-      color: #9F1239;
+      color: #0F172A;
       background-color: #FFFFFF;
       font-size: 10.5px;
       font-weight: 700;
@@ -388,8 +388,8 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       transition: all 0.15s ease;
     }
     .btn-print {
-      background-color: #881337;
-      color: #FFFFFF;
+      background-color: #FFFFFF;
+      color: #334155;
     }
     .btn-print:hover {
       background-color: #9F1239;
@@ -464,8 +464,8 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       <div class="meta-card">
         <h4>Customer & Delivery Details</h4>
         <p><strong>${customerName}</strong></p>
-        <p style="color: #64748B;">${customerPhone}</p>
-        ${customerEmail ? `<p style="color: #64748B; font-size: 12px;">${customerEmail}</p>` : ""}
+        <p style="color: #334155;">${customerPhone}</p>
+        ${customerEmail ? `<p style="color: #334155; font-size: 12px;">${customerEmail}</p>` : ""}
         <p style="margin-top: 6px; font-size: 12.5px;"><strong>${isInstore ? 'Pickup Location:' : 'Shipping Address:'}</strong><br />${isInstore ? '🏢 Store Pickup' : deliveryAddressStr}</p>
       </div>
       
@@ -474,7 +474,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({
         <p><strong>Order Date:</strong> ${createdAt}</p>
         <p><strong>Payment Method:</strong> ${paymentMethod}</p>
         <p><strong>Payment Status:</strong> <span style="color: ${paymentStatusColor}; font-weight: 700;">${paymentStatusText}</span></p>
-        <p style="margin-top: 6px; font-size: 12.5px;"><strong>Customer Helpline:</strong><br /><a href="https://wa.me/8801600905774" target="_blank" style="color: #BE123C; text-decoration: none; font-weight: 700;">01600905774</a> (WhatsApp Available)</p>
+        <p style="margin-top: 6px; font-size: 12.5px;"><strong>Customer Helpline:</strong><br /><a href="https://wa.me/8801600905774" target="_blank" style="color: #0F172A; text-decoration: none; font-weight: 700;">01600905774</a> (WhatsApp Available)</p>
       </div>
     </div>
 
@@ -503,14 +503,14 @@ export const buildSurokkhaOrderInvoiceHtml = ({
           </tr>
           <tr>
             <td>Delivery Fee:</td>
-            <td class="amount">${Number(shippingFee) > 0 ? `৳${Number(shippingFee).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '<span style="color: #15803D; font-weight: 600;">Free</span>'}</td>
+            <td class="amount">${Number(shippingFee) > 0 ? `৳${Number(shippingFee).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '<span style="color: #0F172A; font-weight: 600;">Free</span>'}</td>
           </tr>
           ${Number(discountAmount) > 0 ? `
           <tr>
-            <td style="color: #15803D; font-weight: 600;">
+            <td style="color: #0F172A; font-weight: 600;">
               Discount ${couponCode ? `<span class="coupon-tag">${couponCode}</span>` : ""}:
             </td>
-            <td class="amount" style="color: #15803D; font-weight: 700;">-৳${Number(discountAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td class="amount" style="color: #0F172A; font-weight: 700;">-৳${Number(discountAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           </tr>` : ""}
           <tr class="grand-total">
             <td>Grand Total (BDT):</td>
@@ -524,12 +524,12 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     <div class="invoice-footer-wrapper">
       <!-- Thank you message above footer -->
       <div style="padding: 16px 32px; text-align: center; font-size: 12.5px; color: #334155; border-top: 1px solid #F1F5F9; background-color: #FFFFFF;">
-        Thank you for choosing <a href="https://surokkha.store" target="_blank" style="color: #BE123C; text-decoration: none; font-weight: 700;"><strong>Surokkha.store</strong></a> — Trusted Destination for Personal Wellness
+        Thank you for choosing <a href="https://surokkha.store" target="_blank" style="color: #0F172A; text-decoration: none; font-weight: 700;"><strong>Surokkha.store</strong></a> — Trusted Destination for Personal Wellness
       </div>
 
       <!-- Surokkha Clean Light Footer -->
       <div class="invoice-footer-light">
-        <p style="font-size: 11.5px; color: #64748B; margin: 0;">
+        <p style="font-size: 11.5px; color: #334155; margin: 0;">
           For questions or assistance, reach out via WhatsApp at <a href="https://wa.me/8801600905774" target="_blank" style="text-decoration: underline;">01600905774</a> or email <a href="mailto:support@surokkha.store">support@surokkha.store</a>.
         </p>
       </div>

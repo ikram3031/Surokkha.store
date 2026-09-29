@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { OrderModel } from '../models/order.model.js';
+import { ProductModel } from '../models/product.model.js';
 import { MemberModel } from '../models/member.model.js';
 import { PaymentModel } from '../models/payment.model.js';
 import { UserModel } from '../models/user.model.js';
@@ -44,8 +45,8 @@ export const resolveUserIdFromReference = async (reference) => {
 };
 
 // Normalize checkout items into the order schema shape expected by the database.
-export const normalizeOrderItems = (items = []) =>
-  (items || []).map((item) => ({
+export const normalizeOrderItems = async (items = []) => {
+  const normalized = (items || []).map((item) => ({
     name: item.name ?? item.productName ?? 'Unknown product',
     quantity: Number(item.quantity || 1),
     unitPrice: Number(item.unitPrice ?? item.price ?? 0),
@@ -53,6 +54,33 @@ export const normalizeOrderItems = (items = []) =>
     concentration: item.concentration ?? '',
     productDid: item.productDid ?? '',
   }));
+
+  const needsResolution = normalized.filter((item) => !item.productDid || item.productDid.length !== 16);
+  if (needsResolution.length > 0) {
+    const slugs = needsResolution.map((i) => i.productDid).filter(Boolean);
+    const names = needsResolution.map((i) => i.name).filter(Boolean);
+    const foundProds = await ProductModel.find({
+      $or: [
+        { did: { $in: slugs } },
+        { slug: { $in: slugs } },
+        { name: { $in: names } },
+      ],
+    }, 'did slug name').lean();
+
+    const mapBySlug = new Map(foundProds.map((p) => [p.slug, p.did]));
+    const mapByName = new Map(foundProds.map((p) => [p.name, p.did]));
+    const mapByDid = new Map(foundProds.map((p) => [p.did, p.did]));
+
+    for (const item of needsResolution) {
+      const resolved = mapByDid.get(item.productDid) || mapBySlug.get(item.productDid) || mapByName.get(item.name);
+      if (resolved) {
+        item.productDid = resolved;
+      }
+    }
+  }
+
+  return normalized;
+};
 
 // Build the Mongo order document from the incoming checkout payload.
 export const buildOrderDocument = async (payload) => {
@@ -103,7 +131,7 @@ export const buildOrderDocument = async (payload) => {
     discountTotalAmount: Number(payload.discountTotalAmount || 0),
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
     orderType: resolvedOrderType,
-    items: normalizeOrderItems(payload.items),
+    items: await normalizeOrderItems(payload.items),
     totals: {
       subtotal: Number(payload.subtotal || payload.subTotal || 0),
       shippingFee: Number(payload.shippingFee || payload.shippingTotalAmount || payload.shipping || 0),

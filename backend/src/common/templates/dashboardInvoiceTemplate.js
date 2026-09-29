@@ -117,7 +117,7 @@ export const buildDashboardInvoiceHtml = ({
     .invoice-header .invoice-label {
       font-family: 'Marcellus', serif;
       font-size: 26px;
-      color: #C5A059;
+      color: #0F172A;
       letter-spacing: 2px;
       text-transform: uppercase;
     }
@@ -143,7 +143,7 @@ export const buildDashboardInvoiceHtml = ({
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: #9CA3AF;
+      color: #334155;
       font-weight: 600;
       margin-bottom: 4px;
     }
@@ -153,7 +153,7 @@ export const buildDashboardInvoiceHtml = ({
       font-weight: 600;
     }
     .meta-value.highlight {
-      color: #C5A059;
+      color: #0F172A;
       font-size: 16px;
     }
     /* Address sections */
@@ -173,7 +173,7 @@ export const buildDashboardInvoiceHtml = ({
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: #9CA3AF;
+      color: #334155;
       font-weight: 700;
       margin-bottom: 8px;
     }
@@ -235,7 +235,7 @@ export const buildDashboardInvoiceHtml = ({
       color: #111827;
     }
     .totals-table .total-row .value {
-      color: #C5A059;
+      color: #0F172A;
     }
     /* Footer */
     .invoice-footer {
@@ -247,7 +247,7 @@ export const buildDashboardInvoiceHtml = ({
     }
     .invoice-footer p {
       font-size: 12px;
-      color: #9CA3AF;
+      color: #334155;
       margin: 4px 0;
     }
     .invoice-footer .thanks {

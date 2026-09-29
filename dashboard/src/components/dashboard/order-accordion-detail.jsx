@@ -43,6 +43,7 @@ import {
   WhatsAppIcon,
 } from '@/utils/orderDetailsHelper';
 import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
+import { formatDateTime } from '@/utils/dateHelper';
 
 // Renders an expanded accordion panel containing full order details and inline status management
 export const OrderAccordionDetail = ({ order }) => {
@@ -144,7 +145,7 @@ export const OrderAccordionDetail = ({ order }) => {
           </Link>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Calendar className="h-3.5 w-3.5" />
-            {new Date(order.createdAt || order.date).toLocaleString(locale)}
+            {formatDateTime(order.createdAt || order.date)}
           </span>
           {order.couponCode && (
             <Badge variant="outline" className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono font-bold text-[11px] py-0.5 px-2">

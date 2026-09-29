@@ -253,3 +253,45 @@ export const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
+
+// Fetch current user's profile
+export const getProfile = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ status: "error", message: "Unauthorized" });
+    const user = await UserModel.findById(userId).lean();
+    if (!user) return res.status(404).json({ status: "error", message: "User not found" });
+    res.json({ data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update current user's profile
+export const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ status: "error", message: "Unauthorized" });
+
+    const payload = req.body ?? {};
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ status: "error", message: "User not found" });
+
+    if (payload.firstName !== undefined) user.firstName = payload.firstName.trim();
+    if (payload.lastName !== undefined) user.lastName = payload.lastName.trim();
+    if (payload.firstName || payload.lastName) {
+      user.name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    }
+    
+    // User cannot change their own email
+    if (payload.phone !== undefined) user.phone = payload.phone.trim();
+    if (payload.address !== undefined) user.address = payload.address.trim();
+    if (payload.avatar !== undefined) user.avatar = payload.avatar.trim();
+
+    await user.save();
+
+    res.json({ status: "success", data: user.toJSON() });
+  } catch (error) {
+    next(error);
+  }
+};
