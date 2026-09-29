@@ -144,12 +144,12 @@ export const calculatePaymentStatus = (total, paidAmount, paymentMethod = "") =>
 export const getPaymentBadge = (status) => {
   switch (String(status).toLowerCase()) {
     case "paid":
-      return <Badge className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 text-xs">Paid</Badge>;
+      return <Badge className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 text-xs text-white border-transparent">Paid</Badge>;
     case "partial":
-      return <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400 px-3 py-1 text-xs font-semibold">Partial</Badge>;
+      return <Badge className="bg-amber-500 hover:bg-amber-600 px-3 py-1 text-xs font-semibold text-white border-transparent">Partial</Badge>;
     case "pending":
     default:
-      return <Badge variant="secondary" className="bg-rose-500/20 text-rose-600 hover:bg-rose-500/30 dark:text-rose-400 px-3 py-1 text-xs">Pending</Badge>;
+      return <Badge className="bg-rose-500 hover:bg-rose-600 px-3 py-1 text-xs text-white border-transparent">Pending</Badge>;
   }
 };
 
@@ -157,13 +157,13 @@ export const getPaymentBadge = (status) => {
 export const getFulfillmentBadge = (status) => {
   switch (String(status).toLowerCase()) {
     case "shipped":
-      return <Badge className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 text-xs">Shipped</Badge>;
+      return <Badge className="bg-indigo-500 hover:bg-indigo-600 px-3 py-1 text-xs text-white border-transparent">Shipped</Badge>;
     case "processing":
-      return <Badge variant="secondary" className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400 px-3 py-1 text-xs">Processing</Badge>;
+      return <Badge className="bg-blue-500 hover:bg-blue-600 px-3 py-1 text-xs text-white border-transparent">Processing</Badge>;
     case "cancelled":
-      return <Badge variant="destructive" className="px-3 py-1 text-xs">Cancelled</Badge>;
+      return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 px-3 py-1 text-xs text-white border-transparent">Cancelled</Badge>;
     case "completed":
-      return <Badge className="bg-emerald-600 hover:bg-emerald-700 px-3 py-1 text-xs">Completed</Badge>;
+      return <Badge className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 text-xs text-white border-transparent">Completed</Badge>;
     default:
       return <Badge variant="outline" className="px-3 py-1 text-xs">{status}</Badge>;
   }
