@@ -190,18 +190,25 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     }
   }
 
+  const orderCanceled = orderData.status === 'canceled' || orderData.status === 'cancelled';
+  if (orderCanceled) {
+    paidAmount = 0;
+  }
+
   paidAmount = Math.min(totalAmount, Math.max(0, paidAmount));
-  const pendingAmount = Math.max(0, totalAmount - paidAmount);
+  const pendingAmount = orderCanceled ? 0 : Math.max(0, totalAmount - paidAmount);
 
   let paymentStatus = 'pending';
   const rawMethod = normalizeText(orderData.paymentMethod || payload.paymentMethod).toLowerCase();
   const isMfs = ['bkash', 'nagad', 'rocket'].some((m) => rawMethod.includes(m));
 
-  if (isInstore) {
+  if (orderCanceled) {
+    paymentStatus = 'cancelled';
+  } else if (isInstore) {
     paymentStatus = 'paid';
   } else if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
     const pStatus = String(payload.paymentStatus).toLowerCase();
-    if (['paid', 'partial', 'pending', 'n-a'].includes(pStatus)) {
+    if (['paid', 'partial', 'pending', 'n-a', 'cancelled', 'returned'].includes(pStatus)) {
       paymentStatus = pStatus;
     } else {
       if (paidAmount >= totalAmount && totalAmount > 0) {
@@ -481,7 +488,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   }
 
   if (payload.items) {
-    allowedUpdates.items = normalizeOrderItems(payload.items);
+    allowedUpdates.items = await normalizeOrderItems(payload.items);
   }
   if (payload.memberId !== undefined) {
     if (payload.memberId && Types.ObjectId.isValid(payload.memberId)) {
