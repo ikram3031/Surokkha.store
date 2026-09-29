@@ -128,13 +128,14 @@ export const getBackendStatus = (fullStatus) => {
 export const calculatePendingAmount = (total, paidAmount) =>
   Math.max(0, Number(total || 0) - Number(paidAmount || 0));
 
-// Determine payment status preview string based on total, paid amounts, and method.
-export const calculatePaymentStatus = (total, paidAmount, paymentMethod = "") => {
+export const calculatePaymentStatus = (total, paidAmount, paymentMethod = "", orderStatus = "") => {
   const paid = Number(paidAmount || 0);
   const netTotal = Number(total || 0);
   const method = String(paymentMethod || "").toLowerCase();
+  const status = String(orderStatus || "").toLowerCase();
   const isMfs = ["bkash", "nagad", "rocket"].some(m => method.includes(m));
 
+  if (status === "cancelled" || status === "canceled") return "Cancelled";
   if (paid >= netTotal && netTotal > 0) return "Paid";
   if (paid > 0 || isMfs) return "Partial";
   return "Pending";
@@ -147,6 +148,9 @@ export const getPaymentBadge = (status) => {
       return <Badge className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 text-xs text-white border-transparent">Paid</Badge>;
     case "partial":
       return <Badge className="bg-amber-500 hover:bg-amber-600 px-3 py-1 text-xs font-semibold text-white border-transparent">Partial</Badge>;
+    case "cancelled":
+    case "canceled":
+      return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 px-3 py-1 text-xs text-white border-transparent">Cancelled</Badge>;
     case "pending":
     default:
       return <Badge className="bg-rose-500 hover:bg-rose-600 px-3 py-1 text-xs text-white border-transparent">Pending</Badge>;

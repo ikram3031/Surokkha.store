@@ -47,6 +47,7 @@ const fetchOrders = async (params) => {
         const p = o.paymentStatus.toLowerCase();
         if (p === 'paid') paymentStatus = 'Paid';
         else if (p === 'failed') paymentStatus = 'Failed';
+        else if (p === 'cancelled' || p === 'canceled') paymentStatus = 'Canceled';
         else paymentStatus = 'Pending';
       } else {
         const isPaid = o.status === 'completed' || o.status === 'shipped';

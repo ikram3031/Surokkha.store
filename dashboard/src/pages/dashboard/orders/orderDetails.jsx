@@ -413,8 +413,8 @@ const OrderDetailsPage = () => {
   );
 
   const calculatedPaymentStatus = useMemo(
-    () => calculatePaymentStatus(total, paidAmount),
-    [paidAmount, total],
+    () => calculatePaymentStatus(total, paidAmount, paymentMethod, orderStatus),
+    [paidAmount, total, paymentMethod, orderStatus],
   );
 
   const isDigitalPayment = useMemo(() => {
