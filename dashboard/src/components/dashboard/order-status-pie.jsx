@@ -6,14 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useTheme } from 'next-themes';
 
 const STATUS_CONFIG = {
-  processing: { key: 'orders.status_processing', defaultLabel: 'Processing', color: '#f59e0b' },
-  shipped: { key: 'orders.status_shipped', defaultLabel: 'Shipped', color: '#3b82f6' },
-  completed: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#10b981' },
-  delivered: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#10b981' },
-  cancelled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#ef4444' },
-  canceled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#ef4444' },
-  returned: { key: 'orders.status_returned', defaultLabel: 'Returned', color: '#ec4899' },
-  pending: { key: 'orders.status_pending', defaultLabel: 'Pending', color: '#8b5cf6' },
+  processing: { key: 'orders.status_processing', defaultLabel: 'Processing', color: '#ffcc00' },
+  shipped: { key: 'orders.status_shipped', defaultLabel: 'Shipped', color: '#3865a3' },
+  confirmed: { key: 'orders.status_confirmed', defaultLabel: 'Confirmed', color: '#87a2c7' },
+  completed: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#64a338' },
+  delivered: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#64a338' },
+  cancelled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#e03b24' },
+  canceled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#e03b24' },
+  returned: { key: 'orders.status_returned', defaultLabel: 'Returned', color: '#e03b24' },
+  pending: { key: 'orders.status_pending', defaultLabel: 'Pending', color: '#ffcc00' },
 };
 
 // Renders the order distribution donut pie chart with interactive status legend

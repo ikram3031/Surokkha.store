@@ -19,6 +19,8 @@ export const RecentTransactionsTable = () => {
   const { data: ordersData, isLoading } = useOrders({ limit: 5, page: 1 });
   const orders = ordersData?.data || [];
 
+  const BADGE_FIXED_CLS = "w-24 justify-center text-center truncate border-transparent select-none";
+
   const getStatusBadge = (status) => {
     const s = String(status || '').toLowerCase();
     switch (s) {
@@ -26,44 +28,50 @@ export const RecentTransactionsTable = () => {
       case 'completed':
       case 'delivered':
         return (
-          <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent">
+          <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>
             {t('orders.status_delivered', 'Completed')}
+          </Badge>
+        );
+      case 'shipped':
+        return (
+          <Badge className={`${BADGE_FIXED_CLS} bg-[#3865a3] hover:bg-[#2f558a] text-white`}>
+            {t('orders.status_shipped', 'Shipped')}
+          </Badge>
+        );
+      case 'confirmed':
+        return (
+          <Badge className={`${BADGE_FIXED_CLS} bg-[#87a2c7] hover:bg-[#7693b9] text-slate-950 font-medium`}>
+            {t('orders.status_confirmed', 'Confirmed')}
           </Badge>
         );
       case 'processing':
         return (
-          <Badge className="bg-blue-500 hover:bg-blue-600 text-white border-transparent">
+          <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>
             {t('orders.status_processing', 'Processing')}
           </Badge>
         );
       case 'pending':
         return (
-          <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-transparent">
+          <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>
             {t('orders.status_pending', 'Pending')}
-          </Badge>
-        );
-      case 'shipped':
-        return (
-          <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white border-transparent">
-            {t('orders.status_shipped', 'Shipped')}
           </Badge>
         );
       case 'failed':
       case 'cancelled':
       case 'canceled':
         return (
-          <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 text-white border-transparent">
+          <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>
             {t('orders.status_canceled', 'Cancelled')}
           </Badge>
         );
       case 'returned':
         return (
-          <Badge className="bg-pink-500 hover:bg-pink-600 text-white border-transparent">
+          <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>
             {t('orders.status_returned', 'Returned')}
           </Badge>
         );
       default:
-        return <Badge variant="outline">{status || t('orders.status_pending', 'Pending')}</Badge>;
+        return <Badge variant="outline" className={`${BADGE_FIXED_CLS}`}>{status || t('orders.status_pending', 'Pending')}</Badge>;
     }
   };
 

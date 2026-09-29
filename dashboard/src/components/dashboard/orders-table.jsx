@@ -152,17 +152,29 @@ export const OrdersTable = ({
     navigate(`/dashboard/orders/${order.id}`);
   };
 
+  // Fixed-width badge helper classes with unified palette:
+  // Green (#64a338): delivered/complete/paid (white text)
+  // Yellow (#ffcc00): processing/pending/partial (dark text)
+  // Red (#e03b24): cancelled/deleted/failed (white text)
+  // Blue (#3865a3): shipped (white text)
+  // Sky (#87a2c7): confirmed (dark text)
+  const BADGE_FIXED_CLS = "w-24 justify-center text-center truncate border-transparent select-none";
+
   // Resolves the visual badge representation for payment status
   const getPaymentBadge = (status) => {
     switch (String(status).toLowerCase()) {
       case 'paid':
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white">{t('orders.status_paid', 'Paid')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>{t('orders.status_paid', 'Paid')}</Badge>;
       case 'pending':
-        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white">{t('orders.status_pending', 'Pending')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_pending', 'Pending')}</Badge>;
+      case 'partial':
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_partial', 'Partial')}</Badge>;
       case 'failed':
-        return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 text-white">{t('common.error', 'Failed')}</Badge>;
+      case 'cancelled':
+      case 'canceled':
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('common.error', 'Failed')}</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className={`${BADGE_FIXED_CLS}`}>{status}</Badge>;
     }
   };
 
@@ -171,21 +183,23 @@ export const OrdersTable = ({
     switch (String(status).toLowerCase()) {
       case 'delivered':
       case 'completed':
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent">{t('orders.status_delivered', 'Completed')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>{t('orders.status_delivered', 'Completed')}</Badge>;
       case 'shipped':
-        return <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white border-transparent">{t('orders.status_shipped', 'Shipped')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#3865a3] hover:bg-[#2f558a] text-white`}>{t('orders.status_shipped', 'Shipped')}</Badge>;
+      case 'confirmed':
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#87a2c7] hover:bg-[#7693b9] text-slate-950 font-medium`}>{t('orders.status_confirmed', 'Confirmed')}</Badge>;
       case 'processing':
-        return <Badge className="bg-blue-500 hover:bg-blue-600 text-white border-transparent">{t('orders.status_processing', 'Processing')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_processing', 'Processing')}</Badge>;
       case 'cancelled':
       case 'canceled':
-        return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 text-white border-transparent">{t('orders.status_canceled', 'Cancelled')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_canceled', 'Cancelled')}</Badge>;
       case 'returned':
-        return <Badge className="bg-pink-500 hover:bg-pink-600 text-white border-transparent">{t('orders.status_returned', 'Returned')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_returned', 'Returned')}</Badge>;
       case 'pending':
       case 'unfulfilled':
-        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-transparent">{t('orders.status_pending', 'Pending')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_pending', 'Pending')}</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline" className={`${BADGE_FIXED_CLS}`}>{status}</Badge>;
     }
   };
 
@@ -231,7 +245,7 @@ export const OrdersTable = ({
             <TableHead className="w-[180px]">{t('orders.customer_name', 'Customer Name')}</TableHead>
             <TableHead className="w-[110px]">{t('common.date', 'Date')}</TableHead>
             <TableHead className="w-[120px]">{t('common.total', 'Total Amount')}</TableHead>
-            <TableHead className="w-[100px]">{t('orders.payment_status', 'Payment')}</TableHead>
+            <TableHead className="w-[120px]">{t('orders.payment_status', 'Payment')}</TableHead>
             <TableHead className="w-[120px]">{t('common.status', 'Status')}</TableHead>
             <TableHead className="w-[60px] text-right">{t('common.actions', 'Actions')}</TableHead>
           </TableRow>
@@ -335,7 +349,7 @@ export const OrdersTable = ({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="w-[100px]">{getPaymentBadge(order.paymentStatus)}</TableCell>
+                    <TableCell className="w-[120px]">{getPaymentBadge(order.paymentStatus)}</TableCell>
                     <TableCell className="w-[120px]">{getFulfillmentBadge(order.orderStatus)}</TableCell>
                     <TableCell
                       className="text-right w-[60px]"
