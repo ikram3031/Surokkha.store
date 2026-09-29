@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import { formatDateTime } from '@/utils/dateHelper';
 
 export function SystemUsersTable({
   searchQuery,
@@ -214,7 +215,7 @@ export function SystemUsersTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {new Date(user.lastLogin).toLocaleString()}
+                  {formatDateTime(user.lastLogin)}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>

@@ -43,6 +43,7 @@ import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { formatDate, formatDateTime } from '@/utils/dateHelper';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -313,13 +314,7 @@ export function ReviewsTable({
 
                     {/* Date */}
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {review.createdAt
-                        ? new Date(review.createdAt).toLocaleDateString('en-GB', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })
-                        : '—'}
+                      {review.createdAt ? formatDate(review.createdAt) : '—'}
                     </TableCell>
 
                     {/* Actions */}
@@ -445,7 +440,7 @@ export function ReviewsTable({
                   <Calendar className="h-3.5 w-3.5" />
                   <span>
                     Submitted on{' '}
-                    {new Date(viewReview.createdAt).toLocaleString('en-GB')}
+                    {formatDateTime(viewReview.createdAt)}
                   </span>
                 </div>
               )}

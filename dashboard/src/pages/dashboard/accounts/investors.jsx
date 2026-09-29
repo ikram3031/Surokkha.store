@@ -62,6 +62,7 @@ import { useMembers } from '@/hooks/use-members';
 import { useSystemUsers } from '@/hooks/use-users';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { toast } from 'sonner';
+import { formatDate } from '@/utils/dateHelper';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
@@ -450,7 +451,7 @@ export const InvestorsPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '—'}
+                        {inv.createdAt ? formatDate(inv.createdAt) : '—'}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">

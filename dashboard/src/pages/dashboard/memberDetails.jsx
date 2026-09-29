@@ -61,6 +61,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import { formatDate, formatDateTime } from '@/utils/dateHelper';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
@@ -531,7 +532,7 @@ export const MemberDetails = () => {
                   <div className="inline-flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
                     <span>
-                      Joined {new Date(member.createdAt || member.joinedDate || Date.now()).toLocaleDateString()}
+                      Joined {formatDate(member.createdAt || member.joinedDate || Date.now())}
                     </span>
                   </div>
                 </div>
@@ -736,11 +737,7 @@ export const MemberDetails = () => {
                             </Link>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                            {new Date(ord.createdAt).toLocaleDateString('en-GB', {
-                              day: '2-digit',
-                              month: 'short',
-                              year: 'numeric',
-                            })}
+                            {formatDate(ord.createdAt)}
                           </TableCell>
                           <TableCell className="text-xs max-w-[280px]">
                             <div className="truncate text-foreground font-medium">
@@ -1229,13 +1226,13 @@ export const MemberDetails = () => {
                 <div className="flex justify-between py-1.5 border-b border-border/40">
                   <span className="text-muted-foreground">Registration Date:</span>
                   <span className="text-foreground">
-                    {new Date(member.createdAt || member.joinedDate || Date.now()).toLocaleString()}
+                    {formatDateTime(member.createdAt || member.joinedDate || Date.now())}
                   </span>
                 </div>
                 <div className="flex justify-between py-1.5">
                   <span className="text-muted-foreground">Last Updated:</span>
                   <span className="text-foreground">
-                    {member.updatedAt ? new Date(member.updatedAt).toLocaleString() : 'N/A'}
+                    {member.updatedAt ? formatDateTime(member.updatedAt) : 'N/A'}
                   </span>
                 </div>
               </CardContent>

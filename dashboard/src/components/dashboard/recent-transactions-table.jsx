@@ -26,25 +26,25 @@ export const RecentTransactionsTable = () => {
       case 'completed':
       case 'delivered':
         return (
-          <Badge className="bg-emerald-500/20 text-emerald-600 hover:bg-emerald-500/30 dark:text-emerald-400 border-0">
+          <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent">
             {t('orders.status_delivered', 'Completed')}
           </Badge>
         );
       case 'processing':
         return (
-          <Badge variant="secondary" className="bg-amber-500/20 text-amber-600 hover:bg-amber-500/30 dark:text-amber-400 border-0">
+          <Badge className="bg-blue-500 hover:bg-blue-600 text-white border-transparent">
             {t('orders.status_processing', 'Processing')}
           </Badge>
         );
       case 'pending':
         return (
-          <Badge variant="outline" className="border-amber-500/40 text-amber-600">
+          <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-transparent">
             {t('orders.status_pending', 'Pending')}
           </Badge>
         );
       case 'shipped':
         return (
-          <Badge className="bg-blue-500/20 text-blue-600 hover:bg-blue-500/30 dark:text-blue-400 border-0">
+          <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white border-transparent">
             {t('orders.status_shipped', 'Shipped')}
           </Badge>
         );
@@ -52,13 +52,13 @@ export const RecentTransactionsTable = () => {
       case 'cancelled':
       case 'canceled':
         return (
-          <Badge variant="destructive" className="border-0">
+          <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 text-white border-transparent">
             {t('orders.status_canceled', 'Cancelled')}
           </Badge>
         );
       case 'returned':
         return (
-          <Badge variant="destructive" className="bg-pink-500/20 text-pink-600 border-0">
+          <Badge className="bg-pink-500 hover:bg-pink-600 text-white border-transparent">
             {t('orders.status_returned', 'Returned')}
           </Badge>
         );

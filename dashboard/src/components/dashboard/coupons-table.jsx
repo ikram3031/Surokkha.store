@@ -28,6 +28,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { formatDate } from '@/utils/dateHelper';
 
 export function CouponsTable({
   searchQuery,
@@ -287,7 +288,7 @@ export function CouponsTable({
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       <div className="text-xs font-medium text-foreground">
-                        {coupon.validTo ? new Date(coupon.validTo).toLocaleDateString() : 'Permanent'}
+                        {coupon.validTo ? formatDate(coupon.validTo) : 'Permanent'}
                       </div>
                       <div className="text-[10px] text-muted-foreground whitespace-nowrap">
                         {getValidityBadge(coupon.validFrom, coupon.validTo)}

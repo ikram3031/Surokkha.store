@@ -23,6 +23,7 @@ import {
   MoreHorizontal,
   AlertCircle,
 } from 'lucide-react';
+import { formatDate } from '@/utils/dateHelper';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -226,7 +227,7 @@ export const MembersTable = ({
                 <TableCell className="w-[130px] text-muted-foreground whitespace-nowrap">{member.phone}</TableCell>
                 <TableCell className="text-right w-[100px] font-semibold">{member.totalOrders}</TableCell>
                 <TableCell className="text-right w-[130px] font-bold whitespace-nowrap text-foreground">৳{member.lifetimeSpent.toFixed(2)}</TableCell>
-                <TableCell className="w-[110px] whitespace-nowrap">{new Date(member.joinedDate).toLocaleDateString()}</TableCell>
+                <TableCell className="w-[110px] whitespace-nowrap">{formatDate(member.joinedDate)}</TableCell>
                 <TableCell className="text-right w-[60px]">
                   <DropdownMenu>
                     <DropdownMenuTrigger render={
