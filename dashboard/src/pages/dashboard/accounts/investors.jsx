@@ -19,6 +19,7 @@ import {
   Phone,
   Calendar,
   Landmark,
+  CornerDownLeft,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,7 @@ import { useInvestments } from '@/hooks/use-investments';
 import { useMembers } from '@/hooks/use-members';
 import { useSystemUsers } from '@/hooks/use-users';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
+import { ReturnInvestmentModal } from '@/components/dashboard/accounts/ReturnInvestmentModal';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/dateHelper';
 
@@ -81,6 +83,8 @@ export const InvestorsPage = () => {
 
   // Modal States
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [returnTargetInvestorId, setReturnTargetInvestorId] = useState('');
   const [modalOption, setModalOption] = useState('existing');
   const [editingInvestor, setEditingInvestor] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -259,6 +263,18 @@ export const InvestorsPage = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={() => {
+              setReturnTargetInvestorId('');
+              setReturnModalOpen(true);
+            }}
+            variant="outline"
+            className="h-9 text-xs gap-1.5 shadow-sm border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 cursor-pointer"
+          >
+            <CornerDownLeft className="w-4 h-4" />
+            <span>{t('accounts.return_investment_btn', 'Return Investment')}</span>
+          </Button>
+
           <Button
             onClick={handleOpenAdd}
             className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
@@ -455,6 +471,18 @@ export const InvestorsPage = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                            onClick={() => {
+                              setReturnTargetInvestorId(inv.id);
+                              setReturnModalOpen(true);
+                            }}
+                            title="Record Return / Repayment"
+                          >
+                            <CornerDownLeft className="h-3.5 w-3.5" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -718,6 +746,19 @@ export const InvestorsPage = () => {
         isDeleting={isDeleting}
         title="Delete Investor"
         description={`Are you sure you want to delete investor profile "${deleteTarget?.name}"?`}
+      />
+
+      {/* Return Investment Modal */}
+      <ReturnInvestmentModal
+        open={returnModalOpen}
+        onOpenChange={(open) => {
+          setReturnModalOpen(open);
+          if (!open) setReturnTargetInvestorId('');
+        }}
+        defaultInvestorId={returnTargetInvestorId}
+        onSuccess={() => {
+          setReturnTargetInvestorId('');
+        }}
       />
     </div>
   );

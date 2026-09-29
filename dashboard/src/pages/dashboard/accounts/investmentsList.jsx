@@ -66,6 +66,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { useInvestments } from '@/hooks/use-investments';
 import { useInvestors } from '@/hooks/use-investors';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
+import { ReturnInvestmentModal } from '@/components/dashboard/accounts/ReturnInvestmentModal';
 import { toast } from 'sonner';
 
 const formatCurrency = (val) => {
@@ -87,10 +88,9 @@ export const InvestmentsListPage = () => {
 
   // Modal States
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [editingInv, setEditingInv] = useState(null);
-  const [repayTarget, setRepayTarget] = useState(null);
-  const [repayAmount, setRepayAmount] = useState('');
-  const [repayNotes, setRepayNotes] = useState('');
+  const [returnTarget, setReturnTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
@@ -266,26 +266,6 @@ export const InvestmentsListPage = () => {
     }
   };
 
-  const handleRecordRepayment = async (e) => {
-    e.preventDefault();
-    if (!repayAmount || Number(repayAmount) <= 0) {
-      toast.error('Please enter a valid repayment amount');
-      return;
-    }
-
-    try {
-      await recordReturn({
-        id: repayTarget.id,
-        returnAmountToAdd: Number(repayAmount),
-        notes: repayNotes.trim(),
-      });
-      setRepayTarget(null);
-      setRepayAmount('');
-      setRepayNotes('');
-    } catch {
-      toast.error('Failed to record repayment');
-    }
-  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -354,8 +334,20 @@ export const InvestmentsListPage = () => {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
+            onClick={() => {
+              setReturnTarget(null);
+              setReturnModalOpen(true);
+            }}
+            variant="outline"
+            className="h-9 text-xs gap-1.5 shadow-sm border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 cursor-pointer"
+          >
+            <CornerDownLeft className="w-4 h-4" />
+            <span>{t('accounts.return_investment_btn', 'Return Investment')}</span>
+          </Button>
+
+          <Button
             onClick={handleOpenAdd}
-            className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{t('accounts.add_investment_btn', 'Add Investment')}</span>
@@ -603,7 +595,10 @@ export const InvestmentsListPage = () => {
                             {outstanding > 0 && (
                               <DropdownMenuItem
                                 className="cursor-pointer gap-2 text-emerald-600 font-semibold"
-                                onClick={() => setRepayTarget(inv)}
+                                onClick={() => {
+                                  setReturnTarget(inv);
+                                  setReturnModalOpen(true);
+                                }}
                               >
                                 <CornerDownLeft className="w-3.5 h-3.5" />
                                 <span>Record Repayment</span>
@@ -838,57 +833,20 @@ export const InvestmentsListPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Record Repayment Modal */}
-      <Dialog open={!!repayTarget} onOpenChange={(open) => !open && setRepayTarget(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold flex items-center gap-2 text-emerald-600">
-              <CornerDownLeft className="w-5 h-5" />
-              Record Repayment to Investor
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              {repayTarget?.investorName} — Outstanding Balance: {formatCurrency(Math.max(0, (repayTarget?.takenAmount || 0) - (repayTarget?.returnedAmount || 0)))}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleRecordRepayment} className="space-y-4 py-2 text-xs">
-            <div className="space-y-1.5">
-              <label className="font-semibold text-foreground">
-                Repayment Amount to Add (৳) <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="number"
-                min="1"
-                step="any"
-                placeholder="0.00"
-                value={repayAmount}
-                onChange={(e) => setRepayAmount(e.target.value)}
-                className="text-xs font-bold font-mono text-emerald-600"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-semibold text-foreground">Repayment Remarks</label>
-              <Input
-                placeholder="e.g. Q2 Dividend / Principal return via EBL bank"
-                value={repayNotes}
-                onChange={(e) => setRepayNotes(e.target.value)}
-                className="text-xs"
-              />
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setRepayTarget(null)}>
-                Cancel
-              </Button>
-              <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                Confirm Repayment
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Return Investment Modal */}
+      <ReturnInvestmentModal
+        open={returnModalOpen}
+        onOpenChange={(open) => {
+          setReturnModalOpen(open);
+          if (!open) setReturnTarget(null);
+        }}
+        defaultInvestorId={returnTarget?.investorId || ''}
+        defaultInvestmentId={returnTarget?.id || ''}
+        onSuccess={() => {
+          setReturnTarget(null);
+          if (refetch) refetch();
+        }}
+      />
 
       {/* Delete Confirmation */}
       <ConfirmDeleteDialog

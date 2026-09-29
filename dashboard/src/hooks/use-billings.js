@@ -54,6 +54,13 @@ const mapBilling = (billing) => {
   const paidAmount = typeof billing.paidAmount === 'number' ? billing.paidAmount : (billing.status === 'paid' ? totalAmount : 0);
   const pendingAmount = typeof billing.pendingAmount === 'number' ? billing.pendingAmount : Math.max(0, totalAmount - paidAmount);
 
+  const investor = typeof billing.investorId === 'object' && billing.investorId !== null ? billing.investorId : {};
+  const investorId = investor._id || investor.id || (typeof billing.investorId === 'string' ? billing.investorId : null);
+  const investorName = investor.name || (billing.billType === 'Investment Return' ? billing.vendor || '' : '');
+
+  const investment = typeof billing.investmentId === 'object' && billing.investmentId !== null ? billing.investmentId : {};
+  const investmentId = investment._id || investment.id || (typeof billing.investmentId === 'string' ? billing.investmentId : null);
+
   return {
     id: billing.id || billing._id || invoiceId,
     invoiceId,
@@ -64,6 +71,9 @@ const mapBilling = (billing) => {
     vendor: billing.vendor || customerName,
     customerName,
     billingMethod: billing.billingMethod || 'Cash',
+    investorId,
+    investorName,
+    investmentId,
     date: formatDate(billing.billingDate || billing.createdAt || billing.updatedAt || order.createdAt),
     billingDate: formatDate(billing.billingDate || billing.createdAt || order.createdAt),
     dueDate: formatDate(billing.dueDate || billing.billingDate || billing.createdAt || order.createdAt),

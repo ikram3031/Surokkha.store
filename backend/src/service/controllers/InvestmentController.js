@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import { InvestmentModel } from "../../common/models/investment.model.js";
 import { InvestorModel } from "../../common/models/investor.model.js";
+import { BillingModel } from "../../common/models/billing.model.js";
+import { BillTypeModel } from "../../common/models/billType.model.js";
 import { logger } from "../../common/config/logger.js";
 
 const { Types } = mongoose;
@@ -385,6 +387,189 @@ export const bulkDeleteInvestments = async (req, res, next) => {
     });
   } catch (error) {
     logger.error({ error }, "Failed to bulk delete investments");
+    next(error);
+  }
+};
+
+// Ensures the Investment Return bill type exists in the database
+const ensureInvestmentReturnBillType = async (userId = null) => {
+  let billType = await BillTypeModel.findOne({ name: { $regex: /^investment return$/i } });
+  if (!billType) {
+    billType = await BillTypeModel.create({
+      name: "Investment Return",
+      description: "Repayments and capital returns paid back to investors and stakeholders",
+      status: "active",
+      isDefault: false,
+      createdBy: userId || null,
+    });
+  }
+  return billType;
+};
+
+// Records an investment repayment/return to an investor and syncs with billing
+export const recordInvestmentReturn = async (req, res, next) => {
+  try {
+    const targetInvestmentId = req.params.id || req.body.investmentId;
+    const {
+      investorId,
+      amount,
+      returnAmount,
+      returnDate,
+      returnedDate,
+      paymentMethod,
+      notes,
+      createBill = true,
+    } = req.body ?? {};
+
+    const numAmount = Number(amount ?? returnAmount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ status: "error", message: "A valid positive return amount is required" });
+    }
+
+    let investor = null;
+    let targetInvestment = null;
+
+    if (targetInvestmentId) {
+      const invQuery = Types.ObjectId.isValid(targetInvestmentId) ? { _id: targetInvestmentId } : { did: targetInvestmentId };
+      targetInvestment = await InvestmentModel.findOne(invQuery);
+      if (targetInvestment) {
+        investor = await InvestorModel.findById(targetInvestment.investorId);
+      }
+    }
+
+    if (!investor && investorId) {
+      const investorQuery = Types.ObjectId.isValid(investorId) ? { _id: investorId } : { did: investorId };
+      investor = await InvestorModel.findOne(investorQuery);
+    }
+
+    if (!investor) {
+      return res.status(404).json({ status: "error", message: "Investor not found. Please select a valid investor." });
+    }
+
+    const rawDate = returnDate || returnedDate;
+    const resolvedDate = rawDate ? new Date(rawDate) : new Date();
+    const validReturnDate = !isNaN(resolvedDate.getTime()) ? resolvedDate : new Date();
+    const updatedInvestments = [];
+
+    if (targetInvestment) {
+      const prevReturned = Number(targetInvestment.returnedAmount || 0);
+      const newReturned = prevReturned + numAmount;
+      const taken = Number(targetInvestment.takenAmount || 0);
+      targetInvestment.returnedAmount = newReturned;
+      targetInvestment.status = newReturned >= taken && taken > 0 ? "returned" : "partial";
+      targetInvestment.returnedDate = validReturnDate;
+      if (paymentMethod) targetInvestment.paymentMethod = String(paymentMethod).trim();
+      if (notes) {
+        targetInvestment.notes = targetInvestment.notes
+          ? `${targetInvestment.notes} | Repaid ৳${numAmount}: ${notes}`.trim()
+          : `Repaid ৳${numAmount}: ${notes}`;
+      }
+      targetInvestment.updatedBy = (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null;
+      await targetInvestment.save();
+      updatedInvestments.push(targetInvestment);
+    } else {
+      const activeInvestments = await InvestmentModel.find({
+        investorId: investor._id,
+        status: { $in: ["active", "partial", "pending"] },
+      }).sort({ takenDate: 1, createdAt: 1 });
+
+      let remainingToAllocate = numAmount;
+
+      for (const inv of activeInvestments) {
+        if (remainingToAllocate <= 0) break;
+        const taken = Number(inv.takenAmount || 0);
+        const currReturned = Number(inv.returnedAmount || 0);
+        const due = Math.max(0, taken - currReturned);
+
+        if (due > 0) {
+          const allocation = Math.min(remainingToAllocate, due);
+          inv.returnedAmount = currReturned + allocation;
+          inv.status = inv.returnedAmount >= taken ? "returned" : "partial";
+          inv.returnedDate = validReturnDate;
+          if (notes) {
+            inv.notes = inv.notes
+              ? `${inv.notes} | Repaid ৳${allocation}: ${notes}`.trim()
+              : `Repaid ৳${allocation}: ${notes}`;
+          }
+          inv.updatedBy = (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null;
+          await inv.save();
+          updatedInvestments.push(inv);
+          remainingToAllocate -= allocation;
+        }
+      }
+
+      if (remainingToAllocate > 0) {
+        const latestInvestment = await InvestmentModel.findOne({ investorId: investor._id }).sort({ takenDate: -1, createdAt: -1 });
+        if (latestInvestment) {
+          latestInvestment.returnedAmount = Number(latestInvestment.returnedAmount || 0) + remainingToAllocate;
+          latestInvestment.returnedDate = validReturnDate;
+          latestInvestment.status = latestInvestment.returnedAmount >= latestInvestment.takenAmount ? "returned" : "partial";
+          latestInvestment.updatedBy = (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null;
+          await latestInvestment.save();
+          if (!updatedInvestments.some((i) => i._id.toString() === latestInvestment._id.toString())) {
+            updatedInvestments.push(latestInvestment);
+          }
+        }
+      }
+    }
+
+    let createdBill = null;
+    if (createBill !== false) {
+      const billType = await ensureInvestmentReturnBillType(req.user?.userId);
+      const billTitle = `Investment Return - ${investor.name}`;
+      const billNotes = notes ? `Investment repayment: ${notes}` : `Repayment to investor ${investor.name}`;
+
+      createdBill = await BillingModel.create({
+        billTypeId: billType._id,
+        investorId: investor._id,
+        investmentId: targetInvestment?._id || updatedInvestments[0]?._id || null,
+        title: billTitle,
+        name: investor.name,
+        vendor: investor.name,
+        billingPhone: investor.phone || "",
+        billingEmail: investor.email || "",
+        totalAmount: numAmount,
+        paidAmount: numAmount,
+        pendingAmount: 0,
+        amount: numAmount,
+        status: "paid",
+        billingDate: validReturnDate,
+        dueDate: validReturnDate,
+        billingMethod: paymentMethod ? String(paymentMethod).trim() : "Bank Transfer",
+        notes: billNotes,
+        createdBy: (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null,
+      });
+    }
+
+    const allInvestorInvestments = await InvestmentModel.find({ investorId: investor._id }).lean();
+    const totalInvested = allInvestorInvestments.reduce((acc, curr) => acc + (curr.takenAmount || 0), 0);
+    const totalReturned = allInvestorInvestments.reduce((acc, curr) => acc + (curr.returnedAmount || 0), 0);
+    const netInvested = Math.max(0, totalInvested - totalReturned);
+
+    return res.status(200).json({
+      status: "success",
+      message: `Successfully recorded repayment of ৳${numAmount.toLocaleString()} to ${investor.name}`,
+      data: {
+        investor: {
+          id: investor._id,
+          name: investor.name,
+          phone: investor.phone,
+          email: investor.email,
+          totalInvested,
+          totalReturned,
+          netInvested,
+        },
+        bill: createdBill,
+        investments: updatedInvestments,
+        summary: {
+          totalInvested,
+          totalReturned,
+          netInvested,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to record investment return");
     next(error);
   }
 };

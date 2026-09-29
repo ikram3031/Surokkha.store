@@ -24,6 +24,8 @@ export const createBilling = async (req, res, next) => {
       orderId,
       billTypeId,
       billType,
+      investorId,
+      investmentId,
       title,
       name,
       billingMethod,
@@ -45,6 +47,12 @@ export const createBilling = async (req, res, next) => {
     if (billTypeId && !Types.ObjectId.isValid(billTypeId)) {
       return res.status(400).json({ status: "error", message: "Invalid billTypeId" });
     }
+    if (investorId && !Types.ObjectId.isValid(investorId)) {
+      return res.status(400).json({ status: "error", message: "Invalid investorId" });
+    }
+    if (investmentId && !Types.ObjectId.isValid(investmentId)) {
+      return res.status(400).json({ status: "error", message: "Invalid investmentId" });
+    }
     if (amount === undefined || typeof amount !== "number" || amount < 0) {
       return res.status(400).json({ status: "error", message: "Valid amount is required" });
     }
@@ -65,6 +73,8 @@ export const createBilling = async (req, res, next) => {
     const billingData = {
       orderId: orderId || null,
       billTypeId: resolvedBillTypeId,
+      investorId: investorId || null,
+      investmentId: investmentId || null,
       title: (title || name || "").toString().trim(),
       name: (name || title || "").toString().trim(),
       billingMethod: billingMethod?.trim() || "manual",
@@ -85,6 +95,8 @@ export const createBilling = async (req, res, next) => {
     const populated = await BillingModel.findById(billing._id)
       .populate("orderId")
       .populate("billTypeId")
+      .populate("investorId", "name email phone did type status")
+      .populate("investmentId", "takenAmount returnedAmount did status")
       .lean();
 
     return res.status(201).json({
@@ -111,6 +123,10 @@ export const listBilling = async (req, res, next) => {
 
     if (req.query.billTypeId && Types.ObjectId.isValid(req.query.billTypeId)) {
       filter.billTypeId = req.query.billTypeId;
+    }
+
+    if (req.query.investorId && Types.ObjectId.isValid(req.query.investorId)) {
+      filter.investorId = req.query.investorId;
     }
 
     if (req.query.billingMethod) {
@@ -163,6 +179,8 @@ export const listBilling = async (req, res, next) => {
     const billings = await BillingModel.find(filter)
       .populate("orderId")
       .populate("billTypeId")
+      .populate("investorId", "name email phone did type status")
+      .populate("investmentId", "takenAmount returnedAmount did status")
       .sort({ billingDate: -1, createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
@@ -213,6 +231,8 @@ export const getBillingById = async (req, res, next) => {
     const billing = await BillingModel.findOne(query)
       .populate("orderId")
       .populate("billTypeId")
+      .populate("investorId", "name email phone did type status")
+      .populate("investmentId", "takenAmount returnedAmount did status")
       .lean();
 
     if (!billing) {
@@ -250,6 +270,18 @@ export const updateBilling = async (req, res, next) => {
       if (found) {
         allowedUpdates.billTypeId = found._id;
       }
+    }
+    if (payload.investorId !== undefined) {
+      if (payload.investorId && !Types.ObjectId.isValid(payload.investorId)) {
+        return res.status(400).json({ status: "error", message: "Invalid investorId" });
+      }
+      allowedUpdates.investorId = payload.investorId || null;
+    }
+    if (payload.investmentId !== undefined) {
+      if (payload.investmentId && !Types.ObjectId.isValid(payload.investmentId)) {
+        return res.status(400).json({ status: "error", message: "Invalid investmentId" });
+      }
+      allowedUpdates.investmentId = payload.investmentId || null;
     }
     if (payload.billingMethod !== undefined) {
       allowedUpdates.billingMethod = payload.billingMethod.trim();
@@ -299,6 +331,8 @@ export const updateBilling = async (req, res, next) => {
     })
       .populate("orderId")
       .populate("billTypeId")
+      .populate("investorId", "name email phone did type status")
+      .populate("investmentId", "takenAmount returnedAmount did status")
       .lean();
 
     if (!billing) {

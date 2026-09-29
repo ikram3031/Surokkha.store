@@ -136,12 +136,15 @@ export const BalanceOverview = () => {
 
   const netInvestmentsTaken = Math.max(0, totalInvestmentsTaken - totalInvestmentsReturned);
 
-  // 4. Operating Balance: Total Payments - Total Bills
+  // Total Cash Balance = (Total Receipts + Total Investments Taken) - Total Bills
+  const totalCashBalance = totalReceipt + totalInvestmentsTaken - totalBills;
+
+  // Operating Balance: Total Payments - Total Bills
   const operatingBalance = totalReceipt - totalBills;
 
   // Second Section - Business Asset Calculation
-  // Business Asset = (Total Payments - Total Bills) - Net Investments Taken
-  const businessAsset = operatingBalance - netInvestmentsTaken;
+  // Business Asset = Total Cash Balance - Net Outstanding Investments
+  const businessAsset = totalCashBalance - netInvestmentsTaken;
 
   // Chart Data Generator: Daily breakdown of Payments and Bills
   const chartData = useMemo(() => {
@@ -231,7 +234,7 @@ export const BalanceOverview = () => {
           <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {t('accounts.total_bills', 'Total Bills')}
+              {t('accounts.total_bills', 'Total Bills & Returns')}
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center">
               <Receipt className="h-4 w-4" />
@@ -264,34 +267,34 @@ export const BalanceOverview = () => {
               {formatCurrency(totalInvestmentsTaken)}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-purple-600 font-medium">
-              <span>Outstanding: {formatCurrency(netInvestmentsTaken)}</span>
+              <span>Outstanding Due: {formatCurrency(netInvestmentsTaken)}</span>
             </div>
           </CardContent>
         </Card>
 
-        {/* 4. Balance (Total Payments - Total Bills) */}
+        {/* 4. Total Cash Balance (Receipts + Investments - Bills) */}
         <Card className="border-border/60 shadow-sm relative overflow-hidden bg-gradient-to-br from-card to-blue-500/5">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {t('accounts.balance', 'Balance')}
+              {t('accounts.total_cash_balance', 'Total Cash Balance')}
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
               <Wallet className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent className="space-y-1">
-            <div className={`text-2xl font-bold tracking-tight ${operatingBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-              {formatCurrency(operatingBalance)}
+            <div className={`text-2xl font-bold tracking-tight ${totalCashBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              {formatCurrency(totalCashBalance)}
             </div>
             <div className="flex items-center gap-1.5 text-xs font-medium">
               <Badge
                 variant="outline"
-                className={operatingBalance >= 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' : 'bg-red-500/10 text-red-600 border-red-500/30'}
+                className={totalCashBalance >= 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' : 'bg-red-500/10 text-red-600 border-red-500/30'}
               >
-                {operatingBalance >= 0 ? t('accounts.surplus', 'Surplus') : t('accounts.deficit', 'Deficit')}
+                {totalCashBalance >= 0 ? t('accounts.surplus', 'Surplus') : t('accounts.deficit', 'Deficit')}
               </Badge>
-              <span className="text-muted-foreground text-[11px]">Payments − Bills</span>
+              <span className="text-muted-foreground text-[11px]">(Receipts + Investments) − Bills</span>
             </div>
           </CardContent>
         </Card>
@@ -312,7 +315,7 @@ export const BalanceOverview = () => {
                     {t('accounts.business_asset', 'Business Asset Valuation')}
                   </CardTitle>
                   <CardDescription className="text-xs mt-0.5">
-                    {t('accounts.business_asset_desc', 'True business capital remaining after deducting external investment obligations')}
+                    {t('accounts.business_asset_desc', 'True retained business capital after deducting outstanding external investor obligations')}
                   </CardDescription>
                 </div>
               </div>
@@ -324,30 +327,34 @@ export const BalanceOverview = () => {
             <div className="space-y-3">
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60 space-y-2 text-xs">
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>1. {t('accounts.total_receipt', 'Total Receipt (Inflow)')}</span>
+                  <span>1. {t('accounts.total_receipt', 'Total Customer Receipts')}</span>
                   <span className="font-bold text-emerald-600 font-mono">+{formatCurrency(totalReceipt)}</span>
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>2. {t('accounts.total_bills', 'Total Bills (Outflow)')}</span>
+                  <span>2. {t('accounts.investments_taken', 'Investments Taken (Capital In)')}</span>
+                  <span className="font-bold text-purple-600 font-mono">+{formatCurrency(totalInvestmentsTaken)}</span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground font-medium">
+                  <span>3. {t('accounts.total_bills', 'Total Bills & Repayments (Outflow)')}</span>
                   <span className="font-bold text-red-600 font-mono">−{formatCurrency(totalBills)}</span>
                 </div>
                 <div className="border-t border-border/60 pt-2 flex items-center justify-between font-semibold text-foreground">
-                  <span>= {t('accounts.net_operating_balance', 'Net Operating Balance')}</span>
-                  <span className="font-mono text-blue-600 dark:text-blue-400">{formatCurrency(operatingBalance)}</span>
+                  <span>= {t('accounts.total_cash_balance', 'Total Cash Balance in Hand')}</span>
+                  <span className="font-mono text-blue-600 dark:text-blue-400">{formatCurrency(totalCashBalance)}</span>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60 space-y-2 text-xs">
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>3. {t('accounts.investments_taken', 'Investments Taken')}</span>
+                  <span>Investments Taken:</span>
                   <span className="font-bold text-purple-600 font-mono">{formatCurrency(totalInvestmentsTaken)}</span>
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>4. {t('accounts.investments_returned', 'Investments Returned')}</span>
+                  <span>Investments Returned:</span>
                   <span className="font-bold text-emerald-600 font-mono">−{formatCurrency(totalInvestmentsReturned)}</span>
                 </div>
                 <div className="border-t border-border/60 pt-2 flex items-center justify-between font-semibold text-foreground">
-                  <span>= {t('accounts.net_investments_taken', 'Net Outstanding Investment')}</span>
+                  <span>= {t('accounts.net_investments_taken', 'Net Investor Due Obligation')}</span>
                   <span className="font-mono text-purple-600">{formatCurrency(netInvestmentsTaken)}</span>
                 </div>
               </div>
@@ -358,7 +365,7 @@ export const BalanceOverview = () => {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-primary" />
-                  {t('accounts.true_business_asset', 'True Business Asset (Net Capital)')}
+                  {t('accounts.true_business_asset', 'True Business Asset (Retained Capital)')}
                 </span>
                 <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[10px]">
                   Net Capital
@@ -368,7 +375,7 @@ export const BalanceOverview = () => {
                 {formatCurrency(businessAsset)}
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">
-                {t('accounts.asset_explanation', 'Deducting net borrowed investments from operating balance reflects the actual retained capital generated from store operations.')}
+                {t('accounts.asset_explanation', 'Deducting outstanding investor debt from total cash balance reflects the store’s actual self-owned equity & retained earnings.')}
               </p>
             </div>
 

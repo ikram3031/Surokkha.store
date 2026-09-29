@@ -172,20 +172,39 @@ export const useInvestments = (params = {}) => {
   });
 
   const recordReturnMutation = useMutation({
-    mutationFn: async ({ id, returnAmountToAdd, notes }) => {
-      const current = query.data?.allItems?.find((item) => item.id === id);
-      const newReturned = (Number(current?.returnedAmount) || 0) + (Number(returnAmountToAdd) || 0);
-      const combinedNotes = notes ? `${current?.notes || ''} [Returned ৳${returnAmountToAdd}: ${notes}]`.trim() : current?.notes;
-      const res = await apiClient.put(`/api/v1/investments/${id}`, {
-        returnedAmount: newReturned,
-        notes: combinedNotes,
-      });
+    mutationFn: async ({
+      id,
+      investmentId,
+      investorId,
+      returnAmount,
+      returnAmountToAdd,
+      returnDate,
+      paymentMethod,
+      notes,
+      createBill = true,
+    }) => {
+      const payload = {
+        investmentId: investmentId || id,
+        investorId,
+        returnAmount: Number(returnAmount ?? returnAmountToAdd),
+        returnDate,
+        paymentMethod,
+        notes,
+        createBill,
+      };
+      const endpoint = id ? `/api/v1/investments/${id}/return` : '/api/v1/investments/return';
+      const res = await apiClient.post(endpoint, payload);
       return res.data?.data || res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['investments'] });
       queryClient.invalidateQueries({ queryKey: ['investors'] });
-      toast.success('Repayment recorded successfully');
+      queryClient.invalidateQueries({ queryKey: ['billings'] });
+      queryClient.invalidateQueries({ queryKey: ['bill-types'] });
+      queryClient.invalidateQueries({ queryKey: ['account-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      const msg = data?.message || 'Repayment recorded and synced with billing successfully';
+      toast.success(msg);
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to record repayment');

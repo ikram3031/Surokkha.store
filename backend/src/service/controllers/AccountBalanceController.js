@@ -164,8 +164,10 @@ export const getAccountBalance = async (req, res, next) => {
     const totalBills = billingAgg[0]?.totalBills || 0;
     const totalInvestments = investmentAgg[0]?.totalInvestments || 0;
     const totalInvestmentsReturned = investmentAgg[0]?.totalInvestmentsReturned || 0;
-    const netInvestments = totalInvestments - totalInvestmentsReturned;
-    const balance = totalReceipt - totalBills;
+    const netInvestments = Math.max(0, totalInvestments - totalInvestmentsReturned);
+    const operatingBalance = totalReceipt - totalBills;
+    const totalBalance = totalReceipt + totalInvestments - totalBills;
+    const balance = totalBalance;
     const businessAsset = balance - netInvestments;
 
     const [paymentTimelineAgg, billingTimelineAgg, investmentTimelineAgg] = await Promise.all([
@@ -280,6 +282,8 @@ export const getAccountBalance = async (req, res, next) => {
         totalInvestmentsReturned,
         netInvestments,
         balance,
+        totalBalance,
+        operatingBalance,
         businessAsset,
         dateRange: {
           preset: resolvedPreset,

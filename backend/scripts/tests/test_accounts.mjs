@@ -375,6 +375,27 @@ const runAccountsTestSuite = async () => {
       );
     }
 
+    {
+      const res = await request(
+        server,
+        "POST",
+        "/api/v1/accounts/investments/return",
+        {
+          investorId: investor1Id,
+          investmentId: investment2Id,
+          returnAmount: 10000,
+          paymentMethod: "bKash",
+          notes: "Partial dividend return",
+          createBill: true,
+        },
+        authHeader
+      );
+      assert(
+        res.status === 200 && res.data?.data?.bill?.title?.includes("Investment Return") && res.data?.data?.bill?.paidAmount === 10000,
+        "POST /accounts/investments/return (Record return and automatically create bill of type Investment Return)"
+      );
+    }
+
     console.log("\n------------------------------------------------------");
     console.log(" 4. Billing (BillType Integration & Date Range Filter)");
     console.log("------------------------------------------------------");
@@ -496,12 +517,13 @@ const runAccountsTestSuite = async () => {
       const data = res.data?.data;
       assert(res.status === 200, "GET /accounts/balance?preset=all (Endpoint response 200)");
       assert(data?.totalReceipt === 120000, "Account Balance totalReceipt equals 120,000", data?.totalReceipt);
-      assert(data?.totalBills === 30000, "Account Balance totalBills equals 30,000", data?.totalBills);
+      assert(data?.totalBills === 40000, "Account Balance totalBills equals 40,000", data?.totalBills);
       assert(data?.totalInvestments === 180000, "Account Balance totalInvestments equals 180,000", data?.totalInvestments);
-      assert(data?.totalInvestmentsReturned === 150000, "Account Balance totalInvestmentsReturned equals 150,000", data?.totalInvestmentsReturned);
-      assert(data?.netInvestments === 30000, "Account Balance netInvestments equals 30,000", data?.netInvestments);
-      assert(data?.balance === 90000, "Account Balance balance equals 90,000 (120,000 - 30,000)", data?.balance);
-      assert(data?.businessAsset === 60000, "Account Balance businessAsset equals 60,000 (90,000 - 30,000)", data?.businessAsset);
+      assert(data?.totalInvestmentsReturned === 160000, "Account Balance totalInvestmentsReturned equals 160,000", data?.totalInvestmentsReturned);
+      assert(data?.netInvestments === 20000, "Account Balance netInvestments equals 20,000", data?.netInvestments);
+      assert(data?.balance === 260000, "Account Balance balance equals 260,000 (120k + 180k - 40k)", data?.balance);
+      assert(data?.operatingBalance === 80000, "Account Balance operatingBalance equals 80,000 (120k - 40k)", data?.operatingBalance);
+      assert(data?.businessAsset === 240000, "Account Balance businessAsset equals 240,000 (260k - 20k)", data?.businessAsset);
       assert(Array.isArray(data?.timeline) && data.timeline.length > 0, "Account Balance timeline array populated");
     }
 

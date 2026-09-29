@@ -38,6 +38,7 @@ import {
 import { useBillings } from '@/hooks/use-billings';
 import { useBillTypes } from '@/hooks/use-bill-types';
 import { usePaymentTypes } from '@/hooks/use-payment-types';
+import { useInvestors } from '@/hooks/use-investors';
 import { toast } from 'sonner';
 
 const formatCurrency = (val) => {
@@ -54,6 +55,7 @@ export const AddNewBillPage = () => {
   const { allBillings = [], createBilling, updateBilling, isCreating, isUpdating } = useBillings();
   const { allBillTypes = [], addBillType } = useBillTypes();
   const { allPaymentTypes = [] } = usePaymentTypes();
+  const { allInvestors = [] } = useInvestors();
 
   const defaultBillingMethods = ['Bank Transfer', 'Cash', 'Card', 'bKash', 'Nagad', 'Cheque', 'Other'];
   const availableBillingMethods = React.useMemo(() => {
@@ -68,6 +70,7 @@ export const AddNewBillPage = () => {
   const [formData, setFormData] = useState({
     title: '',
     billType: '',
+    investorId: '',
     vendor: '',
     billingPhone: '',
     billingEmail: '',
@@ -102,6 +105,7 @@ export const AddNewBillPage = () => {
         setFormData({
           title: existing.title || '',
           billType: existing.billType || (allBillTypes[0]?.name || ''),
+          investorId: existing.investorId || '',
           vendor: existing.vendor || existing.customerName || '',
           billingPhone: existing.billingPhone || '',
           billingEmail: existing.billingEmail || '',
@@ -121,6 +125,24 @@ export const AddNewBillPage = () => {
   const totalAmountNum = Number(formData.totalAmount) || 0;
   const paidAmountNum = Number(formData.paidAmount) || 0;
   const pendingAmountNum = Math.max(0, totalAmountNum - paidAmountNum);
+
+  const handleInvestorSelect = (invId) => {
+    if (invId === 'none' || !invId) {
+      setFormData((prev) => ({ ...prev, investorId: '' }));
+      return;
+    }
+    const inv = allInvestors.find((i) => i.id === invId);
+    if (inv) {
+      setFormData((prev) => ({
+        ...prev,
+        investorId: inv.id,
+        vendor: inv.name || prev.vendor,
+        billingPhone: inv.phone || prev.billingPhone,
+        billingEmail: inv.email || prev.billingEmail,
+        title: prev.title || `Investment Return - ${inv.name}`,
+      }));
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => {
@@ -167,6 +189,7 @@ export const AddNewBillPage = () => {
       title: formData.title.trim(),
       billType: formData.billType,
       billTypeId: billTypeId,
+      investorId: formData.investorId || null,
       vendor: formData.vendor.trim() || formData.title.trim(),
       customerName: formData.vendor.trim() || formData.title.trim(),
       billingPhone: formData.billingPhone.trim(),
@@ -279,18 +302,57 @@ export const AddNewBillPage = () => {
                   </Select>
                 </div>
 
+                {/* Associated Investor (shows prominently for Investment Return or if investors exist) */}
+                {formData.billType === 'Investment Return' ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-purple-700 dark:text-purple-400 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5" /> Associated Investor
+                    </label>
+                    <Select
+                      value={formData.investorId || 'none'}
+                      onValueChange={handleInvestorSelect}
+                    >
+                      <SelectTrigger className="text-xs border-purple-500/40 bg-purple-500/5">
+                        <SelectValue placeholder="Select Investor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None / Manual Payee</SelectItem>
+                        {allInvestors.map((inv) => (
+                          <SelectItem key={inv.id} value={inv.id}>
+                            {inv.name} ({inv.did}) - Due: {formatCurrency(inv.remainingDue || 0)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-foreground">
+                      Vendor / Payee Name
+                    </label>
+                    <Input
+                      placeholder="e.g. Green Valley Real Estate Ltd"
+                      value={formData.vendor}
+                      onChange={(e) => handleInputChange('vendor', e.target.value)}
+                      className="text-xs"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {formData.billType === 'Investment Return' && (
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">
-                    Vendor / Payee Name
+                    Investor / Payee Display Name
                   </label>
                   <Input
-                    placeholder="e.g. Green Valley Real Estate Ltd"
+                    placeholder="e.g. John Doe"
                     value={formData.vendor}
                     onChange={(e) => handleInputChange('vendor', e.target.value)}
                     className="text-xs"
                   />
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">

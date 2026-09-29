@@ -453,7 +453,14 @@ export const AllBillsPage = () => {
                       <div className="text-[11px] text-muted-foreground line-clamp-1">{b.vendor || b.customerName}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-[11px] font-medium bg-muted/40">
+                      <Badge
+                        variant="outline"
+                        className={`text-[11px] font-medium ${
+                          b.billType === 'Investment Return'
+                            ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30'
+                            : 'bg-muted/40'
+                        }`}
+                      >
                         {b.billType}
                       </Badge>
                     </TableCell>
@@ -582,8 +589,23 @@ export const AllBillsPage = () => {
                 </div>
                 <div>
                   <span className="text-muted-foreground block">Bill Category:</span>
-                  <Badge variant="outline" className="mt-0.5">{viewBillTarget.billType}</Badge>
+                  <Badge
+                    variant="outline"
+                    className={`mt-0.5 ${
+                      viewBillTarget.billType === 'Investment Return'
+                        ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30'
+                        : ''
+                    }`}
+                  >
+                    {viewBillTarget.billType}
+                  </Badge>
                 </div>
+                {viewBillTarget.investorName && (
+                  <div className="col-span-2 p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-between">
+                    <span className="text-purple-700 dark:text-purple-300 font-medium">Repayment to Investor:</span>
+                    <span className="font-bold text-foreground">{viewBillTarget.investorName}</span>
+                  </div>
+                )}
                 <div>
                   <span className="text-muted-foreground block">Billing Date:</span>
                   <span className="font-medium text-foreground">{viewBillTarget.billingDate || viewBillTarget.date}</span>

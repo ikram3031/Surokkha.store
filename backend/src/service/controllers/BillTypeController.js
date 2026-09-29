@@ -4,9 +4,46 @@ import { logger } from "../../common/config/logger.js";
 
 const { Types } = mongoose;
 
+// Ensures the Investment Return bill type exists in the database
+export const ensureInvestmentReturnBillType = async (userId = null) => {
+  let billType = await BillTypeModel.findOne({ name: { $regex: /^investment return$/i } });
+  if (!billType) {
+    billType = await BillTypeModel.create({
+      name: "Investment Return",
+      description: "Repayments and capital returns paid back to investors and stakeholders",
+      status: "active",
+      isDefault: false,
+      createdBy: userId || null,
+    });
+  }
+  return billType;
+};
+
+// Seed standard bill types if collection is empty
+const seedDefaultBillTypes = async (userId = null) => {
+  const count = await BillTypeModel.countDocuments({});
+  if (count === 0) {
+    const defaults = [
+      { name: "Investment Return", description: "Repayments and capital returns paid back to investors", isDefault: false },
+      { name: "Office Rent", description: "Monthly office or warehouse rental expense", isDefault: false },
+      { name: "Utility Bills", description: "Electricity, gas, internet, water utilities", isDefault: false },
+      { name: "Packaging & Materials", description: "Boxes, tape, flyers, and packing supplies", isDefault: false },
+      { name: "Marketing & Advertising", description: "Facebook, Google, TikTok and campaign ads", isDefault: false },
+      { name: "Salary & Wages", description: "Staff salaries, bonuses, and contractor payments", isDefault: false },
+      { name: "Supplier & Vendor", description: "Wholesale goods, inventory, and supplier purchases", isDefault: false },
+      { name: "General Expense", description: "General office and operational expenses", isDefault: true },
+    ];
+    for (const item of defaults) {
+      await BillTypeModel.create({ ...item, status: "active", createdBy: userId });
+    }
+  }
+};
+
 // Retrieves a paginated and filterable list of bill types
 export const listBillTypes = async (req, res, next) => {
   try {
+    await seedDefaultBillTypes(req.user?.userId);
+
     const page = Math.max(1, parseInt(req.query.page || "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "50", 10)));
     const filter = {};
