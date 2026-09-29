@@ -70,8 +70,8 @@ async function runTest() {
   console.log("Triggering sendOrderEmailsAsynchronously for test order...");
   sendOrderEmailsAsynchronously(testOrder);
 
-  // Wait 3 seconds for async setImmediate to complete
-  await new Promise((res) => setTimeout(res, 3000));
+  // Wait 10 seconds for async setImmediate to complete
+  await new Promise((res) => setTimeout(res, 10000));
   console.log("Order email dispatch complete!");
   
   await mongoose.disconnect();

@@ -159,7 +159,7 @@ export const buildDecantreOrderInvoiceHtml = ({
     }
     .gold-header-bar {
       height: 6px;
-      background: linear-gradient(90deg, #99732B 0%, #C5A059 50%, #E8CD8C 100%);
+      background: #E2E8F0;
     }
     .invoice-header {
       padding: 28px 32px 20px 32px;
@@ -175,7 +175,7 @@ export const buildDecantreOrderInvoiceHtml = ({
     }
     .brand-subtitle {
       font-size: 11px;
-      color: #64748B;
+      color: #334155;
       letter-spacing: 1px;
       text-transform: uppercase;
       margin-top: 2px;
@@ -203,7 +203,7 @@ export const buildDecantreOrderInvoiceHtml = ({
     .meta-card h4 {
       font-size: 11px;
       font-weight: 700;
-      color: #64748B;
+      color: #334155;
       text-transform: uppercase;
       letter-spacing: 0.75px;
       margin-bottom: 6px;
@@ -223,7 +223,7 @@ export const buildDecantreOrderInvoiceHtml = ({
       margin-top: 8px;
     }
     .items-table th {
-      background-color: #0F172A;
+      background-color: #FFFFFF;
       color: #F8FAFC;
       font-size: 11.5px;
       font-weight: 600;
@@ -314,7 +314,7 @@ export const buildDecantreOrderInvoiceHtml = ({
     }
     .invoice-footer {
       padding: 24px 32px;
-      background-color: #0F172A;
+      background-color: #FFFFFF;
       color: #94A3B8;
       text-align: center;
       font-size: 12px;
@@ -329,7 +329,7 @@ export const buildDecantreOrderInvoiceHtml = ({
       display: inline-block;
       margin-bottom: 8px;
       padding: 3px 10px;
-      border: 1px solid #C5A059;
+      border: 1px solid #E2E8F0;
       border-radius: 4px;
       color: #E8CD8C;
       font-size: 10px;
@@ -360,8 +360,8 @@ export const buildDecantreOrderInvoiceHtml = ({
       transition: all 0.15s ease;
     }
     .btn-print {
-      background-color: #0F172A;
-      color: #FFFFFF;
+      background-color: #FFFFFF;
+      color: #334155;
     }
     .btn-print:hover {
       background-color: #1E293B;
@@ -440,8 +440,8 @@ export const buildDecantreOrderInvoiceHtml = ({
       <div class="meta-card">
         <h4>Customer & Delivery Details</h4>
         <p><strong>${customerName}</strong></p>
-        <p style="color: #64748B;">${customerPhone}</p>
-        ${customerEmail ? `<p style="color: #64748B; font-size: 12px;">${customerEmail}</p>` : ""}
+        <p style="color: #334155;">${customerPhone}</p>
+        ${customerEmail ? `<p style="color: #334155; font-size: 12px;">${customerEmail}</p>` : ""}
         <p style="margin-top: 6px; font-size: 12.5px;"><strong>${isInstore ? 'Pickup Location:' : 'Shipping Address:'}</strong><br />${isInstore ? '🏢 Decantre Store / Office Pickup' : deliveryAddressStr}</p>
       </div>
       
@@ -479,14 +479,14 @@ export const buildDecantreOrderInvoiceHtml = ({
           </tr>
           <tr>
             <td>Delivery Fee:</td>
-            <td class="amount">${Number(shippingFee) > 0 ? `৳${Number(shippingFee).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '<span style="color: #15803D; font-weight: 600;">Free</span>'}</td>
+            <td class="amount">${Number(shippingFee) > 0 ? `৳${Number(shippingFee).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '<span style="color: #0F172A; font-weight: 600;">Free</span>'}</td>
           </tr>
           ${Number(discountAmount) > 0 ? `
           <tr>
-            <td style="color: #15803D; font-weight: 600;">
+            <td style="color: #0F172A; font-weight: 600;">
               Discount ${couponCode ? `<span class="coupon-tag">${couponCode}</span>` : ""}:
             </td>
-            <td class="amount" style="color: #15803D; font-weight: 700;">-৳${Number(discountAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td class="amount" style="color: #0F172A; font-weight: 700;">-৳${Number(discountAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           </tr>` : ""}
           <tr class="grand-total">
             <td>Grand Total:</td>
@@ -511,7 +511,7 @@ export const buildDecantreOrderInvoiceHtml = ({
       <div class="invoice-footer">
         <div class="authenticity-seal">✦ 100% Authentic Flacon Decant Guarantee ✦</div>
         <p>Thank you for choosing <strong>Decantre</strong> — Your Premier Destination for Luxury Perfumes.</p>
-        <p style="margin-top: 4px; font-size: 11px; color: #64748B;">
+        <p style="margin-top: 4px; font-size: 11px; color: #334155;">
           For questions or returns, reach out via WhatsApp at <strong>01869151550</strong> or email <a href="mailto:support@decantrebd.com">support@decantrebd.com</a>.
         </p>
       </div>
