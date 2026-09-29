@@ -1,16 +1,14 @@
 {
-  "clientId": "05",
-  "clientKey": "surokkha",
-  "orderPrefix": "SS",
-  "brandName": "Surokkha",
-  "domain": "surokkha.store",
-  "supportEmail": "support@surokkha.store",
-  "phone": "01600905774",
-  "supportPhone": "01600905774",
-  "whatsappNumber": "01600905774",
-  "apiBaseUrl": "https://api.surokkha.store",
-  "dashboardUrl": "https://admin.surokkha.store",
-  "storefrontUrl": "https://surokkha.store",
+  "clientId": "00",
+  "clientKey": "demo",
+  "brandName": "Demo Store",
+  "domain": "plexivia.online",
+  "supportEmail": "info@plexivia.online",
+  "phone": "+8801823110885",
+  "address": "Dhaka, Bangladesh",
+  "apiBaseUrl": "https://api.plexivia.online",
+  "dashboardUrl": "https://dashboard.plexivia.online",
+  "storefrontUrl": "https://store.plexivia.online",
   "routes": {
     "shop": "/shop",
     "category": "/shop/:category",
@@ -19,93 +17,47 @@
   },
   "policies": {
     "stock": {
-      "mode": "product_wise",
+      "mode": "variant_wise",
       "trackQuantity": true,
       "lowStockThreshold": 5,
       "allowPreorder": false
     },
     "pricing": {
-      "mode": "simple",
+      "mode": "variable",
       "allowOfferPrice": true
     },
     "variants": {
-      "enabled": false,
-      "allowVariantImages": false,
-      "supportedDimensions": [],
+      "enabled": true,
+      "allowVariantImages": true,
+      "supportedDimensions": ["size", "color"],
       "defaultUnit": "piece"
     },
     "specifications": {
       "material": true,
-      "packSize": true,
       "origin": true
-    },
-    "members": {
-      "forceMembershipFromOrder": true
     }
   },
-  "multiLanguage": true,
-  "languages": [
-    "en",
-    "bn"
-  ],
-  "defaultLanguage": "en",
-  "forceMembershipFromOrder": true,
   "features": {
-    "season": false,
-    "brand": false,
-    "category": true,
-    "categories": true,
-    "attribute": false,
-    "attributes": false,
-    "variantImage": false,
-    "sizeChart": false,
+    "season": true,
+    "brand": true,
+    "variantImage": true,
     "webmail": true,
-    "inStoreOrder": false,
-    "customOrders": true,
-    "multiLanguage": true
+    "inStoreOrder": true
   },
   "stockManagement": {
     "simpleProduct": true,
-    "variableProduct": false
+    "variableProduct": true
   },
   "reports": {
-    "enableInStoreFilter": false,
-    "enableCustomOrderFilter": true,
+    "enableInStoreFilter": true,
     "enableExport": true,
-    "enabledTabs": [
-      "sales",
-      "products",
-      "payments",
-      "inventory"
-    ]
+    "enabledTabs": ["sales", "products", "payments", "inventory"]
   },
   "cloudFlareAnalytics": {
-    "active": true,
-    "zoneId": "bd131177db6d610b5d4e5beb0142108b",
-    "domain": "surokkha.store",
-    "accountEmail": "plexivia@gmail.com"
+    "active": false
   },
-  "googleAnalytics": {
-    "measurementId": "G-3JHW9WK6GG",
-    "googleTagId": "GT-5DH5WGNX",
-    "gtmId": "",
-    "propertyId": "555476258",
-    "streamId": "15828364152",
-    "streamName": "surokkha",
-    "lookerStudioEmbedUrl": "",
-    "isVerified": true,
-    "enhancedMeasurement": true
-  },
-  "metaPixel": {
-    "pixelId": "1086570487291746",
-    "accessToken": "EAAYhPCm6R1gBSgATyaVVWn0mt98n2oZAz5D3vUcZAdkaM0sXeDwDVe9wBoAK9F6jvjM1XZCxsbehTYUBlDVIPCaozQ7WtG1emsj9sUewKEIexoXjPLRg4INW7YooTin5qqAGGOF8GGzAJfGZA5RJKZBgStebLuTf0WZBQLmZCoHk2VoRJeMaELEH0FwusltQAZDZD",
-    "isEnabled": true,
-    "enableBrowserPixel": true,
-    "enableCapi": true,
-    "advancedMatching": true
-  },
-  "logoUrl": "",
-  "siteIconUrl": "",
+  "logoUrl": "/uploads/assets/logo.webp",
+  "siteIconUrl": "/uploads/assets/logo.webp",
   "assetsConfig": {
     "sections": [
       {
@@ -113,38 +65,8 @@
         "title": "Hero Slider Carousel",
         "description": "Main sliding banners displayed on store homepage (Recommended: 1920x650 px, max 2MB)",
         "slots": [
-          {
-            "key": "slider-1",
-            "label": "Slide 1",
-            "filename": "slider-1.webp",
-            "recommendedSize": "1920x650"
-          },
-          {
-            "key": "slider-2",
-            "label": "Slide 2",
-            "filename": "slider-2.webp",
-            "recommendedSize": "1920x650"
-          },
-          {
-            "key": "slider-3",
-            "label": "Slide 3",
-            "filename": "slider-3.webp",
-            "recommendedSize": "1920x650"
-          }
-        ]
-      },
-      {
-        "id": "promo-video",
-        "title": "Promotional Video",
-        "description": "Featured storefront promo video with automated H.264 web compression (Max 100MB, MP4/WebM/MOV)",
-        "slots": [
-          {
-            "key": "promo-video",
-            "label": "Promo Video",
-            "filename": "promo-video.mp4",
-            "recommendedSize": "1080p / 720p MP4",
-            "type": "video"
-          }
+          { "key": "slider-1", "label": "Slide 1", "filename": "slider-1.webp", "recommendedSize": "1920x650" },
+          { "key": "slider-2", "label": "Slide 2", "filename": "slider-2.webp", "recommendedSize": "1920x650" }
         ]
       },
       {
@@ -152,12 +74,7 @@
         "title": "Promotional Banners",
         "description": "Special campaign and announcement banner images",
         "slots": [
-          {
-            "key": "banner-main",
-            "label": "Main Promo Banner",
-            "filename": "banner-main.webp",
-            "recommendedSize": "1200x400"
-          }
+          { "key": "banner-main", "label": "Main Promo Banner", "filename": "banner-main.webp", "recommendedSize": "1200x400" }
         ]
       },
       {
@@ -165,18 +82,8 @@
         "title": "Brand & Identity",
         "description": "Brand logo and browser favicon files",
         "slots": [
-          {
-            "key": "logo",
-            "label": "Dashboard Logo",
-            "filename": "logo.webp",
-            "recommendedSize": "500x200"
-          },
-          {
-            "key": "favicon",
-            "label": "Favicon Icon",
-            "filename": "favicon.ico",
-            "recommendedSize": "64x64"
-          }
+          { "key": "logo", "label": "Header Logo", "filename": "logo.webp", "recommendedSize": "500x200" },
+          { "key": "favicon", "label": "Favicon Icon", "filename": "favicon.ico", "recommendedSize": "64x64" }
         ]
       }
     ]
@@ -187,12 +94,13 @@
     "orders",
     "orders.new",
     "orders.list",
-    "orders.custom",
-    "orders.custom-new",
+    "orders.instore",
     "products",
     "products.new",
     "products.list",
     "products.categories",
+    "products.brands",
+    "products.attributes",
     "products.coupons",
     "reviews",
     "members",
@@ -219,80 +127,80 @@
   ],
   "theme": {
     "light": {
-      "--background": "oklch(0.99 0.005 15)",
-      "--foreground": "oklch(0.15 0.02 15)",
+      "--background": "oklch(1 0 0)",
+      "--foreground": "oklch(0.145 0 0)",
       "--card": "oklch(1 0 0)",
-      "--card-foreground": "oklch(0.15 0.02 15)",
+      "--card-foreground": "oklch(0.145 0 0)",
       "--popover": "oklch(1 0 0)",
-      "--popover-foreground": "oklch(0.15 0.02 15)",
-      "--primary": "oklch(0.50 0.22 15)",
+      "--popover-foreground": "oklch(0.145 0 0)",
+      "--primary": "oklch(0.488 0.243 264.376)",
       "--primary-foreground": "#ffffff",
-      "--secondary": "oklch(0.95 0.03 15)",
-      "--secondary-foreground": "oklch(0.25 0.08 15)",
-      "--muted": "oklch(0.97 0.01 15)",
-      "--muted-foreground": "oklch(0.55 0.03 15)",
-      "--accent": "oklch(0.92 0.06 15)",
-      "--accent-foreground": "oklch(0.25 0.08 15)",
+      "--secondary": "oklch(0.92 0.05 264)",
+      "--secondary-foreground": "oklch(0.25 0.08 264)",
+      "--muted": "oklch(0.97 0 0)",
+      "--muted-foreground": "oklch(0.556 0 0)",
+      "--accent": "oklch(0.92 0.05 264)",
+      "--accent-foreground": "oklch(0.205 0 0)",
       "--destructive": "oklch(0.577 0.245 27.325)",
       "--destructive-foreground": "#ffffff",
-      "--border": "oklch(0.92 0.02 15)",
-      "--input": "oklch(0.92 0.02 15)",
-      "--ring": "oklch(0.50 0.22 15)",
-      "--chart-1": "oklch(0.50 0.22 15)",
-      "--chart-2": "oklch(0.65 0.18 350)",
-      "--chart-3": "oklch(0.70 0.15 40)",
-      "--chart-4": "oklch(0.80 0.14 80)",
-      "--chart-5": "oklch(0.60 0.20 280)",
-      "--sidebar": "oklch(0.15 0.02 15 / 95%)",
-      "--sidebar-foreground": "oklch(0.95 0.02 15)",
-      "--sidebar-primary": "oklch(0.50 0.22 15)",
+      "--border": "oklch(0.922 0 0)",
+      "--input": "oklch(0.922 0 0)",
+      "--ring": "oklch(0.488 0.243 264.376)",
+      "--chart-1": "oklch(0.488 0.243 264.376)",
+      "--chart-2": "oklch(0.6 0.118 184.704)",
+      "--chart-3": "oklch(0.398 0.07 227.392)",
+      "--chart-4": "oklch(0.828 0.189 84.429)",
+      "--chart-5": "oklch(0.769 0.188 70.08)",
+      "--sidebar": "oklch(0.145 0 0 / 90%)",
+      "--sidebar-foreground": "oklch(0.95 0 0)",
+      "--sidebar-primary": "oklch(0.488 0.243 264.376)",
       "--sidebar-primary-foreground": "#ffffff",
-      "--sidebar-accent": "oklch(0.25 0.03 15)",
-      "--sidebar-accent-foreground": "oklch(0.95 0.02 15)",
+      "--sidebar-accent": "oklch(0.269 0 0)",
+      "--sidebar-accent-foreground": "oklch(0.95 0 0)",
       "--sidebar-border": "oklch(1 0 0 / 10%)",
-      "--sidebar-ring": "oklch(0.50 0.22 15)",
-      "--font-sans": "'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
-      "--font-serif": "Georgia, serif",
-      "--font-mono": "ui-monospace, monospace",
-      "--radius": "0.75rem"
+      "--sidebar-ring": "oklch(0.556 0 0)",
+      "--font-sans": "'Poppins', system-ui, -apple-system, sans-serif",
+      "--font-serif": "'Libre Baskerville', Georgia, serif",
+      "--font-mono": "'IBM Plex Mono', ui-monospace, monospace",
+      "--radius": "0.625rem"
     },
     "dark": {
-      "--background": "oklch(0.14 0.02 15)",
-      "--foreground": "oklch(0.98 0.01 15)",
-      "--card": "oklch(0.18 0.02 15)",
-      "--card-foreground": "oklch(0.98 0.01 15)",
-      "--popover": "oklch(0.20 0.02 15)",
-      "--popover-foreground": "oklch(0.98 0.01 15)",
-      "--primary": "oklch(0.60 0.22 15)",
+      "--background": "oklch(0.145 0 0)",
+      "--foreground": "oklch(0.985 0 0)",
+      "--card": "oklch(0.205 0 0)",
+      "--card-foreground": "oklch(0.985 0 0)",
+      "--popover": "oklch(0.269 0 0)",
+      "--popover-foreground": "oklch(0.985 0 0)",
+      "--primary": "oklch(0.55 0.22 264)",
       "--primary-foreground": "#ffffff",
-      "--secondary": "oklch(0.28 0.05 15)",
-      "--secondary-foreground": "oklch(0.95 0.02 15)",
-      "--muted": "oklch(0.22 0.02 15)",
-      "--muted-foreground": "oklch(0.70 0.03 15)",
-      "--accent": "oklch(0.28 0.06 15)",
-      "--accent-foreground": "oklch(0.95 0.02 15)",
+      "--secondary": "oklch(0.269 0.04 264)",
+      "--secondary-foreground": "oklch(0.95 0 0)",
+      "--muted": "oklch(0.269 0 0)",
+      "--muted-foreground": "oklch(0.708 0 0)",
+      "--accent": "oklch(0.269 0 0)",
+      "--accent-foreground": "oklch(0.985 0 0)",
       "--destructive": "oklch(0.704 0.191 22.216)",
       "--destructive-foreground": "#ffffff",
-      "--border": "oklch(1 0 0 / 12%)",
+      "--border": "oklch(1 0 0 / 10%)",
       "--input": "oklch(1 0 0 / 15%)",
-      "--ring": "oklch(0.60 0.22 15)",
-      "--chart-1": "oklch(0.60 0.22 15)",
-      "--chart-2": "oklch(0.75 0.18 350)",
-      "--chart-3": "oklch(0.70 0.15 40)",
-      "--chart-4": "oklch(0.80 0.14 80)",
-      "--chart-5": "oklch(0.60 0.20 280)",
-      "--sidebar": "oklch(0.12 0.02 15 / 95%)",
-      "--sidebar-foreground": "oklch(0.95 0.02 15)",
-      "--sidebar-primary": "oklch(0.60 0.22 15)",
+      "--ring": "oklch(0.55 0.22 264)",
+      "--chart-1": "oklch(0.55 0.22 264)",
+      "--chart-2": "oklch(0.696 0.17 162.48)",
+      "--chart-3": "oklch(0.769 0.188 70.08)",
+      "--chart-4": "oklch(0.627 0.265 303.9)",
+      "--chart-5": "oklch(0.645 0.246 16.439)",
+      "--sidebar": "oklch(0.145 0 0 / 90%)",
+      "--sidebar-foreground": "oklch(0.95 0 0)",
+      "--sidebar-primary": "oklch(0.55 0.22 264)",
       "--sidebar-primary-foreground": "#ffffff",
-      "--sidebar-accent": "oklch(0.22 0.03 15)",
-      "--sidebar-accent-foreground": "oklch(0.95 0.02 15)",
+      "--sidebar-accent": "oklch(0.269 0 0)",
+      "--sidebar-accent-foreground": "oklch(0.95 0 0)",
       "--sidebar-border": "oklch(1 0 0 / 10%)",
-      "--sidebar-ring": "oklch(0.60 0.22 15)",
-      "--font-sans": "'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
-      "--font-serif": "Georgia, serif",
-      "--font-mono": "ui-monospace, monospace",
-      "--radius": "0.75rem"
+      "--sidebar-ring": "oklch(0.556 0 0)",
+      "--font-sans": "'Poppins', system-ui, -apple-system, sans-serif",
+      "--font-serif": "'Libre Baskerville', Georgia, serif",
+      "--font-mono": "'IBM Plex Mono', ui-monospace, monospace",
+      "--radius": "0.625rem"
     }
   }
 }
