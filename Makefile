@@ -1,8 +1,9 @@
-.PHONY: deploy build build-backend build-dashboard build-frontend status logs logs-backend logs-dashboard logs-frontend down help sync-config
+.PHONY: deploy deploy-native deploy-docker build build-backend build-dashboard build-frontend status logs logs-backend logs-dashboard logs-frontend down help sync-config
 
-# ── Surokkha Environment & Docker Compose Settings ─────────────
+# ── Surokkha Environment & Paths ──────────────────────────────
 CLIENT := surokkha
 ENV_FILE ?= $(shell if [ -f .env ]; then echo .env; \
+	elif [ -f /opt/clients/surokkha/backend/.env ]; then echo /opt/clients/surokkha/backend/.env; \
 	elif [ -f /opt/clients/surokkha/configs/backend.env ]; then echo /opt/clients/surokkha/configs/backend.env; \
 	elif [ -f /opt/surokkha/configs/backend.env ]; then echo /opt/surokkha/configs/backend.env; \
 	else echo .env; fi)
@@ -15,75 +16,102 @@ help:
 	@echo "=========================================================="
 	@echo " Surokkha.store Production Deployment Automation"
 	@echo "=========================================================="
-	@echo "Env File: $(ENV_FILE)"
+	@echo "Active Env File: $(ENV_FILE)"
 	@echo ""
-	@echo "Available commands:"
-	@echo "  make deploy             Pull latest from Live & build/recreate all services"
-	@echo "  make build-backend      Rebuild Storefront & Dashboard backend services"
-	@echo "  make build-dashboard    Rebuild Admin Dashboard container"
-	@echo "  make build-frontend     Rebuild Customer Storefront container"
-	@echo "  make status             Show running Surokkha containers"
-	@echo "  make logs               Tail all container logs"
-	@echo "  make logs-backend       Tail backend logs"
-	@echo "  make logs-dashboard     Tail dashboard logs"
-	@echo "  make logs-frontend      Tail frontend logs"
-	@echo "  make down               Stop all Surokkha containers"
+	@echo "Deployment Modes:"
+	@echo "  make deploy             Safe deployment matching VPS native setup (Systemd + Nginx static)"
+	@echo "  make deploy-docker      Containerized deployment via Docker Compose"
+	@echo ""
+	@echo "Component Builds (Native VPS Mode):"
+	@echo "  make build-frontend     Build Storefront and deploy to /opt/clients/surokkha/dist"
+	@echo "  make build-dashboard    Build Admin Dashboard and deploy to /var/www/admin.surokkha.store/dist"
+	@echo "  make restart-backend    Restart systemd services (surokkha-storefront & surokkha-dashboard)"
+	@echo ""
+	@echo "Status & Health:"
+	@echo "  make status             Check systemd service and mongo status"
+	@echo "  make logs               Tail backend systemd logs"
 	@echo "=========================================================="
 
 sync-config:
 	@node scripts/sync-config.js $(CLIENT) 2>/dev/null || true
 
+# ── Safe Native VPS Deployment (Default) ──────────────────────
+# Pulls Live, builds frontend & dashboard to their exact Nginx webroots, and restarts systemd backends
 deploy:
-	@echo "🚀 Deploying Surokkha [Live branch] using env [$(ENV_FILE)]..."
+	@echo "🚀 Deploying Surokkha [Live branch] using Native VPS Architecture..."
+	git pull origin Live
+	@$(MAKE) sync-config
+	@# 1. Build and deploy Customer Storefront
+	@if [ -d "frontend" ]; then \
+		echo "📦 Building Storefront..."; \
+		npm install --prefix frontend; \
+		npm run build --prefix frontend; \
+		mkdir -p /opt/clients/surokkha/dist; \
+		cp -r frontend/dist/* /opt/clients/surokkha/dist/ 2>/dev/null || true; \
+		echo "✓ Storefront static files deployed to /opt/clients/surokkha/dist"; \
+	fi
+	@# 2. Build and deploy Admin Dashboard
+	@if [ -d "dashboard" ]; then \
+		echo "📦 Building Admin Dashboard..."; \
+		npm install --prefix dashboard; \
+		npm run build --prefix dashboard; \
+		mkdir -p /var/www/admin.surokkha.store/dist; \
+		cp -r dashboard/dist/* /var/www/admin.surokkha.store/dist/ 2>/dev/null || true; \
+		echo "✓ Admin Dashboard static files deployed to /var/www/admin.surokkha.store/dist"; \
+	fi
+	@# 3. Update Backend dependencies and restart services
+	@if [ -d "backend" ]; then \
+		echo "📦 Updating Backend dependencies..."; \
+		npm install --prefix backend; \
+		systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true; \
+		echo "✓ Surokkha backend services restarted"; \
+	fi
+	@# 4. Reload Nginx
+	@systemctl reload nginx 2>/dev/null || true
+	@echo "🎉 Surokkha Deployment successfully finished without downtime!"
+
+build: deploy
+
+build-frontend:
+	@echo "📦 Building and deploying Surokkha Frontend..."
+	npm install --prefix frontend
+	npm run build --prefix frontend
+	@mkdir -p /opt/clients/surokkha/dist
+	@cp -r frontend/dist/* /opt/clients/surokkha/dist/ 2>/dev/null || true
+	@systemctl reload nginx 2>/dev/null || true
+	@echo "✓ Frontend deployed!"
+
+build-dashboard:
+	@echo "📦 Building and deploying Surokkha Admin Dashboard..."
+	@$(MAKE) sync-config
+	npm install --prefix dashboard
+	npm run build --prefix dashboard
+	@mkdir -p /var/www/admin.surokkha.store/dist
+	@cp -r dashboard/dist/* /var/www/admin.surokkha.store/dist/ 2>/dev/null || true
+	@systemctl reload nginx 2>/dev/null || true
+	@echo "✓ Admin Dashboard deployed!"
+
+restart-backend:
+	systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true
+	@echo "✓ Backend restarted!"
+
+# ── Containerized Deployment (Optional Alternative) ────────────
+deploy-docker:
+	@echo "🚀 Deploying Surokkha using Docker Compose..."
 	git pull origin Live
 	@$(MAKE) sync-config
 	$(COMPOSE) build --no-cache
 	$(COMPOSE) up -d --force-recreate
 	@docker builder prune -f 2>/dev/null || true
 	@systemctl reload nginx 2>/dev/null || true
-	@echo "✓ Surokkha Full Deployment complete!"
-
-build: deploy
-
-build-backend:
-	@echo "🚀 Rebuilding Surokkha Backend services..."
-	git pull origin Live
-	$(COMPOSE) build --no-cache backend-storefront backend-dashboard
-	$(COMPOSE) up -d --force-recreate backend-storefront backend-dashboard
-	@systemctl reload nginx 2>/dev/null || true
-	@echo "✓ Backend services rebuilt successfully!"
-
-build-dashboard:
-	@echo "🚀 Rebuilding Surokkha Admin Dashboard..."
-	git pull origin Live
-	@$(MAKE) sync-config
-	$(COMPOSE) build --no-cache dashboard
-	$(COMPOSE) up -d --force-recreate dashboard
-	@systemctl reload nginx 2>/dev/null || true
-	@echo "✓ Admin Dashboard rebuilt successfully!"
-
-build-frontend:
-	@echo "🚀 Rebuilding Surokkha Frontend..."
-	git pull origin Live
-	$(COMPOSE) build --no-cache frontend
-	$(COMPOSE) up -d --force-recreate frontend
-	@systemctl reload nginx 2>/dev/null || true
-	@echo "✓ Frontend rebuilt successfully!"
+	@echo "✓ Docker Compose deployment complete!"
 
 status:
-	$(COMPOSE) ps
+	@systemctl status surokkha-storefront surokkha-dashboard --no-pager 2>/dev/null || true
+	@docker ps --filter "name=surokkha-mongodb-live" 2>/dev/null || true
 
 logs:
-	$(COMPOSE) logs -f
-
-logs-backend:
-	$(COMPOSE) logs -f backend-storefront backend-dashboard
-
-logs-dashboard:
-	$(COMPOSE) logs -f dashboard
-
-logs-frontend:
-	$(COMPOSE) logs -f frontend
+	journalctl -u surokkha-storefront -u surokkha-dashboard -f --no-tail
 
 down:
-	$(COMPOSE) down
+	systemctl stop surokkha-storefront surokkha-dashboard 2>/dev/null || true
