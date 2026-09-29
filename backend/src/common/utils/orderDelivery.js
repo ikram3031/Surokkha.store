@@ -179,11 +179,17 @@ export const sendOrderEmailsAsynchronously = (order) => {
       // 2. Resolve Admin Recipients (Bypassed for Custom Orders)
       if (!isCustomOrder) {
         const adminRecipientsSet = new Set();
-        if (activeClientKey === "decantre") {
-          adminRecipientsSet.add("decantre.store@gmail.com");
-        } else if (activeClientKey === "surokkha") {
+        
+        // Add designated store operational emails
+        if (activeClientKey === "surokkha") {
           adminRecipientsSet.add("support@surokkha.store");
           adminRecipientsSet.add("contact@surokkha.store");
+        } else if (activeClientKey === "decantre") {
+          adminRecipientsSet.add("decantre.store@gmail.com");
+        }
+
+        if (config.supportEmail && isValidCustomerEmail(config.supportEmail)) {
+          adminRecipientsSet.add(config.supportEmail.toLowerCase().trim());
         }
 
         try {
@@ -194,7 +200,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
           }).select("email receiveEmailNotifications").lean();
 
           for (const adminUser of superAdmins) {
-            if (adminUser.email && adminUser.receiveEmailNotifications !== false) {
+            if (adminUser.email && adminUser.receiveEmailNotifications !== false && isValidCustomerEmail(adminUser.email)) {
               adminRecipientsSet.add(adminUser.email.toLowerCase().trim());
             }
           }
@@ -202,34 +208,41 @@ export const sendOrderEmailsAsynchronously = (order) => {
           console.error("[Email Notification] Database query for super admin emails failed, falling back to default admins:", dbErr.message);
         }
 
-        // Explicitly EXCLUDE emails that should not receive admin notifications
+        // Explicitly EXCLUDE developer test emails that should not receive store alerts
         adminRecipientsSet.delete("ikramul.web@gmail.com");
         adminRecipientsSet.delete("md.ikr4m@gmail.com");
 
-        // For demo / plexivia environment, ensure info@plexivia.online receives notifications
+        // If in demo environment, fallback to demo recipient
         if (activeClientKey === "demo" || (env.SMTP_USER && env.SMTP_USER.includes("plexivia"))) {
           adminRecipientsSet.add("info@plexivia.online");
         }
 
         const adminRecipients = Array.from(adminRecipientsSet);
-        console.log(`[Email Notification] Admin notification targets: ${adminRecipients.join(", ")}`);
+        console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
 
         // Send Admin New Order Notification Email to all resolved admin emails
         if (smtpConfig.isConfigured && adminRecipients.length > 0) {
           try {
+            const adminEmailHtml = buildAdminOrderEmailHtml({
+              order: formattedOrderData,
+              logoUrl: emailLogoUrl,
+            });
+
             await activeTransport.sendMail({
               from: fromAddress,
               to: adminRecipients,
               replyTo: isValidCustomerEmail(customerEmail)
                 ? { name: customerName, address: customerEmail }
                 : { name: brandDisplayName, address: fromEmail },
-              subject: `${brandDisplayName}: You have got a new order - #${orderId}`,
-              html: invoiceHtml
+              subject: `🛒 ${brandDisplayName}: New Order Received - #${orderId} (৳${totalAmount})`,
+              html: adminEmailHtml || invoiceHtml
             });
             console.log(`[Email Notification] Admin notification email successfully sent to: ${adminRecipients.join(", ")}`);
           } catch (adminErr) {
             console.error(`[Email Notification] Failed sending admin email to ${adminRecipients.join(", ")}:`, adminErr.message);
           }
+        } else if (!smtpConfig.isConfigured) {
+          console.warn(`[Email Notification] SMTP is not configured. Admin notification skipped.`);
         }
       }
 

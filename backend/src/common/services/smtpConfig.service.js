@@ -19,12 +19,17 @@ export async function getSmtpConfig() {
     }
   }
 
-  const useDb = Boolean(dbSmtp.isEnabled && dbSmtp.host && dbSmtp.user);
+  // Check DB settings: if isEnabled is explicitly true and host & user exist, use DB.
+  // Or if user and password are saved in DB, use DB.
+  const hasDbCredentials = Boolean(dbSmtp.host && dbSmtp.user && dbSmtp.password);
+  const useDb = Boolean(dbSmtp.isEnabled && hasDbCredentials);
 
-  const host = (useDb ? dbSmtp.host : env.SMTP_HOST || "smtp.hostinger.com").trim();
-  const port = Number(useDb ? dbSmtp.port : env.SMTP_PORT || 465);
-  const user = (useDb ? dbSmtp.user : env.SMTP_USER || "").trim();
-  const rawPassword = useDb ? decryptText(dbSmtp.password || "") : env.SMTP_PASSWORD || "";
+  const host = (useDb ? dbSmtp.host : (env.SMTP_HOST || dbSmtp.host || "smtp.hostinger.com")).trim();
+  const port = Number(useDb ? dbSmtp.port : (env.SMTP_PORT || dbSmtp.port || 465));
+  const user = (useDb ? dbSmtp.user : (env.SMTP_USER || dbSmtp.user || "")).trim();
+  const rawPassword = useDb
+    ? decryptText(dbSmtp.password || "")
+    : (env.SMTP_PASSWORD || decryptText(dbSmtp.password || "") || "");
   const password = String(rawPassword).trim();
   
   // Secure option: Port 465 is always SSL/TLS (secure: true). Port 587 uses STARTTLS (secure: false).
@@ -39,8 +44,10 @@ export async function getSmtpConfig() {
     secure = String(env.SMTP_ENCRYPTION || "").toLowerCase() === "ssl";
   }
 
-  const fromName = (useDb && dbSmtp.senderName ? dbSmtp.senderName : env.SMTP_FROM_NAME || "Decantre BD").trim();
-  const fromEmail = (useDb && dbSmtp.senderEmail ? dbSmtp.senderEmail : env.SMTP_FROM || user || "").trim();
+  const defaultBrand = "Surokkha";
+  const defaultDomain = "surokkha.store";
+  const fromName = (useDb && dbSmtp.senderName ? dbSmtp.senderName : env.SMTP_FROM_NAME || defaultBrand).trim();
+  const fromEmail = (useDb && dbSmtp.senderEmail ? dbSmtp.senderEmail : env.SMTP_FROM || user || `support@${defaultDomain}`).trim();
 
   const isConfigured = Boolean(host && user && password && password !== "none");
 
@@ -54,7 +61,7 @@ export async function getSmtpConfig() {
     fromEmail,
     fromAddress: { name: fromName, address: fromEmail },
     isConfigured,
-    source: useDb ? "database" : "env",
+    source: useDb ? "database" : (hasDbCredentials ? "database-fallback" : "env"),
   };
 }
 
