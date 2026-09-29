@@ -141,35 +141,53 @@ export const calculatePaymentStatus = (total, paidAmount, paymentMethod = "", or
   return "Pending";
 };
 
+// Fixed-width badge helper classes with unified palette:
+// Green (#64a338): delivered/complete/paid (white text)
+// Yellow (#ffcc00): processing/pending/partial (dark text)
+// Red (#e03b24): cancelled/deleted/failed (white text)
+// Blue (#3865a3): shipped (white text)
+// Sky (#87a2c7): confirmed (dark text)
+const BADGE_FIXED_CLS = "w-24 justify-center text-center truncate border-transparent select-none";
+
 // Render payment status badge based on payment status string.
 export const getPaymentBadge = (status) => {
   switch (String(status).toLowerCase()) {
     case "paid":
-      return <Badge className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 text-xs text-white border-transparent">Paid</Badge>;
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>Paid</Badge>;
     case "partial":
-      return <Badge className="bg-amber-500 hover:bg-amber-600 px-3 py-1 text-xs font-semibold text-white border-transparent">Partial</Badge>;
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>Partial</Badge>;
+    case "failed":
     case "cancelled":
     case "canceled":
-      return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 px-3 py-1 text-xs text-white border-transparent">Cancelled</Badge>;
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>Cancelled</Badge>;
     case "pending":
     default:
-      return <Badge className="bg-rose-500 hover:bg-rose-600 px-3 py-1 text-xs text-white border-transparent">Pending</Badge>;
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>Pending</Badge>;
   }
 };
 
 // Render order fulfillment status badge based on status string.
 export const getFulfillmentBadge = (status) => {
   switch (String(status).toLowerCase()) {
-    case "shipped":
-      return <Badge className="bg-indigo-500 hover:bg-indigo-600 px-3 py-1 text-xs text-white border-transparent">Shipped</Badge>;
-    case "processing":
-      return <Badge className="bg-blue-500 hover:bg-blue-600 px-3 py-1 text-xs text-white border-transparent">Processing</Badge>;
-    case "cancelled":
-      return <Badge variant="destructive" className="bg-destructive hover:bg-destructive/90 px-3 py-1 text-xs text-white border-transparent">Cancelled</Badge>;
+    case "delivered":
     case "completed":
-      return <Badge className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 text-xs text-white border-transparent">Completed</Badge>;
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>Completed</Badge>;
+    case "shipped":
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#3865a3] hover:bg-[#2f558a] text-white`}>Shipped</Badge>;
+    case "confirmed":
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#87a2c7] hover:bg-[#7693b9] text-slate-950 font-medium`}>Confirmed</Badge>;
+    case "processing":
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>Processing</Badge>;
+    case "cancelled":
+    case "canceled":
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>Cancelled</Badge>;
+    case "returned":
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>Returned</Badge>;
+    case "pending":
+    case "unfulfilled":
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>Pending</Badge>;
     default:
-      return <Badge variant="outline" className="px-3 py-1 text-xs">{status}</Badge>;
+      return <Badge variant="outline" className={`${BADGE_FIXED_CLS}`}>{status}</Badge>;
   }
 };
 
