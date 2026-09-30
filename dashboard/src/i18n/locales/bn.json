@@ -345,6 +345,7 @@
     "discount_value": "ছাড়ের পরিমাণ",
     "percentage": "শতকরা হার (%)",
     "fixed_amount": "নির্দিষ্ট পরিমাণ (৳)",
+    "free_shipping": "ফ্রি ডেলিভারি",
     "minimum_spend": "ন্যূনতম অর্ডারের পরিমাণ (৳)",
     "maximum_discount": "সর্বোচ্চ ছাড় (৳)",
     "usage_limit": "কুপন ব্যবহারের মোট সীমা",

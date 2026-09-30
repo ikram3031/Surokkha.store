@@ -753,7 +753,7 @@ export default function CheckoutView() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Tier 1: Inside Dhaka */}
                 <div className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                  totals.deliveryFee === 70
+                  (totals.originalDeliveryFee ?? totals.deliveryFee) === 70
                     ? 'border-brand-700 bg-brand-50/70 text-brand-900 font-bold shadow-xs'
                     : 'border-slate-200 bg-white text-slate-400 opacity-60'
                 }`}>
@@ -761,12 +761,19 @@ export default function CheckoutView() {
                     <span className="text-xs font-bold block">{t('checkout.inside_dhaka')}</span>
                     <span className="text-[10px] text-slate-500">{t('checkout.inside_dhaka_time')}</span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-brand-800">৳70</span>
+                  {totals.isFreeShippingCoupon && (totals.originalDeliveryFee ?? totals.deliveryFee) === 70 ? (
+                    <span className="text-xs font-mono font-bold text-emerald-700">
+                      <span className="line-through text-slate-400 font-normal text-[10px] mr-1">৳70</span>
+                      {isBn ? 'ফ্রি' : 'FREE'}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-mono font-bold text-brand-800">৳70</span>
+                  )}
                 </div>
 
                 {/* Tier 2: Dhaka Suburbs */}
                 <div className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                  totals.deliveryFee === 90
+                  (totals.originalDeliveryFee ?? totals.deliveryFee) === 90
                     ? 'border-brand-700 bg-brand-50/70 text-brand-900 font-bold shadow-xs'
                     : 'border-slate-200 bg-white text-slate-400 opacity-60'
                 }`}>
@@ -774,12 +781,19 @@ export default function CheckoutView() {
                     <span className="text-xs font-bold block">{t('checkout.dhaka_suburbs')}</span>
                     <span className="text-[10px] text-slate-500">{t('checkout.dhaka_suburbs_time')}</span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-brand-800">৳90</span>
+                  {totals.isFreeShippingCoupon && (totals.originalDeliveryFee ?? totals.deliveryFee) === 90 ? (
+                    <span className="text-xs font-mono font-bold text-emerald-700">
+                      <span className="line-through text-slate-400 font-normal text-[10px] mr-1">৳90</span>
+                      {isBn ? 'ফ্রি' : 'FREE'}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-mono font-bold text-brand-800">৳90</span>
+                  )}
                 </div>
 
                 {/* Tier 3: Outside Dhaka */}
                 <div className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
-                  totals.deliveryFee === 120
+                  (totals.originalDeliveryFee ?? totals.deliveryFee) === 120
                     ? 'border-brand-700 bg-brand-50/70 text-brand-900 font-bold shadow-xs'
                     : 'border-slate-200 bg-white text-slate-400 opacity-60'
                 }`}>
@@ -787,7 +801,14 @@ export default function CheckoutView() {
                     <span className="text-xs font-bold block">{t('checkout.outside_dhaka')}</span>
                     <span className="text-[10px] text-slate-500">{t('checkout.outside_dhaka_time')}</span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-brand-800">৳120</span>
+                  {totals.isFreeShippingCoupon && (totals.originalDeliveryFee ?? totals.deliveryFee) === 120 ? (
+                    <span className="text-xs font-mono font-bold text-emerald-700">
+                      <span className="line-through text-slate-400 font-normal text-[10px] mr-1">৳120</span>
+                      {isBn ? 'ফ্রি' : 'FREE'}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-mono font-bold text-brand-800">৳120</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -883,7 +904,11 @@ export default function CheckoutView() {
                   </span>
                   {appliedCoupon && (
                     <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      ✓ {appliedCoupon.discountType === 'percentage' ? `${appliedCoupon.discountValue}% OFF` : `৳${appliedCoupon.discountValue} OFF`}
+                      ✓ {appliedCoupon.discountType === 'free_shipping' 
+                          ? (isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery')
+                          : (appliedCoupon.discountType === 'percentage' 
+                              ? `${appliedCoupon.discountValue}% OFF` 
+                              : `৳${appliedCoupon.discountValue} OFF`)}
                     </span>
                   )}
                 </div>
@@ -895,7 +920,9 @@ export default function CheckoutView() {
                         {appliedCoupon.code}
                       </span>
                       <span className="text-[11px] font-semibold text-emerald-700">
-                        (-৳{totals.discountAmount})
+                        {appliedCoupon.discountType === 'free_shipping'
+                          ? `(${isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'})`
+                          : `(-৳${totals.discountAmount})`}
                       </span>
                     </div>
                     <button
@@ -962,7 +989,14 @@ export default function CheckoutView() {
 
                 <div className="flex justify-between text-slate-700 font-medium">
                   <span>{t('checkout.delivery_charge', { area: activeDistrict ? activeDistrict.toUpperCase() : 'STANDARD' })}</span>
-                  <span className="font-bold text-slate-900 font-mono">৳{totals.deliveryFee}</span>
+                  {totals.isFreeShippingCoupon ? (
+                    <span className="font-bold text-emerald-700 font-mono flex items-center gap-1">
+                      <span className="line-through text-slate-400 font-normal text-[11px]">৳{totals.originalDeliveryFee}</span>
+                      <span>{isBn ? 'ফ্রি' : 'FREE'}</span>
+                    </span>
+                  ) : (
+                    <span className="font-bold text-slate-900 font-mono">৳{totals.deliveryFee}</span>
+                  )}
                 </div>
                 <div className="border-t border-slate-200 pt-2 flex justify-between items-baseline">
                   <span className="text-sm font-bold text-slate-900">{t('checkout.grand_total')}</span>

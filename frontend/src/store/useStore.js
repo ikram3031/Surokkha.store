@@ -695,15 +695,23 @@ export const useStore = create((set, get) => ({
 
     // Dynamic Coupon Discount Calculation
     let discountAmount = 0;
+    let isFreeShippingCoupon = false;
+    let originalDeliveryFee = deliveryFee;
+
     if (appliedCoupon && subtotal > 0) {
       const minOrder = Number(appliedCoupon.minOrderAmount || 0);
       if (subtotal >= minOrder) {
-        if (appliedCoupon.discountType === 'percentage') {
+        if (appliedCoupon.discountType === 'free_shipping') {
+          isFreeShippingCoupon = true;
+          deliveryFee = 0;
+          discountAmount = 0;
+        } else if (appliedCoupon.discountType === 'percentage') {
           discountAmount = Math.round((subtotal * Number(appliedCoupon.discountValue || 0)) / 100);
+          discountAmount = Math.max(0, Math.min(subtotal, discountAmount));
         } else {
           discountAmount = Number(appliedCoupon.discountValue || 0);
+          discountAmount = Math.max(0, Math.min(subtotal, discountAmount));
         }
-        discountAmount = Math.max(0, Math.min(subtotal, discountAmount));
       }
     }
 
@@ -712,6 +720,8 @@ export const useStore = create((set, get) => ({
     return {
       subtotal,
       deliveryFee,
+      originalDeliveryFee,
+      isFreeShippingCoupon,
       discountAmount,
       grandTotal,
       itemCount: totalItemCount,

@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Ticket, Copy, Check, Percent, Tag } from 'lucide-react';
+import { MoreHorizontal, Ticket, Copy, Check, Percent, Tag, Truck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
@@ -124,6 +124,7 @@ export function CouponsTable({
   }
 
   const formatDiscount = (type, value) => {
+    if (type === 'free_shipping') return 'Free Delivery';
     return type === 'percentage' ? `${value}% OFF` : `৳${value.toFixed(0)} OFF`;
   };
 
@@ -244,12 +245,16 @@ export function CouponsTable({
 
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      {coupon.discountType === 'percentage' ? (
+                      {coupon.discountType === 'free_shipping' ? (
+                        <Truck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                      ) : coupon.discountType === 'percentage' ? (
                         <Percent className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                       ) : (
                         <Tag className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                       )}
-                      <span className="font-medium">{formatDiscount(coupon.discountType, coupon.discountValue)}</span>
+                      <span className={`font-medium ${coupon.discountType === 'free_shipping' ? 'text-teal-700 dark:text-teal-300 font-semibold' : ''}`}>
+                        {formatDiscount(coupon.discountType, coupon.discountValue)}
+                      </span>
                     </div>
                   </TableCell>
 

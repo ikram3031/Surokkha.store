@@ -5,8 +5,8 @@ const couponSchema = new Schema(
   {
     code: { type: String, required: true, trim: true, uppercase: true, unique: true, index: true },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
-    discountType: { type: String, required: true, enum: ["percentage", "fixed"], default: "percentage" },
-    discountValue: { type: Number, required: true, min: 0 },
+    discountType: { type: String, required: true, enum: ["percentage", "fixed", "free_shipping"], default: "percentage" },
+    discountValue: { type: Number, required: true, min: 0, default: 0 },
     minOrderAmount: { type: Number, default: 0, min: 0 },
     validFrom: { type: Date, default: null },
     validTo: { type: Date, default: null },

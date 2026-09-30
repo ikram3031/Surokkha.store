@@ -138,13 +138,14 @@ const CouponsPage = () => {
           </Select>
 
           <Select value={typeFilter} onValueChange={handleTypeFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[160px]">
               <SelectValue placeholder={t('categories_brands.discount_type')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">{t('common.all')}</SelectItem>
               <SelectItem value="Percentage">{t('categories_brands.percentage')}</SelectItem>
               <SelectItem value="Fixed">{t('categories_brands.fixed_amount')}</SelectItem>
+              <SelectItem value="free_shipping">{t('categories_brands.free_shipping', 'Free Delivery')}</SelectItem>
             </SelectContent>
           </Select>
         </div>

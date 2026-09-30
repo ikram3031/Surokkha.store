@@ -22,16 +22,24 @@ export function validateCouponPayload(payload = {}) {
     errors.push("code is required");
   }
 
-  if (!["percentage", "fixed"].includes(normalized.discountType)) {
-    errors.push("discountType must be either percentage or fixed");
+  if (normalized.discountType === "free_shipping") {
+    if (!Number.isFinite(normalized.discountValue) || normalized.discountValue < 0) {
+      normalized.discountValue = 0;
+    }
   }
 
-  if (!Number.isFinite(normalized.discountValue) || normalized.discountValue <= 0) {
-    errors.push("discountValue must be a positive number");
+  if (!["percentage", "fixed", "free_shipping"].includes(normalized.discountType)) {
+    errors.push("discountType must be percentage, fixed, or free_shipping");
   }
 
-  if (normalized.discountType === "percentage" && normalized.discountValue > 100) {
-    errors.push("percentage discount cannot exceed 100");
+  if (normalized.discountType !== "free_shipping") {
+    if (!Number.isFinite(normalized.discountValue) || normalized.discountValue <= 0) {
+      errors.push("discountValue must be a positive number");
+    }
+
+    if (normalized.discountType === "percentage" && normalized.discountValue > 100) {
+      errors.push("percentage discount cannot exceed 100");
+    }
   }
 
   if (normalized.minOrderAmount < 0) {

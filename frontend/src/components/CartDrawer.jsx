@@ -396,7 +396,9 @@ export default function CartDrawer() {
                     <div className="flex items-center gap-2">
                       <span className="text-emerald-700 font-bold">🎟️ {appliedCoupon.code}</span>
                       <span className="text-emerald-800 font-extrabold font-mono">
-                        (-{formatPrice(totals.discountAmount)})
+                        {appliedCoupon.discountType === 'free_shipping'
+                          ? `(${isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'})`
+                          : `(-${formatPrice(totals.discountAmount)})`}
                       </span>
                     </div>
                     <button
@@ -450,7 +452,7 @@ export default function CartDrawer() {
                 <div className="flex justify-between text-slate-700 font-medium">
                   <span>{isBn ? 'ডেলিভারি চার্জ' : 'Delivery Charge'}</span>
                   <span>
-                    {totals.subtotal >= freeDeliveryThreshold ? (
+                    {totals.isFreeShippingCoupon || totals.subtotal >= freeDeliveryThreshold ? (
                       <strong className="text-emerald-700 font-bold uppercase">{isBn ? 'ফ্রি' : 'FREE'}</strong>
                     ) : (
                       <span className="text-[11px] text-slate-600 font-medium">

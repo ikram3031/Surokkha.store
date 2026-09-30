@@ -223,15 +223,19 @@ export function CouponDialog({ open, onOpenChange, couponToEdit }) {
       return;
     }
 
-    const val = parseFloat(discountValue);
-    if (isNaN(val) || val <= 0) {
-      toast.error('Discount value must be a positive number.');
-      return;
-    }
+    let val = parseFloat(discountValue);
+    if (discountType === 'free_shipping') {
+      val = 0;
+    } else {
+      if (isNaN(val) || val <= 0) {
+        toast.error('Discount value must be a positive number.');
+        return;
+      }
 
-    if (discountType === 'percentage' && val > 100) {
-      toast.error('Percentage discount cannot exceed 100%.');
-      return;
+      if (discountType === 'percentage' && val > 100) {
+        toast.error('Percentage discount cannot exceed 100%.');
+        return;
+      }
     }
 
     const minAmount = parseFloat(minOrderAmount);
@@ -363,6 +367,7 @@ export function CouponDialog({ open, onOpenChange, couponToEdit }) {
                 <SelectContent>
                   <SelectItem value="percentage">Percentage (%)</SelectItem>
                   <SelectItem value="fixed">Fixed Amount (৳)</SelectItem>
+                  <SelectItem value="free_shipping">Free Delivery (৳0 Shipping)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -372,17 +377,28 @@ export function CouponDialog({ open, onOpenChange, couponToEdit }) {
             {/* Discount Value */}
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Discount Value {discountType === 'percentage' ? '(%)' : '(৳)'}
+                {discountType === 'free_shipping' 
+                  ? 'Discount Value (Free Delivery)' 
+                  : `Discount Value ${discountType === 'percentage' ? '(%)' : '(৳)'}`}
               </label>
               <Input
                 type="number"
                 step="any"
-                placeholder={discountType === 'percentage' ? 'e.g. 10' : 'e.g. 500'}
-                value={discountValue}
+                placeholder={
+                  discountType === 'free_shipping' 
+                    ? '0 (Free Delivery applied)' 
+                    : (discountType === 'percentage' ? 'e.g. 10' : 'e.g. 500')
+                }
+                value={discountType === 'free_shipping' ? '0' : discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
-                disabled={isSubmitting}
-                required
+                disabled={isSubmitting || discountType === 'free_shipping'}
+                required={discountType !== 'free_shipping'}
               />
+              {discountType === 'free_shipping' && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                  ✦ Delivery charge will be ৳0 when this coupon is applied.
+                </p>
+              )}
             </div>
 
             {/* Min Order Amount */}

@@ -345,6 +345,7 @@
     "discount_value": "Discount Value",
     "percentage": "Percentage (%)",
     "fixed_amount": "Fixed Amount (৳)",
+    "free_shipping": "Free Delivery",
     "minimum_spend": "Minimum Spend (৳)",
     "maximum_discount": "Maximum Discount (৳)",
     "usage_limit": "Usage Limit Per Coupon",
