@@ -1,9 +1,49 @@
 import fs from "fs";
+import path from "path";
+import crypto from "crypto";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, "..");
+
+const ALGORITHM = "aes-256-cbc";
+
+const decryptText = (text, secret = process.env.ACCESS_TOKEN_SECRET) => {
+  if (!text) return "";
+  const textParts = text.split(":");
+  if (textParts.length !== 2) return text;
+  try {
+    const encKeySecret = secret || "default_fallback_secret_must_be_long_enough";
+    const key = crypto.createHash("sha256").update(String(encKeySecret)).digest("base64").substr(0, 32);
+    const iv = Buffer.from(textParts[0], "hex");
+    const encryptedText = Buffer.from(textParts[1], "hex");
+    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(key), iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch {
+    return text;
+  }
+};
 
 const zoneId = "bd131177db6d610b5d4e5beb0142108b";
-const raw = fs.readFileSync("J:\\My Drive\\CLIENTS\\Cloudflare.txt", "utf8");
-const match = raw.match(/cfat_[A-Za-z0-9_-]+/);
-const token = match ? match[0] : "";
+
+const resolveToken = () => {
+  if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_API_TOKEN.trim()) {
+    return decryptText(process.env.CLOUDFLARE_API_TOKEN.trim());
+  }
+  const cfgPath = path.join(rootDir, "configs", "surokkha.json");
+  if (fs.existsSync(cfgPath)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
+      if (cfg.cloudflare?.apiToken) return decryptText(cfg.cloudflare.apiToken.trim());
+    } catch {}
+  }
+  return "";
+};
+
+const token = resolveToken();
 
 async function manageDNS() {
   console.log("Using token:", token.slice(0, 10) + "...");
