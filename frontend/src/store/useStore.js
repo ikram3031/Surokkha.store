@@ -842,7 +842,7 @@ export const useStore = create((set, get) => ({
       throw lastError || new Error('Failed to reach order server. Please check your connection.');
     }
 
-    const resolvedOrderNumber = responseData?.data?.orderNumber || responseData?.data?.id || responseData?.orderNumber || ('SK-' + Math.floor(100000 + Math.random() * 900000));
+    const resolvedOrderNumber = responseData?.data?.orderNumber || responseData?.data?.id || responseData?.orderNumber || ('SS-' + Math.floor(100000 + Math.random() * 900000));
 
     const newOrder = {
       orderId: resolvedOrderNumber,

@@ -632,7 +632,7 @@ export const trackAddPaymentInfo = (paymentType = 'Cash on Delivery', totals = {
 export const trackPurchase = (order, products = {}) => {
   if (!order || !order.totals) return;
 
-  const orderId = String(order.orderId || ('SK-' + Date.now()));
+  const orderId = String(order.orderId || ('SS-' + Date.now()));
   const grandTotal = Number(order.totals.grandTotal || order.totals.subtotal || 0);
   const itemCount = Number(order.totals.itemCount || 0);
   const purchasedItems = Object.entries(order.items || {}).filter(([_, qty]) => qty > 0);
