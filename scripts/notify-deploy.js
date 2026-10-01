@@ -1,4 +1,4 @@
-﻿import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import { execSync } from 'child_process';
 import path from 'path';
@@ -204,12 +204,12 @@ Recipient: ${recipient}
   // 3. Send via SMTP
   try {
     const transporter = nodemailer.createTransport({
-      host: 'mail.spacemail.com',
-      port: 465,
+      host: process.env.SMTP_HOST || 'mail.spacemail.com',
+      port: Number(process.env.SMTP_PORT || 465),
       secure: true,
       auth: {
-        user: 'support@plexivia.online',
-        pass: 'P@ss0265'
+        user: process.env.SMTP_USER || process.env.DEPLOY_NOTIFY_USER || 'support@plexivia.online',
+        pass: process.env.SMTP_PASSWORD || process.env.DEPLOY_NOTIFY_PASS || ''
       },
       tls: { rejectUnauthorized: false }
     });

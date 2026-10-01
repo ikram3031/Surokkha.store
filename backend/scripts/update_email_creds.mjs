@@ -8,8 +8,12 @@ async function run() {
   await mongoose.connect(env.MONGODB_URI);
   console.log("Connected to MongoDB");
 
-  const email = "support@surokkha.store";
-  const password = "P@ss0265";
+  const email = process.env.SMTP_USER || "support@surokkha.store";
+  const password = process.env.SMTP_PASSWORD || "";
+  if (!password) {
+    console.error("Please set SMTP_PASSWORD environment variable.");
+    process.exit(1);
+  }
   const encryptedPassword = encryptText(password);
 
   console.log("Encrypting password...");
