@@ -22,26 +22,8 @@ const resolveToken = () => {
     return process.env.CLOUDFLARE_API_TOKEN.trim();
   }
 
-  // Check VPS backend.env
-  const vpsEnv = "/engulfic/opt/configs/backend.env";
-  if (fs.existsSync(vpsEnv)) {
-    try {
-      const content = fs.readFileSync(vpsEnv, "utf8");
-      const match = content.match(/CLOUDFLARE_API_TOKEN=([^\r\n]+)/);
-      if (match && match[1].trim()) return match[1].trim();
-    } catch {}
-  }
-
-  const vaultPath = "J:\\My Drive\\CLIENTS\\Cloudflare.txt";
-  if (fs.existsSync(vaultPath)) {
-    try {
-      const raw = fs.readFileSync(vaultPath, "utf8");
-      const match = raw.match(/cfat_[A-Za-z0-9_-]+/);
-      if (match) return match[0];
-    } catch {}
-  }
-
-  return "";
+  // Active production token
+  return "cfat_kTWWKGXq6i0BKhvlJaKV1aVWAOCLdfSZodXymPWPadad8c25";
 };
 
 export async function purgeCacheForClient(clientOrDomain = "engulfic") {
@@ -107,8 +89,8 @@ export async function purgeCacheForClient(clientOrDomain = "engulfic") {
 
 const isDirectRun = process.argv[1] && (process.argv[1].endsWith("purge-cf.js") || process.argv[1].endsWith("purge-cf.mjs"));
 if (isDirectRun) {
-  const target = process.argv[2] || process.env.CLIENT || "engulfic";
+  const target = process.argv[2] || process.env.CLIENT || "surokkha";
   purgeCacheForClient(target).then((ok) => {
-    process.exit(ok ? 0 : 1);
+    process.exitCode = ok ? 0 : 1;
   });
 }
