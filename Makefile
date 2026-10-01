@@ -64,11 +64,18 @@ deploy:
 	@if [ -d "backend" ]; then \
 		echo "📦 Updating Backend dependencies..."; \
 		npm install --prefix backend; \
-		systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true; \
+		systemctl restart surokkha-storefront surokkha-dashboard surokkha-backend 2>/dev/null || true; \
 		echo "✓ Surokkha backend services restarted"; \
 	fi
 	@# 4. Reload Nginx
 	@systemctl reload nginx 2>/dev/null || true
+	@# 5. Dispatch Deployment Notification Email & Dashboard Alert
+	@if [ -f "scripts/notify-deploy.js" ]; then \
+		echo "📧 Sending multi-component deployment notification email..."; \
+		node scripts/notify-deploy.js --bump 2>/dev/null || true; \
+	elif [ -f "frontend/scripts/notify-deploy.js" ]; then \
+		node frontend/scripts/notify-deploy.js --bump 2>/dev/null || true; \
+	fi
 	@echo "🎉 Surokkha Deployment successfully finished without downtime!"
 
 build: deploy

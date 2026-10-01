@@ -1,13 +1,82 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
-async function notifyDeploy() {
-  console.log('🚀 Running Surokkha Deployment Notification...');
+// Resolves directory paths accurately regardless of execution cwd
+function getProjectRoots() {
+  const cwd = process.cwd();
+  let rootDir = cwd;
+  if (fs.existsSync(path.join(cwd, 'frontend')) || fs.existsSync(path.join(cwd, 'backend'))) {
+    rootDir = cwd;
+  } else if (fs.existsSync(path.join(cwd, '..', 'frontend')) || fs.existsSync(path.join(cwd, '..', 'backend'))) {
+    rootDir = path.resolve(cwd, '..');
+  }
+  return {
+    rootDir,
+    frontendDir: path.join(rootDir, 'frontend'),
+    backendDir: path.join(rootDir, 'backend'),
+    dashboardDir: path.join(rootDir, 'dashboard'),
+  };
+}
 
-  // 1. Gather Git & Environment Metadata
+// Safely reads version from a package.json path
+function readPackageVersion(pkgPath, defaultVal = '1.0.0') {
+  try {
+    if (fs.existsSync(pkgPath)) {
+      const data = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      if (data.version) return data.version;
+    }
+  } catch (e) {}
+  return defaultVal;
+}
+
+// Increments patch version (e.g. 1.0.9 -> 1.0.10) and saves to file
+function bumpPatchVersion(pkgPath) {
+  try {
+    if (fs.existsSync(pkgPath)) {
+      const data = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      const parts = (data.version || '1.0.0').split('.');
+      if (parts.length === 3) {
+        const patchNum = parseInt(parts[2], 10);
+        if (!isNaN(patchNum)) {
+          parts[2] = String(patchNum + 1);
+          data.version = parts.join('.');
+          fs.writeFileSync(pkgPath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+          return data.version;
+        }
+      }
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function notifyDeploy() {
+  console.log('🚀 Running Surokkha Comprehensive Deployment Notification...');
+
+  const roots = getProjectRoots();
+  const shouldBump = process.argv.includes('--bump') || process.argv.includes('-b') || process.env.BUMP_VERSION === 'true';
+
+  // 1. Resolve & bump component versions
+  let frontendVersion = readPackageVersion(path.join(roots.frontendDir, 'package.json'), '1.0.10');
+  if (frontendVersion === '1.0.0' || !fs.existsSync(path.join(roots.frontendDir, 'package.json'))) {
+    frontendVersion = readPackageVersion(path.join(roots.rootDir, 'package.json'), '1.0.10');
+  }
+
+  let backendVersion = readPackageVersion(path.join(roots.backendDir, 'package.json'), '3.1.00');
+  let dashboardVersion = readPackageVersion(path.join(roots.dashboardDir, 'package.json'), '3.05.00');
+  let platformVersion = readPackageVersion(path.join(roots.rootDir, 'package.json'), frontendVersion);
+
+  if (shouldBump) {
+    const bumpedFrontend = bumpPatchVersion(path.join(roots.frontendDir, 'package.json'));
+    const bumpedRoot = bumpPatchVersion(path.join(roots.rootDir, 'package.json'));
+    if (bumpedFrontend) frontendVersion = bumpedFrontend;
+    if (bumpedRoot) platformVersion = bumpedRoot;
+    console.log(`📦 Version bumped to v${frontendVersion}`);
+  }
+
+  // 2. Gather Git & Environment Metadata
   let commitHash = 'latest';
   let commitMsg = 'Production Build';
   let commitAuthor = 'Deployment Pipeline';
@@ -18,20 +87,7 @@ async function notifyDeploy() {
     commitMsg = execSync('git log -1 --pretty=%s', { encoding: 'utf8' }).trim();
     commitAuthor = execSync('git log -1 --pretty=%an', { encoding: 'utf8' }).trim();
     commitTime = execSync('git log -1 --pretty=%cd --date=iso', { encoding: 'utf8' }).trim();
-  } catch (e) {
-    // Git metadata fallback
-  }
-
-  let version = 'v1.0.6';
-  try {
-    const pkgPath = path.resolve(process.cwd(), 'package.json');
-    if (fs.existsSync(pkgPath)) {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      if (pkg.version) version = `v${pkg.version}`;
-    }
-  } catch (e) {
-    // Version fallback
-  }
+  } catch (e) {}
 
   const deployTimestamp = new Date().toLocaleString('en-US', {
     timeZone: 'Asia/Dhaka',
@@ -39,7 +95,7 @@ async function notifyDeploy() {
     timeStyle: 'medium'
   });
 
-  const subject = `🚀 [Surokkha Deploy] New Deployment Successful (${version})`;
+  const subject = `🚀 [Surokkha Deploy] Release v${frontendVersion} (Storefront: v${frontendVersion} | Backend: v${backendVersion} | Dashboard: v${dashboardVersion})`;
   const recipient = 'surokkha.support@gmail.com';
 
   const htmlContent = `
@@ -49,25 +105,50 @@ async function notifyDeploy() {
   <meta charset="utf-8">
 </head>
 <body style="margin: 0; padding: 20px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <div style="background: linear-gradient(135deg, #e11d48, #9f1239); padding: 22px 24px; text-align: center;">
-      <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px;">Surokkha Storefront Deployed</h1>
-      <p style="margin: 4px 0 0 0; font-size: 13px; color: #fecdd3;">Automated Production Deployment Report</p>
+  <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.06);">
+    <div style="background: linear-gradient(135deg, #e11d48, #9f1239); padding: 24px 28px; text-align: center;">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px;">Surokkha Platform Deployed</h1>
+      <p style="margin: 6px 0 0 0; font-size: 13px; color: #fecdd3;">Automated Multi-Component Release Report</p>
     </div>
-    <div style="padding: 24px; color: #1e293b;">
-      <div style="display: inline-block; background: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; margin-bottom: 16px; border: 1px solid #a7f3d0;">
-        ● LIVE ON PRODUCTION
+    <div style="padding: 26px; color: #1e293b;">
+      <div style="display: flex; gap: 8px; margin-bottom: 18px;">
+        <span style="display: inline-block; background: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; border: 1px solid #a7f3d0;">
+          ● LIVE ON PRODUCTION
+        </span>
+        <span style="display: inline-block; background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 9999px; border: 1px solid #bfdbfe;">
+          RELEASE v${frontendVersion}
+        </span>
       </div>
+
       <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #475569;">
-        A new production release of <strong>Surokkha.store</strong> has been successfully built and deployed to VPS.
+        A new production release of <strong>Surokkha.store</strong> has been successfully built and deployed to VPS. All component services have been refreshed.
       </p>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Component Versions Breakdown</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 6px 0; color: #475569; font-weight: 600;">🛍️ Storefront (Frontend)</td>
+            <td style="padding: 6px 0; color: #e11d48; font-weight: 800; text-align: right;">v${frontendVersion}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 6px 0; color: #475569; font-weight: 600;">⚙️ Backend Core API (Ports 5094/5096)</td>
+            <td style="padding: 6px 0; color: #0284c7; font-weight: 800; text-align: right;">v${backendVersion}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 6px 0; color: #475569; font-weight: 600;">📊 Admin Dashboard</td>
+            <td style="padding: 6px 0; color: #16a34a; font-weight: 800; text-align: right;">v${dashboardVersion}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #475569; font-weight: 600;">📦 Platform Release Package</td>
+            <td style="padding: 6px 0; color: #7c3aed; font-weight: 800; text-align: right;">v${platformVersion}</td>
+          </tr>
+        </table>
+      </div>
+
       <table style="width: 100%; border-collapse: collapse; margin: 12px 0 20px 0; font-size: 13px;">
         <tr style="border-bottom: 1px solid #f1f5f9;">
-          <td style="padding: 8px 0; color: #64748b; font-weight: 600; width: 100px;">Version:</td>
-          <td style="padding: 8px 0; color: #e11d48; font-weight: 700;">${version}</td>
-        </tr>
-        <tr style="border-bottom: 1px solid #f1f5f9;">
-          <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Commit:</td>
+          <td style="padding: 8px 0; color: #64748b; font-weight: 600; width: 110px;">Git Commit:</td>
           <td style="padding: 8px 0; color: #0f172a; font-family: monospace;">${commitHash} — ${commitMsg}</td>
         </tr>
         <tr style="border-bottom: 1px solid #f1f5f9;">
@@ -78,9 +159,13 @@ async function notifyDeploy() {
           <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Deploy Time:</td>
           <td style="padding: 8px 0; color: #0f172a;">${deployTimestamp}</td>
         </tr>
-        <tr>
+        <tr style="border-bottom: 1px solid #f1f5f9;">
           <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Environment:</td>
-          <td style="padding: 8px 0; color: #0f172a;">Production VPS (14.128.14.223)</td>
+          <td style="padding: 8px 0; color: #0f172a;">Production VPS Node 1 (14.128.14.223)</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Dispatched To:</td>
+          <td style="padding: 8px 0; color: #0f172a;">${recipient}</td>
         </tr>
       </table>
 
@@ -91,7 +176,7 @@ async function notifyDeploy() {
       </div>
     </div>
     <div style="padding: 14px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center;">
-      Sent from Surokkha Deployment Bot &bull; support@surokkha.store
+      Sent from Surokkha Deployment Automation Bot &bull; support@surokkha.store
     </div>
   </div>
 </body>
@@ -99,16 +184,24 @@ async function notifyDeploy() {
 `;
 
   const textContent = `
-Surokkha Storefront Deployed (${version})
+Surokkha Platform Deployed (Release v${frontendVersion})
 Live on Production: https://surokkha.store
 Admin Dashboard: https://admin.surokkha.store
+
+--- Component Versions ---
+* Storefront (Frontend): v${frontendVersion}
+* Backend Core API: v${backendVersion}
+* Admin Dashboard: v${dashboardVersion}
+* Platform Release: v${platformVersion}
 
 Commit: ${commitHash} - ${commitMsg}
 Author: ${commitAuthor}
 Deploy Time: ${deployTimestamp}
+Environment: Production VPS (14.128.14.223)
+Recipient: ${recipient}
 `;
 
-  // 2. Send via SMTP
+  // 3. Send via SMTP
   try {
     const transporter = nodemailer.createTransport({
       host: 'mail.spacemail.com',
@@ -134,7 +227,7 @@ Deploy Time: ${deployTimestamp}
     console.error('⚠️ SMTP send error:', smtpErr.message);
   }
 
-  // 3. Ingest into MongoDB Dashboard Webmail Inbox
+  // 4. Ingest into MongoDB Dashboard Webmail Inbox & System Logs
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27019/surokkha-db';
     await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
@@ -166,7 +259,7 @@ Deploy Time: ${deployTimestamp}
         }
       ],
       subject: subject,
-      snippet: `Deployment ${version} successful (${commitHash}): ${commitMsg}`,
+      snippet: `Deployment v${frontendVersion} successful (Frontend: v${frontendVersion}, Backend: v${backendVersion}, Dashboard: v${dashboardVersion}) - ${commitHash}: ${commitMsg}`,
       bodyHtml: htmlContent,
       bodyText: textContent,
       date: new Date(),
@@ -183,12 +276,12 @@ Deploy Time: ${deployTimestamp}
     await emailCollection.insertOne(msgDoc);
     console.log('✅ Notification stored in Dashboard Webmail INBOX (ID:', msgDoc.did, ')');
 
-    // Create system notification log
+    // Create system notification bell alert log
     await logsCollection.insertOne({
       did: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       type: 'deployment',
       typeDid: '110',
-      description: `New Deployment ${version} (${commitHash}) published to live. Email sent to ${recipient}.`,
+      description: `New Deployment v${frontendVersion} (Storefront: v${frontendVersion} | Backend: v${backendVersion} | Dashboard: v${dashboardVersion} | Commit: ${commitHash}) published to live. Email sent to ${recipient}.`,
       readStatus: false,
       active: true,
       createdBy: 'deploy-pipeline',
