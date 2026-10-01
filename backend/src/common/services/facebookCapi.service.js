@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import crypto from "crypto";
 import { env } from "../config/env.js";
 import { config as clientConfig } from "../config/index.js";

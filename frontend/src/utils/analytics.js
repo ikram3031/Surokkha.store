@@ -3,7 +3,7 @@
  * Implements Meta Pixel & CAPI with Event Deduplication (eventID matching) and robust EMQ
  */
 
-export const META_PIXEL_ID = '1086570487291746';
+export const META_PIXEL_ID = '1565104865301894';
 
 const isBrowser = typeof window !== 'undefined';
 
