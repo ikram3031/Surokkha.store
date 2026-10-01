@@ -185,6 +185,7 @@ Deploy Time: ${deployTimestamp}
 
     // Create system notification log
     await logsCollection.insertOne({
+      did: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       type: 'deployment',
       typeDid: '110',
       description: `New Deployment ${version} (${commitHash}) published to live. Email sent to ${recipient}.`,
