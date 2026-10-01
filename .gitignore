@@ -38,8 +38,8 @@ PIG/
 # Backups & Local Data
 backups/
 **/backups/
-data/
-**/data/
+/data/
+backend/data/
 *.gz
 *.archive
 *.dump
@@ -56,7 +56,6 @@ configs/*.json
 .wrangler/
 **/.wrangler/
 
-# Local Database runtime files
-data/
-**/data/
-backend/data/
+# Unignore examples
+!**/.env.example
+!frontend/src/data/

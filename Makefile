@@ -44,12 +44,13 @@ deploy:
 	@# 1. Build and deploy Customer Storefront
 	@if [ -d "frontend" ]; then \
 		echo "📦 Building Storefront..."; \
-		npm install --prefix frontend; \
-		npm run build --prefix frontend; \
-		mkdir -p /opt/clients/surokkha/dist; \
+		npm install --prefix frontend && \
+		npm run build --prefix frontend && \
+		mkdir -p /opt/clients/surokkha/dist && \
 		cp -r frontend/dist/* /opt/clients/surokkha/dist/ 2>/dev/null || true; \
 		echo "✓ Storefront static files deployed to /opt/clients/surokkha/dist"; \
 	fi
+
 	@# 2. Build and deploy Admin Dashboard
 	@if [ -d "dashboard" ]; then \
 		echo "📦 Building Admin Dashboard..."; \
