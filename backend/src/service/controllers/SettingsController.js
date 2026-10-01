@@ -630,4 +630,74 @@ export const updateImapSettings = async (req, res, next) => {
   }
 };
 
+// Retrieves Cloudflare settings from database with fallback to tenant client config
+export const getCloudflareSettings = async (req, res, next) => {
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+    const dbCf = doc?.cloudflare || {};
+    const clientCf = clientConfig?.cloudflare || {};
+
+    const rawToken = dbCf.apiToken || clientCf.apiToken || process.env.CLOUDFLARE_API_TOKEN || "";
+    const decryptedToken = decryptText(rawToken);
+
+    const data = {
+      apiToken: decryptedToken,
+      zoneId: dbCf.zoneId || clientCf.zoneId || "",
+      accountEmail: dbCf.accountEmail || clientCf.accountEmail || "",
+      isEnabled: dbCf.isEnabled ?? clientCf.isEnabled ?? true,
+      lastPurgedAt: dbCf.lastPurgedAt || null,
+      isPersistedInDb: Boolean(doc?.cloudflare?.apiToken || doc?.cloudflare?.zoneId),
+    };
+
+    return res.json({
+      status: "success",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Persists updated Cloudflare settings to database with AES encryption
+export const updateCloudflareSettings = async (req, res, next) => {
+  try {
+    const {
+      apiToken = "",
+      zoneId = "",
+      accountEmail = "",
+      isEnabled = true,
+    } = req.body || {};
+
+    const cleanApiToken = String(apiToken).trim();
+    const cleanZoneId = String(zoneId).trim();
+    const cleanAccountEmail = String(accountEmail).trim();
+
+    const updatePayload = {
+      "cloudflare.apiToken": cleanApiToken ? encryptText(cleanApiToken) : "",
+      "cloudflare.zoneId": cleanZoneId,
+      "cloudflare.accountEmail": cleanAccountEmail,
+      "cloudflare.isEnabled": Boolean(isEnabled),
+      updatedBy: req.user?.userId || null,
+    };
+
+    const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $set: updatePayload },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    return res.json({
+      status: "success",
+      message: "Cloudflare settings saved successfully.",
+      data: {
+        ...updatedDoc.cloudflare,
+        apiToken: decryptText(updatedDoc.cloudflare?.apiToken || ""),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
