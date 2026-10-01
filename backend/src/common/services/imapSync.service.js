@@ -148,8 +148,8 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
           logger.error({ wsErr }, "WebSocket broadcast error on incoming webmail");
         });
 
-        // Forward incoming support email to designated forward address (plexivia@gmail.com)
-        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || "plexivia@gmail.com";
+        // Forward incoming support email to designated forward address (surokkha.support@gmail.com)
+        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || "surokkha.support@gmail.com";
         if (forwardTarget && env.SMTP_USER) {
           const isSecure =
             Number(env.SMTP_PORT) === 465 ||

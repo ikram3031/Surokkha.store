@@ -184,6 +184,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
         if (activeClientKey === "surokkha") {
           adminRecipientsSet.add("support@surokkha.store");
           adminRecipientsSet.add("contact@surokkha.store");
+          adminRecipientsSet.add("surokkha.support@gmail.com");
         } else if (activeClientKey === "decantre") {
           adminRecipientsSet.add("decantre.store@gmail.com");
         }

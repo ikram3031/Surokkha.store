@@ -35,11 +35,12 @@ const lightThemeHtml = (title, body) => `
 // Sends acknowledgment email to the customer who submitted the contact form
 export const sendContactAcknowledgment = async ({ name, email, message }) => {
   try {
-    if (!env.SMTP_USER || !env.SMTP_PASSWORD || !email) return;
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !email) return;
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Store Contact";
-    const fromAddress = { name: fromName, address: env.SMTP_FROM || env.SMTP_USER };
+    const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Surokkha Support";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
+    const fromAddress = { name: fromName, address: fromEmail };
 
     const customerHtml = lightThemeHtml(
       "Thank you for contacting us!",
@@ -74,13 +75,14 @@ export const sendContactReplyEmail = async ({
   adminName,
 }) => {
   try {
-    if (!env.SMTP_USER || !env.SMTP_PASSWORD || !toEmail) {
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !toEmail) {
       throw new Error("SMTP credentials or recipient email missing");
     }
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Customer Support";
-    const fromAddress = { name: fromName, address: env.SMTP_FROM || env.SMTP_USER };
+    const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Customer Support";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
+    const fromAddress = { name: fromName, address: fromEmail };
 
     const replyHtml = lightThemeHtml(
       `Response to your inquiry`,
@@ -110,15 +112,16 @@ export const sendContactReplyEmail = async ({
   }
 };
 
-// Forwards incoming contact inquiry to store admin (e.g. kawaiikutir@gmail.com)
+// Forwards incoming contact inquiry to store admin (surokkha.support@gmail.com)
 export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject, message }) => {
   try {
-    if (!env.SMTP_USER || !env.SMTP_PASSWORD) return;
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured) return;
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Surokkha";
-    const fromAddress = { name: fromName, address: env.SMTP_FROM || env.SMTP_USER };
-    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || "kawaiikutir@gmail.com";
+    const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Surokkha";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
+    const fromAddress = { name: fromName, address: fromEmail };
+    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || "surokkha.support@gmail.com";
 
     const forwardSubject = `📩 [New Inquiry from contact@surokkha.store] ${subject || "Contact Form"}`;
     const forwardHtml = lightThemeHtml(

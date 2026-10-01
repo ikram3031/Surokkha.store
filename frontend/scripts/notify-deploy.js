@@ -40,7 +40,7 @@ async function notifyDeploy() {
   });
 
   const subject = `🚀 [Surokkha Deploy] New Deployment Successful (${version})`;
-  const recipient = 'kawaiikutir@gmail.com';
+  const recipient = 'surokkha.support@gmail.com';
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -153,7 +153,7 @@ Deploy Time: ${deployTimestamp}
       },
       to: [
         {
-          name: 'Kawaii Kutir Admin',
+          name: 'Surokkha Admin',
           address: recipient
         }
       ],
