@@ -105,7 +105,8 @@
     "advancedMatching": true
   },
   "cloudflare": {
-    "apiToken": "c7bb6cba33a45514fb525f56c9cd2a45:60822f461a47378cf5a8d91986c9ff91f30e3c51d2858ea18d92b8acc1f4271b2e8e42a5df989bbff0e719fc1f0ec1ce65a1bc0cc8006ffcc3ee52de23fc5920",
+    "apiToken": "cfat_lfKJ5uXUo07iLNFoaviz5Rj6PfHTpKJecbbiDdlgee397274",
+    "accountId": "10dfabfc220dab8d36255ee6a105035d",
     "zoneId": "bd131177db6d610b5d4e5beb0142108b",
     "isEnabled": true
   },

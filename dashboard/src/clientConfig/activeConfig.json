@@ -104,8 +104,14 @@
     "enableCapi": true,
     "advancedMatching": true
   },
-  "logoUrl": "",
-  "siteIconUrl": "",
+  "cloudflare": {
+    "apiToken": "cfat_lfKJ5uXUo07iLNFoaviz5Rj6PfHTpKJecbbiDdlgee397274",
+    "accountId": "10dfabfc220dab8d36255ee6a105035d",
+    "zoneId": "bd131177db6d610b5d4e5beb0142108b",
+    "isEnabled": true
+  },
+  "logoUrl": "/uploads/assets/logo.png",
+  "siteIconUrl": "/uploads/assets/favicon.ico",
   "assetsConfig": {
     "sections": [
       {
