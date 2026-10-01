@@ -17,6 +17,8 @@ import {
   testSmtpConnection,
   getImapSettings,
   updateImapSettings,
+  getCloudflareSettings,
+  updateCloudflareSettings,
 } from "../controllers/SettingsController.js";
 import {
   authenticateToken,
@@ -140,6 +142,21 @@ settingsRouter.put(
   authenticateToken,
   authorizeRoles("Owner", "Admin"),
   updateImapSettings
+);
+
+// Protected Cloudflare administration endpoints
+settingsRouter.get(
+  "/cloudflare",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  getCloudflareSettings
+);
+
+settingsRouter.put(
+  "/cloudflare",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  updateCloudflareSettings
 );
 
 export default settingsRouter;

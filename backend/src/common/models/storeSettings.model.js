@@ -343,6 +343,31 @@ const storeSettingsSchema = new Schema(
         default: "",
       },
     },
+    cloudflare: {
+      apiToken: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      zoneId: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      accountEmail: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      isEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      lastPurgedAt: {
+        type: Date,
+        default: null,
+      },
+    },
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

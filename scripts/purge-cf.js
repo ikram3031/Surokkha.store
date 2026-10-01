@@ -1,10 +1,32 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
+
+const ALGORITHM = "aes-256-cbc";
+
+const decryptText = (text, secret = process.env.ACCESS_TOKEN_SECRET) => {
+  if (!text) return "";
+  const textParts = text.split(":");
+  if (textParts.length !== 2) return text; // Probably unencrypted plain text
+
+  try {
+    const encKeySecret = secret || "default_fallback_secret_must_be_long_enough";
+    const key = crypto.createHash("sha256").update(String(encKeySecret)).digest("base64").substr(0, 32);
+    const iv = Buffer.from(textParts[0], "hex");
+    const encryptedText = Buffer.from(textParts[1], "hex");
+    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(key), iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch (error) {
+    return text;
+  }
+};
 
 const ZONE_MAP = {
   "engulfic.com": "b8baf3af57594678d588a9391b3a7023",
@@ -17,32 +39,60 @@ const ZONE_MAP = {
   "surokkha": "bd131177db6d610b5d4e5beb0142108b",
 };
 
-const resolveToken = () => {
+const resolveToken = (target) => {
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_API_TOKEN.trim()) {
-    return process.env.CLOUDFLARE_API_TOKEN.trim();
+    return decryptText(process.env.CLOUDFLARE_API_TOKEN.trim());
   }
 
-  // Active production token
-  return "cfat_kTWWKGXq6i0BKhvlJaKV1aVWAOCLdfSZodXymPWPadad8c25";
+  // Try reading client config
+  const possiblePaths = [
+    path.join(rootDir, "configs", `${target}.json`),
+    path.join(rootDir, "backend", "src", "common", "config", "activeClient.json"),
+    path.join(rootDir, "backend", "src", "common", "config", "config.client.json"),
+  ];
+
+  for (const cfgPath of possiblePaths) {
+    if (fs.existsSync(cfgPath)) {
+      try {
+        const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
+        if (cfg.cloudflare?.apiToken) {
+          const dec = decryptText(cfg.cloudflare.apiToken.trim());
+          if (dec) return dec;
+        }
+      } catch {}
+    }
+  }
+
+  return "";
 };
 
-export async function purgeCacheForClient(clientOrDomain = "engulfic") {
-  const token = resolveToken();
+export async function purgeCacheForClient(clientOrDomain = "surokkha") {
   let target = clientOrDomain.toLowerCase().trim();
+  let zoneId = "";
+  let resolvedDomain = target;
 
-  // Try to resolve domain from configs if client key passed
+  // Try to resolve domain & zoneId from configs if client key passed
   const configPath = path.join(rootDir, "configs", `${target}.json`);
   if (fs.existsSync(configPath)) {
     try {
       const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-      if (config.domain) target = config.domain.toLowerCase().trim();
+      if (config.domain) resolvedDomain = config.domain.toLowerCase().trim();
+      if (config.cloudflare?.zoneId) zoneId = config.cloudflare.zoneId.trim();
     } catch {}
   }
 
-  const domain = target.replace(/^https?:\/\//, "").split("/")[0];
+  const token = resolveToken(target);
+  const domain = resolvedDomain.replace(/^https?:\/\//, "").split("/")[0];
   console.log(`\n☁️  [Cloudflare] Purging edge cache for: ${domain}...`);
 
-  let zoneId = ZONE_MAP[domain] || ZONE_MAP[target];
+  if (!zoneId) {
+    zoneId = ZONE_MAP[domain] || ZONE_MAP[target];
+  }
+
+  if (!token) {
+    console.warn(`[Cloudflare Warning] No Cloudflare API Token resolved. Skipping Cloudflare purge.`);
+    return false;
+  }
 
   if (!zoneId) {
     try {
