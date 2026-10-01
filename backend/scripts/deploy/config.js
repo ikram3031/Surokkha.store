@@ -9,7 +9,8 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 export const config = {
-  host: process.env.DEPLOY_SERVER_IP || '144.79.218.126',
+  host: process.env.DEPLOY_SERVER_IP || '14.128.14.223',
   user: process.env.DEPLOY_SERVER_USER || 'root',
-  deployPath: '/opt/dev'
+  deployPath: process.env.DEPLOY_PATH || '/opt/clients/surokkha-mtEcom'
 };
+

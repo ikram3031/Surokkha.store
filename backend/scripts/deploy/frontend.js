@@ -1,3 +1,3 @@
 import { runDeployCommand } from './runDeploy.js';
 
-runDeployCommand('Frontend', 'make fg');
+runDeployCommand('Frontend', 'make build-frontend');

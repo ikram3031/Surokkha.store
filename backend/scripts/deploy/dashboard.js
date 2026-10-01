@@ -1,3 +1,3 @@
 import { runDeployCommand } from './runDeploy.js';
 
-runDeployCommand('Dashboard', 'make dashboard');
+runDeployCommand('Dashboard', 'make build-dashboard');
