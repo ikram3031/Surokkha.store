@@ -10,7 +10,7 @@
   "whatsappNumber": "01600905774",
   "apiBaseUrl": "https://api.surokkha.store",
   "dashboardUrl": "https://admin.surokkha.store",
-  "storefrontUrl": "https://surokkha.store",
+  "storefrontUrl": "https://surokkha.shop",
   "routes": {
     "shop": "/shop",
     "category": "/shop/:category",
