@@ -128,6 +128,8 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
     "http://127.0.0.1:8005",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+    "https://surokkha.shop",
+    "https://www.surokkha.shop",
   ];
   localOrigins.forEach((o) => origins.add(o));
 
