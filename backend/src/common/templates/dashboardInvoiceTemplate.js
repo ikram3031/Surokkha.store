@@ -7,7 +7,7 @@
  */
 export const buildDashboardInvoiceHtml = ({
   order = {},
-  logoUrl = "https://server.decantrebd.com/uploads/decantre_logo.png",
+  logoUrl = "https://admin.surokkha.store/surokkha_logo.png",
 }) => {
   const {
     orderId = "N/A",
@@ -74,7 +74,7 @@ export const buildDashboardInvoiceHtml = ({
   <title>Invoice-${orderId}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -101,24 +101,25 @@ export const buildDashboardInvoiceHtml = ({
       flex-direction: column;
       box-sizing: border-box;
     }
-    /* Dark header with golden logo */
+    /* Header with logo */
     .invoice-header {
-      background-color: #0A0A0A;
+      background-color: #0F172A;
       padding: 28px 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 2px solid #FFFFFF;
+      border-bottom: 2px solid #E2E8F0;
     }
     .invoice-header .logo img {
       height: 28px;
       width: auto;
     }
     .invoice-header .invoice-label {
-      font-family: 'Marcellus', serif;
-      font-size: 26px;
-      color: #0F172A;
-      letter-spacing: 2px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 1px;
       text-transform: uppercase;
     }
     /* Body content */
@@ -226,7 +227,7 @@ export const buildDashboardInvoiceHtml = ({
       font-weight: 500;
     }
     .totals-table .total-row td {
-      border-top: 2px solid #C5A059;
+      border-top: 2px solid #0F172A;
       padding-top: 10px;
       font-size: 16px;
       font-weight: 700;
@@ -251,8 +252,9 @@ export const buildDashboardInvoiceHtml = ({
       margin: 4px 0;
     }
     .invoice-footer .thanks {
-      font-family: 'Marcellus', serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 15px;
+      font-weight: 600;
       color: #374151;
       margin-bottom: 6px;
     }
@@ -305,7 +307,7 @@ export const buildDashboardInvoiceHtml = ({
     <!-- Dark Header: Logo + INVOICE label -->
     <div class="invoice-header">
       <div class="logo">
-        <img src="${logoUrl}" alt="Decantre" style="height: 28px; width: auto; display: block;" />
+        <img src="${logoUrl}" alt="Surokkha" style="height: 28px; width: auto; display: block;" />
       </div>
       <div class="invoice-label">Invoice</div>
     </div>
@@ -344,7 +346,7 @@ export const buildDashboardInvoiceHtml = ({
           <h4>Ship To</h4>
           <p>
             ${isInStore
-              ? `<strong>🏢 Office Pickup (In-Store)</strong><br><span style="color: #6B7280; font-size: 11px;">Customer will pick up from Decantre Office.</span>`
+              ? `<strong>🏢 In-Store Pickup</strong><br><span style="color: #6B7280; font-size: 11px;">Customer will pick up from store.</span>`
               : `<strong>${(shippingAddress && shippingAddress.name) || customerName}</strong><br>
                 ${shippingStr}<br>
                 ${((shippingAddress && shippingAddress.phone) || customerPhone) !== 'N/A' ? `Phone: ${(shippingAddress && shippingAddress.phone) || customerPhone}` : ''}`
@@ -396,7 +398,7 @@ export const buildDashboardInvoiceHtml = ({
     <!-- Footer -->
     <div class="invoice-footer">
       <p class="thanks">Thank you for your order</p>
-      <p>&copy; ${new Date().getFullYear()} Decantre. All rights reserved.</p>
+      <p>&copy; ${new Date().getFullYear()} Surokkha.store. All rights reserved.</p>
     </div>
 
   </div>

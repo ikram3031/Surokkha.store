@@ -33,7 +33,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
       }
 
       const activeClientKey = (order.client || config.clientKey || process.env.CLIENT_NAME || env.CLIENT_NAME || "surokkha").toLowerCase().trim();
-      const brandDisplayName = smtpConfig.fromName || config.brandName || (activeClientKey === "surokkha" ? "Surokkha" : "Decantre BD");
+      const brandDisplayName = smtpConfig.fromName || config.brandName || "Surokkha";
       const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
       const fromAddress = { name: brandDisplayName, address: fromEmail };
       console.log(`[Email Notification] Preparing order emails via Hostinger/SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
@@ -185,8 +185,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
           adminRecipientsSet.add("support@surokkha.store");
           adminRecipientsSet.add("contact@surokkha.store");
           adminRecipientsSet.add("surokkha.support@gmail.com");
-        } else if (activeClientKey === "decantre") {
-          adminRecipientsSet.add("decantre.store@gmail.com");
         }
 
         if (config.supportEmail && isValidCustomerEmail(config.supportEmail)) {

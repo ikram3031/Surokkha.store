@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { buildOtpEmailHtml } from "../templates/otpEmailTemplate.js";
 import { env } from "../config/env.js";
+import { config } from "../config/index.js";
 import { getSmtpTransport } from "../services/smtpConfig.service.js";
 
 // Sends OTP verification or password reset email
@@ -23,17 +24,18 @@ export const sendOtpEmail = async ({
     };
   }
 
+  const brandName = smtpConfig.fromName || config.brandName || "Surokkha";
   const isForgotPassword = type === "forgot-password";
   const subject = isForgotPassword
-    ? "Your Decantre Password Reset Code"
-    : "Your OTP verification code";
+    ? `Your ${brandName} Password Reset Code`
+    : `Your ${brandName} OTP verification code`;
   const text = isForgotPassword
-    ? `Hello ${name || "there"},\n\nUse this OTP to reset your Decantre password: ${otp}\nThis code will expire in 3 minutes.\n\nIf you did not request this, please ignore this email.`
-    : `Hello ${name || "there"},\n\nYour OTP verification code is ${otp}.\nThis code will expire in 3 minutes.\n\nThank you.`;
+    ? `Hello ${name || "there"},\n\nUse this OTP to reset your ${brandName} password: ${otp}\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.`
+    : `Hello ${name || "there"},\n\nYour OTP verification code is ${otp}.\nThis code will expire in 10 minutes.\n\nThank you for choosing ${brandName}.`;
 
   const html = buildOtpEmailHtml({ name, otp, type });
-  const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Decantre BD";
-  const fromEmail = smtpConfig.fromEmail || smtpConfig.user;
+  const fromName = brandName;
+  const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
   const fromAddress = `"${fromName}" <${fromEmail}>`;
 
   try {
