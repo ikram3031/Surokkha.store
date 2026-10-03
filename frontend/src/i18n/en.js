@@ -87,14 +87,14 @@ const en = {
     brand_label: 'Brand',
     unit_price_bdt: 'Unit Price (BDT)',
     cod_badge: 'Cash on Delivery Nationwide',
-    description_title: 'Product Description & Healthcare Use',
-    specs_title: 'Technical & Quality Specifications (ISO 4074)',
+    description_title: 'Product Description',
+    specs_title: 'Technical & Quality Specifications',
     qty_label: 'Select Quantity',
     discreet_title: '100% Discreet & Confidential Packaging',
     discreet_text: 'Every order is packed inside a plain, unbranded delivery box. No product names, categories, or descriptions appear anywhere on the external label.',
     discreet_box: 'Discreet Box Guarantee',
-    complementary_title: 'Complementary Family Planning Devices',
-    complementary_desc: 'Check out other certified barrier options from our lineup.',
+    complementary_title: 'Our Other Products',
+    complementary_desc: 'Explore other products from our certified collection.',
     or_get_combo: 'Or get all 3 packs in Combo Pack for ৳800'
   },
   cart: {

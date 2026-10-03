@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from '../components/ProductArtwork';
+import ProductCard from '../components/ProductCard';
 import ProductDetailSkeleton from '../components/ProductDetailSkeleton';
 import { trackViewContent } from '../utils/analytics';
 
@@ -90,7 +91,7 @@ export default function ProductDetailView() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
       
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
@@ -299,110 +300,91 @@ export default function ProductDetailView() {
       </div>
 
       {/* FULL PRODUCT DETAILS & TECHNICAL SPECIFICATIONS SECTION (ABOVE OTHER PRODUCTS) */}
-      <div className="pt-8 border-t border-slate-200/90 space-y-6">
-        <div>
-          <h2 className="text-lg sm:text-xl font-heading font-extrabold text-slate-900">
-            {isBn ? 'পণ্যের বিস্তারিত ও টেকনিক্যাল স্পেসিফিকেশন' : 'Product Details & Technical Specifications'}
-          </h2>
-          <p className="text-xs text-slate-600 mt-0.5">
-            {isBn ? 'আন্তর্জাতিক স্বাস্থ্য মানদণ্ড (ISO 4074) এবং গুণগত বৈশিষ্ট্যের বিবরণ' : 'International Healthcare Standards (ISO 4074) and Quality Specifications'}
-          </p>
-        </div>
+      {(() => {
+        const specsObj = (isBn ? product.specifications_bn : product.specifications) || product.specifications || product.technicalSpecs || {};
+        const entries = Object.entries(specsObj);
+        const hasSpecs = entries.length > 0;
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Technical Specifications (ISO 4074 & Healthcare Standard) */}
-          <div className="lg:col-span-6 bg-slate-50/90 border border-slate-200 rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-brand-600"></span>
-                <span>{t('specs_title', 'Technical & Quality Specifications (ISO 4074)')}</span>
-              </h3>
-              <span className="text-[10px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">
-                18+ Adult Use
-              </span>
+        const activeBenefits = (isBn ? product.benefits_bn : product.benefits) || product.benefits || [];
+        const hasBenefits = Array.isArray(activeBenefits) && activeBenefits.length > 0;
+        const hasFeatures = Array.isArray(localizedFeatures) && localizedFeatures.length > 0;
+        const hasRightSide = hasBenefits || hasFeatures;
+
+        if (!hasSpecs && !hasRightSide) return null;
+
+        return (
+          <div className="pt-8 border-t border-slate-200/90 space-y-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-heading font-extrabold text-slate-900">
+                {isBn ? 'পণ্যের বিস্তারিত স্পেসিফিকেশন' : 'Product Details & Specifications'}
+              </h2>
+              <p className="text-xs text-slate-600 mt-0.5">
+                {isBn ? 'পণ্যের গুণগত বৈশিষ্ট্য ও বিস্তারিত বিবরণ' : 'Detailed product characteristics and quality specifications'}
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-              {(() => {
-                const specsObj = (isBn ? product.specifications_bn : product.specifications) || product.specifications || product.technicalSpecs || {};
-                const entries = Object.entries(specsObj);
-                if (entries.length > 0) {
-                  return entries.map(([label, val], idx) => (
-                    <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
-                      <span className="text-[11px] text-slate-600 block font-semibold">{label}:</span>
-                      <span className="font-bold text-slate-900 mt-0.5 block">{String(val)}</span>
-                    </div>
-                  ));
-                }
-                return (
-                  <>
-                    <div className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
-                      <span className="text-[11px] text-slate-600 block font-semibold">Nominal Width:</span>
-                      <span className="font-bold text-slate-900 mt-0.5 block">52mm (± 2mm)</span>
-                    </div>
-                    <div className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
-                      <span className="text-[11px] text-slate-600 block font-semibold">Material:</span>
-                      <span className="font-bold text-slate-900 mt-0.5 block">100% Medical Grade Natural Latex</span>
-                    </div>
-                  </>
-                );
-              })()}
-              <div className="sm:col-span-2 bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs flex items-center justify-between">
-                <span className="text-[11px] text-slate-700 font-semibold">{isBn ? 'গুণগত মান পরীক্ষা:' : 'Quality Inspection:'}</span>
-                <span className="text-[11px] font-bold text-emerald-800">{isBn ? '১০০% ইলেকট্রনিক পিনহোল ও বার্স্ট টেস্টেড' : '100% Electronically Pinhole & Burst Tested'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Key Features & Benefits */}
-          <div className="lg:col-span-6 bg-slate-50/90 border border-slate-200 rounded-2xl p-5 space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-              <span>{isBn ? 'মূল বৈশিষ্ট্য ও সুবিধাসমূহ' : 'Key Characteristics & Benefits'}</span>
-            </h3>
-
-            {(() => {
-              const activeBenefits = (isBn ? product.benefits_bn : product.benefits) || product.benefits || [];
-              if (Array.isArray(activeBenefits) && activeBenefits.length > 0) {
-                return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-800">
-                    {activeBenefits.map((b, idx) => {
-                      const title = typeof b === 'object' ? (b.title || '') : b;
-                      const desc = typeof b === 'object' ? (b.description || '') : '';
-                      return (
-                        <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs text-left">
-                          <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                            <span className="text-brand-700">✓</span>
-                            <span>{title}</span>
-                          </div>
-                          {desc && <p className="text-[11px] text-slate-700 mt-1 leading-relaxed font-normal">{desc}</p>}
-                        </div>
-                      );
-                    })}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Technical Specifications */}
+              {hasSpecs && (
+                <div className={`${hasRightSide ? 'lg:col-span-6' : 'lg:col-span-12'} bg-slate-50/90 border border-slate-200 rounded-2xl p-5 space-y-4`}>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-brand-600"></span>
+                      <span>{t('specs_title', 'Technical & Quality Specifications')}</span>
+                    </h3>
                   </div>
-                );
-              }
-              if (Array.isArray(localizedFeatures) && localizedFeatures.length > 0) {
-                return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-800">
-                    {localizedFeatures.map((f, idx) => (
-                      <div key={idx} className="flex items-center gap-2 bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
-                        <span className="text-brand-700 font-bold">✓</span>
-                        <span className="font-semibold text-slate-900">{f}</span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                    {entries.map(([label, val], idx) => (
+                      <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
+                        <span className="text-[11px] text-slate-600 block font-semibold">{label}:</span>
+                        <span className="font-bold text-slate-900 mt-0.5 block">{String(val)}</span>
                       </div>
                     ))}
                   </div>
-                );
-              }
-              return (
-                <div className="p-3 bg-white rounded-xl text-xs text-slate-700 font-medium">
-                  {isBn ? '১০০% ফ্যাক্টরি টেস্টেড ও সিল করা প্রিমিয়াম পণ্য।' : '100% factory tested and certified wellness product.'}
                 </div>
-              );
-            })()}
+              )}
+
+              {/* Key Features & Benefits */}
+              {hasRightSide && (
+                <div className={`${hasSpecs ? 'lg:col-span-6' : 'lg:col-span-12'} bg-slate-50/90 border border-slate-200 rounded-2xl p-5 space-y-4`}>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                    <span>{isBn ? 'মূল বৈশিষ্ট্য ও সুবিধাসমূহ' : 'Key Characteristics & Benefits'}</span>
+                  </h3>
+
+                  {hasBenefits ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-800">
+                      {activeBenefits.map((b, idx) => {
+                        const title = typeof b === 'object' ? (b.title || '') : b;
+                        const desc = typeof b === 'object' ? (b.description || '') : '';
+                        return (
+                          <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs text-left">
+                            <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                              <span className="text-brand-700">✓</span>
+                              <span>{title}</span>
+                            </div>
+                            {desc && <p className="text-[11px] text-slate-700 mt-1 leading-relaxed font-normal">{desc}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-800">
+                      {localizedFeatures.map((f, idx) => (
+                        <div key={idx} className="flex items-center gap-2 bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
+                          <span className="text-brand-700 font-bold">✓</span>
+                          <span className="font-semibold text-slate-900">{f}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* ADD MORE PRODUCTS (AFTER PRODUCT) */}
       {otherKeys.length > 0 && (
@@ -419,90 +401,16 @@ export default function ProductDetailView() {
             <button 
               type="button"
               onClick={addComboToCart} 
-              className="text-xs font-bold text-brand-800 hover:underline cursor-pointer"
+              className="text-xs sm:text-sm font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
             >
-              {isBn ? `অথবা ${formatPrice(products['variety-condoms-30pcs-combo']?.price || 800)}-এ কম্বো প্যাক নিন →` : `Or get Combo Pack (${formatPrice(products['variety-condoms-30pcs-combo']?.price || 800)}) →`}
+              {isBn ? `স্পেশাল অফারটি লুফে নিন →` : `Grab the special offer →`}
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-            {otherKeys.map((k) => {
-              const other = products[k];
-              if (!other) return null;
-              const otherLocalizedName = getLocalizedName(other);
-              const otherIsOutOfStock = Boolean(other.isOutOfStock || other.stockStatus === 'outofstock' || other.stockStatus === 'out_of_stock' || other.stockAmount === 0);
-
-              return (
-                <div 
-                  key={k} 
-                  className={`bg-white border rounded-2xl p-3.5 sm:p-4 flex items-center justify-between shadow-2xs transition group ${
-                    otherIsOutOfStock ? 'border-slate-200 opacity-90' : 'border-slate-200 hover:border-brand-400 hover:shadow-sm'
-                  }`}
-                >
-                  <div 
-                    onClick={() => openProduct(k)} 
-                    className="flex items-center gap-3 cursor-pointer flex-1 min-w-0 pr-3"
-                    title={`${otherLocalizedName} - ${t('viewDetails', 'View Details')}`}
-                  >
-                    <div className="w-16 h-16 bg-slate-50 rounded-xl p-0.5 flex items-center justify-center flex-shrink-0 border border-slate-200/80 overflow-hidden group-hover:scale-105 transition-transform relative">
-                      <ProductArtwork 
-                        productKey={k} 
-                        sizeClass="w-full h-full aspect-square" 
-                        imgClassName="w-full h-full object-cover object-center rounded-lg"
-                      />
-                      {otherIsOutOfStock && (
-                        <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center pointer-events-none">
-                          <span className="bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded">
-                            {isBn ? 'স্টক শেষ' : 'Out'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-brand-700 transition line-clamp-1 leading-snug">
-                        {otherLocalizedName}
-                      </h4>
-                      <div className="flex items-baseline gap-1.5 text-xs mt-1">
-                        <span className={`font-bold ${otherIsOutOfStock ? 'text-slate-500' : 'text-rose-600'}`}>
-                          {formatPrice(other.offerPrice || other.price)}
-                        </span>
-                        {other.regularPrice > (other.offerPrice || other.price) && (
-                          <span className="text-slate-400 line-through text-[11px]">{formatPrice(other.regularPrice)}</span>
-                        )}
-                        {otherIsOutOfStock ? (
-                          <span className="text-[10px] text-rose-700 bg-rose-50 px-1 py-0.2 rounded border border-rose-200">
-                            {isBn ? 'স্টক শেষ' : 'Out of Stock'}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-rose-700 bg-rose-50 px-1 py-0.2 rounded border border-rose-200/50">
-                            {isBn ? 'অফার' : 'Offer'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    type="button"
-                    disabled={otherIsOutOfStock}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!otherIsOutOfStock) {
-                        addToCart(k, 1, true);
-                        openCartDrawer();
-                      }
-                    }} 
-                    aria-label={`${t('addToCart', 'Add to Cart')} - ${otherLocalizedName}`}
-                    className={`text-xs font-semibold py-2 px-3 rounded-lg transition whitespace-nowrap flex-shrink-0 ${
-                      otherIsOutOfStock
-                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                        : 'bg-brand-50 hover:bg-brand-100 text-brand-900 border border-brand-200 cursor-pointer'
-                    }`}
-                  >
-                    {otherIsOutOfStock ? (isBn ? 'স্টক শেষ' : 'Out of Stock') : `+ ${t('addToCart', 'Add to Cart')}`}
-                  </button>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {otherKeys.map((k) => (
+              <ProductCard key={k} productKey={k} />
+            ))}
           </div>
         </div>
       )}
