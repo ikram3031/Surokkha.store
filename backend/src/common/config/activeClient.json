@@ -14,7 +14,6 @@
   "routes": {
     "shop": "/shop",
     "category": "/shop/:category",
-    "brand": "/brand/:brand",
     "product": "/shop/:category/:slug"
   },
   "policies": {
@@ -48,7 +47,7 @@
     "en",
     "bn"
   ],
-  "defaultLanguage": "en",
+  "defaultLanguage": "bn",
   "forceMembershipFromOrder": true,
   "features": {
     "season": false,
@@ -84,17 +83,6 @@
     "zoneId": "bd131177db6d610b5d4e5beb0142108b",
     "domain": "surokkha.store",
     "accountEmail": "surokkha.support@gmail.com"
-  },
-  "googleAnalytics": {
-    "measurementId": "G-3JHW9WK6GG",
-    "googleTagId": "GT-5DH5WGNX",
-    "gtmId": "",
-    "propertyId": "555476258",
-    "streamId": "15828364152",
-    "streamName": "surokkha",
-    "lookerStudioEmbedUrl": "",
-    "isVerified": true,
-    "enhancedMeasurement": true
   },
   "metaPixel": {
     "pixelId": "1565104865301894",
