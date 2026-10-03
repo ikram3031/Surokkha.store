@@ -70,9 +70,10 @@ export default function ProductDetailView() {
     }
   }, [product?.id]);
 
-  const galleryImages = Array.isArray(product?.images) && product.images.length > 0
+  const galleryImages = (Array.isArray(product?.images) && product.images.length > 0
     ? product.images
-    : (product?.imageUrl ? [product.imageUrl] : []);
+    : (product?.imageUrl ? [product.imageUrl] : []))
+    .filter(img => img && typeof img === 'string' && img.trim() !== '' && img.trim() !== '#' && img.trim() !== '/#' && img.trim().toLowerCase() !== 'null' && img.trim().toLowerCase() !== 'undefined');
 
   const otherKeys = productKeys.filter((k) => {
     if (k === product?.id || k === product?.slug) return false;

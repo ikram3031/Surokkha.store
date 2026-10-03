@@ -23,7 +23,7 @@ export default function CheckoutView() {
   const orderNotes = useStore((state) => state.orderNotes);
   const setOrderNotes = useStore((state) => state.setOrderNotes);
 
-  const appliedCoupon = useStore((state) => state.appliedCoupon);
+  const storeAppliedCoupon = useStore((state) => state.appliedCoupon);
   const couponCodeInput = useStore((state) => state.couponCodeInput);
   const setCouponCodeInput = useStore((state) => state.setCouponCodeInput);
   const couponError = useStore((state) => state.couponError);
@@ -43,7 +43,22 @@ export default function CheckoutView() {
   const [shipPhoneError, setShipPhoneError] = useState('');
 
   const totals = getCartTotals();
+  const appliedCoupon = totals.appliedCoupon || storeAppliedCoupon;
   const cartKeys = Object.keys(cart).filter((k) => cart[k] > 0);
+
+  const freeDeliveryThreshold = 1000;
+  const progressPercent = Math.min(100, Math.round((totals.subtotal / freeDeliveryThreshold) * 100));
+  const remainingForFreeDelivery = Math.max(0, freeDeliveryThreshold - totals.subtotal);
+  const isFreeDeliveryUnlocked = totals.subtotal >= freeDeliveryThreshold || totals.isFreeShippingCoupon;
+
+  const formatPrice = (val) => {
+    const num = Number(val) || 0;
+    if (isBn) {
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      return '৳' + String(num).replace(/[0-9]/g, (d) => bnDigits[d]);
+    }
+    return `৳${num}`;
+  };
 
   useEffect(() => {
     if (totals.itemCount > 0) {
@@ -266,6 +281,57 @@ export default function CheckoutView() {
         <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1">
           {t('checkout.subtitle')}
         </p>
+      </div>
+
+      {/* Free Delivery Threshold Progress Banner (Matching Cart Drawer & Image) */}
+      <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-2.5">
+        <div className="flex items-center justify-between gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-2 font-bold text-emerald-950">
+            <span className="text-base sm:text-lg">🚚</span>
+            {isFreeDeliveryUnlocked ? (
+              <span className="text-emerald-900 font-black">
+                {isBn 
+                  ? '🎉 অভিনন্দন! আপনি ফ্রি হোম ডেলিভারি পাচ্ছেন! (FREEOCT স্বয়ংক্রিয়ভাবে প্রয়োগ করা হয়েছে)' 
+                  : '🎉 Congratulations! You unlocked Free Home Delivery! (FREEOCT auto-applied)'}
+              </span>
+            ) : (
+              <span>
+                {isBn ? (
+                  <>
+                    আর মাত্র <strong className="text-emerald-950 underline font-black">{formatPrice(remainingForFreeDelivery)}</strong> টাকার পণ্য যোগ করলেই <strong className="text-emerald-950">ফ্রি ডেলিভারি!</strong>
+                  </>
+                ) : (
+                  <>
+                    Add <strong className="text-emerald-950 font-black">{formatPrice(remainingForFreeDelivery)}</strong> more to get <strong className="text-emerald-950">Free Delivery!</strong>
+                  </>
+                )}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="font-bold text-emerald-800 text-xs sm:text-sm font-mono bg-white px-2.5 py-0.5 rounded-lg border border-emerald-200 shadow-2xs">
+              {progressPercent}%
+            </span>
+            {!isFreeDeliveryUnlocked && (
+              <button
+                type="button"
+                onClick={openCartDrawer}
+                className="hidden sm:inline-flex text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-white hover:bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-lg transition cursor-pointer shadow-2xs active:scale-95"
+              >
+                + {isBn ? 'পণ্য যোগ করুন' : 'Add Items'}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Progress Bar Track */}
+        <div className="w-full bg-emerald-200/80 rounded-full h-2.5 overflow-hidden">
+          <div 
+            className="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 h-full rounded-full transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -909,12 +975,17 @@ export default function CheckoutView() {
                           : (appliedCoupon.discountType === 'percentage' 
                               ? `${appliedCoupon.discountValue}% OFF` 
                               : `৳${appliedCoupon.discountValue} OFF`)}
+                      {appliedCoupon.isAutoApplied && (
+                        <span className="text-[9px] bg-emerald-200 text-emerald-950 font-bold px-1 rounded ml-0.5">
+                          {isBn ? 'স্বয়ংক্রিয়' : 'Auto'}
+                        </span>
+                      )}
                     </span>
                   )}
                 </div>
 
                 {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-emerald-50/90 border border-emerald-300 rounded-xl px-3 py-2 text-xs">
+                  <div className="flex items-center justify-between bg-emerald-50/90 border border-emerald-300 rounded-xl px-3 py-2 text-xs shadow-2xs">
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold text-emerald-950 tracking-wider">
                         {appliedCoupon.code}
@@ -924,6 +995,11 @@ export default function CheckoutView() {
                           ? `(${isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'})`
                           : `(-৳${totals.discountAmount})`}
                       </span>
+                      {appliedCoupon.isAutoApplied && (
+                        <span className="text-[10px] bg-emerald-200/80 text-emerald-900 font-bold px-1.5 py-0.5 rounded">
+                          {isBn ? 'স্বয়ংক্রিয় প্রয়োগ' : 'Auto-Applied'}
+                        </span>
+                      )}
                     </div>
                     <button
                       type="button"

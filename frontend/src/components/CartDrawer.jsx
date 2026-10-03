@@ -49,6 +49,7 @@ export default function CartDrawer() {
   }, [isCartDrawerOpen]);
 
   const totals = getCartTotals();
+  const effectiveCoupon = totals.appliedCoupon || appliedCoupon;
   const cartKeys = Object.keys(cart).filter((k) => cart[k] > 0);
   const hasComboInCart = cartKeys.some(
     (k) => k.includes('combo') || k === 'variety-condoms-30pcs-combo' || k === 'combo-26'
@@ -391,15 +392,20 @@ export default function CartDrawer() {
               
               {/* Coupon Code Section */}
               <div className="space-y-1.5">
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-300 rounded-xl px-3 py-2 text-xs">
+                {effectiveCoupon ? (
+                  <div className="flex items-center justify-between bg-emerald-50 border border-emerald-300 rounded-xl px-3 py-2 text-xs shadow-2xs">
                     <div className="flex items-center gap-2">
-                      <span className="text-emerald-700 font-bold">🎟️ {appliedCoupon.code}</span>
-                      <span className="text-emerald-800 font-extrabold font-mono">
-                        {appliedCoupon.discountType === 'free_shipping'
+                      <span className="text-emerald-800 font-bold">🎟️ {effectiveCoupon.code}</span>
+                      <span className="text-emerald-900 font-extrabold font-mono">
+                        {effectiveCoupon.discountType === 'free_shipping'
                           ? `(${isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'})`
                           : `(-${formatPrice(totals.discountAmount)})`}
                       </span>
+                      {effectiveCoupon.isAutoApplied && (
+                        <span className="text-[10px] bg-emerald-200/80 text-emerald-900 font-bold px-1.5 py-0.5 rounded">
+                          {isBn ? 'স্বয়ংক্রিয়' : 'Auto'}
+                        </span>
+                      )}
                     </div>
                     <button
                       type="button"

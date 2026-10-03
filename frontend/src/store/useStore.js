@@ -160,11 +160,43 @@ export const useStore = create((set, get) => ({
 
     if (!cleanCode) {
       set({ couponError: isBn ? 'অনুগ্রহ করে কুপন কোড লিখুন।' : 'Please enter a coupon code.' });
-      return false;
+      return { success: false, message: isBn ? 'অনুগ্রহ করে কুপন কোড লিখুন।' : 'Please enter a coupon code.' };
     }
 
     set({ isApplyingCoupon: true, couponError: '' });
     try {
+      // Special client-side handling for FREEOCT if API doesn't have it in DB yet
+      if (cleanCode === 'FREEOCT') {
+        const totals = get().getCartTotals();
+        if (totals.subtotal < 1000) {
+          const errMsg = isBn
+            ? 'এই কুপনের জন্য সর্বনিম্ন ৳১,০০০ টাকার অর্ডার প্রয়োজন।'
+            : 'Minimum purchase of ৳1,000 required for FREEOCT.';
+          set({ couponError: errMsg, isApplyingCoupon: false });
+          return { success: false, message: errMsg };
+        }
+
+        const freeOctCoupon = {
+          code: 'FREEOCT',
+          discountType: 'free_shipping',
+          discountValue: 0,
+          minOrderAmount: 1000,
+          active: true,
+          description: 'Free Shipping on orders ৳1,000+'
+        };
+
+        set({
+          appliedCoupon: freeOctCoupon,
+          couponCodeInput: cleanCode,
+          couponError: '',
+          isApplyingCoupon: false
+        });
+
+        const successMsg = isBn ? '🎉 কুপন "FREEOCT" প্রয়োগ করা হয়েছে! আপনি পাচ্ছেন ফ্রি ডেলিভারি!' : '🎉 Coupon "FREEOCT" applied! Free Delivery unlocked!';
+        get().showToast(successMsg);
+        return { success: true, message: successMsg };
+      }
+
       const cleanBase = API_BASE_URL.replace(/\/$/, '');
       const res = await fetch(`${cleanBase}/api/v1/coupons/${encodeURIComponent(cleanCode)}`);
       const json = await res.json();
@@ -172,35 +204,39 @@ export const useStore = create((set, get) => ({
       if (!res.ok || json.status !== 'success' || !json.data) {
         const errMsg = json.message || (isBn ? 'কুপন কোডটি সঠিক নয় বা মেয়াদ শেষ।' : 'Invalid coupon code or expired.');
         set({ couponError: errMsg, isApplyingCoupon: false });
-        return false;
+        return { success: false, message: errMsg };
       }
 
       const coupon = json.data;
 
       if (!coupon.active) {
-        set({ couponError: isBn ? 'কুপনটি বর্তমানে সক্রিয় নয়।' : 'Coupon is currently inactive.', isApplyingCoupon: false });
-        return false;
+        const errMsg = isBn ? 'কুপনটি বর্তমানে সক্রিয় নয়।' : 'Coupon is currently inactive.';
+        set({ couponError: errMsg, isApplyingCoupon: false });
+        return { success: false, message: errMsg };
       }
 
       const now = new Date();
       if (coupon.validFrom && now < new Date(coupon.validFrom)) {
-        set({ couponError: isBn ? 'কুপনের অফারটি এখনো শুরু হয়নি।' : 'Coupon promotion has not started yet.', isApplyingCoupon: false });
-        return false;
+        const errMsg = isBn ? 'কুপনের অফারটি এখনো শুরু হয়নি।' : 'Coupon promotion has not started yet.';
+        set({ couponError: errMsg, isApplyingCoupon: false });
+        return { success: false, message: errMsg };
       }
       if (coupon.validTo && now > new Date(coupon.validTo)) {
-        set({ couponError: isBn ? 'কুপনের মেয়াদ শেষ হয়ে গেছে।' : 'Coupon has expired.', isApplyingCoupon: false });
-        return false;
+        const errMsg = isBn ? 'কুপনের মেয়াদ শেষ হয়ে গেছে।' : 'Coupon has expired.';
+        set({ couponError: errMsg, isApplyingCoupon: false });
+        return { success: false, message: errMsg };
       }
 
       const totals = get().getCartTotals();
       if (coupon.minOrderAmount && totals.subtotal < Number(coupon.minOrderAmount)) {
+        const errMsg = isBn
+          ? `এই কুপনের জন্য সর্বনিম্ন ৳${coupon.minOrderAmount} টাকার অর্ডার প্রয়োজন।`
+          : `Minimum purchase of ৳${coupon.minOrderAmount} required.`;
         set({
-          couponError: isBn
-            ? `এই কুপনের জন্য সর্বনিম্ন ৳${coupon.minOrderAmount} টাকার অর্ডার প্রয়োজন।`
-            : `Minimum purchase of ৳${coupon.minOrderAmount} required.`,
+          couponError: errMsg,
           isApplyingCoupon: false
         });
-        return false;
+        return { success: false, message: errMsg };
       }
 
       set({
@@ -210,19 +246,19 @@ export const useStore = create((set, get) => ({
         isApplyingCoupon: false
       });
 
-      get().showToast(
-        isBn
-          ? `🎉 কুপন "${cleanCode}" সফলভাবে প্রয়োগ করা হয়েছে!`
-          : `🎉 Coupon "${cleanCode}" applied successfully!`
-      );
-      return true;
+      const successMsg = isBn
+        ? `🎉 কুপন "${cleanCode}" সফলভাবে প্রয়োগ করা হয়েছে!`
+        : `🎉 Coupon "${cleanCode}" applied successfully!`;
+      get().showToast(successMsg);
+      return { success: true, message: successMsg };
     } catch (err) {
       console.error('Error applying coupon:', err);
+      const errMsg = isBn ? 'কুপন যাচাই করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'Failed to verify coupon. Please try again.';
       set({
-        couponError: isBn ? 'কুপন যাচাই করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'Failed to verify coupon. Please try again.',
+        couponError: errMsg,
         isApplyingCoupon: false
       });
-      return false;
+      return { success: false, message: errMsg };
     }
   },
   removeCoupon: () => {
@@ -390,11 +426,15 @@ export const useStore = create((set, get) => ({
 
           const resolveUrl = (img) => {
             if (img && typeof img === 'string') {
-              if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
-                return img;
+              const trimmed = img.trim();
+              if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
+                return null;
+              }
+              if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+                return trimmed;
               }
               const cleanBase = API_BASE_URL.replace(/\/$/, '');
-              const cleanPath = img.startsWith('/') ? img : `/${img}`;
+              const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
               return `${cleanBase}${cleanPath}`;
             }
             return null;
@@ -729,23 +769,41 @@ export const useStore = create((set, get) => ({
       }
     }
 
-    // Dynamic Coupon Discount Calculation
+    // Dynamic Coupon Discount Calculation & Automatic FREEOCT application (1,000+ Tk orders)
     let discountAmount = 0;
     let isFreeShippingCoupon = false;
     let originalDeliveryFee = deliveryFee;
 
-    if (appliedCoupon && subtotal > 0) {
-      const minOrder = Number(appliedCoupon.minOrderAmount || 0);
+    let effectiveCoupon = appliedCoupon;
+
+    if (subtotal >= 1000) {
+      if (!appliedCoupon || appliedCoupon.code === 'FREEOCT' || appliedCoupon.isAutoApplied) {
+        effectiveCoupon = {
+          code: 'FREEOCT',
+          discountType: 'free_shipping',
+          discountValue: 0,
+          minOrderAmount: 1000,
+          active: true,
+          isAutoApplied: true,
+          description: 'Free Shipping on orders ৳1,000+'
+        };
+      }
+    } else if (appliedCoupon && (appliedCoupon.isAutoApplied || appliedCoupon.code === 'FREEOCT')) {
+      effectiveCoupon = null;
+    }
+
+    if (effectiveCoupon && subtotal > 0) {
+      const minOrder = Number(effectiveCoupon.minOrderAmount || 0);
       if (subtotal >= minOrder) {
-        if (appliedCoupon.discountType === 'free_shipping') {
+        if (effectiveCoupon.discountType === 'free_shipping') {
           isFreeShippingCoupon = true;
           deliveryFee = 0;
           discountAmount = 0;
-        } else if (appliedCoupon.discountType === 'percentage') {
-          discountAmount = Math.round((subtotal * Number(appliedCoupon.discountValue || 0)) / 100);
+        } else if (effectiveCoupon.discountType === 'percentage') {
+          discountAmount = Math.round((subtotal * Number(effectiveCoupon.discountValue || 0)) / 100);
           discountAmount = Math.max(0, Math.min(subtotal, discountAmount));
         } else {
-          discountAmount = Number(appliedCoupon.discountValue || 0);
+          discountAmount = Number(effectiveCoupon.discountValue || 0);
           discountAmount = Math.max(0, Math.min(subtotal, discountAmount));
         }
       }
@@ -761,14 +819,14 @@ export const useStore = create((set, get) => ({
       discountAmount,
       grandTotal,
       itemCount: totalItemCount,
-      appliedCoupon
+      appliedCoupon: effectiveCoupon
     };
   },
 
   // Order submission with exact Decantre-compatible Payload & live backend API dispatch
   submitOrder: async (customPayload = null) => {
     const totals = get().getCartTotals();
-    const appliedCoupon = get().appliedCoupon;
+    const appliedCoupon = totals.appliedCoupon || get().appliedCoupon;
     const cart = get().cart;
     const shippingInfo = get().shippingInfo;
     const shippingAddress = get().shippingAddress;

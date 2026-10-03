@@ -3,8 +3,6 @@ import { useStore } from '../store/useStore';
 import { PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 import { Skeleton } from './ui/skeleton';
 
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha.store';
-
 export default function ProductArtwork({
   productKey,
   customImageUrl = null,
@@ -26,12 +24,14 @@ export default function ProductArtwork({
   let rawImg = customImageUrl || p?.imageUrl || p?.image || p?.thumbnailUrl || (Array.isArray(p?.images) && p.images[0]) || p?.photo || p?.picture || p?.featured_image || null;
   let resolvedImgUrl = null;
 
-  if (rawImg && typeof rawImg === 'string' && rawImg.trim() !== '') {
+  if (rawImg && typeof rawImg === 'string') {
     const trimmed = rawImg.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
-      resolvedImgUrl = trimmed;
-    } else {
-      resolvedImgUrl = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    if (trimmed !== '' && trimmed !== '#' && trimmed !== '/#' && trimmed.toLowerCase() !== 'null' && trimmed.toLowerCase() !== 'undefined') {
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+        resolvedImgUrl = trimmed;
+      } else {
+        resolvedImgUrl = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+      }
     }
   }
 
@@ -62,14 +62,114 @@ export default function ProductArtwork({
   }
 
   // Meta Compliant Sealed Box Artwork
+  const brandName = (p?.brand || (p?.name ? p.name.split(' ')[0] : 'MO')).toUpperCase();
+  const slugKey = String(p?.slug || productKey || '').toLowerCase();
+  const prodName = String(p?.name || '').toLowerCase();
+  const isLubricant = prodName.includes('jelly') || prodName.includes('gel') || prodName.includes('lubricant') || slugKey.includes('jelly') || slugKey.includes('lubricant') || p?.iconType === 'lubricant';
+  const isDelay = prodName.includes('long love') || prodName.includes('delay') || slugKey.includes('long-love');
+  const isGold = prodName.includes('gold') || slugKey.includes('gold');
+  const isBlack = prodName.includes('black') || slugKey.includes('black');
+  const isDotted = p?.iconType === 'dotted' || slugKey.includes('dotted') || prodName.includes('dotted') || prodName.includes('textured');
+  const isThin = p?.iconType === 'thin' || slugKey.includes('thin') || prodName.includes('thin');
+  const isCombo = p?.iconType === 'combo' || slugKey.includes('combo') || slugKey.includes('20pcs') || slugKey.includes('30pcs') || prodName.includes('combo');
+
   let boxGradient = null;
   let patternSvg = null;
-  let accentBadge = '';
-  let variantLabel = '';
+  let accentBadge = 'MEDICAL GRADE BARRIER';
+  let variantLabel = 'PREMIUM PROTECTION';
   let foilColor = '#FDA4AF';
   let badgeBg = '#9F1239';
+  let classLabel = 'LATEX CONTRACEPTIVE BARRIER';
 
-  if (p?.iconType === 'dotted' || productKey === 'mo-dotted' || productKey === 'mo-dotted-condom') {
+  if (isLubricant) {
+    classLabel = 'PERSONAL LUBRICANT GEL';
+    variantLabel = prodName.includes('strawberry') ? 'STRAWBERRY FLAVOR (100ml)' : 'WATER BASED MOISTURE (50g)';
+    accentBadge = 'PH BALANCED • DERMA TESTED';
+    foilColor = prodName.includes('strawberry') ? '#FDA4AF' : '#7DD3FC';
+    badgeBg = prodName.includes('strawberry') ? '#881337' : '#0369A1';
+    boxGradient = (
+      <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor={prodName.includes('strawberry') ? '#9F1239' : '#0369A1'} />
+        <stop offset="50%" stopColor={prodName.includes('strawberry') ? '#881337' : '#0284C7'} />
+        <stop offset="100%" stopColor={prodName.includes('strawberry') ? '#4C0519' : '#0C4A6E'} />
+      </linearGradient>
+    );
+    patternSvg = (
+      <g fill={foilColor} opacity="0.75">
+        <circle cx="150" cy="170" r="28" fill="none" stroke={foilColor} strokeWidth="2.5" />
+        <circle cx="150" cy="170" r="16" fill="none" stroke={foilColor} strokeWidth="1.5" />
+        <circle cx="150" cy="170" r="5" fill="#FFFFFF" />
+        <path d="M150 130 Q150 145 150 160" stroke={foilColor} strokeWidth="3" strokeLinecap="round" />
+        <circle cx="100" cy="220" r="4" fill="#FFFFFF" />
+        <circle cx="200" cy="220" r="4" fill="#FFFFFF" />
+        <circle cx="150" cy="235" r="5" fill="#FFFFFF" />
+      </g>
+    );
+  } else if (isGold) {
+    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    variantLabel = 'EXOTIC METALLIC GOLD';
+    accentBadge = 'VANILLA SCENTED BARRIER';
+    foilColor = '#FDE68A';
+    badgeBg = '#78350F';
+    boxGradient = (
+      <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#B45309" />
+        <stop offset="50%" stopColor="#92400E" />
+        <stop offset="100%" stopColor="#451A03" />
+      </linearGradient>
+    );
+    patternSvg = (
+      <g stroke="#FDE68A" strokeWidth="2" fill="none" opacity="0.8">
+        <polygon points="150,140 185,200 115,200" strokeWidth="2.5" />
+        <polygon points="150,230 185,170 115,170" strokeWidth="2" />
+        <circle cx="150" cy="185" r="8" fill="#FDE68A" />
+      </g>
+    );
+  } else if (isBlack) {
+    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    variantLabel = 'EXOTIC OBSIDIAN BLACK';
+    accentBadge = 'PREMIUM SMOOTH BARRIER';
+    foilColor = '#E2E8F0';
+    badgeBg = '#27272A';
+    boxGradient = (
+      <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#27272A" />
+        <stop offset="50%" stopColor="#18181B" />
+        <stop offset="100%" stopColor="#09090B" />
+      </linearGradient>
+    );
+    patternSvg = (
+      <g stroke="#CBD5E1" strokeWidth="2.5" fill="none" opacity="0.85">
+        <rect x="90" y="150" width="120" height="75" rx="10" stroke="#94A3B8" strokeWidth="2" />
+        <line x1="105" y1="187" x2="195" y2="187" stroke="#F8FAFC" strokeWidth="3" />
+      </g>
+    );
+  } else if (isDelay) {
+    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    variantLabel = 'LONG LOVE (4.5% BENZOCAINE)';
+    accentBadge = 'EXTENDED CLIMAX CONTROL';
+    foilColor = '#FEF08A';
+    badgeBg = '#713F12';
+    boxGradient = (
+      <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#A16207" />
+        <stop offset="50%" stopColor="#854D0E" />
+        <stop offset="100%" stopColor="#422006" />
+      </linearGradient>
+    );
+    patternSvg = (
+      <g fill="#FEF08A" opacity="0.75">
+        <circle cx="105" cy="165" r="4" /> <circle cx="135" cy="165" r="4" /> <circle cx="165" cy="165" r="4" /> <circle cx="195" cy="165" r="4" />
+        <circle cx="120" cy="190" r="5" fill="#FFF" /> <circle cx="150" cy="190" r="6" fill="#FFF" /> <circle cx="180" cy="190" r="5" fill="#FFF" />
+        <circle cx="105" cy="215" r="4" /> <circle cx="135" cy="215" r="4" /> <circle cx="165" cy="215" r="4" /> <circle cx="195" cy="215" r="4" />
+      </g>
+    );
+  } else if (isDotted) {
+    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    variantLabel = 'TEXTURED MATRIX';
+    accentBadge = 'CERTIFIED SAFETY BARRIER';
+    foilColor = '#FECDD3';
+    badgeBg = '#4C0519';
     boxGradient = (
       <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#9F1239" />
@@ -77,10 +177,6 @@ export default function ProductArtwork({
         <stop offset="100%" stopColor="#4C0519" />
       </linearGradient>
     );
-    foilColor = '#FECDD3';
-    badgeBg = '#4C0519';
-    variantLabel = 'TEXTURED MATRIX';
-    accentBadge = '  CERTIFIED BARRIER';
     patternSvg = (
       <g fill="#FFE4E6" opacity="0.6">
         <circle cx="95" cy="150" r="3.5" /> <circle cx="120" cy="150" r="3.5" /> <circle cx="150" cy="150" r="4" fill="#FFF" /> <circle cx="180" cy="150" r="3.5" /> <circle cx="205" cy="150" r="3.5" />
@@ -90,7 +186,12 @@ export default function ProductArtwork({
         <circle cx="95" cy="250" r="3.5" /> <circle cx="120" cy="250" r="3.5" /> <circle cx="150" cy="250" r="4" fill="#FFF" /> <circle cx="180" cy="250" r="3.5" /> <circle cx="205" cy="250" r="3.5" />
       </g>
     );
-  } else if (p?.iconType === 'thin' || productKey === 'mo-ultra-thin' || productKey === 'mo-ultra-thin-condom') {
+  } else if (isThin) {
+    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    variantLabel = 'ULTRA THIN (0.045mm)';
+    accentBadge = 'NATURAL LATEX BARRIER';
+    foilColor = '#93C5FD';
+    badgeBg = '#172554';
     boxGradient = (
       <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#1E3A8A" />
@@ -98,10 +199,6 @@ export default function ProductArtwork({
         <stop offset="100%" stopColor="#172554" />
       </linearGradient>
     );
-    foilColor = '#93C5FD';
-    badgeBg = '#172554';
-    variantLabel = 'ULTRA THIN (0.045mm)';
-    accentBadge = 'MEDICAL GRADE NATURAL LATEX';
     patternSvg = (
       <g stroke="#93C5FD" strokeWidth="2.5" fill="none" opacity="0.8">
         <path d="M60 170 C 110 140, 180 190, 240 160" strokeLinecap="round" />
@@ -110,7 +207,12 @@ export default function ProductArtwork({
         <path d="M70 245 C 120 215, 190 265, 230 235" strokeLinecap="round" opacity="0.4" />
       </g>
     );
-  } else if (p?.iconType === 'combo' || productKey.startsWith('combo') || productKey.includes('20pcs')) {
+  } else if (isCombo) {
+    classLabel = 'CONTRACEPTIVE VALUE PACK';
+    variantLabel = 'MULTI-PACK VALUE BUNDLE';
+    accentBadge = 'CERTIFIED VALUE BUNDLE';
+    foilColor = '#FDE047';
+    badgeBg = '#3F3F46';
     boxGradient = (
       <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#18181B" />
@@ -118,25 +220,22 @@ export default function ProductArtwork({
         <stop offset="100%" stopColor="#09090B" />
       </linearGradient>
     );
-    foilColor = '#FDE047';
-    badgeBg = '#3F3F46';
-    variantLabel = 'FAMILY PLANNING (20 PCS)';
-    accentBadge = 'CERTIFIED 2-PACK VALUE BUNDLE';
     patternSvg = (
       <g opacity="0.95">
         <rect x="65" y="145" width="75" height="105" rx="8" fill="#1E3A8A" stroke="#93C5FD" strokeWidth="2" />
-        <text x="102" y="185" fill="#FFF" fontSize="12" fontWeight="800" textAnchor="middle">10 PCS</text>
-        <text x="102" y="202" fill="#93C5FD" fontSize="10" fontWeight="600" textAnchor="middle">THIN</text>
-
+        <text x="102" y="185" fill="#FFF" fontSize="12" fontWeight="800" textAnchor="middle">THIN</text>
         <rect x="160" y="145" width="75" height="105" rx="8" fill="#881337" stroke="#FECDD3" strokeWidth="2" />
-        <text x="197" y="185" fill="#FFF" fontSize="12" fontWeight="800" textAnchor="middle">10 PCS</text>
-        <text x="197" y="202" fill="#FECDD3" fontSize="10" fontWeight="600" textAnchor="middle">BARRIER</text>
-
+        <text x="197" y="185" fill="#FFF" fontSize="12" fontWeight="800" textAnchor="middle">BARRIER</text>
         <rect x="95" y="260" width="110" height="20" rx="10" fill="#EAB308" />
-        <text x="150" y="274" fill="#09090B" fontSize="10" fontWeight="900" textAnchor="middle" letterSpacing="0.5">20 UNITS TOTAL</text>
+        <text x="150" y="274" fill="#09090B" fontSize="10" fontWeight="900" textAnchor="middle" letterSpacing="0.5">SAVER PACK</text>
       </g>
     );
   } else {
+    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    variantLabel = 'CONTOURED RIDGES';
+    accentBadge = '52mm ERGONOMIC BARRIER';
+    foilColor = '#E2E8F0';
+    badgeBg = '#0F172A';
     boxGradient = (
       <linearGradient id={`boxGrad-${productKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#334155" />
@@ -144,10 +243,6 @@ export default function ProductArtwork({
         <stop offset="100%" stopColor="#0F172A" />
       </linearGradient>
     );
-    foilColor = '#E2E8F0';
-    badgeBg = '#0F172A';
-    variantLabel = 'CONTOURED RIDGES';
-    accentBadge = '52mm ERGONOMIC BARRIER';
     patternSvg = (
       <g stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" opacity="0.8">
         <line x1="75" y1="160" x2="225" y2="160" stroke="#94A3B8" />
@@ -178,29 +273,29 @@ export default function ProductArtwork({
         {/* Precision Border */}
         <rect x="35" y="30" width="230" height="315" rx="16" fill="none" stroke={foilColor} strokeWidth="1.2" opacity="0.4" />
 
-        {/* Brand Name "MO" */}
-        <text x="56" y="82" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="900" fontSize="38" fill="#FFFFFF" letterSpacing="1.5">MO</text>
+        {/* Brand Name Dynamic */}
+        <text x="56" y="82" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="900" fontSize={brandName.length > 6 ? "28" : "36"} fill="#FFFFFF" letterSpacing="1.5">{brandName}</text>
 
         {/* Strict 18+ Age Gating Stamp on Packaging */}
         <circle cx="155" cy="68" r="13" fill="#000000" fillOpacity="0.5" stroke={foilColor} strokeWidth="1.2" />
         <text x="155" y="73" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="900" fill="#FFFFFF" textAnchor="middle">18+</text>
 
-        {/*   Medical Device Compliance Pill */}
+        {/* Compliance Pill */}
         <rect x="178" y="56" width="76" height="24" rx="12" fill={badgeBg} fillOpacity="0.85" stroke={foilColor} strokeWidth="1" />
-        <text x="216" y="72" fontFamily="Inter, sans-serif" fontSize="8.5" fontWeight="800" fill={foilColor} textAnchor="middle" letterSpacing="0.5"> </text>
+        <text x="216" y="72" fontFamily="Inter, sans-serif" fontSize="8.5" fontWeight="800" fill={foilColor} textAnchor="middle" letterSpacing="0.5">AUTHENTIC</text>
 
-        {/* Regulated Medical Classification Text */}
-        <text x="56" y="106" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="700" fill="#FFFFFF" opacity="0.85" letterSpacing="0.8">LATEX CONTRACEPTIVE BARRIER</text>
+        {/* Regulated Classification Text */}
+        <text x="56" y="106" fontFamily="Inter, sans-serif" fontSize="8.5" fontWeight="700" fill="#FFFFFF" opacity="0.85" letterSpacing="0.8">{classLabel}</text>
 
         {/* Geometric Technical Texture */}
         {patternSvg}
 
         {/* Variant Title */}
-        <text x="150" y="305" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="800" fontSize="14" fill="#FFFFFF" textAnchor="middle" letterSpacing="0.8">{variantLabel}</text>
+        <text x="150" y="305" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="800" fontSize="13" fill="#FFFFFF" textAnchor="middle" letterSpacing="0.6">{variantLabel}</text>
 
         {/* Specification Subtitle */}
-        <rect x="65" y="316" width="170" height="18" rx="5" fill="#000000" fillOpacity="0.45" />
-        <text x="150" y="329" fontFamily="Inter, sans-serif" fontSize="8.5" fontWeight="700" fill={foilColor} textAnchor="middle" letterSpacing="0.6">{accentBadge}</text>
+        <rect x="50" y="316" width="200" height="18" rx="5" fill="#000000" fillOpacity="0.45" />
+        <text x="150" y="329" fontFamily="Inter, sans-serif" fontSize="8" fontWeight="700" fill={foilColor} textAnchor="middle" letterSpacing="0.5">{accentBadge}</text>
       </svg>
     </div>
   );
