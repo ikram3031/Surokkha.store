@@ -3,6 +3,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import mongoose from 'mongoose';
 import { config } from '../../common/config/index.js';
+import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
+import { decryptText } from '../../common/utils/crypto.util.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,33 +77,30 @@ export const getMetadata = async (req, res, next) => {
   }
 };
 
-const resolveCloudflareToken = () => {
+const resolveCloudflareToken = async () => {
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_API_TOKEN.trim()) {
-    return process.env.CLOUDFLARE_API_TOKEN.trim();
+    return decryptText(process.env.CLOUDFLARE_API_TOKEN.trim());
   }
   if (process.env.CLOUDFLARE_ACCOUNT_TOKEN && process.env.CLOUDFLARE_ACCOUNT_TOKEN.trim()) {
-    return process.env.CLOUDFLARE_ACCOUNT_TOKEN.trim();
+    return decryptText(process.env.CLOUDFLARE_ACCOUNT_TOKEN.trim());
+  }
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: 'default' }).lean();
+    if (doc?.cloudflare?.apiToken) {
+      const dec = decryptText(doc.cloudflare.apiToken.trim());
+      if (dec) return dec;
+    }
+  } catch {}
+  if (config.cloudflare?.apiToken) {
+    return decryptText(config.cloudflare.apiToken.trim());
   }
   const vpsEnv = '/engulfic/opt/configs/backend.env';
   if (fs.existsSync(vpsEnv)) {
     try {
       const content = fs.readFileSync(vpsEnv, 'utf8');
       const match = content.match(/CLOUDFLARE_API_TOKEN=([^\r\n]+)/);
-      if (match && match[1].trim()) return match[1].trim();
+      if (match && match[1].trim()) return decryptText(match[1].trim());
     } catch {}
-  }
-  const vaultPaths = [
-    'J:\\My Drive\\CLIENTS\\SouthernHermain\\cloudflare-credentials.txt',
-    'J:\\My Drive\\CLIENTS\\Cloudflare.txt',
-  ];
-  for (const vp of vaultPaths) {
-    if (fs.existsSync(vp)) {
-      try {
-        const raw = fs.readFileSync(vp, 'utf8');
-        const match = raw.match(/(?:API Token:\s*|Bearer\s*)([A-Za-z0-9_-]{35,})/i) || raw.match(/cfat_[A-Za-z0-9_-]+/);
-        if (match) return match[1] ? match[1].trim() : match[0].trim();
-      } catch {}
-    }
   }
   return '';
 };
@@ -110,7 +109,7 @@ export const purgeSystemCache = async (req, res, next) => {
   try {
     const clientKey = config.clientKey || process.env.CLIENT_NAME || 'surokkha';
     const domain = (config.domain || `${clientKey}.store`).replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
-    const token = resolveCloudflareToken();
+    const token = await resolveCloudflareToken();
 
     const ZONE_MAP = {
       'surokkha.store': 'bd131177db6d610b5d4e5beb0142108b',
@@ -125,7 +124,13 @@ export const purgeSystemCache = async (req, res, next) => {
       'toyoland': '6e159fb7a28e83161c565d3ecad4e565',
     };
 
-    let zoneId = ZONE_MAP[domain] || ZONE_MAP[clientKey];
+    let dbZoneId = '';
+    try {
+      const doc = await StoreSettingsModel.findOne({ key: 'default' }).lean();
+      if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
+    } catch {}
+
+    let zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey];
     let cfPurged = false;
     let cfMessage = '';
 
@@ -175,7 +180,7 @@ export const getCloudflareAnalytics = async (req, res, next) => {
   try {
     const clientKey = config.clientKey || process.env.CLIENT_NAME || 'surokkha';
     const domain = (config.domain || 'surokkha.store').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
-    const token = resolveCloudflareToken();
+    const token = await resolveCloudflareToken();
     const range = req.query.range || '24h';
 
     const ZONE_MAP = {
@@ -193,7 +198,13 @@ export const getCloudflareAnalytics = async (req, res, next) => {
       'southernhermainoverseas.site': '0ea0658d9d8852cb447d196a78f8a6b0',
     };
 
-    const zoneId = ZONE_MAP[domain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
+    let dbZoneId = '';
+    try {
+      const doc = await StoreSettingsModel.findOne({ key: 'default' }).lean();
+      if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
+    } catch {}
+
+    const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
 
     let daysCount = 7;
     if (range === '24h' || range === 'today') daysCount = 1;
