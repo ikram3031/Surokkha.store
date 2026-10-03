@@ -26,13 +26,14 @@ export default function ComboView() {
       const name = (p.name || '').toLowerCase();
       const nameBn = (p.name_bn || '');
       const id = (p.id || '').toLowerCase();
+      const slug = (p.slug || '').toLowerCase();
       return (
-        cat.includes('combo') || 
-        catBn.includes('কম্বো') || 
-        name.includes('combo') || 
-        nameBn.includes('কম্বো') || 
-        id.includes('combo') || 
-        p.iconType === 'combo'
+        cat.includes('combo') ||
+        catBn.includes('কম্বো') ||
+        name.includes('combo') ||
+        nameBn.includes('কম্বো') ||
+        id.includes('combo') ||
+        slug.includes('combo')
       );
     });
 
@@ -49,10 +50,10 @@ export default function ComboView() {
       tagline: isBn ? (products['mo-dotted-condom']?.tagline_bn || 'আইএসও সার্টিফাইড টেক্সচার্ড ল্যাটেক্স') : (products['mo-dotted-condom']?.tagline || 'ISO Certified Textured Latex'),
       desc: isBn
         ? (products['mo-dotted-condom']?.description_bn || 'বিশেষভাবে বিন্যস্ত মাইক্রো-টেক্সচার্ড ল্যাটেক্স ম্যাট্রিক্স যা শতভাগ কার্যকর গর্ভনিরোধক ও এসটিআই সংক্রমণ প্রতিরোধ নিশ্চিত করে।')
-        : (products['mo-dotted-condom']?.description || 'Micro-textured latex matrix engineered strictly under ISO 4074 standards for safe, dependable contraception.'),
+        : (products['mo-dotted-condom']?.description || 'Micro-textured latex matrix engineered strictly under   standards for safe, dependable contraception.'),
       features: isBn
         ? (products['mo-dotted-condom']?.features_bn || ['আইএসও ৪০৭৪ সার্টিফাইড', 'নিউট্রাল পিএইচ লুব্রিকেশন', 'ইলেকট্রনিক পিনহোল টেস্টেড'])
-        : (products['mo-dotted-condom']?.features || ['ISO 4074 certified quality', 'Neutral pH lubrication', 'Electronically pinhole tested']),
+        : (products['mo-dotted-condom']?.features || ['  certified quality', 'Neutral pH lubrication', 'Electronically pinhole tested']),
     },
     {
       key: 'mo-ultra-thin-condom',
@@ -80,14 +81,14 @@ export default function ComboView() {
 
   return (
     <div className="bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 min-h-screen text-slate-800 pb-16">
-      
+
       {/* 1. HERO HEADER (Dark Luxury Theme matching ShopView) */}
       <div className="bg-gradient-to-r from-[#200b14] via-[#15050d] to-[#200b14] text-white py-12 sm:py-16 border-b border-rose-950/80 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 text-center">
-          
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+
           {/* Breadcrumb */}
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-rose-200/70 mb-4">
             <button onClick={() => navigateTo('home')} className="hover:text-amber-400 transition cursor-pointer">
@@ -135,7 +136,7 @@ export default function ComboView() {
       </div>
 
       {/* 2. DYNAMIC COMBO PRODUCTS GRID */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-12">
         {/* Results Counter & Quick Reassurance */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200/80 text-xs sm:text-sm text-slate-700 font-semibold">
           <div>
@@ -164,7 +165,7 @@ export default function ComboView() {
 
       {/* 3. VARIANT BREAKDOWN (Clean Original Light Box Grid) */}
       <section className="py-12 bg-white border-y border-slate-200/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-10">
             <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1 rounded-full border border-rose-200/60">
               {isBn ? 'সিগনেচার টেক্সচার' : 'Signature Textures'}
@@ -203,7 +204,7 @@ export default function ComboView() {
       </section>
 
       {/* 4. 100% DISCREET PACKAGING GUARANTEE */}
-      <section className="py-10 max-w-4xl mx-auto px-4 sm:px-6">
+      <section className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#fff7f8] border border-rose-200/80 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6 text-center">
           <div className="w-14 h-14 bg-white border border-rose-200/80 rounded-2xl flex items-center justify-center mx-auto text-2xl text-brand-800 shadow-2xs">
             🔒

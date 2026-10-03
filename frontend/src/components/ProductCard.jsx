@@ -36,14 +36,9 @@ export default function ProductCard({ productKey, className = '' }) {
 
   const localizedName = isBn ? (prod.name_bn || prod.name) : (prod.name || prod.title);
 
-  // Pack size extraction from dynamic API fields
+  // Combo highlight classification
   const is30Pcs = productKey.includes('30pcs') || productKey.includes('variety') || productKey === 'combo-26' || (prod.name && prod.name.includes('30'));
   const is20Pcs = productKey.includes('20pcs') || (prod.name && prod.name.includes('20'));
-  const packLabel = (isBn ? prod.packSize_bn : prod.packSize) || (is30Pcs 
-    ? (isBn ? '৩০ পিস (৩ বক্স কম্বো)' : '30 Pcs (3 Box Combo)')
-    : is20Pcs 
-    ? (isBn ? '২০ পিস (২ বক্স মেগা প্যাক)' : '20 Pcs (2 Box Mega Pack)')
-    : (isBn ? '১০ পিস সিল্ড প্যাক' : '10 Pcs Sealed Pack'));
   const isTrio = is30Pcs;
 
   return (
@@ -56,35 +51,6 @@ export default function ProductCard({ productKey, className = '' }) {
           : 'border-slate-200/90 hover:border-brand-500/60'
       } ${currentCartQty > 0 ? 'ring-2 ring-brand-600/30 border-brand-600' : ''} ${className}`}
     >
-      {/* Top Header Badge & Micro Metadata (Hidden on mobile for clean look, visible on sm+) */}
-      <div className="hidden sm:flex px-3 pt-2 pb-1 items-center justify-between text-[11px] gap-2">
-        {/* Out of Stock / Discount Ribbon or Brand */}
-        {isOutOfStock ? (
-          <span className="inline-flex items-center gap-1 bg-slate-700 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow-2xs tracking-tight">
-            <span>🚫</span>
-            <span>{isBn ? 'আউট অব স্টক' : 'Out of Stock'}</span>
-          </span>
-        ) : hasDiscount ? (
-          <span className="inline-flex items-center gap-1 bg-gradient-to-r from-brand-700 to-rose-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-md shadow-2xs tracking-tight">
-            <span>🔥</span>
-            <span>{isBn ? `${discountPercent}% ছাড়` : `${discountPercent}% OFF`}</span>
-          </span>
-        ) : (
-          <span className="inline text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-            {prod.brand || 'MO'}
-          </span>
-        )}
-
-        {/* Clean Unboxed Metadata: Pack Size & 18+ */}
-        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-700 ml-auto sm:ml-0">
-          <span className="text-slate-900 font-bold">{packLabel}</span>
-          <span aria-hidden="true" className="inline text-slate-400">·</span>
-          <span className="inline-block text-emerald-800 font-bold bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
-            {isBn ? '১৮+' : '18+'}
-          </span>
-        </div>
-      </div>
-
       {/* Visual Product Showcase - 1:1 Aspect Ratio Full Width */}
       <div 
         onClick={() => openProduct(productKey)} 
@@ -95,6 +61,55 @@ export default function ProductCard({ productKey, className = '' }) {
           sizeClass="w-full h-full aspect-square"
           imgClassName="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
         />
+
+        {/* Discount Ribbon Badge (SS Design with Folded 3D Corner & Downward Chevron Point) */}
+        {hasDiscount && discountPercent > 0 && (
+          <div 
+            className="absolute top-0 left-2 sm:left-2.5 z-20 pointer-events-none select-none drop-shadow-md transition-transform duration-200 group-hover:scale-105"
+            title={`${discountPercent}% Discount`}
+          >
+            <svg 
+              viewBox="0 0 70 65" 
+              className="w-9 sm:w-11 h-auto overflow-visible" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient id={`discountGrad-${productKey}`} x1="29" y1="0" x2="29" y2="64" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FF0D1B" />
+                  <stop offset="45%" stopColor="#EE000A" />
+                  <stop offset="100%" stopColor="#C00003" />
+                </linearGradient>
+                <linearGradient id={`foldGrad-${productKey}`} x1="58" y1="0" x2="70" y2="13" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#B30005" />
+                  <stop offset="100%" stopColor="#660002" />
+                </linearGradient>
+              </defs>
+              {/* 3D Fold tab at top right */}
+              <path d="M58 0 C65 0 70 2 70 5 C70 8.5 65 13 58 13 Z" fill={`url(#foldGrad-${productKey})`} />
+              {/* Main Ribbon Body (with rounded top-left corner and sharp downward chevron at bottom) */}
+              <path d="M4 0 H58 V52 L29 64 L0 52 V4 Q0 0 4 0 Z" fill={`url(#discountGrad-${productKey})`} />
+              {/* Top inner highlight sheen */}
+              <path d="M4 1.5 H57" stroke="#FFFFFF" strokeOpacity="0.4" strokeWidth="1.2" strokeLinecap="round" />
+              {/* White Bold Text: -<percent>% */}
+              <text 
+                x="29" 
+                y="27" 
+                textAnchor="middle" 
+                dominantBaseline="central" 
+                fill="#FFFFFF" 
+                style={{
+                  fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: String(discountPercent).length > 2 ? '17px' : '19px',
+                  fontWeight: 900,
+                  letterSpacing: '-0.5px'
+                }}
+              >
+                -{discountPercent}%
+              </text>
+            </svg>
+          </div>
+        )}
 
         {/* Out of Stock Visual Overlay */}
         {isOutOfStock ? (

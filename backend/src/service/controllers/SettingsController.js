@@ -546,11 +546,42 @@ export const testSmtpConnection = async (req, res, next) => {
       },
     });
 
+    const senderName = (req.body?.senderName || currentConfig.senderName || "Surokkha").trim();
+    const senderEmail = (req.body?.senderEmail || currentConfig.senderEmail || targetUser).trim();
+    const recipientEmail = (req.body?.recipientEmail || req.body?.to || "").trim();
+
     try {
       await transporter.verify();
+
+      let emailSent = false;
+      if (recipientEmail) {
+        const fromAddress = `"${senderName}" <${senderEmail}>`;
+        await transporter.sendMail({
+          from: fromAddress,
+          to: recipientEmail,
+          subject: `Test Email from ${senderName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+              <h2 style="color: #4f46e5; margin-top: 0;">SMTP Test Email</h2>
+              <p>Congratulations! Your SMTP email server connection has been successfully verified.</p>
+              <div style="background: #f9fafb; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #4f46e5;">
+                <p style="margin: 0;"><strong>Sender:</strong> ${fromAddress}</p>
+                <p style="margin: 5px 0 0 0;"><strong>Recipient:</strong> ${recipientEmail}</p>
+                <p style="margin: 5px 0 0 0;"><strong>Server:</strong> ${targetHost}:${targetPort}</p>
+              </div>
+              <p style="color: #6b7280; font-size: 13px; margin-bottom: 0;">This is an automated test message sent from your Store Admin Dashboard.</p>
+            </div>
+          `,
+        });
+        emailSent = true;
+      }
+
       return res.json({
         status: "success",
-        message: "SMTP connection verified successfully.",
+        message: emailSent
+          ? `SMTP connection verified and test email sent to ${recipientEmail}!`
+          : "SMTP connection verified successfully.",
+        emailSent,
       });
     } catch (err) {
       return res.status(400).json({

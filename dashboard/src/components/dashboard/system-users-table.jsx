@@ -18,10 +18,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Mail } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -57,6 +56,7 @@ export function SystemUsersTable({
   }, [totalPages, onTotalPagesChange, responseData]);
 
   const [toggling, setToggling] = useState(null);
+  const [resendingInvite, setResendingInvite] = useState(null);
 
   const handleToggleStatus = async (id, currentStatus) => {
     setToggling(id);
@@ -69,6 +69,21 @@ export function SystemUsersTable({
       toast.error('Failed to update user status.');
     } finally {
       setToggling(null);
+    }
+  };
+
+  const handleResendInvite = async (id, name) => {
+    setResendingInvite(id);
+    try {
+      const res = await apiClient.post(`/api/v1/users/${id}/resend-invite`, {
+        domain: window.location.origin,
+      });
+      toast.success(res.data?.message || `Invitation email resent to ${name}.`);
+      queryClient.invalidateQueries({ queryKey: ['system-users'] });
+    } catch (err) {
+      toast.error(err.response?.data?.message || `Failed to resend invitation to ${name}.`);
+    } finally {
+      setResendingInvite(null);
     }
   };
 
@@ -227,6 +242,16 @@ export function SystemUsersTable({
                     } />
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      {user.status !== 'Active' && (
+                        <DropdownMenuItem
+                          disabled={resendingInvite === user.id}
+                          onClick={() => handleResendInvite(user.id, user.name)}
+                          className="cursor-pointer text-indigo-600 dark:text-indigo-400 font-medium"
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          {resendingInvite === user.id ? 'Sending Invite...' : 'Resend Invite Email'}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)}>
                         Toggle Active Status
                       </DropdownMenuItem>

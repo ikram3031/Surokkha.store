@@ -35,7 +35,7 @@ export default function HomeView() {
     if (!p) return false;
     const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
     if (isOutOfStock) return false;
-    const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || p?.iconType === 'combo';
+    const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || (p?.category && String(p.category).toLowerCase().includes('combo')) || (p?.category_bn && p.category_bn.includes('কম্বো'));
     return !isCombo;
   });
 
@@ -55,7 +55,7 @@ export default function HomeView() {
       <HeroSlider />
 
       {/* 3 DEDICATED FEATURE CARDS (Directly Under Hero Slider, White Theme) */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           
           {/* Feature 1: 100% Private Packaging */}
@@ -107,7 +107,7 @@ export default function HomeView() {
       </section>
 
       {/* DEDICATED PRODUCT SECTION (The MO Lineup) */}
-      <section id="productsSection" className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section id="productsSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
           <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200/70">
             {t('featuredCollection', 'Featured Collection')}
@@ -136,7 +136,7 @@ export default function HomeView() {
 
       {/* COMBO SALES & VALUE SHOWCASE BANNER (Only shown if 20pcs combos in stock) */}
       {available20PcsComboKeys.length > 0 && (
-        <section id="comboSection" className="max-w-6xl mx-auto px-4 sm:px-6">
+        <section id="comboSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#0b0a0e] border-2 border-brand-600/40 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
             
             {/* Background Banner-2 Image with low opacity & gradient overlay */}
@@ -267,7 +267,7 @@ export default function HomeView() {
       )}
 
       {/* WHY SUROKKHA / SERVICE STANDARDS */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-xs">
           <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10">
             <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200/70">

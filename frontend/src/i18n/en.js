@@ -48,7 +48,7 @@ const en = {
     shop_btn: 'All Products',
     badge_private: '100% Private',
     badge_cod: 'Cash on Delivery',
-    badge_quality: 'ISO 4074 Quality'
+    badge_quality: '  Quality'
   },
   home: {
     featured_badge: 'Certified Collection',
@@ -64,7 +64,7 @@ const en = {
     standards_title: 'Why Choose Surokkha.store?',
     standards_desc: 'Reliable, confidential family planning healthcare supplies delivered nationwide.',
     authentic_title: '100% Authentic Quality',
-    authentic_desc: 'Direct authentic MO devices adhering to ISO 4074 electronic pinhole testing standards.',
+    authentic_desc: 'Direct authentic MO devices adhering to   electronic pinhole testing standards.',
     discreet_title: 'Discreet Delivery',
     discreet_desc: '100% plain, sealed unbranded parcels. No product names or descriptions mentioned on the outer box.',
     online_title: 'Convenient Online Ordering',
@@ -87,14 +87,14 @@ const en = {
     brand_label: 'Brand',
     unit_price_bdt: 'Unit Price (BDT)',
     cod_badge: 'Cash on Delivery Nationwide',
-    description_title: 'Product Description & Healthcare Use',
-    specs_title: 'Technical & Quality Specifications (ISO 4074)',
+    description_title: 'Product Description',
+    specs_title: 'Technical & Quality Specifications',
     qty_label: 'Select Quantity',
     discreet_title: '100% Discreet & Confidential Packaging',
     discreet_text: 'Every order is packed inside a plain, unbranded delivery box. No product names, categories, or descriptions appear anywhere on the external label.',
     discreet_box: 'Discreet Box Guarantee',
-    complementary_title: 'Complementary Family Planning Devices',
-    complementary_desc: 'Check out other certified barrier options from our lineup.',
+    complementary_title: 'Our Other Products',
+    complementary_desc: 'Explore other products from our certified collection.',
     or_get_combo: 'Or get all 3 packs in Combo Pack for ৳800'
   },
   cart: {
@@ -215,7 +215,7 @@ const en = {
     contact_title: 'Contact & Social Support',
     guarantee_title: 'Service Commitments',
     g1: '100% Discreet & Unbranded Packaging',
-    g2: 'ISO 4074 Medical Quality Certified',
+    g2: '  Medical Quality Certified',
     g3: 'Cash on Delivery Across Bangladesh',
     g4: '18+ Adult Family Planning Device',
     copyright: '© 2026 Surokkha.store. All rights reserved. Family Planning & Healthcare Supplies (18+).'

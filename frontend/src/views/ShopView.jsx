@@ -1,52 +1,201 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
-import ProductArtwork from '../components/ProductArtwork';
 import PromoComboBanner from '../components/PromoComboBanner';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 
 export default function ShopView() {
   const navigateTo = useStore((state) => state.navigateTo);
-  const addToCart = useStore((state) => state.addToCart);
-  const buyNowDirect = useStore((state) => state.buyNowDirect);
-  const openProduct = useStore((state) => state.openProduct);
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
   const products = useStore((state) => state.products);
   const productKeys = useStore((state) => state.productKeys);
+  const storeCategories = useStore((state) => state.categories);
 
-  const { t, isBn, formatPrice, getLocalizedName, getLocalizedTagline } = useTranslation();
+  const { t, isBn, formatNumber } = useTranslation();
 
-  const [activeTab, setActiveTab] = useState('all'); // 'all', 'single', 'combo'
+  // 1. Dynamic category filter ('all' or specific slug like 'combo', 'contraceptive', 'lubricants', etc.)
+  const [category, setCategory] = useState('all');
+  const [priceRange, setPriceRange] = useState('all'); // 'all' | 'under-500' | '500-800' | 'above-800'
 
-  const singleCount = productKeys.filter((k) => {
-    const p = products[k];
-    return !(k.toLowerCase().includes('combo') || p?.iconType === 'combo' || p?.category === 'Combo' || p?.category === 'Combo Pack');
-  }).length;
+  // 2. Default sorting: Oldest to Newest (original products at top, new ones go down)
+  const [sortBy, setSortBy] = useState('oldest');
 
-  const comboCount = productKeys.filter((k) => {
-    const p = products[k];
-    return (k.toLowerCase().includes('combo') || p?.iconType === 'combo' || p?.category === 'Combo' || p?.category === 'Combo Pack');
-  }).length;
+  // 3. Stock filter: Default false (shows all products including out-of-stock). When checked, shows only in-stock
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [displayCount, setDisplayCount] = useState(8);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  const filteredKeys = productKeys.filter((key) => {
-    const prod = products[key];
-    const isCombo = key.toLowerCase().includes('combo') || prod?.iconType === 'combo' || prod?.category === 'Combo' || prod?.category === 'Combo Pack';
-    if (activeTab === 'single') return !isCombo;
-    if (activeTab === 'combo') return isCombo;
-    return true;
-  });
+  // Dynamic Category Extraction from products & backend categories
+  const dynamicCategories = useMemo(() => {
+    const map = new Map();
+
+    // Pre-populate with backend category objects if available
+    if (Array.isArray(storeCategories) && storeCategories.length > 0) {
+      storeCategories.forEach((cat) => {
+        const slug = (cat.slug || cat.name?.toLowerCase() || '').replace(/\s+/g, '-');
+        if (!slug) return;
+        map.set(slug, {
+          slug,
+          name: cat.name,
+          name_bn: cat.name_bn || (
+            slug.includes('combo') ? 'কম্বো প্যাক' :
+              slug.includes('lubricant') ? 'লুব্রিকেন্ট' :
+                slug.includes('contraceptive') ? 'কনট্রাসেপটিভ' : cat.name
+          ),
+          count: 0,
+        });
+      });
+    }
+
+    // Tally actual live products count and discover any unlisted categories
+    productKeys.forEach((key) => {
+      const prod = products[key];
+      if (!prod) return;
+      if (prod.isActive === false || prod.status === 'inactive') return;
+
+      const catName = (typeof prod.category === 'object' ? prod.category?.name : prod.category) || (key.includes('combo') ? 'Combo' : 'Contraceptive');
+      const catSlug = (prod.categorySlug || (typeof prod.category === 'object' ? prod.category?.slug : '') || catName.toLowerCase()).replace(/\s+/g, '-');
+      const catBn = (typeof prod.category === 'object' && prod.category?.name_bn) || prod.category_bn || (
+        catSlug.includes('combo') ? 'কম্বো প্যাক' :
+          catSlug.includes('lubricant') ? 'লুব্রিকেন্ট' :
+            catSlug.includes('contraceptive') ? 'কনট্রাসেপটিভ' : catName
+      );
+
+      if (!map.has(catSlug)) {
+        map.set(catSlug, {
+          slug: catSlug,
+          name: catName,
+          name_bn: catBn,
+          count: 0,
+        });
+      }
+      map.get(catSlug).count += 1;
+    });
+
+    return Array.from(map.values()).filter((c) => c.count > 0);
+  }, [productKeys, products, storeCategories]);
+
+  // Dynamic counts for screenshot header banner tabs
+  const singleCount = useMemo(() => {
+    return productKeys.filter((k) => {
+      const p = products[k];
+      if (!p || p.isActive === false || p.status === 'inactive') return false;
+      const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || p?.category === 'Combo' || p?.category === 'Combo Pack' || (p?.category_bn && p.category_bn.includes('কম্বো')) || (p?.categorySlug && p.categorySlug.includes('combo'));
+      return !isCombo;
+    }).length;
+  }, [productKeys, products]);
+
+  const comboCount = useMemo(() => {
+    return productKeys.filter((k) => {
+      const p = products[k];
+      if (!p || p.isActive === false || p.status === 'inactive') return false;
+      const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || p?.category === 'Combo' || p?.category === 'Combo Pack' || (p?.category_bn && p.category_bn.includes('কম্বো')) || (p?.categorySlug && p.categorySlug.includes('combo'));
+      return isCombo;
+    }).length;
+  }, [productKeys, products]);
+
+  // Derived Min/Max prices from priceRange filter
+  const minPrice = useMemo(() => {
+    if (priceRange === 'under-500') return 0;
+    if (priceRange === '500-800') return 500;
+    if (priceRange === 'above-800') return 800;
+    return undefined;
+  }, [priceRange]);
+
+  const maxPrice = useMemo(() => {
+    if (priceRange === 'under-500') return 500;
+    if (priceRange === '500-800') return 800;
+    if (priceRange === 'above-800') return undefined;
+    return undefined;
+  }, [priceRange]);
+
+  // Filter and sort products pipeline
+  const displayedKeys = useMemo(() => {
+    let list = productKeys.filter((k) => {
+      const prod = products[k];
+      if (!prod) return false;
+      if (prod.isActive === false || prod.status === 'inactive') return false;
+
+      const isCombo = k.toLowerCase().includes('combo') || (prod?.name && prod.name.toLowerCase().includes('combo')) || prod?.category === 'Combo' || prod?.category === 'Combo Pack' || (prod?.category_bn && prod.category_bn.includes('কম্বো')) || (prod?.categorySlug && prod.categorySlug.includes('combo'));
+      const prodCatSlug = (prod.categorySlug || (typeof prod.category === 'object' ? prod.category?.slug : '') || (prod.category || '').toLowerCase()).replace(/\s+/g, '-');
+
+      // Category filter
+      if (category !== 'all') {
+        if (category === 'single') {
+          if (isCombo) return false;
+        } else if (category === 'combo') {
+          if (!isCombo) return false;
+        } else {
+          // Specific dynamic category slug match
+          if (prodCatSlug !== category && !(category.includes('combo') && isCombo)) {
+            return false;
+          }
+        }
+      }
+
+      // Price filter
+      const price = Number(prod.price || prod.offerPrice || 0);
+      if (minPrice !== undefined && price < minPrice) return false;
+      if (maxPrice !== undefined && price > maxPrice) return false;
+
+      // In stock filter: Default false (shows all). If checked, shows only in-stock
+      const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
+      if (inStockOnly && isOutOfStock) return false;
+
+      return true;
+    });
+
+    // Sorting (Default: Oldest to Newest, original lineup at top, new arrivals at bottom)
+    list.sort((a, b) => {
+      const pA = products[a];
+      const pB = products[b];
+      const priceA = Number(pA?.price || pA?.offerPrice || 0);
+      const priceB = Number(pB?.price || pB?.offerPrice || 0);
+      const timeA = pA?.createdTimestamp || (pA?.createdAt ? new Date(pA.createdAt).getTime() : 0);
+      const timeB = pB?.createdTimestamp || (pB?.createdAt ? new Date(pB.createdAt).getTime() : 0);
+
+      switch (sortBy) {
+        case 'oldest':
+          if (!timeA && timeB) return -1;
+          if (timeA && !timeB) return 1;
+          return (timeA || 0) - (timeB || 0); // Oldest first
+        case 'newest':
+          return (timeB || 0) - (timeA || 0); // Newest first
+        case 'price-asc':
+          return priceA - priceB;
+        case 'price-desc':
+          return priceB - priceA;
+        case 'featured':
+        default:
+          return 0;
+      }
+    });
+
+    return list;
+  }, [productKeys, products, category, minPrice, maxPrice, inStockOnly, sortBy]);
+
+  const paginatedKeys = displayedKeys.slice(0, displayCount);
+  const hasMore = displayCount < displayedKeys.length;
+
+  const handleResetFilters = () => {
+    setCategory('all');
+    setPriceRange('all');
+    setSortBy('oldest');
+    setInStockOnly(false);
+    setDisplayCount(8);
+  };
 
   return (
     <div className="bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 min-h-screen pb-16">
-      
-      {/* Header Banner */}
+
+      {/* 1. Header Banner - EXACTLY PRESERVED AS PER SCREENSHOT RULE */}
       <div className="bg-gradient-to-r from-[#200b14] via-[#15050d] to-[#200b14] text-white py-12 sm:py-16 border-b border-rose-950/80 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           {/* Breadcrumb */}
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-rose-200/70 mb-4">
             <button onClick={() => navigateTo('home')} className="hover:text-amber-400 transition cursor-pointer">
@@ -59,83 +208,292 @@ export default function ShopView() {
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-extrabold text-white tracking-tight">
             {isBn ? 'সকল প্রোডাক্ট ও কম্বো প্যাক' : 'All Products & Combos'}
           </h1>
-          
+
           <p className="text-xs sm:text-sm md:text-base text-slate-300 max-w-2xl mx-auto mt-3 leading-relaxed">
             {isBn
               ? 'আইএসও সার্টিফাইড আসল MO কন্ট্রাসেপ্টিভ ভ্যারিয়েন্ট ও পরিবার পরিকল্পনা কম্বো বান্ডেল। ১৮+ প্রাপ্তবয়স্কদের জন্য ক্যাশ অন ডেলিভারিতে।'
-              : 'ISO 4074 certified authentic MO contraceptive variants and family planning bundles. Regulated barrier devices for 18+ adults with confidential Cash on Delivery nationwide.'}
+              : '  certified authentic MO contraceptive variants and family planning bundles. Regulated barrier devices for 18+ adults with confidential Cash on Delivery nationwide.'}
           </p>
 
-          {/* Category Filter Tabs */}
+          {/* Category Filter Tabs (Dynamic API Counts) */}
           <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 flex-wrap">
             <button
               type="button"
-              onClick={() => setActiveTab('all')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'all'
+              onClick={() => setCategory('all')}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'all'
                   ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'
-              }`}
+                }`}
             >
-              {isBn ? 'সকল প্রোডাক্ট' : 'All Products'} ({productKeys.length})
+              {isBn ? 'সকল প্রোডাক্ট' : 'All Products'} ({formatNumber(productKeys.length)})
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab('single')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'single'
+              onClick={() => setCategory('single')}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'single'
                   ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'
-              }`}
+                }`}
             >
-              {isBn ? 'সিঙ্গেল প্যাক' : 'Single Packs'} ({singleCount})
+              {isBn ? 'সিঙ্গেল প্যাক' : 'Single Packs'} ({formatNumber(singleCount)})
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab('combo')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer animate-vibrate ${
-                activeTab === 'combo'
+              onClick={() => setCategory('combo')}
+              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer animate-vibrate ${category === 'combo'
                   ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
                   : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/50 shadow-xs'
-              }`}
+                }`}
             >
-              🔥 {isBn ? 'কম্বো ভ্যালু প্যাক' : 'Combo Packs'} ({comboCount})
+              🔥 {isBn ? 'কম্বো ভ্যালু প্যাক' : 'Combo Packs'} ({formatNumber(comboCount)})
             </button>
           </div>
         </div>
       </div>
 
-      {/* Product Grid Section */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
-        
-        {/* Results Counter & Quick Reassurance */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200/80 text-xs sm:text-sm text-slate-700 font-semibold">
-          <div>
-            <span>{isBn ? 'প্রদর্শিত হচ্ছে:' : 'Showing:'} </span>
-            <span className="font-bold text-slate-900">{filteredKeys.length} {isBn ? 'টি প্রোডাক্ট' : 'Items'}</span>
+      {/* 2. Main Content Layout (SoulCove Structure: Toolbar + 4-column Grid with Dynamic Sidebar & Cards) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+
+        {/* Clean Toolbar: Dynamic Product Count from API & Sort Dropdown */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-rose-200/70 gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm text-slate-600 font-semibold whitespace-nowrap">
+              {isBn ? 'প্রদর্শিত হচ্ছে' : 'Showing'}{' '}
+              <strong className="text-slate-900 font-bold">{formatNumber(displayedKeys.length)}</strong>{' '}
+              {isBn ? 'টি প্রোডাক্ট' : 'products'}
+            </span>
           </div>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="text-emerald-600 font-bold">✓ {isBn ? '১০০% নামহীন গোপনীয় ডেলিভারি' : '100% Discreet Unmarked Parcel'}</span>
-            <span className="hidden sm:inline text-slate-300">•</span>
-            <span className="hidden sm:inline text-rose-600 font-bold">✓ {isBn ? 'ক্যাশ অন ডেলিভারি' : 'Cash on Delivery'}</span>
+
+          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+            {/* Mobile Filter Button */}
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+              className="lg:hidden flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 shadow-2xs hover:bg-rose-50 cursor-pointer"
+            >
+              <svg className="h-3.5 w-3.5 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              <span>{isBn ? 'ফিল্টার' : 'Filters'}</span>
+            </button>
+
+            {/* Sort Dropdown (Default: Old to New) */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-500 font-semibold hidden sm:inline whitespace-nowrap">
+                {isBn ? 'সাজান:' : 'Sort:'}
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="h-10 text-xs bg-white border border-rose-200 rounded-xl px-3 text-slate-800 font-semibold shadow-2xs focus:outline-none focus:border-brand-600 cursor-pointer"
+              >
+                <option value="oldest">{isBn ? 'আগের পণ্য প্রথমে (ডিফল্ট)' : 'Oldest First (Default)'}</option>
+                <option value="newest">{isBn ? 'নতুন কালেকশন' : 'Newest Drops'}</option>
+                <option value="price-asc">{isBn ? 'দাম: কম থেকে বেশি' : 'Price: Low to High'}</option>
+                <option value="price-desc">{isBn ? 'দাম: বেশি থেকে কম' : 'Price: High to Low'}</option>
+                <option value="featured">{isBn ? 'জনপ্রিয়তা অনুযায়ী' : 'Featured'}</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Dynamic Responsive Compact Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-6">
-          {isLoadingProducts ? (
-            Array.from({ length: 6 }).map((_, idx) => (
-              <ProductCardSkeleton key={`skeleton-shop-${idx}`} />
-            ))
-          ) : (
-            filteredKeys.map((key) => (
-              <ProductCard key={key} productKey={key} />
-            ))
-          )}
-        </div>
+        {/* Main Grid Layout: Sidebar Filters + Products (SoulCove grid-cols-1 lg:grid-cols-4) */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
 
+          {/* Desktop Sidebar Filters (SoulCove Dynamic Sidebar Structure) */}
+          <aside
+            className={`lg:block ${mobileFilterOpen
+                ? 'fixed inset-0 z-50 bg-[#FAF8F5] p-6 overflow-y-auto block'
+                : 'hidden'
+              } lg:relative lg:p-0 space-y-6`}
+          >
+            {mobileFilterOpen && (
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 lg:hidden">
+                <h3 className="font-heading font-bold text-lg text-slate-900">
+                  {isBn ? 'ফিল্টার' : 'Filters'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700"
+                >
+                  {isBn ? 'প্রয়োগ' : 'Apply'}
+                </button>
+              </div>
+            )}
+
+            {/* Dynamic Categories Box (Populated from API Products & Categories) */}
+            <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs space-y-3">
+              <h3 className="font-semibold text-xs uppercase tracking-wider text-slate-900 flex items-center justify-between">
+                <span>{isBn ? 'ক্যাটাগরি' : 'Categories'}</span>
+                {category !== 'all' && (
+                  <button
+                    onClick={() => setCategory('all')}
+                    className="text-[11px] text-brand-700 font-medium lowercase hover:underline cursor-pointer"
+                  >
+                    {isBn ? 'মুছুন' : 'clear'}
+                  </button>
+                )}
+              </h3>
+
+              <div className="space-y-1 text-xs">
+                {/* All Products Option */}
+                <button
+                  type="button"
+                  onClick={() => setCategory('all')}
+                  className={`flex w-full items-center justify-between py-2 px-2.5 rounded-lg transition-colors text-left cursor-pointer ${category === 'all'
+                      ? 'bg-rose-50 font-semibold text-brand-900 border border-rose-200'
+                      : 'text-slate-600 hover:bg-slate-50'
+                    }`}
+                >
+                  <span>{isBn ? 'সকল প্রোডাক্ট' : 'All Products'}</span>
+                  <span>{formatNumber(productKeys.length)}</span>
+                </button>
+
+                {/* Dynamically Loaded Categories */}
+                {dynamicCategories.map((cat) => (
+                  <button
+                    key={cat.slug}
+                    type="button"
+                    onClick={() => setCategory(cat.slug)}
+                    className={`flex w-full items-center justify-between py-2 px-2.5 rounded-lg transition-colors text-left cursor-pointer ${category === cat.slug
+                        ? 'bg-rose-50 font-semibold text-brand-900 border border-rose-200'
+                        : 'text-slate-600 hover:bg-slate-50'
+                      }`}
+                  >
+                    <span>{isBn ? cat.name_bn : cat.name}</span>
+                    <span>{formatNumber(cat.count)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Range Filter Box */}
+            <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs space-y-3">
+              <h3 className="font-semibold text-xs uppercase tracking-wider text-slate-900 flex items-center justify-between">
+                <span>{isBn ? 'মূল্য সীমা' : 'Price'}</span>
+                {priceRange !== 'all' && (
+                  <button
+                    onClick={() => setPriceRange('all')}
+                    className="text-[11px] text-brand-700 font-medium lowercase hover:underline cursor-pointer"
+                  >
+                    {isBn ? 'মুছুন' : 'clear'}
+                  </button>
+                )}
+              </h3>
+              <div className="space-y-1.5 text-xs">
+                {[
+                  { id: 'all', label: isBn ? 'সকল দাম' : 'All Prices' },
+                  { id: 'under-500', label: isBn ? '৳৫০০ এর নিচে' : 'Under ৳500' },
+                  { id: '500-800', label: isBn ? '৳৫০০ — ৳৮০০' : '৳500 — ৳800' },
+                  { id: 'above-800', label: isBn ? '৳৮০০ ও বেশি' : '৳800 & Above' },
+                ].map((tier) => (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => setPriceRange(tier.id)}
+                    className={`flex w-full items-center justify-between py-2 px-2.5 rounded-lg transition-colors text-left cursor-pointer ${priceRange === tier.id
+                        ? 'bg-rose-50 font-semibold text-brand-900 border border-rose-200'
+                        : 'text-slate-600 hover:bg-slate-50'
+                      }`}
+                  >
+                    <span>{tier.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* In Stock Toggle (Shows all products by default, filters in-stock when checked) */}
+            <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs">
+              <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  id="stock-filter"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  className="w-4 h-4 rounded text-brand-600 accent-rose-600 cursor-pointer"
+                />
+                <span className="text-xs font-semibold text-slate-700">
+                  {isBn ? 'শুধুমাত্র ইন স্টক প্রোডাক্ট' : 'In Stock Items Only'}
+                </span>
+              </label>
+            </div>
+
+            {/* Reset Filters CTA */}
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-rose-200 text-xs font-semibold text-slate-700 bg-white hover:bg-rose-50 hover:text-brand-800 transition-colors shadow-2xs cursor-pointer"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>{isBn ? 'সকল ফিল্টার রিসেট' : 'Reset All Filters'}</span>
+            </button>
+          </aside>
+
+          {/* Product Grid Area (SoulCove lg:col-span-3) */}
+          <div className="lg:col-span-3">
+            {isLoadingProducts ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : displayedKeys.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-3xl bg-white border border-rose-200/60 shadow-2xs">
+                <div className="h-16 w-16 rounded-full bg-rose-50 flex items-center justify-center text-slate-400 mb-4 text-3xl">
+                  📦
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 font-heading">
+                  {isBn ? 'কোনো প্রোডাক্ট পাওয়া যায়নি' : 'No products found'}
+                </h3>
+                <p className="mt-1 text-xs text-slate-500 max-w-sm">
+                  {isBn
+                    ? 'আপনার নির্বাচিত ফিল্টারে কোনো আইটেম পাওয়া যায়নি। ফিল্টার রিসেট করে আবার দেখুন।'
+                    : "We couldn't find items matching your current filters. Try resetting your price or category options."}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="mt-6 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-700 to-rose-600 text-white rounded-xl text-xs font-bold hover:opacity-95 shadow-xs cursor-pointer"
+                >
+                  <span>✨</span>
+                  <span>{isBn ? 'সকল প্রোডাক্ট ব্রাউজ করুন' : 'Browse All Products'}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Product Cards Grid: 2 cols mobile, 3 cols desktop */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                  {paginatedKeys.map((key) => (
+                    <ProductCard key={key} productKey={key} />
+                  ))}
+                </div>
+
+                {/* Load More Button Module */}
+                {hasMore && (
+                  <div className="flex flex-col items-center justify-center pt-4">
+                    <p className="text-xs text-slate-500 mb-3 font-medium">
+                      {isBn
+                        ? `প্রদর্শিত হচ্ছে ${formatNumber(paginatedKeys.length)} / মোট ${formatNumber(displayedKeys.length)} টি প্রোডাক্ট`
+                        : `Showing ${paginatedKeys.length} of ${displayedKeys.length} products`}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setDisplayCount((prev) => prev + 4)}
+                      className="px-6 py-2.5 rounded-xl border border-rose-300 bg-white hover:bg-rose-50 text-brand-800 text-xs sm:text-sm font-bold shadow-2xs transition-colors cursor-pointer"
+                    >
+                      {isBn ? 'আরও প্রোডাক্ট দেখুন' : 'Load More Products'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Special 3-Pack Combo Promo Banner */}
@@ -149,3 +507,5 @@ export default function ShopView() {
     </div>
   );
 }
+
+

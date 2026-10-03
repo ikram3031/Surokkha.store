@@ -125,7 +125,11 @@ const UsersPage = () => {
         domain: window.location.origin,
       });
 
-      toast.success(response.data?.message || t('common.saved'));
+      if (response.data?.emailSent === false) {
+        toast.warning(response.data?.message || 'User created, but email could not be sent.');
+      } else {
+        toast.success(response.data?.message || t('common.saved'));
+      }
       queryClient.invalidateQueries({ queryKey: ['system-users'] });
       setIsInviteOpen(false);
       setNewUserName('');

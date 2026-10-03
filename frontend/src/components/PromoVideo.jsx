@@ -52,7 +52,7 @@ export default function PromoVideo() {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="relative rounded-3xl overflow-hidden bg-slate-950 border-2 border-brand-500/40 shadow-2xl group">
         
         {/* Ambient background glow */}

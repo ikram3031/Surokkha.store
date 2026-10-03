@@ -19,7 +19,7 @@ export const PRODUCTS = {
     price: 400, regularPrice: 400, offerPrice: 400,
     tagline: 'Reliable latex protection for family planning and reproductive health',
     tagline_bn: 'পরিবার পরিকল্পনা ও নিরাপদ সুরক্ষার জন্য বিশ্বস্ত কন্ট্রাসেপ্টিভ',
-    description: 'Engineered with a micro-textured latex matrix for secure contraception. Manufactured in compliance with ISO 4074:2015 standards and 100% electronically tested for dependable pregnancy and STI prevention.',
+    description: 'Engineered with a micro-textured latex matrix for secure contraception. Manufactured in compliance with  :2015 standards and 100% electronically tested for dependable pregnancy and STI prevention.',
     description_bn: 'আইএসও ৪০৭৪ আন্তর্জাতিক মানসম্পন্ন মেডিক্যাল গ্রেড প্রাকৃতিক ল্যাটেক্সে প্রস্তুত। শতভাগ ইলেকট্রনিক পিনহোল ও বার্স্ট টেস্টে উত্তীর্ণ বিশ্বস্ত পরিবার পরিকল্পনা ও এসটিআই সুরক্ষার সামগ্রী।',
     imageUrl: '/uploads/2609/260923/mo-dotted_main_1790169125534.webp',
     images: [
@@ -35,7 +35,7 @@ export const PRODUCTS = {
       thickness: '0.055mm calibrated wall',
       lubrication: 'Neutral pH silicone oil (non-spermicidal)',
       testing: '100% Electronically Pinhole & Burst Tested',
-      certification: 'ISO 4074:2015 / CE Certified',
+      certification: ' :2015 / CE Certified',
       purpose: 'Contraception & STI/HIV prevention',
       ageRating: '18+ Adults Only'
     },
@@ -46,7 +46,7 @@ export const PRODUCTS = {
     createdAt: '2026-09-22T18:25:17.514Z',
     createdDate: '2026-09-22T18:25:17.514Z',
     features: [
-      'ISO 4074:2015 quality certified',
+      ' :2015 quality certified',
       'Medical-grade natural rubber latex',
       '100% electronically pinhole inspected',
       'Neutral pH skin-friendly lubrication',
@@ -82,7 +82,7 @@ export const PRODUCTS = {
     price: 400, regularPrice: 400, offerPrice: 400,
     tagline: 'Precision 0.045mm ultra-fine latex for safe family planning',
     tagline_bn: 'নিরাপদ পরিবার পরিকল্পনার জন্য ০.০৪৫ মিমি নিখুঁত পাতলা কন্ট্রাসেপ্টিভ',
-    description: 'Precision-engineered with high-tensile 0.045mm natural latex for optimal flexibility without compromising durability. Adheres strictly to ISO 4074 international reproductive health standards.',
+    description: 'Precision-engineered with high-tensile 0.045mm natural latex for optimal flexibility without compromising durability. Adheres strictly to   international reproductive health standards.',
     description_bn: '০.০৪৫ মিমি আল্ট্রা-থিন মেমব্রেন এবং উচ্চ নমনীয়তার সমন্বয়ে প্রস্তুত। আইএসও ৪০৭৪ আন্তর্জাতিক প্রজনন স্বাস্থ্য মানদণ্ড অনুসরণ করে ১০০% ইলেকট্রনিকালি টেস্টেড।',
     imageUrl: '/uploads/2609/260923/mo-ultra-thin_main_1790169170756.webp',
     images: [
@@ -98,7 +98,7 @@ export const PRODUCTS = {
       thickness: '0.045mm ultra-sheer',
       lubrication: 'Neutral pH medical silicone fluid',
       testing: '100% Electronically Inspected & Burst Tested',
-      certification: 'ISO 4074:2015 / CE Certified',
+      certification: ' :2015 / CE Certified',
       purpose: 'Contraception & STI/HIV prevention',
       ageRating: '18+ Adults Only'
     },
@@ -108,7 +108,7 @@ export const PRODUCTS = {
     features: [
       'Ultra-fine 0.045mm membrane wall',
       'High tensile strength & elasticity',
-      'ISO 4074 reproductive health certified',
+      '  reproductive health certified',
       '100% electronic pinhole safety tested',
       'Smooth medical silicone lubrication'
     ],
@@ -158,7 +158,7 @@ export const PRODUCTS = {
       thickness: '0.055mm contoured wall',
       lubrication: 'Long-lasting neutral pH silicone fluid',
       testing: '100% Electronically Pinhole & Pressure Tested',
-      certification: 'ISO 4074:2015 / CE Certified',
+      certification: ' :2015 / CE Certified',
       purpose: 'Contraception & STI/HIV prevention',
       ageRating: '18+ Adults Only'
     },
@@ -202,7 +202,7 @@ export const PRODUCTS = {
     price: 800, regularPrice: 800, offerPrice: 800,
     tagline: '20pcs family planning supply bundle for dependable contraception',
     tagline_bn: '২০ পিস নির্ভরযোগ্য পারিবারিক স্বাস্থ্য ও পরিবার পরিকল্পনা সরবরাহ বান্ডেল',
-    description: 'Double-pack family planning supply (2 boxes / 20 units) of ISO 4074 certified MO Ultra Thin latex contraception. Delivered in 100% plain, sealed, unmarked parcel bags.',
+    description: 'Double-pack family planning supply (2 boxes / 20 units) of   certified MO Ultra Thin latex contraception. Delivered in 100% plain, sealed, unmarked parcel bags.',
     description_bn: '২০ পিস (২ বক্স) আইএসও ৪০৭৪ সার্টিফাইড আসল MO আল্ট্রা থিন কন্ট্রাসেপ্টিভ। সম্পূর্ণ সিল করা সাধারণ পার্সেল ব্যাগে সুরক্ষিত ডেলিভারি।',
     imageUrl: '/uploads/2609/260923/combo-26_main_1790168615316.webp',
     images: [
@@ -218,7 +218,7 @@ export const PRODUCTS = {
       thickness: '0.045mm ultra-sheer',
       lubrication: 'Neutral pH silicone oil',
       testing: 'Dual Electronic Pinhole Tested',
-      certification: 'ISO 4074:2015 / CE Certified',
+      certification: ' :2015 / CE Certified',
       purpose: 'Contraception & STI/HIV prevention',
       ageRating: '18+ Adults Only'
     },
@@ -227,7 +227,7 @@ export const PRODUCTS = {
     stockAmount: 50,
     features: [
       '2x MO Retail Boxes (20 units total)',
-      'Certified ISO 4074 medical quality',
+      'Certified   medical quality',
       '0.045mm ultra-sheer membrane',
       '100% discreet unmarked parcel'
     ],
@@ -276,7 +276,7 @@ export const PRODUCTS = {
       thickness: '0.055mm calibrated wall',
       lubrication: 'Neutral pH silicone oil',
       testing: 'Dual Electronic Pinhole Tested',
-      certification: 'ISO 4074:2015 / CE Certified',
+      certification: ' :2015 / CE Certified',
       purpose: 'Contraception & STI/HIV prevention',
       ageRating: '18+ Adults Only'
     },
@@ -318,7 +318,7 @@ export const PRODUCTS = {
     price: 800, regularPrice: 800, offerPrice: 800,
     tagline: '20pcs family planning supply bundle with micro-textured latex matrix',
     tagline_bn: '২০ পিস মাইক্রো-টেক্সচার্ড ম্যাট্রিক্স পরিবার পরিকল্পনা কম্বো প্যাক',
-    description: 'Value pack of 20 units of authentic MO textured matrix contraceptive latex. Engineered under ISO 4074 for high-reliability contraception.',
+    description: 'Value pack of 20 units of authentic MO textured matrix contraceptive latex. Engineered under   for high-reliability contraception.',
     description_bn: '২০ পিস (২ বক্স) আসল MO টেক্সচার্ড ম্যাট্রিক্স পরিবার পরিকল্পনা সামগ্রী। আন্তর্জাতিক আইএসও ৪০৭৪ মানদণ্ড অনুযায়ী প্রস্তুত।',
     imageUrl: '/uploads/2609/260923/combo-26_main_1790168615316.webp',
     images: [
@@ -334,7 +334,7 @@ export const PRODUCTS = {
       thickness: '0.055mm calibrated wall',
       lubrication: 'Neutral pH silicone oil',
       testing: 'Dual Electronic Pinhole Tested',
-      certification: 'ISO 4074:2015 / CE Certified',
+      certification: ' :2015 / CE Certified',
       purpose: 'Contraception & STI/HIV prevention',
       ageRating: '18+ Adults Only'
     },
@@ -376,7 +376,7 @@ export const PRODUCTS = {
     price: 900, regularPrice: 1200, offerPrice: 900,
     tagline: 'Complete 30pcs variety family planning bundle (3x 10pcs boxes)',
     tagline_bn: '৩০ পিস সম্পূর্ণ ভ্যারাইটি পরিবার পরিকল্পনা কম্বো প্যাক (৩টি বক্স)',
-    description: 'Complete family planning bundle (3 sealed retail boxes / 30 units total) containing 1x Ultra Thin 10pcs + 1x Dotted 10pcs + 1x Ribbed 10pcs. ISO 4074 certified and delivered in 100% plain, sealed, unmarked parcel.',
+    description: 'Complete family planning bundle (3 sealed retail boxes / 30 units total) containing 1x Ultra Thin 10pcs + 1x Dotted 10pcs + 1x Ribbed 10pcs.   certified and delivered in 100% plain, sealed, unmarked parcel.',
     description_bn: '৩০ পিস (৩টি বক্স) আসল MO কন্ট্রাসেপ্টিভ কম্বো: ১টি আল্ট্রা থিন (১০ পিস) + ১টি ডটেড (১০ পিস) + ১টি আল্ট্রা রিবড (১০ পিস)। আন্তর্জাতিক আইএসও ৪০৭৪ সার্টিফাইড মানসম্পন্ন ও ১০০% গোপনীয় পার্সেল ডেলিভারি।',
     imageUrl: '/uploads/2609/260923/combo-26_main_1790168615316.webp',
     images: [
@@ -392,7 +392,7 @@ export const PRODUCTS = {
       thickness: 'Assorted (0.045mm to 0.055mm)',
       lubrication: 'Neutral pH medical silicone fluid',
       testing: 'Triple Electronic Lab Tested',
-      certification: 'ISO 4074:2015 / CE Certified',
+      certification: ' :2015 / CE Certified',
       purpose: 'Contraception & STI/HIV prevention',
       ageRating: '18+ Adults Only'
     },
@@ -402,7 +402,7 @@ export const PRODUCTS = {
     features: [
       '3x MO Retail Boxes (30 units total)',
       '1x Ultra Thin + 1x Dotted + 1x Ribbed',
-      'Certified ISO 4074 medical quality',
+      'Certified   medical quality',
       '100% discreet unmarked parcel'
     ],
     features_bn: [

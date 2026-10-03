@@ -50,7 +50,6 @@ export const sendOtpEmail = async ({
     return { delivered: true };
   } catch (error) {
     log.warn?.({ error, toEmail }, "OTP email delivery failed");
-    defaultTransport = null;
     return {
       delivered: false,
       reason: error.message || "OTP email delivery failed",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, CheckCircle2, AlertCircle, RefreshCw, Save, Activity, Inbox } from 'lucide-react';
+import { Mail, CheckCircle2, AlertCircle, RefreshCw, Save, Activity, Inbox, Send } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ const EmailServerSettingsPage = () => {
   const [senderEmail, setSenderEmail] = useState('');
   const [smtpEnabled, setSmtpEnabled] = useState(false);
   const [smtpTestStatus, setSmtpTestStatus] = useState('untested');
+  const [testEmailRecipient, setTestEmailRecipient] = useState('');
 
   // IMAP State
   const [imapHost, setImapHost] = useState('');
@@ -120,13 +121,16 @@ const EmailServerSettingsPage = () => {
   });
 
   const testSmtpMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ sendLiveEmail = false } = {}) => {
       const payload = {
         host: smtpHost.trim(),
         port: Number(smtpPort),
         secure: smtpSecure,
         user: smtpUser.trim(),
         password: smtpPassword.trim(),
+        senderName: senderName.trim(),
+        senderEmail: senderEmail.trim(),
+        recipientEmail: sendLiveEmail ? (testEmailRecipient.trim() || smtpUser.trim()) : undefined,
       };
       const res = await apiClient.post('/api/v1/settings/smtp/test', payload);
       return res.data;
@@ -156,7 +160,20 @@ const EmailServerSettingsPage = () => {
       toast.error('Host, User, and Password are required to test connection');
       return;
     }
-    testSmtpMutation.mutate();
+    testSmtpMutation.mutate({ sendLiveEmail: false });
+  };
+
+  const handleSendLiveTestEmail = () => {
+    if (!smtpHost.trim() || !smtpUser.trim() || !smtpPassword.trim()) {
+      toast.error('Host, User, and Password are required to send test email');
+      return;
+    }
+    const targetEmail = testEmailRecipient.trim() || smtpUser.trim();
+    if (!targetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+      toast.error('Please enter a valid recipient email address');
+      return;
+    }
+    testSmtpMutation.mutate({ sendLiveEmail: true });
   };
 
   const isSmtpConnected = smtpTestStatus === 'connected';
@@ -299,6 +316,42 @@ const EmailServerSettingsPage = () => {
                     <p className="text-[11px] text-muted-foreground">If disabled, the server will fallback to using environment variable configurations.</p>
                   </div>
                   <Switch checked={smtpEnabled} onCheckedChange={setSmtpEnabled} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/60 shadow-xs">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base font-semibold">Test Email & Diagnostics</CardTitle>
+                <CardDescription className="text-xs">
+                  Verify the server connection or send a live test message directly to an inbox to verify deliverability.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-foreground">Test Recipient Email Address</label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      type="email"
+                      placeholder="e.g. yourname@gmail.com"
+                      value={testEmailRecipient}
+                      onChange={(e) => setTestEmailRecipient(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={handleSendLiveTestEmail}
+                      disabled={testSmtpMutation.isPending || !smtpHost || !smtpUser || !smtpPassword}
+                      className="flex items-center gap-2 cursor-pointer shrink-0"
+                    >
+                      <Send className={`h-4 w-4 ${testSmtpMutation.isPending ? 'animate-spin' : ''}`} />
+                      <span>Send Live Test Email</span>
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    This dispatches a real test email through your SMTP credentials to confirm delivery to external inboxes.
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -33,7 +33,7 @@ export default function PromoComboBanner() {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1c0612] via-[#2c091b] to-[#13030b] border-2 border-brand-500/50 shadow-2xl p-6 sm:p-8 md:p-10 text-white">
         
         {/* Subtle Ambient Radial Lighting Effects */}

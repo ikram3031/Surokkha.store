@@ -5,8 +5,8 @@ import { Skeleton } from './ui/skeleton';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha.store';
 
-export default function ProductArtwork({ 
-  productKey, 
+export default function ProductArtwork({
+  productKey,
   customImageUrl = null,
   sizeClass = "w-full aspect-square",
   imgClassName = "w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105 rounded-2xl"
@@ -14,12 +14,12 @@ export default function ProductArtwork({
   const storeProducts = useStore((state) => state.products);
   const p = (typeof productKey === 'object' && productKey !== null)
     ? productKey
-    : (storeProducts[productKey] || 
-       (typeof productKey === 'string' && storeProducts[productKey.replace(/-condom$/, '')]) ||
-       (typeof productKey === 'string' && storeProducts[`${productKey}-condom`]) ||
-       DEFAULT_PRODUCTS[productKey] || 
-       DEFAULT_PRODUCTS['mo-dotted']);
-       
+    : (storeProducts[productKey] ||
+      (typeof productKey === 'string' && storeProducts[productKey.replace(/-condom$/, '')]) ||
+      (typeof productKey === 'string' && storeProducts[`${productKey}-condom`]) ||
+      DEFAULT_PRODUCTS[productKey] ||
+      DEFAULT_PRODUCTS['mo-dotted']);
+
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
@@ -46,9 +46,9 @@ export default function ProductArtwork({
         {!imgLoaded && (
           <Skeleton className="absolute inset-0 w-full h-full rounded-2xl" />
         )}
-        <img 
-          src={resolvedImgUrl} 
-          alt={p?.name || 'Product Packaging'} 
+        <img
+          src={resolvedImgUrl}
+          alt={p?.name || 'Product Packaging'}
           className={`${imgClassName || "w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105 rounded-2xl"} ${imgLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
           onLoad={() => setImgLoaded(true)}
           onError={() => {
@@ -80,7 +80,7 @@ export default function ProductArtwork({
     foilColor = '#FECDD3';
     badgeBg = '#4C0519';
     variantLabel = 'TEXTURED MATRIX';
-    accentBadge = 'ISO 4074 CERTIFIED BARRIER';
+    accentBadge = '  CERTIFIED BARRIER';
     patternSvg = (
       <g fill="#FFE4E6" opacity="0.6">
         <circle cx="95" cy="150" r="3.5" /> <circle cx="120" cy="150" r="3.5" /> <circle cx="150" cy="150" r="4" fill="#FFF" /> <circle cx="180" cy="150" r="3.5" /> <circle cx="205" cy="150" r="3.5" />
@@ -180,14 +180,14 @@ export default function ProductArtwork({
 
         {/* Brand Name "MO" */}
         <text x="56" y="82" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="900" fontSize="38" fill="#FFFFFF" letterSpacing="1.5">MO</text>
-        
+
         {/* Strict 18+ Age Gating Stamp on Packaging */}
         <circle cx="155" cy="68" r="13" fill="#000000" fillOpacity="0.5" stroke={foilColor} strokeWidth="1.2" />
         <text x="155" y="73" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="900" fill="#FFFFFF" textAnchor="middle">18+</text>
 
-        {/* ISO 4074 Medical Device Compliance Pill */}
+        {/*   Medical Device Compliance Pill */}
         <rect x="178" y="56" width="76" height="24" rx="12" fill={badgeBg} fillOpacity="0.85" stroke={foilColor} strokeWidth="1" />
-        <text x="216" y="72" fontFamily="Inter, sans-serif" fontSize="8.5" fontWeight="800" fill={foilColor} textAnchor="middle" letterSpacing="0.5">ISO 4074</text>
+        <text x="216" y="72" fontFamily="Inter, sans-serif" fontSize="8.5" fontWeight="800" fill={foilColor} textAnchor="middle" letterSpacing="0.5"> </text>
 
         {/* Regulated Medical Classification Text */}
         <text x="56" y="106" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="700" fill="#FFFFFF" opacity="0.85" letterSpacing="0.8">LATEX CONTRACEPTIVE BARRIER</text>
@@ -197,7 +197,7 @@ export default function ProductArtwork({
 
         {/* Variant Title */}
         <text x="150" y="305" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="800" fontSize="14" fill="#FFFFFF" textAnchor="middle" letterSpacing="0.8">{variantLabel}</text>
-        
+
         {/* Specification Subtitle */}
         <rect x="65" y="316" width="170" height="18" rx="5" fill="#000000" fillOpacity="0.45" />
         <text x="150" y="329" fontFamily="Inter, sans-serif" fontSize="8.5" fontWeight="700" fill={foilColor} textAnchor="middle" letterSpacing="0.6">{accentBadge}</text>

@@ -8,33 +8,7 @@ import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
 
-let defaultTransport;
-
-// Helper to initialize or retrieve SMTP transport
-const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    defaultTransport = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      auth: {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
-  }
-  return defaultTransport;
-};
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
 // Generates/retrieves TOTP secret and emails QR Code to user
 export const sendQrCodeEmail = async (req, res, next) => {
@@ -71,9 +45,12 @@ export const sendQrCodeEmail = async (req, res, next) => {
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
 
     // Build SMTP transport and sender address
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Decantre BD";
-    const fromEmail = env.SMTP_FROM || env.SMTP_USER;
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured) {
+      return res.status(500).json({ status: "error", message: "SMTP service is not configured" });
+    }
+    const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Surokkha";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
     const fromAddress = `"${fromName}" <${fromEmail}>`;
 
     // Build branded HTML email from template
@@ -82,7 +59,7 @@ export const sendQrCodeEmail = async (req, res, next) => {
     await transport.sendMail({
       from: fromAddress,
       to: user.email,
-      subject: "Set Up Two-Factor Authentication — Decantre Dashboard",
+      subject: `Set Up Two-Factor Authentication — ${fromName}`,
       text: `Hello ${user.name},\n\nScan the QR code in your Google Authenticator app to set up 2FA.\nCan't scan? Enter this key manually: ${secret}\n\nIf you did not request this, change your password immediately.`,
       html: htmlContent,
       attachments: [
