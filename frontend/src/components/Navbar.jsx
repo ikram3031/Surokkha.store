@@ -102,7 +102,7 @@ export default function Navbar() {
 
       {/* BRAND HEADER (Surokkha Signature Light Rose Theme & Centered Menu) */}
       <header className="bg-[#faf5f6]/95 backdrop-blur-md border-b border-rose-200/70 shadow-xs transition-all">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-4">
           
           {/* Left: Brand Logo */}
           <div className="flex-shrink-0">

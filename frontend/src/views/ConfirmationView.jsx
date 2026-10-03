@@ -10,7 +10,8 @@ export default function ConfirmationView() {
 
   if (!lastOrder) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        <div className="max-w-xl mx-auto space-y-4">
         <h2 className="text-xl sm:text-2xl font-heading font-bold text-slate-900">{t('confirmation.no_order_title')}</h2>
         <button 
           onClick={() => navigateTo('home')} 
@@ -18,12 +19,14 @@ export default function ConfirmationView() {
         >
           {t('confirmation.return_home')}
         </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-center space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 animate-fade-in">
+      <div className="max-w-2xl mx-auto text-center space-y-8">
       
       <div className="w-16 h-16 bg-brand-50 text-brand-800 rounded-3xl flex items-center justify-center mx-auto shadow-xs border border-brand-100">
         <svg className="w-8 h-8 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,6 +150,7 @@ export default function ConfirmationView() {
         </button>
       </div>
 
+      </div>
     </div>
   );
 }

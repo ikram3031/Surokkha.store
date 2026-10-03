@@ -1,44 +1,19 @@
 import { Router } from "express";
-import nodemailer from "nodemailer";
 import { buildInvoiceEmailHtml } from "../../common/utils/invoiceEmailTemplate.js";
 import { env } from "../../common/config/env.js";
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
 const emailRouter = Router();
 
-let transporter;
-
-// Dynamically retrieve or initialize SMTP transporter
-const getTransporter = () => {
-  if (!transporter) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    transporter = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: Number(env.SMTP_PORT),
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      auth: {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
-  }
-  return transporter;
-};
-
 const sendEmail = async ({ toEmail, subject, text, html }) => {
-  const activeTransporter = getTransporter();
-  const fromName = env.SMTP_FROM_NAME || "Decantre BD";
-  const fromEmail = env.SMTP_FROM || env.SMTP_USER;
+  const { transport, config: smtpConfig } = await getSmtpTransport();
+  if (!smtpConfig.isConfigured) {
+    throw new Error("SMTP credentials are not configured in DB or .env");
+  }
+  const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Surokkha";
+  const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
   
-  await activeTransporter.sendMail({
+  return await transport.sendMail({
     from: `"${fromName}" <${fromEmail}>`,
     to: toEmail,
     subject,
@@ -54,13 +29,6 @@ const handleEmailRequest = async (req, res) => {
     return res.status(400).json({
       status: "error",
       message: "Valid email is required",
-    });
-  }
-
-  if (!env.SMTP_USER || !env.SMTP_PASSWORD) {
-    return res.status(500).json({
-      status: "error",
-      message: "SMTP credentials are not configured",
     });
   }
 
@@ -80,7 +48,7 @@ const handleEmailRequest = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       status: "error",
-      message: "Failed to send email",
+      message: error.message || "Failed to send email",
       details: error.message,
     });
   }
@@ -93,13 +61,6 @@ const handleInvoiceRequest = async (req, res) => {
     return res.status(400).json({
       status: "error",
       message: "Valid email is required",
-    });
-  }
-
-  if (!env.SMTP_USER || !env.SMTP_PASSWORD) {
-    return res.status(500).json({
-      status: "error",
-      message: "SMTP credentials are not configured",
     });
   }
 

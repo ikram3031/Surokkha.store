@@ -8,47 +8,21 @@ import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { config as clientConfig } from "../../common/config/index.js";
 import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
 // Configure authenticator with a 1-step window to accommodate minor time drift
 authenticator.options = { window: 1 };
 
-let defaultTransport;
-
-// Helper to initialize or retrieve SMTP transport
-export const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    const transportOpts = {
-      host: env.SMTP_HOST || "127.0.0.1",
-      port: Number(env.SMTP_PORT) || 25,
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 8000,
-    };
-
-    if (env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER) {
-      transportOpts.auth = {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      };
-    }
-
-    defaultTransport = nodemailer.createTransport(transportOpts);
-  }
-  return defaultTransport;
-};
-
 // Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
 export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
   try {
-    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured) {
+      logger.warn({ email: user.email }, "Cannot send 2FA setup email: SMTP is not configured");
+      return false;
+    }
+
+    const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
     const otpauth = authenticator.keyuri(user.email, brandName, secret);
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, {
       width: 240,
@@ -59,10 +33,8 @@ export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
       },
     });
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || brandName;
-    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
-    const fromAddress = `"${fromName}" <${fromEmail}>`;
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromAddress = `"${brandName}" <${fromEmail}>`;
 
     const htmlContent = buildTwoFactorQrEmailHtml({
       name: user.name,

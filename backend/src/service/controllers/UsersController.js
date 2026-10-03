@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import mongoose from "mongoose";
 import nodemailer from "nodemailer";
 import { UserModel } from "../../common/models/user.model.js";
 import { AssetModel } from "../../common/models/asset.model.js";
@@ -11,37 +12,40 @@ import {
   validateUpdateUserPayload,
 } from "../../common/helper/userControllerHelper.js";
 
-let defaultTransport;
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
-// Dynamically retrieve or initialize SMTP transport
-const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    const transportOpts = {
-      host: env.SMTP_HOST || "127.0.0.1",
-      port: Number(env.SMTP_PORT) || 25,
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 8000,
-    };
-
-    if (env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER) {
-      transportOpts.auth = {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      };
+// Helper to reliably dispatch user invitation emails
+export const sendInvitationEmail = async ({ user, inviteUrl }) => {
+  try {
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured) {
+      console.warn(`[UsersController] Cannot send invitation email to ${user.email}: SMTP is not configured in DB or .env`);
+      return { success: false, reason: "SMTP credentials not configured" };
     }
 
-    defaultTransport = nodemailer.createTransport(transportOpts);
+    const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const logoUrl = "https://admin.surokkha.store/surokkha_logo.png";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromAddress = `"${brandName}" <${fromEmail}>`;
+
+    const info = await transport.sendMail({
+      from: fromAddress,
+      to: user.email,
+      subject: `You're invited to join ${brandName} as ${user.role}`,
+      html: renderUserInviteEmail({
+        name: user.name,
+        role: user.role,
+        inviteUrl,
+        brandName,
+        logoUrl,
+      }),
+    });
+    console.log(`[UsersController] Invitation email successfully dispatched to ${user.email} (MessageId: ${info.messageId})`);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error(`[UsersController] Failed to send invitation email to ${user.email}:`, err);
+    return { success: false, error: err.message };
   }
-  return defaultTransport;
 };
 
 // List all users in the system.
@@ -117,7 +121,7 @@ export const createUser = async (req, res, next) => {
         inviteToken,
         inviteTokenExpiresAt,
         isActive: Boolean(passwordHash), // Active if password explicitly provided, otherwise pending activation
-        createdBy: req.user?.userId || null,
+        createdBy: mongoose.isValidObjectId(req.user?.userId) ? req.user.userId : null,
       });
     }
 
@@ -133,40 +137,68 @@ export const createUser = async (req, res, next) => {
     }
     const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
 
-    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
-    const logoUrl = "https://admin.surokkha.store/surokkha_logo.png";
-    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
-    const fromAddress = `"${brandName}" <${fromEmail}>`;
-
-    // Send invitation email non-blockingly if SMTP is available
-    if (env.SMTP_HOST && (env.SMTP_USER || Number(env.SMTP_PORT) === 25)) {
-      Promise.resolve().then(async () => {
-        try {
-          const transport = getTransport();
-          await transport.sendMail({
-            from: fromAddress,
-            to: user.email,
-            subject: `You're invited to join ${brandName} as ${user.role}`,
-            html: renderUserInviteEmail({
-              name: user.name,
-              role: user.role,
-              inviteUrl,
-              brandName,
-              logoUrl,
-            }),
-          });
-          console.log(`[UsersController] Invitation email successfully dispatched to ${user.email}`);
-        } catch (mailErr) {
-          console.error("[UsersController] Failed to send invitation email:", mailErr);
-        }
-      });
-    }
+    // Dispatch invitation email via active SMTP configuration
+    const mailResult = await sendInvitationEmail({ user, inviteUrl });
 
     res.status(201).json({
       status: "success",
-      message: "User invited successfully. Invitation link sent via email.",
+      message: mailResult.success
+        ? "User invited successfully. Invitation link sent via email."
+        : "User invited successfully. (Note: Email delivery failed or SMTP not configured; share invite link manually).",
       data: user,
       inviteUrl,
+      emailSent: mailResult.success,
+      emailError: mailResult.error || (mailResult.success ? null : mailResult.reason),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Resend invitation email for a pending user
+export const resendInvitation = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: "error", message: "User not found" });
+    }
+
+    if (user.isActive) {
+      return res.status(400).json({ status: "error", message: "This user account is already active" });
+    }
+
+    // Generate fresh invite token
+    const inviteToken = crypto.randomBytes(32).toString("hex");
+    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+
+    user.inviteToken = inviteToken;
+    user.inviteTokenExpiresAt = inviteTokenExpiresAt;
+    await user.save();
+
+    // Resolve white-label domain for invitation link
+    const origin = req.headers.origin || req.headers.referer || "";
+    let domainUrl = "https://admin.surokkha.store";
+    if (req.body?.domain) {
+      domainUrl = req.body.domain.startsWith("http") ? req.body.domain : `https://${req.body.domain}`;
+    } else if (origin) {
+      try {
+        domainUrl = new URL(origin).origin;
+      } catch (_) {}
+    }
+    const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
+
+    const mailResult = await sendInvitationEmail({ user, inviteUrl });
+
+    return res.json({
+      status: "success",
+      message: mailResult.success
+        ? "Invitation email resent successfully."
+        : "Invitation link refreshed, but email delivery failed. You can share the invitation link manually.",
+      data: user,
+      inviteUrl,
+      emailSent: mailResult.success,
+      emailError: mailResult.error || (mailResult.success ? null : mailResult.reason),
     });
   } catch (error) {
     next(error);

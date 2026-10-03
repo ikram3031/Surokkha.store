@@ -19,16 +19,18 @@ import ConfirmationView from './views/ConfirmationView';
 export default function App() {
   const currentView = useStore((state) => state.currentView);
   const fetchProducts = useStore((state) => state.fetchProducts);
+  const fetchCategories = useStore((state) => state.fetchCategories);
   const navigateTo = useStore((state) => state.navigateTo);
   const openCartDrawer = useStore((state) => state.openCartDrawer);
 
   useEffect(() => {
     fetchProducts();
+    if (fetchCategories) fetchCategories();
     const initial = parseRouteFromLocation();
     if (initial.openCart) {
       openCartDrawer();
     }
-  }, [fetchProducts, openCartDrawer]);
+  }, [fetchProducts, fetchCategories, openCartDrawer]);
 
   // Sync state when user clicks browser Back/Forward buttons
   useEffect(() => {

@@ -48,7 +48,7 @@ const en = {
     shop_btn: 'All Products',
     badge_private: '100% Private',
     badge_cod: 'Cash on Delivery',
-    badge_quality: 'ISO 4074 Quality'
+    badge_quality: '  Quality'
   },
   home: {
     featured_badge: 'Certified Collection',
@@ -64,7 +64,7 @@ const en = {
     standards_title: 'Why Choose Surokkha.store?',
     standards_desc: 'Reliable, confidential family planning healthcare supplies delivered nationwide.',
     authentic_title: '100% Authentic Quality',
-    authentic_desc: 'Direct authentic MO devices adhering to ISO 4074 electronic pinhole testing standards.',
+    authentic_desc: 'Direct authentic MO devices adhering to   electronic pinhole testing standards.',
     discreet_title: 'Discreet Delivery',
     discreet_desc: '100% plain, sealed unbranded parcels. No product names or descriptions mentioned on the outer box.',
     online_title: 'Convenient Online Ordering',
@@ -215,7 +215,7 @@ const en = {
     contact_title: 'Contact & Social Support',
     guarantee_title: 'Service Commitments',
     g1: '100% Discreet & Unbranded Packaging',
-    g2: 'ISO 4074 Medical Quality Certified',
+    g2: '  Medical Quality Certified',
     g3: 'Cash on Delivery Across Bangladesh',
     g4: '18+ Adult Family Planning Device',
     copyright: '© 2026 Surokkha.store. All rights reserved. Family Planning & Healthcare Supplies (18+).'

@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { PRODUCTS as DEFAULT_PRODUCTS, PRODUCT_KEYS as DEFAULT_PRODUCT_KEYS } from '../data/products';
-import { 
-  trackPageView, 
-  trackViewContent, 
-  trackAddToCart, 
-  trackAddComboToCart, 
+import {
+  trackPageView,
+  trackViewContent,
+  trackAddToCart,
+  trackAddComboToCart,
   trackPurchase,
   getFbp,
   getFbc,
@@ -18,7 +18,7 @@ const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha
 export const parseRouteFromLocation = () => {
   if (typeof window === 'undefined') return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
   const pathname = window.location.pathname.replace(/\/$/, '') || '/';
-  
+
   if (pathname === '/' || pathname === '') {
     return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
   }
@@ -71,7 +71,7 @@ export const getInitialLanguage = () => {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('surokkha_lang', 'bn');
-    } catch (e) {}
+    } catch (e) { }
   }
   return 'bn';
 };
@@ -95,7 +95,7 @@ export const useStore = create((set, get) => ({
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('surokkha_lang', lang);
-      } catch (e) {}
+      } catch (e) { }
     }
     set({ language: lang });
   },
@@ -103,7 +103,7 @@ export const useStore = create((set, get) => ({
     const next = get().language === 'bn' ? 'en' : 'bn';
     get().setLanguage(next);
   },
-  
+
   // Checkout States (Matching Decantre Architecture)
   sameAsBilling: true,
   orderNotes: '',
@@ -127,7 +127,7 @@ export const useStore = create((set, get) => ({
     district: '',
     zip: ''
   },
-  
+
   setSameAsBilling: (same) => set({ sameAsBilling: same }),
   setOrderNotes: (notes) => set({ orderNotes: notes }),
   setShippingInfo: (updater) => set((state) => {
@@ -139,7 +139,7 @@ export const useStore = create((set, get) => ({
         if (updated.fullName) window.localStorage.setItem('_sk_user_name', updated.fullName);
         if (updated.district) window.localStorage.setItem('_sk_user_district', updated.district);
         syncMetaUserProperties(updated);
-      } catch (_) {}
+      } catch (_) { }
     }
     return { shippingInfo: updated };
   }),
@@ -232,10 +232,43 @@ export const useStore = create((set, get) => ({
   },
 
   // Dynamic Products State
+  // Dynamic Products & Categories State
   products: DEFAULT_PRODUCTS,
   productKeys: DEFAULT_PRODUCT_KEYS,
   isLoadingProducts: false,
   productsError: null,
+  categories: [],
+  isLoadingCategories: false,
+
+  fetchCategories: async () => {
+    set({ isLoadingCategories: true });
+    try {
+      const endpoints = [
+        '/api/v1/categories',
+        `${API_BASE_URL}/api/v1/categories`,
+        '/api/categories',
+        `${API_BASE_URL}/api/categories`
+      ];
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            headers: { 'Accept': 'application/json' }
+          });
+          if (res.ok) {
+            const json = await res.json();
+            const cats = Array.isArray(json) ? json : (json.data || json.categories || []);
+            if (Array.isArray(cats) && cats.length > 0) {
+              set({ categories: cats, isLoadingCategories: false });
+              return;
+            }
+          }
+        } catch { }
+      }
+      set({ isLoadingCategories: false });
+    } catch {
+      set({ isLoadingCategories: false });
+    }
+  },
 
   // Fetch Dynamic Products from API with Multi-Language / data_bn Support
   fetchProducts: async () => {
@@ -243,9 +276,13 @@ export const useStore = create((set, get) => ({
     const currentLang = get().language || 'bn';
     try {
       const endpoints = [
-        `/api/v1/products?lang=${currentLang}`,
-        '/api/v1/products',
-        `${API_BASE_URL}/api/v1/products?lang=${currentLang}`,
+        `/api/v1/products?isActive=true&limit=100&lang=${currentLang}`,
+        `/api/v1/products?limit=100&lang=${currentLang}`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100&lang=${currentLang}`,
+        `${API_BASE_URL}/api/v1/products?limit=100&lang=${currentLang}`,
+        `/api/v1/products?isActive=true&limit=100`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100`,
+        `/api/v1/products`,
         `${API_BASE_URL}/api/v1/products`,
         '/api/products',
         `${API_BASE_URL}/api/products`
@@ -257,7 +294,7 @@ export const useStore = create((set, get) => ({
       for (const endpoint of endpoints) {
         try {
           const res = await fetch(endpoint, {
-            headers: { 
+            headers: {
               'Accept': 'application/json',
               'Accept-Language': currentLang,
               'X-Language': currentLang
@@ -265,12 +302,12 @@ export const useStore = create((set, get) => ({
           });
           if (res.ok) {
             const json = await res.json();
-            
+
             if (json && typeof json === 'object') {
               rawDataBn = json.data_bn || json.products_bn || json.result_bn || null;
               rawData = Array.isArray(json) ? json : (json.data || json.products || json.result || json.items || []);
             }
-            
+
             if (Array.isArray(rawData) && rawData.length > 0) {
               break;
             }
@@ -284,7 +321,7 @@ export const useStore = create((set, get) => ({
         const normalized = {};
         const keys = [];
 
-        // Helper to extract timestamp for sorting latest first
+        // Helper to extract timestamp for sorting
         const getCreatedTimestamp = (p) => {
           if (p.createdAt) {
             const t = new Date(p.createdAt).getTime();
@@ -311,7 +348,7 @@ export const useStore = create((set, get) => ({
           return 0;
         };
 
-        // Sort products: In Stock -> Active -> CreatedDate Latest First
+        // Sort products: Active first -> Oldest CreatedDate first (original lineup at top, new arrivals at bottom)
         rawData.sort((a, b) => {
           const aIsActive = (a.isActive !== false && a.status !== 'inactive') ? 1 : 0;
           const bIsActive = (b.isActive !== false && b.status !== 'inactive') ? 1 : 0;
@@ -319,15 +356,12 @@ export const useStore = create((set, get) => ({
             return bIsActive - aIsActive; // Active first
           }
 
-          const aIsOos = (a.stockStatus === 'outofstock' || a.stockStatus === 'out_of_stock' || a.availability === 'out of stock' || a.isOutOfStock === true || (a.stockStatus !== 'instock' && (a.stockAmount === 0 || a.stock === 0))) ? 1 : 0;
-          const bIsOos = (b.stockStatus === 'outofstock' || b.stockStatus === 'out_of_stock' || b.availability === 'out of stock' || b.isOutOfStock === true || (b.stockStatus !== 'instock' && (b.stockAmount === 0 || b.stock === 0))) ? 1 : 0;
-          if (aIsOos !== bIsOos) {
-            return aIsOos - bIsOos; // In stock first
-          }
-
           const timeA = getCreatedTimestamp(a);
           const timeB = getCreatedTimestamp(b);
-          return timeB - timeA; // Latest createdDate first
+          // Items with no timestamp or earliest timestamp come first
+          if (!timeA && timeB) return -1;
+          if (timeA && !timeB) return 1;
+          return timeA - timeB; // Oldest first
         });
 
         // Build a lookup map if rawDataBn is provided as an array or object
@@ -383,15 +417,15 @@ export const useStore = create((set, get) => ({
           const nameBn = itemBn.name || itemBn.title || p.name_bn || p.title_bn || p.name || 'ওয়েলনেস প্রোডাক্ট';
           const taglineBn = itemBn.tagline || itemBn.shortDescription || itemBn.subtitle || p.tagline_bn || p.shortDescription_bn || p.tagline || 'প্রিমিয়াম পার্সোনাল ওয়েলনেস স্ট্যান্ডার্ড';
           const descriptionBn = itemBn.description || itemBn.longDescription || p.description_bn || p.longDescription_bn || p.description || 'কঠোর মান নিয়ন্ত্রণে প্রস্তুত প্রিমিয়াম গোপনীয় ব্যক্তিগত যত্ন পণ্য।';
-          
+
           const benefits = Array.isArray(p.benefits) && p.benefits.length > 0 ? p.benefits : [];
           const benefitsBn = Array.isArray(itemBn.benefits) && itemBn.benefits.length > 0 ? itemBn.benefits : benefits;
 
           const featuresBn = benefitsBn.length > 0
             ? benefitsBn.map(b => (typeof b === 'object' ? (b.title || b.description || '') : b)).filter(Boolean)
             : (Array.isArray(itemBn.features) && itemBn.features.length > 0
-                ? itemBn.features
-                : (Array.isArray(p.features_bn) && p.features_bn.length > 0 ? p.features_bn : ['সার্টিফাইড সেফটি স্ট্যান্ডার্ড', 'নিউট্রাল পিএইচ সিলিকন লুব্রিকেশন', 'ইলেকট্রনিক পরীক্ষায় প্রমাণিত স্থায়িত্ব']));
+              ? itemBn.features
+              : (Array.isArray(p.features_bn) && p.features_bn.length > 0 ? p.features_bn : ['সার্টিফাইড সেফটি স্ট্যান্ডার্ড', 'নিউট্রাল পিএইচ সিলিকন লুব্রিকেশন', 'ইলেকট্রনিক পরীক্ষায় প্রমাণিত স্থায়িত্ব']));
 
           const features = benefits.length > 0
             ? benefits.map(b => (typeof b === 'object' ? (b.title || b.description || '') : b)).filter(Boolean)
@@ -416,9 +450,11 @@ export const useStore = create((set, get) => ({
             bn: itemBn,
             data_bn: itemBn,
             brand: p.brand && typeof p.brand === 'string' ? p.brand : 'MO',
-            origin: p.origin || 'Imported (ISO 4074 / CE Certified)',
-            category: p.category?.name || (key.includes('combo') ? 'Combo' : 'Contraceptive Barrier Device'),
-            category_bn: key.includes('combo') ? 'কম্বো প্যাক' : 'পরিবার পরিকল্পনা সামগ্রী',
+            origin: p.origin || 'Imported (  / CE Certified)',
+            category: (p.category && typeof p.category === 'object' ? p.category.name : p.category) || (key.includes('combo') ? 'Combo' : 'Contraceptive'),
+            categorySlug: (p.category && typeof p.category === 'object' ? p.category.slug : (p.category ? String(p.category).toLowerCase().replace(/\s+/g, '-') : '')) || (key.includes('combo') ? 'combo' : 'contraceptive'),
+            category_bn: (p.category && typeof p.category === 'object' && p.category.name_bn) ? p.category.name_bn : (key.includes('combo') ? 'কম্বো প্যাক' : ((p.category?.name || p.category || '').toLowerCase().includes('lubricant') ? 'লুব্রিকেন্ট' : (p.category_bn || 'কনট্রাসেপটিভ'))),
+            categories: Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []),
             price: resolvedPrice,
             regularPrice: resolvedRegularPrice,
             offerPrice: resolvedOfferPrice,
@@ -447,7 +483,7 @@ export const useStore = create((set, get) => ({
             features: features,
             features_bn: featuresBn,
             badgeColor: p.badgeColor || (key.includes('dotted') ? 'bg-rose-50 text-rose-800 border-rose-200' : key.includes('ribbed') ? 'bg-purple-50 text-purple-900 border-purple-200' : key.includes('variety') ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-brand-50 text-brand-800 border-brand-200'),
-            iconType: p.iconType || (key.includes('thin') ? 'thin' : key.includes('ribbed') ? 'ribbed' : key.includes('dotted') ? 'dotted' : 'combo'),
+            iconType: p.iconType || (key.includes('thin') ? 'thin' : key.includes('ribbed') ? 'ribbed' : key.includes('dotted') ? 'dotted' : key.includes('combo') ? 'combo' : (key.includes('gelly') || key.includes('jelly') || key.includes('lubricant') ? 'lubricant' : 'standard')),
             imageUrl: primaryImg,
             images: resolvedGallery.length > 0 ? resolvedGallery : (primaryImg ? [primaryImg] : []),
           };
@@ -612,7 +648,7 @@ export const useStore = create((set, get) => ({
     const { products } = get();
     const comboKey = 'variety-condoms-30pcs-combo';
     const comboProd = products[comboKey] || products['combo-26'] || { id: comboKey, name: 'MO Ultimate 3-in-1 Latex Contraceptive (30 Pcs Combo)', price: 900, regularPrice: 1200 };
-    
+
     const isOutOfStock = Boolean(comboProd.isOutOfStock || comboProd.stockStatus === 'outofstock' || comboProd.stockStatus === 'out_of_stock' || comboProd.stockAmount === 0);
     if (isOutOfStock) {
       const isBn = get().language === 'bn';
@@ -659,7 +695,7 @@ export const useStore = create((set, get) => ({
   // Dynamic Totals & Delivery computation
   getCartTotals: () => {
     const { cart, products, shippingInfo, shippingAddress, sameAsBilling, appliedCoupon } = get();
-    
+
     let subtotal = 0;
     let totalItemCount = 0;
 

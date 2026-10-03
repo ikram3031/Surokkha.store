@@ -10,7 +10,7 @@ export default function Footer() {
 
   return (
     <footer className="hidden sm:block bg-gradient-to-b from-[#18050e] via-[#12040b] to-[#0a0206] text-white pt-12 pb-12 border-t border-rose-950/80 mt-16 text-sm text-left">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Top 18+ Age Notice Strip */}
         <div className="mb-8 p-3.5 rounded-2xl bg-rose-950/70 border border-rose-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white">
