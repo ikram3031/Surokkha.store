@@ -800,7 +800,7 @@ export const AppSidebar = ({ ...props }) => {
               {openMenu === "tools" && (
                 <SidebarMenuSub>
 
-                  {Boolean(clientConfig?.cloudFlareAnalytics?.active || clientConfig?.clientKey === "surokkha") && (isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
+                  {Boolean(clientConfig?.cloudFlareAnalytics?.active || clientConfig?.features?.cloudflareAnalytics !== false) && (isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
                         isActive={pathname.startsWith("/dashboard/cloudflare-analytics") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/cloudflare")}

@@ -9,8 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, UploadCloud, X, Tag, Check, Layers, ChevronDown } from "lucide-react";
+import { Plus, UploadCloud, X, Tag, Check, Layers, ChevronDown, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { MediaPickerModal } from "@/components/dashboard/media-picker-modal";
 
 const COMMON_TAG_SUGGESTIONS = [
   "featured",
@@ -48,10 +49,12 @@ export const SidebarCards = ({
   fileInputRef,
   handleImageSelect,
   removeUploadedImage,
-  galleryImages,
+  onSelectFeaturedMedia,
+  galleryImages = [],
   galleryInputRef,
   handleGalleryImageSelect,
   removeGalleryImage,
+  onSelectGalleryMedia,
   categorySlugs = [],
   setCategorySlugs,
   categorySlug,
@@ -110,6 +113,10 @@ export const SidebarCards = ({
   const [tagInput, setTagInput] = useState("");
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const tagDropdownRef = useRef(null);
+
+  // Media Picker Modals
+  const [isMediaPickerOpenFeatured, setIsMediaPickerOpenFeatured] = useState(false);
+  const [isMediaPickerOpenGallery, setIsMediaPickerOpenGallery] = useState(false);
 
   const handleAddTag = (rawText) => {
     if (!rawText || !rawText.trim()) return;
@@ -393,56 +400,110 @@ export const SidebarCards = ({
 
       {/* 2. Featured Image Card */}
       <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
-        <h3 className="text-sm font-bold border-b pb-2 text-foreground">
-          Featured Image *
-        </h3>
-
-        {!imagePreview ? (
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[140px] ${
-              mainImageError
-                ? "border-destructive bg-destructive/5 text-destructive"
-                : "border-border/80 hover:border-primary/50 hover:bg-muted/10"
-            }`}
-          >
-            <UploadCloud
-              className={`h-8 w-8 mb-1.5 ${
-                mainImageError ? "text-destructive" : "text-muted-foreground"
-              }`}
-            />
-            <span className="text-xs font-semibold block text-foreground">
-              Upload Main Image
-            </span>
-            <span className="text-[10px] text-muted-foreground block mt-0.5">
-              PNG, JPG, WEBP up to 2MB
-            </span>
-            {mainImageError && (
-              <p className="text-[11px] font-semibold text-destructive mt-2">
-                {mainImageError}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="relative rounded-lg border overflow-hidden group bg-muted/10">
-            <img
-              src={
-                imagePreview.startsWith("blob:") ||
-                imagePreview.startsWith("http")
-                  ? imagePreview
-                  : getFullPreviewUrl(imagePreview)
-              }
-              alt="Featured preview"
-              className="w-full h-44 object-cover"
-            />
+        <div className="flex items-center justify-between border-b pb-2">
+          <h3 className="text-sm font-bold text-foreground">
+            Featured Image *
+          </h3>
+          {imagePreview && (
             <button
               type="button"
-              onClick={removeUploadedImage}
-              className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-sm hover:bg-destructive/90 transition-colors cursor-pointer"
-              title="Remove image"
+              onClick={() => setIsMediaPickerOpenFeatured(true)}
+              className="text-[11px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1"
             >
-              <X className="h-3.5 w-3.5" />
+              <ImageIcon className="h-3 w-3" /> Change
             </button>
+          )}
+        </div>
+
+        {!imagePreview ? (
+          <div className="space-y-2.5">
+            <div
+              onClick={() => setIsMediaPickerOpenFeatured(true)}
+              className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[130px] bg-primary/5 border-primary/40 hover:border-primary hover:bg-primary/10 ${
+                mainImageError
+                  ? "border-destructive bg-destructive/5 text-destructive"
+                  : ""
+              }`}
+            >
+              <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center text-primary mb-1.5 shadow-xs">
+                <ImageIcon className="h-4.5 w-4.5" />
+              </div>
+              <span className="text-xs font-bold block text-foreground">
+                Select from Media Library
+              </span>
+              <span className="text-[10px] text-muted-foreground block mt-0.5">
+                Choose existing image or upload new
+              </span>
+              {mainImageError && (
+                <p className="text-[11px] font-semibold text-destructive mt-2">
+                  {mainImageError}
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full text-xs h-8 gap-1.5 font-medium cursor-pointer text-muted-foreground hover:text-foreground border-dashed"
+            >
+              <UploadCloud className="h-3.5 w-3.5" />
+              Upload from Computer
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="relative rounded-xl border overflow-hidden group bg-muted/10">
+              <img
+                src={
+                  imagePreview.startsWith("blob:") ||
+                  imagePreview.startsWith("http")
+                    ? imagePreview
+                    : getFullPreviewUrl
+                    ? getFullPreviewUrl(imagePreview)
+                    : imagePreview
+                }
+                alt="Featured preview"
+                className="w-full h-44 object-cover"
+              />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setIsMediaPickerOpenFeatured(true)}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-white text-black hover:bg-white/90 shadow-md cursor-pointer"
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  Media Library
+                </Button>
+                <button
+                  type="button"
+                  onClick={removeUploadedImage}
+                  className="bg-destructive text-destructive-foreground rounded-full p-2 shadow-md hover:bg-destructive/90 transition-colors cursor-pointer"
+                  title="Remove image"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+              <button
+                type="button"
+                onClick={() => setIsMediaPickerOpenFeatured(true)}
+                className="text-primary hover:underline text-[11px] font-semibold flex items-center gap-1 cursor-pointer"
+              >
+                <ImageIcon className="h-3 w-3" /> Select another
+              </button>
+              <button
+                type="button"
+                onClick={removeUploadedImage}
+                className="text-destructive hover:underline text-[11px] font-semibold cursor-pointer"
+              >
+                Remove
+              </button>
+            </div>
           </div>
         )}
 
@@ -462,13 +523,23 @@ export const SidebarCards = ({
             Product Gallery ({galleryImages.length}/5)
           </h3>
           {galleryImages.length < 5 && (
-            <button
-              type="button"
-              onClick={() => galleryInputRef.current?.click()}
-              className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
-            >
-              + Add Image
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsMediaPickerOpenGallery(true)}
+                className="text-[11px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <ImageIcon className="h-3 w-3" /> Media Library
+              </button>
+              <span className="text-muted-foreground/50 text-[10px]">|</span>
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                className="text-[11px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                + Upload
+              </button>
+            </div>
           )}
         </div>
 
@@ -483,7 +554,9 @@ export const SidebarCards = ({
                   img.preview.startsWith("http") ||
                   img.preview.startsWith("blob:")
                     ? img.preview
-                    : getFullPreviewUrl(img.preview)
+                    : getFullPreviewUrl
+                    ? getFullPreviewUrl(img.preview)
+                    : img.preview
                 }
                 alt="Gallery preview"
                 className="object-cover w-full h-full"
@@ -491,7 +564,7 @@ export const SidebarCards = ({
               <button
                 type="button"
                 onClick={() => removeGalleryImage(img.id)}
-                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 shadow-sm hover:bg-destructive/90 transition-colors"
+                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 shadow-sm hover:bg-destructive/90 transition-colors cursor-pointer"
                 title="Remove gallery image"
               >
                 <X className="h-3 w-3" />
@@ -501,12 +574,13 @@ export const SidebarCards = ({
 
           {galleryImages.length < 5 && (
             <div
-              onClick={() => galleryInputRef.current?.click()}
+              onClick={() => setIsMediaPickerOpenGallery(true)}
               className="border-2 border-dashed border-border/80 hover:border-primary/50 hover:bg-muted/10 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all aspect-square min-h-[70px]"
+              title="Select from Media Library or Upload"
             >
-              <Plus className="h-5 w-5 text-muted-foreground" />
+              <ImageIcon className="h-5 w-5 text-muted-foreground" />
               <span className="text-[9px] font-semibold text-muted-foreground mt-0.5">
-                Add
+                + Choose
               </span>
             </div>
           )}
@@ -905,6 +979,34 @@ export const SidebarCards = ({
           </p>
         )}
       </div>
+
+      {/* Media Picker Modal for Featured Image */}
+      <MediaPickerModal
+        open={isMediaPickerOpenFeatured}
+        onOpenChange={setIsMediaPickerOpenFeatured}
+        onSelect={(selectedUrl) => {
+          if (onSelectFeaturedMedia) {
+            onSelectFeaturedMedia(selectedUrl);
+          }
+        }}
+        multiple={false}
+        initialSelected={imagePreview}
+        title="Select Featured Product Image"
+      />
+
+      {/* Media Picker Modal for Gallery Images */}
+      <MediaPickerModal
+        open={isMediaPickerOpenGallery}
+        onOpenChange={setIsMediaPickerOpenGallery}
+        onSelect={(selectedUrls) => {
+          if (onSelectGalleryMedia) {
+            onSelectGalleryMedia(selectedUrls);
+          }
+        }}
+        multiple={true}
+        maxSelect={Math.max(1, 5 - galleryImages.length)}
+        title="Select Gallery Images"
+      />
     </div>
   );
 };

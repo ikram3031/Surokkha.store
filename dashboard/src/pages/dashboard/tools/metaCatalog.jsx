@@ -138,14 +138,14 @@ const getDynamicDefaults = () => {
     (clientConfig?.domain ? `https://${clientConfig.domain.replace(/^https?:\/\//, '')}` : null) ||
     (typeof window !== 'undefined'
       ? `${window.location.protocol}//${window.location.hostname.replace(/^admin\./, '')}`
-      : 'https://decantrebd.com');
+      : 'https://plexivia.online');
 
   const detectedApiBase = (
     clientConfig?.apiBaseUrl ||
     baseURL ||
     (typeof window !== 'undefined'
       ? `${window.location.protocol}//api.${window.location.hostname.replace(/^admin\./, '')}`
-      : 'https://server.decantrebd.com')
+      : 'https://api.plexivia.online')
   ).replace(/\/$/, '');
 
   const defaultProductPattern = clientConfig?.routes?.product || '/shop/:category/:slug';
@@ -1473,7 +1473,7 @@ const MetaCatalogGenerator = () => {
               <Input
                 value={siteUrl}
                 onChange={(e) => setSiteUrl(e.target.value)}
-                placeholder="https://decantrebd.com"
+                placeholder="https://plexivia.online"
                 className="h-8 text-xs font-mono"
               />
             </div>
@@ -1500,7 +1500,7 @@ const MetaCatalogGenerator = () => {
               <Input
                 value={imageBaseUrl}
                 onChange={(e) => setImageBaseUrl(e.target.value)}
-                placeholder="https://server.decantrebd.com"
+                placeholder="https://api.plexivia.online"
                 className="h-8 text-xs font-mono"
               />
             </div>

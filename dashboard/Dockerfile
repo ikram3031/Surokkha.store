@@ -5,10 +5,10 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 COPY . .
 
-ARG VITE_API_BASE_URL=https://server.decantrebd.com
+ARG VITE_API_BASE_URL=https://api.plexivia.online
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
-ARG VITE_CLIENT=engulfic
+ARG VITE_CLIENT=demo
 ENV VITE_CLIENT=$VITE_CLIENT
 
 RUN npm run build

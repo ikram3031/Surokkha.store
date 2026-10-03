@@ -441,7 +441,7 @@ const NewInStoreOrderPage = () => {
         status: "paid",
       });
 
-      const invoiceUrl = `https://${clientConfig?.domain || 'decantrebd.com'}/invoice/${orderNumber}`;
+      const invoiceUrl = `https://${clientConfig?.domain || 'plexivia.online'}/invoice/${orderNumber}`;
       const invoiceItems = cart.map((item) => ({
         description: item.name,
         price: formatBDT(item.price),
@@ -481,7 +481,7 @@ const NewInStoreOrderPage = () => {
 
   const handleDownloadInvoice = () => {
     if (!completedOrder) return;
-    const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://server.decantrebd.com').replace(/\/$/, '');
+    const apiBase = (import.meta.env.VITE_API_BASE_URL || clientConfig?.apiBaseUrl || 'https://api.plexivia.online').replace(/\/$/, '');
     const orderIdentifier = completedOrder?.order?._id || completedOrder?.order?.id || completedOrder?.order?.did || completedOrder?.orderNumber;
     window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
   };

@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
+import { config } from "../config/index.js";
 import { UserModel } from "../models/user.model.js";
 import { getSmtpTransport } from "../services/smtpConfig.service.js";
 
@@ -9,7 +10,7 @@ const lightThemeHtml = (title, body) => `
 <head>
 <style>
   body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #0f172a; }
-  .container { max-w-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; border: 1px solid #e2e8f0; }
+  .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; border: 1px solid #e2e8f0; }
   .header { border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
   .title { font-size: 20px; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
   .content { font-size: 15px; line-height: 1.6; color: #334155; }
@@ -25,7 +26,7 @@ const lightThemeHtml = (title, body) => `
       ${body}
     </div>
     <div class="footer">
-      &copy; ${new Date().getFullYear()} ${env.SMTP_FROM_NAME || "Our Store"}. All rights reserved.
+      &copy; ${new Date().getFullYear()} ${config.brandName || "Our Store"}. All rights reserved.
     </div>
   </div>
 </body>
@@ -35,11 +36,13 @@ const lightThemeHtml = (title, body) => `
 // Sends acknowledgment email to the customer who submitted the contact form
 export const sendContactAcknowledgment = async ({ name, email, message }) => {
   try {
-    if (!env.SMTP_USER || !env.SMTP_PASSWORD || !email) return;
+    if (!email) return;
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Store Contact";
-    const fromAddress = { name: fromName, address: env.SMTP_FROM || env.SMTP_USER };
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !transport) return;
+
+    const fromName = smtpConfig.fromName || config.brandName || "Store Contact";
+    const fromAddress = smtpConfig.fromAddress;
 
     const customerHtml = lightThemeHtml(
       "Thank you for contacting us!",
@@ -74,13 +77,17 @@ export const sendContactReplyEmail = async ({
   adminName,
 }) => {
   try {
-    if (!env.SMTP_USER || !env.SMTP_PASSWORD || !toEmail) {
-      throw new Error("SMTP credentials or recipient email missing");
+    if (!toEmail) {
+      throw new Error("Recipient email missing");
     }
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Customer Support";
-    const fromAddress = { name: fromName, address: env.SMTP_FROM || env.SMTP_USER };
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !transport) {
+      throw new Error("SMTP credentials missing or unconfigured");
+    }
+
+    const fromName = smtpConfig.fromName || config.brandName || "Customer Support";
+    const fromAddress = smtpConfig.fromAddress;
 
     const replyHtml = lightThemeHtml(
       `Response to your inquiry`,
@@ -110,20 +117,21 @@ export const sendContactReplyEmail = async ({
   }
 };
 
-// Forwards incoming contact inquiry to store admin (e.g. kawaiikutir@gmail.com)
+// Forwards incoming contact inquiry to store admin
 export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject, message }) => {
   try {
-    if (!env.SMTP_USER || !env.SMTP_PASSWORD) return;
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !transport) return;
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Surokkha";
-    const fromAddress = { name: fromName, address: env.SMTP_FROM || env.SMTP_USER };
-    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || "kawaiikutir@gmail.com";
+    const fromName = smtpConfig.fromName || config.brandName || "Customer Support";
+    const fromAddress = smtpConfig.fromAddress;
+    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || config.supportEmail || config.contact?.supportEmail;
+    if (!adminEmail) return;
 
-    const forwardSubject = `📩 [New Inquiry from contact@surokkha.store] ${subject || "Contact Form"}`;
+    const forwardSubject = `📩 [New Inquiry for ${config.brandName || "Store"}] ${subject || "Contact Form"}`;
     const forwardHtml = lightThemeHtml(
       "New Customer Inquiry Received",
-      `<p>A new customer inquiry has been received on <strong>contact@surokkha.store</strong>:</p>
+      `<p>A new customer inquiry has been received on <strong>${config.supportEmail || config.brandName || "Store Support"}</strong>:</p>
        <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px;">
          <tr><td style="padding: 8px; font-weight: bold; color: #64748b; width: 120px;">Name:</td><td style="padding: 8px; color: #0f172a;">${name || "Anonymous"}</td></tr>
          <tr><td style="padding: 8px; font-weight: bold; color: #64748b;">Email:</td><td style="padding: 8px; color: #0f172a;"><a href="mailto:${email}">${email}</a></td></tr>
@@ -148,4 +156,3 @@ export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject
     console.error("Error forwarding contact inquiry to admin:", error);
   }
 };
-

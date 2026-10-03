@@ -1,4 +1,4 @@
-﻿# Master Developer Task Roadmap & Architecture Specification
+# Master Developer Task Roadmap & Architecture Specification
 ## Multi-Tenant Client Infrastructure & Automated Onboarding System (Cloudflare D1 SQLite)
 
 ---
@@ -47,23 +47,23 @@ graph TD
     -- Table: clients
     CREATE TABLE IF NOT EXISTS clients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        client_id TEXT NOT NULL UNIQUE,          -- e.g. "05"
-        client_key TEXT NOT NULL UNIQUE,         -- e.g. "surokkha"
-        brand_name TEXT NOT NULL,                -- e.g. "Surokkha"
+        client_id TEXT NOT NULL UNIQUE,          -- e.g. "demo"
+        client_key TEXT NOT NULL UNIQUE,         -- e.g. "demo"
+        brand_name TEXT NOT NULL,                -- e.g. "Flexivia"
         status TEXT DEFAULT 'active' CHECK(status IN ('active', 'inactive', 'suspended')),
         
         -- Domain Details
-        storefront_domain TEXT NOT NULL UNIQUE,  -- "surokkha.store"
-        admin_domain TEXT NOT NULL UNIQUE,       -- "admin.surokkha.store"
-        api_domain TEXT NOT NULL UNIQUE,         -- "api.surokkha.store"
+        storefront_domain TEXT NOT NULL UNIQUE,  -- "plexivia.online"
+        admin_domain TEXT NOT NULL UNIQUE,       -- "dashboard.plexivia.online"
+        api_domain TEXT NOT NULL UNIQUE,         -- "api.plexivia.online"
         
         -- Email Configurations
-        admin_email TEXT NOT NULL,               -- Personal/Owner email
-        support_email TEXT NOT NULL,             -- "support@surokkha.store"
-        forwarding_email TEXT,                   -- "plexivia@gmail.com"
+        admin_email TEXT NOT NULL,               -- "admin@plexivia.online"
+        support_email TEXT NOT NULL,             -- "support@plexivia.online"
+        forwarding_email TEXT,                   -- "notifications@plexivia.online"
         
         -- Server & VPS Infrastructure
-        vps_ip TEXT NOT NULL,                    -- "14.128.14.223"
+        vps_ip TEXT NOT NULL,                    -- "127.0.0.1"
         vps_port INTEGER DEFAULT 22,
         vps_user TEXT DEFAULT 'root',
         server_ssh_key TEXT,                     -- VPS SSH Private/Public Key

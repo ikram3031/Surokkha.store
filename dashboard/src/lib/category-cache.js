@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import clientConfig from '@/clientConfig';
 
-const CATEGORY_STORAGE_KEY = 'decantre_category_cache';
-const BRAND_STORAGE_KEY = 'decantre_brand_cache';
+const CATEGORY_STORAGE_KEY = 'ecom_category_cache';
+const BRAND_STORAGE_KEY = 'ecom_brand_cache';
 const CACHE_TTL_MS = 1000 * 60 * 30; // 30 minutes
 
 // ─── Category Cache Helpers ──────────────────────────────────────────────────

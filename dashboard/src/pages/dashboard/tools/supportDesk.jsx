@@ -36,7 +36,7 @@ const HUB_BASE_URL =
   clientConfig?.hubApiUrl ||
   (typeof window !== "undefined" && window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "http://144.79.218.241:5000");
+    : "https://hub.plexivia.online");
 
 // Fetches live hosting alerts and status from Central Hub
 const fetchBillingAlerts = async (clientKey) => {
@@ -66,7 +66,7 @@ const postTicket = async (payload) => {
 
 // Support Desk main view component
 export const SupportDesk = () => {
-  const clientKey = clientConfig?.clientKey || "decantre";
+  const clientKey = clientConfig?.clientKey || "demo";
   const brandName = clientConfig?.brandName || "Store";
   const domain = clientConfig?.domain || window.location.hostname;
 

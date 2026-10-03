@@ -24,7 +24,6 @@ ENV NODE_ENV=production
 COPY --from=builder /app/package.json /app/package-lock.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
-COPY --from=builder /app/scripts ./scripts
 
 # Create public and uploads directories for compatibility with existing deployments
 RUN mkdir -p /app/public /app/uploads /app/src/uploads

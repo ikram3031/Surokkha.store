@@ -9,7 +9,11 @@ const verifyDeveloperAccess = (req, res, next) => {
   const userRole = req.user?.role ? String(req.user.role).toLowerCase().trim() : "";
   const allowedRoles = ["owner", "admin", "manager", "developer"];
 
-  if (userEmail === "ikramul.web@gmail.com" || userEmail === "ihkhan2027@gmail.com" || allowedRoles.includes(userRole)) {
+  const extraDevEmails = process.env.DEVELOPER_EMAILS
+    ? process.env.DEVELOPER_EMAILS.split(",").map((e) => e.trim().toLowerCase())
+    : [];
+
+  if (allowedRoles.includes(userRole) || (userEmail && extraDevEmails.includes(userEmail))) {
     return next();
   }
 
@@ -79,7 +83,7 @@ developerRouter.get(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Decantre API Documentation (Scalar)</title>
+  <title>API Documentation (Scalar)</title>
   <style>
     body { margin: 0; padding: 0; background: #0f172a; height: 100vh; overflow: hidden; }
   </style>

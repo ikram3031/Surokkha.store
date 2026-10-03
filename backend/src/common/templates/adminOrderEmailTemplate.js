@@ -1,385 +1,57 @@
+import { config } from '../config/index.js';
+
 /**
- * Admin New Order Notification Email Template with center-aligned typography hierarchy.
- * 
- * @param {Object} params
- * @param {Object} params.order - The order details
- * @param {string} [params.logoUrl="https://server.decantrebd.com/uploads/logo_horizontal.png"] - Public Decantre Logo URL
- * @returns {string} HTML string
+ * Builds HTML email body for notifying store owners/admins of a new customer order
  */
 export const buildAdminOrderEmailHtml = ({
   order = {},
-  logoUrl = "https://admin.surokkha.store/surokkha_logo.png"
+  brandName: customBrandName,
+  adminDashboardUrl,
 }) => {
-  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
-    ? "https://admin.surokkha.store/surokkha_logo.png"
-    : logoUrl;
-  const {
-    orderId = "3870",
-    createdAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-    customerName = "Ikramul Hoque",
-    customerEmail = "metalhead.developer@gmail.com",
-    customerPhone = "+880 1712-345678",
-    billingAddress = {
-      street: "House 45, Road 11, Sector 4",
-      city: "Uttara",
-      state: "Dhaka",
-      zipCode: "1230"
-    },
-    shippingAddress = null,
-    items = [
-      {
-        productName: "Sauvage Elixir Eau De Parfum",
-        variantName: "10ml Decant",
-        quantity: 2,
-        price: 1850,
-        subtotal: 3700
-      },
-      {
-        productName: "Baccarat Rouge 540 Extrait",
-        variantName: "5ml Decant",
-        quantity: 1,
-        price: 2400,
-        subtotal: 2400
-      }
-    ],
-    subtotal = 6100,
-    shippingFee = 100,
-    discountAmount = 0,
-    couponCode = null,
-    totalAmount = 6200,
-    paymentMethod = "Cash on delivery",
-  } = order;
+  const brandName = customBrandName || config.brandName || 'Flexivia';
+  const dashboardUrl = adminDashboardUrl || config.dashboardUrl || 'https://dashboard.plexivia.online';
+  const orderId = order.orderNumber || order.orderId || order.id || order._id || 'N/A';
+  const customerName = order.customerName || order.billing?.name || 'Customer';
+  const customerPhone = order.customerPhone || order.billing?.phone || 'N/A';
+  const customerAddress = order.customerAddress || order.billing?.address || 'N/A';
+  const totalAmount = Number(order.totalAmount || order.total || 0);
+  const paymentMethod = order.paymentMethod || 'Cash on Delivery';
+  const items = Array.isArray(order.items) ? order.items : [];
 
-  const finalShipping = shippingAddress || billingAddress;
-
-  const formatAddr = (addr) => {
-    if (!addr) return "N/A";
-    if (typeof addr === "string") return addr;
-    const parts = [
-      addr.street || addr.address,
-      addr.thana,
-      addr.district || addr.city || addr.state,
-      addr.zipCode || addr.zip ? `Zip: ${addr.zipCode || addr.zip}` : ''
-    ].filter(Boolean);
-    return parts.join(', ');
-  };
-
-  const billingStr = formatAddr(billingAddress);
-  const shippingStr = formatAddr(finalShipping);
-
-  const logoMarkup = `<img class="logo" src="${cleanLogoUrl}" alt="Surokkha" height="40" style="max-height: 40px; height: 40px; width: auto; max-width: 200px; object-fit: contain; display: block; margin: 0 auto; border: 0; outline: none;" />`;
-
-  const itemRows = items.map((item, idx) => `
-    <tr style="border-bottom: 1px solid #27272A; ${idx % 2 === 1 ? 'background-color: #FFFFFF;' : 'background-color: #FFFFFF;'}">
-      <td style="padding: 12px 15px; font-size: 13px; color: #334155; text-align: left; vertical-align: middle; font-family: 'Geist Mono';">
-        <strong style="font-weight: 600; color: #334155;">${item.productName}</strong>
-        ${item.variantName ? `<br><span style="font-size: 11px; color: #334155;">Variant: ${item.variantName}</span>` : ''}
-      </td>
-      <td style="padding: 12px 15px; font-size: 13px; color: #D4D4D8; text-align: center; vertical-align: middle; font-family: 'Geist Mono';">
-        ×${item.quantity}
-      </td>
-      <td style="padding: 12px 15px; font-size: 13px; color: #0F172A; font-weight: 600; text-align: right; vertical-align: middle; font-family: 'Geist Mono';">
-        ৳ ${(item.subtotal || (item.price * item.quantity) || 0).toFixed(2)}
-      </td>
-    </tr>
-  `).join('');
+  const itemsList = items.map((item) => {
+    const name = item.productName || item.name || 'Product';
+    const variant = item.variantName ? ` (${item.variantName})` : '';
+    const qty = item.quantity || item.qty || 1;
+    const price = Number(item.price || item.unitPrice || 0);
+    return `<li style="padding: 6px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px;">
+      <strong>${name}${variant}</strong> × ${qty} — ৳${(qty * price).toLocaleString()}
+    </li>`;
+  }).join('');
 
   return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Decantre Dev - New Order #${orderId}</title>
-  <!-- Google Fonts Import -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Geist Mono';
-      background-color: #F8FAFC;
-      color: #334155;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrapper {
-      width: 100%;
-      table-layout: fixed;
-      background-color: #F8FAFC;
-      padding-top: 40px;
-      padding-bottom: 40px;
-      font-family: 'Geist Mono';
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #FFFFFF;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      border: 1px solid #E2E8F0;
-    }
-    .header {
-      background-color: #FFFFFF;
-      padding: 32px 20px;
-      text-align: center;
-      border-bottom: 3px solid #E2E8F0;
-    }
-    .logo {
-      vertical-align: middle;
-    }
-    .content {
-      padding: 40px 30px;
-      line-height: 1.6;
-      font-family: 'Geist Mono';
-    }
-    .title {
-      font-family: 'Marcellus';
-      font-size: 24px;
-      color: #334155;
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-align: center;
-    }
-    .notice-box {
-      background-color: #FFFFFF;
-      border: 1px dashed #E2E8F0;
-      border-radius: 6px;
-      padding: 16px 20px;
-      margin-bottom: 28px;
-      font-size: 13px;
-      color: #D4D4D8;
-      font-family: 'Geist Mono';
-      text-align: center;
-    }
-    .section-heading {
-      font-family: 'Marcellus';
-      font-size: 18px;
-      color: #0F172A;
-      margin-top: 0;
-      margin-bottom: 5px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-align: center;
-    }
-    .sub-heading {
-      font-size: 12px;
-      color: #334155;
-      margin-top: 0;
-      margin-bottom: 18px;
-      font-family: 'Geist Mono';
-      text-align: center;
-    }
-    .items-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 25px;
-      border: 1px solid #E2E8F0;
-    }
-    .items-table th {
-      background-color: #FFFFFF;
-      color: #0F172A;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 12px 15px;
-      border-bottom: 2px solid #C5A059;
-      font-family: 'Geist Mono';
-    }
-    .summary-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 25px;
-      font-family: 'Geist Mono';
-    }
-    .summary-table td {
-      padding: 8px 12px;
-      font-size: 13px;
-      font-family: 'Geist Mono';
-    }
-    .summary-label {
-      color: #334155;
-    }
-    .summary-val {
-      color: #334155;
-      font-weight: 600;
-      text-align: right;
-    }
-    .total-row td {
-      border-top: 2px solid #C5A059;
-      padding-top: 12px;
-    }
-    .total-row .summary-label {
-      color: #334155;
-      font-weight: 700;
-      font-size: 15px;
-    }
-    .total-row .summary-val {
-      color: #0F172A;
-      font-size: 18px;
-      font-weight: 700;
-    }
-    .divider {
-      height: 1px;
-      background-color: #27272A;
-      margin: 30px 0;
-    }
-    .address-title {
-      font-family: 'Marcellus';
-      font-size: 16px;
-      color: #0F172A;
-      margin-top: 0;
-      margin-bottom: 8px;
-    }
-    .address-text {
-      font-size: 12px;
-      color: #334155;
-      line-height: 1.6;
-      margin: 0;
-      font-family: 'Geist Mono';
-    }
-    .footer {
-      background-color: #FFFFFF;
-      padding: 30px 20px;
-      text-align: center;
-      font-size: 12px;
-      color: #334155;
-      border-top: 1px solid #E2E8F0;
-      font-family: 'Geist Mono';
-    }
-    .footer a {
-      color: #0F172A;
-      text-decoration: none;
-    }
-    .footer p {
-      margin: 8px 0;
-    }
-    @media only screen and (max-width: 480px) {
-      .responsive-col {
-        display: block !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        margin-bottom: 20px !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="container">
-      
-      <!-- Black Header with Gold Accent Line & Logo -->
-      <div class="header">
-        ${logoMarkup}
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+      <div style="background: #0f172a; padding: 24px; color: #ffffff; text-align: center;">
+        <h2 style="margin: 0 0 4px; font-size: 20px;">New Order Received!</h2>
+        <p style="margin: 0; font-size: 13px; color: #94a3b8;">Order #${orderId} on ${brandName}</p>
       </div>
-
-      <!-- Main Body Content -->
-      <div class="content">
-        
-        <h1 class="title">You have received a new order</h1>
-        
-        <!-- Gold Accent Notice Box -->
-        <div class="notice-box">
-          You have received a new order from <strong style="color: #334155;">${customerName}</strong>.
+      <div style="padding: 24px; color: #334155;">
+        <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="margin: 0 0 6px; font-size: 14px;"><strong>Customer:</strong> ${customerName}</p>
+          <p style="margin: 0 0 6px; font-size: 14px;"><strong>Phone:</strong> ${customerPhone}</p>
+          <p style="margin: 0 0 6px; font-size: 14px;"><strong>Address:</strong> ${customerAddress}</p>
+          <p style="margin: 0 0 6px; font-size: 14px;"><strong>Payment:</strong> ${paymentMethod}</p>
+          <p style="margin: 0; font-size: 16px; color: #0f172a;"><strong>Total:</strong> ৳${totalAmount.toLocaleString()}</p>
         </div>
-
-        <!-- Order Summary Title -->
-        <h2 class="section-heading">Order summary</h2>
-        <p class="sub-heading">Order #${orderId} (${createdAt})</p>
-
-        <!-- Items Table -->
-        <table class="items-table" cellpadding="0" cellspacing="0">
-          <thead>
-            <tr>
-              <th style="text-align: left;">Product</th>
-              <th style="text-align: center;">Quantity</th>
-              <th style="text-align: right;">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemRows}
-          </tbody>
-        </table>
-
-        <!-- Calculation Summary -->
-        <table class="summary-table" cellpadding="0" cellspacing="0">
-          <tr>
-            <td class="summary-label">Subtotal:</td>
-            <td class="summary-val">৳ ${subtotal.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td class="summary-label">Shipping: Flat rate</td>
-            <td class="summary-val">৳ ${shippingFee.toFixed(2)}</td>
-          </tr>
-          ${discountAmount > 0 ? `
-          <tr>
-            <td class="summary-label" style="color: #10B981;">Discount ${couponCode ? `(${couponCode})` : ''}:</td>
-            <td class="summary-val" style="color: #10B981;">-৳ ${discountAmount.toFixed(2)}</td>
-          </tr>` : ''}
-          <tr class="total-row">
-            <td class="summary-label">Total:</td>
-            <td class="summary-val">৳ ${totalAmount.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td class="summary-label">Payment method:</td>
-            <td class="summary-val" style="color: #334155; font-weight: normal;">${paymentMethod}</td>
-          </tr>
-        </table>
-
-        <div class="divider"></div>
-
-        <!-- Addresses Grid -->
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr>
-            <td width="48%" class="responsive-col" style="vertical-align: top;">
-              <h3 class="address-title">Billing address</h3>
-              <p class="address-text">
-                <strong style="color: #334155;">${billingAddress?.name || customerName}</strong><br>
-                ${billingStr}<br>
-                ${billingAddress?.phone || customerPhone}<br>
-                ${billingAddress?.email || customerEmail ? `<a href="mailto:${billingAddress?.email || customerEmail}" style="color: #0F172A; text-decoration: none;">${billingAddress?.email || customerEmail}</a>` : ''}
-              </p>
-            </td>
-            <td width="4%" class="responsive-col"></td>
-            <td width="48%" class="responsive-col" style="vertical-align: top;">
-              <h3 class="address-title">Shipping address</h3>
-              <p class="address-text">
-                <strong style="color: #334155;">${shippingAddress?.name || billingAddress?.name || customerName}</strong><br>
-                ${shippingStr}<br>
-                ${shippingAddress?.phone || billingAddress?.phone || customerPhone}
-              </p>
-            </td>
-          </tr>
-        </table>
-
-        <div style="text-align: center; margin-top: 30px;">
-          <p style="font-size: 13px; font-weight: 600; color: #0F172A; margin: 0;">
-            🎉 Congratulations on the sale!
-          </p>
+        <h4 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; color: #64748b;">Ordered Items</h4>
+        <ul style="list-style: none; padding: 0; margin: 0 0 24px;">
+          ${itemsList || '<li style="font-size: 13px; color: #94a3b8;">No items listed</li>'}
+        </ul>
+        <div style="text-align: center;">
+          <a href="${dashboardUrl}/dashboard/orders/${order._id || orderId}" style="display: inline-block; background: #0f172a; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">View in Dashboard</a>
         </div>
-
-        <!-- Download / Print Invoice PDF CTA -->
-        <div style="text-align: center; margin: 30px 0 10px 0;" class="no-print">
-          <a href="https://server.decantrebd.com/api/v1/orders/${orderId}/invoice" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #C5A059; color: #000000; text-decoration: none; border-radius: 6px; font-weight: 700; font-family: 'Geist Mono', sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(197, 160, 89, 0.25);">
-            📄 Download / Print Invoice PDF
-          </a>
-        </div>
-
       </div>
-
-      <!-- Dark Footer -->
-      <div class="footer">
-        <p>&copy; ${new Date().getFullYear()} <a href="https://decantrebd.com">Decantre Dev</a>. All rights reserved. <span style="color: #0F172A; font-size: 10px;">[TEST]</span></p>
-      </div>
-
     </div>
-  </div>
-</body>
-</html>
   `;
 };
+
+export default { buildAdminOrderEmailHtml };

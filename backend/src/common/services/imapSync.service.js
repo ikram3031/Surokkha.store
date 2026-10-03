@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
 import { env } from "../config/env.js";
+import { config } from "../config/index.js";
 import { logger } from "../config/logger.js";
 import { EmailMessageModel } from "../models/emailMessage.model.js";
 import { LogModel } from "../models/log.model.js";
@@ -148,8 +149,8 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
           logger.error({ wsErr }, "WebSocket broadcast error on incoming webmail");
         });
 
-        // Forward incoming support email to designated forward address (plexivia@gmail.com)
-        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || "plexivia@gmail.com";
+        // Forward incoming support email if SUPPORT_FORWARD_EMAIL or ADMIN_NOTIFY_EMAIL is configured
+        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || process.env.ADMIN_NOTIFY_EMAIL;
         if (forwardTarget && env.SMTP_USER) {
           const isSecure =
             Number(env.SMTP_PORT) === 465 ||
@@ -173,15 +174,15 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
 
           forwardTransport.sendMail({
             from: {
-              name: env.SMTP_FROM_NAME || "Surokkha Support",
+              name: env.SMTP_FROM_NAME || config.brandName || "Customer Support",
               address: env.SMTP_FROM || env.SMTP_USER,
             },
             to: forwardTarget,
             replyTo: from.address,
-            subject: `[Fwd: support@surokkha.store] ${subject}`,
+            subject: `[Fwd: ${config.supportEmail || env.SMTP_USER || "Support"}] ${subject}`,
             html: `
               <div style="font-family: -apple-system, sans-serif; padding: 15px; border-left: 4px solid #e11d48; background: #f8fafc; margin-bottom: 20px;">
-                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from support@surokkha.store</strong></p>
+                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from ${config.supportEmail || env.SMTP_USER || "Store Support"}</strong></p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>From:</strong> ${from.name ? `${from.name} &lt;${from.address}&gt;` : from.address}</p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Subject:</strong> ${subject}</p>
                 <p style="margin: 0; font-size: 14px;"><strong>Date:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' })}</p>

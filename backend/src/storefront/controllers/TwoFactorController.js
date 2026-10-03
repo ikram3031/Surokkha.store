@@ -5,6 +5,7 @@ import { UserModel } from "../../common/models/user.model.js";
 import { comparePassword } from "../../common/utils/password.js";
 import { createAccessToken, createRefreshToken } from "./AuthController.js";
 import { env } from "../../common/config/env.js";
+import { config } from "../../common/config/index.js";
 import { logger } from "../../common/config/logger.js";
 import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
 
@@ -65,14 +66,15 @@ export const sendQrCodeEmail = async (req, res, next) => {
     }
 
     // Generate OTPAuth URI for the TOTP app
-    const otpauth = authenticator.keyuri(user.email, "Decantre BD", secret);
+    const brandName = config.brandName || env.SMTP_FROM_NAME || "Flexivia";
+    const otpauth = authenticator.keyuri(user.email, brandName, secret);
 
     // Render QR Code as PNG buffer for inline email attachment
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
 
     // Build SMTP transport and sender address
     const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || "Decantre BD";
+    const fromName = env.SMTP_FROM_NAME || brandName;
     const fromEmail = env.SMTP_FROM || env.SMTP_USER;
     const fromAddress = `"${fromName}" <${fromEmail}>`;
 
@@ -82,7 +84,7 @@ export const sendQrCodeEmail = async (req, res, next) => {
     await transport.sendMail({
       from: fromAddress,
       to: user.email,
-      subject: "Set Up Two-Factor Authentication — Decantre Dashboard",
+      subject: `Set Up Two-Factor Authentication — ${brandName} Dashboard`,
       text: `Hello ${user.name},\n\nScan the QR code in your Google Authenticator app to set up 2FA.\nCan't scan? Enter this key manually: ${secret}\n\nIf you did not request this, change your password immediately.`,
       html: htmlContent,
       attachments: [

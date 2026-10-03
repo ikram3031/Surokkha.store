@@ -233,7 +233,7 @@ const LoginPage = () => {
     );
   }
 
-  const brandName = clientConfig?.brandName || 'Surokkha';
+  const brandName = clientConfig?.brandName || 'Flexivia';
 
   return (
     <div className="min-h-screen w-screen max-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-primary/30 selection:text-primary-foreground">
@@ -278,7 +278,7 @@ const LoginPage = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-11 h-11 text-sm bg-muted/50 border-transparent text-foreground focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50 rounded-xl transition-all"
-                        placeholder="ikramul.web@gmail.com"
+                        placeholder="admin@plexivia.online"
                         required
                       />
                     </div>

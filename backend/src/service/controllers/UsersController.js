@@ -123,7 +123,7 @@ export const createUser = async (req, res, next) => {
 
     // Resolve white-label domain for invitation link
     const origin = req.headers.origin || req.headers.referer || "";
-    let domainUrl = "https://admin.surokkha.store";
+    let domainUrl = clientConfig?.dashboardUrl || "https://dashboard.plexivia.online";
     if (payload.domain) {
       domainUrl = payload.domain.startsWith("http") ? payload.domain : `https://${payload.domain}`;
     } else if (origin) {
@@ -133,9 +133,9 @@ export const createUser = async (req, res, next) => {
     }
     const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
 
-    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
-    const logoUrl = "https://admin.surokkha.store/surokkha_logo.png";
-    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Flexivia";
+    const logoUrl = clientConfig?.logoUrl || "/uploads/assets/logo.webp";
+    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "plexivia.online"}`;
     const fromAddress = `"${brandName}" <${fromEmail}>`;
 
     // Send invitation email non-blockingly if SMTP is available

@@ -430,7 +430,7 @@ const OrderDetailsPage = () => {
 
   // Opens the printable invoice endpoint in a new browser tab
   const handleOpenInvoice = () => {
-    const apiBase = (baseURL || import.meta.env.VITE_API_BASE_URL || clientConfig?.apiBaseUrl || 'https://server.decantrebd.com').replace(/\/$/, '');
+    const apiBase = (baseURL || import.meta.env.VITE_API_BASE_URL || clientConfig?.apiBaseUrl || 'https://api.plexivia.online').replace(/\/$/, '');
     const orderIdentifier = order?._id || order?.id || order?.did || order?.orderNumber || id;
     window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
   };

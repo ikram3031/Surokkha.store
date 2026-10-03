@@ -2,6 +2,7 @@ import { Router } from "express";
 import nodemailer from "nodemailer";
 import { buildInvoiceEmailHtml } from "../../common/utils/invoiceEmailTemplate.js";
 import { env } from "../../common/config/env.js";
+import { config } from "../../common/config/index.js";
 
 const emailRouter = Router();
 
@@ -35,7 +36,7 @@ const getTransporter = () => {
 
 const sendEmail = async ({ toEmail, subject, text, html }) => {
   const activeTransporter = getTransporter();
-  const fromName = env.SMTP_FROM_NAME || "Decantre BD";
+  const fromName = env.SMTP_FROM_NAME || config.brandName || "Customer Support";
   const fromEmail = env.SMTP_FROM || env.SMTP_USER;
   
   await activeTransporter.sendMail({
@@ -108,42 +109,32 @@ const handleInvoiceRequest = async (req, res) => {
     invoiceNumber,
     createdDate: req.body.createdDate || req.query.createdDate || new Date().toLocaleDateString(),
     dueDate: req.body.dueDate || req.query.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-    sellerName: req.body.sellerName || req.query.sellerName || "Decantre",
-    sellerAddress: req.body.sellerAddress || req.query.sellerAddress || "House 20, Rd 10, Uttara, Dhaka 1230",
-    buyerName: req.body.buyerName || req.query.buyerName || "Acme Corp.",
-    buyerAddress: req.body.buyerAddress || req.query.buyerAddress || "John Doe, john@example.com",
+    sellerName: req.body.sellerName || req.query.sellerName || config.brandName || "Flexivia",
+    sellerAddress: req.body.sellerAddress || req.query.sellerAddress || config.address || "Dhaka, Bangladesh",
+    buyerName: req.body.buyerName || req.query.buyerName || "Customer",
+    buyerAddress: req.body.buyerAddress || req.query.buyerAddress || "Customer Address",
     buyerEmail: req.body.buyerEmail || req.query.buyerEmail || email,
-    paymentMethod: req.body.paymentMethod || req.query.paymentMethod || "Check",
-    paymentReference: req.body.paymentReference || req.query.paymentReference || "1000",
+    paymentMethod: req.body.paymentMethod || req.query.paymentMethod || "COD",
+    paymentReference: req.body.paymentReference || req.query.paymentReference || "N/A",
     items: Array.isArray(req.body.items)
       ? req.body.items
       : Array.isArray(req.query.items)
       ? req.query.items
       : [
           {
-            description: "Website design",
-            price: "$300.00",
-            total: "$300.00",
-          },
-          {
-            description: "Hosting (3 months)",
-            price: "$75.00",
-            total: "$75.00",
-          },
-          {
-            description: "Domain name (1 year)",
-            price: "$10.00",
-            total: "$10.00",
-          },
+            description: "Product Sample",
+            price: "1000.00",
+            total: "1000.00",
+          }
         ],
-    subtotal: req.body.subtotal || req.query.subtotal || "$385.00",
-    taxes: req.body.taxes || req.query.taxes || "$0.00",
-    discount: req.body.discount || req.query.discount || "$0.00",
-    total: req.body.total || req.query.total || "$385.00",
+    subtotal: req.body.subtotal || req.query.subtotal || "1000.00",
+    taxes: req.body.taxes || req.query.taxes || "0.00",
+    discount: req.body.discount || req.query.discount || "0.00",
+    total: req.body.total || req.query.total || "1000.00",
     invoiceUrl:
-      req.body.invoiceUrl || req.query.invoiceUrl || `https://yourdomain.com/invoice/${invoiceNumber}`,
+      req.body.invoiceUrl || req.query.invoiceUrl || `https://${config.domain || "plexivia.online"}/invoice/${invoiceNumber}`,
     notes: req.body.notes || req.query.notes || "Thank you for your business.",
-    logoUrl: req.body.logoUrl || req.query.logoUrl || "https://server.decantrebd.com/uploads/logo.webp",
+    logoUrl: req.body.logoUrl || req.query.logoUrl || config.logoUrl || "/uploads/assets/logo.webp",
   };
 
   try {

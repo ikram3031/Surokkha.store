@@ -32,9 +32,9 @@ export const sendOrderEmailsAsynchronously = (order) => {
         console.warn(`[Email Notification] SMTP credentials not fully configured (host: ${smtpConfig.host}, user: ${smtpConfig.user || 'none'}). Skipping SMTP dispatch, but proceeding with Dashboard INBOX ingestion.`);
       }
 
-      const activeClientKey = (order.client || config.clientKey || process.env.CLIENT_NAME || env.CLIENT_NAME || "surokkha").toLowerCase().trim();
-      const brandDisplayName = smtpConfig.fromName || config.brandName || (activeClientKey === "surokkha" ? "Surokkha" : "Decantre BD");
-      const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
+      const activeClientKey = (order.client || config.clientKey || process.env.CLIENT_NAME || env.CLIENT_NAME || "demo").toLowerCase().trim();
+      const brandDisplayName = smtpConfig.fromName || config.brandName || "Flexivia";
+      const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'plexivia.online'}`;
       const fromAddress = { name: brandDisplayName, address: fromEmail };
       console.log(`[Email Notification] Preparing order emails via Hostinger/SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
 
@@ -148,7 +148,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
 
       const emailLogoUrl = (config.logoUrl && config.logoUrl.startsWith("http"))
         ? config.logoUrl
-        : "https://admin.surokkha.store/surokkha_logo.png";
+        : (config.domain ? `https://${config.domain}${config.logoUrl || '/uploads/assets/logo.webp'}` : "/uploads/assets/logo.webp");
 
       const invoiceHtml = getClientInvoiceHtml({
         order: formattedOrderData,
@@ -179,11 +179,11 @@ export const sendOrderEmailsAsynchronously = (order) => {
       // 2. Resolve Admin Recipients (Bypassed for Custom Orders)
       if (!isCustomOrder) {
         const adminRecipientsSet = new Set();
-        if (activeClientKey === "decantre") {
-          adminRecipientsSet.add("decantre.store@gmail.com");
-        } else if (activeClientKey === "surokkha") {
-          adminRecipientsSet.add("support@surokkha.store");
-          adminRecipientsSet.add("contact@surokkha.store");
+        if (process.env.ADMIN_NOTIFY_EMAIL) {
+          adminRecipientsSet.add(process.env.ADMIN_NOTIFY_EMAIL.toLowerCase().trim());
+        }
+        if (config.supportEmail) {
+          adminRecipientsSet.add(config.supportEmail.toLowerCase().trim());
         }
 
         try {
@@ -200,15 +200,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
           }
         } catch (dbErr) {
           console.error("[Email Notification] Database query for super admin emails failed, falling back to default admins:", dbErr.message);
-        }
-
-        // Explicitly EXCLUDE emails that should not receive admin notifications
-        adminRecipientsSet.delete("ikramul.web@gmail.com");
-        adminRecipientsSet.delete("md.ikr4m@gmail.com");
-
-        // For demo / plexivia environment, ensure info@plexivia.online receives notifications
-        if (activeClientKey === "demo" || (env.SMTP_USER && env.SMTP_USER.includes("plexivia"))) {
-          adminRecipientsSet.add("info@plexivia.online");
         }
 
         const adminRecipients = Array.from(adminRecipientsSet);
@@ -243,10 +234,10 @@ export const sendOrderEmailsAsynchronously = (order) => {
         if (!existingOrderEmail) {
           const customerSenderAddress = isValidCustomerEmail(customerEmail)
             ? customerEmail
-            : `orders@${config.domain || "surokkha.store"}`;
+            : `orders@${config.domain || "plexivia.online"}`;
 
           await EmailMessageModel.create({
-            messageId: `order-${orderId}-${Date.now()}@${config.domain || "surokkha.store"}`,
+            messageId: `order-${orderId}-${Date.now()}@${config.domain || "plexivia.online"}`,
             folder: "INBOX",
             from: {
               name: customerName || "Online Store Customer",

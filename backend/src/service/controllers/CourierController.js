@@ -386,11 +386,7 @@ export const createOrderConsignmentController = async (req, res, next) => {
       payload.recipient_area = Number(recipient_area);
     }
 
-    const clientKey = (process.env.CLIENT_NAME || "").toLowerCase().trim();
-    if (clientKey === "surokkha") {
-      const randomNum = Math.floor(Math.random() * 10) + 1;
-      payload.item_description = `Gift combo${randomNum}`;
-    }
+
 
     const pathaoResult = await createPathaoOrder(payload);
     const orderData = pathaoResult?.data || pathaoResult;
@@ -463,13 +459,7 @@ export const createBulkOrderConsignmentsController = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Array of orders is required." });
     }
 
-    const clientKey = (process.env.CLIENT_NAME || "").toLowerCase().trim();
-    if (clientKey === "surokkha") {
-      for (const order of orders) {
-        const randomNum = Math.floor(Math.random() * 10) + 1;
-        order.item_description = `Gift combo${randomNum}`;
-      }
-    }
+
 
     const result = await createPathaoBulkOrders(orders);
     return res.json({ status: "success", data: result });

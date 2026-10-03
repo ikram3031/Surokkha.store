@@ -80,5 +80,5 @@ Returns list of available order statuses, payment statuses, and categories confi
 ---
 
 ## Implementation Details:
-- **Routes File**: [SystemRoute.js](file:///c:/Users/mdikr/Documents/CODE/AFull/backend/src/routes/SystemRoute.js)
-- **Controller File**: [SystemController.js](file:///c:/Users/mdikr/Documents/CODE/AFull/backend/src/controllers/SystemController.js)
+- **Routes File**: `SystemRoute.js`
+- **Controller File**: `SystemController.js`

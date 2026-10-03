@@ -351,7 +351,7 @@ export const resolveOrForceMembershipFromOrder = async (createdOrder, payload = 
     }
 
     // Otherwise create new member
-    const domain = config.domain || 'surokkha.store';
+    const domain = config.domain || 'plexivia.online';
     const cleanPhoneDigits = rawPhone.replace(/\D/g, '');
     const fallbackEmail = rawEmail || (cleanPhoneDigits ? `${cleanPhoneDigits}@${domain}` : `customer_${Date.now()}@${domain}`);
     const randomPassword = crypto.randomBytes(16).toString('hex');

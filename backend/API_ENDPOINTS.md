@@ -1,6 +1,6 @@
-# Decantre BD API Endpoints Reference
+# White-Label E-Commerce API Endpoints Reference
 
-Base API Address: `https://server.decantrebd.com`
+Base API Address: `https://api.plexivia.online` (or active tenant domain)
 
 ---
 

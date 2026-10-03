@@ -5,7 +5,7 @@ export const normalizeImageUrl = (url) => {
   if (!url) {
     return null;
   }
-  return url.replace(/^https?:\/\/[^/]+/i, "https://webiste.decantrebd.com");
+  return url;
 };
 
 /**

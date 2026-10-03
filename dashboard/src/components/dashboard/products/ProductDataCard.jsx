@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, UploadCloud, X, Layers, Lock, Package, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Plus, UploadCloud, X, Layers, Lock, Package, CheckCircle2, XCircle, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { MediaPickerModal } from "@/components/dashboard/media-picker-modal";
 
 export const ProductDataCard = ({
   productType,
@@ -26,8 +27,8 @@ export const ProductDataCard = ({
   setStockStatus,
   stockAmount = "",
   setStockAmount,
-  variants,
-  attributeGroups,
+  variants = [],
+  attributeGroups = [],
   selectedAttributeGroup,
   setSelectedAttributeGroup,
   addAllPresets,
@@ -35,9 +36,11 @@ export const ProductDataCard = ({
   removeVariant,
   updateVariant,
   handleVariantImageSelect,
+  onSelectVariantMedia,
   getFullPreviewUrl,
   clientConfig,
 }) => {
+  const [variantMediaPickerIndex, setVariantMediaPickerIndex] = useState(null);
   const [applySamePrice, setApplySamePrice] = useState(false);
   const [samePrice, setSamePrice] = useState("");
   const [sameOfferPrice, setSameOfferPrice] = useState("");
@@ -565,17 +568,15 @@ export const ProductDataCard = ({
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                {/* Row 4: Image Thumbnail (Conditional on clientConfig) */}
+                            {/* Row 4: Image Thumbnail (Conditional on clientConfig) */}
                 {clientConfig?.features?.variantImage !== false && (
                   <div className="space-y-1.5 pt-2 border-t border-border/60">
                     <label className="text-[11px] font-semibold text-muted-foreground block">
-                      Variation Image (Optional, Max 2MB)
+                      Variation Image (Optional)
                     </label>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <div
-                        className={`relative w-12 h-12 border rounded-lg flex items-center justify-center cursor-pointer overflow-hidden group bg-background ${
+                        className={`relative w-12 h-12 border rounded-lg flex items-center justify-center overflow-hidden group bg-background ${
                           v.imageError
                             ? "border-destructive bg-destructive/10 text-destructive"
                             : "border-border hover:border-primary"
@@ -588,7 +589,9 @@ export const ProductDataCard = ({
                                 v.imagePreview.startsWith("http") ||
                                 v.imagePreview.startsWith("blob:")
                                   ? v.imagePreview
-                                  : getFullPreviewUrl(v.imagePreview)
+                                  : getFullPreviewUrl
+                                  ? getFullPreviewUrl(v.imagePreview)
+                                  : v.imagePreview
                               }
                               alt="variant"
                               className="w-full h-full object-cover"
@@ -596,23 +599,47 @@ export const ProductDataCard = ({
                             <button
                               type="button"
                               onClick={() => {
+                                updateVariant(i, "imageUrl", "");
                                 updateVariant(i, "imageFile", null);
                                 updateVariant(i, "imagePreview", "");
                                 updateVariant(i, "imageError", "");
                               }}
-                              className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                              title="Remove image"
                             >
                               <X className="w-4 h-4 text-white" />
                             </button>
                           </>
                         ) : (
-                          <label
-                            htmlFor={`variant-image-${i}`}
-                            className="cursor-pointer p-2 text-muted-foreground hover:text-primary flex items-center justify-center w-full h-full"
+                          <button
+                            type="button"
+                            onClick={() => setVariantMediaPickerIndex(i)}
+                            className="p-2 text-muted-foreground hover:text-primary flex items-center justify-center w-full h-full cursor-pointer"
+                            title="Select from Media Library"
                           >
-                            <UploadCloud className="w-5 h-5" />
-                          </label>
+                            <ImageIcon className="w-5 h-5" />
+                          </button>
                         )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVariantMediaPickerIndex(i)}
+                          className="h-7 text-[11px] px-2.5 font-medium gap-1 cursor-pointer"
+                        >
+                          <ImageIcon className="h-3 w-3" />
+                          {v.imagePreview ? "Change" : "Media Library"}
+                        </Button>
+                        <label
+                          htmlFor={`variant-image-${i}`}
+                          className="inline-flex items-center justify-center rounded-md border border-input bg-background px-2.5 h-7 text-[11px] font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer gap-1"
+                        >
+                          <UploadCloud className="h-3 w-3" />
+                          Upload
+                        </label>
                         <input
                           type="file"
                           id={`variant-image-${i}`}
@@ -621,11 +648,6 @@ export const ProductDataCard = ({
                           className="hidden"
                         />
                       </div>
-                      <span className="text-[11px] text-muted-foreground">
-                        {v.imagePreview
-                          ? "Image uploaded"
-                          : "Click icon to upload variant image"}
-                      </span>
                     </div>
                   </div>
                 )}
@@ -708,6 +730,34 @@ export const ProductDataCard = ({
           </div>
         </div>
       )}
+
+      {/* Media Picker Modal for Variant Image */}
+      <MediaPickerModal
+        open={variantMediaPickerIndex !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setVariantMediaPickerIndex(null);
+        }}
+        onSelect={(selectedUrl) => {
+          if (variantMediaPickerIndex !== null) {
+            if (onSelectVariantMedia) {
+              onSelectVariantMedia(variantMediaPickerIndex, selectedUrl);
+            } else {
+              updateVariant(variantMediaPickerIndex, "imageUrl", selectedUrl);
+              updateVariant(variantMediaPickerIndex, "imagePreview", selectedUrl);
+              updateVariant(variantMediaPickerIndex, "imageFile", null);
+              updateVariant(variantMediaPickerIndex, "imageError", "");
+            }
+            setVariantMediaPickerIndex(null);
+          }
+        }}
+        multiple={false}
+        initialSelected={
+          variantMediaPickerIndex !== null
+            ? variants[variantMediaPickerIndex]?.imagePreview || variants[variantMediaPickerIndex]?.imageUrl
+            : ""
+        }
+        title="Select Variant Image"
+      />
     </div>
   );
 };

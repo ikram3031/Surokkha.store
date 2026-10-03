@@ -48,7 +48,7 @@ export const getTransport = () => {
 // Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
 export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
   try {
-    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Flexivia";
     const otpauth = authenticator.keyuri(user.email, brandName, secret);
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, {
       width: 240,
@@ -61,7 +61,7 @@ export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
 
     const transport = getTransport();
     const fromName = env.SMTP_FROM_NAME || brandName;
-    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "plexivia.online"}`;
     const fromAddress = `"${fromName}" <${fromEmail}>`;
 
     const htmlContent = buildTwoFactorQrEmailHtml({

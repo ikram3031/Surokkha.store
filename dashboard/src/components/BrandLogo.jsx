@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { clientConfig } from '@/clientConfig';
-import { apiClient, resolveImageUrl } from '@/lib/api-client';
-import surokkhaLogo from '@/assets/surokkha_logo.png';
-import decantreLogo from '@/assets/decantre_logo.png';
-import engulficLogo from '@/assets/engulfic_logo.webp';
-
-const staticClientLogos = {
-  surokkha: surokkhaLogo,
-  decantre: decantreLogo,
-  engulfic: engulficLogo,
-};
+import { resolveImageUrl } from '@/lib/api-client';
+import plexiviaLogo from '@/assets/plexivia.png';
 
 // Renders the tenant branding logo with fixed proportional width and dynamic height
 export const BrandLogo = ({
@@ -20,7 +12,7 @@ export const BrandLogo = ({
   iconOnly = false,
   centered = false,
 }) => {
-  const { clientKey = 'decantre', brandName = 'Decantre', logoUrl } = clientConfig || {};
+  const { clientKey = 'demo', brandName = 'Flexivia', logoUrl } = clientConfig || {};
 
   const [logoVersion, setLogoVersion] = useState(() => {
     try {
@@ -30,9 +22,8 @@ export const BrandLogo = ({
     }
   });
 
-  const bundledLogo = staticClientLogos[clientKey?.toLowerCase()] || null;
-  const defaultLogo = '/uploads/assets/logo.webp';
-  const rawUrl = src || (logoUrl && !logoUrl.includes('demo_logo') ? logoUrl : (bundledLogo || defaultLogo)) || defaultLogo;
+  const defaultLogo = logoUrl && !logoUrl.includes('demo_logo') ? logoUrl : plexiviaLogo;
+  const rawUrl = src || defaultLogo;
 
   // Resolves image paths and appends version query string for real-time asset invalidation
   const resolveLogoUrl = (url, version) => {
@@ -41,14 +32,14 @@ export const BrandLogo = ({
       return url;
     }
     let finalUrl = resolveImageUrl(url);
-    if (version && !finalUrl.startsWith('data:') && !finalUrl.startsWith('blob:')) {
+    if (version && typeof finalUrl === 'string' && !finalUrl.startsWith('data:') && !finalUrl.startsWith('blob:')) {
       finalUrl += `${finalUrl.includes('?') ? '&' : '?'}v=${version}`;
     }
     return finalUrl;
   };
 
   const primaryUrl = resolveLogoUrl(rawUrl, logoVersion);
-  const [currentSrc, setCurrentSrc] = useState(primaryUrl || bundledLogo);
+  const [currentSrc, setCurrentSrc] = useState(primaryUrl || plexiviaLogo);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -67,14 +58,14 @@ export const BrandLogo = ({
   }, []);
 
   useEffect(() => {
-    setCurrentSrc(primaryUrl || bundledLogo);
+    setCurrentSrc(primaryUrl || plexiviaLogo);
     setImageError(false);
-  }, [primaryUrl, bundledLogo]);
+  }, [primaryUrl]);
 
-  // Handles image load failures and falls back to bundled static logo
+  // Handles image load failures and falls back gracefully
   const handleImageError = () => {
-    if (bundledLogo && currentSrc !== bundledLogo) {
-      setCurrentSrc(bundledLogo);
+    if (currentSrc !== plexiviaLogo) {
+      setCurrentSrc(plexiviaLogo);
     } else {
       setImageError(true);
     }
@@ -99,7 +90,7 @@ export const BrandLogo = ({
     return (
       <div className={`flex items-center justify-center font-bold text-primary shrink-0 ${className}`}>
         <span className="bg-primary/20 px-2 py-0.5 rounded border border-primary/30 uppercase text-xs font-black">
-          {clientKey ? clientKey.slice(0, 2) : 'WL'}
+          {brandName ? brandName.slice(0, 2).toUpperCase() : 'WL'}
         </span>
       </div>
     );
@@ -108,7 +99,7 @@ export const BrandLogo = ({
   return (
     <div className={`flex items-center gap-2 font-bold tracking-wider text-xl text-primary shrink-0 ${className}`}>
       <span className="bg-primary/20 px-2 py-0.5 rounded border border-primary/30 uppercase text-xs font-black">
-        {clientKey ? clientKey.slice(0, 2) : 'WL'}
+        {brandName ? brandName.slice(0, 2).toUpperCase() : 'WL'}
       </span>
       <span className="truncate">{brandName}</span>
     </div>

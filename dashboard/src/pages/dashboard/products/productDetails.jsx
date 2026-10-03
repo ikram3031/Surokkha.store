@@ -392,6 +392,45 @@ const EditProductPage = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleSelectExistingFeaturedImage = (url) => {
+    if (!url) return;
+    setUploadedImageUrl(url);
+    setImagePreview(url);
+    setMainImageFile(null);
+    setMainImageError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSelectExistingGalleryImages = (urls) => {
+    const urlList = Array.isArray(urls) ? urls : [urls];
+    if (urlList.length === 0) return;
+
+    const remainingSlots = Math.max(0, 5 - galleryImages.length);
+    const toAdd = urlList.slice(0, remainingSlots);
+
+    if (urlList.length > remainingSlots) {
+      toast.error(`Maximum 5 gallery images allowed. Only ${remainingSlots} were added.`);
+    }
+
+    const newImages = toAdd.map((url, idx) => ({
+      id: `media-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 6)}`,
+      file: null,
+      preview: url,
+      url,
+      altText: "",
+      isLoaded: true,
+    }));
+
+    setGalleryImages((prev) => [...prev, ...newImages]);
+  };
+
+  const handleSelectExistingVariantImage = (index, url) => {
+    updateVariant(index, "imageUrl", url || "");
+    updateVariant(index, "imagePreview", url || "");
+    updateVariant(index, "imageFile", null);
+    updateVariant(index, "imageError", "");
+  };
+
   const handleGalleryImageSelect = (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -783,6 +822,7 @@ const EditProductPage = () => {
               removeVariant={removeVariant}
               updateVariant={updateVariant}
               handleVariantImageSelect={handleVariantImageSelect}
+              onSelectVariantMedia={handleSelectExistingVariantImage}
               getFullPreviewUrl={getFullPreviewUrl}
               clientConfig={clientConfig}
             />
@@ -812,10 +852,12 @@ const EditProductPage = () => {
               fileInputRef={fileInputRef}
               handleImageSelect={handleImageSelect}
               removeUploadedImage={removeUploadedImage}
+              onSelectFeaturedMedia={handleSelectExistingFeaturedImage}
               galleryImages={galleryImages}
               galleryInputRef={galleryInputRef}
               handleGalleryImageSelect={handleGalleryImageSelect}
               removeGalleryImage={removeGalleryImage}
+              onSelectGalleryMedia={handleSelectExistingGalleryImages}
               categorySlugs={categorySlugs}
               setCategorySlugs={setCategorySlugs}
               categories={categories}

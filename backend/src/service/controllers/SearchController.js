@@ -3,6 +3,7 @@ import { CategoryModel } from "../../common/models/category.model.js";
 import { BrandModel } from "../../common/models/brand.model.js";
 import { RecentSearchModel } from "../../common/models/recentSearch.model.js";
 import { PopularSearchModel } from "../../common/models/popularSearch.model.js";
+import { config } from "../../common/config/index.js";
 
 // Performs product search and asynchronously tracks search analytics
 export const searchProducts = async (req, res, next) => {
@@ -57,8 +58,9 @@ export const searchProducts = async (req, res, next) => {
       const brand = pBrandDids.map((did) => brandMap.get(did)).filter(Boolean)[0] || null;
 
       const rawImage = p.thumbnailUrl || p.imageUrl || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null);
+      const apiBase = (config.apiBaseUrl || "").replace(/\/$/, "");
       const fullUrl = rawImage
-        ? (rawImage.startsWith("http") ? rawImage : `https://server.decantrebd.com${rawImage.startsWith("/") ? "" : "/"}${rawImage}`)
+        ? (rawImage.startsWith("http") ? rawImage : `${apiBase}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`)
         : null;
 
       return {

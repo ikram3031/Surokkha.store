@@ -94,7 +94,7 @@ export const createApp = async (options = {}) => {
       : ["dashboard"];
     const frontendKeywords = env.FRONTEND_DOMAIN_KEYWORDS
       ? env.FRONTEND_DOMAIN_KEYWORDS.split(",").map((kw) => kw.trim().toLowerCase())
-      : ["localhost", "decantrebd.com"];
+      : ["localhost", config.domain || "plexivia.online"];
 
     const isDashboard = dashboardKeywords.some((kw) => origin.includes(kw)) ||
       (req.originalUrl && req.originalUrl.includes("/dashboard/"));
@@ -218,7 +218,7 @@ export const createApp = async (options = {}) => {
   app.get("/", (req, res) => {
     res.json({
       status: "success",
-      message: "Decantre BD Backend API is live",
+      message: `${config.brandName || "White-Label"} Backend API is live`,
       documentation: {
         swaggerUI: "/api-docs",
         openApiJson: "/api/v1/swagger.json",

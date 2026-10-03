@@ -81,7 +81,7 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=${VITE_API_BASE_URL}
-        - VITE_CLIENT=${VITE_CLIENT:-engulfic}
+        - VITE_CLIENT=${VITE_CLIENT:-demo}
     container_name: ${DASHBOARD_CONTAINER_NAME}
     restart: always
     # dashboard এর .env ও dynamically specified path বা default path থেকে mount

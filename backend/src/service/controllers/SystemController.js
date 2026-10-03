@@ -11,9 +11,12 @@ const __dirname = path.dirname(__filename);
 
 let backendVersion = '2.0.1';
 try {
-  const pkgPath = path.resolve(__dirname, '../../package.json');
+  const pkgPath = path.resolve(__dirname, '../../../package.json');
   if (fs.existsSync(pkgPath)) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    if (pkg.version) backendVersion = pkg.version;
+  } else if (fs.existsSync(path.join(process.cwd(), 'package.json'))) {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
     if (pkg.version) backendVersion = pkg.version;
   }
 } catch (err) {
@@ -25,8 +28,8 @@ export const getHealthCheck = async (req, res, next) => {
     const isDbConnected = mongoose.connection.readyState === 1;
     return res.status(isDbConnected ? 200 : 503).json({
       status: isDbConnected ? 'healthy' : 'degraded',
-      clientKey: config.clientKey || 'surokkha',
-      brandName: config.brandName || 'Surokkha',
+      clientKey: config.clientKey || 'demo',
+      brandName: config.brandName || 'Flexivia',
       policies: config.policies || {},
       backendVersion,
       uptimeSeconds: Math.floor(process.uptime()),
@@ -43,8 +46,8 @@ export const getSystemInfo = async (req, res, next) => {
     return res.json({
       status: 'success',
       data: {
-        clientKey: config.clientKey || 'surokkha',
-        brandName: config.brandName || 'Surokkha',
+        clientKey: config.clientKey || 'demo',
+        brandName: config.brandName || 'Flexivia',
         policies: config.policies || {},
         backendVersion,
         nodeVersion: process.version,
@@ -63,8 +66,8 @@ export const getMetadata = async (req, res, next) => {
     return res.json({
       status: 'success',
       data: {
-        clientKey: config.clientKey || 'surokkha',
-        brandName: config.brandName || 'Surokkha',
+        clientKey: config.clientKey || 'demo',
+        brandName: config.brandName || 'Flexivia',
         orderStatuses: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'returned'],
         paymentMethods: ['Cash on Delivery (COD)', 'bKash', 'Nagad', 'Rocket', 'Bank Transfer', 'In-Store POS Cash'],
         paymentStatuses: ['pending', 'paid', 'partially_paid', 'failed', 'refunded'],
@@ -107,8 +110,8 @@ const resolveCloudflareToken = async () => {
 
 export const purgeSystemCache = async (req, res, next) => {
   try {
-    const clientKey = config.clientKey || process.env.CLIENT_NAME || 'surokkha';
-    const domain = (config.domain || `${clientKey}.store`).replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+    const clientKey = config.clientKey || process.env.CLIENT_NAME || 'demo';
+    const domain = (config.domain || 'plexivia.online').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
     const token = await resolveCloudflareToken();
 
     const ZONE_MAP = {
@@ -130,7 +133,7 @@ export const purgeSystemCache = async (req, res, next) => {
       if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
     } catch {}
 
-    let zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey];
+    let zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || process.env.CLOUDFLARE_ZONE_ID || config.cloudFlareAnalytics?.zoneId || '';
     let cfPurged = false;
     let cfMessage = '';
 
@@ -178,8 +181,8 @@ const formatNumber = (num) => {
 
 export const getCloudflareAnalytics = async (req, res, next) => {
   try {
-    const clientKey = config.clientKey || process.env.CLIENT_NAME || 'surokkha';
-    const domain = (config.domain || 'surokkha.store').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+    const clientKey = config.clientKey || process.env.CLIENT_NAME || 'demo';
+    const domain = (config.domain || 'plexivia.online').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
     const token = await resolveCloudflareToken();
     const range = req.query.range || '24h';
 
@@ -204,7 +207,15 @@ export const getCloudflareAnalytics = async (req, res, next) => {
       if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
     } catch {}
 
-    const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
+    const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || process.env.CLOUDFLARE_ZONE_ID || config.cloudFlareAnalytics?.zoneId || '';
+
+    if (!token || !zoneId) {
+      return res.json({
+        status: 'success',
+        data: null,
+        message: 'Cloudflare analytics not configured.',
+      });
+    }
 
     let daysCount = 7;
     if (range === '24h' || range === 'today') daysCount = 1;

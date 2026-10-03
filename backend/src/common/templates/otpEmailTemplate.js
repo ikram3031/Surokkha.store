@@ -1,187 +1,47 @@
+import { config } from '../config/index.js';
+
 /**
- * Builds a professional, luxury dark/gold themed HTML email template for OTP verification with center-aligned text hierarchy.
- * 
- * @param {Object} params
- * @param {string} params.name - The recipient's name
- * @param {string} params.otp - The One-Time Password
- * @param {string} [params.logoUrl="https://server.decantrebd.com/uploads/logo_horizontal.png"] - Public Decantre logo URL
- * @returns {string} HTML email string
+ * Builds HTML email body for customer/member OTP codes
  */
 export const buildOtpEmailHtml = ({
   name,
   otp,
-  logoUrl = "https://admin.surokkha.store/surokkha_logo.png"
+  type = 'registration',
+  brandName: customBrandName,
 }) => {
-  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
-    ? "https://admin.surokkha.store/surokkha_logo.png"
-    : logoUrl;
-  const finalName = name || "Valued Customer";
+  const brandName = customBrandName || config.brandName || 'Flexivia';
+  const isForgotPassword = type === 'forgot-password';
+  const heading = isForgotPassword ? 'Password Reset Verification' : 'Verify Your Email';
+  const description = isForgotPassword
+    ? `We received a request to reset your ${brandName} password. Use the verification code below to proceed:`
+    : `Thank you for choosing ${brandName}. Please use the verification code below to complete your registration or login:`;
 
   return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Verification Code</title>
-  <!-- Google Fonts Import -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Geist Mono';
-      background-color: #F8FAFC;
-      color: #334155;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrapper {
-      width: 100%;
-      table-layout: fixed;
-      background-color: #F8FAFC;
-      padding-top: 40px;
-      padding-bottom: 40px;
-      font-family: 'Geist Mono';
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #FFFFFF;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      border: 1px solid #E2E8F0;
-    }
-    .header {
-      background-color: #FFFFFF;
-      padding: 32px 20px;
-      text-align: center;
-      border-bottom: 3px solid #E2E8F0;
-    }
-    .logo {
-      vertical-align: middle;
-    }
-    .content {
-      padding: 40px 30px;
-      text-align: center;
-      line-height: 1.6;
-      font-family: 'Geist Mono';
-    }
-    .title {
-      font-family: 'Marcellus';
-      font-size: 24px;
-      color: #334155;
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-align: center;
-    }
-    .greeting {
-      font-size: 15px;
-      color: #334155;
-      margin-bottom: 15px;
-      text-align: center;
-      font-family: 'Geist Mono';
-    }
-    .message-text {
-      font-size: 14px;
-      color: #334155;
-      margin-bottom: 25px;
-      text-align: center;
-      font-family: 'Geist Mono';
-    }
-    .otp-container {
-      margin: 25px 0;
-      padding: 22px 30px;
-      background-color: #FFFFFF;
-      border: 1px dashed #E2E8F0;
-      border-radius: 6px;
-      display: inline-block;
-    }
-    .otp-code {
-      font-size: 34px;
-      font-weight: 700;
-      color: #0F172A;
-      letter-spacing: 10px;
-      margin: 0;
-      padding-left: 10px;
-      font-family: 'Geist Mono';
-    }
-    .expiry-text {
-      font-size: 13px;
-      color: #334155;
-      margin-top: 15px;
-      font-style: italic;
-      text-align: center;
-      font-family: 'Geist Mono';
-    }
-    .security-notice {
-      font-size: 12px;
-      color: #71717A;
-      border-top: 1px solid #27272A;
-      margin-top: 40px;
-      padding-top: 20px;
-      text-align: center;
-      font-family: 'Geist Mono';
-    }
-    .footer {
-      background-color: #FFFFFF;
-      padding: 30px 20px;
-      text-align: center;
-      font-size: 12px;
-      color: #334155;
-      border-top: 1px solid #E2E8F0;
-      font-family: 'Geist Mono';
-    }
-    .footer a {
-      color: #0F172A;
-      text-decoration: none;
-    }
-    .footer p {
-      margin: 8px 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="container">
-      
-      <!-- Black Header with Gold Accent Line & Logo -->
-      <div class="header">
-        <img class="logo" src="${cleanLogoUrl}" alt="Surokkha" height="36" style="max-height: 36px; height: 36px; width: auto; max-width: 180px; object-fit: contain; display: block; margin: 0 auto; border: 0;" />
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+      <div style="background: #0f172a; padding: 24px; text-align: center; color: #ffffff;">
+        <h2 style="margin: 0; font-size: 20px; font-weight: 700;">${brandName}</h2>
       </div>
-
-      <!-- Main Body Content -->
-      <div class="content">
-        <h1 class="title">Verification Required</h1>
-        <p class="greeting">Hello ${finalName},</p>
-        <p class="message-text">
-          Thank you for choosing Decantre. To complete your verification, please use the One-Time Password (OTP) provided below:
+      <div style="padding: 32px 24px; text-align: center; color: #334155;">
+        <h3 style="margin: 0 0 12px; font-size: 18px; color: #0f172a;">${heading}</h3>
+        <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #64748b;">
+          Hello <strong>${name || 'Valued Customer'}</strong>,<br/>
+          ${description}
         </p>
-        
-        <!-- Gold Accent OTP Card Box -->
-        <div class="otp-container">
-          <div class="otp-code">${otp}</div>
+        <div style="background: #f1f5f9; padding: 18px 24px; border-radius: 10px; display: inline-block; letter-spacing: 8px; font-size: 32px; font-weight: 800; color: #0f172a; font-family: monospace; margin-bottom: 24px;">
+          ${otp}
         </div>
-        
-        <p class="expiry-text">This code will expire in 10 minutes.</p>
-        
-        <p class="security-notice">
-          If you did not request this verification code, please ignore this email or contact support if you suspect unauthorized activity.
+        <p style="margin: 0 0 12px; font-size: 12px; color: #ef4444; font-weight: 600;">
+          ⏳ This code is valid for 3 minutes.
+        </p>
+        <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+          If you did not request this code, you can safely ignore this email.
         </p>
       </div>
-
-      <!-- Dark Footer -->
-      <div class="footer">
-        <p>&copy; ${new Date().getFullYear()} <a href="https://decantrebd.com">Decantre</a>. All rights reserved.</p>
+      <div style="background: #f8fafc; padding: 16px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+        © ${new Date().getFullYear()} ${brandName}. All rights reserved.
       </div>
-
     </div>
-  </div>
-</body>
-</html>
   `;
 };
+
+export default { buildOtpEmailHtml };
