@@ -33,8 +33,8 @@ export const testimonials = [
     date: '2026-03-14',
     verified: true,
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80',
-    comment: 'The 30pcs Combo Pack saved me ৳400 instantly. Getting all 3 signature textures in one single confidential parcel is unbeatable value for money.',
-    comment_bn: '৩০ পিসের কম্বো প্যাকটায় সরাসরি ৪০০ টাকা সাশ্রয় হলো। এক অর্ডারে ৩টি আলাদা টেক্সচার পাওয়ার এই মেগা কম্বো অফারটি আসলেই সেরা।'
+    comment: 'The 30pcs Combo Pack provides amazing value and convenience. Getting all 3 signature textures in one single confidential parcel is unbeatable value for money.',
+    comment_bn: '৩০ পিসের কম্বো প্যাকটি দারুণ সাশ্রয়ী ও সুবিধাজনক। এক অর্ডারে ৩টি আলাদা ভ্যারিয়েন্ট পাওয়ার এই মেগা কম্বো প্যাকেজটি আসলেই সেরা।'
   },
   {
     id: 'rev-3',

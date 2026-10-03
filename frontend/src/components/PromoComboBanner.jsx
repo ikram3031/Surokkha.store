@@ -16,9 +16,9 @@ export default function PromoComboBanner() {
 
   if (isOutOfStock) return null;
 
-  const currentOfferPrice = comboProd.offerPrice || comboProd.price || 800;
+  const currentOfferPrice = comboProd.offerPrice || comboProd.price || 900;
   const currentRegularPrice = comboProd.regularPrice || 1200;
-  const savingsAmount = currentRegularPrice > currentOfferPrice ? currentRegularPrice - currentOfferPrice : 400;
+  const savingsAmount = currentRegularPrice > currentOfferPrice ? currentRegularPrice - currentOfferPrice : 300;
   const savingsPercent = Math.round((savingsAmount / currentRegularPrice) * 100);
 
   const handleBuyNow = () => {

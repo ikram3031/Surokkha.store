@@ -704,7 +704,7 @@ export const useStore = create((set, get) => ({
     }));
     trackAddToCart(comboProd, 1);
     const isBn = get().language === 'bn';
-    get().showToast(isBn ? `কম্বো প্যাক যোগ করা হয়েছে! ৩টি MO প্যাক মাত্র ৳৯০০` : `Combo Pack added! 3 MO Packs for ৳900`);
+    get().showToast(isBn ? `কম্বো প্যাক সফলভাবে কার্টে যোগ করা হয়েছে!` : `Combo Pack successfully added to cart!`);
     get().openCartDrawer();
   },
 
