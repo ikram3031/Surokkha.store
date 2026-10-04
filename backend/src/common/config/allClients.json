@@ -984,7 +984,7 @@
     "whatsappNumber": "01600905774",
     "apiBaseUrl": "https://api.surokkha.store",
     "dashboardUrl": "https://admin.surokkha.store",
-    "storefrontUrl": "https://surokkha.shop",
+    "storefrontUrl": "https://surokkha.store",
     "routes": {
       "shop": "/shop",
       "category": "/shop/:category",
@@ -1071,7 +1071,10 @@
       "store": {
         "key": "store",
         "domain": "surokkha.store",
+        "url": "https://surokkha.store",
+        "storefrontUrl": "https://surokkha.store",
         "name": "Surokkha Store",
+        "orderPrefix": "SST",
         "metaPixel": {
           "pixelId": "1840805450442709",
           "accessToken": "EAAdd22ZBIEXABSsMRZCWB0wUlZAiS9el5HHkQZBf3qVEdE0TEUIHfD9JHxVt12MRIBQXgvrH2bpEdZCAMQ9RjgFJdZBbtSPlJw4aybNMtZC5TDyBuaSQQx3ExjJDDKKyJrUdEzgQvZAxg19ljeim99AwKCEHZA1xgmnCyEzDZBfemqcF2xPOVnUDuoUtvETl6lQX1rswZDZD",
@@ -1084,7 +1087,10 @@
       "shop": {
         "key": "shop",
         "domain": "surokkha.shop",
+        "url": "https://surokkha.shop",
+        "storefrontUrl": "https://surokkha.shop",
         "name": "Surokkha Shop",
+        "orderPrefix": "SSH",
         "metaPixel": {
           "pixelId": "1565104865301894",
           "accessToken": "EAAdd22ZBIEXABSsMRZCWB0wUlZAiS9el5HHkQZBf3qVEdE0TEUIHfD9JHxVt12MRIBQXgvrH2bpEdZCAMQ9RjgFJdZBbtSPlJw4aybNMtZC5TDyBuaSQQx3ExjJDDKKyJrUdEzgQvZAxg19ljeim99AwKCEHZA1xgmnCyEzDZBfemqcF2xPOVnUDuoUtvETl6lQX1rswZDZD",

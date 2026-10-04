@@ -100,7 +100,10 @@ export const getMetaCatalogCsv = async (req, res, next) => {
       const availability = p.stockStatus === 'outofstock' ? 'out of stock' : 'in stock';
       const condition = 'new';
       
-      const link = `${config.storefrontUrl || 'https://' + (config.domain || 'localhost')}/product/${p.slug}`;
+      const reqSiteKey = String(req.query.siteKey || (req.headers.host?.includes('shop') ? 'shop' : 'store')).toLowerCase();
+      const siteConfig = config.sites?.[reqSiteKey];
+      const baseSiteUrl = siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'));
+      const link = `${baseSiteUrl}/product/${p.slug}`;
       const imageLink = p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : `${config.apiBaseUrl || 'https://api.' + (config.domain || 'localhost')}${p.imageUrl}`) : '';
       
       const brand = config.brandName || 'Store';

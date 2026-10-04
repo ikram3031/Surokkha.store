@@ -158,6 +158,22 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
         if (kw) keywords.add(kw);
       }
     });
+
+    if (cfg.sites && typeof cfg.sites === "object") {
+      Object.values(cfg.sites).forEach((site) => {
+        if (site?.domain) {
+          buildUrlVariations(site.domain).forEach((v) => origins.add(v));
+          const kw = extractDomainKeyword(site.domain);
+          if (kw) keywords.add(kw);
+        }
+        const siteUrl = site?.url || site?.storefrontUrl;
+        if (siteUrl) {
+          buildUrlVariations(siteUrl).forEach((v) => origins.add(v));
+          const kw = extractDomainKeyword(siteUrl);
+          if (kw) keywords.add(kw);
+        }
+      });
+    }
   });
 
   if (envAllowedOrigins) {
