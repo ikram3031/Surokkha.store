@@ -45,13 +45,13 @@ const HeroSlider = () => {
               playsInline
               preload="auto"
               onError={() => setVideoError(true)}
-              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-40' : 'opacity-85'} transition-opacity duration-1000`}
+              className="w-full h-full object-cover object-center scale-105 opacity-85 transition-opacity duration-1000"
             />
           ) : (
             <img
               src={posterUrl}
               alt="Surokkha Premium Collection"
-              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-30' : 'opacity-75'}`}
+              className="w-full h-full object-cover object-center scale-105 opacity-75"
             />
           )}
 
