@@ -24,7 +24,7 @@ help:
 	@echo ""
 	@echo "Component Builds (Native VPS Mode):"
 	@echo "  make build-frontend     Build Storefront and deploy to /opt/clients/surokkha/dist"
-	@echo "  make build-dashboard    Build Admin Dashboard and deploy to /var/www/admin.surokkha.store/dist"
+	@echo "  make build-dashboard    Build Admin Dashboard and deploy to /opt/clients/surokkha/dashboard"
 	@echo "  make restart-backend    Restart systemd services (surokkha-storefront & surokkha-dashboard)"
 	@echo ""
 	@echo "Status & Health:"
@@ -60,9 +60,9 @@ deploy:
 		echo "📦 Building Admin Dashboard..."; \
 		npm install --prefix dashboard; \
 		npm run build --prefix dashboard; \
-		mkdir -p /var/www/admin.surokkha.store/dist; \
-		cp -r dashboard/dist/* /var/www/admin.surokkha.store/dist/ 2>/dev/null || true; \
-		echo "✓ Admin Dashboard static files deployed to /var/www/admin.surokkha.store/dist"; \
+		mkdir -p /opt/clients/surokkha/dashboard; \
+		cp -r dashboard/dist/* /opt/clients/surokkha/dashboard/ 2>/dev/null || true; \
+		echo "✓ Admin Dashboard static files deployed to /opt/clients/surokkha/dashboard"; \
 	fi
 	@# 3. Update Backend dependencies and restart services
 	@if [ -d "backend" ]; then \
@@ -109,10 +109,10 @@ build-dashboard:
 	@$(MAKE) sync-config
 	npm install --prefix dashboard
 	npm run build --prefix dashboard
-	@mkdir -p /var/www/admin.surokkha.store/dist
-	@cp -r dashboard/dist/* /var/www/admin.surokkha.store/dist/ 2>/dev/null || true
+	@mkdir -p /opt/clients/surokkha/dashboard
+	@cp -r dashboard/dist/* /opt/clients/surokkha/dashboard/ 2>/dev/null || true
 	@systemctl reload nginx 2>/dev/null || true
-	@echo "✓ Admin Dashboard deployed!"
+	@echo "✓ Admin Dashboard deployed to /opt/clients/surokkha/dashboard!"
 
 restart-backend:
 	systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true
