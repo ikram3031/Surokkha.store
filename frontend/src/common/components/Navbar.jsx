@@ -27,42 +27,34 @@ const Navbar = () => {
               onClick={(e) => { e.stopPropagation(); openProduct('variety-condoms-30pcs-combo'); }}
               className="flex items-center gap-2 sm:gap-3 px-6 sm:px-12 cursor-pointer hover:opacity-90 transition-opacity"
             >
-              <span className={`inline-flex items-center gap-1.5 font-bold ${isStore ? 'text-rose-700' : 'text-amber-400'}`}>
+              <span className="inline-flex items-center gap-1.5 font-bold text-amber-400">
                 <span className="animate-pulse">🔥</span>
                 <span>{t('navbar.combo_banner_lead', '২৫% স্পেশাল ডিসকাউন্ট!')}</span>
               </span>
-              <span className={`font-semibold ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
+              <span className="font-semibold text-rose-100/90">
                 {t('navbar.combo_banner_text', '৩০ পিস MO কম্বো প্যাক নিন মাত্র ৯০০ টাকায়')}
               </span>
-              <span className={`inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors ${
-                isStore
-                  ? 'text-rose-700 group-hover:text-rose-900 decoration-rose-500'
-                  : 'text-amber-400 group-hover:text-amber-300 decoration-amber-400/80'
-              }`}>
+              <span className="inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors text-amber-400 group-hover:text-amber-300 decoration-amber-400/80">
                 <span>{t('navbar.combo_banner_action', 'অফারটি দেখুন →')}</span>
               </span>
-              <span className={`${isStore ? 'text-rose-300' : 'text-rose-400/50'} ml-6 font-bold`}>•</span>
+              <span className="text-rose-400/50 ml-6 font-bold">•</span>
             </div>
 
             <div 
               onClick={(e) => { e.stopPropagation(); navigateTo('shop'); }}
               className="flex items-center gap-2 sm:gap-3 px-6 sm:px-12 cursor-pointer hover:opacity-90 transition-opacity"
             >
-              <span className={`inline-flex items-center gap-1.5 font-bold ${isStore ? 'text-amber-700' : 'text-amber-300'}`}>
+              <span className="inline-flex items-center gap-1.5 font-bold text-amber-300">
                 <span className="animate-pulse">🎉</span>
                 <span>{t('navbar.monthly_banner_lead', 'মাসব্যাপী অফার!')}</span>
               </span>
-              <span className={`font-semibold ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
+              <span className="font-semibold text-rose-100/90">
                 {t('navbar.monthly_banner_text', 'আমাদের সকল পণ্যে সেপ্টেম্বর মাসব্যাপী ডিসকাউন্ট পাচ্ছেন')}
               </span>
-              <span className={`inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors ${
-                isStore
-                  ? 'text-amber-700 group-hover:text-amber-900 decoration-amber-500'
-                  : 'text-amber-300 group-hover:text-amber-200 decoration-amber-300/80'
-              }`}>
+              <span className="inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors text-amber-300 group-hover:text-amber-200 decoration-amber-300/80">
                 <span>{t('navbar.monthly_banner_action', 'শপ দেখুন →')}</span>
               </span>
-              <span className={`${isStore ? 'text-rose-300' : 'text-rose-400/50'} ml-6 font-bold`}>•</span>
+              <span className="text-rose-400/50 ml-6 font-bold">•</span>
             </div>
           </div>
 
@@ -71,42 +63,34 @@ const Navbar = () => {
               onClick={(e) => { e.stopPropagation(); openProduct('variety-condoms-30pcs-combo'); }}
               className="flex items-center gap-2 sm:gap-3 px-6 sm:px-12 cursor-pointer hover:opacity-90 transition-opacity"
             >
-              <span className={`inline-flex items-center gap-1.5 font-bold ${isStore ? 'text-rose-700' : 'text-amber-400'}`}>
+              <span className="inline-flex items-center gap-1.5 font-bold text-amber-400">
                 <span className="animate-pulse">🔥</span>
                 <span>{t('navbar.combo_banner_lead', '২৫% স্পেশাল ডিসকাউন্ট!')}</span>
               </span>
-              <span className={`font-semibold ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
+              <span className="font-semibold text-rose-100/90">
                 {t('navbar.combo_banner_text', '৩০ পিস MO কম্বো প্যাক নিন মাত্র ৯০০ টাকায়')}
               </span>
-              <span className={`inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors ${
-                isStore
-                  ? 'text-rose-700 group-hover:text-rose-900 decoration-rose-500'
-                  : 'text-amber-400 group-hover:text-amber-300 decoration-amber-400/80'
-              }`}>
+              <span className="inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors text-amber-400 group-hover:text-amber-300 decoration-amber-400/80">
                 <span>{t('navbar.combo_banner_action', 'অফারটি দেখুন →')}</span>
               </span>
-              <span className={`${isStore ? 'text-rose-300' : 'text-rose-400/50'} ml-6 font-bold`}>•</span>
+              <span className="text-rose-400/50 ml-6 font-bold">•</span>
             </div>
 
             <div 
               onClick={(e) => { e.stopPropagation(); navigateTo('shop'); }}
               className="flex items-center gap-2 sm:gap-3 px-6 sm:px-12 cursor-pointer hover:opacity-90 transition-opacity"
             >
-              <span className={`inline-flex items-center gap-1.5 font-bold ${isStore ? 'text-amber-700' : 'text-amber-300'}`}>
+              <span className="inline-flex items-center gap-1.5 font-bold text-amber-300">
                 <span className="animate-pulse">🎉</span>
                 <span>{t('navbar.monthly_banner_lead', 'মাসব্যাপী অফার!')}</span>
               </span>
-              <span className={`font-semibold ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
+              <span className="font-semibold text-rose-100/90">
                 {t('navbar.monthly_banner_text', 'আমাদের সকল পণ্যে সেপ্টেম্বর মাসব্যাপী ডিসকাউন্ট পাচ্ছেন')}
               </span>
-              <span className={`inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors ${
-                isStore
-                  ? 'text-amber-700 group-hover:text-amber-900 decoration-amber-500'
-                  : 'text-amber-300 group-hover:text-amber-200 decoration-amber-300/80'
-              }`}>
+              <span className="inline-flex items-center gap-1 font-bold underline underline-offset-4 transition-colors text-amber-300 group-hover:text-amber-200 decoration-amber-300/80">
                 <span>{t('navbar.monthly_banner_action', 'শপ দেখুন →')}</span>
               </span>
-              <span className={`${isStore ? 'text-rose-300' : 'text-rose-400/50'} ml-6 font-bold`}>•</span>
+              <span className="text-rose-400/50 ml-6 font-bold">•</span>
             </div>
           </div>
         </div>
