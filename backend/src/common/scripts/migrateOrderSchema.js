@@ -6,7 +6,7 @@ dotenv.config();
 
 // Establish temporary database connection to run the schema migration
 async function runMigration() {
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/decantre';
+  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ecommerce-db';
   console.log(`[Migration] Connecting to database: ${uri}`);
   
   try {

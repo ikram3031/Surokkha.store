@@ -4,11 +4,8 @@ import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { decryptText } from "../utils/crypto.util.js";
 import { env } from "../config/env.js";
 
-/**
- * Resolves active SMTP configuration from database (StoreSettingsModel) or environment variables (.env).
- * Gives precedence to DB settings if host & user are provided (or isEnabled is true), falling back to env.
- */
-export async function getSmtpConfig() {
+// Resolves active SMTP configuration from database with environment fallback
+export const getSmtpConfig = async () => {
   let dbSmtp = {};
   if (mongoose.connection.readyState === 1) {
     try {
@@ -19,8 +16,6 @@ export async function getSmtpConfig() {
     }
   }
 
-  // Check DB settings: if isEnabled is explicitly true and host & user exist, use DB.
-  // Or if user and password are saved in DB, use DB.
   const hasDbCredentials = Boolean(dbSmtp.host && dbSmtp.user && dbSmtp.password);
   const useDb = Boolean(dbSmtp.isEnabled && hasDbCredentials);
 
@@ -32,7 +27,6 @@ export async function getSmtpConfig() {
     : (env.SMTP_PASSWORD || decryptText(dbSmtp.password || "") || "");
   const password = String(rawPassword).trim();
   
-  // Secure option: Port 465 is always SSL/TLS (secure: true). Port 587 uses STARTTLS (secure: false).
   let secure;
   if (useDb && dbSmtp.secure !== undefined) {
     secure = Boolean(dbSmtp.secure);
@@ -63,12 +57,10 @@ export async function getSmtpConfig() {
     isConfigured,
     source: useDb ? "database" : (hasDbCredentials ? "database-fallback" : "env"),
   };
-}
+};
 
-/**
- * Creates and returns a Nodemailer transport instance with current active SMTP settings.
- */
-export async function getSmtpTransport() {
+// Creates and returns a Nodemailer transport instance with current active SMTP settings
+export const getSmtpTransport = async () => {
   const config = await getSmtpConfig();
 
   const isLocalhost = config.host === "127.0.0.1" || config.host === "localhost";
@@ -103,4 +95,4 @@ export async function getSmtpTransport() {
     fromAddress: config.fromAddress,
     isConfigured: config.isConfigured,
   };
-}
+};

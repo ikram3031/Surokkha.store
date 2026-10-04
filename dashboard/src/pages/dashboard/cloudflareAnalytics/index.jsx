@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Printer,
   Link as LinkIcon,
@@ -91,8 +91,8 @@ export default function CloudflareTrafficOverviewPage() {
   const isDark = (theme === 'system' ? systemTheme : theme) === 'dark';
 
   const cfConfig = clientConfig?.cloudFlareAnalytics;
-  const isAccessAllowed = Boolean(cfConfig?.active || clientConfig?.clientKey === 'surokkha');
-  const domain = cfConfig?.domain || clientConfig?.domain || 'surokkha.store';
+  const isAccessAllowed = Boolean(cfConfig?.active || clientConfig?.features?.cloudflareAnalytics !== false);
+  const domain = cfConfig?.domain || clientConfig?.domain || 'plexivia.online';
 
   const [range, setRange] = useState('24h');
   const [loading, setLoading] = useState(true);

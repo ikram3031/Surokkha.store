@@ -261,7 +261,7 @@ const EmailServerSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">SMTP Username (Email)</label>
                   <Input
-                    placeholder="e.g. support@surokkha.store"
+                    placeholder="e.g. support@plexivia.online"
                     value={smtpUser}
                     onChange={(e) => setSmtpUser(e.target.value)}
                     disabled={smtpLoading}
@@ -293,7 +293,7 @@ const EmailServerSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">Sender Name</label>
                   <Input
-                    placeholder="e.g. Surokkha Store"
+                    placeholder="e.g. Flexivia Store"
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
                     disabled={smtpLoading}
@@ -303,7 +303,7 @@ const EmailServerSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">Sender Email (From)</label>
                   <Input
-                    placeholder="e.g. support@surokkha.store"
+                    placeholder="e.g. support@plexivia.online"
                     value={senderEmail}
                     onChange={(e) => setSenderEmail(e.target.value)}
                     disabled={smtpLoading}
@@ -422,7 +422,7 @@ const EmailServerSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">IMAP Username</label>
                   <Input
-                    placeholder="e.g. support@surokkha.store"
+                    placeholder="e.g. support@plexivia.online"
                     value={imapUser}
                     onChange={(e) => setImapUser(e.target.value)}
                     disabled={imapLoading}

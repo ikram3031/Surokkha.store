@@ -177,7 +177,7 @@ export default function UserProfile() {
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Globe className="h-4 w-4 shrink-0 text-foreground/70" />
-                  <a href="#" className="hover:text-primary transition-colors">https://surokkha.store</a>
+                  <a href={clientConfig?.storefrontUrl || (clientConfig?.domain ? `https://${clientConfig.domain}` : 'https://plexivia.online')} target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">{clientConfig?.storefrontUrl || (clientConfig?.domain ? `https://${clientConfig.domain}` : 'https://plexivia.online')}</a>
                 </div>
               </div>
             </CardContent>

@@ -16,7 +16,7 @@ if (typeof window !== 'undefined') {
 
 // Initialize dynamic page title and favicon immediately per client tenant
 if (typeof document !== 'undefined') {
-  const brandName = clientConfig?.brandName || 'Decantre';
+  const brandName = clientConfig?.brandName || 'Flexivia';
   document.title = `Dashboard - ${brandName}`;
 
   const rawFavicon = clientConfig?.siteIconUrl || clientConfig?.logoUrl || '/uploads/assets/logo.webp';

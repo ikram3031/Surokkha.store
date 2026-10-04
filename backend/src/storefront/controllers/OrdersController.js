@@ -254,7 +254,7 @@ export const getOrderInvoiceView = async (req, res, next) => {
       paymentMethod: order.paymentMethod || "Cash on Delivery",
     };
 
-    const clientKey = order.client || config.clientKey || 'decantre';
+    const clientKey = order.client || config.clientKey || 'surokkha';
     const invoiceHtml = getClientInvoiceHtml({
       order: formattedOrderData,
       isPrintView: true,

@@ -1,13 +1,12 @@
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import nodemailer from "nodemailer";
 import { UserModel } from "../../common/models/user.model.js";
 import { comparePassword } from "../../common/utils/password.js";
 import { createAccessToken, createRefreshToken } from "./AuthController.js";
 import { env } from "../../common/config/env.js";
+import { config } from "../../common/config/index.js";
 import { logger } from "../../common/config/logger.js";
 import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
-
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
 // Generates/retrieves TOTP secret and emails QR Code to user
@@ -30,7 +29,6 @@ export const sendQrCodeEmail = async (req, res, next) => {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
 
-    // Generate secret if not already set
     let secret = user.twoFactorSecret;
     if (!secret) {
       secret = authenticator.generateSecret();
@@ -38,22 +36,19 @@ export const sendQrCodeEmail = async (req, res, next) => {
       await user.save();
     }
 
-    // Generate OTPAuth URI for the TOTP app
-    const otpauth = authenticator.keyuri(user.email, "Decantre BD", secret);
+    const brandName = config.brandName || "Surokkha";
+    const otpauth = authenticator.keyuri(user.email, brandName, secret);
 
-    // Render QR Code as PNG buffer for inline email attachment
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
 
-    // Build SMTP transport and sender address
     const { transport, config: smtpConfig } = await getSmtpTransport();
     if (!smtpConfig.isConfigured) {
       return res.status(500).json({ status: "error", message: "SMTP service is not configured" });
     }
-    const fromName = smtpConfig.fromName || env.SMTP_FROM_NAME || "Surokkha";
+    const fromName = smtpConfig.fromName || config.brandName || env.SMTP_FROM_NAME || "Surokkha";
     const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
     const fromAddress = `"${fromName}" <${fromEmail}>`;
 
-    // Build branded HTML email from template
     const htmlContent = buildTwoFactorQrEmailHtml({ name: user.name, secret });
 
     await transport.sendMail({
@@ -66,7 +61,7 @@ export const sendQrCodeEmail = async (req, res, next) => {
         {
           filename: "qrcode.png",
           content: qrCodeBuffer,
-          cid: "qrcode", // Referenced as src="cid:qrcode" in the HTML template
+          cid: "qrcode",
         },
       ],
     });
@@ -107,7 +102,6 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "2FA has not been set up yet. Please request a QR Code first." });
     }
 
-    // Verify TOTP code
     const isTokenValid = authenticator.verify({
       token: trimmedCode,
       secret: user.twoFactorSecret,
@@ -117,12 +111,10 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Invalid or expired 2FA code" });
     }
 
-    // Mark 2FA as fully enabled and activated
     if (!user.twoFactorEnabled) {
       user.twoFactorEnabled = true;
     }
 
-    // Issue tokens and update login stats
     const refreshToken = createRefreshToken();
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
     user.lastLogin = new Date();

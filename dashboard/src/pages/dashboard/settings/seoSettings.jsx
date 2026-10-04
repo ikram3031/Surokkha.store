@@ -75,7 +75,7 @@ const SEOSettingsPage = () => {
     saveMutation.mutate();
   };
 
-  const displayUrl = canonicalBaseUrl || 'https://yourstore.com';
+  const displayUrl = canonicalBaseUrl || clientConfig?.storefrontUrl || (clientConfig?.domain ? `https://${clientConfig.domain}` : 'https://plexivia.online');
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 w-full max-w-5xl">
@@ -115,7 +115,7 @@ const SEOSettingsPage = () => {
                     <span className="text-[10px] text-muted-foreground">{metaTitle.length}/60 chars</span>
                   </div>
                   <Input
-                    placeholder="e.g. Decantre | Premium Perfumes & Fragrances Bangladesh"
+                    placeholder="e.g. Flexivia | Premium Lifestyle & eCommerce Store"
                     value={metaTitle}
                     onChange={(e) => setMetaTitle(e.target.value)}
                     disabled={isLoading}
@@ -130,7 +130,7 @@ const SEOSettingsPage = () => {
                   </div>
                   <Textarea
                     rows={3}
-                    placeholder="e.g. Explore authentic designer decants, luxury fragrances, and perfumes delivered nationwide across Bangladesh."
+                    placeholder="e.g. Explore curated premium products, lifestyle accessories, and essentials delivered nationwide."
                     value={metaDescription}
                     onChange={(e) => setMetaDescription(e.target.value)}
                     disabled={isLoading}
@@ -141,7 +141,7 @@ const SEOSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">Focus Keywords (Comma separated)</label>
                   <Input
-                    placeholder="e.g. perfume, fragrance, decant, bd perfume store"
+                    placeholder="e.g. ecommerce, online store, shopping, lifestyle"
                     value={keywords}
                     onChange={(e) => setKeywords(e.target.value)}
                     disabled={isLoading}
@@ -162,7 +162,7 @@ const SEOSettingsPage = () => {
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">Site Name</label>
                     <Input
-                      placeholder="e.g. Decantre"
+                      placeholder="e.g. Flexivia"
                       value={siteName}
                       onChange={(e) => setSiteName(e.target.value)}
                       disabled={isLoading}
@@ -171,7 +171,7 @@ const SEOSettingsPage = () => {
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">Twitter / X Handle</label>
                     <Input
-                      placeholder="e.g. @decantrebd"
+                      placeholder="e.g. @flexiviabd"
                       value={twitterHandle}
                       onChange={(e) => setTwitterHandle(e.target.value)}
                       disabled={isLoading}
@@ -182,7 +182,7 @@ const SEOSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">Canonical Base URL</label>
                   <Input
-                    placeholder="https://decantrebd.com"
+                    placeholder="https://plexivia.online"
                     value={canonicalBaseUrl}
                     onChange={(e) => setCanonicalBaseUrl(e.target.value)}
                     disabled={isLoading}
@@ -192,7 +192,7 @@ const SEOSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">OpenGraph Social Share Image URL</label>
                   <Input
-                    placeholder="https://server.decantrebd.com/uploads/assets/og_banner.webp"
+                    placeholder="https://api.plexivia.online/uploads/assets/og_banner.webp"
                     value={ogImage}
                     onChange={(e) => setOgImage(e.target.value)}
                     disabled={isLoading}

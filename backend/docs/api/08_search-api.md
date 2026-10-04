@@ -114,6 +114,6 @@ Clears the search history. If query `q` is specified, deletes only that keyword.
 ---
 
 ## Implementation Details:
-- **Routes File**: [SearchRoute.js](file:///c:/Users/mdikr/Documents/CODE/AFull/backend/src/routes/SearchRoute.js)
-- **Controller File**: [SearchController.js](file:///c:/Users/mdikr/Documents/CODE/AFull/backend/src/controllers/SearchController.js)
-- **Models**: [recentSearch.model.js](file:///c:/Users/mdikr/Documents/CODE/AFull/backend/src/models/recentSearch.model.js), [popularSearch.model.js](file:///c:/Users/mdikr/Documents/CODE/AFull/backend/src/models/popularSearch.model.js)
+- **Routes File**: `SearchRoute.js`
+- **Controller File**: `SearchController.js`
+- **Models**: `recentSearch.model.js`, `popularSearch.model.js`

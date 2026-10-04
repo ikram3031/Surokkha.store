@@ -1,24 +1,24 @@
 services:
   mongodb:
     image: mongo:7.0
-    container_name: ${MONGODB_CONTAINER_NAME:-decantre-mongodb-dev}
+    container_name: ${MONGODB_CONTAINER_NAME:-ecommerce-mongodb-dev}
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-11223345}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-perfume-store}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-ecommerce-db}
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
       - mongodb-data-dev:/data/db
     networks:
-      - decantre-network
+      - ecommerce-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: ${BACKEND_CONTAINER_NAME:-decantre-backend-dev}
+    container_name: ${BACKEND_CONTAINER_NAME:-ecommerce-backend-dev}
     restart: always
     env_file:
       - .env
@@ -27,17 +27,17 @@ services:
     ports:
       - "127.0.0.1:${BACKEND_PORT:-5092}:${BACKEND_PORT:-5092}"
     volumes:
-      - /decantre/uploads:/app/uploads
+      - ${UPLOADS_PATH:-./uploads}:/app/uploads
     depends_on:
       - mongodb
     networks:
-      - decantre-network
+      - ecommerce-network
 
   backend-storefront:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: ${STOREFRONT_BACKEND_CONTAINER_NAME:-decantre-backend-storefront-dev}
+    container_name: ${STOREFRONT_BACKEND_CONTAINER_NAME:-ecommerce-backend-storefront-dev}
     restart: always
     env_file:
       - .env
@@ -48,17 +48,17 @@ services:
     ports:
       - "127.0.0.1:${STOREFRONT_BACKEND_PORT:-4001}:${STOREFRONT_BACKEND_PORT:-4001}"
     volumes:
-      - /decantre/uploads:/app/uploads
+      - ${UPLOADS_PATH:-./uploads}:/app/uploads
     depends_on:
       - mongodb
     networks:
-      - decantre-network
+      - ecommerce-network
 
   backend-dashboard:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: ${DASHBOARD_BACKEND_CONTAINER_NAME:-decantre-backend-dashboard-dev}
+    container_name: ${DASHBOARD_BACKEND_CONTAINER_NAME:-ecommerce-backend-dashboard-dev}
     restart: always
     env_file:
       - .env
@@ -69,24 +69,24 @@ services:
     ports:
       - "127.0.0.1:${DASHBOARD_BACKEND_PORT:-4002}:${DASHBOARD_BACKEND_PORT:-4002}"
     volumes:
-      - /decantre/uploads:/app/uploads
+      - ${UPLOADS_PATH:-./uploads}:/app/uploads
     depends_on:
       - mongodb
     networks:
-      - decantre-network
+      - ecommerce-network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: ${FRONTEND_CONTAINER_NAME:-decantre-frontend-dev}
+    container_name: ${FRONTEND_CONTAINER_NAME:-ecommerce-frontend-dev}
     restart: always
     env_file:
       - .env
     ports:
       - "127.0.0.1:${FRONTEND_PORT:-8001}:8001"
     networks:
-      - decantre-network
+      - ecommerce-network
 
   dashboard:
     build:
@@ -94,17 +94,17 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=${VITE_API_BASE_URL}
-    container_name: ${DASHBOARD_CONTAINER_NAME:-decantre-dashboard-dev}
+    container_name: ${DASHBOARD_CONTAINER_NAME:-ecommerce-dashboard-dev}
     restart: always
     env_file:
       - .env
     ports:
       - "127.0.0.1:${DASHBOARD_PORT:-8005}:8005"
     networks:
-      - decantre-network
+      - ecommerce-network
 
 networks:
-  decantre-network:
+  ecommerce-network:
     driver: bridge
 
 volumes:

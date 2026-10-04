@@ -88,7 +88,7 @@ export const testMetaCapiConnection = async ({ pixelId, accessToken, testEventCo
         event_id: `test_${Date.now()}`,
         action_source: "website",
         user_data: {
-          client_user_agent: "Decantre-WL-Ecom/Backend-CAPI-Tester",
+          client_user_agent: "Flexivia-WL-Ecom/Backend-CAPI-Tester",
         },
         custom_data: {
           test: true,

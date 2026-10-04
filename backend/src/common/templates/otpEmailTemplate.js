@@ -1,12 +1,4 @@
-/**
- * Builds a professional HTML email template for OTP verification with center-aligned text hierarchy.
- * 
- * @param {Object} params
- * @param {string} params.name - The recipient's name
- * @param {string} params.otp - The One-Time Password
- * @param {string} [params.logoUrl="https://admin.surokkha.store/surokkha_logo.png"] - Public Surokkha logo URL
- * @returns {string} HTML email string
- */
+// Builds a professional HTML email template for OTP verification with center-aligned text hierarchy
 export const buildOtpEmailHtml = ({
   name,
   otp,
@@ -24,7 +16,6 @@ export const buildOtpEmailHtml = ({
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Verification Code - Surokkha</title>
-  <!-- Google Fonts Import -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -154,7 +145,6 @@ export const buildOtpEmailHtml = ({
         <img class="logo" src="${cleanLogoUrl}" alt="Surokkha" height="36" style="max-height: 36px; height: 36px; width: auto; max-width: 180px; object-fit: contain; display: block; margin: 0 auto; border: 0;" />
       </div>
 
-      <!-- Main Body Content -->
       <div class="content">
         <h1 class="title">Verification Required</h1>
         <p class="greeting">Hello ${finalName},</p>
@@ -173,7 +163,6 @@ export const buildOtpEmailHtml = ({
         </p>
       </div>
 
-      <!-- Footer -->
       <div class="footer">
         <p>&copy; ${new Date().getFullYear()} <a href="https://surokkha.store">Surokkha.store</a>. All rights reserved.</p>
       </div>
@@ -184,3 +173,5 @@ export const buildOtpEmailHtml = ({
 </html>
   `;
 };
+
+export default { buildOtpEmailHtml };

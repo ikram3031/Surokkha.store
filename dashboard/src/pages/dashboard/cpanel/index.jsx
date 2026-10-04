@@ -36,7 +36,7 @@ const CPanelManager = () => {
       image: 'node:22-alpine',
       role: 'storefront',
       port: 4001,
-      domain: `server.${clientConfig?.domain || 'client.com'}`,
+      domain: `server.${clientConfig?.domain || 'plexivia.online'}`,
       status: 'running',
       cpu: '2.1%',
       memory: '94 MB',
@@ -47,7 +47,7 @@ const CPanelManager = () => {
       image: 'node:22-alpine',
       role: 'dashboard',
       port: 4002,
-      domain: `service.${clientConfig?.domain || 'client.com'}`,
+      domain: `service.${clientConfig?.domain || 'plexivia.online'}`,
       status: 'running',
       cpu: '1.8%',
       memory: '112 MB',
@@ -58,7 +58,7 @@ const CPanelManager = () => {
       image: 'nginx:alpine',
       role: 'web',
       port: 3000,
-      domain: `${clientConfig?.domain || 'client.com'}`,
+      domain: `${clientConfig?.domain || 'plexivia.online'}`,
       status: 'running',
       cpu: '0.4%',
       memory: '38 MB',
@@ -69,7 +69,7 @@ const CPanelManager = () => {
       image: 'nginx:alpine',
       role: 'admin',
       port: 5000,
-      domain: `admin.${clientConfig?.domain || 'client.com'}`,
+      domain: `admin.${clientConfig?.domain || 'plexivia.online'}`,
       status: 'running',
       cpu: '0.5%',
       memory: '41 MB',
@@ -81,7 +81,7 @@ const CPanelManager = () => {
     clientConfig?.cpanelUrl ||
     (typeof window !== 'undefined'
       ? `https://cpanel.${window.location.hostname.replace(/^admin\./, '').replace(/^dashboard\./, '')}`
-      : 'https://cpanel.client.com');
+      : 'https://cpanel.plexivia.online');
 
   const handleRefresh = () => {
     setLoading(true);

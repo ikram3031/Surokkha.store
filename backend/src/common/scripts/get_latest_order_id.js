@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
 import { OrderModel } from "../models/order.model.js";
 
-const MONGODB_URI = "mongodb://admin:11223345@144.79.218.126:27017/perfume-store?authSource=admin";
+import dotenv from "dotenv";
+dotenv.config();
+
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/ecommerce-db";
 
 async function run() {
   try {

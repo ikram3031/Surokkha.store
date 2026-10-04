@@ -79,7 +79,7 @@ export const submitContact = async (req, res) => {
       console.error("Non-blocking contact acknowledgment error:", err);
     });
 
-    // 2b. Forward the inquiry to store admin (kawaiikutir@gmail.com)
+    // 2b. Forward the inquiry to configured store admin email
     forwardContactInquiryToAdmin({
       name: contactMessage.name,
       email: contactMessage.email,

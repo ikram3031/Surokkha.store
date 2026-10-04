@@ -1,11 +1,11 @@
 export const swaggerSpec = {
   openapi: "3.0.3",
   info: {
-    title: "Decantre BD Fullstack API Documentation",
+    title: "White-Label Fullstack API Documentation",
     version: "2.3.19",
-    description: `## Decantre BD REST API & Developer Reference
+    description: `## White-Label REST API & Developer Reference
 
-Welcome to the official API documentation for **Decantre BD**.
+Welcome to the official API documentation for White-Label E-Commerce Platform.
 
 ### Authentication
 Most administrative and protected member endpoints require a **Bearer JWT Token** in the \`Authorization\` header:
@@ -14,9 +14,9 @@ Authorization: Bearer <your_jwt_access_token>
 \`\`\`
 Click the **Authorize** button at the top right to set your JWT token for interactive testing.`,
     contact: {
-      name: "Decantre BD Developer Support",
-      email: "ikramul.web@gmail.com",
-      url: "https://decantrebd.com"
+      name: "Developer Support",
+      email: "support@plexivia.online",
+      url: "https://plexivia.online"
     }
   },
   servers: [
@@ -25,7 +25,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
       description: "Current Host Relative Base URL (/api/v1)"
     },
     {
-      url: "https://server.decantrebd.com/api/v1",
+      url: "https://api.plexivia.online/api/v1",
       description: "Production Server"
     },
     {
@@ -63,7 +63,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
           _id: { type: "string", example: "64a8c9b3f8e3a5c1d2e7f0a1" },
           did: { type: "string", example: "US-123456" },
           name: { type: "string", example: "Admin User" },
-          email: { type: "string", example: "user@decantrebd.com" },
+          email: { type: "string", example: "user@plexivia.online" },
           role: { type: "string", enum: ["Owner", "Admin", "Manager", "Marketing Expert", "Customer Support"], example: "Admin" },
           lastLogin: { type: "string", format: "date-time" }
         }
@@ -73,8 +73,8 @@ Click the **Authorize** button at the top right to set your JWT token for intera
         properties: {
           _id: { type: "string", example: "64a8c9b3f8e3a5c1d2e7f0b2" },
           did: { type: "string", example: "MB-100234" },
-          name: { type: "string", example: "Saad Azad" },
-          email: { type: "string", example: "saadazad97@gmail.com" },
+          name: { type: "string", example: "John Doe" },
+          email: { type: "string", example: "customer@example.com" },
           phone: { type: "string", example: "01712345678" },
           address: { type: "string", example: "House 45, Road 11, Sector 4, Uttara" },
           city: { type: "string", example: "Dhaka" },
@@ -124,8 +124,8 @@ Click the **Authorize** button at the top right to set your JWT token for intera
         properties: {
           _id: { type: "string", example: "66c58ef18a24d5b9423c56b2" },
           orderId: { type: "string", example: "ORD-98421" },
-          fullName: { type: "string", example: "Saad Azad" },
-          email: { type: "string", example: "saadazad97@gmail.com" },
+          fullName: { type: "string", example: "John Doe" },
+          email: { type: "string", example: "customer@example.com" },
           phone: { type: "string", example: "01712345678" },
           address: { type: "string", example: "House 45, Road 11, Sector 4" },
           district: { type: "string", example: "Dhaka" },
@@ -195,7 +195,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 type: "object",
                 required: ["email", "password"],
                 properties: {
-                  email: { type: "string", example: "user@decantrebd.com" },
+                  email: { type: "string", example: "user@plexivia.online" },
                   password: { type: "string", example: "yourPassword123" }
                 }
               }
@@ -242,7 +242,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 type: "object",
                 required: ["email", "password"],
                 properties: {
-                  email: { type: "string", example: "user@decantrebd.com" },
+                  email: { type: "string", example: "user@plexivia.online" },
                   password: { type: "string", example: "yourPassword123" }
                 }
               }
@@ -267,7 +267,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 type: "object",
                 required: ["email", "token"],
                 properties: {
-                  email: { type: "string", example: "user@decantrebd.com" },
+                  email: { type: "string", example: "user@plexivia.online" },
                   token: { type: "string", example: "123456" }
                 }
               }
@@ -816,8 +816,8 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 type: "object",
                 required: ["fullName", "email", "phone", "address", "district", "subtotal", "totalAmount", "paymentMethod", "items"],
                 properties: {
-                  fullName: { type: "string", example: "Saad Azad" },
-                  email: { type: "string", example: "saadazad97@gmail.com" },
+                  fullName: { type: "string", example: "John Doe" },
+                  email: { type: "string", example: "customer@example.com" },
                   phone: { type: "string", example: "01712345678" },
                   address: { type: "string", example: "House 45, Road 11, Sector 4" },
                   district: { type: "string", example: "Dhaka" },
@@ -1654,7 +1654,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 properties: {
                   to: { type: "string", example: "customer@example.com" },
                   subject: { type: "string", example: "Your Order is on the way" },
-                  message: { type: "string", example: "Thank you for shopping with Decantre BD!" }
+                  message: { type: "string", example: "Thank you for shopping with us!" }
                 }
               }
             }

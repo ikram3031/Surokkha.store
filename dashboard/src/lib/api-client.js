@@ -12,15 +12,6 @@ export const getApiBaseUrl = () => {
     if (host.includes('localhost') || host.includes('127.0.0.1')) {
       return 'http://localhost:4002';
     }
-    if (host.includes('surokkha')) {
-      return window.location.origin;
-    }
-    if (host.includes('engulfic')) {
-      return window.location.origin;
-    }
-    if (host.includes('decantre')) {
-      return window.location.origin;
-    }
   }
   return (
     import.meta.env.VITE_SERVICE_API_BASE_URL ||
@@ -28,29 +19,17 @@ export const getApiBaseUrl = () => {
     clientConfig?.dashboardApiUrl ||
     clientConfig?.serviceApiBaseUrl ||
     clientConfig?.apiBaseUrl ||
-    'https://admin.surokkha.store'
+    'https://api.plexivia.online'
   );
 };
 
 // Dynamically determines active Storefront API Base URL for public customer interactions
 export const getStorefrontApiBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname.toLowerCase();
-    if (host.includes('surokkha')) {
-      return 'https://server.surokkha.store';
-    }
-    if (host.includes('engulfic')) {
-      return 'https://server.engulfic.com';
-    }
-    if (host.includes('decantre')) {
-      return 'https://server.decantrebd.com';
-    }
-  }
   return (
     import.meta.env.VITE_STOREFRONT_API_BASE_URL ||
     clientConfig?.storefrontApiUrl ||
     clientConfig?.apiBaseUrl ||
-    'https://server.surokkha.store'
+    'https://store.plexivia.online'
   );
 };
 
@@ -62,7 +41,7 @@ export const getWebSocketUrl = () => {
     const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     return `${protocol}//${url.host}/ws`;
   } catch (_) {
-    return 'wss://service.decantrebd.com/ws';
+    return 'wss://api.plexivia.online/ws';
   }
 };
 

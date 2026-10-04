@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 
 /**

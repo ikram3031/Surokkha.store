@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import mongoose from "mongoose";
-import nodemailer from "nodemailer";
 import { UserModel } from "../../common/models/user.model.js";
 import { AssetModel } from "../../common/models/asset.model.js";
 import { hashPassword } from "../../common/utils/password.js";
@@ -11,10 +10,9 @@ import {
   validateCreateUserPayload,
   validateUpdateUserPayload,
 } from "../../common/helper/userControllerHelper.js";
-
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
-// Helper to reliably dispatch user invitation emails
+// Dispatches user invitation email via active SMTP configuration
 export const sendInvitationEmail = async ({ user, inviteUrl }) => {
   try {
     const { transport, config: smtpConfig } = await getSmtpTransport();
@@ -24,7 +22,7 @@ export const sendInvitationEmail = async ({ user, inviteUrl }) => {
     }
 
     const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
-    const logoUrl = "https://admin.surokkha.store/surokkha_logo.png";
+    const logoUrl = clientConfig?.logoUrl || "https://admin.surokkha.store/surokkha_logo.png";
     const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
     const fromAddress = `"${brandName}" <${fromEmail}>`;
 
@@ -48,7 +46,7 @@ export const sendInvitationEmail = async ({ user, inviteUrl }) => {
   }
 };
 
-// List all users in the system.
+// List all users in the system
 export const listUsers = async (req, res, next) => {
   try {
     const users = await UserModel.find().lean();
@@ -58,7 +56,7 @@ export const listUsers = async (req, res, next) => {
   }
 };
 
-// Fetch a single user record by id.
+// Fetch a single user record by id
 export const getUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -70,7 +68,7 @@ export const getUserById = async (req, res, next) => {
   }
 };
 
-// Create a new user / send invitation with role-aware permission checks
+// Create a new user and send invitation with role-aware permission checks
 export const createUser = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
@@ -79,7 +77,6 @@ export const createUser = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Invalid user payload", errors: validationErrors });
     }
 
-    // If creator is Admin, they cannot create Owner or Admin accounts
     const creatorRole = req.user?.role || null;
     if (creatorRole === "Admin" && (payload.role === "Owner" || payload.role === "Admin")) {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to create this role" });
@@ -93,9 +90,8 @@ export const createUser = async (req, res, next) => {
       }
     }
 
-    // Generate secure invite token
     const inviteToken = crypto.randomBytes(32).toString("hex");
-    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
     let passwordHash = null;
     if (payload.password && payload.password.trim()) {
@@ -120,14 +116,13 @@ export const createUser = async (req, res, next) => {
         passwordHash,
         inviteToken,
         inviteTokenExpiresAt,
-        isActive: Boolean(passwordHash), // Active if password explicitly provided, otherwise pending activation
+        isActive: Boolean(passwordHash),
         createdBy: mongoose.isValidObjectId(req.user?.userId) ? req.user.userId : null,
       });
     }
 
-    // Resolve white-label domain for invitation link
     const origin = req.headers.origin || req.headers.referer || "";
-    let domainUrl = "https://admin.surokkha.store";
+    let domainUrl = clientConfig?.dashboardUrl || "https://admin.surokkha.store";
     if (payload.domain) {
       domainUrl = payload.domain.startsWith("http") ? payload.domain : `https://${payload.domain}`;
     } else if (origin) {
@@ -137,7 +132,6 @@ export const createUser = async (req, res, next) => {
     }
     const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
 
-    // Dispatch invitation email via active SMTP configuration
     const mailResult = await sendInvitationEmail({ user, inviteUrl });
 
     res.status(201).json({
@@ -168,17 +162,15 @@ export const resendInvitation = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "This user account is already active" });
     }
 
-    // Generate fresh invite token
     const inviteToken = crypto.randomBytes(32).toString("hex");
-    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
     user.inviteToken = inviteToken;
     user.inviteTokenExpiresAt = inviteTokenExpiresAt;
     await user.save();
 
-    // Resolve white-label domain for invitation link
     const origin = req.headers.origin || req.headers.referer || "";
-    let domainUrl = "https://admin.surokkha.store";
+    let domainUrl = clientConfig?.dashboardUrl || "https://admin.surokkha.store";
     if (req.body?.domain) {
       domainUrl = req.body.domain.startsWith("http") ? req.body.domain : `https://${req.body.domain}`;
     } else if (origin) {
@@ -205,7 +197,7 @@ export const resendInvitation = async (req, res, next) => {
   }
 };
 
-// Update an existing user while enforcing role-based restrictions.
+// Update an existing user while enforcing role-based restrictions
 export const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -218,7 +210,6 @@ export const updateUser = async (req, res, next) => {
     const user = await UserModel.findById(userId);
     if (!user) return res.status(404).json({ status: "error", message: "User not found" });
 
-    // If updater is Admin, prevent modifying Owner accounts
     const updaterRole = req.user?.role || null;
     if (updaterRole === "Admin" && user.role === "Owner") {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to modify this user" });
@@ -259,7 +250,7 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
-// Delete a user and prevent unsafe admin/self-deletion cases.
+// Delete a user and prevent unsafe admin or self-deletion cases
 export const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -269,12 +260,10 @@ export const deleteUser = async (req, res, next) => {
     const user = await UserModel.findById(userId).lean();
     if (!user) return res.status(404).json({ status: "error", message: "User not found" });
 
-    // Admin cannot delete their own account
     if (requesterRole === "Admin" && requesterId === String(user._id)) {
       return res.status(403).json({ status: "error", message: "Admin cannot delete own account" });
     }
 
-    // Admin cannot delete Owner
     if (requesterRole === "Admin" && user.role === "Owner") {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to delete this user" });
     }
@@ -315,7 +304,6 @@ export const updateProfile = async (req, res, next) => {
       user.name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
     }
     
-    // User cannot change their own email
     if (payload.phone !== undefined) user.phone = payload.phone.trim();
     if (payload.address !== undefined) user.address = payload.address.trim();
     if (payload.avatar !== undefined) user.avatar = payload.avatar.trim();

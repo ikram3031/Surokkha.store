@@ -1,14 +1,43 @@
 {
   "clientId": "00",
   "clientKey": "demo",
-  "brandName": "Demo Store",
+  "brandName": "Flexivia",
+  "domain": "plexivia.online",
+  "supportEmail": "info@plexivia.online",
+  "phone": "+8801700000000",
+  "supportPhone": "+8801700000000",
+  "whatsappNumber": "+8801700000000",
+  "address": "Dhaka, Bangladesh",
   "apiBaseUrl": "https://api.plexivia.online",
+  "dashboardUrl": "https://dashboard.plexivia.online",
   "storefrontUrl": "https://store.plexivia.online",
   "routes": {
     "shop": "/shop",
     "category": "/shop/:category",
     "brand": "/brand/:brand",
     "product": "/shop/:category/:slug"
+  },
+  "policies": {
+    "stock": {
+      "mode": "variant_wise",
+      "trackQuantity": true,
+      "lowStockThreshold": 5,
+      "allowPreorder": false
+    },
+    "pricing": {
+      "mode": "variable",
+      "allowOfferPrice": true
+    },
+    "variants": {
+      "enabled": true,
+      "allowVariantImages": true,
+      "supportedDimensions": ["size", "color"],
+      "defaultUnit": "piece"
+    },
+    "specifications": {
+      "material": true,
+      "origin": true
+    }
   },
   "features": {
     "season": true,
@@ -28,14 +57,6 @@
   },
   "cloudFlareAnalytics": {
     "active": false
-  },
-  "googleAnalytics": {
-    "measurementId": "G-DEMO123456",
-    "gtmId": "",
-    "propertyId": "",
-    "streamName": "Demo Store Web Stream",
-    "isVerified": true,
-    "enhancedMeasurement": true
   },
   "logoUrl": "/uploads/assets/logo.webp",
   "siteIconUrl": "/uploads/assets/logo.webp",
@@ -63,7 +84,7 @@
         "title": "Brand & Identity",
         "description": "Brand logo and browser favicon files",
         "slots": [
-          { "key": "logo", "label": "Dashboard Logo", "filename": "logo.webp", "recommendedSize": "500x200" },
+          { "key": "logo", "label": "Header Logo", "filename": "logo.webp", "recommendedSize": "500x200" },
           { "key": "favicon", "label": "Favicon Icon", "filename": "favicon.ico", "recommendedSize": "64x64" }
         ]
       }

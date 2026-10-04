@@ -86,7 +86,7 @@ export const testTikTokEventsApiConnection = async ({ pixelId, accessToken, test
         event_time: Math.floor(Date.now() / 1000),
         event_id: `test_${Date.now()}`,
         user: {
-          client_user_agent: "Decantre-WL-Ecom/Backend-TikTok-Tester",
+          client_user_agent: "Flexivia-WL-Ecom/Backend-TikTok-Tester",
           ip: "127.0.0.1",
         },
         properties: {

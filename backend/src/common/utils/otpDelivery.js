@@ -33,7 +33,8 @@ export const sendOtpEmail = async ({
     ? `Hello ${name || "there"},\n\nUse this OTP to reset your ${brandName} password: ${otp}\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.`
     : `Hello ${name || "there"},\n\nYour OTP verification code is ${otp}.\nThis code will expire in 10 minutes.\n\nThank you for choosing ${brandName}.`;
 
-  const html = buildOtpEmailHtml({ name, otp, type });
+  const logoUrl = config.logoUrl || "https://admin.surokkha.store/surokkha_logo.png";
+  const html = buildOtpEmailHtml({ name, otp, type, logoUrl });
   const fromName = brandName;
   const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
   const fromAddress = `"${fromName}" <${fromEmail}>`;

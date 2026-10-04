@@ -13,8 +13,8 @@ const collectTelemetryData = () => {
   const uptimeSeconds = process.uptime();
 
   return {
-    clientKey: config.clientKey || "decantre",
-    brandName: config.brandName || "Decantre",
+    clientKey: config.clientKey || "demo",
+    brandName: config.brandName || "Flexivia",
     domain: config.domain || "",
     vpsIp: env.VPS_IP || process.env.VPS_IP || "auto-detect",
     environment: env.NODE_ENV,

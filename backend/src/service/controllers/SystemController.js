@@ -11,9 +11,12 @@ const __dirname = path.dirname(__filename);
 
 let backendVersion = '2.0.1';
 try {
-  const pkgPath = path.resolve(__dirname, '../../package.json');
+  const pkgPath = path.resolve(__dirname, '../../../package.json');
   if (fs.existsSync(pkgPath)) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    if (pkg.version) backendVersion = pkg.version;
+  } else if (fs.existsSync(path.join(process.cwd(), 'package.json'))) {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
     if (pkg.version) backendVersion = pkg.version;
   }
 } catch (err) {
@@ -130,7 +133,7 @@ export const purgeSystemCache = async (req, res, next) => {
       if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
     } catch {}
 
-    let zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey];
+    let zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || process.env.CLOUDFLARE_ZONE_ID || config.cloudFlareAnalytics?.zoneId || 'bd131177db6d610b5d4e5beb0142108b';
     let cfPurged = false;
     let cfMessage = '';
 
@@ -204,7 +207,15 @@ export const getCloudflareAnalytics = async (req, res, next) => {
       if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
     } catch {}
 
-    const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
+    const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || process.env.CLOUDFLARE_ZONE_ID || config.cloudFlareAnalytics?.zoneId || 'bd131177db6d610b5d4e5beb0142108b';
+
+    if (!token || !zoneId) {
+      return res.json({
+        status: 'success',
+        data: null,
+        message: 'Cloudflare analytics not configured.',
+      });
+    }
 
     let daysCount = 7;
     if (range === '24h' || range === 'today') daysCount = 1;

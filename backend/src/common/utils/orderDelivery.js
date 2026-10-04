@@ -38,7 +38,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
       const fromAddress = { name: brandDisplayName, address: fromEmail };
       console.log(`[Email Notification] Preparing order emails via Hostinger/SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
 
-      // Extract order details with complete alignment to OrderModel schema
       const orderId = order.orderNumber || order.did || order._id?.toString()?.slice(-6) || "N/A";
       const isInstoreOrder =
         order.orderType === "instore" ||
@@ -56,7 +55,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
       const customerPhone = order.billingInfo?.phone || "N/A";
       const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
-      // Build primary customer address (Billing Address) from OrderModel billingInfo schema
       const primaryAddrParts = [
         order.billingInfo?.address,
         order.billingInfo?.thana,
@@ -75,7 +73,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
         fullAddress: primaryAddrParts.join(', ')
       };
 
-      // Resolve Shipping Address (Use custom shippingInfo if provided; otherwise fallback to billingAddress)
       let shippingAddress = billingAddress;
       if (order.shippingInfo && typeof order.shippingInfo === 'object') {
         const customStreet = order.shippingInfo.address || order.shippingInfo.street;
@@ -106,7 +103,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
         const finalPrice = price || (subtotal / quantity) || 0;
         const finalSubtotal = subtotal || (finalPrice * quantity) || 0;
 
-        // Combine size and concentration for complete variant display
         const variantParts = [item.size, item.concentration, item.variant, item.variantName].filter(Boolean);
         const variantName = [...new Set(variantParts)].join(' • ');
 
@@ -148,7 +144,9 @@ export const sendOrderEmailsAsynchronously = (order) => {
 
       const emailLogoUrl = (config.logoUrl && config.logoUrl.startsWith("http"))
         ? config.logoUrl
-        : "https://admin.surokkha.store/surokkha_logo.png";
+        : (activeClientKey === "surokkha"
+            ? "https://admin.surokkha.store/surokkha_logo.png"
+            : (config.domain ? `https://${config.domain}${config.logoUrl || '/uploads/assets/logo.webp'}` : "https://admin.surokkha.store/surokkha_logo.png"));
 
       const invoiceHtml = getClientInvoiceHtml({
         order: formattedOrderData,
@@ -156,7 +154,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
         logoUrl: emailLogoUrl,
       });
 
-      // 1. Send Customer Order Confirmation Email (to customer email)
       if (smtpConfig.isConfigured && isValidCustomerEmail(customerEmail)) {
         try {
           await activeTransport.sendMail({
@@ -176,17 +173,18 @@ export const sendOrderEmailsAsynchronously = (order) => {
         order.orderType === "custom" ||
         String(orderId).startsWith("CO");
 
-      // 2. Resolve Admin Recipients (Bypassed for Custom Orders)
       if (!isCustomOrder) {
         const adminRecipientsSet = new Set();
         
-        // Add designated store operational emails
         if (activeClientKey === "surokkha") {
           adminRecipientsSet.add("support@surokkha.store");
           adminRecipientsSet.add("contact@surokkha.store");
           adminRecipientsSet.add("surokkha.support@gmail.com");
         }
 
+        if (process.env.ADMIN_NOTIFY_EMAIL) {
+          adminRecipientsSet.add(process.env.ADMIN_NOTIFY_EMAIL.toLowerCase().trim());
+        }
         if (config.supportEmail && isValidCustomerEmail(config.supportEmail)) {
           adminRecipientsSet.add(config.supportEmail.toLowerCase().trim());
         }
@@ -207,11 +205,9 @@ export const sendOrderEmailsAsynchronously = (order) => {
           console.error("[Email Notification] Database query for super admin emails failed, falling back to default admins:", dbErr.message);
         }
 
-        // Explicitly EXCLUDE developer test emails that should not receive store alerts
         adminRecipientsSet.delete("ikramul.web@gmail.com");
         adminRecipientsSet.delete("md.ikr4m@gmail.com");
 
-        // If in demo environment, fallback to demo recipient
         if (activeClientKey === "demo" || (env.SMTP_USER && env.SMTP_USER.includes("plexivia"))) {
           adminRecipientsSet.add("info@plexivia.online");
         }
@@ -219,7 +215,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
         const adminRecipients = Array.from(adminRecipientsSet);
         console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
 
-        // Send Admin New Order Notification Email to all resolved admin emails
         if (smtpConfig.isConfigured && adminRecipients.length > 0) {
           try {
             const adminEmailHtml = buildAdminOrderEmailHtml({
@@ -245,7 +240,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
         }
       }
 
-      // 3. Ingest New Order directly into Dashboard Webmail INBOX
       try {
         const existingOrderEmail = await EmailMessageModel.findOne({
           subject: { $regex: `#${orderId}`, $options: "i" },
@@ -291,4 +285,4 @@ export const sendOrderEmailsAsynchronously = (order) => {
       console.error("[Email Notification] Unexpected error in async email handler:", globalErr.message);
     }
   });
-}
+};

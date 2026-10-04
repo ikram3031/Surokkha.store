@@ -17,8 +17,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Trash2, Layers, Package } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
+import { Plus, Trash2, Layers, Package, Image as ImageIcon, X } from 'lucide-react';
+import { apiClient, resolveImageUrl } from '@/lib/api-client';
+import { MediaPickerModal } from '@/components/dashboard/media-picker-modal';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
@@ -55,6 +56,7 @@ export function AddProductDialog() {
   const [slugManual, setSlugManual] = useState(false);
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 
   // Type toggle
   const [productType, setProductType] = useState('simple');
@@ -483,14 +485,64 @@ export function AddProductDialog() {
             </Select>
           </div>
 
-          {/* Image URL */}
+          {/* Image URL / Picker */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold">Image URL (Optional)</label>
-            <Input
-              placeholder="https://..."
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold">Product Image (Optional)</label>
+              <button
+                type="button"
+                onClick={() => setIsMediaPickerOpen(true)}
+                className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <ImageIcon className="h-3.5 w-3.5" />
+                Select from Media Library
+              </button>
+            </div>
+
+            {imageUrl ? (
+              <div className="flex items-center gap-3 p-2 border rounded-lg bg-muted/20">
+                <div className="h-12 w-12 rounded-md border overflow-hidden bg-background shrink-0 flex items-center justify-center">
+                  <img
+                    src={resolveImageUrl(imageUrl)}
+                    alt="Selected"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-mono text-foreground truncate">{imageUrl}</p>
+                  <p className="text-[10px] text-muted-foreground">Image selected</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setImageUrl("")}
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive cursor-pointer"
+                  title="Remove image"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="https://... or choose from media library"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="text-xs"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsMediaPickerOpen(true)}
+                  className="text-xs font-semibold gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  Browse
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
@@ -510,6 +562,19 @@ export function AddProductDialog() {
             </Button>
           </div>
         </form>
+
+        {/* Media Picker Modal */}
+        <MediaPickerModal
+          open={isMediaPickerOpen}
+          onOpenChange={setIsMediaPickerOpen}
+          onSelect={(selectedUrl) => {
+            setImageUrl(selectedUrl || "");
+            setIsMediaPickerOpen(false);
+          }}
+          multiple={false}
+          initialSelected={imageUrl}
+          title="Select Product Image"
+        />
       </DialogContent>
     </Dialog>
   );

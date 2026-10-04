@@ -30,8 +30,8 @@ const customCss = `
 
 const customOptions = {
   customCss,
-  customSiteTitle: "Decantre BD | API Documentation",
-  customfavIcon: "https://decantrebd.com/favicon.ico",
+  customSiteTitle: "White-Label E-Commerce | API Documentation",
+  customfavIcon: "/uploads/assets/favicon.ico",
   swaggerOptions: {
     persistAuthorization: true,
     docExpansion: "none",

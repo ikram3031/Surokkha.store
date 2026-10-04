@@ -1,11 +1,17 @@
-/**
- * Admin New Order Notification Email Template with center-aligned typography hierarchy.
- * 
- * @param {Object} params
- * @param {Object} params.order - The order details
- * @param {string} [params.logoUrl="https://admin.surokkha.store/surokkha_logo.png"] - Public Surokkha Logo URL
- * @returns {string} HTML string
- */
+// Formats address object or string cleanly
+const formatAddr = (addr) => {
+  if (!addr) return "N/A";
+  if (typeof addr === "string") return addr;
+  const parts = [
+    addr.street || addr.address,
+    addr.thana,
+    addr.district || addr.city || addr.state,
+    addr.zipCode || addr.zip ? `Zip: ${addr.zipCode || addr.zip}` : ''
+  ].filter(Boolean);
+  return parts.join(', ');
+};
+
+// Builds admin new order notification email template with center-aligned typography hierarchy
 export const buildAdminOrderEmailHtml = ({
   order = {},
   logoUrl = "https://admin.surokkha.store/surokkha_logo.png"
@@ -31,22 +37,8 @@ export const buildAdminOrderEmailHtml = ({
   } = order;
 
   const finalShipping = shippingAddress || billingAddress;
-
-  const formatAddr = (addr) => {
-    if (!addr) return "N/A";
-    if (typeof addr === "string") return addr;
-    const parts = [
-      addr.street || addr.address,
-      addr.thana,
-      addr.district || addr.city || addr.state,
-      addr.zipCode || addr.zip ? `Zip: ${addr.zipCode || addr.zip}` : ''
-    ].filter(Boolean);
-    return parts.join(', ');
-  };
-
   const billingStr = formatAddr(billingAddress);
   const shippingStr = formatAddr(finalShipping);
-
   const logoMarkup = `<img class="logo" src="${cleanLogoUrl}" alt="Surokkha" height="40" style="max-height: 40px; height: 40px; width: auto; max-width: 200px; object-fit: contain; display: block; margin: 0 auto; border: 0; outline: none;" />`;
 
   const itemRows = items.map((item, idx) => `
@@ -71,7 +63,6 @@ export const buildAdminOrderEmailHtml = ({
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Surokkha - New Order #${orderId}</title>
-  <!-- Google Fonts Import -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -258,20 +249,16 @@ export const buildAdminOrderEmailHtml = ({
         ${logoMarkup}
       </div>
 
-      <!-- Main Body Content -->
       <div class="content">
-        
         <h1 class="title">You have received a new order</h1>
         
         <div class="notice-box">
           You have received a new order from <strong style="color: #0F172A;">${customerName}</strong>.
         </div>
 
-        <!-- Order Summary Title -->
         <h2 class="section-heading">Order summary</h2>
         <p class="sub-heading">Order #${orderId} (${createdAt})</p>
 
-        <!-- Items Table -->
         <table class="items-table" cellpadding="0" cellspacing="0">
           <thead>
             <tr>
@@ -285,7 +272,6 @@ export const buildAdminOrderEmailHtml = ({
           </tbody>
         </table>
 
-        <!-- Calculation Summary -->
         <table class="summary-table" cellpadding="0" cellspacing="0">
           <tr>
             <td class="summary-label">Subtotal:</td>
@@ -312,7 +298,6 @@ export const buildAdminOrderEmailHtml = ({
 
         <div class="divider"></div>
 
-        <!-- Addresses Grid -->
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td width="48%" class="responsive-col" style="vertical-align: top;">
@@ -342,7 +327,6 @@ export const buildAdminOrderEmailHtml = ({
           </p>
         </div>
 
-        <!-- Download / Print Invoice PDF CTA -->
         <div style="text-align: center; margin: 30px 0 10px 0;" class="no-print">
           <a href="https://server.surokkha.store/api/v1/orders/${orderId}/invoice" target="_blank" style="display: inline-block; padding: 12px 28px; background-color: #0F172A; color: #FFFFFF; text-decoration: none; border-radius: 6px; font-weight: 700; font-family: 'Geist Mono', sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">
             📄 Download / Print Invoice PDF
@@ -351,7 +335,6 @@ export const buildAdminOrderEmailHtml = ({
 
       </div>
 
-      <!-- Footer -->
       <div class="footer">
         <p>&copy; ${new Date().getFullYear()} <a href="https://surokkha.store">Surokkha.store</a>. All rights reserved.</p>
       </div>
@@ -362,3 +345,5 @@ export const buildAdminOrderEmailHtml = ({
 </html>
   `;
 };
+
+export default { buildAdminOrderEmailHtml };

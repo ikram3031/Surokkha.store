@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
 import { env } from "../config/env.js";
+import { config } from "../config/index.js";
 import { logger } from "../config/logger.js";
 import { EmailMessageModel } from "../models/emailMessage.model.js";
 import { LogModel } from "../models/log.model.js";
@@ -130,7 +131,6 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
       { upsert: true, new: true }
     );
 
-    // If new email arrived in INBOX, trigger live WebSocket notification and forward
     if (isNewIncoming && !isBounceOrDaemonNotification(from.address, subject)) {
       try {
         const senderName = from.name || from.address;
@@ -148,8 +148,7 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
           logger.error({ wsErr }, "WebSocket broadcast error on incoming webmail");
         });
 
-        // Forward incoming support email to designated forward address (surokkha.support@gmail.com)
-        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || "surokkha.support@gmail.com";
+        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || process.env.ADMIN_NOTIFY_EMAIL || "surokkha.support@gmail.com";
         if (forwardTarget && env.SMTP_USER) {
           const isSecure =
             Number(env.SMTP_PORT) === 465 ||
@@ -173,15 +172,15 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
 
           forwardTransport.sendMail({
             from: {
-              name: env.SMTP_FROM_NAME || "Surokkha Support",
+              name: env.SMTP_FROM_NAME || config.brandName || "Surokkha Support",
               address: env.SMTP_FROM || env.SMTP_USER,
             },
             to: forwardTarget,
             replyTo: from.address,
-            subject: `[Fwd: support@surokkha.store] ${subject}`,
+            subject: `[Fwd: ${config.supportEmail || "support@surokkha.store"}] ${subject}`,
             html: `
               <div style="font-family: -apple-system, sans-serif; padding: 15px; border-left: 4px solid #e11d48; background: #f8fafc; margin-bottom: 20px;">
-                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from support@surokkha.store</strong></p>
+                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from ${config.supportEmail || "support@surokkha.store"}</strong></p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>From:</strong> ${from.name ? `${from.name} &lt;${from.address}&gt;` : from.address}</p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Subject:</strong> ${subject}</p>
                 <p style="margin: 0; font-size: 14px;"><strong>Date:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' })}</p>
@@ -206,8 +205,6 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
 
 // Synchronizes messages from a specific IMAP folder into the database
 export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
-  // We can let IMAP check be bypassed since it might be controlled in UI now,
-  // but env.IMAP_SYNC_ENABLED is a master switch.
   if (!env.IMAP_SYNC_ENABLED) return { count: 0 };
 
   const client = await createImapClient();
@@ -216,7 +213,6 @@ export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
   try {
     await client.connect();
 
-    // Check if folder exists
     const mailboxes = await client.list();
     const targetBox = mailboxes.find(
       (m) =>
@@ -234,7 +230,6 @@ export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
         return { count: 0 };
       }
 
-      // Fetch latest messages in reverse
       const startSeq = Math.max(1, status.exists - limit + 1);
       const range = `${startSeq}:*`;
 
@@ -259,7 +254,6 @@ export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
     try {
       await client.logout();
     } catch {
-      // silent
     }
     return { count: 0, error: err.message };
   }
@@ -293,7 +287,6 @@ export const startImapIdleListener = async () => {
     try {
       await idleClient.logout();
     } catch {
-      // silent
     }
   }
 
@@ -304,7 +297,6 @@ export const startImapIdleListener = async () => {
     await client.connect();
     logger.info({ host: env.IMAP_HOST, user: env.IMAP_USER || env.SMTP_USER }, "Connected to IMAP server successfully");
 
-    // Perform initial synchronization
     await syncAllMailFolders(40);
 
     const lock = await client.getMailboxLock("INBOX");
@@ -322,7 +314,6 @@ export const startImapIdleListener = async () => {
       try {
         await syncImapFolder("INBOX", 10);
       } catch {
-        // silent
       }
     });
 
@@ -366,7 +357,6 @@ export const appendEmailToSentFolder = async (rawMimeBuffer) => {
     try {
       await client.logout();
     } catch {
-      // silent
     }
   }
 };

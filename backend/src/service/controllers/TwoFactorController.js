@@ -1,6 +1,5 @@
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import nodemailer from "nodemailer";
 import { UserModel } from "../../common/models/user.model.js";
 import { comparePassword } from "../../common/utils/password.js";
 import { createAccessToken, createRefreshToken, setAuthCookies } from "./AuthController.js";
@@ -10,7 +9,6 @@ import { config as clientConfig } from "../../common/config/index.js";
 import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
-// Configure authenticator with a 1-step window to accommodate minor time drift
 authenticator.options = { window: 1 };
 
 // Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
@@ -84,7 +82,6 @@ export const sendQrCodeEmail = async (req, res, next) => {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
 
-    // Generate secret if not already set
     let secret = user.twoFactorSecret;
     if (!secret) {
       secret = authenticator.generateSecret();
@@ -92,12 +89,10 @@ export const sendQrCodeEmail = async (req, res, next) => {
       await user.save();
     }
 
-    // Send email asynchronously in background
     Promise.resolve().then(async () => {
       await dispatchTwoFactorSetupEmail({ user, secret });
     });
 
-    // Strictly return NO sensitive secret or QR dataUrl in HTTP response
     res.json({
       status: "success",
       message: "Setup QR code and instructions have been sent to your registered email address.",
@@ -136,7 +131,6 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "2FA has not been set up yet. Please request a setup email first." });
     }
 
-    // Verify TOTP code
     const isTokenValid = authenticator.verify({
       token: trimmedCode,
       secret: user.twoFactorSecret,
@@ -146,10 +140,8 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Invalid or expired 2FA code. Please check your authenticator app and try again." });
     }
 
-    // Mark 2FA as fully enabled and activated
     user.twoFactorEnabled = true;
 
-    // Issue tokens and update login stats
     const refreshToken = createRefreshToken();
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
     user.lastLogin = new Date();
@@ -159,7 +151,6 @@ export const verify2fa = async (req, res, next) => {
 
     const accessToken = createAccessToken(user);
 
-    // Set SSO cookies
     setAuthCookies(res, req, accessToken, refreshToken);
 
     logger.info({ userId: user.id }, "2FA verified, issued auth tokens and SSO cookies successfully");
@@ -200,7 +191,7 @@ export const resetUser2fa = async (req, res, next) => {
     }
 
     targetUser.twoFactorSecret = undefined;
-    targetUser.twoFactorEnabled = true; // Still keep 2FA enforced, but prompt new QR scan on next login
+    targetUser.twoFactorEnabled = true;
     await targetUser.save();
 
     logger.info({ adminId: req.user?.userId, targetUserId }, "Admin reset 2FA for user");

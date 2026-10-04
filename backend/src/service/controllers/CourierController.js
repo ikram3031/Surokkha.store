@@ -386,7 +386,7 @@ export const createOrderConsignmentController = async (req, res, next) => {
       payload.recipient_area = Number(recipient_area);
     }
 
-    const clientKey = (process.env.CLIENT_NAME || "").toLowerCase().trim();
+    const clientKey = (process.env.CLIENT_NAME || "surokkha").toLowerCase().trim();
     if (clientKey === "surokkha") {
       const randomNum = Math.floor(Math.random() * 10) + 1;
       payload.item_description = `Gift combo${randomNum}`;
@@ -463,7 +463,7 @@ export const createBulkOrderConsignmentsController = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Array of orders is required." });
     }
 
-    const clientKey = (process.env.CLIENT_NAME || "").toLowerCase().trim();
+    const clientKey = (process.env.CLIENT_NAME || "surokkha").toLowerCase().trim();
     if (clientKey === "surokkha") {
       for (const order of orders) {
         const randomNum = Math.floor(Math.random() * 10) + 1;
