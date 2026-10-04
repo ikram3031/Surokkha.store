@@ -20,7 +20,7 @@ export function getSiteConfig() {
     (siteKey === 'shop' ? 'Surokkha Shop' : 'Surokkha Store');
 
   const pixelId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_META_PIXEL_ID) ||
-    '1565104865301894';
+    (siteKey === 'shop' ? '1565104865301894' : '1840805450442709');
 
   const domainVerification = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FACEBOOK_DOMAIN_VERIFICATION) ||
     '19j8puwsyouoywx76lomib7lsa6g7t';
