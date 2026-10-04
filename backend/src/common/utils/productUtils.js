@@ -38,7 +38,7 @@ export const serializeProduct = (product, lang = "en") => {
       const catName = c.name ?? "";
       let localizedCatName = catName;
       if (lang === "bn") {
-        if (catName.toLowerCase() === "condom" || catName.toLowerCase() === "condoms") localizedCatName = "কনডম";
+        if (catName.toLowerCase() === "condom" || catName.toLowerCase() === "condoms" || catName.toLowerCase() === "contraceptive" || catName.toLowerCase() === "contraceptives") localizedCatName = "কন্ট্রাসেপ্টিভ";
         else if (catName.toLowerCase() === "combo" || catName.toLowerCase() === "offers") localizedCatName = "কম্বো অফার";
       }
       return {

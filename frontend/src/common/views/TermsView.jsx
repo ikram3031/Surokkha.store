@@ -71,7 +71,7 @@ export default function TermsView() {
               All products listed on Surokkha.store are 100% authentic, brand-new, and sealed in original manufacturer packaging. Each batch undergoes rigorous 100% electronic pinhole testing and complies with international medical standard ISO 4074.
             </p>
             <p>
-              While condoms are highly effective at reducing the risk of unintended pregnancy and transmission of Sexually Transmitted Infections (STIs), no barrier contraceptive method can guarantee 100% effectiveness. Always follow the enclosed usage instructions.
+              While barrier contraceptive products are highly effective at reducing the risk of unintended pregnancy and transmission of Sexually Transmitted Infections (STIs), no barrier contraceptive method can guarantee 100% effectiveness. Always follow the enclosed usage instructions.
             </p>
           </section>
 

@@ -20,13 +20,7 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0 z-40 shadow-xs">
-      <div 
-        className={`${
-          isStore
-            ? 'bg-gradient-to-r from-[#fff5f6]/95 via-[#ffeef1]/95 to-[#fff5f6]/95 backdrop-blur-md hover:from-[#fae3e7] hover:via-[#f8d7dc] hover:to-[#fae3e7] text-slate-900 border-b border-rose-200/80'
-            : 'bg-gradient-to-r from-[#1b0710] via-[#330c1e] to-[#1b0710] hover:from-[#260a17] hover:via-[#421028] hover:to-[#260a17] text-white border-b border-rose-950/70'
-        } text-xs sm:text-sm py-2 select-none cursor-pointer transition-colors duration-200 overflow-hidden group`}
-      >
+      <div className="bg-gradient-to-r from-[#1b0710] via-[#330c1e] to-[#1b0710] hover:from-[#260a17] hover:via-[#421028] hover:to-[#260a17] text-white border-b border-rose-950/70 text-xs sm:text-sm py-2 select-none cursor-pointer transition-colors duration-200 overflow-hidden group">
         <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] items-center whitespace-nowrap">
           <div className="flex items-center shrink-0">
             <div 
@@ -118,11 +112,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      <header className={`${
-        isStore 
-          ? 'bg-[#14050e]/75 backdrop-blur-xl backdrop-saturate-150 border-b border-rose-500/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' 
-          : 'bg-[#faf5f6]/95 backdrop-blur-md border-b border-rose-200/70 shadow-xs'
-      } transition-all`}>
+      <header className="bg-[#14050e]/95 backdrop-blur-xl backdrop-saturate-150 border-b border-rose-500/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-4">
           
           <div className="flex-shrink-0">

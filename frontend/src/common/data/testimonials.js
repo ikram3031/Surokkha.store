@@ -81,7 +81,7 @@ export const testimonials = [
     date: '2026-02-28',
     verified: true,
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&h=150&q=80',
-    comment: 'The delivery rider delivered quietly without asking any unwanted questions. Top grade international quality condoms. 10/10 privacy guarantee.',
+    comment: 'The delivery rider delivered quietly without asking any unwanted questions. Top grade international quality contraceptives. 10/10 privacy guarantee.',
     comment_bn: 'রাইডার কোনো অপ্রয়োজনীয় প্রশ্ন ছাড়াই অত্যন্ত বিনয়ের সাথে পার্সেলটি হ্যান্ডওভার করেছেন। ১০০% আন্তর্জাতিক মানের সুরক্ষা। পূর্ণ গোপনীয়তার জন্য ১০/১০।'
   },
   {
