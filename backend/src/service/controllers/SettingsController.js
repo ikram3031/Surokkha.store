@@ -14,14 +14,34 @@ import { encryptText, decryptText } from "../../common/utils/crypto.util.js";
 // Retrieves full Meta Pixel and Conversions API settings for Dashboard administration
 export const getMetaPixelSettings = async (req, res, next) => {
   try {
-    const config = await getMetaPixelConfig();
+    const storeConfig = await getMetaPixelConfig("store");
+    const shopConfig = await getMetaPixelConfig("shop");
+    const defaultConfig = await getMetaPixelConfig();
     const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
 
     return res.json({
       status: "success",
       data: {
-        ...config,
-        isPersistedInDb: Boolean(doc?.metaPixel?.pixelId),
+        ...defaultConfig,
+        isPersistedInDb: Boolean(doc?.metaPixel?.pixelId || doc?.sites?.store?.metaPixel?.pixelId),
+        sites: {
+          store: {
+            siteKey: "store",
+            domain: "surokkha.store",
+            brandName: "Surokkha Store",
+            orderPrefix: "SST",
+            ...storeConfig,
+            isPersistedInDb: Boolean(doc?.sites?.store?.metaPixel?.pixelId || doc?.metaPixel?.pixelId),
+          },
+          shop: {
+            siteKey: "shop",
+            domain: "surokkha.shop",
+            brandName: "Surokkha Shop",
+            orderPrefix: "SSH",
+            ...shopConfig,
+            isPersistedInDb: Boolean(doc?.sites?.shop?.metaPixel?.pixelId),
+          },
+        },
       },
     });
   } catch (error) {
@@ -32,30 +52,93 @@ export const getMetaPixelSettings = async (req, res, next) => {
 // Persists updated Meta Pixel and Conversions API settings to database
 export const updateMetaPixelSettings = async (req, res, next) => {
   try {
-    const {
-      pixelId = "",
-      accessToken = "",
-      testEventCode = "",
-      isEnabled = true,
-      enableBrowserPixel = true,
-      enableCapi = true,
-      advancedMatching = true,
-    } = req.body || {};
-
-    const cleanPixelId = String(pixelId).trim();
-    const cleanAccessToken = String(accessToken).trim();
-    const cleanTestEventCode = String(testEventCode).trim();
-
+    const body = req.body || {};
+    const siteKey = String(body.siteKey || "").toLowerCase().trim();
     const updatePayload = {
-      "metaPixel.pixelId": cleanPixelId,
-      "metaPixel.accessToken": cleanAccessToken,
-      "metaPixel.testEventCode": cleanTestEventCode,
-      "metaPixel.isEnabled": Boolean(isEnabled),
-      "metaPixel.enableBrowserPixel": Boolean(enableBrowserPixel),
-      "metaPixel.enableCapi": Boolean(enableCapi),
-      "metaPixel.advancedMatching": Boolean(advancedMatching),
       updatedBy: req.user?.userId || null,
     };
+
+    // 1. If payload provides structured multi-site definitions
+    if (body.sites && typeof body.sites === "object") {
+      if (body.sites.store) {
+        const s = body.sites.store;
+        const meta = s.metaPixel || s;
+        updatePayload["sites.store.siteKey"] = "store";
+        updatePayload["sites.store.domain"] = "surokkha.store";
+        updatePayload["sites.store.brandName"] = "Surokkha Store";
+        updatePayload["sites.store.orderPrefix"] = "SST";
+        updatePayload["sites.store.metaPixel.pixelId"] = String(meta.pixelId || "").trim();
+        updatePayload["sites.store.metaPixel.accessToken"] = String(meta.accessToken || "").trim();
+        updatePayload["sites.store.metaPixel.testEventCode"] = String(meta.testEventCode || "").trim();
+        updatePayload["sites.store.metaPixel.isEnabled"] = Boolean(meta.isEnabled ?? true);
+        updatePayload["sites.store.metaPixel.enableBrowserPixel"] = Boolean(meta.enableBrowserPixel ?? true);
+        updatePayload["sites.store.metaPixel.enableCapi"] = Boolean(meta.enableCapi ?? true);
+        updatePayload["sites.store.metaPixel.advancedMatching"] = Boolean(meta.advancedMatching ?? true);
+
+        // Also sync top-level metaPixel for backward compatibility
+        updatePayload["metaPixel.pixelId"] = String(meta.pixelId || "").trim();
+        updatePayload["metaPixel.accessToken"] = String(meta.accessToken || "").trim();
+        updatePayload["metaPixel.testEventCode"] = String(meta.testEventCode || "").trim();
+        updatePayload["metaPixel.isEnabled"] = Boolean(meta.isEnabled ?? true);
+        updatePayload["metaPixel.enableBrowserPixel"] = Boolean(meta.enableBrowserPixel ?? true);
+        updatePayload["metaPixel.enableCapi"] = Boolean(meta.enableCapi ?? true);
+        updatePayload["metaPixel.advancedMatching"] = Boolean(meta.advancedMatching ?? true);
+      }
+
+      if (body.sites.shop) {
+        const sh = body.sites.shop;
+        const meta = sh.metaPixel || sh;
+        updatePayload["sites.shop.siteKey"] = "shop";
+        updatePayload["sites.shop.domain"] = "surokkha.shop";
+        updatePayload["sites.shop.brandName"] = "Surokkha Shop";
+        updatePayload["sites.shop.orderPrefix"] = "SSH";
+        updatePayload["sites.shop.metaPixel.pixelId"] = String(meta.pixelId || "").trim();
+        updatePayload["sites.shop.metaPixel.accessToken"] = String(meta.accessToken || "").trim();
+        updatePayload["sites.shop.metaPixel.testEventCode"] = String(meta.testEventCode || "").trim();
+        updatePayload["sites.shop.metaPixel.isEnabled"] = Boolean(meta.isEnabled ?? true);
+        updatePayload["sites.shop.metaPixel.enableBrowserPixel"] = Boolean(meta.enableBrowserPixel ?? true);
+        updatePayload["sites.shop.metaPixel.enableCapi"] = Boolean(meta.enableCapi ?? true);
+        updatePayload["sites.shop.metaPixel.advancedMatching"] = Boolean(meta.advancedMatching ?? true);
+      }
+    } else if (siteKey === "shop") {
+      // Single shop site update
+      updatePayload["sites.shop.siteKey"] = "shop";
+      updatePayload["sites.shop.domain"] = "surokkha.shop";
+      updatePayload["sites.shop.brandName"] = "Surokkha Shop";
+      updatePayload["sites.shop.orderPrefix"] = "SSH";
+      updatePayload["sites.shop.metaPixel.pixelId"] = String(body.pixelId || "").trim();
+      updatePayload["sites.shop.metaPixel.accessToken"] = String(body.accessToken || "").trim();
+      updatePayload["sites.shop.metaPixel.testEventCode"] = String(body.testEventCode || "").trim();
+      updatePayload["sites.shop.metaPixel.isEnabled"] = Boolean(body.isEnabled ?? true);
+      updatePayload["sites.shop.metaPixel.enableBrowserPixel"] = Boolean(body.enableBrowserPixel ?? true);
+      updatePayload["sites.shop.metaPixel.enableCapi"] = Boolean(body.enableCapi ?? true);
+      updatePayload["sites.shop.metaPixel.advancedMatching"] = Boolean(body.advancedMatching ?? true);
+    } else {
+      // Store / default update
+      const cleanPixelId = String(body.pixelId || "").trim();
+      const cleanAccessToken = String(body.accessToken || "").trim();
+      const cleanTestEventCode = String(body.testEventCode || "").trim();
+
+      updatePayload["metaPixel.pixelId"] = cleanPixelId;
+      updatePayload["metaPixel.accessToken"] = cleanAccessToken;
+      updatePayload["metaPixel.testEventCode"] = cleanTestEventCode;
+      updatePayload["metaPixel.isEnabled"] = Boolean(body.isEnabled ?? true);
+      updatePayload["metaPixel.enableBrowserPixel"] = Boolean(body.enableBrowserPixel ?? true);
+      updatePayload["metaPixel.enableCapi"] = Boolean(body.enableCapi ?? true);
+      updatePayload["metaPixel.advancedMatching"] = Boolean(body.advancedMatching ?? true);
+
+      updatePayload["sites.store.siteKey"] = "store";
+      updatePayload["sites.store.domain"] = "surokkha.store";
+      updatePayload["sites.store.brandName"] = "Surokkha Store";
+      updatePayload["sites.store.orderPrefix"] = "SST";
+      updatePayload["sites.store.metaPixel.pixelId"] = cleanPixelId;
+      updatePayload["sites.store.metaPixel.accessToken"] = cleanAccessToken;
+      updatePayload["sites.store.metaPixel.testEventCode"] = cleanTestEventCode;
+      updatePayload["sites.store.metaPixel.isEnabled"] = Boolean(body.isEnabled ?? true);
+      updatePayload["sites.store.metaPixel.enableBrowserPixel"] = Boolean(body.enableBrowserPixel ?? true);
+      updatePayload["sites.store.metaPixel.enableCapi"] = Boolean(body.enableCapi ?? true);
+      updatePayload["sites.store.metaPixel.advancedMatching"] = Boolean(body.advancedMatching ?? true);
+    }
 
     const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
       { key: "default" },
@@ -66,7 +149,7 @@ export const updateMetaPixelSettings = async (req, res, next) => {
     return res.json({
       status: "success",
       message: "Meta Pixel settings saved successfully.",
-      data: updatedDoc.metaPixel,
+      data: updatedDoc.sites || updatedDoc.metaPixel,
     });
   } catch (error) {
     next(error);
@@ -76,7 +159,8 @@ export const updateMetaPixelSettings = async (req, res, next) => {
 // Executes a live test event against Meta Graph API and updates verification status
 export const testMetaPixelConnection = async (req, res, next) => {
   try {
-    const currentConfig = await getMetaPixelConfig();
+    const siteKey = String(req.body?.siteKey || "").toLowerCase().trim();
+    const currentConfig = await getMetaPixelConfig(siteKey || req);
     const targetPixelId = (req.body?.pixelId || currentConfig.pixelId || "").trim();
     const targetAccessToken = (req.body?.accessToken || currentConfig.accessToken || "").trim();
     const targetTestEventCode = (req.body?.testEventCode ?? currentConfig.testEventCode ?? "").trim();
@@ -99,15 +183,25 @@ export const testMetaPixelConnection = async (req, res, next) => {
     const statusVal = isSuccess ? "connected" : "failed";
     const statusMsg = testResult.message || (isSuccess ? "Connected" : "Test failed");
 
+    const statusUpdates = {
+      "metaPixel.lastVerifiedAt": isSuccess ? now : currentConfig.lastVerifiedAt,
+      "metaPixel.lastTestStatus": statusVal,
+      "metaPixel.lastTestMessage": statusMsg,
+    };
+
+    if (siteKey === "shop") {
+      statusUpdates["sites.shop.metaPixel.lastVerifiedAt"] = isSuccess ? now : currentConfig.lastVerifiedAt;
+      statusUpdates["sites.shop.metaPixel.lastTestStatus"] = statusVal;
+      statusUpdates["sites.shop.metaPixel.lastTestMessage"] = statusMsg;
+    } else {
+      statusUpdates["sites.store.metaPixel.lastVerifiedAt"] = isSuccess ? now : currentConfig.lastVerifiedAt;
+      statusUpdates["sites.store.metaPixel.lastTestStatus"] = statusVal;
+      statusUpdates["sites.store.metaPixel.lastTestMessage"] = statusMsg;
+    }
+
     await StoreSettingsModel.updateOne(
       { key: "default" },
-      {
-        $set: {
-          "metaPixel.lastVerifiedAt": isSuccess ? now : currentConfig.lastVerifiedAt,
-          "metaPixel.lastTestStatus": statusVal,
-          "metaPixel.lastTestMessage": statusMsg,
-        },
-      },
+      { $set: statusUpdates },
       { upsert: true }
     );
 
@@ -136,7 +230,8 @@ export const testMetaPixelConnection = async (req, res, next) => {
 // Returns public sanitized Meta Pixel configuration for customer storefront integration
 export const getPublicMetaPixelConfig = async (req, res, next) => {
   try {
-    const config = await getMetaPixelConfig();
+    const siteKey = req.query?.site || req.headers?.host || null;
+    const config = await getMetaPixelConfig(siteKey);
 
     return res.json({
       status: "success",

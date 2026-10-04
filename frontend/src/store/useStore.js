@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { PRODUCTS as DEFAULT_PRODUCTS, PRODUCT_KEYS as DEFAULT_PRODUCT_KEYS } from '../data/products';
+import { SITE_CONFIG } from '../config/siteConfig';
 import {
   trackPageView,
   trackViewContent,
@@ -12,7 +13,7 @@ import {
   syncMetaUserProperties
 } from '../utils/analytics';
 
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha.store';
+const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
 // Parse initial view and slug from real browser URL pathname
 export const parseRouteFromLocation = () => {
@@ -888,6 +889,9 @@ export const useStore = create((set, get) => ({
       fbp: getFbp() || undefined,
       fbc: getFbc() || undefined,
       externalId: getExternalId() || undefined,
+      siteKey: SITE_CONFIG.siteKey,
+      clientDomain: SITE_CONFIG.domain,
+      orderPrefix: SITE_CONFIG.siteKey === 'shop' ? 'SSH' : 'SST',
       giftWrap: false,
       orderNotes: (orderNotes || '').trim(),
       paymentMethod: 'cod',

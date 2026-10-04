@@ -97,22 +97,32 @@ export const validateOrderPayload = (body) => {
   return errors;
 };
 
-export const buildOrderNumber = async (orderTypeParam = false) => {
+export const buildOrderNumber = async (orderTypeParam = false, siteOrDomain = null, customPrefix = null) => {
   const now = new Date();
   const shortYear = String(now.getFullYear()).slice(-2);
   const month = String(now.getMonth() + 1).padStart(2, '0');
 
-  // Resolve online order prefix from client configuration (e.g. "SU", "D").
-  // Falls back to "PX" when no client prefix is configured.
-  const clientPrefix = (config.orderPrefix || 'PX').toUpperCase().trim();
+  let prefixType = '';
 
-  let prefixType = clientPrefix;
   if (orderTypeParam === 'custom' || orderTypeParam === 'co') {
     prefixType = 'CO';
   } else if (orderTypeParam === true || orderTypeParam === 'instore' || orderTypeParam === 'is') {
     prefixType = 'IS';
+  } else if (customPrefix && typeof customPrefix === 'string' && customPrefix.trim()) {
+    prefixType = customPrefix.toUpperCase().trim();
+  } else {
+    // Resolve online order prefix based on originating storefront site/domain (SST vs SSH)
+    const siteKey = String(siteOrDomain || '').toLowerCase().trim();
+    if (siteKey === 'shop' || siteKey.includes('surokkha.shop')) {
+      prefixType = config.sites?.shop?.orderPrefix || 'SSH';
+    } else if (siteKey === 'store' || siteKey.includes('surokkha.store')) {
+      prefixType = config.sites?.store?.orderPrefix || 'SST';
+    } else {
+      prefixType = config.sites?.store?.orderPrefix || config.orderPrefix || 'SST';
+    }
   }
 
+  prefixType = prefixType.toUpperCase().trim();
   const prefix = `${prefixType}${shortYear}${month}`;
 
   const lastOrder = await OrderModel.findOne({

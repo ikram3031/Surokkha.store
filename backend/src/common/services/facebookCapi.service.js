@@ -50,29 +50,34 @@ export const getMetaPixelConfig = async (reqOrDomain = null) => {
 
     const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
     const dbMeta = doc?.metaPixel || {};
+    const dbSiteMeta = isShop ? doc?.sites?.shop?.metaPixel : doc?.sites?.store?.metaPixel;
     const fallbackClientMeta = clientConfig?.metaPixel || {};
-
-    const isShop = hostname.includes('surokkha.shop') || hostname.includes('shop');
     const siteConfigMeta = isShop
       ? clientConfig?.sites?.shop?.metaPixel
       : clientConfig?.sites?.store?.metaPixel;
 
     const pixelId =
-      (isShop ? (env.FB_PIXEL_ID_SHOP || siteConfigMeta?.pixelId || dbMeta.pixelIdShop) : (env.FB_PIXEL_ID_STORE || siteConfigMeta?.pixelId)) ||
+      (isShop
+        ? (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_SHOP || siteConfigMeta?.pixelId || dbMeta.pixelIdShop)
+        : (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_STORE || siteConfigMeta?.pixelId)) ||
       dbMeta.pixelId ||
       fallbackClientMeta.pixelId ||
       env.FB_PIXEL_ID ||
       "";
 
     const accessToken =
-      (isShop ? (env.FB_ACCESS_TOKEN_SHOP || siteConfigMeta?.accessToken || dbMeta.accessTokenShop) : (env.FB_ACCESS_TOKEN_STORE || siteConfigMeta?.accessToken)) ||
+      (isShop
+        ? (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_SHOP || siteConfigMeta?.accessToken || dbMeta.accessTokenShop)
+        : (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_STORE || siteConfigMeta?.accessToken)) ||
       dbMeta.accessToken ||
       fallbackClientMeta.accessToken ||
       env.FB_ACCESS_TOKEN ||
       "";
 
     const testEventCode =
-      (isShop ? (env.FB_TEST_EVENT_CODE_SHOP || siteConfigMeta?.testEventCode) : (env.FB_TEST_EVENT_CODE_STORE || siteConfigMeta?.testEventCode)) ||
+      (isShop
+        ? (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_SHOP || siteConfigMeta?.testEventCode)
+        : (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_STORE || siteConfigMeta?.testEventCode)) ||
       dbMeta.testEventCode ||
       fallbackClientMeta.testEventCode ||
       env.FB_TEST_EVENT_CODE ||
@@ -82,13 +87,13 @@ export const getMetaPixelConfig = async (reqOrDomain = null) => {
       pixelId,
       accessToken,
       testEventCode,
-      isEnabled: siteConfigMeta?.isEnabled ?? dbMeta.isEnabled ?? fallbackClientMeta.isEnabled ?? true,
-      enableBrowserPixel: siteConfigMeta?.enableBrowserPixel ?? dbMeta.enableBrowserPixel ?? fallbackClientMeta.enableBrowserPixel ?? true,
-      enableCapi: siteConfigMeta?.enableCapi ?? dbMeta.enableCapi ?? fallbackClientMeta.enableCapi ?? true,
-      advancedMatching: siteConfigMeta?.advancedMatching ?? dbMeta.advancedMatching ?? fallbackClientMeta.advancedMatching ?? true,
-      lastVerifiedAt: dbMeta.lastVerifiedAt || null,
-      lastTestStatus: dbMeta.lastTestStatus || "untested",
-      lastTestMessage: dbMeta.lastTestMessage || "",
+      isEnabled: dbSiteMeta?.isEnabled ?? siteConfigMeta?.isEnabled ?? dbMeta.isEnabled ?? fallbackClientMeta.isEnabled ?? true,
+      enableBrowserPixel: dbSiteMeta?.enableBrowserPixel ?? siteConfigMeta?.enableBrowserPixel ?? dbMeta.enableBrowserPixel ?? fallbackClientMeta.enableBrowserPixel ?? true,
+      enableCapi: dbSiteMeta?.enableCapi ?? siteConfigMeta?.enableCapi ?? dbMeta.enableCapi ?? fallbackClientMeta.enableCapi ?? true,
+      advancedMatching: dbSiteMeta?.advancedMatching ?? siteConfigMeta?.advancedMatching ?? dbMeta.advancedMatching ?? fallbackClientMeta.advancedMatching ?? true,
+      lastVerifiedAt: dbSiteMeta?.lastVerifiedAt || dbMeta.lastVerifiedAt || null,
+      lastTestStatus: dbSiteMeta?.lastTestStatus || dbMeta.lastTestStatus || "untested",
+      lastTestMessage: dbSiteMeta?.lastTestMessage || dbMeta.lastTestMessage || "",
     };
   } catch (_error) {
     return {

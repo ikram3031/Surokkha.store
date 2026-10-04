@@ -117,9 +117,14 @@ export const buildOrderDocument = async (payload) => {
     : (isInstore ? 'completed' : 'processing');
 
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
+  const resolvedSiteKey = String(payload.siteKey || (payload.clientDomain?.includes('shop') ? 'shop' : 'store')).toLowerCase().trim();
+  const resolvedDomain = payload.clientDomain || (resolvedSiteKey === 'shop' ? 'surokkha.shop' : 'surokkha.store');
+  const customPrefix = payload.orderPrefix || null;
 
   return {
-    orderNumber: await buildOrderNumber(resolvedOrderType),
+    orderNumber: await buildOrderNumber(resolvedOrderType, resolvedSiteKey, customPrefix),
+    siteKey: resolvedSiteKey,
+    clientDomain: resolvedDomain,
     status: ['processing', 'shipped', 'completed', 'cancelled'].includes(initialStatus) ? initialStatus : 'processing',
     createdBy: createdByUserId,
     updatedBy: null,
