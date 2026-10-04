@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",
-    "build": "vite build",
+    "build": "npm run build:all",
+    "build:store": "vite build --mode store",
+    "build:shop": "vite build --mode shop",
+    "build:all": "vite build --mode store && vite build --mode shop",
     "preview": "vite preview"
   },
   "dependencies": {

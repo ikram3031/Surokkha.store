@@ -41,14 +41,18 @@ deploy:
 	@echo "🚀 Deploying Surokkha [Live branch] using Native VPS Architecture..."
 	git pull origin Live
 	@$(MAKE) sync-config
-	@# 1. Build and deploy Customer Storefront
+	@# 1. Build and deploy Customer Storefronts (Store & Shop)
 	@if [ -d "frontend" ]; then \
-		echo "📦 Building Storefront..."; \
+		echo "📦 Building Storefronts (store & shop)..."; \
 		npm install --prefix frontend && \
-		npm run build --prefix frontend && \
-		mkdir -p /opt/clients/surokkha/dist && \
-		cp -r frontend/dist/* /opt/clients/surokkha/dist/ 2>/dev/null || true; \
-		echo "✓ Storefront static files deployed to /opt/clients/surokkha/dist"; \
+		npm run build:store --prefix frontend && \
+		mkdir -p /opt/clients/surokkha/store && \
+		cp -r frontend/store/* /opt/clients/surokkha/store/ 2>/dev/null || true && \
+		echo "✓ Storefront (surokkha.store) deployed to /opt/clients/surokkha/store" && \
+		npm run build:shop --prefix frontend && \
+		mkdir -p /opt/clients/surokkha/shop && \
+		cp -r frontend/shop/* /opt/clients/surokkha/shop/ 2>/dev/null || true && \
+		echo "✓ Storefront (surokkha.shop) deployed to /opt/clients/surokkha/shop"; \
 	fi
 
 	@# 2. Build and deploy Admin Dashboard
@@ -80,14 +84,25 @@ deploy:
 
 build: deploy
 
-build-frontend:
-	@echo "📦 Building and deploying Surokkha Frontend..."
+build-store:
+	@echo "📦 Building and deploying Surokkha Store (surokkha.store)..."
 	npm install --prefix frontend
-	npm run build --prefix frontend
-	@mkdir -p /opt/clients/surokkha/dist
-	@cp -r frontend/dist/* /opt/clients/surokkha/dist/ 2>/dev/null || true
+	npm run build:store --prefix frontend
+	@mkdir -p /opt/clients/surokkha/store
+	@cp -r frontend/store/* /opt/clients/surokkha/store/ 2>/dev/null || true
 	@systemctl reload nginx 2>/dev/null || true
-	@echo "✓ Frontend deployed!"
+	@echo "✓ Surokkha Store deployed to /opt/clients/surokkha/store!"
+
+build-shop:
+	@echo "📦 Building and deploying Surokkha Shop (surokkha.shop)..."
+	npm install --prefix frontend
+	npm run build:shop --prefix frontend
+	@mkdir -p /opt/clients/surokkha/shop
+	@cp -r frontend/shop/* /opt/clients/surokkha/shop/ 2>/dev/null || true
+	@systemctl reload nginx 2>/dev/null || true
+	@echo "✓ Surokkha Shop deployed to /opt/clients/surokkha/shop!"
+
+build-frontend: build-store build-shop
 
 build-dashboard:
 	@echo "📦 Building and deploying Surokkha Admin Dashboard..."

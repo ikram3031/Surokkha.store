@@ -30,25 +30,62 @@ const normalizePhone = (phone = "") => {
   return digits;
 };
 
-// Resolves active Meta Pixel configuration from database, client config, and environment fallbacks
-export const getMetaPixelConfig = async () => {
+// Resolves active Meta Pixel configuration from database, client config (multi-site aware), and environment fallbacks
+export const getMetaPixelConfig = async (reqOrDomain = null) => {
   try {
+    let hostname = '';
+    if (typeof reqOrDomain === 'string') {
+      hostname = reqOrDomain.toLowerCase();
+    } else if (reqOrDomain?.headers) {
+      hostname = (
+        reqOrDomain.headers['x-forwarded-host'] ||
+        reqOrDomain.headers.host ||
+        reqOrDomain.headers.origin ||
+        reqOrDomain.headers.referer ||
+        ''
+      ).toLowerCase();
+    } else if (reqOrDomain?.clientDomain || reqOrDomain?.domain) {
+      hostname = String(reqOrDomain.clientDomain || reqOrDomain.domain).toLowerCase();
+    }
+
     const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
     const dbMeta = doc?.metaPixel || {};
     const fallbackClientMeta = clientConfig?.metaPixel || {};
 
-    const pixelId = dbMeta.pixelId || fallbackClientMeta.pixelId || env.FB_PIXEL_ID || "";
-    const accessToken = dbMeta.accessToken || fallbackClientMeta.accessToken || env.FB_ACCESS_TOKEN || "";
-    const testEventCode = dbMeta.testEventCode || fallbackClientMeta.testEventCode || env.FB_TEST_EVENT_CODE || "";
+    const isShop = hostname.includes('surokkha.shop') || hostname.includes('shop');
+    const siteConfigMeta = isShop
+      ? clientConfig?.sites?.shop?.metaPixel
+      : clientConfig?.sites?.store?.metaPixel;
+
+    const pixelId =
+      (isShop ? (env.FB_PIXEL_ID_SHOP || siteConfigMeta?.pixelId || dbMeta.pixelIdShop) : (env.FB_PIXEL_ID_STORE || siteConfigMeta?.pixelId)) ||
+      dbMeta.pixelId ||
+      fallbackClientMeta.pixelId ||
+      env.FB_PIXEL_ID ||
+      "";
+
+    const accessToken =
+      (isShop ? (env.FB_ACCESS_TOKEN_SHOP || siteConfigMeta?.accessToken || dbMeta.accessTokenShop) : (env.FB_ACCESS_TOKEN_STORE || siteConfigMeta?.accessToken)) ||
+      dbMeta.accessToken ||
+      fallbackClientMeta.accessToken ||
+      env.FB_ACCESS_TOKEN ||
+      "";
+
+    const testEventCode =
+      (isShop ? (env.FB_TEST_EVENT_CODE_SHOP || siteConfigMeta?.testEventCode) : (env.FB_TEST_EVENT_CODE_STORE || siteConfigMeta?.testEventCode)) ||
+      dbMeta.testEventCode ||
+      fallbackClientMeta.testEventCode ||
+      env.FB_TEST_EVENT_CODE ||
+      "";
 
     return {
       pixelId,
       accessToken,
       testEventCode,
-      isEnabled: dbMeta.isEnabled ?? fallbackClientMeta.isEnabled ?? true,
-      enableBrowserPixel: dbMeta.enableBrowserPixel ?? fallbackClientMeta.enableBrowserPixel ?? true,
-      enableCapi: dbMeta.enableCapi ?? fallbackClientMeta.enableCapi ?? true,
-      advancedMatching: dbMeta.advancedMatching ?? fallbackClientMeta.advancedMatching ?? true,
+      isEnabled: siteConfigMeta?.isEnabled ?? dbMeta.isEnabled ?? fallbackClientMeta.isEnabled ?? true,
+      enableBrowserPixel: siteConfigMeta?.enableBrowserPixel ?? dbMeta.enableBrowserPixel ?? fallbackClientMeta.enableBrowserPixel ?? true,
+      enableCapi: siteConfigMeta?.enableCapi ?? dbMeta.enableCapi ?? fallbackClientMeta.enableCapi ?? true,
+      advancedMatching: siteConfigMeta?.advancedMatching ?? dbMeta.advancedMatching ?? fallbackClientMeta.advancedMatching ?? true,
       lastVerifiedAt: dbMeta.lastVerifiedAt || null,
       lastTestStatus: dbMeta.lastTestStatus || "untested",
       lastTestMessage: dbMeta.lastTestMessage || "",
@@ -178,7 +215,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       return;
     }
 
-    const metaConfig = await getMetaPixelConfig();
+    const metaConfig = await getMetaPixelConfig(req || order);
 
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) {
       return;
@@ -435,7 +472,7 @@ export const sendServerViewContentEvent = async ({
   user = {},
 }) => {
   try {
-    const metaConfig = await getMetaPixelConfig();
+    const metaConfig = await getMetaPixelConfig(req || eventSourceUrl);
 
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) {
       return;
@@ -562,7 +599,7 @@ export const sendServerAddToCartEvent = async ({
   user = {},
 }) => {
   try {
-    const metaConfig = await getMetaPixelConfig();
+    const metaConfig = await getMetaPixelConfig(req || eventSourceUrl);
 
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) {
       return;
@@ -683,7 +720,7 @@ export const sendServerAddToCartEvent = async ({
 // Sends server-side InitiateCheckout event to Meta Conversions API
 export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, eventId = '', eventSourceUrl = '', user = {} }) => {
   try {
-    const metaConfig = await getMetaPixelConfig();
+    const metaConfig = await getMetaPixelConfig(req || eventSourceUrl);
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) return;
     const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
     if (!pixelId || !accessToken) return;
@@ -763,7 +800,7 @@ export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, 
 // Sends server-side AddPaymentInfo event to Meta Conversions API
 export const sendServerAddPaymentInfoEvent = async ({ customData, req = null, eventId = '', eventSourceUrl = '', user = {} }) => {
   try {
-    const metaConfig = await getMetaPixelConfig();
+    const metaConfig = await getMetaPixelConfig(req || eventSourceUrl);
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) return;
     const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
     if (!pixelId || !accessToken) return;

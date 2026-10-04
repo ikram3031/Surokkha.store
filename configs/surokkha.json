@@ -92,6 +92,34 @@
     "enableCapi": true,
     "advancedMatching": true
   },
+  "sites": {
+    "store": {
+      "key": "store",
+      "domain": "surokkha.store",
+      "name": "Surokkha Store",
+      "metaPixel": {
+        "pixelId": "1565104865301894",
+        "accessToken": "EAAdd22ZBIEXABSsMRZCWB0wUlZAiS9el5HHkQZBf3qVEdE0TEUIHfD9JHxVt12MRIBQXgvrH2bpEdZCAMQ9RjgFJdZBbtSPlJw4aybNMtZC5TDyBuaSQQx3ExjJDDKKyJrUdEzgQvZAxg19ljeim99AwKCEHZA1xgmnCyEzDZBfemqcF2xPOVnUDuoUtvETl6lQX1rswZDZD",
+        "isEnabled": true,
+        "enableBrowserPixel": true,
+        "enableCapi": true,
+        "advancedMatching": true
+      }
+    },
+    "shop": {
+      "key": "shop",
+      "domain": "surokkha.shop",
+      "name": "Surokkha Shop",
+      "metaPixel": {
+        "pixelId": "1565104865301894",
+        "accessToken": "EAAdd22ZBIEXABSsMRZCWB0wUlZAiS9el5HHkQZBf3qVEdE0TEUIHfD9JHxVt12MRIBQXgvrH2bpEdZCAMQ9RjgFJdZBbtSPlJw4aybNMtZC5TDyBuaSQQx3ExjJDDKKyJrUdEzgQvZAxg19ljeim99AwKCEHZA1xgmnCyEzDZBfemqcF2xPOVnUDuoUtvETl6lQX1rswZDZD",
+        "isEnabled": true,
+        "enableBrowserPixel": true,
+        "enableCapi": true,
+        "advancedMatching": true
+      }
+    }
+  },
   "cloudflare": {
     "apiToken": "cfat_lfKJ5uXUo07iLNFoaviz5Rj6PfHTpKJecbbiDdlgee397274",
     "accountId": "10dfabfc220dab8d36255ee6a105035d",

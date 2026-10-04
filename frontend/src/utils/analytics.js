@@ -3,7 +3,9 @@
  * Implements Meta Pixel & CAPI with Event Deduplication (eventID matching) and robust EMQ
  */
 
-export const META_PIXEL_ID = '1565104865301894';
+import { SITE_CONFIG } from '../config/siteConfig.js';
+
+export const META_PIXEL_ID = SITE_CONFIG.pixelId;
 
 const isBrowser = typeof window !== 'undefined';
 
@@ -107,9 +109,7 @@ async function sha256(str) {
   return null;
 }
 
-const API_BASE_URL = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL 
-  ? import.meta.env.VITE_API_BASE_URL 
-  : 'https://api.surokkha.store';
+const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
 // Helper: Get cached user data from browser storage for Advanced Matching
 export function getStoredUserData() {
@@ -197,7 +197,7 @@ export async function getClientIp() {
       const timeoutId = setTimeout(() => controller.abort(), 1200);
 
       try {
-        const res = await fetch('https://api.surokkha.store/api/v1/client-ip', {
+        const res = await fetch(`${API_BASE_URL}/api/v1/client-ip`, {
           signal: controller.signal,
           headers: { 'Accept': 'application/json' }
         });
@@ -336,7 +336,7 @@ export const trackPageView = (pageName = 'home', path = '/') => {
   fbqTrack('PageView', {}, eventId);
   sendMetaCAPI({ eventName: 'PageView', eventId });
   gtagEvent('page_view', {
-    page_title: `Surokkha - ${pageName}`,
+    page_title: `${SITE_CONFIG.brandName} - ${pageName}`,
     page_location: isBrowser ? window.location.href : '',
     page_path: path
   });
