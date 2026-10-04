@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import {
   getMetaPixelConfig,
@@ -17,7 +18,10 @@ export const getMetaPixelSettings = async (req, res, next) => {
     const storeConfig = await getMetaPixelConfig("store");
     const shopConfig = await getMetaPixelConfig("shop");
     const defaultConfig = await getMetaPixelConfig();
-    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+    let doc = null;
+    if (mongoose.connection?.readyState === 1) {
+      doc = await StoreSettingsModel.findOne({ key: "default" }).lean().catch(() => null);
+    }
 
     return res.json({
       status: "success",

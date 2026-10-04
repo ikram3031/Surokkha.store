@@ -34,21 +34,32 @@ const normalizePhone = (phone = "") => {
 export const getMetaPixelConfig = async (reqOrDomain = null) => {
   try {
     let hostname = '';
+    let isShop = false;
+
     if (typeof reqOrDomain === 'string') {
-      hostname = reqOrDomain.toLowerCase();
+      hostname = reqOrDomain.toLowerCase().trim();
+      isShop = hostname === 'shop' || hostname.includes('surokkha.shop') || hostname.includes('shop');
     } else if (reqOrDomain?.headers) {
       hostname = (
+        reqOrDomain.headers['x-site-key'] ||
         reqOrDomain.headers['x-forwarded-host'] ||
         reqOrDomain.headers.host ||
         reqOrDomain.headers.origin ||
         reqOrDomain.headers.referer ||
         ''
       ).toLowerCase();
+      isShop = hostname === 'shop' || hostname.includes('surokkha.shop') || hostname.includes('shop');
+    } else if (reqOrDomain?.siteKey) {
+      isShop = String(reqOrDomain.siteKey).toLowerCase().trim() === 'shop';
     } else if (reqOrDomain?.clientDomain || reqOrDomain?.domain) {
       hostname = String(reqOrDomain.clientDomain || reqOrDomain.domain).toLowerCase();
+      isShop = hostname === 'shop' || hostname.includes('surokkha.shop') || hostname.includes('shop');
     }
 
-    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+    let doc = null;
+    if (mongoose.connection?.readyState === 1) {
+      doc = await StoreSettingsModel.findOne({ key: "default" }).lean().catch(() => null);
+    }
     const dbMeta = doc?.metaPixel || {};
     const dbSiteMeta = isShop ? doc?.sites?.shop?.metaPixel : doc?.sites?.store?.metaPixel;
     const fallbackClientMeta = clientConfig?.metaPixel || {};
@@ -95,7 +106,8 @@ export const getMetaPixelConfig = async (reqOrDomain = null) => {
       lastTestStatus: dbSiteMeta?.lastTestStatus || dbMeta.lastTestStatus || "untested",
       lastTestMessage: dbSiteMeta?.lastTestMessage || dbMeta.lastTestMessage || "",
     };
-  } catch (_error) {
+  } catch (error) {
+    console.error("[Meta CAPI Config] Error resolving Meta Pixel config:", error.message);
     return {
       pixelId: env.FB_PIXEL_ID || "",
       accessToken: env.FB_ACCESS_TOKEN || "",
