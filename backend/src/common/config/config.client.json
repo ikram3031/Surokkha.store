@@ -250,6 +250,8 @@
     "system-logs",
     "trash",
     "settings",
+    "templates",
+    "settings.templates",
     "orders.instore",
     "products.brands",
     "products.attributes"

@@ -1,7 +1,9 @@
 import nodemailer from "nodemailer";
 import { UserModel } from "../models/user.model.js";
+import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { EmailMessageModel } from "../models/emailMessage.model.js";
 import { getClientInvoiceHtml } from "../templates/invoices/index.js";
+import { buildOrderInvoiceEmailHtml } from "../templates/orderInvoiceEmailTemplate.js";
 import { buildAdminOrderEmailHtml } from "../templates/adminOrderEmailTemplate.js";
 import { env } from "../config/env.js";
 import { config } from "../config/index.js";
@@ -148,10 +150,19 @@ export const sendOrderEmailsAsynchronously = (order) => {
             ? "https://admin.surokkha.store/surokkha_logo.png"
             : (config.domain ? `https://${config.domain}${config.logoUrl || '/uploads/assets/logo.webp'}` : "https://admin.surokkha.store/surokkha_logo.png"));
 
-      const invoiceHtml = getClientInvoiceHtml({
+      let templateConfig = null;
+      try {
+        const storeSettings = await StoreSettingsModel.findOne({ key: "default" }).lean();
+        if (storeSettings?.templates?.isActive) {
+          templateConfig = storeSettings.templates;
+        }
+      } catch (_) {}
+
+      const invoiceHtml = buildOrderInvoiceEmailHtml({
         order: formattedOrderData,
         client: activeClientKey,
         logoUrl: emailLogoUrl,
+        templateConfig,
       });
 
       if (smtpConfig.isConfigured && isValidCustomerEmail(customerEmail)) {

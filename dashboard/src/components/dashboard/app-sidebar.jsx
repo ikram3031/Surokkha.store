@@ -521,6 +521,21 @@ export const AppSidebar = ({ ...props }) => {
                       <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+
+                  {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        isActive={
+                          pathname.startsWith("/dashboard/settings/templates") ||
+                          pathname === "/dashboard/templates"
+                        }
+                        render={<Link to="/dashboard/settings/templates" />}
+                      >
+                        <Receipt className="h-3.5 w-3.5 text-blue-500" />
+                        <span>{t("nav.templates", "Invoice & Templates")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )}
                 </SidebarMenuSub>
               )}
             </SidebarMenuItem>

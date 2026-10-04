@@ -27,6 +27,7 @@ import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
+import TemplatesPage from './pages/dashboard/templates/index';
 import AllMedia from './pages/dashboard/allMedia';
 
 // Products
@@ -283,7 +284,23 @@ export const router = createBrowserRouter([
               </RoleGuard>
             ),
           },
+          {
+            path: 'templates',
+            element: (
+              <RoleGuard menuKey="settings">
+                <TemplatesPage />
+              </RoleGuard>
+            ),
+          },
         ],
+      },
+      {
+        path: 'templates',
+        element: (
+          <RoleGuard menuKey="templates">
+            <TemplatesPage />
+          </RoleGuard>
+        ),
       },
       {
         path: 'media',

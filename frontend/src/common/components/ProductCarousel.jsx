@@ -4,7 +4,8 @@ import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
 
-export default function ProductCarousel({ maxItems = 10 }) {
+// Renders the curated wellness and lubricant product carousel
+const ProductCarousel = ({ maxItems = 10 }) => {
   const products = useStore((state) => state.products);
   const productKeys = useStore((state) => state.productKeys);
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
@@ -16,7 +17,6 @@ export default function ProductCarousel({ maxItems = 10 }) {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Filter out "Combo" products and deduplicate
   const randomizedNonComboKeys = useMemo(() => {
     if (!productKeys || productKeys.length === 0) return [];
 
@@ -27,9 +27,8 @@ export default function ProductCarousel({ maxItems = 10 }) {
       const p = products[key];
       if (!p) continue;
 
-      // Check if product is a combo
       const isCombo = 
-        (p.category && String(p.category).toLowerCase().includes('combo')) ||
+        (p.category && String(typeof p.category === 'object' ? p.category.name : p.category).toLowerCase().includes('combo')) ||
         (p.category_bn && p.category_bn.includes('কম্বো')) ||
         (p.categorySlug && p.categorySlug.toLowerCase().includes('combo')) ||
         (key.toLowerCase().includes('combo')) ||
@@ -37,7 +36,30 @@ export default function ProductCarousel({ maxItems = 10 }) {
 
       if (isCombo) continue;
 
-      // Unique identifier to avoid duplicate aliases
+      const isContraceptive = 
+        (p.category && (
+          String(typeof p.category === 'object' ? (p.category.name || p.category.slug || '') : p.category).toLowerCase().includes('contraceptive') ||
+          String(typeof p.category === 'object' ? (p.category.name || p.category.slug || '') : p.category).toLowerCase().includes('condom')
+        )) ||
+        (p.category_bn && (
+          p.category_bn.includes('কনট্রাসেপটিভ') ||
+          p.category_bn.includes('কন্ট্রাসেপটিভ') ||
+          p.category_bn.includes('কনডম') ||
+          p.category_bn.includes('পরিবার পরিকল্পনা')
+        )) ||
+        (p.categorySlug && (
+          p.categorySlug.toLowerCase().includes('contraceptive') ||
+          p.categorySlug.toLowerCase().includes('condom')
+        )) ||
+        (Array.isArray(p.categories) && p.categories.some((c) => {
+          const val = String(typeof c === 'object' ? (c.name || c.slug || '') : c).toLowerCase();
+          return val.includes('contraceptive') || val.includes('condom') || val.includes('কনডম') || val.includes('কনট্রাসেপটিভ') || val.includes('পরিবার পরিকল্পনা');
+        })) ||
+        (key.toLowerCase().includes('contraceptive') || key.toLowerCase().includes('condom')) ||
+        (p.slug && (p.slug.toLowerCase().includes('contraceptive') || p.slug.toLowerCase().includes('condom')));
+
+      if (isContraceptive) continue;
+
       const uniqueId = p.did || p.slug || p._id || key;
       if (seenIds.has(uniqueId)) continue;
       seenIds.add(uniqueId);
@@ -45,14 +67,12 @@ export default function ProductCarousel({ maxItems = 10 }) {
       nonCombos.push(key);
     }
 
-    // Fisher-Yates Random Shuffle
     const shuffled = [...nonCombos];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    // Limit to maxItems (max 10)
     return shuffled.slice(0, maxItems);
   }, [productKeys, products, maxItems]);
 
@@ -75,7 +95,6 @@ export default function ProductCarousel({ maxItems = 10 }) {
     });
   };
 
-  // Autoplay Effect: moves automatically and pauses on hover/touch
   React.useEffect(() => {
     if (isPaused || randomizedNonComboKeys.length <= 1) return;
 
@@ -111,7 +130,6 @@ export default function ProductCarousel({ maxItems = 10 }) {
     >
       <div className="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-8 shadow-xs">
         
-        {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
           <div className="text-left max-w-xl">
             <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200/70 inline-flex items-center gap-1.5 shadow-2xs">
@@ -123,12 +141,11 @@ export default function ProductCarousel({ maxItems = 10 }) {
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
               {isBn 
-                ? 'আপনার পছন্দ অনুযায়ী বাছাইকৃত প্রিমিয়াম কনট্রাসেপটিভ, পার্সোনাল লুব্রিকেন্ট ও সুরক্ষা সামগ্রী।'
-                : 'Browse our curated collection of personal wellness, lubricants, and barrier contraceptives.'}
+                ? 'আপনার পছন্দ অনুযায়ী বাছাইকৃত প্রিমিয়াম পার্সোনাল লুব্রিকেন্ট ও ওয়েলনেস কেয়ার সামগ্রী।'
+                : 'Browse our curated collection of personal wellness and lubricant products.'}
             </p>
           </div>
 
-          {/* Navigation Arrows & View All */}
           <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
             <button
               type="button"
@@ -172,7 +189,6 @@ export default function ProductCarousel({ maxItems = 10 }) {
           </div>
         </div>
 
-        {/* Carousel Horizontal Scroll Container */}
         <div
           ref={scrollContainerRef}
           onScroll={checkScrollability}
@@ -203,4 +219,6 @@ export default function ProductCarousel({ maxItems = 10 }) {
       </div>
     </section>
   );
-}
+};
+
+export default ProductCarousel;

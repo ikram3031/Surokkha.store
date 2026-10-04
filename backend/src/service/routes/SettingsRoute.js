@@ -19,6 +19,11 @@ import {
   updateImapSettings,
   getCloudflareSettings,
   updateCloudflareSettings,
+  getTemplateSettings,
+  updateTemplateSettings,
+  previewTemplateHtml,
+  testTemplateEmail,
+  resetTemplateSettings,
 } from "../controllers/SettingsController.js";
 import {
   authenticateToken,
@@ -157,6 +162,72 @@ settingsRouter.put(
   authenticateToken,
   authorizeRoles("Owner", "Admin"),
   updateCloudflareSettings
+);
+
+// Protected Invoice & Email Template Customizer endpoints
+settingsRouter.get(
+  "/template",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  getTemplateSettings
+);
+settingsRouter.get(
+  "/templates",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  getTemplateSettings
+);
+
+settingsRouter.put(
+  "/template",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  updateTemplateSettings
+);
+settingsRouter.put(
+  "/templates",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  updateTemplateSettings
+);
+
+settingsRouter.post(
+  "/template/preview",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  previewTemplateHtml
+);
+settingsRouter.post(
+  "/templates/preview",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  previewTemplateHtml
+);
+
+settingsRouter.post(
+  "/template/test-email",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  testTemplateEmail
+);
+settingsRouter.post(
+  "/templates/test-email",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  testTemplateEmail
+);
+
+settingsRouter.post(
+  "/template/reset",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  resetTemplateSettings
+);
+settingsRouter.post(
+  "/templates/reset",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  resetTemplateSettings
 );
 
 export default settingsRouter;
