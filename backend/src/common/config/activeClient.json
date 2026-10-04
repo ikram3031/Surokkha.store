@@ -44,7 +44,8 @@
     "brand": true,
     "variantImage": true,
     "webmail": true,
-    "inStoreOrder": true
+    "inStoreOrder": true,
+    "templates": true
   },
   "stockManagement": {
     "simpleProduct": true,

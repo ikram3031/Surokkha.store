@@ -5,6 +5,7 @@ import { ProductModel } from '../../common/models/product.model.js';
 import { MemberModel } from '../../common/models/member.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
+import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import { buildAllowedOrderUpdates,
   buildOrderDocument,
   resolveOrForceMembershipFromOrder,
@@ -685,11 +686,21 @@ export const getOrderInvoiceView = async (req, res, next) => {
     };
 
     const clientKey = order.client || config.clientKey || 'demo';
+
+    let templateConfig = null;
+    try {
+      const storeSettings = await StoreSettingsModel.findOne({ key: "default" }).lean();
+      if (storeSettings?.templates?.isActive) {
+        templateConfig = storeSettings.templates;
+      }
+    } catch (_) {}
+
     const invoiceHtml = getClientInvoiceHtml({
       order: formattedOrderData,
       isPrintView: true,
       client: clientKey,
       logoUrl: config.logoUrl || undefined,
+      templateConfig,
     });
     res.setHeader("Content-Type", "text/html");
     res.setHeader("Content-Disposition", `inline; filename="Invoice-${formattedOrderData.orderId}.pdf"`);

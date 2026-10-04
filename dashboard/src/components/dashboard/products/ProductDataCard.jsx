@@ -568,7 +568,9 @@ export const ProductDataCard = ({
                       </SelectContent>
                     </Select>
                   </div>
-                            {/* Row 4: Image Thumbnail (Conditional on clientConfig) */}
+                </div>
+
+                {/* Row 4: Image Thumbnail (Conditional on clientConfig) */}
                 {clientConfig?.features?.variantImage !== false && (
                   <div className="space-y-1.5 pt-2 border-t border-border/60">
                     <label className="text-[11px] font-semibold text-muted-foreground block">
