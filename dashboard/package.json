@@ -1,7 +1,7 @@
 {
-  "name": "Dashboard",
+  "name": "Surokkha Store Admnin",
   "private": true,
-  "version": "SS_1.0.01",
+  "version": "_SS:1.0.01",
   "type": "module",
   "scripts": {
     "dev": "vite",
