@@ -352,11 +352,9 @@ export const trackViewContent = (product) => {
   const catalogId = resolveCatalogId(product);
   const contentName = product.name || 'MO Wellness Product';
   const eventId = generateEventId(`vc_${catalogId}`);
-  const contentIds = [...new Set([catalogId, product.slug, product.id].filter(Boolean))];
-
   const customData = {
     content_name: contentName,
-    content_ids: contentIds,
+    content_ids: [catalogId],
     contents: [
       {
         id: catalogId,
@@ -422,11 +420,9 @@ export const trackAddToCart = (product, quantity = 1) => {
   const catalogId = resolveCatalogId(product);
   const contentName = product.name || 'MO Wellness Product';
   const eventId = generateEventId(`atc_${catalogId}`);
-  const contentIds = [...new Set([catalogId, product.slug, product.id].filter(Boolean))];
-
   const customData = {
     content_name: contentName,
-    content_ids: contentIds,
+    content_ids: [catalogId],
     contents: [
       {
         id: catalogId,
@@ -557,9 +553,7 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
   const itemCount = Number(totals.itemCount || 0);
   const eventId = generateEventId('ic');
 
-  const catalogIds = cartEntries.map(([slug]) => resolveCatalogId(slug, products));
-  const cartSlugs = cartEntries.map(([slug]) => slug);
-  const contentIds = [...new Set([...catalogIds, ...cartSlugs].filter(Boolean))];
+  const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
   const contents = cartEntries.map(([slug, qty]) => {
     const p = products[slug];
     const catId = resolveCatalogId(slug, products);
@@ -571,7 +565,7 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
   });
 
   const customData = {
-    content_ids: contentIds,
+    content_ids: catalogIds,
     contents: contents,
     content_type: 'product',
     value: grandTotal,
@@ -604,12 +598,10 @@ export const trackAddPaymentInfo = (paymentType = 'Cash on Delivery', totals = {
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
   const eventId = generateEventId('api');
   const cartEntries = typeof cart === 'object' && cart !== null ? Object.entries(cart).filter(([_, qty]) => qty > 0) : [];
-  const catalogIds = cartEntries.map(([slug]) => resolveCatalogId(slug, products));
-  const cartSlugs = cartEntries.map(([slug]) => slug);
-  const contentIds = [...new Set([...catalogIds, ...cartSlugs].filter(Boolean))];
+  const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
 
   const customData = {
-    content_ids: contentIds,
+    content_ids: catalogIds,
     content_type: 'product',
     value: grandTotal,
     currency: 'BDT',
@@ -637,9 +629,7 @@ export const trackPurchase = (order, products = {}) => {
   const itemCount = Number(order.totals.itemCount || 0);
   const purchasedItems = Object.entries(order.items || {}).filter(([_, qty]) => qty > 0);
   
-  const catalogIds = purchasedItems.map(([slug]) => resolveCatalogId(slug, products));
-  const purchaseSlugs = purchasedItems.map(([slug]) => slug);
-  const contentIds = [...new Set([...catalogIds, ...purchaseSlugs].filter(Boolean))];
+  const catalogIds = [...new Set(purchasedItems.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
   const contents = purchasedItems.map(([slug, qty]) => {
     const p = products[slug];
     const catId = resolveCatalogId(slug, products);
@@ -651,7 +641,7 @@ export const trackPurchase = (order, products = {}) => {
   });
 
   const customData = {
-    content_ids: contentIds,
+    content_ids: catalogIds,
     contents: contents,
     content_type: 'product',
     value: grandTotal,

@@ -15,6 +15,11 @@ import ProductDetailView from './views/ProductDetailView';
 import ComboView from './views/ComboView';
 import CheckoutView from './views/CheckoutView';
 import ConfirmationView from './views/ConfirmationView';
+import TermsView from './views/TermsView';
+import PrivacyView from './views/PrivacyView';
+import RefundView from './views/RefundView';
+import FaqView from './views/FaqView';
+import ContactView from './views/ContactView';
 
 export default function App() {
   const currentView = useStore((state) => state.currentView);
@@ -57,6 +62,11 @@ export default function App() {
         {currentView === 'combo' && <ComboView />}
         {currentView === 'checkout' && <CheckoutView />}
         {currentView === 'confirmation' && <ConfirmationView />}
+        {currentView === 'terms' && <TermsView />}
+        {currentView === 'privacy' && <PrivacyView />}
+        {currentView === 'refund' && <RefundView />}
+        {currentView === 'faq' && <FaqView />}
+        {currentView === 'contact' && <ContactView />}
       </main>
 
       <Footer />

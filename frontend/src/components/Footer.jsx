@@ -4,12 +4,11 @@ import { useTranslation } from '../i18n/useTranslation';
 import logoV2 from '../asset/logo_v2.png';
 
 export default function Footer() {
-  const openProduct = useStore((state) => state.openProduct);
   const navigateTo = useStore((state) => state.navigateTo);
   const { t, isBn } = useTranslation();
 
   return (
-    <footer className="hidden sm:block bg-gradient-to-b from-[#18050e] via-[#12040b] to-[#0a0206] text-white pt-12 pb-12 border-t border-rose-950/80 mt-16 text-sm text-left">
+    <footer className="block bg-gradient-to-b from-[#18050e] via-[#12040b] to-[#0a0206] text-white pt-12 pb-12 border-t border-rose-950/80 mt-16 text-sm text-left">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Top 18+ Age Notice Strip */}
@@ -30,7 +29,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-10 border-b border-rose-900/40">
+        {/* 4-Column Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-rose-900/40">
+          
           {/* Column 1: Brand Info */}
           <div className="space-y-3">
             <div className="cursor-pointer inline-block" onClick={() => navigateTo('home')}>
@@ -41,7 +42,66 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Column 2: Contact & Social Support */}
+          {/* Column 2: Quick Links (English Only) */}
+          <div>
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
+              Quick Links
+            </h4>
+            <ul className="space-y-2.5 text-xs text-white/90 font-medium">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('terms')}
+                  className="hover:text-amber-300 text-white/90 hover:translate-x-1 transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="text-rose-400">›</span>
+                  <span>Terms & Conditions</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('privacy')}
+                  className="hover:text-amber-300 text-white/90 hover:translate-x-1 transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="text-rose-400">›</span>
+                  <span>Privacy Policy</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('refund')}
+                  className="hover:text-amber-300 text-white/90 hover:translate-x-1 transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="text-rose-400">›</span>
+                  <span>Return & Refund</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('faq')}
+                  className="hover:text-amber-300 text-white/90 hover:translate-x-1 transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="text-rose-400">›</span>
+                  <span>FAQ</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('contact')}
+                  className="hover:text-amber-300 text-white/90 hover:translate-x-1 transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="text-rose-400">›</span>
+                  <span>Contact</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Contact & Social Support */}
           <div>
             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
               {t('footer.contact_title', 'যোগাযোগ ও সোশ্যাল মিডিয়া')}
@@ -121,7 +181,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Guarantees */}
+          {/* Column 4: Guarantees */}
           <div>
             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
               {t('footer.guarantee_title')}
@@ -145,6 +205,7 @@ export default function Footer() {
               </p>
             </div>
           </div>
+
         </div>
 
         {/* Bottom Bar: Pure White Copyright */}
@@ -159,6 +220,10 @@ export default function Footer() {
             <span>•</span>
             <button onClick={() => navigateTo('combo')} className="hover:text-amber-300 transition cursor-pointer text-white">
               {isBn ? 'কম্বো অফার' : 'Offers'}
+            </button>
+            <span>•</span>
+            <button onClick={() => navigateTo('contact')} className="hover:text-amber-300 transition cursor-pointer text-white">
+              Contact
             </button>
           </div>
         </div>

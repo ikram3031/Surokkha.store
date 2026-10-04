@@ -373,8 +373,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       };
     });
 
-    const allMatchedIds = dbProducts.flatMap((p) => [p.did, p.slug, p.sku, String(p._id)]).filter(Boolean);
-    const contentIds = [...new Set([...contents.map((c) => c.id).filter(Boolean), ...productDids, ...allMatchedIds])];
+    const contentIds = [...new Set(contents.map((c) => c.id).filter(Boolean))];
 
     const orderTotalAmount = Number(
       order.totals?.total ?? order.total ?? order.totalAmount ?? 0

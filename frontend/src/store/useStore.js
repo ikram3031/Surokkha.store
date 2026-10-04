@@ -37,6 +37,21 @@ export const parseRouteFromLocation = () => {
   if (pathname === '/confirmation') {
     return { view: 'confirmation', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
   }
+  if (pathname === '/terms' || pathname === '/terms-and-conditions' || pathname === '/terms-conditions' || pathname === '/tos') {
+    return { view: 'terms', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  }
+  if (pathname === '/privacy' || pathname === '/privacy-policy') {
+    return { view: 'privacy', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  }
+  if (pathname === '/refund' || pathname === '/return-and-refund' || pathname === '/return-refund' || pathname === '/refund-policy' || pathname === '/returns') {
+    return { view: 'refund', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  }
+  if (pathname === '/faq' || pathname === '/faqs' || pathname === '/help') {
+    return { view: 'faq', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  }
+  if (pathname === '/contact' || pathname === '/contact-us' || pathname === '/support') {
+    return { view: 'contact', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  }
 
   // Handle /product/:slug or /products/:slug dynamically
   if (pathname.startsWith('/product/') || pathname.startsWith('/products/')) {
@@ -608,6 +623,16 @@ export const useStore = create((set, get) => ({
         targetPath = '/checkout';
       } else if (view === 'confirmation') {
         targetPath = '/confirmation';
+      } else if (view === 'terms') {
+        targetPath = '/terms';
+      } else if (view === 'privacy') {
+        targetPath = '/privacy';
+      } else if (view === 'refund') {
+        targetPath = '/refund';
+      } else if (view === 'faq') {
+        targetPath = '/faq';
+      } else if (view === 'contact') {
+        targetPath = '/contact';
       }
 
       if (window.location.pathname !== targetPath) {

@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import HeroSlider from '../components/HeroSlider';
 import PromoComboBanner from '../components/PromoComboBanner';
+import ProductCarousel from '../components/ProductCarousel';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 
 export default function HomeView() {
@@ -30,13 +31,15 @@ export default function HomeView() {
     getLocalizedFeatures 
   } = useTranslation();
 
-  const singleProductKeys = productKeys.filter((k) => {
-    const p = products[k];
-    if (!p) return false;
-    const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-    if (isOutOfStock) return false;
-    const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || (p?.category && String(p.category).toLowerCase().includes('combo')) || (p?.category_bn && p.category_bn.includes('কম্বো'));
-    return !isCombo;
+  const MO_3_KEYS = [
+    'mo-multi-textured-latex-contraceptive-10-pcs',
+    'mo-micro-thin-latex-contraceptive-10-pcs',
+    'mo-micro-ribbed-natural-latex-contraceptive-10-pcs'
+  ];
+
+  const singleProductKeys = MO_3_KEYS.filter((k) => {
+    const p = products[k] || products[k.replace(/-condom$/, '')] || products[`${k}-condom`];
+    return Boolean(p);
   });
 
   const available20PcsComboKeys = [
@@ -265,6 +268,9 @@ export default function HomeView() {
           </div>
         </section>
       )}
+
+      {/* RANDOMIZED NON-COMBO PRODUCT CAROUSEL (Max 10 Products) */}
+      <ProductCarousel maxItems={10} />
 
       {/* WHY SUROKKHA / SERVICE STANDARDS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

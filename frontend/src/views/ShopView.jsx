@@ -215,33 +215,11 @@ export default function ShopView() {
               : '  certified authentic MO contraceptive variants and family planning bundles. Regulated barrier devices for 18+ adults with confidential Cash on Delivery nationwide.'}
           </p>
 
-          {/* Category Filter Tabs (Dynamic API Counts) */}
+          {/* Category Filter Tab (Combo Value Pack) */}
           <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 flex-wrap">
             <button
               type="button"
-              onClick={() => setCategory('all')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'all'
-                  ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'
-                }`}
-            >
-              {isBn ? 'সকল প্রোডাক্ট' : 'All Products'} ({formatNumber(productKeys.length)})
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCategory('single')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'single'
-                  ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'
-                }`}
-            >
-              {isBn ? 'সিঙ্গেল প্যাক' : 'Single Packs'} ({formatNumber(singleCount)})
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCategory('combo')}
+              onClick={() => setCategory(category === 'combo' ? 'all' : 'combo')}
               className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer animate-vibrate ${category === 'combo'
                   ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
                   : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/50 shadow-xs'
@@ -437,8 +415,8 @@ export default function ShopView() {
           {/* Product Grid Area (SoulCove lg:col-span-3) */}
           <div className="lg:col-span-3">
             {isLoadingProducts ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
+                {Array.from({ length: 8 }).map((_, i) => (
                   <ProductCardSkeleton key={i} />
                 ))}
               </div>
@@ -466,8 +444,8 @@ export default function ShopView() {
               </div>
             ) : (
               <div className="space-y-8">
-                {/* Product Cards Grid: 2 cols mobile, 3 cols desktop */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                {/* Product Cards Grid: 2 cols mobile, 3 cols tablet, 4 cols desktop */}
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
                   {paginatedKeys.map((key) => (
                     <ProductCard key={key} productKey={key} />
                   ))}
