@@ -9,17 +9,18 @@ export const getApiBaseUrl = () => {
     if (host.startsWith('admin.') || host.startsWith('dashboard.')) {
       return window.location.origin;
     }
-    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+    if (import.meta.env.VITE_USE_LOCAL_BACKEND === 'true') {
       return 'http://localhost:4002';
     }
   }
   return (
     import.meta.env.VITE_SERVICE_API_BASE_URL ||
     import.meta.env.VITE_API_BASE_URL ||
+    clientConfig?.dashboardUrl ||
     clientConfig?.dashboardApiUrl ||
     clientConfig?.serviceApiBaseUrl ||
     clientConfig?.apiBaseUrl ||
-    'https://api.plexivia.online'
+    'https://admin.surokkha.store'
   );
 };
 
@@ -29,7 +30,7 @@ export const getStorefrontApiBaseUrl = () => {
     import.meta.env.VITE_STOREFRONT_API_BASE_URL ||
     clientConfig?.storefrontApiUrl ||
     clientConfig?.apiBaseUrl ||
-    'https://store.plexivia.online'
+    'https://api.surokkha.store'
   );
 };
 
@@ -41,7 +42,7 @@ export const getWebSocketUrl = () => {
     const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     return `${protocol}//${url.host}/ws`;
   } catch (_) {
-    return 'wss://api.plexivia.online/ws';
+    return 'wss://admin.surokkha.store/ws';
   }
 };
 

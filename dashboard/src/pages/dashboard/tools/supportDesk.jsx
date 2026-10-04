@@ -34,9 +34,9 @@ import axios from "axios";
 const HUB_BASE_URL =
   import.meta.env.VITE_HUB_API_URL ||
   clientConfig?.hubApiUrl ||
-  (typeof window !== "undefined" && window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://hub.plexivia.online");
+  (import.meta.env.VITE_USE_LOCAL_BACKEND === 'true' && typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:5000'
+    : 'https://hub.plexivia.online');
 
 // Fetches live hosting alerts and status from Central Hub
 const fetchBillingAlerts = async (clientKey) => {

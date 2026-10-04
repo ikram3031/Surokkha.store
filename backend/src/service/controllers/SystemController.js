@@ -116,6 +116,9 @@ export const purgeSystemCache = async (req, res, next) => {
 
     const ZONE_MAP = {
       'surokkha.store': 'bd131177db6d610b5d4e5beb0142108b',
+      'surokkha.shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
+      'store': 'bd131177db6d610b5d4e5beb0142108b',
+      'shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
       'surokkha': 'bd131177db6d610b5d4e5beb0142108b',
       'engulfic.com': 'b8baf3af57594678d588a9391b3a7023',
       'engulfic': 'b8baf3af57594678d588a9391b3a7023',
@@ -133,38 +136,76 @@ export const purgeSystemCache = async (req, res, next) => {
       if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
     } catch {}
 
-    let zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || process.env.CLOUDFLARE_ZONE_ID || config.cloudFlareAnalytics?.zoneId || 'bd131177db6d610b5d4e5beb0142108b';
-    let cfPurged = false;
-    let cfMessage = '';
+    const requestedDomain = (req.body?.domain || req.body?.site || req.query?.domain || '').trim().toLowerCase();
+    const zonesToPurge = [];
 
-    if (token && zoneId) {
-      try {
-        const cfRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token.trim()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ purge_everything: true }),
-        });
-        const cfData = await cfRes.json();
-        cfPurged = Boolean(cfData.success);
-        cfMessage = cfPurged ? 'All Cloudflare Edge Cache purged successfully.' : (cfData.errors?.[0]?.message || 'Cloudflare purge failed');
-      } catch (err) {
-        cfMessage = err.message;
+    if (requestedDomain) {
+      if (requestedDomain === 'shop' || requestedDomain.includes('shop')) {
+        zonesToPurge.push({ domain: 'surokkha.shop', zoneId: '04c8761bb5ec8b966b0c6748e27d4b4c' });
+      } else if (requestedDomain === 'store' || requestedDomain.includes('store')) {
+        zonesToPurge.push({ domain: 'surokkha.store', zoneId: dbZoneId || 'bd131177db6d610b5d4e5beb0142108b' });
+      } else if (ZONE_MAP[requestedDomain]) {
+        zonesToPurge.push({ domain: requestedDomain, zoneId: ZONE_MAP[requestedDomain] });
       }
-    } else {
-      cfMessage = 'Local application cache cleared.';
+    }
+
+    if (zonesToPurge.length === 0) {
+      if (config.sites && typeof config.sites === 'object') {
+        Object.values(config.sites).forEach((s) => {
+          const zId = s.cloudflare?.zoneId || ZONE_MAP[s.domain] || '';
+          if (zId && !zonesToPurge.some((zp) => zp.zoneId === zId)) {
+            zonesToPurge.push({ domain: s.domain, zoneId: zId });
+          }
+        });
+      }
+      if (zonesToPurge.length === 0) {
+        const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
+        zonesToPurge.push({ domain, zoneId });
+      }
+    }
+
+    let purgedCount = 0;
+    const purgeResults = [];
+
+    if (token && zonesToPurge.length > 0) {
+      for (const target of zonesToPurge) {
+        try {
+          const cfRes = await fetch(`https://api.cloudflare.com/client/v4/zones/${target.zoneId}/purge_cache`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token.trim()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ purge_everything: true }),
+          });
+          const cfData = await cfRes.json();
+          const isOk = Boolean(cfData.success);
+          if (isOk) purgedCount++;
+          purgeResults.push({
+            domain: target.domain,
+            zoneId: target.zoneId,
+            success: isOk,
+            message: isOk ? 'Purged' : (cfData.errors?.[0]?.message || 'Failed'),
+          });
+        } catch (err) {
+          purgeResults.push({
+            domain: target.domain,
+            zoneId: target.zoneId,
+            success: false,
+            message: err.message,
+          });
+        }
+      }
     }
 
     return res.json({
       status: 'success',
-      message: 'System & Edge Cache purged successfully.',
+      message: `System & Edge Cache purged (${purgedCount}/${zonesToPurge.length} zones successful).`,
       data: {
         clientKey,
         domain,
-        cloudflarePurged: cfPurged,
-        details: cfMessage,
+        cloudflarePurged: purgedCount > 0,
+        details: purgeResults,
         timestamp: new Date().toISOString(),
       },
     });
@@ -188,6 +229,9 @@ export const getCloudflareAnalytics = async (req, res, next) => {
 
     const ZONE_MAP = {
       'surokkha.store': 'bd131177db6d610b5d4e5beb0142108b',
+      'surokkha.shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
+      'store': 'bd131177db6d610b5d4e5beb0142108b',
+      'shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
       'surokkha': 'bd131177db6d610b5d4e5beb0142108b',
       'engulfic.com': 'b8baf3af57594678d588a9391b3a7023',
       'engulfic': 'b8baf3af57594678d588a9391b3a7023',
@@ -201,13 +245,57 @@ export const getCloudflareAnalytics = async (req, res, next) => {
       'southernhermainoverseas.site': '0ea0658d9d8852cb447d196a78f8a6b0',
     };
 
+    const sitesList = config.sites && typeof config.sites === 'object'
+      ? Object.entries(config.sites).map(([k, s]) => ({
+          key: k,
+          name: s.name || (k === 'shop' ? 'Surokkha Shop' : 'Surokkha Store'),
+          domain: s.domain || (k === 'shop' ? 'surokkha.shop' : 'surokkha.store'),
+          url: s.url || s.storefrontUrl || `https://${s.domain || 'surokkha.store'}`,
+          orderPrefix: s.orderPrefix || (k === 'shop' ? 'SSH' : 'SST'),
+          zoneId: s.cloudflare?.zoneId || ZONE_MAP[s.domain] || ZONE_MAP[k] || '',
+        }))
+      : [
+          { key: 'store', name: 'Surokkha Store', domain: 'surokkha.store', url: 'https://surokkha.store', orderPrefix: 'SST', zoneId: 'bd131177db6d610b5d4e5beb0142108b' },
+          { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SSH', zoneId: '04c8761bb5ec8b966b0c6748e27d4b4c' },
+        ];
+
+    const requestedParam = (req.query.domain || req.query.site || '').trim().toLowerCase();
+    let targetDomain = '';
+    let zoneId = '';
+    let activeSiteKey = 'store';
+
+    if (requestedParam) {
+      if (requestedParam === 'shop' || requestedParam.includes('shop')) {
+        targetDomain = 'surokkha.shop';
+        activeSiteKey = 'shop';
+        zoneId = ZONE_MAP['surokkha.shop'] || '04c8761bb5ec8b966b0c6748e27d4b4c';
+      } else if (requestedParam === 'store' || requestedParam.includes('store')) {
+        targetDomain = 'surokkha.store';
+        activeSiteKey = 'store';
+        zoneId = ZONE_MAP['surokkha.store'] || 'bd131177db6d610b5d4e5beb0142108b';
+      } else if (ZONE_MAP[requestedParam]) {
+        targetDomain = requestedParam;
+        zoneId = ZONE_MAP[requestedParam];
+      }
+    }
+
+    if (!targetDomain) {
+      targetDomain = (config.domain || 'surokkha.store').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+      activeSiteKey = targetDomain.includes('shop') ? 'shop' : 'store';
+      zoneId = config.cloudflare?.zoneId || ZONE_MAP[targetDomain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
+    }
+
     let dbZoneId = '';
     try {
       const doc = await StoreSettingsModel.findOne({ key: 'default' }).lean();
-      if (doc?.cloudflare?.zoneId) dbZoneId = doc.cloudflare.zoneId.trim();
+      if (doc?.cloudflare?.zoneId && (!requestedParam || requestedParam.includes('store'))) {
+        dbZoneId = doc.cloudflare.zoneId.trim();
+      }
     } catch {}
 
-    const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || process.env.CLOUDFLARE_ZONE_ID || config.cloudFlareAnalytics?.zoneId || 'bd131177db6d610b5d4e5beb0142108b';
+    if (dbZoneId) {
+      zoneId = dbZoneId;
+    }
 
     if (!token || !zoneId) {
       return res.json({
@@ -506,15 +594,15 @@ export const getCloudflareAnalytics = async (req, res, next) => {
     const maxHost = zoneData.topHosts?.[0]?.count || 1;
     const topHosts = (zoneData.topHosts && zoneData.topHosts.length > 0)
       ? zoneData.topHosts.map((h) => ({
-          name: h.dimensions?.clientRequestHTTPHost || domain,
+          name: h.dimensions?.clientRequestHTTPHost || targetDomain,
           count: h.count,
           formattedCount: formatNumber(h.count),
           relativeWidth: Number(((h.count / maxHost) * 100).toFixed(1)),
         }))
       : [
-          { name: domain, count: Math.round(totalRequests * 0.65), formattedCount: formatNumber(Math.round(totalRequests * 0.65)), relativeWidth: 100 },
-          { name: `api.${domain}`, count: Math.round(totalRequests * 0.25), formattedCount: formatNumber(Math.round(totalRequests * 0.25)), relativeWidth: 38 },
-          { name: `admin.${domain}`, count: Math.round(totalRequests * 0.10), formattedCount: formatNumber(Math.round(totalRequests * 0.10)), relativeWidth: 15 },
+          { name: targetDomain, count: Math.round(totalRequests * 0.65), formattedCount: formatNumber(Math.round(totalRequests * 0.65)), relativeWidth: 100 },
+          { name: `api.${targetDomain}`, count: Math.round(totalRequests * 0.25), formattedCount: formatNumber(Math.round(totalRequests * 0.25)), relativeWidth: 38 },
+          { name: `admin.${targetDomain}`, count: Math.round(totalRequests * 0.10), formattedCount: formatNumber(Math.round(totalRequests * 0.10)), relativeWidth: 15 },
         ];
 
     // Top client IPs extracted from top requests
@@ -564,7 +652,10 @@ export const getCloudflareAnalytics = async (req, res, next) => {
       status: 'success',
       data: {
         zoneId,
-        domain,
+        domain: targetDomain,
+        targetDomain,
+        activeSiteKey,
+        sites: sitesList,
         range,
         summary: {
           totalRequests: formatNumber(totalRequests),

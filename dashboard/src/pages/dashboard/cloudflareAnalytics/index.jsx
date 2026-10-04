@@ -11,7 +11,11 @@ import {
   RefreshCw,
   Lock,
   Globe,
-  Check,
+  Trash2,
+  CheckCircle2,
+  Layers,
+  Activity,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   LineChart,
@@ -32,7 +36,6 @@ import { toast } from 'sonner';
 import { clientConfig } from '@/clientConfig';
 import { apiClient } from '@/lib/api-client';
 
-// Cloudflare official design tokens & colors
 const CF_BLUE = '#0051C3';
 const CF_ACCENT_BLUE = '#1E88E5';
 const CF_LIGHT_BLUE = '#60A5FA';
@@ -76,7 +79,6 @@ const GlobeVisualizer = () => {
         <ellipse cx="80" cy="80" rx="54" ry="72" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
         <line x1="8" y1="80" x2="152" y2="80" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
         <line x1="80" y1="8" x2="80" y2="152" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
-        {/* Globe node highlights */}
         <circle cx="95" cy="65" r="3" fill="#0051C3" className="animate-ping" />
         <circle cx="95" cy="65" r="2.5" fill="#3B82F6" />
         <circle cx="65" cy="95" r="2" fill="#10B981" />
@@ -86,26 +88,50 @@ const GlobeVisualizer = () => {
   );
 };
 
-export default function CloudflareTrafficOverviewPage() {
+// Main Cloudflare Multi-Domain Traffic Overview Analytics component
+const CloudflareTrafficOverviewPage = () => {
   const { theme, systemTheme } = useTheme();
   const isDark = (theme === 'system' ? systemTheme : theme) === 'dark';
 
   const cfConfig = clientConfig?.cloudFlareAnalytics;
   const isAccessAllowed = Boolean(cfConfig?.active || clientConfig?.features?.cloudflareAnalytics !== false);
-  const domain = cfConfig?.domain || clientConfig?.domain || 'plexivia.online';
 
+  const availableSites = useMemo(() => {
+    if (clientConfig?.sites && typeof clientConfig.sites === 'object') {
+      return Object.entries(clientConfig.sites).map(([key, site]) => ({
+        key,
+        name: site.name || (key === 'shop' ? 'Surokkha Shop' : 'Surokkha Store'),
+        domain: site.domain || (key === 'shop' ? 'surokkha.shop' : 'surokkha.store'),
+        url: site.url || site.storefrontUrl || `https://${site.domain || 'surokkha.store'}`,
+        orderPrefix: site.orderPrefix || (key === 'shop' ? 'SSH' : 'SST'),
+      }));
+    }
+    return [
+      { key: 'store', name: 'Surokkha Store', domain: 'surokkha.store', url: 'https://surokkha.store', orderPrefix: 'SST' },
+      { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SSH' },
+    ];
+  }, []);
+
+  const [activeSiteKey, setActiveSiteKey] = useState('store');
   const [range, setRange] = useState('24h');
   const [loading, setLoading] = useState(true);
   const [isLiveActive, setIsLiveActive] = useState(true);
+  const [isPurging, setIsPurging] = useState(false);
   const [data, setData] = useState(null);
 
+  const currentSite = useMemo(() => {
+    return availableSites.find((s) => s.key === activeSiteKey) || availableSites[0];
+  }, [availableSites, activeSiteKey]);
+
+  // Fetches live Cloudflare analytics data for the selected domain and range
   const fetchOverview = useCallback(async () => {
     if (!isAccessAllowed) {
       setLoading(false);
       return;
     }
     try {
-      const res = await apiClient.get(`/api/v1/system/cloudflare-analytics?range=${range}`);
+      const siteParam = activeSiteKey ? `&site=${activeSiteKey}&domain=${currentSite?.domain || ''}` : '';
+      const res = await apiClient.get(`/api/v1/system/cloudflare-analytics?range=${range}${siteParam}`);
       if (res.data?.status === 'success' && res.data?.data) {
         setData(res.data.data);
       }
@@ -114,13 +140,12 @@ export default function CloudflareTrafficOverviewPage() {
     } finally {
       setLoading(false);
     }
-  }, [range, isAccessAllowed]);
+  }, [range, isAccessAllowed, activeSiteKey, currentSite]);
 
   useEffect(() => {
     fetchOverview();
   }, [fetchOverview]);
 
-  // Live Auto-Refresh Heartbeat (every 25s)
   useEffect(() => {
     if (!isLiveActive || !isAccessAllowed) return;
     const timer = setInterval(() => {
@@ -129,10 +154,33 @@ export default function CloudflareTrafficOverviewPage() {
     return () => clearInterval(timer);
   }, [isLiveActive, isAccessAllowed, fetchOverview]);
 
+  // Purges edge cache for the active domain
+  const handlePurgeCache = async () => {
+    setIsPurging(true);
+    try {
+      const res = await apiClient.post('/api/v1/system/purge-cache', {
+        domain: currentSite?.domain || 'surokkha.store',
+        site: activeSiteKey,
+      });
+      if (res.data?.status === 'success') {
+        toast.success(`Cloudflare edge cache purged successfully for ${currentSite?.domain || 'all domains'}.`);
+        fetchOverview();
+      } else {
+        toast.error(res.data?.message || 'Purge request failed.');
+      }
+    } catch (err) {
+      toast.error('Failed to purge edge cache.');
+    } finally {
+      setIsPurging(false);
+    }
+  };
+
+  // Triggers browser print view
   const handlePrint = () => {
     window.print();
   };
 
+  // Copies dashboard link to clipboard
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success('Dashboard link copied to clipboard');
@@ -146,7 +194,7 @@ export default function CloudflareTrafficOverviewPage() {
         </div>
         <h2 className="text-xl font-bold text-foreground">Traffic Overview Restricted</h2>
         <p className="text-sm text-muted-foreground">
-          Cloudflare Live Traffic Overview is enabled exclusively for <strong>Surokkha</strong> personal wellness storefront.
+          Cloudflare Live Traffic Overview is enabled exclusively for <strong>Surokkha</strong> storefronts.
         </p>
       </div>
     );
@@ -156,7 +204,7 @@ export default function CloudflareTrafficOverviewPage() {
     return (
       <div className="flex h-[50vh] items-center justify-center space-x-2 bg-background">
         <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-        <span className="text-muted-foreground font-medium">Loading Cloudflare Data...</span>
+        <span className="text-muted-foreground font-medium">Loading Cloudflare Data for {currentSite?.domain}...</span>
       </div>
     );
   }
@@ -196,13 +244,35 @@ export default function CloudflareTrafficOverviewPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-[1440px] mx-auto bg-background min-h-screen font-sans text-foreground">
-      {/* 1. Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-        <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-foreground">
-          Traffic overview
-        </h1>
+      {/* 1. Multi-Domain Switcher & Top Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-1 border-b border-border/60 pb-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-foreground">
+              Cloudflare Traffic Overview
+            </h1>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live Edge
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Real-time multi-domain CDN metrics, DDoS shielding, and edge caching analytics.
+          </p>
+        </div>
 
-        <div className="flex items-center gap-2">
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handlePurgeCache}
+            disabled={isPurging}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-card hover:bg-muted/70 text-foreground transition-all cursor-pointer disabled:opacity-50"
+            title={`Purge edge cache for ${currentSite?.domain}`}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-muted-foreground ${isPurging ? 'animate-spin' : ''}`} />
+            <span>{isPurging ? 'Purging...' : 'Purge Cache'}</span>
+          </button>
+
           <button
             onClick={handlePrint}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-card hover:bg-muted/70 text-foreground transition-all cursor-pointer"
@@ -219,26 +289,47 @@ export default function CloudflareTrafficOverviewPage() {
             <span>Copy link</span>
           </button>
 
-          <button
-            onClick={() => toast.info('Custom charts are automatically configured for your Cloudflare edge.')}
+          <a
+            href={currentSite?.url || `https://${currentSite?.domain}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#0051C3] hover:bg-[#0040A1] text-white transition-all shadow-xs cursor-pointer"
           >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Add a chart</span>
-          </button>
+            <ArrowUpRight className="h-3.5 w-3.5" />
+            <span>Visit {currentSite?.domain}</span>
+          </a>
         </div>
       </div>
 
-      {/* 2. Sub-Header Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
-        <button
-          onClick={() => toast.info('Edge filter applied: Surokkha Zone')}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-card hover:bg-muted/70 text-foreground w-fit cursor-pointer"
-        >
-          <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-          <span>Add filter</span>
-        </button>
+      {/* 2. Multi-Domain Tabs & Filter Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-muted/40 p-2.5 rounded-xl border border-border">
+        {/* Domain Selection Tabs */}
+        <div className="flex items-center gap-1.5 p-1 bg-background rounded-lg border border-border/80 shadow-2xs">
+          {availableSites.map((site) => {
+            const isSelected = activeSiteKey === site.key;
+            return (
+              <button
+                key={site.key}
+                onClick={() => setActiveSiteKey(site.key)}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#0051C3] text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                }`}
+              >
+                <Globe className={`h-3.5 w-3.5 ${isSelected ? 'text-white' : 'text-muted-foreground'}`} />
+                <span>{site.name}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  isSelected ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
+                }`}>
+                  {site.domain}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
+        {/* Live Refresh and Range Filter */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => {
@@ -271,12 +362,60 @@ export default function CloudflareTrafficOverviewPage() {
         </div>
       </div>
 
-      {/* 3. Top KPI Cards Strip (4 Cards with mini Sparkline charts) */}
+      {/* 3. Domain Comparative Header Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {availableSites.map((site) => {
+          const isSelected = activeSiteKey === site.key;
+          return (
+            <div
+              key={site.key}
+              onClick={() => setActiveSiteKey(site.key)}
+              className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                isSelected
+                  ? 'border-[#0051C3] bg-[#0051C3]/5 shadow-xs ring-1 ring-[#0051C3]/30'
+                  : 'border-border bg-card hover:bg-muted/40'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                  isSelected ? 'bg-[#0051C3] text-white' : 'bg-muted text-muted-foreground'
+                }`}>
+                  <Globe className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-foreground">{site.name}</span>
+                    <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
+                      {site.orderPrefix}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-mono">{site.domain}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {isSelected ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0051C3] dark:text-blue-400 bg-[#0051C3]/10 px-2.5 py-1 rounded-full">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Viewing
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-medium text-muted-foreground hover:text-foreground">
+                    Switch to {site.key} &rarr;
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 4. Top KPI Cards Strip (4 Cards with mini Sparklines) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Card 1: Total requests */}
         <div className="bg-card border border-border rounded-xl p-3.5 shadow-2xs relative flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-normal text-[12px]">Total requests</span>
+            <span className="font-normal text-[12px]">Total requests ({currentSite?.domain})</span>
             <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground/60 cursor-pointer" />
           </div>
           <div className="flex items-baseline gap-2 mt-1.5">
@@ -289,7 +428,7 @@ export default function CloudflareTrafficOverviewPage() {
         {/* Card 2: Total visits */}
         <div className="bg-card border border-border rounded-xl p-3.5 shadow-2xs relative flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-normal text-[12px]">Total visits</span>
+            <span className="font-normal text-[12px]">Unique visitors ({currentSite?.domain})</span>
             <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground/60 cursor-pointer" />
           </div>
           <div className="flex items-baseline gap-2 mt-1.5">
@@ -326,15 +465,20 @@ export default function CloudflareTrafficOverviewPage() {
         </div>
       </div>
 
-      {/* 4. Requests over time (Main Line Chart) */}
+      {/* 5. Requests over time (Main Line Chart) */}
       <div className="bg-card border border-border rounded-xl p-4 shadow-2xs">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-muted-foreground">Requests over time</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground">Requests over time</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
+              {currentSite?.domain}
+            </span>
+          </div>
           <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground/60 cursor-pointer" />
         </div>
         <div className="flex items-center gap-2 mb-3">
           <span className="h-2 w-2 rounded-full bg-[#0051C3]" />
-          <span className="text-xs font-semibold text-foreground">Requests: {summary.totalRequests}</span>
+          <span className="text-xs font-semibold text-foreground">Total requests: {summary.totalRequests}</span>
         </div>
 
         <div className="h-[220px] w-full">
@@ -365,7 +509,7 @@ export default function CloudflareTrafficOverviewPage() {
         </div>
       </div>
 
-      {/* 5. Device Type & Requests by country Row */}
+      {/* 6. Device Type & Requests by country Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Left: Requests by device type */}
         <div className="bg-card border border-border rounded-xl p-4 shadow-2xs flex flex-col justify-between">
@@ -374,7 +518,7 @@ export default function CloudflareTrafficOverviewPage() {
             <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground/60 cursor-pointer" />
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-medium mb-2">
+          <div className="flex items-center gap-4 text-xs font-medium mb-2 flex-wrap">
             {devices.map((d, i) => (
               <div key={i} className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
@@ -438,10 +582,10 @@ export default function CloudflareTrafficOverviewPage() {
         </div>
       </div>
 
-      {/* 6. Status Codes Horizontal Segmented Bar Card */}
+      {/* 7. Status Codes Horizontal Segmented Bar Card */}
       <div className="bg-card border border-border rounded-xl p-4 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground">Status codes</span>
+          <span className="text-xs font-semibold text-muted-foreground">Edge response status codes</span>
           <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground/60 cursor-pointer" />
         </div>
 
@@ -464,7 +608,6 @@ export default function CloudflareTrafficOverviewPage() {
           </div>
         </div>
 
-        {/* Full-width continuous segmented progress bar */}
         <div className="w-full h-4 rounded-md overflow-hidden flex bg-muted">
           <div style={{ width: `${statusCodes['2xx']?.percentage}%` }} className="h-full bg-[#0051C3] hover:opacity-90 transition-all" title={`2xx: ${statusCodes['2xx']?.percentage}%`} />
           <div style={{ width: `${statusCodes['3xx']?.percentage}%` }} className="h-full bg-[#06B6D4] hover:opacity-90 transition-all" title={`3xx: ${statusCodes['3xx']?.percentage}%`} />
@@ -473,7 +616,7 @@ export default function CloudflareTrafficOverviewPage() {
         </div>
       </div>
 
-      {/* 7. Row 4: Top Paths, Top Hosts, Top Client IPs (3 Columns) */}
+      {/* 8. Top Paths, Top Hosts, Top Client IPs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Top paths */}
         <div className="bg-card border border-border rounded-xl p-3.5 shadow-2xs">
@@ -533,7 +676,7 @@ export default function CloudflareTrafficOverviewPage() {
         </div>
       </div>
 
-      {/* 8. Row 5: Top Browsers, Top Operating Systems, Top User Agents (3 Columns) */}
+      {/* 9. Top Browsers, Top Operating Systems, Top User Agents */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {/* Top browsers */}
         <div className="bg-card border border-border rounded-xl p-3.5 shadow-2xs">
@@ -594,4 +737,6 @@ export default function CloudflareTrafficOverviewPage() {
       </div>
     </div>
   );
-}
+};
+
+export default CloudflareTrafficOverviewPage;
