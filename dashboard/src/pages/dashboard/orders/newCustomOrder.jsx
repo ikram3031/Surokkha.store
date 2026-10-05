@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, baseURL, getApiBaseUrl } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useCategories, useBrands } from "@/lib/category-cache";
 import { toast } from "sonner";
@@ -50,6 +50,7 @@ import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { clientConfig } from "@/clientConfig";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
 import { DISTRICTS, DISTRICT_THANAS } from "@/data/districts";
+import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 
 // Modal dialog for selecting product variation & quantity
 const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
@@ -316,6 +317,7 @@ const NewCustomOrderPage = () => {
   const [cart, setCart] = useState([]);
   const [dialogProduct, setDialogProduct] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
+  const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Customer & Billing State (Matching Surokkha Checkout Architecture)
@@ -575,7 +577,7 @@ const NewCustomOrderPage = () => {
 
   const handleDownloadInvoice = () => {
     if (!completedOrder) return;
-    const apiBase = (import.meta.env.VITE_API_BASE_URL || clientConfig?.apiBaseUrl || 'https://api.plexivia.online').replace(/\/$/, '');
+    const apiBase = (baseURL || getApiBaseUrl() || 'https://admin.surokkha.store').replace(/\/$/, '');
     const orderIdentifier = completedOrder?.order?._id || completedOrder?.order?.id || completedOrder?.order?.did || completedOrder?.orderNumber;
     window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
   };
@@ -1634,6 +1636,14 @@ const NewCustomOrderPage = () => {
                 >
                   Download / Print Invoice
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full cursor-pointer text-xs font-semibold gap-1.5"
+                  onClick={() => setSendEmailModalOpen(true)}
+                >
+                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                  Send via Email
+                </Button>
               </div>
             </div>
           )}
@@ -1645,6 +1655,24 @@ const NewCustomOrderPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SendOrderInvoiceModal
+        open={sendEmailModalOpen}
+        onOpenChange={setSendEmailModalOpen}
+        order={completedOrder?.order || (completedOrder ? {
+          ...completedOrder,
+          _id: completedOrder?.order?._id,
+          orderNumber: completedOrder?.orderNumber,
+          billingInfo: {
+            fullName: completedOrder.customerName,
+            email: completedOrder.customerEmail,
+            phone: completedOrder.customerPhone,
+            address: completedOrder.deliveryAddress,
+            district: completedOrder.district,
+            thana: completedOrder.thana,
+          },
+        } : null)}
+      />
     </div>
   );
 };

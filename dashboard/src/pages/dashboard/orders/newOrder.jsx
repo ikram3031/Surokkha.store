@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
-import { apiClient } from "@/lib/api-client";
+import { apiClient, baseURL, getApiBaseUrl } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useCategories, useBrands } from "@/lib/category-cache";
 import { clientConfig } from "@/clientConfig";
@@ -36,7 +36,9 @@ import {
   X,
   Layers,
   Tag,
+  Mail,
 } from "lucide-react";
+import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
@@ -311,6 +313,7 @@ const NewInStoreOrderPage = () => {
   const [cart, setCart] = useState([]);
   const [dialogProduct, setDialogProduct] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
+  const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
 
   const [discount, setDiscount] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -481,7 +484,7 @@ const NewInStoreOrderPage = () => {
 
   const handleDownloadInvoice = () => {
     if (!completedOrder) return;
-    const apiBase = (import.meta.env.VITE_API_BASE_URL || clientConfig?.apiBaseUrl || 'https://api.plexivia.online').replace(/\/$/, '');
+    const apiBase = (baseURL || getApiBaseUrl() || 'https://admin.surokkha.store').replace(/\/$/, '');
     const orderIdentifier = completedOrder?.order?._id || completedOrder?.order?.id || completedOrder?.order?.did || completedOrder?.orderNumber;
     window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
   };
@@ -1017,13 +1020,21 @@ const NewInStoreOrderPage = () => {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-2.5 sm:flex-row">
                 <Button
                   variant="default"
                   className="w-full cursor-pointer"
                   onClick={handleDownloadInvoice}
                 >
                   {t("orders.print_invoice", "Download / Print Invoice")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full cursor-pointer gap-1.5"
+                  onClick={() => setSendEmailModalOpen(true)}
+                >
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  {t("orders.send_invoice_email", "Send via Email")}
                 </Button>
               </div>
             </div>
@@ -1036,6 +1047,22 @@ const NewInStoreOrderPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SendOrderInvoiceModal
+        open={sendEmailModalOpen}
+        onOpenChange={setSendEmailModalOpen}
+        order={completedOrder?.order || (completedOrder ? {
+          ...completedOrder,
+          _id: completedOrder?.order?._id,
+          orderNumber: completedOrder?.orderNumber,
+          billingInfo: {
+            fullName: completedOrder.customerName,
+            email: completedOrder.customerEmail,
+            phone: completedOrder.customerPhone,
+            address: completedOrder.customerAddress,
+          },
+        } : null)}
+      />
     </div>
   );
 };

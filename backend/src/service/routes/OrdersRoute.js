@@ -4,6 +4,7 @@ import {
   deleteOrder,
   getOrderById,
   getOrderInvoiceView,
+  sendOrderInvoiceEmail,
   listOrders,
   updateOrder,
   bulkDeleteOrders,
@@ -21,6 +22,14 @@ ordersRouter.post("/new-order", createOrder);
 
 // Public printable / download invoice PDF view endpoint for order emails
 ordersRouter.get("/:orderId/invoice", getOrderInvoiceView);
+
+// Dispatches order invoice email (Dashboard/Admin only)
+ordersRouter.post(
+  "/:orderId/send-invoice-email",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin", "Manager"),
+  sendOrderInvoiceEmail,
+);
 
 // Get a paginated list of all orders (Dashboard/Admin only)
 ordersRouter.get(

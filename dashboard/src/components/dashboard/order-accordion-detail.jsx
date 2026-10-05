@@ -14,9 +14,7 @@ import {
   Package,
   User,
   Phone,
-  PhoneCall,
   Mail,
-  Copy,
   CreditCard,
   Truck,
   Calendar,
@@ -27,9 +25,12 @@ import {
   ExternalLink,
   Edit3,
   Layers,
+  PhoneCall,
+  Copy,
 } from 'lucide-react';
 import { apiClient, baseURL } from '@/lib/api-client';
 import clientConfig from '@/clientConfig';
+import { SendOrderInvoiceModal } from '@/components/dashboard/orders/SendOrderInvoiceModal';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { logActivity } from '@/lib/activity-logger';
@@ -43,7 +44,7 @@ import {
   formatFullAddress,
   getWhatsAppLink,
   WhatsAppIcon,
-  handleCopyToClipboard,
+  handleCopyText,
 } from '@/utils/orderDetailsHelper';
 import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import { formatDateTime } from '@/utils/dateHelper';
@@ -58,6 +59,7 @@ export const OrderAccordionDetail = ({ order }) => {
   const [orderStatus, setOrderStatus] = useState(order.orderStatus || 'Processing');
   const [paymentStatus, setPaymentStatus] = useState(order.paymentStatus || 'Pending');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
 
   useEffect(() => {
     setOrderStatus(order.orderStatus || 'Processing');
@@ -82,7 +84,7 @@ export const OrderAccordionDetail = ({ order }) => {
   const pendingAmount = Math.max(0, grandTotal - paidAmount);
 
   const phoneNum = billing.phone || order.phone || '';
-  const cleanPhone = phoneNum.replace(/^\+880?/, '');
+  const cleanPhone = phoneNum.replace(/^(\+?880?|0)/, '');
   const emailAddr = billing.email || order.email || '';
 
   const billingAddressText = formatFullAddress(billing);
@@ -119,7 +121,7 @@ export const OrderAccordionDetail = ({ order }) => {
 
   // Opens the printable invoice endpoint in a new browser tab
   const handleOpenInvoice = () => {
-    const apiBase = (baseURL || import.meta.env.VITE_API_BASE_URL || clientConfig?.apiBaseUrl || 'https://api.plexivia.online').replace(/\/$/, '');
+    const apiBase = (baseURL || getApiBaseUrl() || 'https://admin.surokkha.store').replace(/\/$/, '');
     const orderIdentifier = order._id || order.id || order.did || order.orderNumber;
     window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
   };
@@ -173,6 +175,15 @@ export const OrderAccordionDetail = ({ order }) => {
           >
             <FileText className="h-3.5 w-3.5 text-muted-foreground" />
             {t('orders.print_invoice', 'Print Invoice')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 cursor-pointer bg-background"
+            onClick={() => setSendEmailModalOpen(true)}
+          >
+            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+            {t('orders.send_invoice_email', 'Send via Email')}
           </Button>
           <Button
             variant="outline"
@@ -297,18 +308,18 @@ export const OrderAccordionDetail = ({ order }) => {
                         <a
                           href={`tel:+880${cleanPhone}`}
                           className="inline-flex items-center justify-center h-5 w-5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
-                          title="Call Phone Number"
+                          title="Call Phone"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <PhoneCall className="h-3 w-3" />
                         </a>
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
                           title="Copy Phone Number"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCopyToClipboard(`+880${cleanPhone}`, 'Phone number');
+                            handleCopyText(phoneNum, 'Phone number');
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -342,7 +353,7 @@ export const OrderAccordionDetail = ({ order }) => {
                         </a>
                         <a
                           href={`mailto:${emailAddr}`}
-                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
                           title="Send Email"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -350,11 +361,11 @@ export const OrderAccordionDetail = ({ order }) => {
                         </a>
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
                           title="Copy Email"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCopyToClipboard(emailAddr, 'Email');
+                            handleCopyText(emailAddr, 'Email');
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -388,18 +399,18 @@ export const OrderAccordionDetail = ({ order }) => {
                         <a
                           href={`tel:+880${cleanPhone}`}
                           className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
-                          title="Call Phone Number"
+                          title="Call Phone"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <PhoneCall className="h-2.5 w-2.5" />
                         </a>
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
                           title="Copy Phone Number"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCopyToClipboard(`+880${cleanPhone}`, 'Phone number');
+                            handleCopyText(phoneNum, 'Phone number');
                           }}
                         >
                           <Copy className="h-2.5 w-2.5" />
@@ -408,7 +419,7 @@ export const OrderAccordionDetail = ({ order }) => {
                           href={getWhatsAppLink(phoneNum)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
                           title="Message on WhatsApp"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -419,10 +430,10 @@ export const OrderAccordionDetail = ({ order }) => {
                     {emailAddr && (
                       <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
                         <span>{t('common.email', 'Email')}:</span>
-                        <a href={`mailto:${emailAddr}`} className="text-foreground hover:underline truncate max-w-[150px]">{emailAddr}</a>
+                        <a href={`mailto:${emailAddr}`} className="text-foreground hover:underline font-medium truncate max-w-[150px]">{emailAddr}</a>
                         <a
                           href={`mailto:${emailAddr}`}
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
                           title="Send Email"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -430,11 +441,11 @@ export const OrderAccordionDetail = ({ order }) => {
                         </a>
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
                           title="Copy Email"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCopyToClipboard(emailAddr, 'Email');
+                            handleCopyText(emailAddr, 'Email');
                           }}
                         >
                           <Copy className="h-2.5 w-2.5" />
@@ -461,18 +472,18 @@ export const OrderAccordionDetail = ({ order }) => {
                         <a
                           href={`tel:${shipping.phone || phoneNum}`}
                           className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
-                          title="Call Phone Number"
+                          title="Call Phone"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <PhoneCall className="h-2.5 w-2.5" />
                         </a>
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
                           title="Copy Phone Number"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCopyToClipboard(shipping.phone || phoneNum, 'Phone number');
+                            handleCopyText(shipping.phone || phoneNum, 'Phone number');
                           }}
                         >
                           <Copy className="h-2.5 w-2.5" />
@@ -611,6 +622,12 @@ export const OrderAccordionDetail = ({ order }) => {
           </div>
         </div>
       </div>
+
+      <SendOrderInvoiceModal
+        open={sendEmailModalOpen}
+        onOpenChange={setSendEmailModalOpen}
+        order={order}
+      />
     </div>
   );
 };
