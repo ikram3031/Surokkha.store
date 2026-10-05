@@ -1,7 +1,7 @@
 {
   "name": "Dashboard",
   "private": true,
-  "version": "3.05.00",
+  "version": "3.05.01",
   "type": "module",
   "scripts": {
     "dev": "vite",
