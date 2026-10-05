@@ -195,6 +195,8 @@ export const OrdersTable = ({
       case 'cancelled':
       case 'canceled':
         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_canceled', 'Cancelled')}</Badge>;
+      case 'fake':
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-semibold`}>Fake</Badge>;
       case 'returned':
         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_returned', 'Returned')}</Badge>;
       case 'pending':
@@ -246,7 +248,7 @@ export const OrdersTable = ({
             <TableHead className="w-[150px]">{t('orders.order_id', 'Order ID')}</TableHead>
             <TableHead className="w-[180px]">{t('orders.customer_name', 'Customer Name')}</TableHead>
             <TableHead className="w-[110px]">{t('common.date', 'Date')}</TableHead>
-            <TableHead className="w-[120px]">{t('common.total', 'Total Amount')}</TableHead>
+            <TableHead className="w-[120px]">{t('orders.order_amount', 'Order Amount')}</TableHead>
             <TableHead className="w-[120px]">{t('orders.payment_status', 'Payment')}</TableHead>
             <TableHead className="w-[120px]">{t('common.status', 'Status')}</TableHead>
             <TableHead className="w-[60px] text-right">{t('common.actions', 'Actions')}</TableHead>

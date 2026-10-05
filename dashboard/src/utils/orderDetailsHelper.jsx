@@ -145,6 +145,7 @@ export const getBackendStatus = (fullStatus) => {
   if (s === "shipped") return "shipped";
   if (s === "cancelled") return "cancelled";
   if (s === "completed") return "completed";
+  if (s === "fake") return "fake";
   return "processing";
 };
 
@@ -159,7 +160,7 @@ export const calculatePaymentStatus = (total, paidAmount, paymentMethod = "", or
   const status = String(orderStatus || "").toLowerCase();
   const isMfs = ["bkash", "nagad", "rocket"].some(m => method.includes(m));
 
-  if (status === "cancelled" || status === "canceled") return "Cancelled";
+  if (status === "cancelled" || status === "canceled" || status === "fake") return "Cancelled";
   if (paid >= netTotal && netTotal > 0) return "Paid";
   if (paid > 0 || isMfs) return "Partial";
   return "Pending";
@@ -171,6 +172,7 @@ export const calculatePaymentStatus = (total, paidAmount, paymentMethod = "", or
 // Red (#e03b24): cancelled/deleted/failed (white text)
 // Blue (#3865a3): shipped (white text)
 // Sky (#87a2c7): confirmed (dark text)
+// Rose/Dark Red (#991b1b): fake (white text)
 const BADGE_FIXED_CLS = "w-24 justify-center text-center truncate border-transparent select-none";
 
 // Render payment status badge based on payment status string.
@@ -205,6 +207,8 @@ export const getFulfillmentBadge = (status) => {
     case "cancelled":
     case "canceled":
       return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>Cancelled</Badge>;
+    case "fake":
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-semibold`}>Fake</Badge>;
     case "returned":
       return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>Returned</Badge>;
     case "pending":

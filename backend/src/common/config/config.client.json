@@ -14,8 +14,7 @@
   "routes": {
     "shop": "/shop",
     "category": "/shop/:category",
-    "product": "/shop/:category/:slug",
-    "brand": "/brand/:brand"
+    "product": "/shop/:category/:slug"
   },
   "policies": {
     "stock": {
@@ -126,11 +125,6 @@
         "advancedMatching": true
       }
     }
-  },
-  "googleAnalytics": {
-    "measurementId": "G-XXXXX",
-    "propertyId": "123456789",
-    "enabled": false
   },
   "cloudflare": {
     "apiToken": "cfat_lfKJ5uXUo07iLNFoaviz5Rj6PfHTpKJecbbiDdlgee397274",
@@ -249,12 +243,7 @@
     "logs",
     "system-logs",
     "trash",
-    "settings",
-    "templates",
-    "settings.templates",
-    "orders.instore",
-    "products.brands",
-    "products.attributes"
+    "settings"
   ],
   "theme": {
     "light": {

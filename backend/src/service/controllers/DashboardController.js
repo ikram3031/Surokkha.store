@@ -168,6 +168,7 @@ export const getOrderStatusDistribution = async (req, res, next) => {
       shipped: 0,
       completed: 0,
       cancelled: 0,
+      fake: 0,
     };
 
     agg.forEach((item) => {

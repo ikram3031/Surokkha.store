@@ -193,6 +193,7 @@
     "city": "City / District",
     "area": "Area / Zone",
     "order_date": "Order Date",
+    "order_amount": "Order Amount",
     "items": "Items",
     "payment_method": "Payment Method",
     "payment_status": "Payment Status",

@@ -4,6 +4,8 @@ import { OrderModel } from '../../common/models/order.model.js';
 import { ProductModel } from '../../common/models/product.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
+import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
+import { MemberModel } from '../../common/models/member.model.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import {
   buildOrderDocument,
@@ -94,6 +96,45 @@ export const createOrder = async (req, res, next) => {
       }
     }
 
+    // Verification against fake orders database (Fake Order Prevention)
+    const rawBillingPhone = String(payload.billingInfo?.phone || payload.phone || '').trim();
+    const rawBillingEmail = String(payload.billingInfo?.email || payload.email || '').trim().toLowerCase();
+    const cleanDigits = rawBillingPhone.replace(/\D/g, '');
+    const corePhone = cleanDigits.length >= 10 ? cleanDigits.slice(-10) : cleanDigits;
+
+    if (corePhone || rawBillingEmail) {
+      const fakeQueryConditions = [];
+      if (corePhone) {
+        fakeQueryConditions.push({ 'customer.phone': { $regex: corePhone } });
+      }
+      if (rawBillingEmail && !rawBillingEmail.startsWith('instore@')) {
+        fakeQueryConditions.push({ 'customer.email': rawBillingEmail });
+      }
+
+      const matchingFake = await FakeOrderModel.findOne({ $or: fakeQueryConditions }).lean();
+      if (matchingFake) {
+        // Exemption check: If existing customer already has genuine completed orders, permit order
+        let isTrustedCustomer = false;
+        if (corePhone) {
+          const verifiedMember = await MemberModel.findOne({
+            $or: [{ phone: { $regex: corePhone } }, { phones: { $elemMatch: { $regex: corePhone } } }],
+            isActive: true,
+          }).lean();
+          if (verifiedMember && (verifiedMember.totalOrderAmount > 0 || verifiedMember.orders?.length > 1)) {
+            isTrustedCustomer = true;
+          }
+        }
+
+        if (!isTrustedCustomer) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন। (Please use a different valid phone number)',
+            errors: ['Please provide a different valid phone number.'],
+          });
+        }
+      }
+    }
+
     if (validationErrors.length > 0) {
       return res.status(400).json({
         status: 'error',
@@ -102,7 +143,7 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
-    const orderData = await buildOrderDocument(payload);
+    const orderData = await buildOrderDocument(payload, req);
     const createdOrder = await OrderModel.create(orderData);
 
     const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
@@ -273,8 +314,55 @@ export const getOrderInvoiceView = async (req, res, next) => {
       templateConfig,
     });
     res.setHeader("Content-Type", "text/html");
-    res.setHeader("Content-Disposition", `inline; filename="Invoice-\${formattedOrderData.orderId}.pdf"`);
+    res.setHeader("Content-Disposition", `inline; filename="Invoice-${formattedOrderData.orderId}.pdf"`);
     return res.send(invoiceHtml);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Check if a phone number or email is flagged in fake_orders
+export const checkPhoneStatus = async (req, res, next) => {
+  try {
+    const rawPhone = String(req.query.phone || req.body?.phone || '').trim();
+    const rawEmail = String(req.query.email || req.body?.email || '').trim().toLowerCase();
+
+    const cleanDigits = rawPhone.replace(/\D/g, '');
+    const corePhone = cleanDigits.length >= 10 ? cleanDigits.slice(-10) : cleanDigits;
+
+    if (!corePhone && !rawEmail) {
+      return res.json({ status: 'success', isFake: false });
+    }
+
+    const fakeQueryConditions = [];
+    if (corePhone) {
+      fakeQueryConditions.push({ 'customer.phone': { $regex: corePhone } });
+    }
+    if (rawEmail && !rawEmail.startsWith('instore@')) {
+      fakeQueryConditions.push({ 'customer.email': rawEmail });
+    }
+
+    const fakeRecord = await FakeOrderModel.findOne({ $or: fakeQueryConditions }).lean();
+    if (!fakeRecord) {
+      return res.json({ status: 'success', isFake: false });
+    }
+
+    // Exemption check for trusted existing customer
+    if (corePhone) {
+      const verifiedMember = await MemberModel.findOne({
+        $or: [{ phone: { $regex: corePhone } }, { phones: { $elemMatch: { $regex: corePhone } } }],
+        isActive: true,
+      }).lean();
+      if (verifiedMember && (verifiedMember.totalOrderAmount > 0 || verifiedMember.orders?.length > 1)) {
+        return res.json({ status: 'success', isFake: false, isTrustedCustomer: true });
+      }
+    }
+
+    return res.json({
+      status: 'success',
+      isFake: true,
+      message: 'অনুগ্রহ করে অন্য একটি ফোন নম্বর ব্যবহার করুন। (Please use a different phone number)',
+    });
   } catch (error) {
     next(error);
   }

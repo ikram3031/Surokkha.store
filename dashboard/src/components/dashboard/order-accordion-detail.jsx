@@ -573,6 +573,7 @@ export const OrderAccordionDetail = ({ order }) => {
                       <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                       <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
                       <SelectItem value="Cancelled" className="cursor-pointer text-xs text-destructive">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                      <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

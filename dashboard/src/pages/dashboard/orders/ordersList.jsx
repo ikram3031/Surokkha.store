@@ -3,8 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { OrdersTable } from '@/components/dashboard/orders-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Download, PlusCircle, Trash2, X } from 'lucide-react';
+import { Search, Download, PlusCircle, Trash2, X, Filter } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import {
   Select,
@@ -101,8 +110,32 @@ const OrdersPage = () => {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  const handleStatus = (v) => {
-    updateParams({ status: v ?? 'All', page: 1 });
+  const statusOptions = [
+    { value: 'Processing', label: t('orders.status_processing', 'Processing') },
+    { value: 'Shipped', label: t('orders.status_shipped', 'Shipped') },
+    { value: 'Completed', label: t('orders.status_delivered', 'Completed') },
+    { value: 'Cancelled', label: t('orders.status_canceled', 'Cancelled') },
+    { value: 'Fake', label: 'Fake' },
+  ];
+
+  const selectedStatuses = statusFilter === 'All' || !statusFilter
+    ? []
+    : statusFilter.split(',').map((s) => s.trim()).filter(Boolean);
+
+  const toggleStatusFilter = (val) => {
+    let nextStatuses;
+    if (selectedStatuses.includes(val)) {
+      nextStatuses = selectedStatuses.filter((s) => s !== val);
+    } else {
+      nextStatuses = [...selectedStatuses, val];
+    }
+    const nextVal = nextStatuses.length === 0 ? 'All' : nextStatuses.join(',');
+    updateParams({ status: nextVal, page: 1 });
+    setSelectedIds([]);
+  };
+
+  const clearStatusFilter = () => {
+    updateParams({ status: 'All', page: 1 });
     setSelectedIds([]);
   };
 
@@ -216,22 +249,41 @@ const OrdersPage = () => {
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-start sm:justify-end">
           {selectedIds.length === 0 && (
             <div className="flex gap-2 items-center w-full sm:w-auto">
-              <Select value={statusFilter} onValueChange={handleStatus}>
-                <SelectTrigger className="w-[180px] h-9 cursor-pointer text-xs">
-                  <span>
-                    {statusFilter === 'All'
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex h-9 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-xs shadow-xs ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 w-[200px] cursor-pointer">
+                  <span className="truncate">
+                    {selectedStatuses.length === 0
                       ? `${t('orders.order_status', 'Order Status')}: ${t('common.all', 'All')}`
-                      : `${t('orders.order_status', 'Order Status')}: ${statusFilter}`}
+                      : `${t('orders.order_status', 'Status')} (${selectedStatuses.length}): ${selectedStatuses.join(', ')}`}
                   </span>
-                </SelectTrigger>
-                <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="All">{t('orders.order_status', 'Order Status')}: {t('common.all', 'All')}</SelectItem>
-                  <SelectItem value="Processing">{t('orders.status_processing', 'Processing')}</SelectItem>
-                  <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
-                  <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
-                  <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
-                </SelectContent>
-              </Select>
+                  <Filter className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-52" align="start">
+                  <DropdownMenuLabel className="flex items-center justify-between">
+                    <span>{t('orders.order_status', 'Order Status')}</span>
+                    {selectedStatuses.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearStatusFilter}
+                        className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer underline"
+                      >
+                        {t('common.clear', 'Clear')}
+                      </button>
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {statusOptions.map((opt) => (
+                    <DropdownMenuCheckboxItem
+                      key={opt.value}
+                      checked={selectedStatuses.includes(opt.value)}
+                      onCheckedChange={() => toggleStatusFilter(opt.value)}
+                      className="cursor-pointer text-xs"
+                    >
+                      {opt.label}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Select value={paymentFilter} onValueChange={handlePayment}>
                 <SelectTrigger className="w-[160px] h-9 cursor-pointer text-xs">
@@ -278,6 +330,7 @@ const OrdersPage = () => {
                   <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
                   <SelectItem value="Cancelled" className="cursor-pointer text-xs">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                  <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
                 </SelectContent>
               </Select>
 

@@ -243,9 +243,7 @@
     "logs",
     "system-logs",
     "trash",
-    "settings",
-    "templates",
-    "settings.templates"
+    "settings"
   ],
   "theme": {
     "light": {

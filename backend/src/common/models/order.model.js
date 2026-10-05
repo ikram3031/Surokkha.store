@@ -84,7 +84,7 @@ const orderSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: [ "processing", "shipped", "completed", "cancelled"],
+      enum: [ "processing", "shipped", "completed", "cancelled", "fake"],
       default: "processing",
     },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
@@ -102,6 +102,7 @@ const orderSchema = new Schema(
     items: { type: [orderItemSchema], required: true, validate: [(items) => items.length > 0, "items must contain at least one item"] },
     totals: { type: orderTotalsSchema, required: true },
     courier: { type: courierInfoSchema, default: () => ({}) },
+    ipAddress: { type: String, trim: true, default: null, index: true },
     active: { type: Boolean, default: true, index: true },
   },
   {

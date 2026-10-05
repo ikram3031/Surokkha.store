@@ -40,6 +40,8 @@ const fetchOrders = async (params) => {
         fulfillment = 'Completed';
       } else if (o.status === 'cancelled') {
         fulfillment = 'Cancelled';
+      } else if (o.status === 'fake') {
+        fulfillment = 'Fake';
       }
 
       let paymentStatus = 'Pending';

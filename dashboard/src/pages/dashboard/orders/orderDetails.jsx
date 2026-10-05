@@ -358,6 +358,7 @@ const OrderDetailsPage = () => {
         shipped: "Shipped",
         completed: "Completed",
         cancelled: "Cancelled",
+        fake: "Fake",
         processing: "Processing",
       };
       const curStatus = String(order.status || order.orderStatus || "").toLowerCase();
@@ -1483,6 +1484,7 @@ const OrderDetailsPage = () => {
                       <SelectItem value="Shipped">Shipped</SelectItem>
                       <SelectItem value="Completed">Completed</SelectItem>
                       <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      <SelectItem value="Fake" className="text-destructive font-medium">Fake</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

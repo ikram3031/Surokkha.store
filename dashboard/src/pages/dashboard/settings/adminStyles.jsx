@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import api from '@/lib/api';
+import { apiClient } from '@/lib/api-client';
 
 const AdminStylesPage = () => {
   const { t } = useTranslation();
@@ -33,7 +33,7 @@ const AdminStylesPage = () => {
 
   const fetchStyle = async () => {
     try {
-      const response = await api.get('/styles', {
+      const response = await apiClient.get('/styles', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.status === 'success') {
@@ -52,7 +52,7 @@ const AdminStylesPage = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await api.put(`/styles/${type}`, { theme }, {
+      const response = await apiClient.put(`/styles/${type}`, { theme }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.status === 'success') {

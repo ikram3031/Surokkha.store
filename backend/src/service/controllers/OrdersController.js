@@ -13,7 +13,9 @@ import { buildAllowedOrderUpdates,
   syncPaymentDocument,
   updateMemberOrderReference,
   updateMemberTotals,
+  archiveFakeOrder,
 } from '../../common/helper/orderControllerHelper.js';
+import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from "../../common/websocket.js";
@@ -99,7 +101,7 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
-    const orderData = await buildOrderDocument(payload);
+    const orderData = await buildOrderDocument(payload, req);
     const createdOrder = await OrderModel.create(orderData);
 
     const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
@@ -186,7 +188,28 @@ export const listOrders = async (req, res, next) => {
     }
 
     if (req.query.status) {
-      andConditions.push({ status: req.query.status.toLowerCase() });
+      const rawStatuses = Array.isArray(req.query.status)
+        ? req.query.status.join(',')
+        : String(req.query.status);
+      const parsedStatuses = rawStatuses
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s && s !== 'all');
+
+      if (parsedStatuses.length === 1) {
+        andConditions.push({ status: parsedStatuses[0] });
+        // If explicitly requesting 'fake', allow active: false orders to be included
+        if (parsedStatuses[0] === 'fake' && req.query.active === undefined) {
+          const activeCondIdx = andConditions.findIndex((c) => c.active === true);
+          if (activeCondIdx !== -1) andConditions.splice(activeCondIdx, 1);
+        }
+      } else if (parsedStatuses.length > 1) {
+        andConditions.push({ status: { $in: parsedStatuses } });
+        if (parsedStatuses.includes('fake') && req.query.active === undefined) {
+          const activeCondIdx = andConditions.findIndex((c) => c.active === true);
+          if (activeCondIdx !== -1) andConditions.splice(activeCondIdx, 1);
+        }
+      }
     }
 
     if (req.query.orderType === 'custom') {
@@ -382,6 +405,10 @@ export const updateOrder = async (req, res, next) => {
       affectedMemberIds.add(payload.memberId);
     }
 
+    if (allowedUpdates.status === 'fake') {
+      allowedUpdates.active = false;
+    }
+
     const order = await OrderModel.findOneAndUpdate(query, allowedUpdates, {
       new: true,
       runValidators: true,
@@ -389,6 +416,21 @@ export const updateOrder = async (req, res, next) => {
 
     if (!order) {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    // If order was marked as fake, archive it to fake_orders collection and remove from member orders
+    if (order.status === 'fake') {
+      try {
+        await archiveFakeOrder(order, req.user?.userId || null, payload.reason || "Marked as fake order");
+        if (order.member) {
+          await MemberModel.updateOne(
+            { _id: order.member },
+            { $pull: { orders: { did: order.did } } }
+          );
+        }
+      } catch (fakeErr) {
+        console.error("Error archiving fake order:", fakeErr);
+      }
     }
 
     const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
@@ -403,11 +445,11 @@ export const updateOrder = async (req, res, next) => {
       );
     }
 
-    if (newMemberId) {
+    if (newMemberId && order.status !== 'fake') {
       await updateMemberOrderReference(newMemberId, orderDid, orderValue);
     }
 
-        await syncPaymentDocument(order, payload);
+    await syncPaymentDocument(order, payload);
 
     if (oldMemberId) affectedMemberIds.add(oldMemberId);
     if (newMemberId) affectedMemberIds.add(newMemberId);
@@ -566,6 +608,9 @@ export const bulkUpdateOrders = async (req, res, next) => {
     const updateFields = {};
     if (status) {
       updateFields.status = status.toLowerCase();
+      if (updateFields.status === 'fake') {
+        updateFields.active = false;
+      }
     }
 
     // Find affected orders first to read references before updating
@@ -577,6 +622,19 @@ export const bulkUpdateOrders = async (req, res, next) => {
     // Update order documents status in bulk
     if (Object.keys(updateFields).length > 0) {
       await OrderModel.updateMany(query, { $set: updateFields });
+    }
+
+    // If marked as fake in bulk, archive all to fake_orders and remove from members' active orders
+    if (updateFields.status === 'fake') {
+      for (const ord of orders) {
+        archiveFakeOrder(ord, req.user?.userId || null, req.body?.reason || "Bulk marked as fake order").catch(e => console.error(e));
+        if (ord.member && ord.did) {
+          MemberModel.updateOne(
+            { _id: ord.member },
+            { $pull: { orders: { did: ord.did } } }
+          ).catch(e => console.error(e));
+        }
+      }
     }
 
     // Identify distinct member IDs affected by the updates

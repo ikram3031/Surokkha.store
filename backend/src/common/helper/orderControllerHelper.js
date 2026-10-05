@@ -6,8 +6,10 @@ import { ProductModel } from '../models/product.model.js';
 import { MemberModel } from '../models/member.model.js';
 import { PaymentModel } from '../models/payment.model.js';
 import { UserModel } from '../models/user.model.js';
+import { FakeOrderModel } from '../models/fakeOrder.model.js';
 import { buildOrderNumber } from './orderHelper.js';
 import { config, getClientPolicy } from '../config/index.js';
+import { extractClientIp } from '../services/facebookCapi.service.js';
 
 const { Types } = mongoose;
 
@@ -83,7 +85,7 @@ export const normalizeOrderItems = async (items = []) => {
 };
 
 // Build the Mongo order document from the incoming checkout payload.
-export const buildOrderDocument = async (payload) => {
+export const buildOrderDocument = async (payload, req = null) => {
   const createdByUserId = await resolveUserIdFromReference(payload.createdBy);
 
   const billingInfo = {
@@ -125,7 +127,7 @@ export const buildOrderDocument = async (payload) => {
     orderNumber: await buildOrderNumber(resolvedOrderType, resolvedSiteKey, customPrefix),
     siteKey: resolvedSiteKey,
     clientDomain: resolvedDomain,
-    status: ['processing', 'shipped', 'completed', 'cancelled'].includes(initialStatus) ? initialStatus : 'processing',
+    status: ['processing', 'shipped', 'completed', 'cancelled', 'fake'].includes(initialStatus) ? initialStatus : 'processing',
     createdBy: createdByUserId,
     updatedBy: null,
     member: payload.memberId && Types.ObjectId.isValid(payload.memberId) ? payload.memberId : undefined,
@@ -143,6 +145,7 @@ export const buildOrderDocument = async (payload) => {
       tax: Number(payload.tax || 0),
       total: Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0))),
     },
+    ipAddress: normalizeText(payload.ipAddress || (req ? extractClientIp(req) : '')) || null,
   };
 };
 
@@ -195,7 +198,7 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     }
   }
 
-  const orderCanceled = orderData.status === 'canceled' || orderData.status === 'cancelled';
+  const orderCanceled = orderData.status === 'canceled' || orderData.status === 'cancelled' || orderData.status === 'fake';
   if (orderCanceled) {
     paidAmount = 0;
   }
@@ -371,6 +374,23 @@ export const resolveOrForceMembershipFromOrder = async (createdOrder, payload = 
       name: fullName,
       email: fallbackEmail,
       phone: rawPhone,
+      names: fullName ? [fullName] : [],
+      phones: rawPhone ? [rawPhone] : [],
+      emails: rawEmail ? [rawEmail] : [fallbackEmail],
+      orderProfiles: [
+        {
+          name: fullName,
+          phone: rawPhone,
+          email: rawEmail || fallbackEmail,
+          address: normalizeText(billing.address || shipping.address),
+          thana: normalizeText(billing.thana || shipping.thana),
+          district: normalizeText(billing.district || shipping.district),
+          ipAddress: createdOrder.ipAddress || null,
+          orderId: createdOrder._id,
+          orderNumber: createdOrder.orderNumber,
+          recordedAt: new Date(),
+        },
+      ],
       passwordHash,
       isActive: true,
       role: 'Customer',
@@ -420,11 +440,39 @@ export const resolveOrForceMembershipFromOrder = async (createdOrder, payload = 
 };
 
 // Persist the created order snapshot onto the member and refresh derived totals.
-export const syncMemberOrderSnapshot = async (memberId, createdOrder, payload) => {
+export const syncMemberOrderSnapshot = async (memberId, createdOrder, payload = {}) => {
   if (!memberId) return;
 
   const orderValue = createdOrder.totals?.total ?? 0;
-  const memberUpdates = { $addToSet: { orders: { did: createdOrder.did, value: orderValue } } };
+  const billing = createdOrder.billingInfo || payload.billingInfo || {};
+  const shipping = createdOrder.shippingInfo || payload.shippingInfo || {};
+
+  const orderName = normalizeText(billing.fullName || shipping.fullName || payload.fullName);
+  const orderPhone = normalizeText(billing.phone || shipping.phone || payload.phone);
+  const orderEmail = normalizeText(billing.email || shipping.email || payload.email).toLowerCase();
+
+  const memberUpdates = {
+    $addToSet: {
+      orders: { did: createdOrder.did, value: orderValue },
+      ...(orderName ? { names: orderName } : {}),
+      ...(orderPhone ? { phones: orderPhone } : {}),
+      ...(orderEmail ? { emails: orderEmail } : {}),
+    },
+    $push: {
+      orderProfiles: {
+        name: orderName,
+        phone: orderPhone,
+        email: orderEmail,
+        address: normalizeText(billing.address || shipping.address),
+        thana: normalizeText(billing.thana || shipping.thana),
+        district: normalizeText(billing.district || shipping.district),
+        ipAddress: createdOrder.ipAddress || null,
+        orderId: createdOrder._id,
+        orderNumber: createdOrder.orderNumber,
+        recordedAt: new Date(),
+      },
+    },
+  };
 
   if (payload.billingInfo && typeof payload.billingInfo === 'object') {
     memberUpdates.$set = { ...(memberUpdates.$set || {}), billingInfo: payload.billingInfo };
@@ -443,7 +491,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
 
   if (payload.status) {
     const s = String(payload.status).toLowerCase();
-    const validEnums = ['processing', 'shipped', 'completed', 'cancelled'];
+    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake'];
     allowedUpdates.status = validEnums.includes(s) ? s : 'processing';
   }
   if (payload.shippingInfo) {
@@ -508,4 +556,45 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   }
 
   return allowedUpdates;
+};
+
+// Archives a fake order into the dedicated fake_orders collection.
+export const archiveFakeOrder = async (orderDoc, actorUserId = null, reason = "Marked as fake order") => {
+  if (!orderDoc || !orderDoc._id) return null;
+  try {
+    const customer = {
+      fullName: orderDoc.billingInfo?.fullName || orderDoc.shippingInfo?.fullName || "",
+      phone: orderDoc.billingInfo?.phone || orderDoc.shippingInfo?.phone || "",
+      email: orderDoc.billingInfo?.email || orderDoc.shippingInfo?.email || "",
+      address: orderDoc.billingInfo?.address || orderDoc.shippingInfo?.address || "",
+      thana: orderDoc.billingInfo?.thana || orderDoc.shippingInfo?.thana || "",
+      district: orderDoc.billingInfo?.district || orderDoc.shippingInfo?.district || "",
+      zip: orderDoc.billingInfo?.zip || orderDoc.shippingInfo?.zip || "",
+    };
+
+    const record = await FakeOrderModel.findOneAndUpdate(
+      { orderId: orderDoc._id },
+      {
+        orderId: orderDoc._id,
+        orderNumber: orderDoc.orderNumber,
+        did: orderDoc.did,
+        orderType: orderDoc.orderType || "online",
+        customer,
+        billingInfo: orderDoc.billingInfo || {},
+        shippingInfo: orderDoc.shippingInfo || {},
+        items: orderDoc.items || [],
+        totals: orderDoc.totals || {},
+        paymentMethod: orderDoc.paymentMethod || "",
+        member: orderDoc.member || null,
+        markedBy: actorUserId || null,
+        originalCreatedAt: orderDoc.createdAt || new Date(),
+        reason: reason || "Marked as fake order",
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    return record;
+  } catch (err) {
+    console.error(`[archiveFakeOrder] Failed to archive fake order ${orderDoc._id}:`, err);
+    return null;
+  }
 };

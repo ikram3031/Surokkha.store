@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { DISTRICTS, DISTRICT_THANAS } from '../data/districts';
 import { trackInitiateCheckout, trackAddPaymentInfo } from '../utils/analytics';
 import { useTranslation } from '../i18n/useTranslation';
+import { SITE_CONFIG } from '../config/siteConfig';
 
 export default function CheckoutView() {
   const { t, isBn } = useTranslation();
@@ -141,11 +142,36 @@ export default function CheckoutView() {
     return '';
   };
 
+  const checkFakePhone = async (phoneToCheck) => {
+    const raw = convertBnToEnDigits(phoneToCheck || '').trim();
+    const digits = raw.replace(/\D/g, '');
+    const corePhone = digits.length >= 10 ? digits.slice(-10) : digits;
+    if (corePhone.length < 10) return;
+
+    try {
+      const cleanBase = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
+      const res = await fetch(`${cleanBase}/api/v1/orders/check-phone?phone=${encodeURIComponent(corePhone)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.isFake) {
+          const fakeMsg = isBn 
+            ? 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।' 
+            : 'Please use a different valid phone number.';
+          setPhoneError(fakeMsg);
+        }
+      }
+    } catch (_) {}
+  };
+
   const handleBillingPhoneChange = (value) => {
     const cleaned = convertBnToEnDigits(value);
     setShippingInfo({ phone: cleaned });
     if (cleaned.trim()) {
-      setPhoneError(validatePhoneValue(cleaned));
+      const err = validatePhoneValue(cleaned);
+      setPhoneError(err);
+      if (!err) {
+        checkFakePhone(cleaned);
+      }
     } else {
       setPhoneError('');
     }
@@ -155,7 +181,11 @@ export default function CheckoutView() {
     const cleaned = convertBnToEnDigits(value);
     setShippingAddress({ phone: cleaned });
     if (cleaned.trim()) {
-      setShipPhoneError(validatePhoneValue(cleaned));
+      const err = validatePhoneValue(cleaned);
+      setShipPhoneError(err);
+      if (!err) {
+        checkFakePhone(cleaned);
+      }
     } else {
       setShipPhoneError('');
     }

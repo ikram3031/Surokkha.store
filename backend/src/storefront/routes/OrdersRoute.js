@@ -3,9 +3,13 @@ import {
   createOrder,
   getOrderById,
   getOrderInvoiceView,
+  checkPhoneStatus,
 } from "../controllers/OrdersController.js";
 
 const ordersRouter = Router();
+
+// Check if customer phone/email is flagged in fake orders
+ordersRouter.get("/check-phone", checkPhoneStatus);
 
 // Create order from checkout payload (Public customer endpoint)
 ordersRouter.post("/new-order", createOrder);
