@@ -282,7 +282,7 @@ export const PRODUCTS = {
     },
     stockStatus: 'instock',
     isOutOfStock: false,
-    stockAmount: 50,
+    stockAmount: 5,
     features: [
       '2x MO Contoured Box (20 units)',
       '100% Authentic Certified Grade',

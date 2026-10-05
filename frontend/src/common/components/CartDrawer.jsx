@@ -19,7 +19,7 @@ export default function CartDrawer() {
   const isApplyingCoupon = useStore((state) => state.isApplyingCoupon);
   const couponError = useStore((state) => state.couponError);
 
-  const { isBn, t } = useTranslation();
+  const { isBn, t, formatNumber } = useTranslation();
   const [couponCodeInput, setCouponCodeInput] = useState('');
   const [couponFeedback, setCouponFeedback] = useState(null);
   const [isRendered, setIsRendered] = useState(isCartDrawerOpen);
@@ -305,6 +305,19 @@ export default function CartDrawer() {
                             </span>
                           )}
                         </div>
+
+                        {/* Low Stock Scarcity Tag */}
+                        {(() => {
+                          const stockAmount = Number(item.stockAmount != null ? item.stockAmount : (item.stock != null ? item.stock : 50));
+                          const isLowStock = !item.isOutOfStock && stockAmount > 0 && stockAmount <= 10;
+                          if (!isLowStock) return null;
+                          return (
+                            <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200/70 w-fit animate-pulse">
+                              <span>🔥</span>
+                              <span>{isBn ? `স্টকে মাত্র ${formatNumber(stockAmount)}টি বাকি আছে!` : `Only ${stockAmount} left in stock!`}</span>
+                            </div>
+                          );
+                        })()}
 
                         {/* Quantity Stepper & Subtotal in-row */}
                         <div className="flex items-center justify-between gap-2 mt-2">

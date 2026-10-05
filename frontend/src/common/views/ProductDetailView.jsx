@@ -50,6 +50,8 @@ export default function ProductDetailView() {
   };
 
   const isOutOfStock = Boolean(product?.isOutOfStock || product?.stockStatus === 'outofstock' || product?.stockStatus === 'out_of_stock' || product?.stockAmount === 0);
+  const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
+  const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
   const currentOfferPrice = Number(product?.price || product?.offerPrice || 0);
   const currentRegularPrice = Number(product?.regularPrice || 0);
@@ -292,6 +294,133 @@ export default function ProductDetailView() {
                   )
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* Low Stock Alert Box (< 10 items remaining) */}
+          {isLowStock && (
+            <div className="bg-gradient-to-r from-rose-50 via-amber-50 to-rose-50 border-2 border-rose-300 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs animate-pulse">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">🔥</span>
+                <div>
+                  <p className="text-xs sm:text-sm font-extrabold text-rose-950 leading-snug">
+                    {isBn ? `স্টক সীমিত! মাত্র ${formatNumber(stockAmount)}টি বাকি আছে!` : `Limited Stock! Only ${stockAmount} units remaining!`}
+                  </p>
+                  <p className="text-[11px] text-rose-700 mt-0.5">
+                    {isBn ? 'স্টক দ্রুত শেষ হচ্ছে, এখনই আপনার অর্ডার নিশ্চিত করুন।' : 'High demand item. Complete your order before it runs out.'}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-black bg-rose-600 text-white px-3 py-1 rounded-full shadow-xs whitespace-nowrap">
+                {isBn ? `অনলি ${formatNumber(stockAmount)}টি বাকি` : `Only ${stockAmount} left`}
+              </span>
+            </div>
+          )}
+
+          {/* High-Conversion Package & Combo Selector Module */}
+          <div className="space-y-2.5 pt-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                <span>📦</span>
+                <span>{isBn ? 'প্যাকেজ নির্বাচন করুন (কম্বোতে বেশি সাশ্রয়):' : 'Select Package & Save More:'}</span>
+              </span>
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                {isBn ? 'কম্বোতে ফ্রি ডেলিভারি অফার' : 'Mega Combo Savings'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {/* Option 1: Single Pack (10 Pcs) */}
+              <div
+                onClick={() => {
+                  if (product.slug?.includes('combo')) {
+                    openProduct('mo-multi-textured-latex-contraceptive-10-pcs');
+                  }
+                }}
+                className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer text-left ${
+                  !product.slug?.includes('combo')
+                    ? 'border-brand-700 bg-brand-50/40 shadow-xs ring-1 ring-brand-700/20'
+                    : 'border-slate-200 bg-white hover:border-slate-300 opacity-80 hover:opacity-100'
+                }`}
+              >
+                <div className="text-[11px] font-bold text-slate-600">
+                  {isBn ? '১টি বক্স (১০ পিস)' : '1 Box (10 Pcs)'}
+                </div>
+                <div className="text-base font-extrabold text-slate-900 mt-0.5">
+                  {formatPrice(400)}
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">
+                  {isBn ? '৳৪০ প্রতি পিস' : '৳40 / pc'}
+                </div>
+              </div>
+
+              {/* Option 2: 20 Pcs Ribbed Combo (৳650) - Limited Stock */}
+              {(() => {
+                const ribbedComboKey = 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
+                const ribbedCombo = products[ribbedComboKey] || products['ribbed-condoms-20pcs-combo'];
+                const isRibbedActive = product.slug === ribbedComboKey || product.id === ribbedComboKey;
+                const rStock = Number(ribbedCombo?.stockAmount != null ? ribbedCombo.stockAmount : (ribbedCombo?.stock != null ? ribbedCombo.stock : 5));
+                const rLow = rStock > 0 && rStock <= 10;
+
+                return (
+                  <div
+                    onClick={() => openProduct(ribbedComboKey)}
+                    className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer text-left ${
+                      isRibbedActive
+                        ? 'border-purple-600 bg-purple-50/50 shadow-xs ring-1 ring-purple-600/20'
+                        : 'border-purple-200/80 bg-white hover:border-purple-400'
+                    }`}
+                  >
+                    <div className="absolute -top-2.5 right-2 bg-gradient-to-r from-rose-600 to-purple-600 text-white text-[9px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider shadow-xs">
+                      {rLow ? (isBn ? `🔥 মাত্র ${formatNumber(rStock)}টি বাকি!` : `🔥 ${rStock} Left!`) : (isBn ? 'সাশ্রয় ৳১৫০' : 'Save ৳150')}
+                    </div>
+                    <div className="text-[11px] font-bold text-purple-900">
+                      {isBn ? '২টি বক্স • রিবড কম্বো (২০ পিস)' : '2 Boxes • Ribbed Combo (20 Pcs)'}
+                    </div>
+                    <div className="text-base font-extrabold text-purple-950 mt-0.5">
+                      {formatPrice(650)}
+                    </div>
+                    <div className="text-[10px] text-purple-700 mt-0.5 flex items-center gap-1 font-semibold">
+                      <span>{isBn ? '৳৩২.৫/পিস' : '৳32.5/pc'}</span>
+                      <span className="line-through text-slate-400 font-normal">৳৮০০</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Option 3: 30 Pcs Ultimate 3-in-1 Combo (৳900) - Most Popular */}
+              {(() => {
+                const trioKey = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+                const isTrioActive = product.slug === trioKey || product.id === trioKey || product.slug?.includes('30pcs') || product.slug?.includes('variety');
+
+                return (
+                  <div
+                    onClick={() => openProduct(trioKey)}
+                    className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer text-left ${
+                      isTrioActive
+                        ? 'border-amber-500 bg-amber-50/60 shadow-xs ring-2 ring-amber-400/40'
+                        : 'border-amber-300 bg-gradient-to-br from-amber-50/40 to-white hover:border-amber-500'
+                    }`}
+                  >
+                    <div className="absolute -top-2.5 right-2 bg-amber-500 text-slate-950 text-[9px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider shadow-xs">
+                      ⭐ {isBn ? 'সেরা সাশ্রয়ী (৳৯০০)' : 'Best Deal (৳900)'}
+                    </div>
+                    <div className="text-[11px] font-bold text-amber-950">
+                      {isBn ? '৩টি বক্স • মেগা কম্বো (৩০ পিস)' : '3 Boxes • Mega Combo (30 Pcs)'}
+                    </div>
+                    <div className="text-base font-extrabold text-brand-900 mt-0.5 flex items-baseline gap-1.5">
+                      <span>{formatPrice(900)}</span>
+                      <span className="text-[11px] text-emerald-700 font-bold bg-emerald-100/80 px-1 rounded">
+                        {isBn ? '৳৩০০ ছাড়' : 'Save ৳300'}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-amber-800 mt-0.5 flex items-center gap-1 font-semibold">
+                      <span>{isBn ? 'মাত্র ৳৩০/পিস' : 'Only ৳30/pc'}</span>
+                      <span className="line-through text-slate-400 font-normal">৳১২০০</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

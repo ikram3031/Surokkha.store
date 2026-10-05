@@ -42,14 +42,11 @@ export default function HomeView() {
     return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.stockAmount !== 0;
   });
 
-  const available20PcsComboKeys = [
-    'ultra-thin-condoms-20pcs-combo',
-    'ribbed-condoms-20pcs-combo',
-    'dotted-condoms-20pcs-combo'
-  ].filter((k) => {
-    const p = products[k];
-    return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.stockAmount !== 0;
-  });
+  const COMBO_30_KEY = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const COMBO_RIBBED_KEY = 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
+
+  const combo30Prod = products[COMBO_30_KEY] || products['variety-condoms-30pcs-combo'] || products['combo-26'] || {};
+  const comboRibbedProd = products[COMBO_RIBBED_KEY] || products['ribbed-condoms-20pcs-combo'] || {};
 
   return (
     <div className="space-y-6 sm:space-y-8 bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 pb-4">
@@ -137,137 +134,261 @@ export default function HomeView() {
         </div>
       </section>
 
-      {/* COMBO SALES & VALUE SHOWCASE BANNER (Only shown if 20pcs combos in stock) */}
-      {available20PcsComboKeys.length > 0 && (
-        <section id="comboSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#0b0a0e] border-2 border-brand-600/40 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
+      {/* HIGH-CONVERSION SPOTLIGHT COMBO SHOWCASE (Focused on ৳900 30pcs & 20pcs Ribbed Combos) */}
+      <section id="comboSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-[#0b0a0e] border-2 border-brand-600/40 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
+          
+          {/* Ambient Lighting & Background */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <img 
+              src="https://api.surokkha.store/uploads/assets/slider-2.webp" 
+              alt="MO Combo Background" 
+              className="w-full h-full object-cover object-center opacity-20 scale-105"
+              onError={(e) => { 
+                if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+                if (e && e.currentTarget) e.currentTarget.style.display = 'none'; 
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0b0a0e] via-[#0b0a0e]/95 to-[#0b0a0e]/85" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-rose-600/15 rounded-full blur-3xl" />
+          </div>
+          
+          <div className="relative z-10 space-y-6">
             
-            {/* Background Banner-2 Image with low opacity & gradient overlay */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <img 
-                src="https://api.surokkha.store/uploads/assets/slider-2.webp" 
-                alt="MO Combo Background" 
-                className="w-full h-full object-cover object-center opacity-20 scale-105"
-                onError={(e) => { 
-                  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-                  if (e && e.currentTarget) e.currentTarget.style.display = 'none'; 
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0b0a0e] via-[#0b0a0e]/90 to-[#0b0a0e]/80" />
-              <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-72 h-72 bg-rose-600/15 rounded-full blur-3xl" />
-            </div>
-            
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* Sales Copy & Value Proposition */}
-              <div className="lg:col-span-8 space-y-4 text-left">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-950/90 border border-brand-500/60 text-xs font-bold text-amber-300">
+            {/* Header: Value Proposition */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800 pb-5">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-950/90 border border-brand-500/60 text-xs font-bold text-amber-300 mb-2">
                   <span className="animate-pulse">🔥</span>
-                  <span>{isBn ? 'মেগা সেভিংস অফার • ২০ পিস বিশেষ কম্বো প্যাক' : 'Mega Savings Deal • 20pcs Exclusive Combo Packs'}</span>
+                  <span>{isBn ? 'মেগা সেভিংস অফার • স্পেশাল কম্বো কালেকশন' : 'Mega Savings Deals • Exclusive Combo Packs'}</span>
                 </div>
-
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold tracking-tight text-white leading-tight">
                   {isBn ? (
                     <>
-                      কম্বো অফার কালেকশন — <span className="text-amber-400">২০ পিস মেগা ভ্যালু বান্ডেল</span>
+                      সেরা কম্বো অফার — <span className="text-amber-400">সাশ্রয়ী মূল্যে প্রিমিয়াম বান্ডেল</span>
                     </>
                   ) : (
                     <>
-                      MO Combo Deals — <span className="text-amber-400">20pcs Mega Value Bundles</span>
+                      Featured Combos — <span className="text-amber-400">Premium Value Bundles</span>
                     </>
                   )}
                 </h2>
-
-                <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
-                  {isBn ? (
-                    <>
-                      আমাদের ২০ পিস মেগা কম্বো প্যাকেজে পাচ্ছেন আসল MO কন্ট্রাসেপ্টিভ কম্বো বান্ডেল। সম্পূর্ণ ১০০% গোপন ডেলিভারিতে অর্ডার করুন।
-                    </>
-                  ) : (
-                    <>
-                      Explore authentic 20pcs Mega Combos in 1 discreet parcel.
-                    </>
-                  )}
+                <p className="text-slate-300 text-xs sm:text-sm mt-1">
+                  {isBn ? '১টি প্যাকেজে পান অধিক পরিমাণ ও নিশ্চিত সাশ্রয়। ১০০% গোপনীয় আনলেবেলড ডেলিভারি।' : 'Get maximum protection & verified savings in 1 discreet parcel.'}
                 </p>
-
-                {/* In-Stock Combo Packs Quick Selector Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  {available20PcsComboKeys.map((k) => {
-                    const cProd = products[k];
-                    if (!cProd) return null;
-                    const cName = isBn ? (cProd.name_bn || cProd.name) : cProd.name;
-                    const cPrice = cProd.price || 599;
-                    const cRegular = cProd.regularPrice || 800;
-
-                    return (
-                      <div 
-                        key={k}
-                        onClick={() => navigateTo('offers')}
-                        className="bg-slate-900/90 hover:bg-slate-800/90 border border-rose-400/50 hover:border-rose-400 rounded-xl p-3 text-left cursor-pointer transition shadow-xs"
-                      >
-                        <div className="flex items-center justify-between text-[11px] font-bold text-rose-300 mb-1">
-                          <span className="truncate">{cName}</span>
-                          <span className="bg-rose-500/80 text-white text-[10px] px-1.5 py-0.2 rounded font-bold ml-1 flex-shrink-0">20 PCS</span>
-                        </div>
-                        <div className="text-sm font-bold text-white truncate">{cName}</div>
-                        <div className="flex items-baseline gap-2 mt-1">
-                          <span className="text-xs text-rose-300 font-extrabold font-heading">
-                            <span className="text-[10px] text-rose-200/80 font-normal mr-1">{isBn ? 'অফার:' : 'Offer:'}</span>
-                            {formatPrice(cPrice)}
-                          </span>
-                          {cRegular > cPrice && (
-                            <span className="text-[11px] text-slate-400 line-through">
-                              {formatPrice(cRegular)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
 
-              {/* CTA & Sales Action Box */}
-              <div className="lg:col-span-4 flex flex-col gap-3 justify-center bg-slate-900/80 p-5 rounded-2xl border border-slate-700/80 shadow-xl">
-                <button 
+              <div className="flex items-center gap-3">
+                <button
                   type="button"
-                  onClick={() => navigateTo('offers')} 
-                  aria-label={isBn ? 'সকল কম্বো অফার দেখুন' : 'Explore All Combo Offers'}
-                  className="w-full bg-gradient-to-r from-[#F43F5E] via-[#E11D48] to-[#BE123C] hover:from-[#FB7185] hover:to-[#9F1239] text-white font-bold text-sm sm:text-base py-3.5 px-6 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 cursor-pointer active:scale-98 border border-rose-400/40"
+                  onClick={() => navigateTo('combo')}
+                  className="text-xs sm:text-sm font-bold text-amber-300 hover:text-amber-200 underline underline-offset-4 flex items-center gap-1 cursor-pointer"
                 >
-                  <span>{isBn ? '🔥 সকল কম্বো অফার দেখুন' : '🔥 View All Combo Offers'}</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
+                  <span>{isBn ? 'সকল কম্বো কালেকশন দেখুন' : 'View All Combos'}</span>
+                  <span>→</span>
                 </button>
-
-                <button 
-                  type="button"
-                  onClick={() => navigateTo('offers')} 
-                  aria-label={isBn ? 'কম্বো অফার কালেকশন' : 'Combo Offer Collection'}
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs sm:text-sm py-3 px-6 rounded-2xl border border-slate-700 transition flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>{isBn ? 'সকল কম্বো কালেকশন' : 'Explore All Combos'}</span>
-                </button>
-
-                <button 
-                  type="button"
-                  onClick={() => navigateTo('shop')} 
-                  aria-label={isBn ? 'সকল প্রোডাক্ট শপ দেখুন' : 'Explore Shop'}
-                  className="text-xs text-slate-300 hover:text-amber-300 font-semibold py-1 transition text-center underline underline-offset-4 cursor-pointer"
-                >
-                  {isBn ? 'সুরক্ষা শপে সকল প্রোডাক্ট দেখুন →' : 'Browse All Products in Shop →'}
-                </button>
-
-                <div className="pt-2 border-t border-slate-700/60 text-center space-y-1">
-                  <p className="text-[11px] text-emerald-400 font-medium">✓ {isBn ? '১০০% গোপনীয় আনলেবেলড প্যাকেজিং' : '100% Discreet Unmarked Parcel'}</p>
-                  <p className="text-[11px] text-slate-300">{isBn ? 'পণ্য হাতে পেয়ে মূল্য পরিশোধের সুবিধা' : 'Pay when you receive the package'}</p>
-                </div>
               </div>
             </div>
+
+            {/* 2 Focused Combo Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 pt-1">
+              
+              {/* COMBO 1: 30-Pcs Ultimate Mega Combo (৳900) - Star Product */}
+              {(() => {
+                const c30Name = isBn ? (combo30Prod.name_bn || 'MO আলটিমেট ৩-ইন-১ ৩০ পিস মেগা কম্বো') : (combo30Prod.name || 'MO Ultimate 30 Pcs Combo');
+                const c30Price = combo30Prod.price || combo30Prod.offerPrice || 900;
+                const c30Regular = combo30Prod.regularPrice || 1200;
+                const c30Savings = c30Regular > c30Price ? c30Regular - c30Price : 300;
+
+                return (
+                  <div className="bg-slate-900/90 border-2 border-amber-400/80 rounded-3xl p-5 sm:p-6 text-left relative flex flex-col justify-between shadow-2xl hover:border-amber-300 transition-all duration-300 group">
+                    <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1">
+                      <span>⭐</span>
+                      <span>{isBn ? 'সবচেয়ে জনপ্রিয় মেগা কম্বো (৳৯০০)' : 'Most Popular Deal (৳900)'}</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Image & Contents Row */}
+                      <div className="flex items-center gap-4">
+                        <div 
+                          onClick={() => openProduct(COMBO_30_KEY)} 
+                          className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-slate-950 border border-amber-500/40 flex-shrink-0 cursor-pointer p-1"
+                        >
+                          <ProductArtwork productKey={COMBO_30_KEY} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-extrabold text-amber-300 bg-amber-950/80 border border-amber-800/60 px-2 py-0.5 rounded uppercase">
+                            {isBn ? '৩০ পিস মেগা প্যাক' : '30 Pieces Mega Pack'}
+                          </span>
+                          <h3 
+                            onClick={() => openProduct(COMBO_30_KEY)} 
+                            className="text-base sm:text-lg font-bold font-heading text-white hover:text-amber-300 transition cursor-pointer mt-1 line-clamp-2"
+                          >
+                            {c30Name}
+                          </h3>
+                          <p className="text-[11px] text-slate-300 mt-1 line-clamp-2">
+                            {isBn ? '১টি আল্ট্রা থিন (১০ পিস) + ১টি ডটেড (১০ পিস) + ১টি আল্ট্রা রিবড (১০ পিস) = মোট ৩ বক্স।' : '1x Ultra Thin + 1x Dotted + 1x Ribbed = 3 Full Sealed Retail Boxes.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Pricing & Savings Box */}
+                      <div className="bg-slate-950/90 rounded-2xl p-3.5 border border-amber-500/30 flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">
+                            {isBn ? 'কম্বো অফার মূল্য' : 'Special Combo Price'}
+                          </div>
+                          <div className="flex items-baseline gap-2 mt-0.5">
+                            <span className="text-2xl sm:text-3xl font-black font-heading text-amber-400">
+                              {formatPrice(c30Price)}
+                            </span>
+                            {c30Regular > c30Price && (
+                              <span className="text-xs sm:text-sm text-slate-400 line-through">
+                                {formatPrice(c30Regular)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-block bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black text-xs px-2.5 py-1 rounded-xl shadow-xs">
+                            {isBn ? `নগদ ৳${c30Savings} সাশ্রয়` : `Save ৳${c30Savings}`}
+                          </span>
+                          <div className="text-[10px] text-emerald-400 font-bold mt-1">
+                            {isBn ? 'মাত্র ৳৩০ / পিস' : 'Only ৳30 / unit'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CTAs */}
+                    <div className="grid grid-cols-2 gap-2.5 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => buyNowDirect(COMBO_30_KEY)}
+                        className="w-full bg-gradient-to-r from-[#F43F5E] via-[#E11D48] to-[#BE123C] hover:from-[#FB7185] hover:to-[#9F1239] text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-xl shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-rose-400/40"
+                      >
+                        <span>⚡</span>
+                        <span>{isBn ? 'অর্ডার করুন' : 'Order Now'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addToCart(COMBO_30_KEY, 1, true);
+                          openCartDrawer();
+                        }}
+                        className="w-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-xl border border-white/20 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                      >
+                        <span>🛒</span>
+                        <span>{isBn ? 'কার্টে রাখুন' : 'Add to Cart'}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* COMBO 2: 20-Pcs Micro-Ribbed Combo (৳650) - Limited Stock Spotlight ("রিফ্ট কম্বো") */}
+              {(() => {
+                const cRibbedName = isBn ? (comboRibbedProd.name_bn || 'MO রিবড ২০ পিস স্পেশাল কম্বো') : (comboRibbedProd.name || 'MO Ribbed 20 Pcs Combo');
+                const cRibbedPrice = comboRibbedProd.price || comboRibbedProd.offerPrice || 650;
+                const cRibbedRegular = comboRibbedProd.regularPrice || 800;
+                const cRibbedSavings = cRibbedRegular > cRibbedPrice ? cRibbedRegular - cRibbedPrice : 150;
+                const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 5));
+                const rLow = rStock > 0 && rStock <= 10;
+
+                return (
+                  <div className="bg-slate-900/90 border-2 border-purple-500/80 rounded-3xl p-5 sm:p-6 text-left relative flex flex-col justify-between shadow-2xl hover:border-purple-400 transition-all duration-300 group">
+                    <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-rose-600 to-purple-600 text-white text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1 animate-pulse">
+                      <span>🔥</span>
+                      <span>
+                        {rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'রিবড ২০ পিস স্পেশাল কম্বো' : 'Ribbed 20 Pcs Combo')}
+                      </span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Image & Contents Row */}
+                      <div className="flex items-center gap-4">
+                        <div 
+                          onClick={() => openProduct(COMBO_RIBBED_KEY)} 
+                          className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-slate-950 border border-purple-500/40 flex-shrink-0 cursor-pointer p-1"
+                        >
+                          <ProductArtwork productKey={COMBO_RIBBED_KEY} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-extrabold text-purple-300 bg-purple-950/80 border border-purple-800/60 px-2 py-0.5 rounded uppercase">
+                            {isBn ? '২০ পিস কম্বো প্যাক' : '20 Pieces Combo Pack'}
+                          </span>
+                          <h3 
+                            onClick={() => openProduct(COMBO_RIBBED_KEY)} 
+                            className="text-base sm:text-lg font-bold font-heading text-white hover:text-purple-300 transition cursor-pointer mt-1 line-clamp-2"
+                          >
+                            {cRibbedName}
+                          </h3>
+                          <p className="text-[11px] text-slate-300 mt-1 line-clamp-2">
+                            {isBn ? '২টি সম্পূর্ণ রিটেইল বক্স (২০টি ল্যাটেক্স কন্ট্রাসেপ্টিভ)। নিখুঁত শারীরবৃত্তীয় গ্রিপ ও আরাম।' : '2 Sealed Retail Boxes (20 Pieces Contoured Latex). Ergonomic ridges for dependable protection.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Pricing & Savings Box */}
+                      <div className="bg-slate-950/90 rounded-2xl p-3.5 border border-purple-500/30 flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">
+                            {isBn ? 'কম্বো অফার মূল্য' : 'Special Combo Price'}
+                          </div>
+                          <div className="flex items-baseline gap-2 mt-0.5">
+                            <span className="text-2xl sm:text-3xl font-black font-heading text-purple-400">
+                              {formatPrice(cRibbedPrice)}
+                            </span>
+                            {cRibbedRegular > cRibbedPrice && (
+                              <span className="text-xs sm:text-sm text-slate-400 line-through">
+                                {formatPrice(cRibbedRegular)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="inline-block bg-gradient-to-r from-purple-500 to-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-xl shadow-xs">
+                            {isBn ? `সাশ্রয় ৳${cRibbedSavings}` : `Save ৳${cRibbedSavings}`}
+                          </span>
+                          <div className="text-[10px] text-amber-300 font-bold mt-1">
+                            {isBn ? '৳৩২.৫ / পিস' : '৳32.5 / unit'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CTAs */}
+                    <div className="grid grid-cols-2 gap-2.5 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => buyNowDirect(COMBO_RIBBED_KEY)}
+                        className="w-full bg-gradient-to-r from-purple-600 via-rose-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-xl shadow-lg transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 border border-purple-400/40"
+                      >
+                        <span>⚡</span>
+                        <span>{isBn ? 'অর্ডার করুন' : 'Order Now'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          addToCart(COMBO_RIBBED_KEY, 1, true);
+                          openCartDrawer();
+                        }}
+                        className="w-full bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-xl border border-white/20 transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                      >
+                        <span>🛒</span>
+                        <span>{isBn ? 'কার্টে রাখুন' : 'Add to Cart'}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
+            </div>
+
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* RANDOMIZED NON-COMBO PRODUCT CAROUSEL (Max 10 Products) */}
       <ProductCarousel maxItems={10} />

@@ -8,13 +8,16 @@ export default function PromoComboBanner() {
   const addToCart = useStore((state) => state.addToCart);
   const openCartDrawer = useStore((state) => state.openCartDrawer);
   const products = useStore((state) => state.products);
-  const { isBn, formatPrice, getLocalizedName } = useTranslation();
+  const { isBn, formatPrice, formatNumber, getLocalizedName } = useTranslation();
 
-  const comboKey = 'variety-condoms-30pcs-combo';
-  const comboProd = products[comboKey] || products['combo-26'] || {};
+  const comboKey = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const comboProd = products[comboKey] || products['variety-condoms-30pcs-combo'] || products['combo-26'] || {};
   const isOutOfStock = Boolean(comboProd.isOutOfStock || comboProd.stockStatus === 'outofstock' || comboProd.stockStatus === 'out_of_stock' || comboProd.stockAmount === 0);
 
   if (isOutOfStock) return null;
+
+  const stockAmount = Number(comboProd.stockAmount != null ? comboProd.stockAmount : (comboProd.stock != null ? comboProd.stock : 50));
+  const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
   const currentOfferPrice = comboProd.offerPrice || comboProd.price || 900;
   const currentRegularPrice = comboProd.regularPrice || 1200;
@@ -116,13 +119,17 @@ export default function PromoComboBanner() {
           {/* Right Column: Promotional Copy, Price & Sales CTAs */}
           <div className="lg:col-span-6 space-y-4 text-left">
             
-            {/* Top Promo Tag */}
-            {isOutOfStock && (
+            {isOutOfStock ? (
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-700 text-white font-black text-xs uppercase tracking-wider shadow-md">
                 <span>🚫</span>
                 <span>{isBn ? 'বর্তমানে আউট অব স্টক' : 'Currently Out of Stock'}</span>
               </div>
-            )}
+            ) : isLowStock ? (
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-600 text-white font-black text-xs uppercase tracking-wider shadow-md animate-pulse">
+                <span>🔥</span>
+                <span>{isBn ? `স্টক সীমিত: মাত্র ${formatNumber(stockAmount)}টি বাকি আছে!` : `Only ${stockAmount} units remaining!`}</span>
+              </div>
+            ) : null}
 
             {/* Headline */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold text-white leading-tight">

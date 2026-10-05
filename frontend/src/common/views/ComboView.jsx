@@ -37,6 +37,15 @@ export default function ComboView() {
         id.includes('combo') ||
         slug.includes('combo')
       );
+    })
+    .sort((a, b) => {
+      const aKey = (a.slug || a.id || '').toLowerCase();
+      const bKey = (b.slug || b.id || '').toLowerCase();
+      if (aKey.includes('30') || aKey.includes('ultimate')) return -1;
+      if (bKey.includes('30') || bKey.includes('ultimate')) return 1;
+      if (aKey.includes('ribbed')) return -1;
+      if (bKey.includes('ribbed')) return 1;
+      return 0;
     });
 
   useEffect(() => {

@@ -11,13 +11,16 @@ export default function ProductCard({ productKey, className = '' }) {
   const buyNowDirect = useStore((state) => state.buyNowDirect);
   const setProductQty = useStore((state) => state.setProductQty);
   const openProduct = useStore((state) => state.openProduct);
-  const { isBn } = useTranslation();
+  const { isBn, formatNumber } = useTranslation();
 
   const prod = products[productKey];
   if (!prod) return null;
 
   const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
   if (isOutOfStock) return null;
+
+  const stockAmount = Number(prod.stockAmount != null ? prod.stockAmount : (prod.stock != null ? prod.stock : 50));
+  const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
   const currentCartQty = cart[productKey] || 0;
   const currentOfferPrice = Number(prod.price || prod.offerPrice || 0);
@@ -112,6 +115,30 @@ export default function ProductCard({ productKey, className = '' }) {
           </div>
         )}
 
+        {/* Low Stock Urgent Badge (<10 Remaining) & Combo Highlights */}
+        {isLowStock ? (
+          <div className="absolute top-2 right-2 z-20 pointer-events-none select-none">
+            <span className="inline-flex items-center gap-1 bg-gradient-to-r from-rose-600 to-amber-600 text-white text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-lg border border-white/60 tracking-tight animate-pulse">
+              <span>🔥</span>
+              <span>{isBn ? `অনলি ${formatNumber(stockAmount)}টি বাকি!` : `Only ${stockAmount} left!`}</span>
+            </span>
+          </div>
+        ) : is30Pcs ? (
+          <div className="absolute top-2 right-2 z-20 pointer-events-none select-none">
+            <span className="inline-flex items-center gap-1 bg-amber-500 text-slate-950 text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-md border border-amber-300 tracking-tight">
+              <span>⭐</span>
+              <span>{isBn ? 'বেস্ট ভ্যালু (৳৯০০)' : 'Best Value (৳900)'}</span>
+            </span>
+          </div>
+        ) : is20Pcs ? (
+          <div className="absolute top-2 right-2 z-20 pointer-events-none select-none">
+            <span className="inline-flex items-center gap-1 bg-rose-950/85 text-amber-300 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full shadow-md border border-amber-500/40 tracking-tight">
+              <span>⚡</span>
+              <span>{isBn ? '২০ পিস কম্বো' : '20 Pcs Combo'}</span>
+            </span>
+          </div>
+        ) : null}
+
         {/* Out of Stock Visual Overlay */}
         {isOutOfStock ? (
           <div className="absolute inset-0 bg-slate-900/35 flex items-center justify-center pointer-events-none z-10">
@@ -171,6 +198,16 @@ export default function ProductCard({ productKey, className = '' }) {
               </span>
             ) : null}
           </div>
+
+          {/* Low Stock Urgency Banner (< 10 items remaining) */}
+          {isLowStock && (
+            <div className="mb-2 flex items-center justify-between gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200/90 text-rose-800 text-[11px] font-bold">
+              <span className="flex items-center gap-1.5">
+                <span className="animate-pulse">🔥</span>
+                <span>{isBn ? `স্টক সীমিত: মাত্র ${formatNumber(stockAmount)}টি বাকি আছে!` : `Hurry! Only ${stockAmount} remaining!`}</span>
+              </span>
+            </div>
+          )}
 
           {/* Interactive Sales Buttons: 1-Click Buy Now & Cart Controls */}
           <div className="flex items-center gap-1.5">
