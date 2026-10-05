@@ -25,6 +25,7 @@ export default function HomeView() {
     language, 
     isBn,
     formatPrice, 
+    formatNumber,
     getLocalizedName, 
     getLocalizedTagline, 
     getLocalizedDescription, 
