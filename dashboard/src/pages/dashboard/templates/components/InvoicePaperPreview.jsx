@@ -24,10 +24,19 @@ export function InvoicePaperPreview({
 
   const primaryColor = branding.primaryColor || '#0f172a';
   const secondaryColor = branding.secondaryColor || '#0d9488';
-  const darkColor = branding.darkColor || '#0f172a';
-  const lightBgColor = branding.lightBgColor || '#f8fafc';
+  const darkColor = branding.darkColor || branding.textColor || '#0f172a';
+  const lightBgColor = branding.lightBgColor || branding.backgroundColor || '#f8fafc';
+  const borderColor = branding.borderColor || '#e2e8f0';
+  const mutedTextColor = branding.mutedTextColor || '#64748b';
   const fontFamily = branding.fontFamily || 'Inter, sans-serif';
-  const borderRadius = branding.borderRadius || '8px';
+  const borderRadius = typeof branding.borderRadius === 'number' ? `${branding.borderRadius}px` : (branding.borderRadius || '8px');
+
+  // Dynamic Spacing & Padding
+  const pagePadding = branding.pagePadding !== undefined ? `${branding.pagePadding}px` : '32px';
+  const pageMargin = branding.pageMargin !== undefined ? `${branding.pageMargin}px` : '0px';
+  const tableCellPadding = branding.tableCellPadding !== undefined ? `${branding.tableCellPadding}px` : '10px';
+  const headerMarginBottom = branding.headerMarginBottom !== undefined ? `${branding.headerMarginBottom}px` : '20px';
+  const sectionSpacing = branding.sectionSpacing !== undefined ? `${branding.sectionSpacing}px` : '16px';
 
   const logoUrl = header.logoUrl || tenant.logoUrl || tenant.logo || '';
   const logoHeight = header.logoHeight || 50;
@@ -96,8 +105,19 @@ export function InvoicePaperPreview({
       <div
         ref={paperRef}
         id="printable-invoice-paper"
-        className="w-full max-w-[820px] bg-white text-slate-900 shadow-xl border border-slate-200/80 rounded-sm p-7 sm:p-9 relative overflow-hidden print:border-none print:shadow-none print:p-0 print:m-0"
-        style={{ minHeight: '1080px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+        className="w-full max-w-[820px] bg-white text-slate-900 shadow-xl rounded-sm relative overflow-hidden print:border-none print:shadow-none print:p-0 print:m-0"
+        style={{
+          minHeight: '1080px',
+          padding: pagePadding,
+          margin: pageMargin,
+          borderColor: borderColor,
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          color: darkColor,
+        }}
       >
         {/* Custom CSS Injection if specified */}
         {config.customCss && <style>{config.customCss}</style>}
@@ -115,10 +135,10 @@ export function InvoicePaperPreview({
         )}
 
         {/* Top Header Section */}
-        <div className="relative z-10">
+        <div className="relative z-10" style={{ marginBottom: headerMarginBottom }}>
           {showHeaderAccent && (
             <div
-              className="h-2 w-full mb-6 rounded-t-sm transition-all"
+              className="h-2 w-full mb-5 rounded-t-sm transition-all"
               style={{
                 background: `linear-gradient(90deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
                 borderRadius: `${borderRadius} ${borderRadius} 0 0`,
@@ -128,13 +148,14 @@ export function InvoicePaperPreview({
 
           {/* Header row with logo and title */}
           <div
-            className={`flex flex-col sm:flex-row gap-6 pb-6 border-b border-slate-200/90 ${
+            className={`flex flex-col sm:flex-row gap-6 pb-5 ${
               logoPlacement === 'center'
                 ? 'items-center text-center'
                 : logoPlacement === 'right'
                 ? 'items-start sm:flex-row-reverse justify-between'
                 : 'items-start justify-between'
             }`}
+            style={{ borderBottom: `1px solid ${borderColor}` }}
           >
             {/* Logo and store basic info */}
             <div className={`space-y-2 ${logoPlacement === 'center' ? 'flex flex-col items-center' : ''}`}>
@@ -154,8 +175,8 @@ export function InvoicePaperPreview({
                 </div>
               )}
 
-              <div className="text-xs text-slate-500 leading-relaxed max-w-xs">
-                <p className="font-semibold text-slate-800">{tenant.brandName || 'Flexivia Store'}</p>
+              <div className="text-xs leading-relaxed max-w-xs" style={{ color: mutedTextColor }}>
+                <p className="font-bold" style={{ color: darkColor }}>{tenant.brandName || 'Flexivia Store'}</p>
                 {tenant.phone && <p>Hotline: {tenant.phone}</p>}
                 {tenant.supportEmail && <p>Email: {tenant.supportEmail}</p>}
                 {tenant.address && <p>{tenant.address}</p>}
@@ -171,23 +192,23 @@ export function InvoicePaperPreview({
                 {documentTitle}
               </h1>
               {documentSubtitle && (
-                <p className="text-xs font-semibold tracking-wider uppercase text-slate-400">
+                <p className="text-xs font-semibold tracking-wider uppercase" style={{ color: mutedTextColor }}>
                   {documentSubtitle}
                 </p>
               )}
 
               <div className="pt-2 space-y-1 text-xs">
                 <div className="flex items-center gap-2 justify-start sm:justify-end">
-                  <span className="text-slate-400 font-medium">Invoice No:</span>
-                  <span className="font-mono font-bold text-slate-900">{tokenData.orderId}</span>
+                  <span className="font-medium" style={{ color: mutedTextColor }}>Invoice No:</span>
+                  <span className="font-mono font-bold" style={{ color: darkColor }}>{tokenData.orderId}</span>
                 </div>
                 <div className="flex items-center gap-2 justify-start sm:justify-end">
-                  <span className="text-slate-400 font-medium">Date:</span>
-                  <span className="font-medium text-slate-700">{tokenData.orderDate}</span>
+                  <span className="font-medium" style={{ color: mutedTextColor }}>Date:</span>
+                  <span className="font-medium">{tokenData.orderDate}</span>
                 </div>
                 <div className="flex items-center gap-2 justify-start sm:justify-end pt-1">
                   <span
-                    className="px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider text-white"
+                    className="px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider text-white shadow-xs"
                     style={{ backgroundColor: secondaryColor }}
                   >
                     {order.paymentStatus || 'PAID'}
@@ -198,19 +219,28 @@ export function InvoicePaperPreview({
           </div>
 
           {/* Billing & Shipping Details Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-5 border-b border-slate-200/90 text-xs">
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 text-xs"
+            style={{ borderBottom: `1px solid ${borderColor}`, marginBottom: sectionSpacing }}
+          >
             {/* Bill To */}
             <div
-              className="p-3.5 rounded-lg border border-slate-100"
-              style={{ backgroundColor: lightBgColor, borderRadius }}
+              className="p-3.5 rounded-lg"
+              style={{
+                backgroundColor: lightBgColor,
+                borderRadius,
+                borderColor: borderColor,
+                borderWidth: '1px',
+                borderStyle: 'solid',
+              }}
             >
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: mutedTextColor }}>
                 Billed To (Customer)
               </span>
-              <p className="font-bold text-slate-900 text-sm">{customer.name || 'Customer Name'}</p>
-              <p className="text-slate-600 mt-0.5">{customer.phone || '+880 1712-345678'}</p>
-              {customer.email && <p className="text-slate-500">{customer.email}</p>}
-              <p className="text-slate-600 mt-1 leading-snug">
+              <p className="font-bold text-sm" style={{ color: darkColor }}>{customer.name || 'Customer Name'}</p>
+              <p className="mt-0.5">{customer.phone || '+880 1712-345678'}</p>
+              {customer.email && <p style={{ color: mutedTextColor }}>{customer.email}</p>}
+              <p className="mt-1 leading-snug">
                 {[customer.address, customer.city, customer.district, customer.postalCode]
                   .filter(Boolean)
                   .join(', ') || 'Dhaka, Bangladesh'}
@@ -219,87 +249,127 @@ export function InvoicePaperPreview({
 
             {/* Order & Payment Summary */}
             <div
-              className="p-3.5 rounded-lg border border-slate-100 flex flex-col justify-between"
-              style={{ backgroundColor: lightBgColor, borderRadius }}
+              className="p-3.5 rounded-lg flex flex-col justify-between"
+              style={{
+                backgroundColor: lightBgColor,
+                borderRadius,
+                borderColor: borderColor,
+                borderWidth: '1px',
+                borderStyle: 'solid',
+              }}
             >
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider block mb-1" style={{ color: mutedTextColor }}>
                   Payment Details
                 </span>
                 <div className="grid grid-cols-2 gap-y-1 text-xs">
-                  <span className="text-slate-500">Method:</span>
-                  <span className="font-semibold text-slate-800">{order.paymentMethod || 'bKash Online'}</span>
-                  <span className="text-slate-500">Order Status:</span>
-                  <span className="font-semibold text-slate-800">{order.orderStatus || 'Processing'}</span>
-                  <span className="text-slate-500">Currency:</span>
-                  <span className="font-mono font-bold text-slate-800">{currencySymbol} (BDT)</span>
+                  <span style={{ color: mutedTextColor }}>Method:</span>
+                  <span className="font-semibold">{order.paymentMethod || 'bKash Online'}</span>
+                  <span style={{ color: mutedTextColor }}>Order Status:</span>
+                  <span className="font-semibold">{order.orderStatus || 'Processing'}</span>
+                  <span style={{ color: mutedTextColor }}>Currency:</span>
+                  <span className="font-mono font-bold">{currencySymbol} (BDT)</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Line Items Table */}
-          <div className="py-4 overflow-x-auto">
+          <div className="py-2 overflow-x-auto" style={{ marginBottom: sectionSpacing }}>
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr
-                  className="border-y border-slate-200"
                   style={{
                     backgroundColor: primaryColor,
                     color: '#ffffff',
                   }}
                 >
-                  <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-[11px] rounded-l-sm">
+                  <th
+                    className="font-semibold uppercase tracking-wider text-[11px] rounded-l-sm"
+                    style={{ padding: `${tableCellPadding} 14px` }}
+                  >
                     {table.itemHeader || 'Item Description'}
                   </th>
                   {showSku && (
-                    <th className="py-2.5 px-2 font-semibold uppercase tracking-wider text-[11px] text-center">
+                    <th
+                      className="font-semibold uppercase tracking-wider text-[11px] text-center"
+                      style={{ padding: `${tableCellPadding} 10px` }}
+                    >
                       SKU
                     </th>
                   )}
                   {showUnitPrice && (
-                    <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-[11px] text-right">
+                    <th
+                      className="font-semibold uppercase tracking-wider text-[11px] text-right"
+                      style={{ padding: `${tableCellPadding} 14px` }}
+                    >
                       {table.priceHeader || 'Unit Price'}
                     </th>
                   )}
-                  <th className="py-2.5 px-2 font-semibold uppercase tracking-wider text-[11px] text-center">
+                  <th
+                    className="font-semibold uppercase tracking-wider text-[11px] text-center"
+                    style={{ padding: `${tableCellPadding} 10px` }}
+                  >
                     {table.qtyHeader || 'Qty'}
                   </th>
-                  <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-[11px] text-right rounded-r-sm">
+                  <th
+                    className="font-semibold uppercase tracking-wider text-[11px] text-right rounded-r-sm"
+                    style={{ padding: `${tableCellPadding} 14px` }}
+                  >
                     {table.totalHeader || 'Total'}
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {items.map((item, idx) => (
                   <tr
                     key={idx}
                     className={zebraStripes && idx % 2 === 1 ? 'bg-slate-50/70' : 'bg-transparent'}
+                    style={{ borderBottom: `1px solid ${borderColor}` }}
                   >
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-slate-900">{item.name}</div>
+                    <td style={{ padding: `${tableCellPadding} 14px` }}>
+                      <div className="font-semibold" style={{ color: darkColor }}>{item.name}</div>
                       {showVariantBadge && item.variant && (
                         <span
-                          className="inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-medium rounded text-slate-600 bg-slate-100 border border-slate-200"
+                          className="inline-block mt-0.5 px-1.5 py-0.2 text-[10px] font-medium rounded"
+                          style={{
+                            color: secondaryColor,
+                            backgroundColor: lightBgColor,
+                            borderColor: borderColor,
+                            borderWidth: '1px',
+                            borderStyle: 'solid',
+                          }}
                         >
                           {item.variant}
                         </span>
                       )}
                     </td>
                     {showSku && (
-                      <td className="py-3 px-2 text-center font-mono text-[11px] text-slate-500">
+                      <td
+                        className="text-center font-mono text-[11px]"
+                        style={{ padding: `${tableCellPadding} 10px`, color: mutedTextColor }}
+                      >
                         {item.sku || '—'}
                       </td>
                     )}
                     {showUnitPrice && (
-                      <td className="py-3 px-3 text-right font-medium text-slate-700">
+                      <td
+                        className="text-right font-medium"
+                        style={{ padding: `${tableCellPadding} 14px` }}
+                      >
                         {formatMoney(item.price)}
                       </td>
                     )}
-                    <td className="py-3 px-2 text-center font-bold text-slate-900">
+                    <td
+                      className="text-center font-bold"
+                      style={{ padding: `${tableCellPadding} 10px`, color: darkColor }}
+                    >
                       {item.quantity}
                     </td>
-                    <td className="py-3 px-3 text-right font-bold text-slate-900">
+                    <td
+                      className="text-right font-bold"
+                      style={{ padding: `${tableCellPadding} 14px`, color: primaryColor }}
+                    >
                       {formatMoney(item.total || item.price * item.quantity)}
                     </td>
                   </tr>
@@ -309,29 +379,41 @@ export function InvoicePaperPreview({
           </div>
 
           {/* Totals & Notes Split Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 pt-2 pb-6 border-b border-slate-200">
+          <div
+            className="grid grid-cols-1 sm:grid-cols-12 gap-6 pt-2 pb-5"
+            style={{ borderBottom: `1px solid ${borderColor}` }}
+          >
             {/* Left: Notes & QR code */}
             <div className="sm:col-span-7 space-y-3">
               {showNotes && interpolatedNotes && (
                 <div
-                  className="p-3 rounded-lg border border-slate-100 text-xs text-slate-600"
-                  style={{ backgroundColor: lightBgColor, borderRadius }}
+                  className="p-3 rounded-lg text-xs"
+                  style={{
+                    backgroundColor: lightBgColor,
+                    borderRadius,
+                    borderColor: borderColor,
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                  }}
                 >
-                  <span className="font-bold text-slate-800 block mb-0.5 text-[11px] uppercase tracking-wide">
+                  <span className="font-bold block mb-0.5 text-[11px] uppercase tracking-wide" style={{ color: darkColor }}>
                     Notes & Remarks
                   </span>
-                  <p className="whitespace-pre-line leading-relaxed">{interpolatedNotes}</p>
+                  <p className="whitespace-pre-line leading-relaxed" style={{ color: mutedTextColor }}>{interpolatedNotes}</p>
                 </div>
               )}
 
               {showQrCode && (
-                <div className="flex items-center gap-2.5 text-xs text-slate-500 pt-1">
-                  <div className="h-10 w-10 p-1 rounded border border-slate-200 bg-white flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2.5 text-xs pt-1" style={{ color: mutedTextColor }}>
+                  <div
+                    className="h-10 w-10 p-1 rounded bg-white flex items-center justify-center shrink-0"
+                    style={{ borderColor: borderColor, borderWidth: '1px', borderStyle: 'solid' }}
+                  >
                     <QrCode className="h-8 w-8 text-slate-800" />
                   </div>
                   <div>
-                    <span className="font-bold text-slate-700 block text-[11px]">Scan for Online Receipt</span>
-                    <span className="text-[10px] text-slate-400">Order verification & tracking</span>
+                    <span className="font-bold block text-[11px]" style={{ color: darkColor }}>Scan for Online Receipt</span>
+                    <span className="text-[10px]" style={{ color: mutedTextColor }}>Order verification & tracking</span>
                   </div>
                 </div>
               )}
@@ -340,44 +422,50 @@ export function InvoicePaperPreview({
             {/* Right: Calculations / Financial Totals Box */}
             <div className="sm:col-span-5">
               <div
-                className="p-3.5 rounded-lg border border-slate-200 space-y-2 text-xs"
-                style={{ backgroundColor: lightBgColor, borderRadius }}
+                className="p-3.5 rounded-lg space-y-2 text-xs"
+                style={{
+                  backgroundColor: lightBgColor,
+                  borderRadius,
+                  borderColor: borderColor,
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                }}
               >
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between" style={{ color: mutedTextColor }}>
                   <span>Subtotal</span>
-                  <span className="font-medium text-slate-800">{formatMoney(order.subtotal)}</span>
+                  <span className="font-medium" style={{ color: darkColor }}>{formatMoney(order.subtotal)}</span>
                 </div>
 
                 {Number(order.discount) > 0 && (
-                  <div className="flex justify-between text-emerald-700">
+                  <div className="flex justify-between text-emerald-700 font-medium">
                     <span>Discount</span>
-                    <span className="font-medium">-{formatMoney(order.discount)}</span>
+                    <span>-{formatMoney(order.discount)}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between" style={{ color: mutedTextColor }}>
                   <span>Delivery Charge</span>
-                  <span className="font-medium text-slate-800">{formatMoney(order.deliveryCharge)}</span>
+                  <span className="font-medium" style={{ color: darkColor }}>{formatMoney(order.deliveryCharge)}</span>
                 </div>
 
                 {Number(order.tax) > 0 && (
-                  <div className="flex justify-between text-slate-600">
+                  <div className="flex justify-between" style={{ color: mutedTextColor }}>
                     <span>Tax / VAT</span>
-                    <span className="font-medium text-slate-800">{formatMoney(order.tax)}</span>
+                    <span className="font-medium" style={{ color: darkColor }}>{formatMoney(order.tax)}</span>
                   </div>
                 )}
 
                 <div
-                  className="flex justify-between pt-2 border-t border-slate-300/80 font-black text-sm"
-                  style={{ color: primaryColor }}
+                  className="flex justify-between pt-2 font-black text-sm"
+                  style={{ color: primaryColor, borderTop: `2px solid ${borderColor}` }}
                 >
                   <span>Grand Total</span>
                   <span>{formatMoney(order.totalAmount)}</span>
                 </div>
 
                 {Number(order.paidAmount) > 0 && (
-                  <div className="flex justify-between text-xs text-slate-600 pt-1">
-                    <span>Paid Amount</span>
+                  <div className="flex justify-between text-xs pt-1">
+                    <span style={{ color: mutedTextColor }}>Paid Amount</span>
                     <span className="font-semibold text-emerald-700">{formatMoney(order.paidAmount)}</span>
                   </div>
                 )}
@@ -394,14 +482,14 @@ export function InvoicePaperPreview({
         </div>
 
         {/* Bottom Section: Terms, Signatures & Copyright */}
-        <div className="relative z-10 pt-4 space-y-4 text-xs">
+        <div className="relative z-10 pt-3 space-y-4 text-xs">
           {/* Terms & Conditions */}
           {showTerms && interpolatedTerms && (
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+              <span className="text-[10px] font-bold uppercase tracking-wider block" style={{ color: mutedTextColor }}>
                 Terms & Conditions
               </span>
-              <p className="text-[11px] text-slate-500 whitespace-pre-line leading-relaxed">
+              <p className="text-[11px] whitespace-pre-line leading-relaxed" style={{ color: mutedTextColor }}>
                 {interpolatedTerms}
               </p>
             </div>
@@ -409,7 +497,7 @@ export function InvoicePaperPreview({
 
           {/* Signatures Row */}
           {showSignatures && (
-            <div className="grid grid-cols-2 gap-8 pt-6 pb-2">
+            <div className="grid grid-cols-2 gap-8 pt-5 pb-2">
               {/* Signatory 1 */}
               <div className="flex flex-col items-center text-center">
                 {footer.signature1Image ? (
@@ -419,12 +507,12 @@ export function InvoicePaperPreview({
                     className="h-10 max-h-10 w-auto object-contain mb-1"
                   />
                 ) : (
-                  <div className="h-10 w-32 border-b border-dashed border-slate-400 mb-1" />
+                  <div className="h-10 w-32 border-b border-dashed mb-1" style={{ borderColor: mutedTextColor }} />
                 )}
-                <span className="font-bold text-slate-800 text-[11px]">
+                <span className="font-bold text-[11px]" style={{ color: darkColor }}>
                   {footer.signature1Name || 'Customer Signature'}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px]" style={{ color: mutedTextColor }}>
                   {footer.signature1Title || 'Received by'}
                 </span>
               </div>
@@ -438,12 +526,12 @@ export function InvoicePaperPreview({
                     className="h-10 max-h-10 w-auto object-contain mb-1"
                   />
                 ) : (
-                  <div className="h-10 w-32 border-b border-dashed border-slate-400 mb-1" />
+                  <div className="h-10 w-32 border-b border-dashed mb-1" style={{ borderColor: mutedTextColor }} />
                 )}
-                <span className="font-bold text-slate-800 text-[11px]">
+                <span className="font-bold text-[11px]" style={{ color: darkColor }}>
                   {footer.signature2Name || tenant.brandName || 'Authorized Signatory'}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px]" style={{ color: mutedTextColor }}>
                   {footer.signature2Title || 'For Store Management'}
                 </span>
               </div>
@@ -451,7 +539,10 @@ export function InvoicePaperPreview({
           )}
 
           {/* System Footer Notice */}
-          <div className="pt-3 border-t border-slate-100 text-center text-[10px] text-slate-400 flex items-center justify-between">
+          <div
+            className="pt-3 text-center text-[10px] flex items-center justify-between"
+            style={{ borderTop: `1px solid ${borderColor}`, color: mutedTextColor }}
+          >
             <span>{interpolatedFooter}</span>
             <span className="flex items-center gap-1">
               <ShieldCheck className="h-3 w-3 text-emerald-600" />

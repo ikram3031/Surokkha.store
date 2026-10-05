@@ -681,13 +681,40 @@ export function TemplatesPage() {
                     />
 
                     <ColorPickerInput
+                      label="Main Text Color"
+                      value={config.branding?.textColor || config.branding?.darkColor || '#0f172a'}
+                      onChange={(val) => {
+                        updateNested('branding', 'textColor', val);
+                        updateNested('branding', 'darkColor', val);
+                      }}
+                      description="Default color for invoice body text and totals."
+                    />
+
+                    <ColorPickerInput
+                      label="Muted / Subtitle Color"
+                      value={config.branding?.mutedTextColor || '#64748b'}
+                      onChange={(val) => updateNested('branding', 'mutedTextColor', val)}
+                      description="Used for notes, labels, and secondary lines."
+                    />
+
+                    <ColorPickerInput
                       label="Light Surface Color"
-                      value={config.branding?.lightBgColor}
-                      onChange={(val) => updateNested('branding', 'lightBgColor', val)}
+                      value={config.branding?.lightBgColor || config.branding?.backgroundColor || '#f8fafc'}
+                      onChange={(val) => {
+                        updateNested('branding', 'lightBgColor', val);
+                        updateNested('branding', 'backgroundColor', val);
+                      }}
                       description="Background for customer address & summary cards."
                     />
 
-                    <div className="space-y-1.5">
+                    <ColorPickerInput
+                      label="Border / Divider Color"
+                      value={config.branding?.borderColor || '#e2e8f0'}
+                      onChange={(val) => updateNested('branding', 'borderColor', val)}
+                      description="Used for table lines, card borders, and dividers."
+                    />
+
+                    <div className="space-y-1.5 sm:col-span-2">
                       <Label className="text-xs font-semibold">Typography Font Family</Label>
                       <select
                         value={config.branding?.fontFamily || 'Inter, sans-serif'}
@@ -700,29 +727,94 @@ export function TemplatesPage() {
                         <option value="'Courier New', monospace">Courier New (Monospace)</option>
                         <option value="system-ui, -apple-system, sans-serif">System Default</option>
                       </select>
-                      <p className="text-[11px] text-muted-foreground">Font applied to printed invoices.</p>
                     </div>
 
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-semibold">Box Corner Radius</Label>
-                        <span className="text-xs font-mono text-muted-foreground">{config.branding?.borderRadius || '8px'}</span>
+                    {/* Spacing & Padding Controls */}
+                    <div className="sm:col-span-2 space-y-4 pt-2 border-t border-border/70">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                        <Sliders className="h-3.5 w-3.5 text-primary" />
+                        <span>Layout Margins, Padding & Dimensions</span>
                       </div>
-                      <div className="grid grid-cols-5 gap-2">
-                        {['0px', '4px', '8px', '12px', '16px'].map((rad) => (
-                          <button
-                            key={rad}
-                            type="button"
-                            onClick={() => updateNested('branding', 'borderRadius', rad)}
-                            className={`py-1.5 text-xs font-bold rounded border transition-all cursor-pointer ${
-                              config.branding?.borderRadius === rad
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-background hover:bg-muted/60 text-muted-foreground'
-                            }`}
-                          >
-                            {rad === '0px' ? 'Sharp (0)' : rad}
-                          </button>
-                        ))}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold">A4 Page Padding</Label>
+                            <span className="text-xs font-mono font-bold text-muted-foreground">
+                              {config.branding?.pagePadding !== undefined ? config.branding.pagePadding : 32}px
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={16}
+                            max={56}
+                            step={2}
+                            value={config.branding?.pagePadding !== undefined ? config.branding.pagePadding : 32}
+                            onChange={(e) => updateNested('branding', 'pagePadding', Number(e.target.value))}
+                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold">Header Bottom Spacing</Label>
+                            <span className="text-xs font-mono font-bold text-muted-foreground">
+                              {config.branding?.headerMarginBottom !== undefined ? config.branding.headerMarginBottom : 20}px
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={10}
+                            max={48}
+                            step={2}
+                            value={config.branding?.headerMarginBottom !== undefined ? config.branding.headerMarginBottom : 20}
+                            onChange={(e) => updateNested('branding', 'headerMarginBottom', Number(e.target.value))}
+                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold">Section & Card Spacing</Label>
+                            <span className="text-xs font-mono font-bold text-muted-foreground">
+                              {config.branding?.sectionSpacing !== undefined ? config.branding.sectionSpacing : 16}px
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={8}
+                            max={36}
+                            step={2}
+                            value={config.branding?.sectionSpacing !== undefined ? config.branding.sectionSpacing : 16}
+                            onChange={(e) => updateNested('branding', 'sectionSpacing', Number(e.target.value))}
+                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold">Box Corner Radius</Label>
+                            <span className="text-xs font-mono font-bold text-muted-foreground">
+                              {config.branding?.borderRadius || '8px'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-5 gap-1.5 pt-0.5">
+                            {['0px', '4px', '8px', '12px', '16px'].map((rad) => (
+                              <button
+                                key={rad}
+                                type="button"
+                                onClick={() => updateNested('branding', 'borderRadius', rad)}
+                                className={`py-1 text-[11px] font-bold rounded border transition-all cursor-pointer ${
+                                  config.branding?.borderRadius === rad
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'bg-background hover:bg-muted/60 text-muted-foreground'
+                                }`}
+                              >
+                                {rad === '0px' ? '0' : rad}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
