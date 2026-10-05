@@ -1,6 +1,7 @@
 import { createStorefrontApp } from "./storefront/app.js";
 import { createServiceApp } from "./service/app.js";
 import { connectDatabase } from "./common/database/index.js";
+import { StyleModel } from "./common/models/style.model.js";
 import { env } from "./common/config/env.js";
 import { logger } from "./common/config/logger.js";
 import { createShutdownHandler } from "./common/helper/sutdownHelper.js";
@@ -12,6 +13,7 @@ import { initHeartbeatScheduler, stopHeartbeatScheduler } from "./common/schedul
 const bootstrap = async () => {
   try {
     await connectDatabase();
+    await StyleModel.initializeStyles();
   } catch (err) {
     logger.warn({ err: err.message }, "⚠️ MongoDB connection failed. Starting HTTP servers in offline/fallback mode...");
   }

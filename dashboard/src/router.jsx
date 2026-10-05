@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 // Layout
 import DashboardLayout from './layouts/dashboardLayout';
+import AdminLayout from './layouts/adminLayout';
 
 // Auth & Onboarding
 import Login from './pages/auth/login';
@@ -29,6 +30,7 @@ import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
 import AllMedia from './pages/dashboard/allMedia';
+import AdminStylesPage from './pages/dashboard/settings/adminStyles';
 
 // Products
 import ProductsList from './pages/dashboard/products/productsList';
@@ -276,6 +278,14 @@ export const router = createBrowserRouter([
             ),
           },
           { path: 'pathao', element: <Navigate to="pathao-courier" replace /> },
+          {
+            path: 'admin-view/styles',
+            element: (
+              <RoleGuard menuKey="settings">
+                <AdminStylesPage />
+              </RoleGuard>
+            ),
+          },
           {
             path: 'smtp',
             element: (
@@ -719,6 +729,26 @@ export const router = createBrowserRouter([
         element: <NotFound />,
       },
     ],
+  },
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    errorElement: <RouteErrorElement />,
+    children: [
+      {
+        path: '',
+        element: <Navigate to="dashboard" replace />
+      },
+      {
+        path: 'dashboard',
+        element: (
+          <RoleGuard menuKey="admin">
+            <Overview />
+          </RoleGuard>
+        ),
+      },
+      // Here admin layout routes can be expanded
+    ]
   },
   {
     path: '*',

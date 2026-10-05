@@ -211,6 +211,19 @@ export const AppSidebar = ({ ...props }) => {
             </SidebarMenuItem>
           )}
 
+          {features?.adminMenuLayout && isAllowed("admin") && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={pathname.startsWith("/admin")}
+                tooltip={t("nav.admin_layout", "Admin View")}
+                render={<Link to="/admin" />}
+              >
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-primary">{t("nav.admin_layout", "Admin View")}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+
           {isAllowed("orders") && (
             <SidebarMenuItem>
               <SidebarMenuButton
@@ -519,6 +532,16 @@ export const AppSidebar = ({ ...props }) => {
                     >
                       <Mail className="h-3.5 w-3.5 text-indigo-500" />
                       <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname.startsWith("/dashboard/settings/admin-view/styles")}
+                      render={<Link to="/dashboard/settings/admin-view/styles" />}
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                      <span>{t("nav.admin_view_styles", "Admin View Styles")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
 

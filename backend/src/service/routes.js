@@ -40,10 +40,12 @@ import mediaAuditRouter from "./routes/mediaAuditRoute.js";
 import developerRouter from "./routes/DeveloperRoute.js";
 import courierRouter from "./routes/CourierRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
+import stylesRouter from "./routes/StylesRoute.js";
 
 const serviceRouter = Router();
 
 // Dashboard admin and business management service routes
+serviceRouter.use("/styles", stylesRouter);
 serviceRouter.use("/dash/products", dashProductRouter);
 serviceRouter.use("/dash/assets", dashAssetsRouter);
 serviceRouter.use("/products", productsRouter);
