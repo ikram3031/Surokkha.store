@@ -218,7 +218,7 @@ const en = {
     g2: '  Medical Quality Certified',
     g3: 'Cash on Delivery Across Bangladesh',
     g4: '18+ Adult Family Planning Device',
-    copyright: '© 2026 Surokkha.store. All rights reserved. Family Planning & Healthcare Supplies (18+).'
+    copyright: '© 2026 Surokkha.store. Developed by Plexivia'
   },
   whatsapp: {
     inquiry_msg: 'Hello Surokkha, I would like to inquire about MO family planning products.'

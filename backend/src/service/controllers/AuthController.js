@@ -88,7 +88,7 @@ export const login = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Email and password are required" });
     }
 
-    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret");
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret +refreshTokens");
     if (!user || !user.passwordHash) {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
@@ -138,8 +138,9 @@ export const login = async (req, res, next) => {
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
 
     user.lastLogin = new Date();
-    user.refreshToken = refreshToken;
-    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    user.refreshTokens = user.refreshTokens || [];
+    user.refreshTokens = user.refreshTokens.filter((rt) => rt.expiresAt > new Date());
+    user.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
     await user.save();
 
     setAuthCookies(res, req, accessToken, refreshToken);
@@ -170,20 +171,23 @@ export const login = async (req, res, next) => {
 // POST /auth/refresh - refresh token দিয়ে নতুন access token দেয়
 export const refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body ?? {};
-    if (!refreshToken) {
+    const { refreshToken: reqRefreshToken } = req.body ?? {};
+    if (!reqRefreshToken) {
       return res.status(400).json({ status: "error", message: "refreshToken is required" });
     }
 
-    const user = await UserModel.findOne({ refreshToken }).select("+refreshToken +refreshTokenExpiresAt");
-    if (!user || !user.refreshTokenExpiresAt || user.refreshTokenExpiresAt < new Date()) {
+    const user = await UserModel.findOne({ "refreshTokens.token": reqRefreshToken }).select("+refreshTokens");
+    const tokenDoc = user?.refreshTokens?.find((rt) => rt.token === reqRefreshToken);
+
+    if (!user || !tokenDoc || tokenDoc.expiresAt < new Date()) {
       return res.status(401).json({ status: "error", message: "Invalid or expired refresh token" });
     }
 
     const newRefreshToken = createRefreshToken();
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
-    user.refreshToken = newRefreshToken;
-    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    
+    user.refreshTokens = user.refreshTokens.filter((rt) => rt.token !== reqRefreshToken && rt.expiresAt > new Date());
+    user.refreshTokens.push({ token: newRefreshToken, expiresAt: refreshTokenExpiresAt });
     await user.save();
 
     if (!newRefreshToken) {
@@ -213,17 +217,16 @@ export const refreshToken = async (req, res, next) => {
 // POST /auth/logout - refresh token সরিয়ে লগআউট করে
 export const logout = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body ?? {};
+    const { refreshToken: reqRefreshToken } = req.body ?? {};
     clearAuthCookies(res, req);
 
-    if (!refreshToken) {
+    if (!reqRefreshToken) {
       return res.status(200).json({ status: "success", message: "Logged out successfully" });
     }
 
-    const user = await UserModel.findOne({ refreshToken }).select("+refreshToken +refreshTokenExpiresAt");
+    const user = await UserModel.findOne({ "refreshTokens.token": reqRefreshToken }).select("+refreshTokens");
     if (user) {
-      user.refreshToken = undefined;
-      user.refreshTokenExpiresAt = undefined;
+      user.refreshTokens = user.refreshTokens.filter((rt) => rt.token !== reqRefreshToken);
       await user.save();
     }
 
@@ -346,7 +349,7 @@ export const googleAuth = async (req, res, next) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     // 3. Search for registered user in database
-    const user = await UserModel.findOne({ email: normalizedEmail });
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+refreshTokens");
     if (!user) {
       logger.warn({ email: normalizedEmail }, "Google login attempt for unregistered email");
       return res.status(401).json({
@@ -365,8 +368,9 @@ export const googleAuth = async (req, res, next) => {
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
 
     user.lastLogin = new Date();
-    user.refreshToken = refreshToken;
-    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    user.refreshTokens = user.refreshTokens || [];
+    user.refreshTokens = user.refreshTokens.filter((rt) => rt.expiresAt > new Date());
+    user.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
     await user.save();
 
     logger.info({ userId: user.id }, "Successfully logged in via Google Auth");

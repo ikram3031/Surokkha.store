@@ -40,6 +40,12 @@ export function getSiteConfig() {
   const whatsappNumber = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WHATSAPP_NUMBER) ||
     '01600905774';
 
+  const facebookUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FACEBOOK_URL) ||
+    (siteKey === 'shop' ? 'https://www.facebook.com/surokkha.store.bd' : 'https://facebook.com/surokkha.store');
+
+  const instagramUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_INSTAGRAM_URL) ||
+    (siteKey === 'shop' ? 'https://instagram.com/surokkha.shop' : 'https://instagram.com/surokkha.store');
+
   return {
     siteKey,
     domain,
@@ -51,6 +57,8 @@ export function getSiteConfig() {
     supportEmail,
     supportPhone,
     whatsappNumber,
+    facebookUrl,
+    instagramUrl,
     isShop: siteKey === 'shop',
     isStore: siteKey === 'store',
   };

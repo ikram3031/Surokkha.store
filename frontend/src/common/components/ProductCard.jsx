@@ -17,6 +17,7 @@ export default function ProductCard({ productKey, className = '' }) {
   if (!prod) return null;
 
   const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
+  if (isOutOfStock) return null;
 
   const currentCartQty = cart[productKey] || 0;
   const currentOfferPrice = Number(prod.price || prod.offerPrice || 0);

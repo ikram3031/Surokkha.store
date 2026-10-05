@@ -286,7 +286,7 @@ export const useStore = create((set, get) => ({
   // Dynamic Products State
   // Dynamic Products & Categories State
   products: DEFAULT_PRODUCTS,
-  productKeys: DEFAULT_PRODUCT_KEYS,
+  productKeys: DEFAULT_PRODUCT_KEYS.filter(k => DEFAULT_PRODUCTS[k] && !DEFAULT_PRODUCTS[k].isOutOfStock),
   isLoadingProducts: false,
   productsError: null,
   categories: [],
@@ -328,6 +328,10 @@ export const useStore = create((set, get) => ({
     const currentLang = get().language || 'bn';
     try {
       const endpoints = [
+        `/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}`,
+        `/api/v1/products?isActive=true&stockStatus=instock&limit=100`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100`,
         `/api/v1/products?isActive=true&limit=100&lang=${currentLang}`,
         `/api/v1/products?limit=100&lang=${currentLang}`,
         `${API_BASE_URL}/api/v1/products?isActive=true&limit=100&lang=${currentLang}`,
@@ -432,7 +436,6 @@ export const useStore = create((set, get) => ({
 
         rawData.forEach((p, index) => {
           const key = p.slug || p.id || p.did || `product-${index + 1}`;
-          keys.push(key);
           const rawPrice = Number(p.price || p.regularPrice || 0);
           const rawOffer = (p.offerPrice != null && Number(p.offerPrice) > 0) ? Number(p.offerPrice) : ((p.offer_price != null && Number(p.offer_price) > 0) ? Number(p.offer_price) : null);
 
@@ -550,6 +553,11 @@ export const useStore = create((set, get) => ({
           if (p.did) normalized[p.did] = productObj;
           if (p.id && p.id !== key) normalized[p.id] = productObj;
           if (p._id && p._id !== key) normalized[p._id] = productObj;
+
+          // Only list active, in-stock products on website
+          if (!productObj.isOutOfStock && productObj.isActive) {
+            keys.push(key);
+          }
         });
 
         // Add legacy aliases mapping to new canonical slugs
@@ -574,8 +582,10 @@ export const useStore = create((set, get) => ({
         });
 
         const currentSlug = get().selectedProductSlug;
-        const resolvedCurrent = (currentSlug && normalized[currentSlug]) ? (normalized[currentSlug].slug || currentSlug) : null;
-        const finalSelectedSlug = resolvedCurrent || (keys[0] || 'mo-multi-textured-latex-contraceptive-20-pcs-combo');
+        const resolvedCurrent = (currentSlug && normalized[currentSlug] && !normalized[currentSlug].isOutOfStock)
+          ? (normalized[currentSlug].slug || currentSlug)
+          : null;
+        const finalSelectedSlug = resolvedCurrent || keys[0] || 'mo-multi-textured-latex-contraceptive-10-pcs';
 
         set({
           products: normalized,

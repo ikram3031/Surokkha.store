@@ -78,7 +78,9 @@ export default function ProductDetailView() {
   const otherKeys = productKeys.filter((k) => {
     if (k === product?.id || k === product?.slug) return false;
     const p = products[k];
-    return Boolean(p);
+    if (!p) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    return !isOut;
   }).slice(0, 4);
 
   const handleBuyNow = () => {
@@ -95,6 +97,34 @@ export default function ProductDetailView() {
 
   if (isLoadingProducts && (!product || !product.id)) {
     return <ProductDetailSkeleton />;
+  }
+
+  if (!isLoadingProducts && isOutOfStock) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-6">
+        <div className="w-20 h-20 mx-auto rounded-full bg-rose-50 border border-rose-200 text-rose-500 flex items-center justify-center text-4xl shadow-inner">
+          📦
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900">
+          {isBn ? 'পণ্যটি বর্তমানে স্টকে নেই' : 'Product Currently Out of Stock'}
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+          {isBn
+            ? 'দুঃখিত, আপনি যে পণ্যটি দেখছেন তা বর্তমানে আউট অব স্টক রয়েছে। আমাদের স্টকে থাকা অন্যান্য প্রিমিয়াম সামগ্রী দেখতে শপ ভিজিট করুন।'
+            : 'Sorry, the product you are looking for is currently out of stock. Please browse our active in-stock collection.'}
+        </p>
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => navigateTo('shop')}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-white font-bold text-xs sm:text-sm hover:bg-slate-800 transition cursor-pointer shadow-md"
+          >
+            <span>{isBn ? 'সকল ইন-স্টক পণ্য দেখুন' : 'Browse In-Stock Products'}</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -117,7 +117,7 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Email, password, and 2FA code are required" });
     }
 
-    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret");
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret +refreshTokens");
     if (!user || !user.passwordHash) {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
@@ -145,8 +145,9 @@ export const verify2fa = async (req, res, next) => {
     const refreshToken = createRefreshToken();
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
     user.lastLogin = new Date();
-    user.refreshToken = refreshToken;
-    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    user.refreshTokens = user.refreshTokens || [];
+    user.refreshTokens = user.refreshTokens.filter((rt) => rt.expiresAt > new Date());
+    user.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
     await user.save();
 
     const accessToken = createAccessToken(user);

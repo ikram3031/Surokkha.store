@@ -23,8 +23,16 @@ const userSchema = new Schema(
     phone: { type: String, required: false, trim: true, index: true, default: "" },
     address: { type: String, trim: true, default: "" },
     avatar: { type: String, trim: true, default: "" },
-    refreshToken: { type: String, select: false },
-    refreshTokenExpiresAt: { type: Date, select: false },
+    refreshTokens: {
+      type: [
+        {
+          token: { type: String, required: true },
+          expiresAt: { type: Date, required: true },
+        }
+      ],
+      select: false,
+      default: []
+    },
     emailOtp: { type: String, trim: true, select: false },
     emailOtpExpiresAt: { type: Date, select: false },
     twoFactorSecret: { type: String, select: false },
@@ -56,8 +64,7 @@ const userSchema = new Schema(
         delete ret.emailOtp;
         delete ret.emailOtpExpiresAt;
         delete ret.twoFactorSecret;
-        delete ret.refreshToken;
-        delete ret.refreshTokenExpiresAt;
+        delete ret.refreshTokens;
         return ret;
       },
     },

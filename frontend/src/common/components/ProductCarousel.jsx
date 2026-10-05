@@ -26,6 +26,8 @@ const ProductCarousel = ({ maxItems = 10 }) => {
     for (const key of productKeys) {
       const p = products[key];
       if (!p) continue;
+      const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+      if (isOutOfStock) continue;
 
       const isCombo = 
         (p.category && String(typeof p.category === 'object' ? p.category.name : p.category).toLowerCase().includes('combo')) ||

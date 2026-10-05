@@ -54,6 +54,8 @@ export default function CartDrawer() {
   const hasComboInCart = cartKeys.some(
     (k) => k.includes('combo') || k === 'variety-condoms-30pcs-combo' || k === 'combo-26'
   );
+  const comboProd = products['variety-condoms-30pcs-combo'] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['combo-26'];
+  const isComboInStock = Boolean(comboProd && !comboProd.isOutOfStock && comboProd.stockStatus !== 'outofstock' && comboProd.stockStatus !== 'out_of_stock' && comboProd.stockAmount !== 0);
 
   const freeDeliveryThreshold = 1000;
   const progressPercent = Math.min(100, Math.round((totals.subtotal / freeDeliveryThreshold) * 100));
@@ -361,8 +363,8 @@ export default function CartDrawer() {
                   </button>
                 </div>
 
-                {/* Optional Combo Nudge if combo is not in cart */}
-                {!hasComboInCart && (
+                {/* Optional Combo Nudge if combo is not in cart and in stock */}
+                {!hasComboInCart && isComboInStock && (
                   <div className="bg-amber-50/90 border border-amber-300/80 rounded-2xl p-3.5 space-y-2 text-left">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded uppercase">

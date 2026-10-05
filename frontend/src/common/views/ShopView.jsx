@@ -21,9 +21,6 @@ export default function ShopView() {
 
   // 2. Default sorting: Oldest to Newest (original products at top, new ones go down)
   const [sortBy, setSortBy] = useState('oldest');
-
-  // 3. Stock filter: Default false (shows all products including out-of-stock). When checked, shows only in-stock
-  const [inStockOnly, setInStockOnly] = useState(false);
   const [displayCount, setDisplayCount] = useState(8);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -54,6 +51,8 @@ export default function ShopView() {
       const prod = products[key];
       if (!prod) return;
       if (prod.isActive === false || prod.status === 'inactive') return;
+      const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
+      if (isOutOfStock) return;
 
       const catName = (typeof prod.category === 'object' ? prod.category?.name : prod.category) || (key.includes('combo') ? 'Combo' : 'Contraceptive');
       const catSlug = (prod.categorySlug || (typeof prod.category === 'object' ? prod.category?.slug : '') || catName.toLowerCase()).replace(/\s+/g, '-');
@@ -82,6 +81,8 @@ export default function ShopView() {
     return productKeys.filter((k) => {
       const p = products[k];
       if (!p || p.isActive === false || p.status === 'inactive') return false;
+      const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+      if (isOutOfStock) return false;
       const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || p?.category === 'Combo' || p?.category === 'Combo Pack' || (p?.category_bn && p.category_bn.includes('কম্বো')) || (p?.categorySlug && p.categorySlug.includes('combo'));
       return !isCombo;
     }).length;
@@ -91,6 +92,8 @@ export default function ShopView() {
     return productKeys.filter((k) => {
       const p = products[k];
       if (!p || p.isActive === false || p.status === 'inactive') return false;
+      const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+      if (isOutOfStock) return false;
       const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || p?.category === 'Combo' || p?.category === 'Combo Pack' || (p?.category_bn && p.category_bn.includes('কম্বো')) || (p?.categorySlug && p.categorySlug.includes('combo'));
       return isCombo;
     }).length;
@@ -140,9 +143,9 @@ export default function ShopView() {
       if (minPrice !== undefined && price < minPrice) return false;
       if (maxPrice !== undefined && price > maxPrice) return false;
 
-      // In stock filter: Default false (shows all). If checked, shows only in-stock
+      // In stock check: Exclude any out-of-stock products unconditionally
       const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
-      if (inStockOnly && isOutOfStock) return false;
+      if (isOutOfStock) return false;
 
       return true;
     });
@@ -174,7 +177,7 @@ export default function ShopView() {
     });
 
     return list;
-  }, [productKeys, products, category, minPrice, maxPrice, inStockOnly, sortBy]);
+  }, [productKeys, products, category, minPrice, maxPrice, sortBy]);
 
   const paginatedKeys = displayedKeys.slice(0, displayCount);
   const hasMore = displayCount < displayedKeys.length;
@@ -183,7 +186,6 @@ export default function ShopView() {
     setCategory('all');
     setPriceRange('all');
     setSortBy('oldest');
-    setInStockOnly(false);
     setDisplayCount(8);
   };
 
@@ -381,22 +383,6 @@ export default function ShopView() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* In Stock Toggle (Shows all products by default, filters in-stock when checked) */}
-            <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs">
-              <label className="flex items-center space-x-2.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  id="stock-filter"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                  className="w-4 h-4 rounded text-brand-600 accent-rose-600 cursor-pointer"
-                />
-                <span className="text-xs font-semibold text-slate-700">
-                  {isBn ? 'শুধুমাত্র ইন স্টক প্রোডাক্ট' : 'In Stock Items Only'}
-                </span>
-              </label>
             </div>
 
             {/* Reset Filters CTA */}

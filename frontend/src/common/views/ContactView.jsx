@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
+import { SITE_CONFIG } from '../config/siteConfig';
 
 export default function ContactView() {
   const navigateTo = useStore((state) => state.navigateTo);
   const showToast = useStore((state) => state.showToast);
+
+  const isShop = Boolean(SITE_CONFIG?.isShop || (typeof window !== 'undefined' && window.location.hostname.includes('shop')));
+  const facebookUrl = SITE_CONFIG?.facebookUrl || (isShop ? 'https://www.facebook.com/surokkha.store.bd' : 'https://facebook.com/surokkha.store');
+  const instagramUrl = SITE_CONFIG?.instagramUrl || (isShop ? 'https://instagram.com/surokkha.shop' : 'https://instagram.com/surokkha.store');
+  const facebookHandle = isShop ? 'facebook.com/surokkha.store.bd' : 'facebook.com/surokkha.store';
+  const instagramHandle = isShop ? 'instagram.com/surokkha.shop' : 'instagram.com/surokkha.store';
+  const supportEmail = SITE_CONFIG?.supportEmail || (isShop ? 'support@surokkha.shop' : 'support@surokkha.store');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -120,7 +128,7 @@ export default function ContactView() {
 
             {/* Email Card */}
             <a
-              href="mailto:support@surokkha.store"
+              href={`mailto:${supportEmail}`}
               className="block p-5 rounded-2xl bg-white border border-amber-100 shadow-sm hover:shadow-md hover:border-amber-300 transition group"
             >
               <div className="flex items-start gap-4">
@@ -131,7 +139,7 @@ export default function ContactView() {
                   <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Email Inquiry</span>
                   <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">Customer Support</h3>
                   <p className="text-xs text-slate-500 mt-0.5">Replies within 12 business hours</p>
-                  <p className="text-xs font-bold text-slate-800 mt-2">support@surokkha.store</p>
+                  <p className="text-xs font-bold text-slate-800 mt-2">{supportEmail}</p>
                 </div>
               </div>
             </a>
@@ -141,7 +149,7 @@ export default function ContactView() {
               <h4 className="text-xs font-bold uppercase tracking-wider text-rose-300">Official Social Media</h4>
               <div className="space-y-2 text-xs">
                 <a
-                  href="https://facebook.com/surokkha.store"
+                  href={facebookUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 text-white/90 hover:text-white transition group"
@@ -149,10 +157,10 @@ export default function ContactView() {
                   <span className="w-6 h-6 rounded-lg bg-[#1877F2]/30 text-[#1877F2] flex items-center justify-center group-hover:bg-[#1877F2] group-hover:text-white transition">
                     f
                   </span>
-                  <span>facebook.com/surokkha.store</span>
+                  <span>{facebookHandle}</span>
                 </a>
                 <a
-                  href="https://instagram.com/surokkha.store"
+                  href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 text-white/90 hover:text-white transition group"
@@ -160,7 +168,7 @@ export default function ContactView() {
                   <span className="w-6 h-6 rounded-lg bg-[#E4405F]/30 text-[#E4405F] flex items-center justify-center group-hover:bg-[#E4405F] group-hover:text-white transition">
                     📸
                   </span>
-                  <span>instagram.com/surokkha.store</span>
+                  <span>{instagramHandle}</span>
                 </a>
               </div>
             </div>

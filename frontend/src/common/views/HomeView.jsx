@@ -39,7 +39,7 @@ export default function HomeView() {
 
   const singleProductKeys = MO_3_KEYS.filter((k) => {
     const p = products[k] || products[k.replace(/-condom$/, '')] || products[`${k}-condom`];
-    return Boolean(p);
+    return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.stockAmount !== 0;
   });
 
   const available20PcsComboKeys = [

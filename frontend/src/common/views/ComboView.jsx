@@ -21,6 +21,8 @@ export default function ComboView() {
     .map((k) => products[k])
     .filter((p) => {
       if (!p) return false;
+      const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+      if (isOutOfStock) return false;
       const cat = (p.category || '').toLowerCase();
       const catBn = (p.category_bn || '');
       const name = (p.name || '').toLowerCase();

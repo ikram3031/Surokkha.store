@@ -60,8 +60,16 @@ const memberSchema = new Schema(
     totalPaidAmount: { type: Number, default: 0, min: 0 },
     gender: { type: String, trim: true, lowercase: true, default: null }, // "m" or "f" — used for Meta CAPI ge parameter
     dob: { type: Date, default: null }, // Date of birth — used for Meta CAPI db parameter (YYYYMMDD)
-    refreshToken: { type: String, trim: true, select: false },
-    refreshTokenExpiresAt: { type: Date, select: false },
+    refreshTokens: {
+      type: [
+        {
+          token: { type: String, required: true },
+          expiresAt: { type: Date, required: true },
+        }
+      ],
+      select: false,
+      default: []
+    },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
@@ -76,8 +84,7 @@ const memberSchema = new Schema(
         }
         delete ret._id;
         delete ret.passwordHash;
-        delete ret.refreshToken;
-        delete ret.refreshTokenExpiresAt;
+        delete ret.refreshTokens;
         delete ret.emailVerifiedAt;
         return ret;
       },
