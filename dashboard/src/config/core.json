@@ -83,7 +83,9 @@
         "settings.seo",
         "settings.meta-pixel",
         "settings.tiktok-pixel",
-        "settings.google-analytics"
+        "settings.google-analytics",
+        "settings.templates",
+        "templates"
       ]
     },
     "Investor": {

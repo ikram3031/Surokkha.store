@@ -145,6 +145,7 @@ export const AppSidebar = ({ ...props }) => {
     if ((menuKey === "orders.instore" || menuKey === "orders.new") && features?.inStoreOrder === false) return false
     if ((menuKey === "orders.custom" || menuKey === "orders.custom-new") && !features?.customOrders) return false
     if (menuKey === "cpanel" && (clientConfig?.modules?.cpanelAccess === false || features?.cpanelAccess === false)) return false
+    if (menuKey === "templates" && features?.templates === false) return false
 
     return hasMenuAccess(userRole, menuKey)
   }
@@ -521,6 +522,21 @@ export const AppSidebar = ({ ...props }) => {
                       <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+
+                  {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        isActive={
+                          pathname.startsWith("/dashboard/settings/templates") ||
+                          pathname === "/dashboard/templates"
+                        }
+                        render={<Link to="/dashboard/settings/templates" />}
+                      >
+                        <Receipt className="h-3.5 w-3.5 text-blue-500" />
+                        <span>{t("nav.templates", "Invoice & Templates")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )}
                 </SidebarMenuSub>
               )}
             </SidebarMenuItem>

@@ -64,7 +64,8 @@
     "variantImage": false,
     "sizeChart": false,
     "webmail": true,
-    "inStoreOrder": false
+    "inStoreOrder": false,
+    "templates": true
   },
   "stockManagement": {
     "simpleProduct": true,

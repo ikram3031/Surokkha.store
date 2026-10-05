@@ -1,4 +1,5 @@
 import { config } from '../../config/index.js';
+import { compileA4InvoiceHtml } from './templateEngine.js';
 
 /**
  * Generates dynamic, responsive HTML invoice for storefront and dashboard views
@@ -12,7 +13,22 @@ export const getClientInvoiceHtml = ({
   address: customAddress,
   phone: customPhone,
   email: customEmail,
+  templateConfig,
 }) => {
+  // If templateConfig is provided, compile via dynamic template engine
+  if (templateConfig) {
+    try {
+      return compileA4InvoiceHtml({
+        templateConfig,
+        order,
+        clientConfig: config,
+        isPrintView,
+      });
+    } catch (err) {
+      console.warn('Dynamic template compilation fallback to default:', err.message);
+    }
+  }
+
   const brandName = customBrandName || config.brandName || 'Flexivia';
   const displayLogo = logoUrl || config.logoUrl || '';
   const storeAddress = customAddress || config.contact?.address || config.address || 'Dhaka, Bangladesh';

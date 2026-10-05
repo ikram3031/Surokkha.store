@@ -8,8 +8,13 @@ import {
   testTikTokEventsApiConnection,
 } from "../../common/services/tiktokEventsApi.service.js";
 import { config as clientConfig } from "../../common/config/index.js";
-import nodemailer from "nodemailer";
 import { encryptText, decryptText } from "../../common/utils/crypto.util.js";
+import {
+  DEFAULT_TEMPLATE_PRESETS,
+  compileA4InvoiceHtml,
+  compileTransactionalEmailHtml,
+} from "../../common/templates/invoices/templateEngine.js";
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
 // Retrieves full Meta Pixel and Conversions API settings for Dashboard administration
 export const getMetaPixelSettings = async (req, res, next) => {
@@ -698,6 +703,249 @@ export const updateCloudflareSettings = async (req, res, next) => {
     next(error);
   }
 };
+
+// Mock order dataset for live template preview in Admin Studio
+const MOCK_PREVIEW_ORDER = {
+  orderId: "SC-10892",
+  createdAt: new Date().toISOString(),
+  customerName: "Rahim Chowdhury",
+  customerPhone: "+8801712345678",
+  customerEmail: "rahim.chowdhury@example.com",
+  customerAddress: "House 42, Road 11, Banani, Dhaka-1213",
+  paymentMethod: "Cash on Delivery",
+  paymentStatus: "paid",
+  subtotal: 3850,
+  shippingFee: 80,
+  discountAmount: 250,
+  totalAmount: 3680,
+  items: [
+    {
+      productName: "Premium Cotton Oversized T-Shirt",
+      variantName: "Black / L",
+      sku: "TSH-BLK-L",
+      quantity: 2,
+      unitPrice: 1250,
+      subtotal: 2500,
+    },
+    {
+      productName: "Slim Fit Chino Trousers",
+      variantName: "Navy / 32",
+      sku: "CHN-NVY-32",
+      quantity: 1,
+      unitPrice: 1350,
+      subtotal: 1350,
+    },
+  ],
+};
+
+// Retrieves invoice & email template customization settings
+export const getTemplateSettings = async (req, res, next) => {
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
+    const dbTemplates = doc?.templates || {};
+    const preset = dbTemplates.preset || "modern";
+    const defaultPreset = DEFAULT_TEMPLATE_PRESETS[preset] || DEFAULT_TEMPLATE_PRESETS.modern;
+
+    const resolvedSettings = {
+      preset,
+      isActive: dbTemplates.isActive ?? true,
+      branding: {
+        ...defaultPreset.branding,
+        ...(dbTemplates.branding || {}),
+      },
+      header: {
+        ...defaultPreset.header,
+        logoUrl: dbTemplates.header?.logoUrl || clientConfig?.logoUrl || "",
+        ...(dbTemplates.header || {}),
+      },
+      table: {
+        ...defaultPreset.table,
+        ...(dbTemplates.table || {}),
+      },
+      footer: {
+        ...defaultPreset.footer,
+        supportPhone: dbTemplates.footer?.supportPhone || clientConfig?.contact?.phone || clientConfig?.phone || "",
+        supportEmail: dbTemplates.footer?.supportEmail || clientConfig?.contact?.supportEmail || clientConfig?.supportEmail || "",
+        supportAddress: dbTemplates.footer?.supportAddress || clientConfig?.contact?.address || clientConfig?.address || "",
+        ...(dbTemplates.footer || {}),
+      },
+      email: {
+        ...defaultPreset.email,
+        ...(dbTemplates.email || {}),
+      },
+      customCss: dbTemplates.customCss || "",
+      isPersistedInDb: Boolean(doc?.templates?.branding?.primaryColor),
+    };
+
+    return res.json({
+      status: "success",
+      data: resolvedSettings,
+      presets: DEFAULT_TEMPLATE_PRESETS,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Updates invoice & email template customization settings in database
+export const updateTemplateSettings = async (req, res, next) => {
+  try {
+    const {
+      preset = "modern",
+      isActive = true,
+      branding = {},
+      header = {},
+      table = {},
+      footer = {},
+      email = {},
+      customCss = "",
+    } = req.body || {};
+
+    const updatePayload = {
+      "templates.preset": String(preset).trim(),
+      "templates.isActive": Boolean(isActive),
+      "templates.branding": branding,
+      "templates.header": header,
+      "templates.table": table,
+      "templates.footer": footer,
+      "templates.email": email,
+      "templates.customCss": String(customCss).trim(),
+      updatedBy: req.user?.userId || null,
+    };
+
+    const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $set: updatePayload },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    return res.json({
+      status: "success",
+      message: "Template settings saved successfully.",
+      data: updatedDoc.templates,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Generates real-time compiled HTML for live preview in Admin Studio
+export const previewTemplateHtml = async (req, res, next) => {
+  try {
+    const { templateConfig = {}, order = null, mode = "a4" } = req.body || {};
+    const targetOrder = order || MOCK_PREVIEW_ORDER;
+
+    let html = "";
+    if (mode === "email") {
+      html = compileTransactionalEmailHtml({
+        templateConfig,
+        order: targetOrder,
+        clientConfig,
+      });
+    } else {
+      html = compileA4InvoiceHtml({
+        templateConfig,
+        order: targetOrder,
+        clientConfig,
+        isPrintView: true,
+      });
+    }
+
+    return res.json({
+      status: "success",
+      data: { html },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Sends test transactional invoice email to admin
+export const testTemplateEmail = async (req, res, next) => {
+  try {
+    const { recipientEmail, templateConfig } = req.body || {};
+    const targetEmail = recipientEmail || req.user?.email;
+
+    if (!targetEmail) {
+      return res.status(400).json({
+        status: "error",
+        message: "Recipient email is required for test email delivery.",
+      });
+    }
+
+    const htmlContent = compileTransactionalEmailHtml({
+      templateConfig: templateConfig || {},
+      order: MOCK_PREVIEW_ORDER,
+      clientConfig,
+    });
+
+    const transport = await getSmtpTransport();
+    if (!transport) {
+      return res.status(400).json({
+        status: "error",
+        message: "SMTP server is not configured. Please configure SMTP in Settings > SMTP Configuration first.",
+      });
+    }
+
+    const mailOptions = {
+      from: `"${clientConfig?.brandName || 'Flexivia'}" <${transport.options?.auth?.user || 'support@plexivia.online'}>`,
+      to: targetEmail,
+      subject: `[TEST PREVIEW] Order Confirmation #${MOCK_PREVIEW_ORDER.orderId} - ${clientConfig?.brandName || 'Flexivia'}`,
+      html: htmlContent,
+    };
+
+    await transport.sendMail(mailOptions);
+
+    return res.json({
+      status: "success",
+      message: `Test email sent successfully to ${targetEmail}`,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Resets template settings to a specified preset
+export const resetTemplateSettings = async (req, res, next) => {
+  try {
+    const { preset = "modern" } = req.body || {};
+    const targetPreset = DEFAULT_TEMPLATE_PRESETS[preset] || DEFAULT_TEMPLATE_PRESETS.modern;
+
+    const resetPayload = {
+      preset,
+      isActive: true,
+      branding: targetPreset.branding,
+      header: {
+        ...targetPreset.header,
+        logoUrl: clientConfig?.logoUrl || "",
+      },
+      table: targetPreset.table,
+      footer: {
+        ...targetPreset.footer,
+        supportPhone: clientConfig?.contact?.phone || clientConfig?.phone || "",
+        supportEmail: clientConfig?.contact?.supportEmail || clientConfig?.supportEmail || "",
+        supportAddress: clientConfig?.contact?.address || clientConfig?.address || "",
+      },
+      email: targetPreset.email,
+      customCss: "",
+    };
+
+    const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $set: { templates: resetPayload, updatedBy: req.user?.userId || null } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    return res.json({
+      status: "success",
+      message: `Template reset to '${preset}' preset successfully.`,
+      data: updatedDoc.templates,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
 
