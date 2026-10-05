@@ -206,6 +206,7 @@
     "courier_status": "Courier Status",
     "send_to_courier": "Send to Courier",
     "print_invoice": "Print Invoice",
+    "send_invoice_email": "Send via Email",
     "print_pos_receipt": "Print POS Receipt",
     "order_notes": "Order Notes",
     "internal_notes": "Internal Staff Notes",

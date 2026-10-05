@@ -206,6 +206,7 @@
     "courier_status": "কুরিয়ার স্ট্যাটাস",
     "send_to_courier": "কুরিয়ারে পাঠান",
     "print_invoice": "ইনভয়েস প্রিন্ট",
+    "send_invoice_email": "ইমেইলে ইনভয়েস পাঠান",
     "print_pos_receipt": "পিওএস রসিদ প্রিন্ট",
     "order_notes": "অর্ডার নোট",
     "internal_notes": "অভ্যন্তরীণ স্টাফ নোট",
