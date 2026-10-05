@@ -119,8 +119,8 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Main Nav: Solid Dark Background */}
-      <header className="bg-[#14050e] border-b border-rose-900/30 shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all">
+      {/* Main Nav: Dark with subtle glassmorphism */}
+      <header className="bg-[#14050e]/85 backdrop-blur-xl backdrop-saturate-150 border-b border-rose-500/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-4">
           
           {/* Logo */}

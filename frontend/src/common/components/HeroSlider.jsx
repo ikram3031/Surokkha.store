@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
+import { SITE_CONFIG } from '../config/siteConfig';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha.store';
 
-export default function HeroSlider() {
+// Hero banner video and showcase slider component
+const HeroSlider = () => {
   const [videoError, setVideoError] = useState(false);
   const videoRef = useRef(null);
 
@@ -12,28 +14,29 @@ export default function HeroSlider() {
   const navigateToCombo = useStore((state) => state.navigateToCombo);
   const { t, isBn } = useTranslation();
 
+  const isStore = Boolean(SITE_CONFIG.isStore);
   const videoUrl = `${API_BASE_URL}/uploads/assets/promo-video.mp4`;
   const posterUrl = `${API_BASE_URL}/uploads/assets/slider-2.webp`;
 
-  // Ensure autoplay works reliably and silently across mobile and desktop browsers
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.defaultMuted = true;
       videoRef.current.muted = true;
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Autoplay was prevented or postponed
-        });
+        playPromise.catch(() => {});
       }
     }
   }, []);
 
   return (
-    <section className="w-full relative overflow-hidden bg-gradient-to-br from-[#200b14] via-[#12060b] to-[#200b14] text-white select-none border-b border-rose-950/80 min-h-[calc(100vh-90px)] sm:min-h-[calc(100vh-96px)] flex flex-col justify-center">
+    <section className={`w-full relative overflow-hidden ${
+      isStore 
+        ? 'bg-[#180812] text-slate-900 border-b border-rose-200/80' 
+        : 'bg-gradient-to-br from-[#200b14] via-[#12060b] to-[#200b14] text-white border-b border-rose-950/80'
+    } select-none min-h-[calc(100vh-90px)] sm:min-h-[calc(100vh-96px)] flex flex-col justify-center`}>
       <div className="relative w-full overflow-hidden flex-1 flex flex-col justify-center">
         
-        {/* BACKGROUND VIDEO LAYER (High Visibility Autoplay, Always Muted, Loop, PlaysInline) */}
         <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
           {!videoError ? (
             <video
@@ -46,57 +49,69 @@ export default function HeroSlider() {
               playsInline
               preload="auto"
               onError={() => setVideoError(true)}
-              className="w-full h-full object-cover object-center scale-105 opacity-85 transition-opacity duration-1000"
+              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-95' : 'opacity-85'} transition-opacity duration-1000`}
             />
           ) : (
             <img
               src={posterUrl}
               alt="Surokkha Premium Collection"
-              className="w-full h-full object-cover object-center scale-105 opacity-75"
+              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-90' : 'opacity-75'}`}
             />
           )}
 
-          {/* Lighter, balanced overlay to keep background product boxes clearly visible while preserving sharp text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#12060b]/90 via-black/40 to-black/25 z-10" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-rose-600/15 blur-3xl pointer-events-none z-10" />
-          <div className="absolute -bottom-10 right-10 w-60 h-60 bg-amber-500/10 blur-3xl pointer-events-none z-10" />
+          {isStore ? (
+            <>
+              {/* Minimal White Translucent Overlay - Maximum Video Clarity */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-white/12 to-white/25 z-10" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-rose-200/10 blur-3xl pointer-events-none z-10" />
+              <div className="absolute -bottom-10 right-10 w-72 h-72 bg-amber-100/10 blur-3xl pointer-events-none z-10" />
+            </>
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#12060b]/90 via-black/40 to-black/25 z-10" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-rose-600/15 blur-3xl pointer-events-none z-10" />
+              <div className="absolute -bottom-10 right-10 w-60 h-60 bg-amber-500/10 blur-3xl pointer-events-none z-10" />
+            </>
+          )}
         </div>
 
-        {/* HERO CONTENT LAYER (Centered, High Contrast, Luxury Typography) */}
         <div className="relative z-20 px-4 sm:px-8 md:px-12 py-16 sm:py-24 md:py-28 text-center max-w-4xl mx-auto flex flex-col items-center justify-center flex-1">
           
-          {/* Top Category Badge - Bright & Highly Visible */}
-          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-black/60 border border-white/30 text-xs sm:text-sm font-semibold tracking-wide text-white uppercase mb-4 backdrop-blur-md shadow-lg">
+          <div className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide uppercase mb-4 backdrop-blur-md shadow-md ${
+            isStore 
+              ? 'bg-white/85 border border-rose-300 text-rose-950 shadow-rose-100/50' 
+              : 'bg-black/60 border border-white/30 text-white'
+          }`}>
             <span>{t('hero.top_badge', '১৮+ সার্টিফাইড স্বাস্থ্য ও পরিবার পরিকল্পনা সামগ্রী')}</span>
           </div>
 
-          {/* Single-line Hero Title with Crisp Drop Shadow */}
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[44px] font-heading font-extrabold text-white tracking-tight leading-snug md:leading-tight mb-4 max-w-3xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]">
+          <h1 className={`text-2xl sm:text-4xl md:text-5xl lg:text-[44px] font-heading font-extrabold tracking-tight leading-snug md:leading-tight mb-4 max-w-3xl ${
+            isStore ? 'text-slate-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]' : 'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]'
+          }`}>
             {t('hero.title', 'প্রিমিয়াম কোয়ালিটি, ১০০% ডিসক্রিট প্যাকেজিং')}
           </h1>
 
-          {/* Subtitle with Price Highlight */}
-          <p className="text-sm sm:text-base md:text-lg text-white/95 max-w-2xl mx-auto leading-relaxed font-normal mb-8 sm:mb-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+          <p className={`text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 ${
+            isStore ? 'text-slate-800 font-medium' : 'text-white/95 font-normal drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]'
+          }`}>
             {isBn ? (
               <>
                 সেরা ৩টি ভ্যারিয়েন্টের ৩০ পিস কম্বো প্যাকটি নিন বিশেষ ছাড়ে —{' '}
-                <span className="text-amber-300 font-extrabold underline decoration-amber-400/80 decoration-2 underline-offset-4">
+                <span className={`${isStore ? 'text-rose-700' : 'text-amber-300'} font-extrabold underline decoration-rose-500/80 decoration-2 underline-offset-4`}>
                   মাত্র ৯০০ টাকায়
                 </span>
               </>
             ) : (
               <>
                 Get the exclusive 30-piece combo pack of the top 3 variants at a special discount —{' '}
-                <span className="text-amber-300 font-extrabold underline decoration-amber-400/80 decoration-2 underline-offset-4">
+                <span className={`${isStore ? 'text-rose-700' : 'text-amber-300'} font-extrabold underline decoration-rose-500/80 decoration-2 underline-offset-4`}>
                   Only ৳900
                 </span>
               </>
             )}
           </p>
 
-          {/* Action Buttons: Equal Width, WhatsApp Vibrate for Combo, Colored Border for Secondary */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 w-full sm:w-auto max-w-md sm:max-w-none mx-auto">
-            {/* Primary Action-Driven Combo CTA -> /offers (Equal Width + WhatsApp-style Vibration) */}
             <button
               type="button"
               onClick={navigateToCombo}
@@ -106,12 +121,15 @@ export default function HeroSlider() {
               <span>{t('hero.offers_btn', '🔥 ৩০ পিস কম্বো অর্ডার করুন (৳৯০০)')}</span>
             </button>
 
-            {/* Secondary Button -> /shop (Equal Width + Brand Colored Border) */}
             <button
               type="button"
               onClick={() => navigateTo('shop')}
               aria-label={t('hero.shop_btn', 'সকল প্রোডাক্ট')}
-              className="w-full sm:w-64 md:w-72 bg-black/50 hover:bg-rose-950/40 text-rose-100 hover:text-white font-bold text-sm sm:text-base px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl border-2 border-rose-500/70 hover:border-rose-400 shadow-lg backdrop-blur-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-center"
+              className={`w-full sm:w-64 md:w-72 font-bold text-sm sm:text-base px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-lg backdrop-blur-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-center ${
+                isStore
+                  ? 'bg-white/95 hover:bg-rose-50 text-slate-800 hover:text-rose-950 border-2 border-slate-300 hover:border-rose-400'
+                  : 'bg-black/50 hover:bg-rose-950/40 text-rose-100 hover:text-white border-2 border-rose-500/70 hover:border-rose-400'
+              }`}
             >
               <span>{t('hero.shop_btn', 'সকল প্রোডাক্ট')}</span>
             </button>
@@ -121,4 +139,6 @@ export default function HeroSlider() {
       </div>
     </section>
   );
-}
+};
+
+export default HeroSlider;

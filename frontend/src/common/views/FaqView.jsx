@@ -48,7 +48,7 @@ export default function FaqView() {
     },
     {
       category: 'products',
-      question: 'How should condoms be stored?',
+      question: 'How should contraceptive products be stored?',
       answer: 'Store them in a cool, dry place away from direct sunlight, excessive heat, and sharp objects. Avoid storing them in car glove compartments or tight back pockets for extended periods.'
     },
     {

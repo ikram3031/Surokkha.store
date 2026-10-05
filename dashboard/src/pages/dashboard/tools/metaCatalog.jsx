@@ -14,6 +14,10 @@ import {
   CheckSquare,
   Square,
   CheckCheck,
+  FileSpreadsheet,
+  Globe,
+  Archive,
+  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +35,12 @@ import { apiClient, baseURL } from '@/lib/api-client';
 import { clientConfig } from '@/clientConfig';
 import { useCategories } from '@/lib/category-cache';
 import { toast } from 'sonner';
+import {
+  exportToCsv,
+  exportToXlsx,
+  downloadDualSiteZip,
+  generateCsvString as serializeCsv,
+} from '@/lib/excel-export';
 
 const META_CSV_COLUMNS = [
   'id',
@@ -211,6 +221,69 @@ const MetaCatalogGenerator = () => {
   const [googleCategory, setGoogleCategory] = useState(initialSettings.googleCategory);
   const [customLabel0, setCustomLabel0] = useState(initialSettings.customLabel0);
   const [includeVariants, setIncludeVariants] = useState(initialSettings.includeVariants);
+
+  // Multi-site configuration detection (Store: surokkha.store, Shop: surokkha.shop)
+  const configuredSites = useMemo(() => {
+    if (clientConfig?.sites && typeof clientConfig.sites === 'object') {
+      return Object.entries(clientConfig.sites).map(([key, site]) => ({
+        key,
+        name: site.name || (key === 'store' ? 'Surokkha Store' : key === 'shop' ? 'Surokkha Shop' : key),
+        domain: site.domain || (key === 'store' ? 'surokkha.store' : 'surokkha.shop'),
+        url: (site.url || site.storefrontUrl || (site.domain ? `https://${site.domain}` : '')).replace(/\/$/, ''),
+        pixelId: site.metaPixel?.pixelId || (key === 'store' ? '1840805450442709' : key === 'shop' ? '1565104865301894' : ''),
+      }));
+    }
+    return [
+      {
+        key: 'store',
+        name: 'Surokkha Store',
+        domain: 'surokkha.store',
+        url: 'https://surokkha.store',
+        pixelId: '1840805450442709',
+      },
+      {
+        key: 'shop',
+        name: 'Surokkha Shop',
+        domain: 'surokkha.shop',
+        url: 'https://surokkha.shop',
+        pixelId: '1565104865301894',
+      },
+    ];
+  }, []);
+
+  const [activeSiteKey, setActiveSiteKey] = useState(() => {
+    return configuredSites.length > 0 ? configuredSites[0].key : 'store';
+  });
+
+  const activeSite = useMemo(() => {
+    return configuredSites.find((s) => s.key === activeSiteKey) || configuredSites[0] || {
+      key: 'store',
+      name: clientConfig?.brandName || 'Store',
+      domain: clientConfig?.domain || 'surokkha.store',
+      url: siteUrl || 'https://surokkha.store',
+      pixelId: '1840805450442709',
+    };
+  }, [configuredSites, activeSiteKey, siteUrl]);
+
+  const storeSite = useMemo(() => {
+    return configuredSites.find((s) => s.key === 'store') || {
+      key: 'store',
+      name: 'Surokkha Store',
+      domain: 'surokkha.store',
+      url: 'https://surokkha.store',
+      pixelId: '1840805450442709',
+    };
+  }, [configuredSites]);
+
+  const shopSite = useMemo(() => {
+    return configuredSites.find((s) => s.key === 'shop') || {
+      key: 'shop',
+      name: 'Surokkha Shop',
+      domain: 'surokkha.shop',
+      url: 'https://surokkha.shop',
+      pixelId: '1565104865301894',
+    };
+  }, [configuredSites]);
 
   // Staged Catalog State (with LocalStorage restore scoped per client)
   const [stagedMap, setStagedMap] = useState(() => {
@@ -656,54 +729,99 @@ const MetaCatalogGenerator = () => {
     });
   };
 
-  // Generate Catalog Rows according to Meta specifications
-  const catalogRows = useMemo(() => {
-    const rows = [];
-    const prefix = productPathPrefix.startsWith('/') ? productPathPrefix : `/${productPathPrefix}`;
-    const cleanPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
+  // Generates Catalog Rows according to Meta specifications for a specific target site URL
+  const generateRowsForSite = useCallback(
+    (targetSiteUrl) => {
+      const rows = [];
+      const cleanSite = (targetSiteUrl || siteUrl).replace(/\/$/, '');
 
-    stagedMap.forEach((p) => {
-      const cleanDesc = stripHtml(p.description || p.name || 'Quality product.');
-      const brandName = p.brand || clientConfig?.brandName || 'Store';
-      const productLink = buildProductUrl(productPathPrefix, p, siteUrl);
-      const formatImageForMeta = (img) => {
-        if (!img) return '';
-        return img.endsWith('.webp') ? img.replace(/\.webp$/, '.jpg') : img;
-      };
-      const mainImage = formatImageForMeta(p.imageUrl);
-      const productTypeCategory = p.primaryCategory || 'General';
+      stagedMap.forEach((p) => {
+        const cleanDesc = stripHtml(p.description || p.name || 'Quality product.');
+        const brandName = p.brand || clientConfig?.brandName || 'Store';
+        const productLink = buildProductUrl(productPathPrefix, p, cleanSite);
+        const formatImageForMeta = (img) => {
+          if (!img) return '';
+          return img.endsWith('.webp') ? img.replace(/\.webp$/, '.jpg') : img;
+        };
+        const mainImage = formatImageForMeta(p.imageUrl);
+        const productTypeCategory = p.primaryCategory || 'General';
 
-      let contentId = p.did || p.id;
-      if (idMapping === 'sku' && p.sku) contentId = p.sku;
-      else if (idMapping === 'id' && p.id) contentId = String(p.id);
-      else if (idMapping === 'slug' && p.slug) contentId = String(p.slug);
+        let contentId = p.did || p.id;
+        if (idMapping === 'sku' && p.sku) contentId = p.sku;
+        else if (idMapping === 'id' && p.id) contentId = String(p.id);
+        else if (idMapping === 'slug' && p.slug) contentId = String(p.slug);
 
-      if (includeVariants && p.hasVariants && p.variants.length > 0) {
-        p.variants.forEach((v) => {
-          const varPrice = Number(v.price || 0);
-          const varSalePrice = v.offerPrice ? Number(v.offerPrice) : null;
-          const varHasDiscount = varSalePrice != null && varSalePrice > 0 && varSalePrice < varPrice;
+        if (includeVariants && p.hasVariants && p.variants.length > 0) {
+          p.variants.forEach((v) => {
+            const varPrice = Number(v.price || 0);
+            const varSalePrice = v.offerPrice ? Number(v.offerPrice) : null;
+            const varHasDiscount = varSalePrice != null && varSalePrice > 0 && varSalePrice < varPrice;
+
+            rows.push({
+              id: v.id || `${contentId}_${v.sku || 'v'}`,
+              title: `${p.name} - ${v.name}`.trim(),
+              description: cleanDesc,
+              availability: (v.stockQuantity ?? 1) > 0 ? 'in stock' : 'out of stock',
+              condition: defaultCondition,
+              link: productLink,
+              image_link: formatImageForMeta(v.imageUrl) || mainImage,
+              brand: brandName,
+              price: `${varPrice.toFixed(2)} ${currency}`,
+              google_product_category: googleCategory || '',
+              fb_product_category: '',
+              product_type: productTypeCategory,
+              quantity_to_sell_on_facebook: v.stockQuantity ?? 50,
+              sale_price: varHasDiscount ? `${varSalePrice.toFixed(2)} ${currency}` : '',
+              sale_price_effective_date: '',
+              item_group_id: contentId,
+              gender: 'unisex',
+              color: v.color || '',
+              size: v.size || '',
+              age_group: 'adult',
+              material: '',
+              pattern: '',
+              shipping: '',
+              shipping_weight: '',
+              custom_label_0: customLabel0 || '',
+              custom_label_1: productTypeCategory,
+              custom_label_2: '',
+              custom_label_3: '',
+              custom_label_4: '',
+              offer_disclaimer: '',
+              offer_disclaimer_url: '',
+              'video[0].url': '',
+              'video[0].tag[0]': '',
+              gtin: '',
+              'product_tags[0]': customLabel0 || '',
+              'product_tags[1]': productTypeCategory,
+              'style[0]': '',
+            });
+          });
+        } else {
+          const rawPrice = Number(p.price || 0);
+          const rawSalePrice = p.offerPrice ? Number(p.offerPrice) : null;
+          const hasDiscount = rawSalePrice != null && rawSalePrice > 0 && rawSalePrice < rawPrice;
 
           rows.push({
-            id: v.id || `${contentId}_${v.sku || 'v'}`,
-            title: `${p.name} - ${v.name}`.trim(),
+            id: contentId,
+            title: p.name,
             description: cleanDesc,
-            availability: (v.stockQuantity ?? 1) > 0 ? 'in stock' : 'out of stock',
+            availability: p.isInstock ? 'in stock' : 'out of stock',
             condition: defaultCondition,
             link: productLink,
-            image_link: formatImageForMeta(v.imageUrl) || mainImage,
+            image_link: mainImage,
             brand: brandName,
-            price: `${varPrice.toFixed(2)} ${currency}`,
+            price: `${rawPrice.toFixed(2)} ${currency}`,
             google_product_category: googleCategory || '',
             fb_product_category: '',
             product_type: productTypeCategory,
-            quantity_to_sell_on_facebook: v.stockQuantity ?? 50,
-            sale_price: varHasDiscount ? `${varSalePrice.toFixed(2)} ${currency}` : '',
+            quantity_to_sell_on_facebook: p.stockAmount ?? 50,
+            sale_price: hasDiscount ? `${rawSalePrice.toFixed(2)} ${currency}` : '',
             sale_price_effective_date: '',
-            item_group_id: contentId,
+            item_group_id: '',
             gender: 'unisex',
-            color: v.color || '',
-            size: v.size || '',
+            color: '',
+            size: '',
             age_group: 'adult',
             material: '',
             pattern: '',
@@ -723,105 +841,94 @@ const MetaCatalogGenerator = () => {
             'product_tags[1]': productTypeCategory,
             'style[0]': '',
           });
-        });
-      } else {
-        const rawPrice = Number(p.price || 0);
-        const rawSalePrice = p.offerPrice ? Number(p.offerPrice) : null;
-        const hasDiscount = rawSalePrice != null && rawSalePrice > 0 && rawSalePrice < rawPrice;
+        }
+      });
 
-        rows.push({
-          id: contentId,
-          title: p.name,
-          description: cleanDesc,
-          availability: p.isInstock ? 'in stock' : 'out of stock',
-          condition: defaultCondition,
-          link: productLink,
-          image_link: mainImage,
-          brand: brandName,
-          price: `${rawPrice.toFixed(2)} ${currency}`,
-          google_product_category: googleCategory || '',
-          fb_product_category: '',
-          product_type: productTypeCategory,
-          quantity_to_sell_on_facebook: p.stockAmount ?? 50,
-          sale_price: hasDiscount ? `${rawSalePrice.toFixed(2)} ${currency}` : '',
-          sale_price_effective_date: '',
-          item_group_id: '',
-          gender: 'unisex',
-          color: '',
-          size: '',
-          age_group: 'adult',
-          material: '',
-          pattern: '',
-          shipping: '',
-          shipping_weight: '',
-          custom_label_0: customLabel0 || '',
-          custom_label_1: productTypeCategory,
-          custom_label_2: '',
-          custom_label_3: '',
-          custom_label_4: '',
-          offer_disclaimer: '',
-          offer_disclaimer_url: '',
-          'video[0].url': '',
-          'video[0].tag[0]': '',
-          gtin: '',
-          'product_tags[0]': customLabel0 || '',
-          'product_tags[1]': productTypeCategory,
-          'style[0]': '',
-        });
-      }
-    });
+      return rows;
+    },
+    [
+      stagedMap,
+      siteUrl,
+      productPathPrefix,
+      idMapping,
+      defaultCondition,
+      googleCategory,
+      customLabel0,
+      includeVariants,
+      currency,
+    ]
+  );
 
-    return rows;
-  }, [
-    stagedMap,
-    siteUrl,
-    productPathPrefix,
-    idMapping,
-    defaultCondition,
-    googleCategory,
-    customLabel0,
-    includeVariants,
-  ]);
+  // Generate Catalog Rows according to Meta specifications for currently active site
+  const catalogRows = useMemo(() => {
+    return generateRowsForSite(activeSite.url);
+  }, [generateRowsForSite, activeSite.url]);
 
-  // Generates serialized CSV content according to Meta Commerce feed specification
-  const generateCsvString = () => {
-    const header = META_CSV_COLUMNS.join(',');
-    const dataLines = catalogRows.map((row) =>
-      META_CSV_COLUMNS.map((col) => escapeCsvCell(row[col] ?? '')).join(',')
-    );
-    return [header, ...dataLines].join('\r\n');
-  };
-
-  // Triggers browser download for Meta catalog CSV file
-  const handleDownloadCsv = () => {
+  // Triggers browser download for Meta catalog CSV file for a specific site
+  const handleDownloadSiteCsv = (targetSite) => {
     if (catalogRows.length === 0) {
       toast.error('No products added to catalog feed.');
       return;
     }
-    const csvContent = generateCsvString();
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const brand = clientConfig?.brandName?.toLowerCase() || 'catalog';
+    const site = targetSite || activeSite;
+    const rows = generateRowsForSite(site.url);
     const dateStr = new Date().toISOString().slice(0, 10);
-    link.href = url;
-    link.download = `meta_catalog_${brand}_${dateStr}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    toast.success(`Meta Catalog CSV (${catalogRows.length} rows) downloaded successfully!`);
+    const filename = `meta_catalog_${site.key}_${dateStr}.csv`;
+    exportToCsv(filename, META_CSV_COLUMNS, rows);
+    toast.success(`${site.name} CSV (${rows.length} rows) downloaded! (Pixel: ${site.pixelId})`);
   };
 
-  // Copies generated CSV text directly to clipboard
+  // Triggers browser download for Meta catalog Excel (.xlsx) file for a specific site
+  const handleDownloadSiteXlsx = async (targetSite) => {
+    if (catalogRows.length === 0) {
+      toast.error('No products added to catalog feed.');
+      return;
+    }
+    const site = targetSite || activeSite;
+    const rows = generateRowsForSite(site.url);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = `meta_catalog_${site.key}_${dateStr}.xlsx`;
+    const sheetName = site.key === 'shop' ? 'ShopCatalog' : 'StoreCatalog';
+    await exportToXlsx(filename, sheetName, META_CSV_COLUMNS, rows);
+    toast.success(`${site.name} Excel (${rows.length} rows) downloaded! (Pixel: ${site.pixelId})`);
+  };
+
+  // Downloads both Store and Shop catalogs bundled in a single ZIP file
+  const handleDownloadDualZip = async (format = 'csv') => {
+    if (catalogRows.length === 0) {
+      toast.error('No products added to catalog feed.');
+      return;
+    }
+    const storeRows = generateRowsForSite(storeSite.url);
+    const shopRows = generateRowsForSite(shopSite.url);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    await downloadDualSiteZip({
+      zipFilename: `meta_catalogs_dual_${format}_${dateStr}.zip`,
+      storeRows,
+      shopRows,
+      columns: META_CSV_COLUMNS,
+      format,
+      storeName: 'store',
+      shopName: 'shop',
+      dateStr,
+    });
+    toast.success(`Dual Meta Catalog ZIP (${format.toUpperCase()}) downloaded successfully!`);
+  };
+
+  // Default download handler targeting active site
+  const handleDownloadCsv = () => {
+    handleDownloadSiteCsv(activeSite);
+  };
+
+  // Copies generated CSV text directly to clipboard for current active site
   const handleCopyCsv = () => {
     if (catalogRows.length === 0) {
       toast.error('No products in catalog feed.');
       return;
     }
-    const csvContent = generateCsvString();
+    const csvContent = serializeCsv(META_CSV_COLUMNS, catalogRows);
     navigator.clipboard.writeText(csvContent);
-    toast.success('CSV copied to clipboard!');
+    toast.success(`${activeSite.name} CSV copied to clipboard! (Pixel: ${activeSite.pixelId})`);
   };
 
   return (
@@ -836,7 +943,7 @@ const MetaCatalogGenerator = () => {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Pick selective products, filter categories, and download your Meta Pixel & Commerce compliant CSV catalog.
+            Generate and export Meta Pixel & Commerce Manager compliant product catalogs for Surokkha Store and Shop.
           </p>
         </div>
 
@@ -857,20 +964,131 @@ const MetaCatalogGenerator = () => {
             onClick={handleCopyCsv}
             disabled={catalogRows.length === 0}
             className="shadow-2xs text-xs"
+            title={`Copy ${activeSite.name} CSV`}
           >
             <Copy className="h-3.5 w-3.5 mr-1.5" />
-            Copy CSV
+            Copy {activeSite.key === 'shop' ? 'Shop' : 'Store'} CSV
           </Button>
 
+          {/* Dedicated Download Store CSV Button */}
           <Button
             size="sm"
-            onClick={handleDownloadCsv}
+            onClick={() => handleDownloadSiteCsv(storeSite)}
             disabled={catalogRows.length === 0}
-            className="shadow-sm text-xs font-semibold"
+            className="shadow-xs text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
           >
-            <Download className="h-4 w-4 mr-1.5" />
-            Download Meta CSV ({catalogRows.length})
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Download Store CSV
+            <span className="ml-1.5 px-1 py-0.2 bg-emerald-800/60 rounded text-[10px] font-mono">
+              .store
+            </span>
           </Button>
+
+          {/* Dedicated Download Shop CSV Button */}
+          <Button
+            size="sm"
+            onClick={() => handleDownloadSiteCsv(shopSite)}
+            disabled={catalogRows.length === 0}
+            className="shadow-xs text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Download Shop CSV
+            <span className="ml-1.5 px-1 py-0.2 bg-amber-800/60 rounded text-[10px] font-mono">
+              .shop
+            </span>
+          </Button>
+
+          {/* Excel & ZIP Download Dropdown */}
+          <div className="relative group">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={catalogRows.length === 0}
+              className="shadow-2xs text-xs"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+              Excel / ZIP
+              <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-70" />
+            </Button>
+            <div className="absolute right-0 top-full mt-1 hidden group-hover:block z-50 min-w-[210px] rounded-lg border bg-popover p-1 text-xs shadow-lg space-y-0.5">
+              <button
+                type="button"
+                onClick={() => handleDownloadSiteXlsx(storeSite)}
+                className="flex items-center w-full px-2.5 py-1.5 rounded text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-emerald-600" />
+                Store Excel (.xlsx)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDownloadSiteXlsx(shopSite)}
+                className="flex items-center w-full px-2.5 py-1.5 rounded text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-amber-600" />
+                Shop Excel (.xlsx)
+              </button>
+              <div className="border-t my-1" />
+              <button
+                type="button"
+                onClick={() => handleDownloadDualZip('csv')}
+                className="flex items-center w-full px-2.5 py-1.5 rounded text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
+              >
+                <Archive className="h-3.5 w-3.5 mr-2 text-primary" />
+                Download Both Sites (CSV ZIP)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDownloadDualZip('xlsx')}
+                className="flex items-center w-full px-2.5 py-1.5 rounded text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
+              >
+                <Archive className="h-3.5 w-3.5 mr-2 text-emerald-600" />
+                Download Both Sites (Excel ZIP)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dual Site Switcher Card Banner */}
+      <div className="rounded-xl border bg-card/60 backdrop-blur-xs p-3 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary shrink-0" />
+            <div>
+              <span className="text-xs font-semibold text-foreground">Target Storefront Catalog:</span>
+              <p className="text-[11px] text-muted-foreground">Each site has its own distinct domain, product links, and Meta Pixel ID.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {configuredSites.map((site) => {
+              const isSelected = site.key === activeSiteKey;
+              return (
+                <button
+                  key={site.key}
+                  type="button"
+                  onClick={() => setActiveSiteKey(site.key)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-primary text-primary-foreground border-primary shadow-xs font-semibold'
+                      : 'bg-background hover:bg-muted text-muted-foreground hover:text-foreground border-input'
+                  }`}
+                >
+                  <span>{site.name}</span>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] px-1.5 py-0 h-4 ${
+                      isSelected
+                        ? 'bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    Pixel: {site.pixelId}
+                  </Badge>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -1376,18 +1594,65 @@ const MetaCatalogGenerator = () => {
       {/* TAB 3: META CSV RAW PREVIEW */}
       {activeTab === 'preview' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              Exact preview of rows exported to Meta Commerce Catalog CSV.
-            </span>
-            <Button
-              size="sm"
-              onClick={handleDownloadCsv}
-              disabled={catalogRows.length === 0}
-              className="h-8 text-xs font-semibold"
-            >
-              <Download className="h-3.5 w-3.5 mr-1.5" /> Download Full CSV ({catalogRows.length} Rows)
-            </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/40 p-3 rounded-xl border">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-medium text-muted-foreground">
+                Previewing Links:
+              </span>
+              <div className="flex items-center gap-1 bg-background p-0.5 rounded-lg border shadow-2xs">
+                {configuredSites.map((site) => (
+                  <button
+                    key={site.key}
+                    type="button"
+                    onClick={() => setActiveSiteKey(site.key)}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                      activeSiteKey === site.key
+                        ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {site.name}
+                  </button>
+                ))}
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono bg-primary/5 text-primary border-primary/20">
+                Pixel: {activeSite.pixelId}
+              </Badge>
+              <span className="text-[11px] text-muted-foreground hidden md:inline font-mono">
+                ({activeSite.url})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                size="sm"
+                onClick={() => handleDownloadSiteCsv(storeSite)}
+                disabled={catalogRows.length === 0}
+                className="h-8 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+              >
+                <Download className="h-3.5 w-3.5 mr-1" />
+                Store CSV ({catalogRows.length})
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleDownloadSiteCsv(shopSite)}
+                disabled={catalogRows.length === 0}
+                className="h-8 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+              >
+                <Download className="h-3.5 w-3.5 mr-1" />
+                Shop CSV ({catalogRows.length})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownloadSiteXlsx(activeSite)}
+                disabled={catalogRows.length === 0}
+                className="h-8 text-xs cursor-pointer"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                {activeSite.key === 'shop' ? 'Shop' : 'Store'} Excel (.xlsx)
+              </Button>
+            </div>
           </div>
 
           {catalogRows.length === 0 ? (
@@ -1466,6 +1731,81 @@ const MetaCatalogGenerator = () => {
           </DialogHeader>
 
           <div className="space-y-4 py-2 text-xs">
+            {/* Live Scheduled Feed URLs for Meta Commerce Manager */}
+            <div className="rounded-lg border bg-muted/40 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-foreground text-xs flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-primary" />
+                  Meta Commerce Scheduled Feeds
+                </span>
+                <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                  Dual-Site Feeds
+                </Badge>
+              </div>
+
+              {/* Store Live Feed */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                    <span>1. Surokkha Store Feed (surokkha.store)</span>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono">Pixel: 1840805450442709</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    readOnly
+                    value={`${imageBaseUrl.replace(/\/$/, '')}/api/v1/products/feed/meta-catalog.csv?site=store`}
+                    className="h-7 text-[11px] font-mono bg-background"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[11px] px-2.5 shrink-0 cursor-pointer"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${imageBaseUrl.replace(/\/$/, '')}/api/v1/products/feed/meta-catalog.csv?site=store`);
+                      toast.success('Store Feed URL copied to clipboard!');
+                    }}
+                  >
+                    <Copy className="h-3 w-3 mr-1" /> Copy
+                  </Button>
+                </div>
+              </div>
+
+              {/* Shop Live Feed */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                    <span>2. Surokkha Shop Feed (surokkha.shop)</span>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono">Pixel: 1565104865301894</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    readOnly
+                    value={`${imageBaseUrl.replace(/\/$/, '')}/api/v1/products/feed/meta-catalog.csv?site=shop`}
+                    className="h-7 text-[11px] font-mono bg-background"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[11px] px-2.5 shrink-0 cursor-pointer"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${imageBaseUrl.replace(/\/$/, '')}/api/v1/products/feed/meta-catalog.csv?site=shop`);
+                      toast.success('Shop Feed URL copied to clipboard!');
+                    }}
+                  >
+                    <Copy className="h-3 w-3 mr-1" /> Copy
+                  </Button>
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground italic">
+                Tip: In Meta Commerce Manager &gt; Data Sources &gt; Data Feeds &gt; Scheduled Feed, paste the respective URL to sync products automatically.
+              </p>
+            </div>
+
             <div>
               <label className="font-medium text-foreground block mb-1">
                 Store Website URL

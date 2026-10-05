@@ -98,7 +98,7 @@ export default function PrivacyView() {
             </p>
             <ul className="list-disc list-inside space-y-1.5 pl-2 text-slate-600">
               <li>Courier waybills display only your Name, Phone Number, and Address alongside a neutral generic merchant identifier.</li>
-              <li>No medical descriptions, condom variant names, or brand logos appear on courier invoices.</li>
+              <li>No medical descriptions, contraceptive variant names, or brand logos appear on courier invoices.</li>
               <li>Delivery riders are strictly bound to deliver sealed packages without opening or inspecting inner contents.</li>
             </ul>
           </section>
