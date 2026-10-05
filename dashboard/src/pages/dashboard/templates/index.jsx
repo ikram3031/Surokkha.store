@@ -14,6 +14,7 @@ import {
   ZoomIn,
   ZoomOut,
   Code,
+  Sliders,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
