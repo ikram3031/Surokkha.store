@@ -418,35 +418,37 @@ export const updateOrder = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
 
-    // If order was marked as fake, archive it to fake_orders collection and remove from member orders
+    // If order was marked as fake, archive it to fake_orders collection
     if (order.status === 'fake') {
       try {
         await archiveFakeOrder(order, req.user?.userId || null, payload.reason || "Marked as fake order");
-        if (order.member) {
-          await MemberModel.updateOne(
-            { _id: order.member },
-            { $pull: { orders: { did: order.did } } }
-          );
-        }
       } catch (fakeErr) {
         console.error("Error archiving fake order:", fakeErr);
       }
     }
 
+    const isRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(order.status);
     const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
     const newMemberId = order.member ? order.member.toString() : null;
     const orderDid = order.did;
     const orderValue = Number(order.totals?.total || 0);
 
-    if (oldMemberId && oldMemberId !== newMemberId) {
+    if (oldMemberId && (oldMemberId !== newMemberId || isRemovedStatus)) {
       await MemberModel.updateOne(
         { _id: oldMemberId },
         { $pull: { orders: { did: orderDid } } },
       );
     }
 
-    if (newMemberId && order.status !== 'fake') {
-      await updateMemberOrderReference(newMemberId, orderDid, orderValue);
+    if (newMemberId) {
+      if (isRemovedStatus) {
+        await MemberModel.updateOne(
+          { _id: newMemberId },
+          { $pull: { orders: { did: orderDid } } },
+        );
+      } else {
+        await updateMemberOrderReference(newMemberId, orderDid, orderValue);
+      }
     }
 
     await syncPaymentDocument(order, payload);
@@ -625,10 +627,16 @@ export const bulkUpdateOrders = async (req, res, next) => {
       await OrderModel.updateMany(query, { $set: updateFields });
     }
 
-    // If marked as fake in bulk, archive all to fake_orders and remove from members' active orders
+    // If marked as fake or cancelled in bulk, archive fake orders and remove from members' active orders
+    const isBulkRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(updateFields.status);
     if (updateFields.status === 'fake') {
       for (const ord of orders) {
         archiveFakeOrder(ord, req.user?.userId || null, req.body?.reason || "Bulk marked as fake order").catch(e => console.error(e));
+      }
+    }
+
+    if (isBulkRemovedStatus) {
+      for (const ord of orders) {
         if (ord.member && ord.did) {
           MemberModel.updateOne(
             { _id: ord.member },
@@ -646,7 +654,7 @@ export const bulkUpdateOrders = async (req, res, next) => {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
 
-      // If order is fake or cancelled, payment must be cancelled
+      // If order is fake or cancelled, payment must be cancelled and deactivated
       if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled') {
         await PaymentModel.findOneAndUpdate(
           { orderId: updatedOrder._id },
@@ -658,6 +666,7 @@ export const bulkUpdateOrders = async (req, res, next) => {
             pendingAmount: 0,
             amount: 0,
             status: 'cancelled',
+            isActive: false,
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );

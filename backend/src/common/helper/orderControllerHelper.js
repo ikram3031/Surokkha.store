@@ -287,11 +287,23 @@ export const computeMemberTotals = async (memberId) => {
   return { totalOrderAmount, totalPaidAmount, totalPendingAmount };
 };
 
-// Apply the recalculated member totals back into the member profile record.
+// Recalculate the aggregate order, paid, and pending totals for a member, and sync isActive flag.
 export const updateMemberTotals = async (memberId) => {
   if (!memberId) return;
   const totals = await computeMemberTotals(memberId);
-  await MemberModel.findByIdAndUpdate(memberId, totals, { new: true, runValidators: true });
+  const activeOrdersCount = await OrderModel.countDocuments({
+    member: memberId,
+    active: { $ne: false },
+    status: { $nin: ['fake', 'cancelled', 'canceled'] },
+  });
+  await MemberModel.findByIdAndUpdate(
+    memberId,
+    {
+      ...totals,
+      ...(activeOrdersCount === 0 ? { isActive: false } : { isActive: true }),
+    },
+    { new: true, runValidators: true }
+  );
 };
 
 // Keep the member's embedded orders list in sync with the latest order reference.
