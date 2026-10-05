@@ -317,112 +317,6 @@ export default function ProductDetailView() {
             </div>
           )}
 
-          {/* High-Conversion Package & Combo Selector Module */}
-          <div className="space-y-2.5 pt-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                <span>📦</span>
-                <span>{isBn ? 'প্যাকেজ নির্বাচন করুন (কম্বোতে বেশি সাশ্রয়):' : 'Select Package & Save More:'}</span>
-              </span>
-              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                {isBn ? 'কম্বোতে ফ্রি ডেলিভারি অফার' : 'Mega Combo Savings'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {/* Option 1: Single Pack (10 Pcs) */}
-              <div
-                onClick={() => {
-                  if (product.slug?.includes('combo')) {
-                    openProduct('mo-multi-textured-latex-contraceptive-10-pcs');
-                  }
-                }}
-                className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                  !product.slug?.includes('combo')
-                    ? 'border-brand-700 bg-brand-50/40 shadow-xs ring-1 ring-brand-700/20'
-                    : 'border-slate-200 bg-white hover:border-slate-300 opacity-80 hover:opacity-100'
-                }`}
-              >
-                <div className="text-[11px] font-bold text-slate-600">
-                  {isBn ? '১টি বক্স (১০ পিস)' : '1 Box (10 Pcs)'}
-                </div>
-                <div className="text-base font-extrabold text-slate-900 mt-0.5">
-                  {formatPrice(400)}
-                </div>
-                <div className="text-[10px] text-slate-500 mt-0.5">
-                  {isBn ? '৳৪০ প্রতি পিস' : '৳40 / pc'}
-                </div>
-              </div>
-
-              {/* Option 2: 20 Pcs Ribbed Combo (৳650) - Limited Stock */}
-              {(() => {
-                const ribbedComboKey = 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
-                const ribbedCombo = products[ribbedComboKey] || products['ribbed-condoms-20pcs-combo'];
-                const isRibbedActive = product.slug === ribbedComboKey || product.id === ribbedComboKey;
-                const rStock = Number(ribbedCombo?.stockAmount != null ? ribbedCombo.stockAmount : (ribbedCombo?.stock != null ? ribbedCombo.stock : 5));
-                const rLow = rStock > 0 && rStock <= 10;
-
-                return (
-                  <div
-                    onClick={() => openProduct(ribbedComboKey)}
-                    className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                      isRibbedActive
-                        ? 'border-purple-600 bg-purple-50/50 shadow-xs ring-1 ring-purple-600/20'
-                        : 'border-purple-200/80 bg-white hover:border-purple-400'
-                    }`}
-                  >
-                    <div className="absolute -top-2.5 right-2 bg-gradient-to-r from-rose-600 to-purple-600 text-white text-[9px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider shadow-xs">
-                      {rLow ? (isBn ? `🔥 মাত্র ${formatNumber(rStock)}টি বাকি!` : `🔥 ${rStock} Left!`) : (isBn ? 'সাশ্রয় ৳১৫০' : 'Save ৳150')}
-                    </div>
-                    <div className="text-[11px] font-bold text-purple-900">
-                      {isBn ? '২টি বক্স • রিবড কম্বো (২০ পিস)' : '2 Boxes • Ribbed Combo (20 Pcs)'}
-                    </div>
-                    <div className="text-base font-extrabold text-purple-950 mt-0.5">
-                      {formatPrice(650)}
-                    </div>
-                    <div className="text-[10px] text-purple-700 mt-0.5 flex items-center gap-1 font-semibold">
-                      <span>{isBn ? '৳৩২.৫/পিস' : '৳32.5/pc'}</span>
-                      <span className="line-through text-slate-400 font-normal">৳৮০০</span>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Option 3: 30 Pcs Ultimate 3-in-1 Combo (৳900) - Most Popular */}
-              {(() => {
-                const trioKey = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
-                const isTrioActive = product.slug === trioKey || product.id === trioKey || product.slug?.includes('30pcs') || product.slug?.includes('variety');
-
-                return (
-                  <div
-                    onClick={() => openProduct(trioKey)}
-                    className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer text-left ${
-                      isTrioActive
-                        ? 'border-amber-500 bg-amber-50/60 shadow-xs ring-2 ring-amber-400/40'
-                        : 'border-amber-300 bg-gradient-to-br from-amber-50/40 to-white hover:border-amber-500'
-                    }`}
-                  >
-                    <div className="absolute -top-2.5 right-2 bg-amber-500 text-slate-950 text-[9px] font-black px-2 py-0.2 rounded-full uppercase tracking-wider shadow-xs">
-                      ⭐ {isBn ? 'সেরা সাশ্রয়ী (৳৯০০)' : 'Best Deal (৳900)'}
-                    </div>
-                    <div className="text-[11px] font-bold text-amber-950">
-                      {isBn ? '৩টি বক্স • মেগা কম্বো (৩০ পিস)' : '3 Boxes • Mega Combo (30 Pcs)'}
-                    </div>
-                    <div className="text-base font-extrabold text-brand-900 mt-0.5 flex items-baseline gap-1.5">
-                      <span>{formatPrice(900)}</span>
-                      <span className="text-[11px] text-emerald-700 font-bold bg-emerald-100/80 px-1 rounded">
-                        {isBn ? '৳৩০০ ছাড়' : 'Save ৳300'}
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-amber-800 mt-0.5 flex items-center gap-1 font-semibold">
-                      <span>{isBn ? 'মাত্র ৳৩০/পিস' : 'Only ৳30/pc'}</span>
-                      <span className="line-through text-slate-400 font-normal">৳১২০০</span>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
 
           {/* Detailed Description */}
           <div>
@@ -510,6 +404,30 @@ export default function ProductDetailView() {
               <strong className="font-bold text-slate-900">{t('discreetAssuranceLabel', 'Discreet Assurance:')}</strong> {t('discreetAssuranceText', 'Shipped in completely unmarked, unprinted parcel bags. Zero personal wellness labels on outer packaging.')}
             </span>
           </div>
+
+          {/* Optional Subtle Combo Recommendation */}
+          {!product.slug?.includes('combo') && (
+            <div className="pt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
+              <span className="font-medium text-slate-500">
+                {isBn ? '💡 বেশি সাশ্রয়ে কম্বো প্যাক খুঁজছেন?' : '💡 Looking for value combo packs?'}
+              </span>
+              <button
+                type="button"
+                onClick={() => openProduct('mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo')}
+                className="text-brand-700 hover:text-brand-900 font-bold underline cursor-pointer"
+              >
+                {isBn ? 'রিবড ২০ পিস (৳৬৫০)' : 'Ribbed 20 Pcs (৳650)'}
+              </button>
+              <span className="text-slate-300">•</span>
+              <button
+                type="button"
+                onClick={() => openProduct('mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo')}
+                className="text-brand-700 hover:text-brand-900 font-bold underline cursor-pointer"
+              >
+                {isBn ? '৩০ পিস মেগা কম্বো (৳৯০০)' : '30 Pcs Mega Combo (৳900)'}
+              </button>
+            </div>
+          )}
 
         </div>
       </div>
