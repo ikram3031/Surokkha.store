@@ -1,6 +1,5 @@
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import nodemailer from "nodemailer";
 import { UserModel } from "../../common/models/user.model.js";
 import { comparePassword } from "../../common/utils/password.js";
 import { createAccessToken, createRefreshToken, setAuthCookies } from "./AuthController.js";
@@ -8,47 +7,20 @@ import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { config as clientConfig } from "../../common/config/index.js";
 import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
-// Configure authenticator with a 1-step window to accommodate minor time drift
 authenticator.options = { window: 1 };
-
-let defaultTransport;
-
-// Helper to initialize or retrieve SMTP transport
-export const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    const transportOpts = {
-      host: env.SMTP_HOST || "127.0.0.1",
-      port: Number(env.SMTP_PORT) || 25,
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 8000,
-    };
-
-    if (env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER) {
-      transportOpts.auth = {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      };
-    }
-
-    defaultTransport = nodemailer.createTransport(transportOpts);
-  }
-  return defaultTransport;
-};
 
 // Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
 export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
   try {
-    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Flexivia";
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured) {
+      logger.warn({ email: user.email }, "Cannot send 2FA setup email: SMTP is not configured");
+      return false;
+    }
+
+    const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
     const otpauth = authenticator.keyuri(user.email, brandName, secret);
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, {
       width: 240,
@@ -59,10 +31,8 @@ export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
       },
     });
 
-    const transport = getTransport();
-    const fromName = env.SMTP_FROM_NAME || brandName;
-    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "plexivia.online"}`;
-    const fromAddress = `"${fromName}" <${fromEmail}>`;
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromAddress = `"${brandName}" <${fromEmail}>`;
 
     const htmlContent = buildTwoFactorQrEmailHtml({
       name: user.name,
@@ -112,7 +82,6 @@ export const sendQrCodeEmail = async (req, res, next) => {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
 
-    // Generate secret if not already set
     let secret = user.twoFactorSecret;
     if (!secret) {
       secret = authenticator.generateSecret();
@@ -120,12 +89,10 @@ export const sendQrCodeEmail = async (req, res, next) => {
       await user.save();
     }
 
-    // Send email asynchronously in background
     Promise.resolve().then(async () => {
       await dispatchTwoFactorSetupEmail({ user, secret });
     });
 
-    // Strictly return NO sensitive secret or QR dataUrl in HTTP response
     res.json({
       status: "success",
       message: "Setup QR code and instructions have been sent to your registered email address.",
@@ -150,7 +117,7 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Email, password, and 2FA code are required" });
     }
 
-    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret");
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret +refreshTokens");
     if (!user || !user.passwordHash) {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
@@ -164,7 +131,6 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "2FA has not been set up yet. Please request a setup email first." });
     }
 
-    // Verify TOTP code
     const isTokenValid = authenticator.verify({
       token: trimmedCode,
       secret: user.twoFactorSecret,
@@ -174,20 +140,18 @@ export const verify2fa = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Invalid or expired 2FA code. Please check your authenticator app and try again." });
     }
 
-    // Mark 2FA as fully enabled and activated
     user.twoFactorEnabled = true;
 
-    // Issue tokens and update login stats
     const refreshToken = createRefreshToken();
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
     user.lastLogin = new Date();
-    user.refreshToken = refreshToken;
-    user.refreshTokenExpiresAt = refreshTokenExpiresAt;
+    user.refreshTokens = user.refreshTokens || [];
+    user.refreshTokens = user.refreshTokens.filter((rt) => rt.expiresAt > new Date());
+    user.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
     await user.save();
 
     const accessToken = createAccessToken(user);
 
-    // Set SSO cookies
     setAuthCookies(res, req, accessToken, refreshToken);
 
     logger.info({ userId: user.id }, "2FA verified, issued auth tokens and SSO cookies successfully");
@@ -228,7 +192,7 @@ export const resetUser2fa = async (req, res, next) => {
     }
 
     targetUser.twoFactorSecret = undefined;
-    targetUser.twoFactorEnabled = true; // Still keep 2FA enforced, but prompt new QR scan on next login
+    targetUser.twoFactorEnabled = true;
     await targetUser.save();
 
     logger.info({ adminId: req.user?.userId, targetUserId }, "Admin reset 2FA for user");

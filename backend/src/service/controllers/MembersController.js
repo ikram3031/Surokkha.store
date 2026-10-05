@@ -33,8 +33,9 @@ const issueMemberTokens = async (member) => {
     Date.now() + (env.REFRESH_TOKEN_EXPIRES_MS || 30 * 24 * 60 * 60 * 1000),
   );
 
-  member.refreshToken = refreshToken;
-  member.refreshTokenExpiresAt = refreshTokenExpiresAt;
+  member.refreshTokens = member.refreshTokens || [];
+  member.refreshTokens = member.refreshTokens.filter((rt) => rt.expiresAt > new Date());
+  member.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
   await member.save();
 
   return {
@@ -534,31 +535,44 @@ export const verifyMemberOtp = async (req, res, next) => {
 // Rotate a member refresh token and issue a fresh access token pair.
 export const refreshMemberToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body ?? {};
+    const { refreshToken: reqRefreshToken } = req.body ?? {};
 
-    if (!refreshToken) {
+    if (!reqRefreshToken) {
       return res.status(400).json({
         status: "error",
         message: "refreshToken is required",
       });
     }
 
-    const member = await MemberModel.findOne({ refreshToken }).select(
-      "+refreshToken +refreshTokenExpiresAt",
+    const member = await MemberModel.findOne({ "refreshTokens.token": reqRefreshToken }).select(
+      "+refreshTokens",
     );
-    if (!member || !member.refreshTokenExpiresAt || member.refreshTokenExpiresAt < new Date()) {
+    const tokenDoc = member?.refreshTokens?.find((rt) => rt.token === reqRefreshToken);
+    if (!member || !tokenDoc || tokenDoc.expiresAt < new Date()) {
       return res.status(401).json({
         status: "error",
         message: "Invalid or expired refresh token",
       });
     }
 
-    const tokenBundle = await issueMemberTokens(member);
+    // Remove old token
+    member.refreshTokens = member.refreshTokens.filter((rt) => rt.token !== reqRefreshToken && rt.expiresAt > new Date());
+    
+    // Add new token
+    const newRefreshToken = createRefreshToken();
+    const refreshTokenExpiresAt = new Date(Date.now() + (env.REFRESH_TOKEN_EXPIRES_MS || 30 * 24 * 60 * 60 * 1000));
+    member.refreshTokens.push({ token: newRefreshToken, expiresAt: refreshTokenExpiresAt });
+    await member.save();
+
+    const accessToken = createAccessToken(member);
 
     return res.json({
       status: "success",
       data: {
-        ...tokenBundle,
+        accessToken,
+        accessTokenExpiresIn: env.ACCESS_TOKEN_EXPIRES_IN || "20m",
+        refreshToken: newRefreshToken,
+        refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
       },
     });
   } catch (error) {
@@ -569,21 +583,20 @@ export const refreshMemberToken = async (req, res, next) => {
 // Clear the stored refresh token so the member session can no longer be rotated.
 export const logoutMember = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body ?? {};
+    const { refreshToken: reqRefreshToken } = req.body ?? {};
 
-    if (!refreshToken) {
+    if (!reqRefreshToken) {
       return res.status(400).json({
         status: "error",
         message: "refreshToken is required",
       });
     }
 
-    const member = await MemberModel.findOne({ refreshToken }).select(
-      "+refreshToken +refreshTokenExpiresAt",
+    const member = await MemberModel.findOne({ "refreshTokens.token": reqRefreshToken }).select(
+      "+refreshTokens",
     );
     if (member) {
-      member.refreshToken = undefined;
-      member.refreshTokenExpiresAt = undefined;
+      member.refreshTokens = member.refreshTokens.filter((rt) => rt.token !== reqRefreshToken);
       await member.save();
     }
 
