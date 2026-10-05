@@ -9,6 +9,7 @@ import { logActivity } from "@/lib/activity-logger";
 import { toast } from "sonner";
 import { clientConfig } from "@/clientConfig";
 import PathaoCourierCard from "@/components/dashboard/orders/PathaoCourierCard";
+import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,8 @@ import {
   X,
   Tag,
   FileText,
+  PhoneCall,
+  Copy,
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
@@ -71,6 +74,7 @@ import {
   getShippingInfo,
   getWhatsAppLink,
   WhatsAppIcon,
+  handleCopyText,
 } from "@/utils/orderDetailsHelper";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from '@/utils/dateHelper';
@@ -305,6 +309,7 @@ const OrderDetailsPage = () => {
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [brandFilter, setBrandFilter] = useState("All");
   const [dialogProduct, setDialogProduct] = useState(null);
+  const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
 
   const { data: categories = [] } = useCategories();
   const { data: brands = [] } = useBrands();
@@ -624,6 +629,9 @@ const OrderDetailsPage = () => {
               <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={handleOpenInvoice}>
                 <FileText className="h-4 w-4 text-muted-foreground" /> Print Invoice
               </Button>
+              <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={() => setSendEmailModalOpen(true)}>
+                <Mail className="h-4 w-4 text-muted-foreground" /> Send via Email
+              </Button>
               <Button className="gap-1.5 shadow-sm cursor-pointer" onClick={() => setIsEditMode(true)}>
                 <Edit className="h-4 w-4" /> Edit Order
               </Button>
@@ -767,6 +775,21 @@ const OrderDetailsPage = () => {
                             {order.billingInfo?.phone || order.customer?.phone}
                           </a>
                           <a
+                            href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                            title="Call Customer"
+                          >
+                            <PhoneCall className="h-3.5 w-3.5" />
+                          </a>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
+                            title="Copy Phone Number"
+                            onClick={() => handleCopyText(order.billingInfo?.phone || order.customer?.phone, 'Phone number')}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                          <a
                             href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -784,9 +807,29 @@ const OrderDetailsPage = () => {
                       <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                       <div>
                         <span className="text-xs text-muted-foreground block">Email</span>
-                        <span className="font-medium text-foreground">
-                          {order.billingInfo?.email || order.customer?.email}
-                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <a
+                            href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                            className="font-medium text-foreground hover:underline"
+                          >
+                            {order.billingInfo?.email || order.customer?.email}
+                          </a>
+                          <a
+                            href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
+                            title="Send Email"
+                          >
+                            <Mail className="h-3.5 w-3.5" />
+                          </a>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
+                            title="Copy Email"
+                            onClick={() => handleCopyText(order.billingInfo?.email || order.customer?.email, 'Email')}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -827,6 +870,21 @@ const OrderDetailsPage = () => {
                               {order.billingInfo?.phone || order.customer?.phone}
                             </a>
                             <a
+                              href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Call Customer"
+                            >
+                              <PhoneCall className="h-3.5 w-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
+                              title="Copy Phone Number"
+                              onClick={() => handleCopyText(order.billingInfo?.phone || order.customer?.phone, 'Phone number')}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
+                            <a
                               href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -846,9 +904,29 @@ const OrderDetailsPage = () => {
                         <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div>
                           <span className="text-xs text-muted-foreground block">Email</span>
-                          <span className="font-medium text-foreground">
-                            {order.billingInfo?.email || order.customer?.email}
-                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <a
+                              href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                              className="font-medium text-foreground hover:underline"
+                            >
+                              {order.billingInfo?.email || order.customer?.email}
+                            </a>
+                            <a
+                              href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Send Email"
+                            >
+                              <Mail className="h-3.5 w-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
+                              title="Copy Email"
+                              onClick={() => handleCopyText(order.billingInfo?.email || order.customer?.email, 'Email')}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -911,6 +989,21 @@ const OrderDetailsPage = () => {
                             >
                               {order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}
                             </a>
+                            <a
+                              href={`tel:${order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}`}
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Call Customer"
+                            >
+                              <PhoneCall className="h-3.5 w-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
+                              title="Copy Phone Number"
+                              onClick={() => handleCopyText(order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone, 'Phone number')}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
                             <a
                               href={getWhatsAppLink(order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone)}
                               target="_blank"
@@ -1469,6 +1562,12 @@ const OrderDetailsPage = () => {
       )}
 
       <ProductAddDialog product={dialogProduct} onClose={() => setDialogProduct(null)} onAddToCart={addToCart} />
+
+      <SendOrderInvoiceModal
+        open={sendEmailModalOpen}
+        onOpenChange={setSendEmailModalOpen}
+        order={order}
+      />
     </div>
   );
 };

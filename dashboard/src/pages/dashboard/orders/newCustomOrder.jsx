@@ -50,6 +50,7 @@ import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { clientConfig } from "@/clientConfig";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
 import { DISTRICTS, DISTRICT_THANAS } from "@/data/districts";
+import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 
 // Modal dialog for selecting product variation & quantity
 const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
@@ -316,6 +317,7 @@ const NewCustomOrderPage = () => {
   const [cart, setCart] = useState([]);
   const [dialogProduct, setDialogProduct] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
+  const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Customer & Billing State (Matching Surokkha Checkout Architecture)
@@ -1634,6 +1636,14 @@ const NewCustomOrderPage = () => {
                 >
                   Download / Print Invoice
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full cursor-pointer text-xs font-semibold gap-1.5"
+                  onClick={() => setSendEmailModalOpen(true)}
+                >
+                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                  Send via Email
+                </Button>
               </div>
             </div>
           )}
@@ -1645,6 +1655,24 @@ const NewCustomOrderPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SendOrderInvoiceModal
+        open={sendEmailModalOpen}
+        onOpenChange={setSendEmailModalOpen}
+        order={completedOrder?.order || (completedOrder ? {
+          ...completedOrder,
+          _id: completedOrder?.order?._id,
+          orderNumber: completedOrder?.orderNumber,
+          billingInfo: {
+            fullName: completedOrder.customerName,
+            email: completedOrder.customerEmail,
+            phone: completedOrder.customerPhone,
+            address: completedOrder.deliveryAddress,
+            district: completedOrder.district,
+            thana: completedOrder.thana,
+          },
+        } : null)}
+      />
     </div>
   );
 };

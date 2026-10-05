@@ -21,9 +21,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Tag, ChevronDown, ChevronRight, Truck } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Tag, ChevronDown, ChevronRight, Truck, Mail } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiClient } from '@/lib/api-client';
+import { SendOrderInvoiceModal } from '@/components/dashboard/orders/SendOrderInvoiceModal';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
@@ -89,6 +90,7 @@ export const OrdersTable = ({
   const [targetOrderStatus, setTargetOrderStatus] = useState('Not Found');
   const [targetPaymentStatus, setTargetPaymentStatus] = useState('Not Found');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [sendInvoiceTarget, setSendInvoiceTarget] = useState(null);
 
   // Toggles row expansion for displaying detailed order accordion
   const toggleOrderExpansion = (orderId) => {
@@ -377,6 +379,10 @@ export const OrdersTable = ({
                               {t('orders.change_status', 'Change Status')}
                             </DropdownMenuItem>
                           )}
+                          <DropdownMenuItem onClick={() => setSendInvoiceTarget(order)} className="cursor-pointer">
+                            <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+                            <span>{t('orders.send_invoice_email', 'Send Invoice')}</span>
+                          </DropdownMenuItem>
                           {!isReadOnly && (
                             <>
                               <DropdownMenuSeparator />
@@ -476,6 +482,12 @@ export const OrdersTable = ({
         isDeleting={isDeleting}
         title={t('common.delete', 'Delete Order')}
         description={`${t('common.confirm_delete', 'Are you sure you want to delete order')} ${deleteTarget?.orderNumber ?? ''}?`}
+      />
+
+      <SendOrderInvoiceModal
+        open={!!sendInvoiceTarget}
+        onOpenChange={(open) => !open && setSendInvoiceTarget(null)}
+        order={sendInvoiceTarget}
       />
     </div>
   );

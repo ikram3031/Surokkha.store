@@ -1,5 +1,29 @@
 import { Badge } from "@/components/ui/badge";
 import { clientConfig } from "@/clientConfig";
+import { toast } from "sonner";
+
+// Copies text to clipboard with fallback and toast notification
+export const handleCopyText = async (text, type = "Phone number") => {
+  if (!text) return;
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+    toast.success(`${type} copied to clipboard!`);
+  } catch (err) {
+    console.error("Failed to copy:", err);
+    toast.error(`Failed to copy ${type.toLowerCase()}`);
+  }
+};
 
 // Check if an order is an In-Store order based on order number prefix, type, or customer email.
 export const checkIsInStoreOrder = (order) => {

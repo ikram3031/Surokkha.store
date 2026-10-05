@@ -1,7 +1,7 @@
 {
   "name": "Surokkha Store Admnin",
   "private": true,
-  "version": "_SS:1.0.01",
+  "version": "_SS:1.0.02",
   "type": "module",
   "scripts": {
     "dev": "vite",

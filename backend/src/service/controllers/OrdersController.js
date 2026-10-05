@@ -23,6 +23,8 @@ const { Types } = mongoose;
 
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
 import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
+import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
+import { compileTransactionalEmailHtml } from '../../common/templates/invoices/templateEngine.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
@@ -709,5 +711,124 @@ export const getOrderInvoiceView = async (req, res, next) => {
     next(error);
   }
 };
+
+// Dispatches order invoice email to the customer or specified recipient email
+export const sendOrderInvoiceEmail = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const recipientEmail = String(req.body?.email || req.body?.recipientEmail || "").trim();
+
+    let query = {};
+    if (Types.ObjectId.isValid(orderId)) {
+      query = { _id: orderId };
+    } else {
+      query = { $or: [{ did: orderId }, { orderNumber: orderId }] };
+    }
+
+    const order = await OrderModel.findOne(query).lean();
+    if (!order) {
+      return res.status(404).json({
+        status: "error",
+        message: "Order not found",
+      });
+    }
+
+    const targetEmail = recipientEmail || order.billingInfo?.email || "";
+    if (!targetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+      return res.status(400).json({
+        status: "error",
+        message: "A valid recipient email address is required.",
+      });
+    }
+
+    const subtotal = Number(order.totals?.subtotal || order.subtotal || 0);
+    const shippingFee = Number(order.totals?.shippingFee || order.shippingFee || order.shippingTotalAmount || 0);
+    const discountAmount = Number(order.discountTotalAmount || order.totals?.discount || 0);
+    const calculatedTotal = subtotal + shippingFee - discountAmount;
+    const totalAmount = Number(order.totals?.total !== undefined ? order.totals.total : (order.totalAmount !== undefined ? order.totalAmount : calculatedTotal));
+    const couponCode = order.couponCode ? String(order.couponCode).trim().toUpperCase() : null;
+    const formattedOrderId = order.orderNumber || order.did || order._id?.toString()?.slice(-6);
+
+    const formattedOrderData = {
+      orderId: formattedOrderId,
+      status: order.status || "processing",
+      orderType: order.orderType || "online",
+      createdAt: order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+      customerName: order.billingInfo?.fullName || "Valued Customer",
+      customerEmail: targetEmail,
+      customerPhone: order.billingInfo?.phone || "",
+      billingAddress: order.billingInfo || {},
+      shippingAddress: order.shippingInfo || order.billingInfo || {},
+      items: Array.isArray(order.items) ? order.items.map(item => {
+        const qty = Number(item.quantity || 1);
+        const unitPrice = Number(item.unitPrice ?? item.price ?? 0);
+        const itemSubtotal = Number(item.subtotal ?? (unitPrice * qty) ?? 0);
+        const variantParts = [item.size, item.concentration, item.variant, item.variantName].filter(Boolean);
+        const variantName = [...new Set(variantParts)].join(' • ');
+
+        return {
+          productName: item.name || item.productName || "Product",
+          variantName,
+          size: item.size || "",
+          concentration: item.concentration || "",
+          quantity: qty,
+          price: unitPrice,
+          unitPrice,
+          subtotal: itemSubtotal
+        };
+      }) : [],
+      subtotal,
+      shippingFee,
+      discountAmount,
+      couponCode,
+      totalAmount,
+      paymentMethod: order.paymentMethod || "Cash on Delivery",
+    };
+
+    let templateConfig = null;
+    try {
+      const storeSettings = await StoreSettingsModel.findOne({ key: "default" }).lean();
+      if (storeSettings?.templates?.isActive) {
+        templateConfig = storeSettings.templates;
+      }
+    } catch (_) {}
+
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !transport) {
+      return res.status(400).json({
+        status: "error",
+        message: "SMTP server is not configured. Please configure SMTP in Settings > SMTP Configuration first.",
+      });
+    }
+
+    const brandDisplayName = smtpConfig.fromName || config.brandName || "Surokkha";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
+    const fromAddress = `"${brandDisplayName}" <${fromEmail}>`;
+
+    const htmlContent = compileTransactionalEmailHtml({
+      templateConfig: templateConfig || {},
+      order: formattedOrderData,
+      clientConfig: config,
+    });
+
+    await transport.sendMail({
+      from: fromAddress,
+      to: targetEmail,
+      replyTo: { name: brandDisplayName, address: fromEmail },
+      subject: `${brandDisplayName}: Order Invoice & Details - #${formattedOrderId}`,
+      html: htmlContent,
+    });
+
+    return res.json({
+      status: "success",
+      message: `Invoice email sent successfully to ${targetEmail}`,
+      recipientEmail: targetEmail,
+      orderId: formattedOrderId,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
