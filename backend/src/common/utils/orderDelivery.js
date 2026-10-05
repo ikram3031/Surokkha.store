@@ -186,42 +186,8 @@ export const sendOrderEmailsAsynchronously = (order) => {
 
       if (!isCustomOrder) {
         const adminRecipientsSet = new Set();
-        
-        if (activeClientKey === "surokkha") {
-          adminRecipientsSet.add("support@surokkha.store");
-          adminRecipientsSet.add("contact@surokkha.store");
-          adminRecipientsSet.add("surokkha.support@gmail.com");
-        }
-
-        if (process.env.ADMIN_NOTIFY_EMAIL) {
-          adminRecipientsSet.add(process.env.ADMIN_NOTIFY_EMAIL.toLowerCase().trim());
-        }
-        if (config.supportEmail && isValidCustomerEmail(config.supportEmail)) {
-          adminRecipientsSet.add(config.supportEmail.toLowerCase().trim());
-        }
-
-        try {
-          const superAdmins = await UserModel.find({
-            role: { $in: ["Owner", "Admin", "Super Admin", "Manager"] },
-            $or: [{ isActive: true }, { active: true }, { isActive: { $exists: false } }],
-            receiveEmailNotifications: { $ne: false },
-          }).select("email receiveEmailNotifications").lean();
-
-          for (const adminUser of superAdmins) {
-            if (adminUser.email && adminUser.receiveEmailNotifications !== false && isValidCustomerEmail(adminUser.email)) {
-              adminRecipientsSet.add(adminUser.email.toLowerCase().trim());
-            }
-          }
-        } catch (dbErr) {
-          console.error("[Email Notification] Database query for super admin emails failed, falling back to default admins:", dbErr.message);
-        }
-
-        adminRecipientsSet.delete("ikramul.web@gmail.com");
-        adminRecipientsSet.delete("md.ikr4m@gmail.com");
-
-        if (activeClientKey === "demo" || (env.SMTP_USER && env.SMTP_USER.includes("plexivia"))) {
-          adminRecipientsSet.add("info@plexivia.online");
-        }
+        adminRecipientsSet.add("ihkhan889@gmail.com");
+        adminRecipientsSet.add("surokkha.support@gmail.com");
 
         const adminRecipients = Array.from(adminRecipientsSet);
         console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
