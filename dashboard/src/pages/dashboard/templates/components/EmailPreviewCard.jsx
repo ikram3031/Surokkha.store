@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Smartphone, Monitor, Mail, ExternalLink, PackageCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import invoiceLogo from '@/assets/invoice_logo.png';
 
 // Interpolate template tokens in string
 const interpolate = (templateStr, data) => {
@@ -24,8 +25,8 @@ export function EmailPreviewCard({
 
   const primaryColor = branding.primaryColor || '#0f172a';
   const secondaryColor = branding.secondaryColor || '#0d9488';
-  const logoUrl = header.logoUrl || tenant.logoUrl || tenant.logo || '';
-  const logoHeight = Math.min(header.logoHeight || 45, 55);
+  const logoUrl = header.logoUrl || tenant.logoUrl || tenant.logo || invoiceLogo;
+  const logoHeight = Math.min(header.logoHeight || 65, 80);
 
   const bannerBg = email.bannerBg || primaryColor;
   const buttonColor = email.buttonColor || secondaryColor;
@@ -132,7 +133,7 @@ export function EmailPreviewCard({
                 <img
                   src={logoUrl}
                   alt={tenant.brandName || 'Brand Logo'}
-                  style={{ height: `${logoHeight}px`, maxHeight: '55px', objectFit: 'contain' }}
+                  style={{ height: `${logoHeight}px`, maxHeight: '80px', maxWidth: '300px', objectFit: 'contain' }}
                   className="mx-auto mb-2"
                 />
               ) : (

@@ -20,10 +20,10 @@
 export const buildSurokkhaOrderInvoiceHtml = ({
   order = {},
   isPrintView = false,
-  logoUrl = "https://admin.surokkha.store/surokkha_logo.png",
+  logoUrl = "https://admin.surokkha.store/invoice_logo.png",
 }) => {
   const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
-    ? "https://admin.surokkha.store/surokkha_logo.png"
+    ? "https://admin.surokkha.store/invoice_logo.png"
     : logoUrl;
 
   const {
@@ -177,12 +177,13 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       border-bottom: 1px solid #F1F5F9;
     }
     .invoice-logo-img {
-      max-height: 52px;
-      height: 52px;
+      max-height: 80px;
+      height: 75px;
       width: auto;
+      max-width: 360px;
       object-fit: contain;
       display: block;
-      margin: 0 auto 14px auto;
+      margin: 0 auto 16px auto;
     }
     .invoice-id-line {
       font-size: 20px;
@@ -437,6 +438,12 @@ export const buildSurokkhaOrderInvoiceHtml = ({
       .actions-bar {
         display: none !important;
       }
+      .invoice-logo-img {
+        max-height: 75px !important;
+        height: 70px !important;
+        max-width: 340px !important;
+        margin-bottom: 12px !important;
+      }
     }
   </style>
 </head>
@@ -450,8 +457,8 @@ export const buildSurokkhaOrderInvoiceHtml = ({
         src="${cleanLogoUrl}"
         alt="Surokkha"
         class="invoice-logo-img"
-        height="48"
-        style="max-height: 48px; height: 48px; width: auto; max-width: 220px; object-fit: contain; display: block; margin: 0 auto 14px auto; border: 0; outline: none;"
+        height="75"
+        style="max-height: 80px; height: 75px; width: auto; max-width: 360px; object-fit: contain; display: block; margin: 0 auto 16px auto; border: 0; outline: none;"
       />
       <div class="invoice-id-line">INVOICE <span>#${orderId}</span></div>
       <div>

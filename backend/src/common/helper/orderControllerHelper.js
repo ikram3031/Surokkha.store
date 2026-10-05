@@ -253,6 +253,7 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
       pendingAmount,
       amount: paidAmount,
       status: paymentStatus,
+      isActive: !orderCanceled,
       createdBy: orderData.createdBy || null,
       updatedBy: orderData.updatedBy || null,
     },

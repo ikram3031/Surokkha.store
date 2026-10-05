@@ -204,7 +204,7 @@ export default function HomeView() {
 
                 return (
                   <div className="bg-slate-900/90 border-2 border-amber-400/80 rounded-3xl p-5 sm:p-6 text-left relative flex flex-col justify-between shadow-2xl hover:border-amber-300 transition-all duration-300 group">
-                    <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1">
+                    <div className="absolute -top-3.5 right-6 z-20 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xl flex items-center gap-1 border border-amber-300/40">
                       <span>⭐</span>
                       <span>{isBn ? 'সবচেয়ে জনপ্রিয় মেগা কম্বো (৳৯০০)' : 'Most Popular Deal (৳900)'}</span>
                     </div>
@@ -219,12 +219,9 @@ export default function HomeView() {
                           <ProductArtwork productKey={COMBO_30_KEY} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-extrabold text-amber-300 bg-amber-950/80 border border-amber-800/60 px-2 py-0.5 rounded uppercase">
-                            {isBn ? '৩০ পিস মেগা প্যাক' : '30 Pieces Mega Pack'}
-                          </span>
                           <h3 
                             onClick={() => openProduct(COMBO_30_KEY)} 
-                            className="text-base sm:text-lg font-bold font-heading text-white hover:text-amber-300 transition cursor-pointer mt-1 line-clamp-2"
+                            className="text-base sm:text-lg font-bold font-heading text-white hover:text-amber-300 transition cursor-pointer mt-0.5 line-clamp-2"
                           >
                             {c30Name}
                           </h3>
@@ -241,7 +238,7 @@ export default function HomeView() {
                             {isBn ? 'কম্বো অফার মূল্য' : 'Special Combo Price'}
                           </div>
                           <div className="flex items-baseline gap-2 mt-0.5">
-                            <span className="text-2xl sm:text-3xl font-black font-heading text-amber-400">
+                            <span className="text-2xl sm:text-3xl font-black font-heading text-amber-400 animate-price-shake inline-block">
                               {formatPrice(c30Price)}
                             </span>
                             {c30Regular > c30Price && (
@@ -299,7 +296,7 @@ export default function HomeView() {
 
                 return (
                   <div className="bg-slate-900/90 border-2 border-purple-500/80 rounded-3xl p-5 sm:p-6 text-left relative flex flex-col justify-between shadow-2xl hover:border-purple-400 transition-all duration-300 group">
-                    <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-rose-600 to-purple-600 text-white text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-lg flex items-center gap-1 animate-pulse">
+                    <div className="absolute -top-3.5 right-6 z-20 bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 text-white text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xl flex items-center gap-1 border border-purple-400/40">
                       <span>🔥</span>
                       <span>
                         {rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'রিবড ২০ পিস স্পেশাল কম্বো' : 'Ribbed 20 Pcs Combo')}
@@ -316,12 +313,9 @@ export default function HomeView() {
                           <ProductArtwork productKey={COMBO_RIBBED_KEY} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-extrabold text-purple-300 bg-purple-950/80 border border-purple-800/60 px-2 py-0.5 rounded uppercase">
-                            {isBn ? '২০ পিস কম্বো প্যাক' : '20 Pieces Combo Pack'}
-                          </span>
                           <h3 
                             onClick={() => openProduct(COMBO_RIBBED_KEY)} 
-                            className="text-base sm:text-lg font-bold font-heading text-white hover:text-purple-300 transition cursor-pointer mt-1 line-clamp-2"
+                            className="text-base sm:text-lg font-bold font-heading text-white hover:text-purple-300 transition cursor-pointer mt-0.5 line-clamp-2"
                           >
                             {cRibbedName}
                           </h3>
@@ -338,7 +332,7 @@ export default function HomeView() {
                             {isBn ? 'কম্বো অফার মূল্য' : 'Special Combo Price'}
                           </div>
                           <div className="flex items-baseline gap-2 mt-0.5">
-                            <span className="text-2xl sm:text-3xl font-black font-heading text-purple-400">
+                            <span className="text-2xl sm:text-3xl font-black font-heading text-purple-400 animate-price-shake inline-block">
                               {formatPrice(cRibbedPrice)}
                             </span>
                             {cRibbedRegular > cRibbedPrice && (

@@ -14,10 +14,10 @@
  */
 export const buildSurokkhaOrderInvoiceEmailHtml = ({
   order = {},
-  logoUrl = "https://admin.surokkha.store/surokkha_logo.png",
+  logoUrl = "https://admin.surokkha.store/invoice_logo.png",
 }) => {
   const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
-    ? "https://admin.surokkha.store/surokkha_logo.png"
+    ? "https://admin.surokkha.store/invoice_logo.png"
     : logoUrl;
   const {
     orderId = "N/A",
@@ -104,7 +104,7 @@ export const buildSurokkhaOrderInvoiceEmailHtml = ({
           <!-- Centered Header -->
           <tr>
             <td align="center" style="padding: 32px 24px 20px 24px; border-bottom: 1px solid #F1F5F9; text-align: center;">
-              <img src="${cleanLogoUrl}" alt="Surokkha" height="48" style="max-height: 48px; height: 48px; width: auto; max-width: 220px; object-fit: contain; display: block; margin: 0 auto 14px auto; border: 0; outline: none;" />
+              <img src="${cleanLogoUrl}" alt="Surokkha" height="70" style="max-height: 75px; height: 70px; width: auto; max-width: 340px; object-fit: contain; display: block; margin: 0 auto 16px auto; border: 0; outline: none;" />
               <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: #0F172A; margin-bottom: 8px;">INVOICE <span style="color: #0F172A;">#${orderId}</span></div>
               <div>
                 <span style="display: inline-block; padding: 5px 16px; background-color: #FFFFFF; color: #0F172A; border: 1px solid #E2E8F0; border-radius: 9999px; font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.75px;">✓ ORDER CONFIRMED</span>

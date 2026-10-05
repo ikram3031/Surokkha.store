@@ -7,8 +7,11 @@
  */
 export const buildDashboardInvoiceHtml = ({
   order = {},
-  logoUrl = "https://admin.surokkha.store/surokkha_logo.png",
+  logoUrl = "https://admin.surokkha.store/invoice_logo.png",
 }) => {
+  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
+    ? "https://admin.surokkha.store/invoice_logo.png"
+    : logoUrl;
   const {
     orderId = "N/A",
     createdAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
@@ -307,7 +310,7 @@ export const buildDashboardInvoiceHtml = ({
     <!-- Dark Header: Logo + INVOICE label -->
     <div class="invoice-header">
       <div class="logo">
-        <img src="${logoUrl}" alt="Surokkha" style="height: 28px; width: auto; display: block;" />
+        <img src="${cleanLogoUrl}" alt="Surokkha" style="height: 55px; max-height: 60px; width: auto; max-width: 300px; object-fit: contain; display: block;" />
       </div>
       <div class="invoice-label">Invoice</div>
     </div>

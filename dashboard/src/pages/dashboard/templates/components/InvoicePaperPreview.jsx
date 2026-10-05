@@ -1,7 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import { PrintablePaper } from '@/lib/print-engine/PrintablePaper';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, QrCode, ShieldCheck } from 'lucide-react';
+import invoiceLogo from '@/assets/invoice_logo.png';
 
 // Interpolate template tokens in string
 const interpolate = (templateStr, data) => {
@@ -38,8 +39,8 @@ export function InvoicePaperPreview({
   const headerMarginBottom = branding.headerMarginBottom !== undefined ? `${branding.headerMarginBottom}px` : '20px';
   const sectionSpacing = branding.sectionSpacing !== undefined ? `${branding.sectionSpacing}px` : '16px';
 
-  const logoUrl = header.logoUrl || tenant.logoUrl || tenant.logo || '';
-  const logoHeight = header.logoHeight || 50;
+  const logoUrl = header.logoUrl || tenant.logoUrl || tenant.logo || invoiceLogo;
+  const logoHeight = header.logoHeight || 75;
   const logoPlacement = header.logoPlacement || 'left';
   const documentTitle = header.documentTitle || 'INVOICE';
   const documentSubtitle = header.documentSubtitle || tenant.brandName || 'Order Receipt';
@@ -163,7 +164,7 @@ export function InvoicePaperPreview({
                 <img
                   src={logoUrl}
                   alt={tenant.brandName || 'Store Logo'}
-                  style={{ height: `${logoHeight}px`, maxHeight: '80px', objectFit: 'contain' }}
+                  style={{ height: `${logoHeight}px`, maxHeight: '110px', maxWidth: '360px', objectFit: 'contain' }}
                   className="w-auto block"
                 />
               ) : (
