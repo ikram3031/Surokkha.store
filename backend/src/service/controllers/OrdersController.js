@@ -459,8 +459,9 @@ export const updateOrder = async (req, res, next) => {
     }
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
+    const isCancelledOrder = ['fake', 'cancelled', 'canceled'].includes(order.status);
     const fallbackPaid = ['completed', 'shipped'].includes(order.status);
-    const effectivePaymentStatus = payment?.status || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || (isCancelledOrder ? 'cancelled' : fallbackPaid ? 'paid' : 'pending');
 
     const orderWithCustomer = {
       ...order,
@@ -645,8 +646,22 @@ export const bulkUpdateOrders = async (req, res, next) => {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
 
-      // If a specific paymentStatus is requested in bulk payload, update the linked payment document
-      if (paymentStatus) {
+      // If order is fake or cancelled, payment must be cancelled
+      if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled') {
+        await PaymentModel.findOneAndUpdate(
+          { orderId: updatedOrder._id },
+          {
+            paymentMethod: updatedOrder.paymentMethod,
+            paymentPhone: updatedOrder.billingInfo?.phone || '',
+            totalAmount: 0,
+            paidAmount: 0,
+            pendingAmount: 0,
+            amount: 0,
+            status: 'cancelled',
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+      } else if (paymentStatus) {
         const pStatus = paymentStatus.toLowerCase();
         const rawTotal = Number(updatedOrder.totals?.total || 0);
         const shippingFee = Number(updatedOrder.totals?.shippingFee ?? updatedOrder.shippingTotalAmount ?? 0);

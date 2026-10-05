@@ -214,7 +214,7 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     paymentStatus = 'cancelled';
   } else if (isInstore) {
     paymentStatus = 'paid';
-  } else if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
+  } else if (payload?.paymentStatus !== undefined && payload?.paymentStatus !== null) {
     const pStatus = String(payload.paymentStatus).toLowerCase();
     if (['paid', 'partial', 'pending', 'n-a', 'cancelled', 'returned'].includes(pStatus)) {
       paymentStatus = pStatus;
@@ -262,7 +262,11 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
 
 // Recalculate the aggregate order, paid, and pending totals for a member.
 export const computeMemberTotals = async (memberId) => {
-  const orders = await OrderModel.find({ member: memberId }).select('paymentMethod totals shippingTotalAmount').lean();
+  const orders = await OrderModel.find({
+    member: memberId,
+    active: { $ne: false },
+    status: { $nin: ['fake', 'cancelled', 'canceled'] },
+  }).select('paymentMethod totals shippingTotalAmount').lean();
   let totalOrderAmount = 0;
   let totalPaidAmount = 0;
   let totalPendingAmount = 0;
