@@ -5,7 +5,7 @@ import { AdminSidebar } from '@/components/dashboard/admin-sidebar';
 import { Header } from '@/components/dashboard/header';
 import { ClientThemeProvider } from '@/components/clientThemeProvider';
 import { ClientSidebarProvider } from '@/components/dashboard/client-sidebar-provider';
-import apiClient from '@/lib/api-client';
+import { apiClient } from '@/lib/api-client';
 
 const AdminLayout = ({ children }) => {
   const [themeStyles, setThemeStyles] = useState(null);
@@ -35,9 +35,7 @@ const AdminLayout = ({ children }) => {
     <AuthGuard>
       <ClientThemeProvider>
         <ClientSidebarProvider>
-          <div style={sidebarStyle} className="h-full z-10 flex border-r border-border/10">
-            <AdminSidebar />
-          </div>
+          <AdminSidebar style={sidebarStyle} />
           <div className="flex flex-1 flex-col overflow-hidden min-w-0 w-full" style={mainStyle}>
             <Header />
             <main className="flex-1 overflow-y-auto min-w-0 p-4 sm:p-6" style={mainStyle}>

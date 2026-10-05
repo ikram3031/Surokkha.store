@@ -442,6 +442,7 @@ export const OrdersTable = ({
                   <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
                   <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                  <SelectItem value="Fake" className="cursor-pointer text-destructive font-semibold">Fake</SelectItem>
                 </SelectContent>
               </Select>
             </div>
