@@ -8,6 +8,9 @@ import Login from './pages/auth/login';
 import InvitePage from './pages/invite';
 
 // Dashboard
+import AdminLayout from './layouts/adminLayout';
+import AdminOverview from './pages/admin/overview';
+import AdminStyles from './pages/admin/styles';
 import Overview from './pages/dashboard/overview';
 import Analytics from './pages/dashboard/analytics';
 import CloudflareAnalytics from './pages/dashboard/cloudflareAnalytics';
@@ -289,6 +292,14 @@ export const router = createBrowserRouter([
             element: (
               <RoleGuard menuKey="settings">
                 <TemplatesPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'styles',
+            element: (
+              <RoleGuard menuKey="settings">
+                <AdminStyles />
               </RoleGuard>
             ),
           },
@@ -719,6 +730,29 @@ export const router = createBrowserRouter([
         element: <NotFound />,
       },
     ],
+  },
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    errorElement: <RouteErrorElement />,
+    children: [
+      {
+        path: '',
+        element: (
+          <RoleGuard menuKey="admin">
+            <AdminOverview />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'styles',
+        element: (
+          <RoleGuard menuKey="admin">
+            <AdminStyles />
+          </RoleGuard>
+        ),
+      }
+    ]
   },
   {
     path: '*',

@@ -39,6 +39,7 @@ import attributeRouter from "./routes/attribute.route.js";
 import mediaAuditRouter from "./routes/mediaAuditRoute.js";
 import developerRouter from "./routes/DeveloperRoute.js";
 import courierRouter from "./routes/CourierRoute.js";
+import stylesRouter from "./routes/StylesRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
 const serviceRouter = Router();
@@ -97,6 +98,7 @@ serviceRouter.use(attributeRouter);
 serviceRouter.use("/attribute", attributeRouter);
 serviceRouter.use("/courier", courierRouter);
 serviceRouter.use("/admin/media-audit", mediaAuditRouter);
+serviceRouter.use("/styles", stylesRouter);
 serviceRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket

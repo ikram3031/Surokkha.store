@@ -537,6 +537,27 @@ export const AppSidebar = ({ ...props }) => {
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
+
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname.startsWith("/dashboard/settings/admin-view") || pathname.startsWith("/admin")}
+                      render={<Link to="/admin" />}
+                    >
+                      <LayoutDashboard className="h-3.5 w-3.5 text-orange-500" />
+                      <span>{t("nav.admin_view", "Admin View")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname.startsWith("/dashboard/settings/styles")}
+                      render={<Link to="/dashboard/settings/styles" />}
+                      className="ml-4"
+                    >
+                      <Wrench className="h-3.5 w-3.5" />
+                      <span>{t("nav.styles", "Styles")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+
                 </SidebarMenuSub>
               )}
             </SidebarMenuItem>
