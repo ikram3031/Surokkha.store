@@ -16,7 +16,7 @@ export const DEFAULT_TEMPLATE_PRESETS = {
       borderRadius: 8,
     },
     header: {
-      logoHeight: 44,
+      logoHeight: 70,
       logoPlacement: 'left',
       headerTitle: 'INVOICE',
       headerSubtitle: 'Official Sales Receipt & Tax Document',
@@ -606,7 +606,7 @@ export const compileA4InvoiceHtml = (
     <div>
       <div class="invoice-header">
         <div class="brand-logo-container">
-          ${logoUrl ? `<img src="${logoUrl}" alt="${brandName}" style="max-height: ${header.logoHeight || 44}px; width: auto; margin-bottom: 6px;" />` : `<div class="brand-title">${brandName}</div>`}
+          ${logoUrl ? `<img src="${logoUrl}" alt="${brandName}" style="max-height: ${header.logoHeight || 70}px; max-width: 360px; width: auto; object-fit: contain; margin-bottom: 6px;" />` : `<div class="brand-title">${brandName}</div>`}
           <p style="font-size: 11.5px; color: ${branding.mutedTextColor};">${storeAddress}</p>
         </div>
         <div class="invoice-meta">
