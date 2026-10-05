@@ -49,22 +49,22 @@ const HeroSlider = () => {
               playsInline
               preload="auto"
               onError={() => setVideoError(true)}
-              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-90' : 'opacity-85'} transition-opacity duration-1000`}
+              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-95' : 'opacity-85'} transition-opacity duration-1000`}
             />
           ) : (
             <img
               src={posterUrl}
               alt="Surokkha Premium Collection"
-              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-85' : 'opacity-75'}`}
+              className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-90' : 'opacity-75'}`}
             />
           )}
 
           {isStore ? (
             <>
-              {/* White Translucent Overlay - Video Clearly Visible Underneath */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/45 via-white/30 to-white/45 backdrop-blur-[0.5px] z-10" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-rose-200/25 blur-3xl pointer-events-none z-10" />
-              <div className="absolute -bottom-10 right-10 w-72 h-72 bg-amber-100/25 blur-3xl pointer-events-none z-10" />
+              {/* Minimal White Translucent Overlay - Maximum Video Clarity */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-white/12 to-white/25 z-10" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-rose-200/10 blur-3xl pointer-events-none z-10" />
+              <div className="absolute -bottom-10 right-10 w-72 h-72 bg-amber-100/10 blur-3xl pointer-events-none z-10" />
             </>
           ) : (
             <>

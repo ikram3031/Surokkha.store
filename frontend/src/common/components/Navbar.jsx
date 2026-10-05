@@ -134,15 +134,15 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* Unified Sleek Navigation Links */}
-          <nav className="hidden md:flex items-center justify-center gap-2 text-sm flex-1">
+          {/* Navigation Links - Clear & High Contrast */}
+          <nav className="hidden md:flex items-center justify-center gap-2 sm:gap-3 text-sm flex-1">
             <button
               type="button"
               onClick={() => navigateTo('home')}
-              className={`px-4 py-1.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer ${
+              className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-sm tracking-wide transition-all cursor-pointer ${
                 currentView === 'home'
-                  ? 'text-white bg-rose-950/80 backdrop-blur-md border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
-                  : 'text-slate-200 hover:text-white hover:bg-white/10 backdrop-blur-sm'
+                  ? 'text-white bg-gradient-to-r from-rose-600 to-rose-700 shadow-[0_2px_14px_rgba(244,63,94,0.5)] border border-rose-400/40'
+                  : 'text-white/90 hover:text-white hover:bg-white/10'
               }`}
             >
               Home
@@ -151,10 +151,10 @@ const Navbar = () => {
             <button
               type="button"
               onClick={() => navigateTo('shop')}
-              className={`px-4 py-1.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer ${
+              className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-sm tracking-wide transition-all cursor-pointer ${
                 currentView === 'shop'
-                  ? 'text-white bg-rose-950/80 backdrop-blur-md border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
-                  : 'text-slate-200 hover:text-white hover:bg-white/10 backdrop-blur-sm'
+                  ? 'text-white bg-gradient-to-r from-rose-600 to-rose-700 shadow-[0_2px_14px_rgba(244,63,94,0.5)] border border-rose-400/40'
+                  : 'text-white/90 hover:text-white hover:bg-white/10'
               }`}
             >
               Shop
@@ -163,13 +163,13 @@ const Navbar = () => {
             <button
               type="button"
               onClick={() => navigateTo('combo')}
-              className={`px-4 py-1.5 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-sm tracking-wide transition-all cursor-pointer flex items-center gap-1.5 ${
                 currentView === 'combo'
-                  ? 'text-amber-300 bg-amber-950/80 backdrop-blur-md border border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
-                  : 'text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 border border-amber-500/30 backdrop-blur-sm'
+                  ? 'text-slate-950 bg-amber-400 shadow-[0_2px_14px_rgba(245,158,11,0.5)] border border-amber-300 font-extrabold'
+                  : 'text-amber-300 bg-amber-500/15 border border-amber-400/50 hover:bg-amber-500/25 hover:text-amber-200'
               }`}
             >
-              <span className="text-xs">🔥</span>
+              <span className="text-sm">🔥</span>
               <span>Offers</span>
             </button>
           </nav>
