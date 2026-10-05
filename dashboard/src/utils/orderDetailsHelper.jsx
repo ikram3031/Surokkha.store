@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { clientConfig } from "@/clientConfig";
+import { toast } from "sonner";
 
 // Check if an order is an In-Store order based on order number prefix, type, or customer email.
 export const checkIsInStoreOrder = (order) => {
@@ -333,6 +334,13 @@ export const buildUpdatePayload = ({
     shippingTotalAmount: shippingFee,
     updatedBy: user?.did || user?.id || user?._id || undefined,
   };
+};
+
+// Copy given text to clipboard and display Sonner toast notification
+export const handleCopyToClipboard = (text, label = "Text") => {
+  if (!text) return;
+  navigator.clipboard.writeText(String(text));
+  toast.success(`${label} copied to clipboard!`);
 };
 
 // Generates direct WhatsApp chat URL with proper country code normalization

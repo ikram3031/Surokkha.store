@@ -14,7 +14,9 @@ import {
   Package,
   User,
   Phone,
+  PhoneCall,
   Mail,
+  Copy,
   CreditCard,
   Truck,
   Calendar,
@@ -41,6 +43,7 @@ import {
   formatFullAddress,
   getWhatsAppLink,
   WhatsAppIcon,
+  handleCopyToClipboard,
 } from '@/utils/orderDetailsHelper';
 import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import { formatDateTime } from '@/utils/dateHelper';
@@ -292,6 +295,25 @@ export const OrderAccordionDetail = ({ order }) => {
                           +880{cleanPhone}
                         </a>
                         <a
+                          href={`tel:+880${cleanPhone}`}
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                          title="Call Phone Number"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <PhoneCall className="h-3 w-3" />
+                        </a>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          title="Copy Phone Number"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyToClipboard(`+880${cleanPhone}`, 'Phone number');
+                          }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </button>
+                        <a
                           href={getWhatsAppLink(phoneNum)}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -311,12 +333,33 @@ export const OrderAccordionDetail = ({ order }) => {
                     <Mail className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <span className="text-[10px] text-muted-foreground block">{t('common.email', 'Email')}</span>
-                      <a
-                        href={`mailto:${emailAddr}`}
-                        className="font-medium text-foreground hover:underline truncate block max-w-[200px]"
-                      >
-                        {emailAddr}
-                      </a>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <a
+                          href={`mailto:${emailAddr}`}
+                          className="font-medium text-foreground hover:underline truncate block max-w-[170px]"
+                        >
+                          {emailAddr}
+                        </a>
+                        <a
+                          href={`mailto:${emailAddr}`}
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                          title="Send Email"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Mail className="h-3 w-3" />
+                        </a>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          title="Copy Email"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyToClipboard(emailAddr, 'Email');
+                          }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -343,6 +386,25 @@ export const OrderAccordionDetail = ({ order }) => {
                         <span>{t('common.phone', 'Phone')}:</span>
                         <a href={`tel:+880${cleanPhone}`} className="text-primary hover:underline font-medium">+880{cleanPhone}</a>
                         <a
+                          href={`tel:+880${cleanPhone}`}
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          title="Call Phone Number"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <PhoneCall className="h-2.5 w-2.5" />
+                        </a>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          title="Copy Phone Number"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyToClipboard(`+880${cleanPhone}`, 'Phone number');
+                          }}
+                        >
+                          <Copy className="h-2.5 w-2.5" />
+                        </button>
+                        <a
                           href={getWhatsAppLink(phoneNum)}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -355,9 +417,29 @@ export const OrderAccordionDetail = ({ order }) => {
                       </div>
                     )}
                     {emailAddr && (
-                      <p className="text-muted-foreground truncate">
-                        {t('common.email', 'Email')}: <span className="text-foreground">{emailAddr}</span>
-                      </p>
+                      <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                        <span>{t('common.email', 'Email')}:</span>
+                        <a href={`mailto:${emailAddr}`} className="text-foreground hover:underline truncate max-w-[150px]">{emailAddr}</a>
+                        <a
+                          href={`mailto:${emailAddr}`}
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          title="Send Email"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Mail className="h-2.5 w-2.5" />
+                        </a>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          title="Copy Email"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyToClipboard(emailAddr, 'Email');
+                          }}
+                        >
+                          <Copy className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
                     )}
                     <p className="text-muted-foreground leading-tight">
                       {t('common.address', 'Address')}: <span className="text-foreground">{billingAddressText || 'N/A'}</span>
@@ -377,10 +459,29 @@ export const OrderAccordionDetail = ({ order }) => {
                         <span>{t('common.phone', 'Phone')}:</span>
                         <a href={`tel:${shipping.phone || phoneNum}`} className="text-primary hover:underline font-medium">{shipping.phone || phoneNum}</a>
                         <a
+                          href={`tel:${shipping.phone || phoneNum}`}
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          title="Call Phone Number"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <PhoneCall className="h-2.5 w-2.5" />
+                        </a>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                          title="Copy Phone Number"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyToClipboard(shipping.phone || phoneNum, 'Phone number');
+                          }}
+                        >
+                          <Copy className="h-2.5 w-2.5" />
+                        </button>
+                        <a
                           href={getWhatsAppLink(shipping.phone || phoneNum)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
+                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
                           title="Message on WhatsApp"
                           onClick={(e) => e.stopPropagation()}
                         >

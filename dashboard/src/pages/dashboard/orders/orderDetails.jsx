@@ -37,7 +37,9 @@ import {
   Package,
   User,
   Phone,
+  PhoneCall,
   Mail,
+  Copy,
   MapPin,
   CreditCard,
   Truck,
@@ -71,6 +73,7 @@ import {
   getShippingInfo,
   getWhatsAppLink,
   WhatsAppIcon,
+  handleCopyToClipboard,
 } from "@/utils/orderDetailsHelper";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from '@/utils/dateHelper';
@@ -767,6 +770,21 @@ const OrderDetailsPage = () => {
                             {order.billingInfo?.phone || order.customer?.phone}
                           </a>
                           <a
+                            href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                            title="Call Phone Number"
+                          >
+                            <PhoneCall className="h-3.5 w-3.5" />
+                          </a>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                            title="Copy Phone Number"
+                            onClick={() => handleCopyToClipboard(order.billingInfo?.phone || order.customer?.phone, 'Phone number')}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                          <a
                             href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -784,9 +802,26 @@ const OrderDetailsPage = () => {
                       <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                       <div>
                         <span className="text-xs text-muted-foreground block">Email</span>
-                        <span className="font-medium text-foreground">
-                          {order.billingInfo?.email || order.customer?.email}
-                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="font-medium text-foreground">
+                            {order.billingInfo?.email || order.customer?.email}
+                          </span>
+                          <a
+                            href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                            title="Send Email"
+                          >
+                            <Mail className="h-3.5 w-3.5" />
+                          </a>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                            title="Copy Email"
+                            onClick={() => handleCopyToClipboard(order.billingInfo?.email || order.customer?.email, 'Email')}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -827,6 +862,21 @@ const OrderDetailsPage = () => {
                               {order.billingInfo?.phone || order.customer?.phone}
                             </a>
                             <a
+                              href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Call Phone Number"
+                            >
+                              <PhoneCall className="h-3.5 w-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                              title="Copy Phone Number"
+                              onClick={() => handleCopyToClipboard(order.billingInfo?.phone || order.customer?.phone, 'Phone number')}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
+                            <a
                               href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -846,9 +896,26 @@ const OrderDetailsPage = () => {
                         <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div>
                           <span className="text-xs text-muted-foreground block">Email</span>
-                          <span className="font-medium text-foreground">
-                            {order.billingInfo?.email || order.customer?.email}
-                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="font-medium text-foreground">
+                              {order.billingInfo?.email || order.customer?.email}
+                            </span>
+                            <a
+                              href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Send Email"
+                            >
+                              <Mail className="h-3.5 w-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                              title="Copy Email"
+                              onClick={() => handleCopyToClipboard(order.billingInfo?.email || order.customer?.email, 'Email')}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -911,6 +978,21 @@ const OrderDetailsPage = () => {
                             >
                               {order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}
                             </a>
+                            <a
+                              href={`tel:${order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}`}
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                              title="Call Phone Number"
+                            >
+                              <PhoneCall className="h-3.5 w-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0"
+                              title="Copy Phone Number"
+                              onClick={() => handleCopyToClipboard(order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone, 'Phone number')}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
                             <a
                               href={getWhatsAppLink(order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone)}
                               target="_blank"
