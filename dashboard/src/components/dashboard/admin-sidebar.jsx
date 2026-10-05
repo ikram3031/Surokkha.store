@@ -188,9 +188,9 @@ export const AdminSidebar = ({ ...props }) => {
           {isAllowed("overview") && (
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={pathname === "/dashboard"}
+                isActive={pathname === "/admin"}
                 tooltip={t("nav.overview", "Overview")}
-                render={<Link to="/dashboard" />}
+                render={<Link to="/admin" />}
               >
                 <LayoutDashboard className="h-4 w-4" />
                 <span>{t("nav.overview", "Overview")}</span>
@@ -201,9 +201,9 @@ export const AdminSidebar = ({ ...props }) => {
           {(isAllowed("webmail") || isAllowed("tools.messages")) && (
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={pathname === "/dashboard/tools/messages" || pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"}
+                isActive={pathname === "/admin/tools/messages" || pathname.startsWith("/admin/tools/messages") || pathname === "/admin/messages"}
                 tooltip={t("nav.webmail", "Webmail")}
-                render={<Link to="/dashboard/tools/messages" />}
+                render={<Link to="/admin/tools/messages" />}
               >
                 <Mail className="h-4 w-4" />
                 <span>{t("nav.webmail", "Webmail")}</span>
@@ -216,7 +216,7 @@ export const AdminSidebar = ({ ...props }) => {
               <SidebarMenuButton
                 isActive={false}
                 tooltip={t("nav.return_to_dashboard", "Exit Admin")}
-                render={<Link to="/dashboard" />}
+                render={<Link to="/admin" />}
               >
                 <LayoutDashboard className="h-4 w-4 text-primary" />
                 <span className="font-semibold text-primary">{t("nav.return_to_dashboard", "Exit Admin")}</span>
@@ -227,7 +227,7 @@ export const AdminSidebar = ({ ...props }) => {
           {isAllowed("orders") && (
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={pathname.startsWith("/dashboard/orders")}
+                isActive={pathname.startsWith("/admin/orders")}
                 tooltip={t("nav.orders", "Orders")}
                 onClick={() => toggleMenu("orders")}
                 className="cursor-pointer flex items-center justify-between w-full"
@@ -247,8 +247,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("orders.custom-new") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/custom/new" || pathname === "/dashboard/orders/custom-new"}
-                        render={<Link to="/dashboard/orders/custom/new" />}
+                        isActive={pathname === "/admin/orders/custom/new" || pathname === "/admin/orders/custom-new"}
+                        render={<Link to="/admin/orders/custom/new" />}
                       >
                         <PlusCircle className="h-3.5 w-3.5" />
                         <span>{t("nav.new_custom_order", "New Custom Order")}</span>
@@ -258,8 +258,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("orders.new") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/new"}
-                        render={<Link to="/dashboard/orders/new" />}
+                        isActive={pathname === "/admin/orders/new"}
+                        render={<Link to="/admin/orders/new" />}
                       >
                         <PlusCircle className="h-3.5 w-3.5" />
                         <span>{t("nav.new_in_store_order", "New In-Store Order")}</span>
@@ -269,8 +269,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("orders.list") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders"}
-                        render={<Link to="/dashboard/orders" />}
+                        isActive={pathname === "/admin/orders"}
+                        render={<Link to="/admin/orders" />}
                       >
                         <ListOrdered className="h-3.5 w-3.5" />
                         <span>{t("nav.orders_list", "Orders List")}</span>
@@ -280,8 +280,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("orders.custom") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/custom"}
-                        render={<Link to="/dashboard/orders/custom" />}
+                        isActive={pathname === "/admin/orders/custom"}
+                        render={<Link to="/admin/orders/custom" />}
                       >
                         <ShoppingBag className="h-3.5 w-3.5" />
                         <span>{t("nav.custom_orders", "Custom Orders")}</span>
@@ -291,8 +291,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("orders.instore") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/in-store" || pathname === "/dashboard/orders/instore"}
-                        render={<Link to="/dashboard/orders/in-store" />}
+                        isActive={pathname === "/admin/orders/in-store" || pathname === "/admin/orders/instore"}
+                        render={<Link to="/admin/orders/in-store" />}
                       >
                         <Store className="h-3.5 w-3.5" />
                         <span>{t("nav.in_store_orders", "In-Store Orders")}</span>
@@ -308,9 +308,9 @@ export const AdminSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={
-                  pathname.startsWith("/dashboard/products") ||
-                  pathname === "/dashboard/settings/products" ||
-                  pathname.startsWith("/dashboard/reviews")
+                  pathname.startsWith("/admin/products") ||
+                  pathname === "/admin/settings/products" ||
+                  pathname.startsWith("/admin/reviews")
                 }
                 tooltip={t("nav.products", "Products")}
                 onClick={() => toggleMenu("products")}
@@ -331,8 +331,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.new") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/new"}
-                        render={<Link to="/dashboard/products/new" />}
+                        isActive={pathname === "/admin/products/new"}
+                        render={<Link to="/admin/products/new" />}
                       >
                         <PlusCircle className="h-3.5 w-3.5" />
                         <span>{t("nav.add_product", "Add Product")}</span>
@@ -342,8 +342,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.list") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products" || pathname === "/dashboard/products/list"}
-                        render={<Link to="/dashboard/products" />}
+                        isActive={pathname === "/admin/products" || pathname === "/admin/products/list"}
+                        render={<Link to="/admin/products" />}
                       >
                         <ListOrdered className="h-3.5 w-3.5" />
                         <span>{t("nav.product_list", "Product List")}</span>
@@ -353,8 +353,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.on-sale") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/on-sale"}
-                        render={<Link to="/dashboard/products/on-sale" />}
+                        isActive={pathname === "/admin/products/on-sale"}
+                        render={<Link to="/admin/products/on-sale" />}
                       >
                         <Tag className="h-3.5 w-3.5" />
                         <span>{t("nav.on_sale", "On Sale")}</span>
@@ -364,8 +364,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.miniature") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/miniature"}
-                        render={<Link to="/dashboard/products/miniature" />}
+                        isActive={pathname === "/admin/products/miniature"}
+                        render={<Link to="/admin/products/miniature" />}
                       >
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>{t("nav.miniature", "Miniature")}</span>
@@ -375,8 +375,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("products.showcases") || isAllowed("settings")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/settings/products"}
-                        render={<Link to="/dashboard/settings/products" />}
+                        isActive={pathname === "/admin/settings/products"}
+                        render={<Link to="/admin/settings/products" />}
                       >
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>{t("nav.showcases", "Showcases")}</span>
@@ -386,8 +386,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.categories") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/categories"}
-                        render={<Link to="/dashboard/products/categories" />}
+                        isActive={pathname === "/admin/products/categories"}
+                        render={<Link to="/admin/products/categories" />}
                       >
                         <Receipt className="h-3.5 w-3.5" />
                         <span>{t("nav.categories", "Categories")}</span>
@@ -397,8 +397,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.brands") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/brands"}
-                        render={<Link to="/dashboard/products/brands" />}
+                        isActive={pathname === "/admin/products/brands"}
+                        render={<Link to="/admin/products/brands" />}
                       >
                         <CreditCard className="h-3.5 w-3.5" />
                         <span>{t("nav.brands", "Brands")}</span>
@@ -408,8 +408,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.attributes") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/products/attributes")}
-                        render={<Link to="/dashboard/products/attributes" />}
+                        isActive={pathname.startsWith("/admin/products/attributes")}
+                        render={<Link to="/admin/products/attributes" />}
                       >
                         <Sliders className="h-3.5 w-3.5" />
                         <span>{t("nav.attributes", "Attributes")}</span>
@@ -419,8 +419,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.coupons") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/coupons"}
-                        render={<Link to="/dashboard/products/coupons" />}
+                        isActive={pathname === "/admin/products/coupons"}
+                        render={<Link to="/admin/products/coupons" />}
                       >
                         <Ticket className="h-3.5 w-3.5" />
                         <span>{t("nav.coupons", "Coupons")}</span>
@@ -430,8 +430,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("products.size-charts") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/size-charts"}
-                        render={<Link to="/dashboard/products/size-charts" />}
+                        isActive={pathname === "/admin/products/size-charts"}
+                        render={<Link to="/admin/products/size-charts" />}
                       >
                         <Ruler className="h-3.5 w-3.5" />
                         <span>{t("nav.size_charts", "Size Charts")}</span>
@@ -441,8 +441,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("products.reviews") || isAllowed("reviews")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/reviews")}
-                        render={<Link to="/dashboard/reviews" />}
+                        isActive={pathname.startsWith("/admin/reviews")}
+                        render={<Link to="/admin/reviews" />}
                       >
                         <Star className="h-3.5 w-3.5" />
                         <span>{t("nav.reviews", "Reviews")}</span>
@@ -457,7 +457,7 @@ export const AdminSidebar = ({ ...props }) => {
           {isAllowed("settings") && (
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={pathname.startsWith("/dashboard/settings") && pathname !== "/dashboard/settings/products"}
+                isActive={pathname.startsWith("/admin/settings") && pathname !== "/admin/settings/products"}
                 tooltip={t("nav.settings", "Settings")}
                 onClick={() => toggleMenu("settings")}
                 className="cursor-pointer flex items-center justify-between w-full"
@@ -476,8 +476,8 @@ export const AdminSidebar = ({ ...props }) => {
                 <SidebarMenuSub>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/cms")}
-                      render={<Link to="/dashboard/settings/cms-content" />}
+                      isActive={pathname.startsWith("/admin/settings/cms")}
+                      render={<Link to="/admin/settings/cms-content" />}
                     >
                       <ImageIcon className="h-3.5 w-3.5" />
                       <span>{t("nav.cms_content", "CMS Content")}</span>
@@ -486,8 +486,8 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/seo")}
-                      render={<Link to="/dashboard/settings/seo" />}
+                      isActive={pathname.startsWith("/admin/settings/seo")}
+                      render={<Link to="/admin/settings/seo" />}
                     >
                       <Search className="h-3.5 w-3.5" />
                       <span>{t("nav.general_seo", "General & SEO")}</span>
@@ -496,8 +496,8 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/meta-pixel")}
-                      render={<Link to="/dashboard/settings/meta-pixel" />}
+                      isActive={pathname.startsWith("/admin/settings/meta-pixel")}
+                      render={<Link to="/admin/settings/meta-pixel" />}
                     >
                       <Share2 className="h-3.5 w-3.5" />
                       <span>{t("nav.meta_pixel", "Meta Pixel")}</span>
@@ -506,8 +506,8 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/tiktok-pixel")}
-                      render={<Link to="/dashboard/settings/tiktok-pixel" />}
+                      isActive={pathname.startsWith("/admin/settings/tiktok-pixel")}
+                      render={<Link to="/admin/settings/tiktok-pixel" />}
                     >
                       <TikTokIcon className="h-3.5 w-3.5 shrink-0" />
                       <span>{t("nav.tiktok_pixel", "TikTok Pixel")}</span>
@@ -517,8 +517,8 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/pathao-courier") || pathname.startsWith("/dashboard/settings/pathao")}
-                      render={<Link to="/dashboard/settings/pathao-courier" />}
+                      isActive={pathname.startsWith("/admin/settings/pathao-courier") || pathname.startsWith("/admin/settings/pathao")}
+                      render={<Link to="/admin/settings/pathao-courier" />}
                     >
                       <Truck className="h-3.5 w-3.5 text-red-500" />
                       <span>{t("nav.pathao_courier", "Pathao Courier")}</span>
@@ -527,8 +527,8 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/smtp")}
-                      render={<Link to="/dashboard/settings/smtp" />}
+                      isActive={pathname.startsWith("/admin/settings/smtp")}
+                      render={<Link to="/admin/settings/smtp" />}
                     >
                       <Mail className="h-3.5 w-3.5 text-indigo-500" />
                       <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
@@ -537,8 +537,8 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/admin-view/styles")}
-                      render={<Link to="/dashboard/settings/admin-view/styles" />}
+                      isActive={pathname.startsWith("/admin/settings/admin-view/styles")}
+                      render={<Link to="/admin/settings/admin-view/styles" />}
                     >
                       <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
                       <span>{t("nav.admin_view_styles", "Admin View Styles")}</span>
@@ -549,10 +549,10 @@ export const AdminSidebar = ({ ...props }) => {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
                         isActive={
-                          pathname.startsWith("/dashboard/settings/templates") ||
-                          pathname === "/dashboard/templates"
+                          pathname.startsWith("/admin/settings/templates") ||
+                          pathname === "/admin/templates"
                         }
-                        render={<Link to="/dashboard/settings/templates" />}
+                        render={<Link to="/admin/settings/templates" />}
                       >
                         <Receipt className="h-3.5 w-3.5 text-blue-500" />
                         <span>{t("nav.templates", "Invoice & Templates")}</span>
@@ -568,8 +568,8 @@ export const AdminSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={
-                  pathname.startsWith("/dashboard/accounts") ||
-                  pathname.startsWith("/dashboard/billing")
+                  pathname.startsWith("/admin/accounts") ||
+                  pathname.startsWith("/admin/billing")
                 }
                 tooltip={t("nav.accounts", "Accounts")}
                 onClick={() => toggleMenu("accounts")}
@@ -590,8 +590,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {/* Account Balance */}
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/balance" || pathname === "/dashboard/accounts" || pathname === "/dashboard/billing"}
-                      render={<Link to="/dashboard/accounts/balance" />}
+                      isActive={pathname === "/admin/accounts/balance" || pathname === "/admin/accounts" || pathname === "/admin/billing"}
+                      render={<Link to="/admin/accounts/balance" />}
                     >
                       <Scale className="h-3.5 w-3.5 text-blue-500" />
                       <span>{t("nav.account_balance", "Account Balance")}</span>
@@ -604,8 +604,8 @@ export const AdminSidebar = ({ ...props }) => {
                   </div>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/bills/new"}
-                      render={<Link to="/dashboard/accounts/bills/new" />}
+                      isActive={pathname === "/admin/accounts/bills/new"}
+                      render={<Link to="/admin/accounts/bills/new" />}
                     >
                       <PlusCircle className="h-3.5 w-3.5 text-red-500" />
                       <span>{t("nav.add_bill", "Add New")}</span>
@@ -613,8 +613,8 @@ export const AdminSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/bills/types"}
-                      render={<Link to="/dashboard/accounts/bills/types" />}
+                      isActive={pathname === "/admin/accounts/bills/types"}
+                      render={<Link to="/admin/accounts/bills/types" />}
                     >
                       <Tag className="h-3.5 w-3.5 text-amber-500" />
                       <span>{t("nav.bill_types", "Bill Types")}</span>
@@ -623,12 +623,12 @@ export const AdminSidebar = ({ ...props }) => {
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
                       isActive={
-                        pathname === "/dashboard/accounts/payments/methods" ||
-                        pathname === "/dashboard/accounts/payments/types" ||
-                        pathname === "/dashboard/accounts/bills/payment-methods" ||
-                        pathname === "/dashboard/accounts/payment-methods"
+                        pathname === "/admin/accounts/payments/methods" ||
+                        pathname === "/admin/accounts/payments/types" ||
+                        pathname === "/admin/accounts/bills/payment-methods" ||
+                        pathname === "/admin/accounts/payment-methods"
                       }
-                      render={<Link to="/dashboard/accounts/payments/methods" />}
+                      render={<Link to="/admin/accounts/payments/methods" />}
                     >
                       <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
                       <span>{t("nav.payment_methods", "Payment Methods")}</span>
@@ -636,8 +636,8 @@ export const AdminSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/bills" || pathname === "/dashboard/billing/billings"}
-                      render={<Link to="/dashboard/accounts/bills" />}
+                      isActive={pathname === "/admin/accounts/bills" || pathname === "/admin/billing/billings"}
+                      render={<Link to="/admin/accounts/bills" />}
                     >
                       <Receipt className="h-3.5 w-3.5 text-red-500" />
                       <span>{t("nav.all_bills", "All Bills")}</span>
@@ -650,8 +650,8 @@ export const AdminSidebar = ({ ...props }) => {
                   </div>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/payments/new"}
-                      render={<Link to="/dashboard/accounts/payments/new" />}
+                      isActive={pathname === "/admin/accounts/payments/new"}
+                      render={<Link to="/admin/accounts/payments/new" />}
                     >
                       <PlusCircle className="h-3.5 w-3.5 text-emerald-500" />
                       <span>{t("nav.add_payment", "Add New")}</span>
@@ -660,12 +660,12 @@ export const AdminSidebar = ({ ...props }) => {
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
                       isActive={
-                        pathname === "/dashboard/accounts/payments/methods" ||
-                        pathname === "/dashboard/accounts/payments/types" ||
-                        pathname === "/dashboard/accounts/bills/payment-methods" ||
-                        pathname === "/dashboard/accounts/payment-methods"
+                        pathname === "/admin/accounts/payments/methods" ||
+                        pathname === "/admin/accounts/payments/types" ||
+                        pathname === "/admin/accounts/bills/payment-methods" ||
+                        pathname === "/admin/accounts/payment-methods"
                       }
-                      render={<Link to="/dashboard/accounts/payments/methods" />}
+                      render={<Link to="/admin/accounts/payments/methods" />}
                     >
                       <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
                       <span>{t("nav.payment_methods", "Payment Methods")}</span>
@@ -673,8 +673,8 @@ export const AdminSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/payments" || pathname === "/dashboard/billing/payments"}
-                      render={<Link to="/dashboard/accounts/payments" />}
+                      isActive={pathname === "/admin/accounts/payments" || pathname === "/admin/billing/payments"}
+                      render={<Link to="/admin/accounts/payments" />}
                     >
                       <Receipt className="h-3.5 w-3.5 text-emerald-500" />
                       <span>{t("nav.all_payments", "All Payments")}</span>
@@ -687,8 +687,8 @@ export const AdminSidebar = ({ ...props }) => {
                   </div>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/investors"}
-                      render={<Link to="/dashboard/accounts/investors" />}
+                      isActive={pathname === "/admin/accounts/investors"}
+                      render={<Link to="/admin/accounts/investors" />}
                     >
                       <Users className="h-3.5 w-3.5 text-purple-500" />
                       <span>{t("nav.investors", "Investors")}</span>
@@ -696,8 +696,8 @@ export const AdminSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/investments"}
-                      render={<Link to="/dashboard/accounts/investments" />}
+                      isActive={pathname === "/admin/accounts/investments"}
+                      render={<Link to="/admin/accounts/investments" />}
                     >
                       <TrendingUp className="h-3.5 w-3.5 text-purple-500" />
                       <span>{t("nav.investments_list", "Investments")}</span>
@@ -712,12 +712,12 @@ export const AdminSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={
-                  pathname.startsWith("/dashboard/reports") ||
-                  pathname.startsWith("/dashboard/users") ||
-                  pathname.startsWith("/dashboard/members") ||
-                  pathname.startsWith("/dashboard/tools/support") ||
-                  pathname.startsWith("/dashboard/cpanel") ||
-                  pathname.startsWith("/dashboard/trash")
+                  pathname.startsWith("/admin/reports") ||
+                  pathname.startsWith("/admin/users") ||
+                  pathname.startsWith("/admin/members") ||
+                  pathname.startsWith("/admin/tools/support") ||
+                  pathname.startsWith("/admin/cpanel") ||
+                  pathname.startsWith("/admin/trash")
                 }
                 tooltip={t("nav.admin", "Admin")}
                 onClick={() => toggleMenu("admin")}
@@ -738,8 +738,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("reports") || isAllowed("admin")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/reports")}
-                        render={<Link to="/dashboard/reports" />}
+                        isActive={pathname.startsWith("/admin/reports")}
+                        render={<Link to="/admin/reports" />}
                       >
                         <BarChart3 className="h-3.5 w-3.5" />
                         <span>{t("nav.reports", "Reports")}</span>
@@ -749,8 +749,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("users") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/users")}
-                        render={<Link to="/dashboard/users" />}
+                        isActive={pathname.startsWith("/admin/users")}
+                        render={<Link to="/admin/users" />}
                       >
                         <ShieldAlert className="h-3.5 w-3.5" />
                         <span>{t("nav.system_users", "System Users")}</span>
@@ -760,8 +760,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("customers") || isAllowed("members") || isAllowed("admin")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/members")}
-                        render={<Link to="/dashboard/members" />}
+                        isActive={pathname.startsWith("/admin/members")}
+                        render={<Link to="/admin/members" />}
                       >
                         <Users className="h-3.5 w-3.5" />
                         <span>{t("nav.customer_list", "Customer List")}</span>
@@ -771,8 +771,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("tools.support") || isAllowed("admin")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/tools/support" || pathname.startsWith("/dashboard/tools/support")}
-                        render={<Link to="/dashboard/tools/support" />}
+                        isActive={pathname === "/admin/tools/support" || pathname.startsWith("/admin/tools/support")}
+                        render={<Link to="/admin/tools/support" />}
                       >
                         <LifeBuoy className="h-3.5 w-3.5" />
                         <span>{t("nav.support_desk", "Support Desk")}</span>
@@ -782,8 +782,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("cpanel") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/cpanel")}
-                        render={<Link to="/dashboard/cpanel" />}
+                        isActive={pathname.startsWith("/admin/cpanel")}
+                        render={<Link to="/admin/cpanel" />}
                       >
                         <Terminal className="h-3.5 w-3.5 text-emerald-400" />
                         <span className="text-emerald-400 font-medium">{t("nav.cpanel", "PPanel / cPanel")}</span>
@@ -792,8 +792,8 @@ export const AdminSidebar = ({ ...props }) => {
                   )}
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/trash")}
-                      render={<Link to="/dashboard/trash" />}
+                      isActive={pathname.startsWith("/admin/trash")}
+                      render={<Link to="/admin/trash" />}
                     >
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       <span className="text-destructive font-medium">{t("nav.trash", "Trash")}</span>
@@ -808,18 +808,18 @@ export const AdminSidebar = ({ ...props }) => {
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={
-                  pathname.startsWith("/dashboard/analytics") ||
-                  pathname.startsWith("/dashboard/tools/analytics") ||
-                  pathname.startsWith("/dashboard/cloudflare-analytics") ||
-                  pathname.startsWith("/dashboard/tools/cloudflare-analytics") ||
-                  pathname.startsWith("/dashboard/cloudflare") ||
-                  pathname.startsWith("/dashboard/activity-logs") ||
-                  pathname.startsWith("/dashboard/tools/activity-logs") ||
-                  pathname.startsWith("/dashboard/media") ||
-                  pathname.startsWith("/dashboard/tools/bulk-image-resize") ||
-                  pathname.startsWith("/dashboard/tools/meta-catalog") ||
-                  pathname.startsWith("/dashboard/logs") ||
-                  pathname.startsWith("/dashboard/tools/logs")
+                  pathname.startsWith("/admin/analytics") ||
+                  pathname.startsWith("/admin/tools/analytics") ||
+                  pathname.startsWith("/admin/cloudflare-analytics") ||
+                  pathname.startsWith("/admin/tools/cloudflare-analytics") ||
+                  pathname.startsWith("/admin/cloudflare") ||
+                  pathname.startsWith("/admin/activity-logs") ||
+                  pathname.startsWith("/admin/tools/activity-logs") ||
+                  pathname.startsWith("/admin/media") ||
+                  pathname.startsWith("/admin/tools/bulk-image-resize") ||
+                  pathname.startsWith("/admin/tools/meta-catalog") ||
+                  pathname.startsWith("/admin/logs") ||
+                  pathname.startsWith("/admin/tools/logs")
                 }
                 tooltip={t("nav.tools_media", "Tools & Media")}
                 onClick={() => toggleMenu("tools")}
@@ -841,8 +841,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {Boolean(clientConfig?.cloudFlareAnalytics?.active || clientConfig?.features?.cloudflareAnalytics !== false) && (isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/cloudflare-analytics") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/cloudflare")}
-                        render={<Link to="/dashboard/cloudflare-analytics" />}
+                        isActive={pathname.startsWith("/admin/cloudflare-analytics") || pathname.startsWith("/admin/tools/cloudflare-analytics") || pathname.startsWith("/admin/cloudflare")}
+                        render={<Link to="/admin/cloudflare-analytics" />}
                       >
                         <LineChart className="h-3.5 w-3.5 text-blue-500" />
                         <span>{t("nav.cloudflare_analytics", "Cloudflare Analytics")}</span>
@@ -852,8 +852,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("tools") || isAllowed("admin")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs")}
-                        render={<Link to="/dashboard/activity-logs" />}
+                        isActive={pathname.startsWith("/admin/activity-logs") || pathname.startsWith("/admin/tools/activity-logs")}
+                        render={<Link to="/admin/activity-logs" />}
                       >
                         <Activity className="h-3.5 w-3.5" />
                         <span>{t("nav.activity_logs", "Activity Logs")}</span>
@@ -863,8 +863,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("tools.assets") || isAllowed("tools.media") || isAllowed("tools")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/media" || pathname.startsWith("/dashboard/media")}
-                        render={<Link to="/dashboard/media" />}
+                        isActive={pathname === "/admin/media" || pathname.startsWith("/admin/media")}
+                        render={<Link to="/admin/media" />}
                       >
                         <Images className="h-3.5 w-3.5" />
                         <span>{t("nav.all_media", "All Media")}</span>
@@ -874,8 +874,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("tools.bulk-image-resize") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/tools/bulk-image-resize"}
-                        render={<Link to="/dashboard/tools/bulk-image-resize" />}
+                        isActive={pathname === "/admin/tools/bulk-image-resize"}
+                        render={<Link to="/admin/tools/bulk-image-resize" />}
                       >
                         <ImageDown className="h-3.5 w-3.5" />
                         <span>{t("nav.bulk_image_resize", "Bulk Image Resize")}</span>
@@ -885,8 +885,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("tools.meta-catalog") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/tools/meta-catalog"}
-                        render={<Link to="/dashboard/tools/meta-catalog" />}
+                        isActive={pathname === "/admin/tools/meta-catalog"}
+                        render={<Link to="/admin/tools/meta-catalog" />}
                       >
                         <Share2 className="h-3.5 w-3.5" />
                         <span>{t("nav.meta_catalog", "Meta Catalog")}</span>
@@ -896,8 +896,8 @@ export const AdminSidebar = ({ ...props }) => {
                   {(isAllowed("logs") || isAllowed("tools.logs")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs")}
-                        render={<Link to="/dashboard/logs" />}
+                        isActive={pathname.startsWith("/admin/logs") || pathname.startsWith("/admin/tools/logs")}
+                        render={<Link to="/admin/logs" />}
                       >
                         <Terminal className="h-3.5 w-3.5" />
                         <span>{t("nav.system_logs", "System Logs")}</span>
@@ -977,7 +977,7 @@ export const AdminSidebar = ({ ...props }) => {
             <DropdownMenuContent side="right" align="end" sideOffset={12} className="w-48 p-1.5 shadow-xl rounded-xl border border-border/80 bg-popover">
               <DropdownMenuItem
                 className="cursor-pointer flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg hover:bg-accent focus:bg-accent text-foreground"
-                onClick={() => navigate('/dashboard/profile')}
+                onClick={() => navigate('/admin/profile')}
               >
                 <User className="h-4 w-4 text-primary" />
                 <span>{t("nav.profile", "Profile")}</span>
