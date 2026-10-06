@@ -154,11 +154,42 @@ async function pathaoRequest(endpoint, options = {}) {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    let errorMsg = data?.message || data?.error_description || data?.error || `Pathao API Error (${res.status})`;
+    let detailMessages = [];
     if (typeof data?.errors === "object" && data.errors !== null) {
-      const errorDetails = Object.values(data.errors).flat().join(", ");
-      errorMsg = `${errorMsg} - ${errorDetails}`;
+      if (Array.isArray(data.errors)) {
+        detailMessages = data.errors.map((e) => (typeof e === "object" ? JSON.stringify(e) : String(e)));
+      } else {
+        for (const [field, val] of Object.entries(data.errors)) {
+          if (Array.isArray(val)) {
+            detailMessages.push(...val);
+          } else if (typeof val === "string") {
+            detailMessages.push(val);
+          } else {
+            detailMessages.push(`${field}: ${JSON.stringify(val)}`);
+          }
+        }
+      }
+    } else if (typeof data?.errors === "string") {
+      detailMessages.push(data.errors);
     }
+
+    if (data?.error && typeof data.error === "object") {
+      if (data.error.description) detailMessages.push(data.error.description);
+      else if (data.error.message) detailMessages.push(data.error.message);
+    }
+
+    let mainMsg =
+      data?.message ||
+      data?.error_description ||
+      (typeof data?.error === "string" ? data.error : "") ||
+      `Pathao API Error (${res.status})`;
+
+    let errorMsg = mainMsg;
+    if (detailMessages.length > 0) {
+      const detailsStr = detailMessages.join(", ");
+      errorMsg = `${mainMsg}: ${detailsStr}`;
+    }
+
     const error = new Error(errorMsg);
     error.status = res.status;
     error.data = data;

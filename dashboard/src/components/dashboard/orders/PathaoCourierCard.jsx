@@ -142,13 +142,24 @@ const PathaoCourierCard = ({
       .filter(Boolean)
       .join(", ");
 
-    setRecipientAddress(
-      sInfo.address?.trim() ||
-      bInfo.address?.trim() ||
-      fullAddr ||
-      order?.customer?.address?.trim() ||
-      ""
-    );
+    const baseAddr = sInfo.address?.trim() || bInfo.address?.trim() || order?.customer?.address?.trim() || "";
+    const extraParts = [
+      sInfo.thana || bInfo.thana,
+      sInfo.district || bInfo.district || sInfo.city || bInfo.city,
+    ]
+      .filter(Boolean)
+      .filter((part) => !baseAddr.toLowerCase().includes(part.toLowerCase()))
+      .join(", ");
+
+    let resolvedAddress = baseAddr;
+    if (resolvedAddress.length < 10 && extraParts) {
+      resolvedAddress = resolvedAddress ? `${resolvedAddress}, ${extraParts}` : extraParts;
+    }
+    if (!resolvedAddress) {
+      resolvedAddress = fullAddr;
+    }
+
+    setRecipientAddress(resolvedAddress);
 
     // Calculate COD amount: if paid, 0; else remaining total
     const total = order?.totals?.total ?? order?.totalAmount ?? 0;
@@ -350,6 +361,10 @@ const PathaoCourierCard = ({
       toast.error("Delivery Address is required.");
       return;
     }
+    if (recipientAddress.trim().length < 10) {
+      toast.error("Pathao requires at least 10 characters in Delivery Address (please add Area, Thana or District).");
+      return;
+    }
     if (!selectedCity || !selectedZone) {
       toast.error("Please select Destination City and Zone.");
       return;
@@ -488,14 +503,26 @@ const PathaoCourierCard = ({
 
           {/* Delivery Address */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold">Delivery Address <span className="text-destructive">*</span></label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold">
+                Delivery Address <span className="text-destructive">*</span>
+              </label>
+              <span className={`text-[10px] ${recipientAddress.trim().length < 10 ? "text-amber-500 font-medium" : "text-muted-foreground"}`}>
+                {recipientAddress.trim().length} chars (min 10)
+              </span>
+            </div>
             <Textarea
               value={recipientAddress}
               onChange={(e) => setRecipientAddress(e.target.value)}
-              placeholder="House, Road, Area, Landmark"
-              className="text-xs min-h-[60px]"
+              placeholder="House, Road, Area, Thana, District (At least 10 characters)"
+              className={`text-xs min-h-[60px] ${recipientAddress.trim().length > 0 && recipientAddress.trim().length < 10 ? "border-amber-400 focus-visible:ring-amber-400" : ""}`}
               required
             />
+            {recipientAddress.trim().length > 0 && recipientAddress.trim().length < 10 && (
+              <p className="text-[11px] text-amber-500 font-medium">
+                ⚠️ Pathao requires at least 10 characters. Please add thana or district name.
+              </p>
+            )}
           </div>
 
           {/* City / Zone / Area Selectors */}
