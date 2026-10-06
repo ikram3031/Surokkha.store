@@ -311,18 +311,25 @@ export const listOrders = async (req, res, next) => {
       .lean();
 
     const orderIds = orders.map((o) => o._id);
-    const payments = await PaymentModel.find({ orderId: { $in: orderIds } }).select('orderId status').lean();
-    const paymentMap = new Map(payments.map((p) => [p.orderId.toString(), p.status]));
+    const payments = await PaymentModel.find({ orderId: { $in: orderIds } })
+      .select('orderId status paidAmount pendingAmount totalAmount paymentPhone paymentMethod')
+      .lean();
+    const paymentMap = new Map(payments.map((p) => [p.orderId.toString(), p]));
 
-        const data = orders.map((order) => {
-      const pStatus = paymentMap.get(order._id.toString());
+    const data = orders.map((order) => {
+      const payment = paymentMap.get(order._id.toString());
+      const pStatus = payment?.status || order.paymentStatus;
       const fallbackPaid = ['completed', 'shipped'].includes(order.status);
       const effectivePaymentStatus = pStatus || (fallbackPaid ? 'paid' : 'pending');
+      const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
       return {
         ...order,
         id: order._id.toString(),
         customer: order.billingInfo,
         paymentStatus: effectivePaymentStatus,
+        paidAmount: effectivePaid,
+        paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
+        paymentDetails: payment || null,
       };
     });
 
@@ -356,13 +363,17 @@ export const getOrderById = async (req, res, next) => {
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
     const fallbackPaid = ['completed', 'shipped'].includes(order.status);
-    const effectivePaymentStatus = payment?.status || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
 
     const orderWithCustomer = {
       ...order,
       id: order._id.toString(),
       customer: order.billingInfo,
       paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
+      paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
+      paymentDetails: payment || null,
     };
 
     return res.json({ status: 'success', data: orderWithCustomer });
@@ -463,13 +474,17 @@ export const updateOrder = async (req, res, next) => {
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
     const isCancelledOrder = ['fake', 'cancelled', 'canceled'].includes(order.status);
     const fallbackPaid = ['completed', 'shipped'].includes(order.status);
-    const effectivePaymentStatus = payment?.status || (isCancelledOrder ? 'cancelled' : fallbackPaid ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (isCancelledOrder ? 'cancelled' : fallbackPaid ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
 
     const orderWithCustomer = {
       ...order,
       id: order._id.toString(),
       customer: order.billingInfo,
       paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
+      paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
+      paymentDetails: payment || null,
     };
 
     return res.status(200).json({ status: 'success', data: orderWithCustomer });
@@ -615,6 +630,9 @@ export const bulkUpdateOrders = async (req, res, next) => {
         updateFields.active = false;
       }
     }
+    if (paymentStatus) {
+      updateFields.paymentStatus = paymentStatus.toLowerCase();
+    }
 
     // Find affected orders first to read references before updating
     const orders = await OrderModel.find(query).lean();
@@ -670,6 +688,10 @@ export const bulkUpdateOrders = async (req, res, next) => {
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+        await OrderModel.findByIdAndUpdate(updatedOrder._id, {
+          paymentStatus: 'cancelled',
+          paidAmount: 0,
+        });
       } else if (paymentStatus) {
         const pStatus = paymentStatus.toLowerCase();
         const rawTotal = Number(updatedOrder.totals?.total || 0);
@@ -691,6 +713,10 @@ export const bulkUpdateOrders = async (req, res, next) => {
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+        await OrderModel.findByIdAndUpdate(updatedOrder._id, {
+          paymentStatus: pStatus,
+          paidAmount,
+        });
       } else {
         // Fall back to standard payment sync based on order state
         await syncPaymentDocument(updatedOrder);
@@ -733,6 +759,10 @@ export const getOrderInvoiceView = async (req, res, next) => {
     const totalAmount = Number(order.totals?.total !== undefined ? order.totals.total : (order.totalAmount !== undefined ? order.totalAmount : calculatedTotal));
     const couponCode = order.couponCode ? String(order.couponCode).trim().toUpperCase() : null;
 
+    const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (['completed', 'shipped'].includes(order.status) ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? totalAmount : 0);
+
     const formattedOrderData = {
       orderId: order.orderNumber || order.did || order._id?.toString()?.slice(-6),
       status: order.status || 'processing',
@@ -767,6 +797,8 @@ export const getOrderInvoiceView = async (req, res, next) => {
       couponCode,
       totalAmount,
       paymentMethod: order.paymentMethod || "Cash on Delivery",
+      paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
     };
 
     const clientKey = order.client || config.clientKey || 'surokkha';
@@ -831,6 +863,10 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
     const couponCode = order.couponCode ? String(order.couponCode).trim().toUpperCase() : null;
     const formattedOrderId = order.orderNumber || order.did || order._id?.toString()?.slice(-6);
 
+    const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (['completed', 'shipped'].includes(order.status) ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? totalAmount : 0);
+
     const formattedOrderData = {
       orderId: formattedOrderId,
       status: order.status || "processing",
@@ -865,6 +901,8 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
       couponCode,
       totalAmount,
       paymentMethod: order.paymentMethod || "Cash on Delivery",
+      paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
     };
 
     let templateConfig = null;

@@ -123,6 +123,19 @@ export const buildOrderDocument = async (payload, req = null) => {
   const resolvedDomain = payload.clientDomain || (resolvedSiteKey === 'shop' ? 'surokkha.shop' : 'surokkha.store');
   const customPrefix = payload.orderPrefix || null;
 
+    const calculatedTotal = Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0)));
+  const rawMethod = normalizeText(payload.paymentMethod).toLowerCase();
+  const isCash = rawMethod === 'cash' || rawMethod === 'instore';
+  const initialPaidAmount = isInstore || isCash ? calculatedTotal : Number(payload.paidAmount || 0);
+  let initialPaymentStatus = 'pending';
+  if (payload.paymentStatus) {
+    initialPaymentStatus = String(payload.paymentStatus).toLowerCase().trim();
+  } else if (isInstore || (initialPaidAmount >= calculatedTotal && calculatedTotal > 0)) {
+    initialPaymentStatus = 'paid';
+  } else if (initialPaidAmount > 0) {
+    initialPaymentStatus = 'partial';
+  }
+
   return {
     orderNumber: await buildOrderNumber(resolvedOrderType, resolvedSiteKey, customPrefix),
     siteKey: resolvedSiteKey,
@@ -134,6 +147,9 @@ export const buildOrderDocument = async (payload, req = null) => {
     billingInfo,
     shippingInfo,
     paymentMethod: normalizeText(payload.paymentMethod),
+    paymentStatus: initialPaymentStatus,
+    paidAmount: initialPaidAmount,
+    paymentPhone: normalizeText(payload.paymentPhone || ''),
     shippingTotalAmount: Number(payload.shippingTotalAmount || payload.shippingFee || 0),
     discountTotalAmount: Number(payload.discountTotalAmount || 0),
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
@@ -143,7 +159,7 @@ export const buildOrderDocument = async (payload, req = null) => {
       subtotal: Number(payload.subtotal || payload.subTotal || 0),
       shippingFee: Number(payload.shippingFee || payload.shippingTotalAmount || payload.shipping || 0),
       tax: Number(payload.tax || 0),
-      total: Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0))),
+      total: calculatedTotal,
     },
     ipAddress: normalizeText(payload.ipAddress || (req ? extractClientIp(req) : '')) || null,
   };
@@ -152,17 +168,7 @@ export const buildOrderDocument = async (payload, req = null) => {
 // Upsert the linked payment record so it reflects the created order totals.
 // Supports advance, partial, and full payments for COD, Cash, bKash, Nagad, Bank, Card.
 export const syncPaymentDocument = async (orderData, payload = {}) => {
-  const rawTotal = Number(orderData.totals?.total || 0);
-  const shippingFee = Number(
-    orderData.totals?.shippingFee ??
-    orderData.shippingTotalAmount ??
-    orderData.shippingFee ??
-    payload.shippingFee ??
-    payload.shippingTotalAmount ??
-    payload.shipping ??
-    0
-  );
-  const totalAmount = Math.max(0, rawTotal - shippingFee);
+  const totalAmount = Number(orderData.totals?.total ?? orderData.totalAmount ?? 0);
 
   const isInstore = 
     (payload.orderType === 'instore') || 
@@ -180,6 +186,8 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
       paidAmount = 0;
     } else if (payload.paidAmount !== undefined && payload.paidAmount !== null) {
       paidAmount = Number(payload.paidAmount);
+    } else if (orderData.paidAmount !== undefined && orderData.paidAmount !== null) {
+      paidAmount = Number(orderData.paidAmount);
     } else {
       paidAmount = 0;
     }
@@ -259,6 +267,17 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
+
+  if (orderData._id) {
+    await OrderModel.findByIdAndUpdate(orderData._id, {
+      paymentStatus,
+      paidAmount,
+      paymentPhone,
+    });
+    orderData.paymentStatus = paymentStatus;
+    orderData.paidAmount = paidAmount;
+    orderData.paymentPhone = paymentPhone;
+  }
 };
 
 // Recalculate the aggregate order, paid, and pending totals for a member.
@@ -529,6 +548,19 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   }
   if (payload.paymentPhone !== undefined) {
     allowedUpdates.paymentPhone = normalizeText(payload.paymentPhone);
+  }
+  if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
+    allowedUpdates.paymentStatus = String(payload.paymentStatus).toLowerCase().trim();
+  } else if (payload.paidAmount !== undefined) {
+    const currentTotal = Number(payload.totals?.total ?? existingOrder.totals?.total ?? 0);
+    const paid = Number(payload.paidAmount || 0);
+    if (paid >= currentTotal && currentTotal > 0) {
+      allowedUpdates.paymentStatus = 'paid';
+    } else if (paid > 0) {
+      allowedUpdates.paymentStatus = 'partial';
+    } else {
+      allowedUpdates.paymentStatus = 'pending';
+    }
   }
   if (payload.totals) {
     allowedUpdates.totals = payload.totals;

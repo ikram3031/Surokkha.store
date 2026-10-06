@@ -525,9 +525,9 @@ const OrderDetailsPage = () => {
         description: `Order #${order.orderNumber || id} updated (status: "${orderStatus}") by "${user?.name || 'Admin'}"`,
       });
       toast.success("Order updated successfully");
-      queryClient.invalidateQueries(["order", id]);
-      queryClient.invalidateQueries(["orders"]);
-      queryClient.invalidateQueries(["activity-logs"]);
+      queryClient.invalidateQueries({ queryKey: ["order", id] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["activity-logs"] });
       setIsEditMode(false);
     } catch (err) {
       console.error(err);
@@ -562,7 +562,7 @@ const OrderDetailsPage = () => {
   }
 
   const effectiveTotal = order.totals?.total ?? order.totalAmount ?? 0;
-  const effectivePaid = order.paymentDetails?.paidAmount ?? order.paidAmount ?? (order.paymentStatus === "Paid" ? effectiveTotal : 0);
+  const effectivePaid = order.paidAmount ?? order.paymentDetails?.paidAmount ?? 0;
   const effectivePending = calculatePendingAmount(effectiveTotal, effectivePaid);
 
   return (

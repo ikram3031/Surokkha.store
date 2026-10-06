@@ -331,10 +331,14 @@ export const buildUpdatePayload = ({
     zip: finalShipping.zip?.trim() || normalizedBilling.zip,
   };
 
+  const effectivePaid = isInStoreOrder ? Number(total || 0) : Number(paidAmount || 0);
+  const resolvedPaymentStatus = calculatePaymentStatus(total, effectivePaid, paymentMethod, orderStatus).toLowerCase();
+
   return {
     status: getBackendStatus(orderStatus),
     paymentMethod: fullPaymentMethod,
-    paidAmount: isInStoreOrder ? Number(total || 0) : Number(paidAmount || 0),
+    paymentStatus: resolvedPaymentStatus,
+    paidAmount: effectivePaid,
     paymentPhone: formattedPaymentPhone,
     billingInfo: normalizedBilling,
     shippingInfo: normalizedShipping,

@@ -367,7 +367,7 @@ export const createOrderConsignmentController = async (req, res, next) => {
 
     const payload = {
       store_id: Number(effectiveStoreId),
-      merchant_order_id: String(merchant_order_id || orderId || "").trim(),
+      merchant_order_id: `${String(merchant_order_id || orderId || "").trim()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
       recipient_name: String(recipient_name).trim(),
       recipient_phone: cleanPhone,
       recipient_address: String(recipient_address).trim(),

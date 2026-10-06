@@ -48,6 +48,7 @@ const fetchOrders = async (params) => {
       if (o.paymentStatus) {
         const p = o.paymentStatus.toLowerCase();
         if (p === 'paid') paymentStatus = 'Paid';
+        else if (p === 'partial' || p === 'partially_paid') paymentStatus = 'Partial';
         else if (p === 'failed') paymentStatus = 'Failed';
         else if (p === 'cancelled' || p === 'canceled') paymentStatus = 'Canceled';
         else paymentStatus = 'Pending';
@@ -57,6 +58,8 @@ const fetchOrders = async (params) => {
       }
 
       const id = o._id || o.id || `UNKNOWN-${Math.random().toString(36).slice(2, 10)}`;
+      const totalAmount = o.totals?.total ?? o.totalAmount ?? 0;
+      const paidAmount = o.paidAmount ?? (paymentStatus === 'Paid' ? totalAmount : 0);
 
       return {
         ...o,
@@ -65,7 +68,8 @@ const fetchOrders = async (params) => {
         customerName: o.billingInfo?.fullName || o.shippingInfo?.fullName || o.customer?.fullName || 'Guest Customer',
         customer: o.customer || o.billingInfo || o.shippingInfo || {},
         date: o.createdAt || new Date().toISOString(),
-        totalAmount: o.totals?.total ?? o.totalAmount ?? 0,
+        totalAmount,
+        paidAmount,
         paymentStatus,
         orderStatus: fulfillment,
       };
@@ -95,6 +99,8 @@ export const useOrders = (params) => {
   return useQuery({
     queryKey: ['orders', params],
     queryFn: () => fetchOrders(params),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 };
 
@@ -113,5 +119,7 @@ export const useOrder = (id) => {
     queryKey: ['order', id],
     queryFn: () => fetchOrderById(id),
     enabled: !!id,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 };

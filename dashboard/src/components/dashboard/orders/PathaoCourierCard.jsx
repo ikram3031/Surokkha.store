@@ -354,6 +354,10 @@ const PathaoCourierCard = ({
       toast.error("Please select Destination City and Zone.");
       return;
     }
+    if (areas.length > 0 && !selectedArea) {
+      toast.error("Please select a Destination Area, as it is required for this Zone.");
+      return;
+    }
     if (!selectedStoreId) {
       toast.error("Please select a Pathao Pickup Store.");
       return;
@@ -385,8 +389,8 @@ const PathaoCourierCard = ({
       toast.success(res.data?.message || "Order dispatched to Pathao Courier successfully!");
 
       setIsDispatchOpen(false);
-      queryClient.invalidateQueries(["order", order?.id || order?._id]);
-      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries({ queryKey: ["order", order?.id || order?._id] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       if (onOrderUpdated) onOrderUpdated();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to dispatch order to Pathao.");
@@ -402,7 +406,7 @@ const PathaoCourierCard = ({
       const res = await apiClient.get(`/api/v1/courier/pathao/orders/${courier.consignmentId}/track`);
       setTrackingData(res.data?.data || res.data);
       toast.success("Live tracking info updated.");
-      queryClient.invalidateQueries(["order", order?.id || order?._id]);
+      queryClient.invalidateQueries({ queryKey: ["order", order?.id || order?._id] });
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to fetch live tracking info.");
     } finally {
@@ -529,7 +533,9 @@ const PathaoCourierCard = ({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Area / Thana</label>
+              <label className="text-xs font-semibold">
+                Area / Thana {areas.length > 0 && <span className="text-destructive">*</span>}
+              </label>
               <Select value={selectedArea} onValueChange={setSelectedArea} disabled={!selectedZone || areas.length === 0}>
                 <SelectTrigger className="h-9 text-xs">
                   <SelectValue placeholder="Select Area" />

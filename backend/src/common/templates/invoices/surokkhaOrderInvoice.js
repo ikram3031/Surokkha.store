@@ -62,7 +62,10 @@ export const buildSurokkhaOrderInvoiceHtml = ({
   };
 
   const deliveryAddressStr = formatAddress(finalShipping);
-  const isPaid = status === "completed" || paymentMethod.toLowerCase().includes("paid");
+  const rawPaymentStatus = String(order.paymentStatus || "").toLowerCase();
+  const paidAmount = Number(order.paidAmount || 0);
+  const isPaid = status === "completed" || paymentMethod.toLowerCase().includes("paid") || rawPaymentStatus === "paid";
+  const isPartial = rawPaymentStatus === "partial" || rawPaymentStatus === "partially_paid" || (paidAmount > 0 && paidAmount < Number(totalAmount));
   const isCustom = orderType === "custom" || String(orderId).startsWith("CO");
   const isInstore = !isCustom && (orderType === "instore" || String(orderId).startsWith("IS") || paymentMethod.toLowerCase().includes("instore") || paymentMethod.toLowerCase().includes("office"));
 
@@ -93,8 +96,8 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     statusBadgeBorder = "#FDE68A";
   }
 
-  const paymentStatusText = isPaid || isInstore ? "Paid / Confirmed" : "Pending (COD)";
-  const paymentStatusColor = isPaid || isInstore ? "#15803D" : "#BE123C";
+  const paymentStatusText = isPaid || isInstore ? "Paid / Confirmed" : isPartial ? "Partial Payment" : "Pending (COD)";
+  const paymentStatusColor = isPaid || isInstore ? "#15803D" : isPartial ? "#D97706" : "#BE123C";
 
   // Build product item rows
   const itemRowsHtml = items.map((item, index) => {
@@ -523,6 +526,15 @@ export const buildSurokkhaOrderInvoiceHtml = ({
             <td>Grand Total (BDT):</td>
             <td class="amount">৳${Number(totalAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           </tr>
+          ${isPartial && paidAmount > 0 ? `
+          <tr>
+            <td style="color: #166534; font-weight: 600;">Paid / Advance Amount:</td>
+            <td class="amount" style="color: #166534; font-weight: 700;">৳${Number(paidAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          </tr>
+          <tr class="grand-total">
+            <td style="color: #D97706;">Remaining Due (BDT):</td>
+            <td class="amount" style="color: #D97706;">৳${Math.max(0, Number(totalAmount) - Number(paidAmount)).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          </tr>` : ""}
         </table>
       </div>
     </div>

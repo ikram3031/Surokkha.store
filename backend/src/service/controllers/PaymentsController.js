@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { PaymentModel } from "../../common/models/payment.model.js";
+import { OrderModel } from "../../common/models/order.model.js";
 import { logger } from "../../common/config/logger.js";
 
 const { Types } = mongoose;
@@ -57,6 +58,13 @@ export const createPayment = async (req, res, next) => {
     };
 
     const payment = await PaymentModel.create(paymentData);
+    if (payment.orderId) {
+      await OrderModel.findByIdAndUpdate(payment.orderId, {
+        paymentStatus: status,
+        paidAmount,
+        paymentPhone: payment.paymentPhone || "",
+      });
+    }
     const populated = await PaymentModel.findById(payment._id).populate("orderId").lean();
 
     return res.status(201).json({
@@ -247,6 +255,17 @@ export const updatePayment = async (req, res, next) => {
       return res.status(404).json({ status: "error", message: "Payment record not found" });
     }
 
+    if (payment.orderId) {
+      const targetOrderId = payment.orderId._id || payment.orderId;
+      const orderSyncUpdates = {};
+      if (payment.status) orderSyncUpdates.paymentStatus = payment.status;
+      if (payment.paidAmount !== undefined) orderSyncUpdates.paidAmount = payment.paidAmount;
+      if (payment.paymentPhone !== undefined) orderSyncUpdates.paymentPhone = payment.paymentPhone;
+      if (Object.keys(orderSyncUpdates).length > 0) {
+        await OrderModel.findByIdAndUpdate(targetOrderId, orderSyncUpdates);
+      }
+    }
+
     return res.json({ status: "success", data: payment });
   } catch (error) {
     next(error);
@@ -263,6 +282,13 @@ export const deletePayment = async (req, res, next) => {
     const deletedPayment = await PaymentModel.findOneAndDelete(query).lean();
     if (!deletedPayment) {
       return res.status(404).json({ status: "error", message: "Payment record not found" });
+    }
+
+    if (deletedPayment.orderId) {
+      await OrderModel.findByIdAndUpdate(deletedPayment.orderId, {
+        paymentStatus: "pending",
+        paidAmount: 0,
+      });
     }
 
     return res.json({ status: "success", message: "Payment record deleted successfully" });
@@ -326,6 +352,13 @@ export const bulkUpdatePayments = async (req, res, next) => {
         amount: paidAmount,
         updatedBy: req.user?.userId || null,
       });
+
+      if (payment.orderId) {
+        await OrderModel.findByIdAndUpdate(payment.orderId, {
+          paymentStatus: targetStatus,
+          paidAmount,
+        });
+      }
     }
 
     return res.json({ status: "success", message: "Payments updated successfully" });

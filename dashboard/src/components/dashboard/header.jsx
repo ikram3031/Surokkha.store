@@ -11,6 +11,7 @@ import { CacheCleanButton } from './CacheCleanButton';
 import { useDashboardStore } from '@/store/use-dashboard-store';
 import { clientConfig } from '@/clientConfig';
 import { BrandLogo } from '@/components/BrandLogo';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 // Renders the top navigation header containing refresh button, search, cache clean, theme toggle, and language selector
 export const Header = () => {
@@ -35,6 +36,7 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center justify-between gap-2 sm:gap-4 border-b bg-background/95 backdrop-blur-md px-3 sm:px-6">
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <SidebarTrigger className="md:hidden h-[34px] w-[34px] rounded-lg border border-border/50 hover:bg-muted/80 shrink-0" />
         <Button
           type="button"
           variant="outline"

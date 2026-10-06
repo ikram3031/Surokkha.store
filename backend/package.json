@@ -19,6 +19,7 @@
 		"prod:dashboard": "node src/service/server.js",
 		"mongo": "node scripts/start-local-mongo.js",
 		"img": "node scripts/check-img-urls.js",
+		"sync:payments": "node src/common/scripts/syncExistingOrderPayments.js",
 		"lint": "eslint .",
 		"format": "prettier --write ."
 	},

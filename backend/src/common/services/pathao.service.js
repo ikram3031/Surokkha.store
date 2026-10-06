@@ -154,12 +154,11 @@ async function pathaoRequest(endpoint, options = {}) {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const errorMsg =
-      data?.message ||
-      data?.error_description ||
-      data?.error ||
-      (typeof data?.errors === "object" ? JSON.stringify(data.errors) : "") ||
-      `Pathao API Error (${res.status})`;
+    let errorMsg = data?.message || data?.error_description || data?.error || `Pathao API Error (${res.status})`;
+    if (typeof data?.errors === "object" && data.errors !== null) {
+      const errorDetails = Object.values(data.errors).flat().join(", ");
+      errorMsg = `${errorMsg} - ${errorDetails}`;
+    }
     const error = new Error(errorMsg);
     error.status = res.status;
     error.data = data;

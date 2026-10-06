@@ -222,13 +222,17 @@ export const getOrderById = async (req, res, next) => {
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
     const fallbackPaid = ['completed', 'shipped'].includes(order.status);
-    const effectivePaymentStatus = payment?.status || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
 
     const orderWithCustomer = {
       ...order,
       id: order._id.toString(),
       customer: order.billingInfo,
       paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
+      paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
+      paymentDetails: payment || null,
     };
 
     return res.json({ status: 'success', data: orderWithCustomer });
