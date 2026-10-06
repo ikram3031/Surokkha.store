@@ -60,9 +60,7 @@ deploy:
 		echo "📦 Building Admin Dashboard..."; \
 		npm install --prefix dashboard; \
 		npm run build --prefix dashboard; \
-		mkdir -p /opt/clients/surokkha/dashboard; \
-		cp -r dashboard/dist/* /opt/clients/surokkha/dashboard/ 2>/dev/null || true; \
-		echo "✓ Admin Dashboard static files deployed to /opt/clients/surokkha/dashboard"; \
+		echo "✓ Admin Dashboard built to /opt/clients/surokkha/dashboard/dist"; \
 	fi
 	@# 3. Update Backend dependencies and restart services
 	@if [ -d "backend" ]; then \
@@ -109,10 +107,8 @@ build-dashboard:
 	@$(MAKE) sync-config
 	npm install --prefix dashboard
 	npm run build --prefix dashboard
-	@mkdir -p /opt/clients/surokkha/dashboard
-	@cp -r dashboard/dist/* /opt/clients/surokkha/dashboard/ 2>/dev/null || true
 	@systemctl reload nginx 2>/dev/null || true
-	@echo "✓ Admin Dashboard deployed to /opt/clients/surokkha/dashboard!"
+	@echo "✓ Admin Dashboard deployed to /opt/clients/surokkha/dashboard/dist!"
 
 restart-backend:
 	systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true
