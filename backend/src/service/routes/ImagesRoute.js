@@ -25,7 +25,7 @@ imagesRouter.get("/resize", async (req, res, next) => {
 imagesRouter.post(
   "/upload",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles("Owner", "Admin", "Manager", "Marketing-Expert", "Marketing Expert"),
   uploadMiddleware,
   uploadProductImage
 );

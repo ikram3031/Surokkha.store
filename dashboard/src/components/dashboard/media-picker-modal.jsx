@@ -31,6 +31,8 @@ import { formatDate } from "@/utils/dateHelper";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
+const DEFAULT_INITIAL_SELECTED = [];
+
 // Reusable modal for choosing existing product images or uploading new ones
 export const MediaPickerModal = ({
   open,
@@ -38,7 +40,7 @@ export const MediaPickerModal = ({
   onSelect,
   multiple = false,
   maxSelect = 5,
-  initialSelected = [],
+  initialSelected = DEFAULT_INITIAL_SELECTED,
   title,
 }) => {
   const { t } = useTranslation();
@@ -58,9 +60,10 @@ export const MediaPickerModal = ({
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const uploadInputRef = useRef(null);
+  const prevOpenRef = useRef(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && !prevOpenRef.current) {
       if (Array.isArray(initialSelected)) {
         setSelectedItems(
           initialSelected
@@ -73,9 +76,13 @@ export const MediaPickerModal = ({
         setSelectedItems([]);
       }
       setFocusedItem(null);
-      fetchMedia(1, "");
+      setCurrentPage(1);
+      setActiveSearch("");
+      setSearchQuery("");
+      setActiveTab("library");
     }
-  }, [open, initialSelected]);
+    prevOpenRef.current = open;
+  }, [open]);
 
   const fetchMedia = useCallback(async (page = 1, search = "") => {
     setIsLoading(true);
@@ -93,7 +100,9 @@ export const MediaPickerModal = ({
       setTotalPages(meta.totalPages || 1);
       setTotalFiles(meta.total || data.length);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to load media assets"));
+      if (!apiClient.isCancel?.(err)) {
+        toast.error(getApiErrorMessage(err, "Failed to load media assets"));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +112,7 @@ export const MediaPickerModal = ({
     if (open) {
       fetchMedia(currentPage, activeSearch);
     }
-  }, [currentPage, activeSearch, open, fetchMedia]);
+  }, [open, currentPage, activeSearch, fetchMedia]);
 
   const handleSearchSubmit = (e) => {
     e?.preventDefault();
@@ -119,11 +128,18 @@ export const MediaPickerModal = ({
 
   const isItemSelected = (item) => {
     if (!item?.url) return false;
-    return selectedItems.some((sel) => sel.url === item.url || (sel.url && sel.url.endsWith(item.url)));
+    return selectedItems.some((sel) => {
+      const selUrl = typeof sel === "string" ? sel : sel?.url;
+      return selUrl === item.url || (selUrl && item.url && (selUrl.endsWith(item.url) || item.url.endsWith(selUrl)));
+    });
   };
 
   const getSelectionIndex = (item) => {
-    const idx = selectedItems.findIndex((sel) => sel.url === item.url || (sel.url && sel.url.endsWith(item.url)));
+    if (!item?.url) return null;
+    const idx = selectedItems.findIndex((sel) => {
+      const selUrl = typeof sel === "string" ? sel : sel?.url;
+      return selUrl === item.url || (selUrl && item.url && (selUrl.endsWith(item.url) || item.url.endsWith(selUrl)));
+    });
     return idx >= 0 ? idx + 1 : null;
   };
 
@@ -133,7 +149,12 @@ export const MediaPickerModal = ({
       setSelectedItems([item]);
     } else {
       if (isItemSelected(item)) {
-        setSelectedItems((prev) => prev.filter((sel) => sel.url !== item.url && !sel.url?.endsWith(item.url)));
+        setSelectedItems((prev) =>
+          prev.filter((sel) => {
+            const selUrl = typeof sel === "string" ? sel : sel?.url;
+            return selUrl !== item.url && (!selUrl || !item.url || (!selUrl.endsWith(item.url) && !item.url.endsWith(selUrl)));
+          })
+        );
       } else {
         if (selectedItems.length >= maxSelect) {
           toast.error(`You can select at most ${maxSelect} images.`);

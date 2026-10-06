@@ -1005,6 +1005,7 @@ export const SidebarCards = ({
         }}
         multiple={true}
         maxSelect={Math.max(1, 5 - galleryImages.length)}
+        initialSelected={galleryImages.map((img) => img.url || img.preview || img)}
         title="Select Gallery Images"
       />
     </div>
