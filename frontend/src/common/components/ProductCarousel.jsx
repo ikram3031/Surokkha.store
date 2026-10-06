@@ -21,7 +21,12 @@ const ProductCarousel = ({ maxItems = 10 }) => {
     if (!productKeys || productKeys.length === 0) return [];
 
     const seenIds = new Set();
-    const nonCombos = [];
+    const otherProducts = [];
+    const mo3Keys = new Set([
+      'mo-multi-textured-latex-contraceptive-10-pcs',
+      'mo-micro-thin-latex-contraceptive-10-pcs',
+      'mo-micro-ribbed-natural-latex-contraceptive-10-pcs'
+    ]);
 
     for (const key of productKeys) {
       const p = products[key];
@@ -37,7 +42,7 @@ const ProductCarousel = ({ maxItems = 10 }) => {
       );
       if (isOutOfStock) continue;
 
-      // 1. Exclude Combos
+      // 1. Exclude Combos (Combos have their own dedicated Spotlight Showcase above)
       const isCombo = 
         (p.category && String(typeof p.category === 'object' ? p.category.name : p.category).toLowerCase().includes('combo')) ||
         (p.category_bn && p.category_bn.includes('কম্বো')) ||
@@ -47,45 +52,40 @@ const ProductCarousel = ({ maxItems = 10 }) => {
 
       if (isCombo) continue;
 
-      // 2. Identify if it is an other wellness product (Lubricant, Spray, Delay, Performance Booster, etc.)
-      const catName = String(typeof p.category === 'object' ? (p.category?.name || p.category?.slug || '') : (p.category || '')).toLowerCase();
-      const catSlug = String(p.categorySlug || '').toLowerCase();
-      const catBn = String(p.category_bn || '');
-
-      const isOtherWellness = 
-        catName.includes('lubricant') || catName.includes('booster') || catName.includes('spray') || catName.includes('delay') || catName.includes('wellness') || catName.includes('other') ||
-        catSlug.includes('lubricant') || catSlug.includes('performance-booster') || catSlug.includes('delay') || catSlug.includes('spray') || catSlug.includes('wellness') || catSlug.includes('other') ||
-        catBn.includes('লুব্রিকেন্ট') || catBn.includes('বুস্টার') || catBn.includes('স্প্রে') || catBn.includes('অন্যান্য');
-
-      // 3. Exclude Contraceptives / Condoms (only if NOT an other wellness product)
-      const isContraceptive = !isOtherWellness && (
-        catName.includes('contraceptive') ||
-        catName.includes('condom') ||
-        catBn.includes('কনট্রাসেপটিভ') ||
-        catBn.includes('কন্ট্রাসেপটিভ') ||
-        catBn.includes('কনডম') ||
-        catBn.includes('পরিবার পরিকল্পনা') ||
-        catSlug.includes('contraceptive') ||
-        catSlug.includes('condom') ||
-        (Array.isArray(p.categories) && p.categories.some((c) => {
-          const val = String(typeof c === 'object' ? (c.name || c.slug || '') : c).toLowerCase();
-          return val.includes('contraceptive') || val.includes('condom') || val.includes('কনডম') || val.includes('কনট্রাসেপটিভ') || val.includes('পরিবার পরিকল্পনা');
-        })) ||
-        key.toLowerCase().includes('contraceptive') ||
-        key.toLowerCase().includes('condom') ||
-        (p.slug && (p.slug.toLowerCase().includes('contraceptive') || p.slug.toLowerCase().includes('condom')))
-      );
-
-      if (isContraceptive) continue;
+      // 2. Prioritize products other than the 3 primary MO condoms featured in Section 1
+      const isPrimaryMo = mo3Keys.has(key) || mo3Keys.has(p.slug) || mo3Keys.has(p.did);
+      if (isPrimaryMo) continue;
 
       const uniqueId = p.did || p.slug || p._id || key;
       if (seenIds.has(uniqueId)) continue;
       seenIds.add(uniqueId);
 
-      nonCombos.push(key);
+      otherProducts.push(key);
     }
 
-    const shuffled = [...nonCombos];
+    // Fallback: If other products are fewer than 3, include any remaining active in-stock products
+    if (otherProducts.length < 3) {
+      for (const key of productKeys) {
+        const p = products[key];
+        if (!p || p.isActive === false || p.status === 'inactive') continue;
+        const isOutOfStock = Boolean(
+          p.isOutOfStock === true || 
+          p.stockStatus === 'outofstock' || 
+          p.stockStatus === 'out_of_stock' || 
+          (p.stockStatus !== 'instock' && (p.stockAmount === 0 || p.stock === 0))
+        );
+        if (isOutOfStock) continue;
+        const isCombo = key.toLowerCase().includes('combo') || (p.name && p.name.toLowerCase().includes('combo'));
+        if (isCombo) continue;
+        const uniqueId = p.did || p.slug || p._id || key;
+        if (!seenIds.has(uniqueId)) {
+          seenIds.add(uniqueId);
+          otherProducts.push(key);
+        }
+      }
+    }
+
+    const shuffled = [...otherProducts];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -159,8 +159,8 @@ const ProductCarousel = ({ maxItems = 10 }) => {
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
               {isBn 
-                ? 'আপনার পছন্দ অনুযায়ী বাছাইকৃত প্রিমিয়াম পার্সোনাল লুব্রিকেন্ট ও ওয়েলনেস কেয়ার সামগ্রী।'
-                : 'Browse our curated collection of personal wellness and lubricant products.'}
+                ? 'আপনার পছন্দ অনুযায়ী বাছাইকৃত প্রিমিয়াম কনট্রাসেপটিভ, পার্সোনাল লুব্রিকেন্ট ও সুরক্ষা সামগ্রী।'
+                : 'Browse our curated collection of personal wellness, lubricants, and barrier contraceptives.'}
             </p>
           </div>
 

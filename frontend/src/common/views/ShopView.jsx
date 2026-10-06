@@ -21,84 +21,81 @@ export default function ShopView() {
 
   // 2. Default sorting: Oldest to Newest (original products at top, new ones go down)
   const [sortBy, setSortBy] = useState('oldest');
-  const [displayCount, setDisplayCount] = useState(8);
+  const [inStockOnly, setInStockOnly] = useState(true);
+  const [displayCount, setDisplayCount] = useState(24);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  // Dynamic Category Extraction from products & backend categories
-  const dynamicCategories = useMemo(() => {
-    const map = new Map();
+  // Normalization helper for category slugs (handles singular, plural, and variations)
+  const normalizeCatSlug = (slug, name = '') => {
+    const s = String(slug || name || '').toLowerCase().trim().replace(/s$/, '').replace(/\s+/g, '-');
+    if (s.includes('contraceptive') || s.includes('condom') || s.includes('কনট্রাসেপটিভ') || s.includes('কনডম')) return 'contraceptive';
+    if (s.includes('combo') || s.includes('কম্বো')) return 'combo';
+    if (s.includes('lubricant') || s.includes('jelly') || s.includes('gel') || s.includes('লুব্রিকেন্ট')) return 'lubricants';
+    if (s.includes('booster') || s.includes('spray') || s.includes('delay') || s.includes('performance') || s.includes('বুস্টার')) return 'performance-booster';
+    return s || 'other';
+  };
 
-    // Pre-populate with backend category objects if available
-    if (Array.isArray(storeCategories) && storeCategories.length > 0) {
-      storeCategories.forEach((cat) => {
-        const slug = (cat.slug || cat.name?.toLowerCase() || '').replace(/\s+/g, '-');
-        if (!slug) return;
-        map.set(slug, {
-          slug,
-          name: cat.name,
-          name_bn: cat.name_bn || (
-            slug.includes('combo') ? 'কম্বো প্যাক' :
-              slug.includes('lubricant') ? 'লুব্রিকেন্ট' :
-                slug.includes('contraceptive') ? 'কনট্রাসেপটিভ' : cat.name
-          ),
-          count: 0,
-        });
-      });
-    }
-
-    // Tally actual live products count and discover any unlisted categories
-    productKeys.forEach((key) => {
-      const prod = products[key];
-      if (!prod) return;
-      if (prod.isActive === false || prod.status === 'inactive') return;
-      const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
-      if (isOutOfStock) return;
-
-      const catName = (typeof prod.category === 'object' ? prod.category?.name : prod.category) || (key.includes('combo') ? 'Combo' : (prod.category || 'Contraceptive'));
-      const catSlug = (prod.categorySlug || (typeof prod.category === 'object' ? prod.category?.slug : '') || catName.toLowerCase()).replace(/\s+/g, '-');
-      const catBn = (typeof prod.category === 'object' && prod.category?.name_bn) || prod.category_bn || (
-        catSlug.includes('combo') ? 'কম্বো প্যাক' :
-          catSlug.includes('lubricant') ? 'পার্সোনাল লুব্রিকেন্ট' :
-            (catSlug.includes('booster') || catSlug.includes('spray') || catSlug.includes('delay')) ? 'পারফরম্যান্স বুস্টার' :
-              catSlug.includes('contraceptive') ? 'কনট্রাসেপটিভ' : catName
+  // Base list of active (and optionally in-stock) products
+  const activeProducts = useMemo(() => {
+    return productKeys.map((k) => products[k]).filter((p) => {
+      if (!p) return false;
+      if (p.isActive === false || p.status === 'inactive') return false;
+      const isOutOfStock = Boolean(
+        p.isOutOfStock ||
+        p.stockStatus === 'outofstock' ||
+        p.stockStatus === 'out_of_stock' ||
+        (p.stockStatus !== 'instock' && (p.stockAmount === 0 || p.stock === 0))
       );
-
-      if (!map.has(catSlug)) {
-        map.set(catSlug, {
-          slug: catSlug,
-          name: catName,
-          name_bn: catBn,
-          count: 0,
-        });
-      }
-      map.get(catSlug).count += 1;
+      if (inStockOnly && isOutOfStock) return false;
+      return true;
     });
+  }, [productKeys, products, inStockOnly]);
 
-    return Array.from(map.values()).filter((c) => c.count > 0);
-  }, [productKeys, products, storeCategories]);
+  const totalActiveCount = activeProducts.length;
 
-  // Dynamic counts for screenshot header banner tabs
-  const singleCount = useMemo(() => {
-    return productKeys.filter((k) => {
-      const p = products[k];
-      if (!p || p.isActive === false || p.status === 'inactive') return false;
-      const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-      if (isOutOfStock) return false;
-      const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || p?.category === 'Combo' || p?.category === 'Combo Pack' || (p?.category_bn && p.category_bn.includes('কম্বো')) || (p?.categorySlug && p.categorySlug.includes('combo'));
-      return !isCombo;
+  const contraceptiveCount = useMemo(() => {
+    return activeProducts.filter((p) => {
+      const isCombo = (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+      if (isCombo) return false;
+      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'contraceptive';
     }).length;
-  }, [productKeys, products]);
+  }, [activeProducts]);
 
   const comboCount = useMemo(() => {
-    return productKeys.filter((k) => {
-      const p = products[k];
-      if (!p || p.isActive === false || p.status === 'inactive') return false;
-      const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-      if (isOutOfStock) return false;
-      const isCombo = k.toLowerCase().includes('combo') || (p?.name && p.name.toLowerCase().includes('combo')) || p?.category === 'Combo' || p?.category === 'Combo Pack' || (p?.category_bn && p.category_bn.includes('কম্বো')) || (p?.categorySlug && p.categorySlug.includes('combo'));
-      return isCombo;
+    return activeProducts.filter((p) => {
+      return (
+        normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'combo' ||
+        (p.slug && p.slug.includes('combo')) ||
+        (p.name && p.name.toLowerCase().includes('combo'))
+      );
     }).length;
-  }, [productKeys, products]);
+  }, [activeProducts]);
+
+  const lubricantCount = useMemo(() => {
+    return activeProducts.filter((p) => {
+      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'lubricants';
+    }).length;
+  }, [activeProducts]);
+
+  const boosterCount = useMemo(() => {
+    return activeProducts.filter((p) => {
+      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'performance-booster';
+    }).length;
+  }, [activeProducts]);
+
+  // Dynamic Category Extraction from products
+  const dynamicCategories = useMemo(() => {
+    const list = [
+      { slug: 'contraceptive', name: 'Contraceptive', name_bn: 'কনট্রাসেপটিভ', count: contraceptiveCount },
+      { slug: 'combo', name: 'Combo', name_bn: 'কম্বো প্যাক', count: comboCount },
+      { slug: 'lubricants', name: 'Lubricants', name_bn: 'পার্সোনাল লুব্রিকেন্ট', count: lubricantCount },
+      { slug: 'performance-booster', name: 'Performance Booster', name_bn: 'পারফরম্যান্স বুস্টার', count: boosterCount },
+    ];
+    return list.filter((c) => c.count > 0);
+  }, [contraceptiveCount, comboCount, lubricantCount, boosterCount]);
+
+  // Dynamic counts for banner tabs
+  const singleCount = contraceptiveCount;
 
   // Derived Min/Max prices from priceRange filter
   const minPrice = useMemo(() => {
@@ -123,7 +120,6 @@ export default function ShopView() {
       if (prod.isActive === false || prod.status === 'inactive') return false;
 
       const isCombo = k.toLowerCase().includes('combo') || (prod?.name && prod.name.toLowerCase().includes('combo')) || prod?.category === 'Combo' || prod?.category === 'Combo Pack' || (prod?.category_bn && prod.category_bn.includes('কম্বো')) || (prod?.categorySlug && prod.categorySlug.includes('combo'));
-      const prodCatSlug = (prod.categorySlug || (typeof prod.category === 'object' ? prod.category?.slug : '') || (prod.category || '').toLowerCase()).replace(/\s+/g, '-');
 
       // Category filter
       if (category !== 'all') {
@@ -132,10 +128,10 @@ export default function ShopView() {
         } else if (category === 'combo') {
           if (!isCombo) return false;
         } else {
-          // Specific dynamic category slug match
-          if (prodCatSlug !== category && !(category.includes('combo') && isCombo)) {
-            return false;
-          }
+          const prodCatNorm = normalizeCatSlug(prod.categorySlug, (typeof prod.category === 'object' ? prod.category?.name : prod.category) || k);
+          const targetCatNorm = normalizeCatSlug(category);
+          if (targetCatNorm === 'contraceptive' && isCombo) return false;
+          if (prodCatNorm !== targetCatNorm) return false;
         }
       }
 
@@ -144,9 +140,9 @@ export default function ShopView() {
       if (minPrice !== undefined && price < minPrice) return false;
       if (maxPrice !== undefined && price > maxPrice) return false;
 
-      // In stock check: Exclude any out-of-stock products unconditionally
+      // In stock check
       const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
-      if (isOutOfStock) return false;
+      if (inStockOnly && isOutOfStock) return false;
 
       return true;
     });
@@ -178,7 +174,7 @@ export default function ShopView() {
     });
 
     return list;
-  }, [productKeys, products, category, minPrice, maxPrice, sortBy]);
+  }, [productKeys, products, category, minPrice, maxPrice, inStockOnly, sortBy]);
 
   const paginatedKeys = displayedKeys.slice(0, displayCount);
   const hasMore = displayCount < displayedKeys.length;
@@ -187,7 +183,8 @@ export default function ShopView() {
     setCategory('all');
     setPriceRange('all');
     setSortBy('oldest');
-    setDisplayCount(8);
+    setInStockOnly(true);
+    setDisplayCount(24);
   };
 
   return (
@@ -218,18 +215,75 @@ export default function ShopView() {
               : '  certified authentic MO contraceptive variants and family planning bundles. Regulated barrier devices for 18+ adults with confidential Cash on Delivery nationwide.'}
           </p>
 
-          {/* Category Filter Tab (Combo Value Pack) */}
+          {/* Category Filter Tabs */}
           <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 flex-wrap">
+            {/* All Products Tab */}
             <button
               type="button"
-              onClick={() => setCategory(category === 'combo' ? 'all' : 'combo')}
-              className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer animate-vibrate ${category === 'combo'
+              onClick={() => setCategory('all')}
+              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'all'
                   ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
-                  : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/50 shadow-xs'
+                  : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/40 shadow-xs'
                 }`}
             >
-              🔥 {isBn ? 'কম্বো ভ্যালু প্যাক' : 'Combo Packs'} ({formatNumber(comboCount)})
+              🌟 {isBn ? 'সকল প্রোডাক্ট' : 'All Products'} ({formatNumber(totalActiveCount)})
             </button>
+
+            {/* Contraceptive Tab */}
+            {contraceptiveCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setCategory(category === 'contraceptive' ? 'all' : 'contraceptive')}
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'contraceptive'
+                    ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
+                    : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/40 shadow-xs'
+                  }`}
+              >
+                🛡️ {isBn ? 'কনট্রাসেপটিভ' : 'Contraceptives'} ({formatNumber(contraceptiveCount)})
+              </button>
+            )}
+
+            {/* Combo Value Pack Tab */}
+            {comboCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setCategory(category === 'combo' ? 'all' : 'combo')}
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'combo'
+                    ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
+                    : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/40 shadow-xs'
+                  }`}
+              >
+                🔥 {isBn ? 'কম্বো ভ্যালু প্যাক' : 'Combo Packs'} ({formatNumber(comboCount)})
+              </button>
+            )}
+
+            {/* Lubricants Tab */}
+            {lubricantCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setCategory(category === 'lubricants' ? 'all' : 'lubricants')}
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'lubricants'
+                    ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
+                    : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/40 shadow-xs'
+                  }`}
+              >
+                💧 {isBn ? 'পার্সোনাল লুব্রিকেন্ট' : 'Lubricants'} ({formatNumber(lubricantCount)})
+              </button>
+            )}
+
+            {/* Performance Booster Tab */}
+            {boosterCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setCategory(category === 'performance-booster' ? 'all' : 'performance-booster')}
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'performance-booster'
+                    ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
+                    : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/40 shadow-xs'
+                  }`}
+              >
+                ⚡ {isBn ? 'পারফরম্যান্স বুস্টার' : 'Performance Booster'} ({formatNumber(boosterCount)})
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -330,7 +384,7 @@ export default function ShopView() {
                     }`}
                 >
                   <span>{isBn ? 'সকল প্রোডাক্ট' : 'All Products'}</span>
-                  <span>{formatNumber(productKeys.length)}</span>
+                  <span>{formatNumber(totalActiveCount)}</span>
                 </button>
 
                 {/* Dynamically Loaded Categories */}
@@ -349,6 +403,22 @@ export default function ShopView() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* In Stock Toggle */}
+            <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs">
+              <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  id="stock-filter"
+                  checked={inStockOnly}
+                  onChange={(e) => setInStockOnly(e.target.checked)}
+                  className="w-4 h-4 rounded text-brand-600 accent-rose-600 cursor-pointer"
+                />
+                <span className="text-xs font-semibold text-slate-700">
+                  {isBn ? 'শুধুমাত্র স্টকে থাকা প্রোডাক্ট' : 'In Stock Items Only'}
+                </span>
+              </label>
             </div>
 
             {/* Price Range Filter Box */}
