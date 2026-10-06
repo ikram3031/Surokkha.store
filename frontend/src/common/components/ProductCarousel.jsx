@@ -26,9 +26,18 @@ const ProductCarousel = ({ maxItems = 10 }) => {
     for (const key of productKeys) {
       const p = products[key];
       if (!p) continue;
-      const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+      if (p.isActive === false || p.status === 'inactive') continue;
+
+      const isOutOfStock = Boolean(
+        p.isOutOfStock === true || 
+        p.stockStatus === 'outofstock' || 
+        p.stockStatus === 'out_of_stock' || 
+        p.availability === 'out of stock' ||
+        (p.stockStatus !== 'instock' && (p.stockAmount === 0 || p.stock === 0))
+      );
       if (isOutOfStock) continue;
 
+      // 1. Exclude Combos
       const isCombo = 
         (p.category && String(typeof p.category === 'object' ? p.category.name : p.category).toLowerCase().includes('combo')) ||
         (p.category_bn && p.category_bn.includes('কম্বো')) ||
@@ -38,27 +47,34 @@ const ProductCarousel = ({ maxItems = 10 }) => {
 
       if (isCombo) continue;
 
-      const isContraceptive = 
-        (p.category && (
-          String(typeof p.category === 'object' ? (p.category.name || p.category.slug || '') : p.category).toLowerCase().includes('contraceptive') ||
-          String(typeof p.category === 'object' ? (p.category.name || p.category.slug || '') : p.category).toLowerCase().includes('condom')
-        )) ||
-        (p.category_bn && (
-          p.category_bn.includes('কনট্রাসেপটিভ') ||
-          p.category_bn.includes('কন্ট্রাসেপটিভ') ||
-          p.category_bn.includes('কনডম') ||
-          p.category_bn.includes('পরিবার পরিকল্পনা')
-        )) ||
-        (p.categorySlug && (
-          p.categorySlug.toLowerCase().includes('contraceptive') ||
-          p.categorySlug.toLowerCase().includes('condom')
-        )) ||
+      // 2. Identify if it is an other wellness product (Lubricant, Spray, Delay, Performance Booster, etc.)
+      const catName = String(typeof p.category === 'object' ? (p.category?.name || p.category?.slug || '') : (p.category || '')).toLowerCase();
+      const catSlug = String(p.categorySlug || '').toLowerCase();
+      const catBn = String(p.category_bn || '');
+
+      const isOtherWellness = 
+        catName.includes('lubricant') || catName.includes('booster') || catName.includes('spray') || catName.includes('delay') || catName.includes('wellness') || catName.includes('other') ||
+        catSlug.includes('lubricant') || catSlug.includes('performance-booster') || catSlug.includes('delay') || catSlug.includes('spray') || catSlug.includes('wellness') || catSlug.includes('other') ||
+        catBn.includes('লুব্রিকেন্ট') || catBn.includes('বুস্টার') || catBn.includes('স্প্রে') || catBn.includes('অন্যান্য');
+
+      // 3. Exclude Contraceptives / Condoms (only if NOT an other wellness product)
+      const isContraceptive = !isOtherWellness && (
+        catName.includes('contraceptive') ||
+        catName.includes('condom') ||
+        catBn.includes('কনট্রাসেপটিভ') ||
+        catBn.includes('কন্ট্রাসেপটিভ') ||
+        catBn.includes('কনডম') ||
+        catBn.includes('পরিবার পরিকল্পনা') ||
+        catSlug.includes('contraceptive') ||
+        catSlug.includes('condom') ||
         (Array.isArray(p.categories) && p.categories.some((c) => {
           const val = String(typeof c === 'object' ? (c.name || c.slug || '') : c).toLowerCase();
           return val.includes('contraceptive') || val.includes('condom') || val.includes('কনডম') || val.includes('কনট্রাসেপটিভ') || val.includes('পরিবার পরিকল্পনা');
         })) ||
-        (key.toLowerCase().includes('contraceptive') || key.toLowerCase().includes('condom')) ||
-        (p.slug && (p.slug.toLowerCase().includes('contraceptive') || p.slug.toLowerCase().includes('condom')));
+        key.toLowerCase().includes('contraceptive') ||
+        key.toLowerCase().includes('condom') ||
+        (p.slug && (p.slug.toLowerCase().includes('contraceptive') || p.slug.toLowerCase().includes('condom')))
+      );
 
       if (isContraceptive) continue;
 

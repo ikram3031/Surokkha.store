@@ -54,12 +54,13 @@ export default function ShopView() {
       const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
       if (isOutOfStock) return;
 
-      const catName = (typeof prod.category === 'object' ? prod.category?.name : prod.category) || (key.includes('combo') ? 'Combo' : 'Contraceptive');
+      const catName = (typeof prod.category === 'object' ? prod.category?.name : prod.category) || (key.includes('combo') ? 'Combo' : (prod.category || 'Contraceptive'));
       const catSlug = (prod.categorySlug || (typeof prod.category === 'object' ? prod.category?.slug : '') || catName.toLowerCase()).replace(/\s+/g, '-');
       const catBn = (typeof prod.category === 'object' && prod.category?.name_bn) || prod.category_bn || (
         catSlug.includes('combo') ? 'কম্বো প্যাক' :
-          catSlug.includes('lubricant') ? 'লুব্রিকেন্ট' :
-            catSlug.includes('contraceptive') ? 'কনট্রাসেপটিভ' : catName
+          catSlug.includes('lubricant') ? 'পার্সোনাল লুব্রিকেন্ট' :
+            (catSlug.includes('booster') || catSlug.includes('spray') || catSlug.includes('delay')) ? 'পারফরম্যান্স বুস্টার' :
+              catSlug.includes('contraceptive') ? 'কনট্রাসেপটিভ' : catName
       );
 
       if (!map.has(catSlug)) {

@@ -497,7 +497,37 @@ export const useStore = create((set, get) => ({
           const packSizeBn = itemBn.packSize || (key.includes('30pcs') || key.includes('variety') ? '৩০ পিস (৩টি বক্স)' : (key.includes('20pcs') || key.includes('combo') ? '২০ পিস (২টি বক্স)' : '১০ পিস প্রতি বক্স'));
 
           const packageContents = p.packageContents || (key.includes('30pcs') || key.includes('variety') ? '3 Sealed Retail Boxes (1x Ultra Thin 10pcs + 1x Dotted 10pcs + 1x Ribbed 10pcs = 30 Pcs Total)' : (key.includes('20pcs') || key.includes('combo') ? '2 Sealed Retail Boxes (20 Individual Foils)' : '1 Sealed Retail Box (10 Individual Foils)'));
-          const packageContentsBn = itemBn.packageContents || (key.includes('30pcs') || key.includes('variety') ? '৩টি বক্স (১x আল্ট্রা থিন ১০ পিস + ১x ডটেড ১০ পিস + ১x আল্ট্রা রিবড ১০ পিস)' : (key.includes('20pcs') || key.includes('combo') ? '২টি বক্স (২০টি সিল্ড ইনডিভিজুয়াল ফয়েল প্যাক)' : '১টি সিল করা রিটেইল বক্স (১০টি ফয়েল)'));
+          const rawCatName = (p.category && typeof p.category === 'object' ? (p.category.name || '') : (typeof p.category === 'string' ? p.category : '')) || '';
+          const rawCatSlug = (p.category && typeof p.category === 'object' ? (p.category.slug || '') : (p.categorySlug || (rawCatName ? String(rawCatName).toLowerCase().replace(/\s+/g, '-') : ''))) || '';
+          const rawCatBn = (p.category && typeof p.category === 'object' && p.category.name_bn) ? p.category.name_bn : (p.category_bn || '');
+
+          const catSearch = `${rawCatName} ${rawCatSlug} ${key}`.toLowerCase();
+
+          let resolvedCategory = rawCatName;
+          let resolvedCategorySlug = rawCatSlug;
+          let resolvedCategoryBn = rawCatBn;
+
+          if (catSearch.includes('combo')) {
+            resolvedCategory = resolvedCategory || 'Combo';
+            resolvedCategorySlug = resolvedCategorySlug || 'combo';
+            resolvedCategoryBn = resolvedCategoryBn || 'কম্বো প্যাক';
+          } else if (catSearch.includes('lubricant') || catSearch.includes('jelly') || catSearch.includes('gel')) {
+            resolvedCategory = resolvedCategory || 'Lubricant';
+            resolvedCategorySlug = resolvedCategorySlug || 'lubricant';
+            resolvedCategoryBn = resolvedCategoryBn || 'পার্সোনাল লুব্রিকেন্ট';
+          } else if (catSearch.includes('booster') || catSearch.includes('spray') || catSearch.includes('delay') || catSearch.includes('performance') || catSearch.includes('viga') || catSearch.includes('maxman')) {
+            resolvedCategory = resolvedCategory || 'Performance Booster';
+            resolvedCategorySlug = resolvedCategorySlug || 'performance-booster';
+            resolvedCategoryBn = resolvedCategoryBn || 'পারফরম্যান্স বুস্টার';
+          } else if (catSearch.includes('contraceptive') || catSearch.includes('condom')) {
+            resolvedCategory = resolvedCategory || 'Contraceptive';
+            resolvedCategorySlug = resolvedCategorySlug || 'contraceptive';
+            resolvedCategoryBn = resolvedCategoryBn || 'কনট্রাসেপটিভ';
+          } else {
+            resolvedCategory = resolvedCategory || 'Other';
+            resolvedCategorySlug = resolvedCategorySlug || 'other';
+            resolvedCategoryBn = resolvedCategoryBn || 'অন্যান্য';
+          }
 
           const productObj = {
             id: key,
@@ -510,10 +540,10 @@ export const useStore = create((set, get) => ({
             data_bn: itemBn,
             brand: p.brand && typeof p.brand === 'string' ? p.brand : 'MO',
             origin: p.origin || 'Imported (  / CE Certified)',
-            category: (p.category && typeof p.category === 'object' ? p.category.name : p.category) || (key.includes('combo') ? 'Combo' : 'Contraceptive'),
-            categorySlug: (p.category && typeof p.category === 'object' ? p.category.slug : (p.category ? String(p.category).toLowerCase().replace(/\s+/g, '-') : '')) || (key.includes('combo') ? 'combo' : 'contraceptive'),
-            category_bn: (p.category && typeof p.category === 'object' && p.category.name_bn) ? p.category.name_bn : (key.includes('combo') ? 'কম্বো প্যাক' : ((p.category?.name || p.category || '').toLowerCase().includes('lubricant') ? 'লুব্রিকেন্ট' : (p.category_bn || 'কনট্রাসেপটিভ'))),
-            categories: Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []),
+            category: resolvedCategory,
+            categorySlug: resolvedCategorySlug,
+            category_bn: resolvedCategoryBn,
+            categories: Array.isArray(p.categories) && p.categories.length > 0 ? p.categories : [{ name: resolvedCategory, slug: resolvedCategorySlug, name_bn: resolvedCategoryBn }],
             price: resolvedPrice,
             regularPrice: resolvedRegularPrice,
             offerPrice: resolvedOfferPrice,

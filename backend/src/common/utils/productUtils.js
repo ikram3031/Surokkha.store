@@ -36,23 +36,52 @@ export const serializeProduct = (product, lang = "en") => {
     .filter((c) => c && typeof c === "object" && (c.name || c.slug || c.did || c._id))
     .map((c) => {
       const catName = c.name ?? "";
-      let localizedCatName = catName;
-      if (lang === "bn") {
-        if (catName.toLowerCase() === "condom" || catName.toLowerCase() === "condoms" || catName.toLowerCase() === "contraceptive" || catName.toLowerCase() === "contraceptives") localizedCatName = "কন্ট্রাসেপ্টিভ";
-        else if (catName.toLowerCase() === "combo" || catName.toLowerCase() === "offers") localizedCatName = "কম্বো অফার";
+      let localizedCatName = c.name_bn || catName;
+      const lower = catName.toLowerCase();
+      if (lower === "condom" || lower === "condoms" || lower === "contraceptive" || lower === "contraceptives") {
+        localizedCatName = "কন্ট্রাসেপ্টিভ";
+      } else if (lower === "combo" || lower === "offers" || lower === "combo offer" || lower === "combo pack") {
+        localizedCatName = "কম্বো অফার";
+      } else if (lower.includes("lubricant") || lower.includes("jelly") || lower.includes("gel")) {
+        localizedCatName = "পার্সোনাল লুব্রিকেন্ট";
+      } else if (lower.includes("booster") || lower.includes("spray") || lower.includes("delay") || lower.includes("performance")) {
+        localizedCatName = "পারফরম্যান্স বুস্টার";
+      } else if (lower.includes("wellness") || lower.includes("other")) {
+        localizedCatName = "অন্যান্য ওয়েলনেস";
       }
+
       return {
         id: c._id?.toString?.() ?? c.id ?? null,
         _id: c._id?.toString?.() ?? c.id ?? null,
         did: c.did ?? null,
         name: lang === "bn" ? localizedCatName : catName,
+        name_bn: c.name_bn || localizedCatName,
         slug: c.slug ?? "",
         imageUrl: c.imageUrl ?? "",
         parent: c.parent ?? null,
       };
     });
 
-  const primaryCategory = populatedCategories.length > 0 ? populatedCategories[0] : null;
+  let primaryCategory = populatedCategories.length > 0 ? populatedCategories[0] : null;
+  if (!primaryCategory && source?.category) {
+    if (typeof source.category === "object") {
+      primaryCategory = source.category;
+    } else if (typeof source.category === "string") {
+      const catName = source.category;
+      let localizedCatName = catName;
+      const lower = catName.toLowerCase();
+      if (lower.includes("lubricant")) localizedCatName = "পার্সোনাল লুব্রিকেন্ট";
+      else if (lower.includes("booster") || lower.includes("spray") || lower.includes("delay") || lower.includes("performance")) localizedCatName = "পারফরম্যান্স বুস্টার";
+      else if (lower.includes("combo")) localizedCatName = "কম্বো অফার";
+      else if (lower.includes("condom") || lower.includes("contraceptive")) localizedCatName = "কন্ট্রাসেপ্টিভ";
+
+      primaryCategory = {
+        name: catName,
+        name_bn: localizedCatName,
+        slug: catName.toLowerCase().replace(/\s+/g, "-"),
+      };
+    }
+  }
 
   const rawVariants = Array.isArray(source?.variants)
     ? source.variants.map((v) => ({
@@ -97,6 +126,12 @@ export const serializeProduct = (product, lang = "en") => {
     benefits,
     sections,
     category: primaryCategory,
+    category_bn: primaryCategory?.name_bn || (primaryCategory?.name ? (
+      primaryCategory.name.toLowerCase().includes('lubricant') ? 'পার্সোনাল লুব্রিকেন্ট' :
+      primaryCategory.name.toLowerCase().includes('booster') || primaryCategory.name.toLowerCase().includes('spray') ? 'পারফরম্যান্স বুস্টার' :
+      primaryCategory.name.toLowerCase().includes('combo') ? 'কম্বো অফার' :
+      primaryCategory.name.toLowerCase().includes('contraceptive') || primaryCategory.name.toLowerCase().includes('condom') ? 'কন্ট্রাসেপ্টিভ' : ''
+    ) : ''),
     categories: populatedCategories.length > 0 ? populatedCategories : rawCategories,
     _populatedCategories: populatedCategories,
     stockStatus: source?.stockStatus ?? "instock",

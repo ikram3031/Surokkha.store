@@ -5,6 +5,7 @@ import { generateDid } from "../utils/generateDid.js";
 const categorySchema = new Schema(
   {
     name: { type: String, required: true, trim: true, unique: true, index: true },
+    name_bn: { type: String, trim: true, default: "" },
     slug: { type: String, required: true, trim: true, unique: true, index: true },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     description: { type: String, trim: true, default: "" },
