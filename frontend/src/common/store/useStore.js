@@ -501,32 +501,52 @@ export const useStore = create((set, get) => ({
           const rawCatSlug = (p.category && typeof p.category === 'object' ? (p.category.slug || '') : (p.categorySlug || (rawCatName ? String(rawCatName).toLowerCase().replace(/\s+/g, '-') : ''))) || '';
           const rawCatBn = (p.category && typeof p.category === 'object' && p.category.name_bn) ? p.category.name_bn : (p.category_bn || '');
 
-          const catSearch = `${rawCatName} ${rawCatSlug} ${key}`.toLowerCase();
+          const catNameLower = rawCatName.toLowerCase();
+          const catSlugLower = rawCatSlug.toLowerCase();
+          const keyLower = key.toLowerCase();
 
           let resolvedCategory = rawCatName;
           let resolvedCategorySlug = rawCatSlug;
           let resolvedCategoryBn = rawCatBn;
 
-          if (catSearch.includes('combo')) {
-            resolvedCategory = resolvedCategory || 'Combo';
-            resolvedCategorySlug = resolvedCategorySlug || 'combo';
-            resolvedCategoryBn = resolvedCategoryBn || 'কম্বো প্যাক';
-          } else if (catSearch.includes('lubricant') || catSearch.includes('jelly') || catSearch.includes('gel')) {
-            resolvedCategory = resolvedCategory || 'Lubricant';
-            resolvedCategorySlug = resolvedCategorySlug || 'lubricant';
-            resolvedCategoryBn = resolvedCategoryBn || 'পার্সোনাল লুব্রিকেন্ট';
-          } else if (catSearch.includes('booster') || catSearch.includes('spray') || catSearch.includes('delay') || catSearch.includes('performance') || catSearch.includes('viga') || catSearch.includes('maxman')) {
-            resolvedCategory = resolvedCategory || 'Performance Booster';
-            resolvedCategorySlug = resolvedCategorySlug || 'performance-booster';
-            resolvedCategoryBn = resolvedCategoryBn || 'পারফরম্যান্স বুস্টার';
-          } else if (catSearch.includes('contraceptive') || catSearch.includes('condom')) {
-            resolvedCategory = resolvedCategory || 'Contraceptive';
-            resolvedCategorySlug = resolvedCategorySlug || 'contraceptive';
-            resolvedCategoryBn = resolvedCategoryBn || 'কনট্রাসেপটিভ';
+          if (catNameLower.includes('contraceptive') || catSlugLower.includes('contraceptive') || catNameLower.includes('condom') || catSlugLower.includes('condom')) {
+            resolvedCategory = 'Contraceptive';
+            resolvedCategorySlug = 'contraceptive';
+            resolvedCategoryBn = 'কনট্রাসেপটিভ';
+          } else if (catNameLower.includes('combo') || catSlugLower.includes('combo')) {
+            resolvedCategory = 'Combo';
+            resolvedCategorySlug = 'combo';
+            resolvedCategoryBn = 'কম্বো প্যাক';
+          } else if (catNameLower.includes('lubricant') || catSlugLower.includes('lubricant')) {
+            resolvedCategory = 'Lubricant';
+            resolvedCategorySlug = 'lubricant';
+            resolvedCategoryBn = 'পার্সোনাল লুব্রিকেন্ট';
+          } else if (catNameLower.includes('booster') || catSlugLower.includes('booster') || catNameLower.includes('spray') || catSlugLower.includes('spray') || catNameLower.includes('performance') || catSlugLower.includes('performance')) {
+            resolvedCategory = 'Performance Booster';
+            resolvedCategorySlug = 'performance-booster';
+            resolvedCategoryBn = 'পারফরম্যান্স বুস্টার';
           } else {
-            resolvedCategory = resolvedCategory || 'Other';
-            resolvedCategorySlug = resolvedCategorySlug || 'other';
-            resolvedCategoryBn = resolvedCategoryBn || 'অন্যান্য';
+            if (keyLower.includes('contraceptive') || keyLower.includes('condom')) {
+              resolvedCategory = 'Contraceptive';
+              resolvedCategorySlug = 'contraceptive';
+              resolvedCategoryBn = 'কনট্রাসেপটিভ';
+            } else if (keyLower.includes('combo')) {
+              resolvedCategory = 'Combo';
+              resolvedCategorySlug = 'combo';
+              resolvedCategoryBn = 'কম্বো প্যাক';
+            } else if (keyLower.includes('lubricant') || keyLower.includes('jelly') || keyLower.includes('gel')) {
+              resolvedCategory = 'Lubricant';
+              resolvedCategorySlug = 'lubricant';
+              resolvedCategoryBn = 'পার্সোনাল লুব্রিকেন্ট';
+            } else if (keyLower.includes('booster') || keyLower.includes('spray') || keyLower.includes('viga') || keyLower.includes('maxman')) {
+              resolvedCategory = 'Performance Booster';
+              resolvedCategorySlug = 'performance-booster';
+              resolvedCategoryBn = 'পারফরম্যান্স বুস্টার';
+            } else {
+              resolvedCategory = rawCatName || 'Other';
+              resolvedCategorySlug = rawCatSlug || 'other';
+              resolvedCategoryBn = rawCatBn || 'অন্যান্য';
+            }
           }
 
           const productObj = {
