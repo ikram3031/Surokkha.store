@@ -42,7 +42,9 @@ export default function ProductDetailView() {
     name: 'MO Dotted',
     brand: 'MO',
     origin: 'Authentic MO',
-    price: 400,
+    price: 350,
+    regularPrice: 400,
+    offerPrice: 350,
     tagline: 'Distinct raised matrix for heightened sensory texture',
     description: 'Engineered with an array of delicately raised circular micropores.',
     features: ['Precision raised matrix texture', 'Certified safety standard', 'Neutral pH silicone lubrication'],
@@ -53,9 +55,15 @@ export default function ProductDetailView() {
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
-  const currentOfferPrice = Number(product?.price || product?.offerPrice || 0);
-  const currentRegularPrice = Number(product?.regularPrice || 0);
-  const hasDiscount = currentRegularPrice > currentOfferPrice;
+  const rawOffer = Number(product?.offerPrice || product?.offer_price || product?.sale_price || product?.salePrice || 0);
+  const rawRegular = Number(product?.regularPrice || product?.regular_price || 0);
+  const rawPrice = Number(product?.price || 0);
+
+  const currentRegularPrice = Math.max(rawRegular, (rawOffer > 0 && rawPrice > rawOffer) ? rawPrice : 0, rawPrice > 0 ? rawPrice : 0);
+  const candidateSelling = [rawOffer, rawPrice].map(Number).filter(v => !isNaN(v) && v > 0);
+  const currentOfferPrice = candidateSelling.length > 0 ? Math.min(...candidateSelling) : 0;
+
+  const hasDiscount = currentRegularPrice > currentOfferPrice && currentOfferPrice > 0;
   const savingsAmount = hasDiscount ? currentRegularPrice - currentOfferPrice : 0;
   const discountPercent = hasDiscount ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
@@ -265,13 +273,13 @@ export default function ProductDetailView() {
               <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
                 <div>
                   <span className={`text-3xl sm:text-4xl font-extrabold font-heading ${isOutOfStock ? 'text-slate-500' : 'text-slate-900'}`}>
-                    {formatPrice(product.offerPrice || product.price)}
+                    {formatPrice(currentOfferPrice)}
                   </span>
                 </div>
-                {(product.regularPrice) > (product.offerPrice || product.price) && (
+                {hasDiscount && (
                   <div className="pl-3 border-l border-slate-200 flex items-baseline self-end mb-1">
                     <span className="text-lg sm:text-xl text-slate-400 line-through font-normal">
-                      {formatPrice(product.regularPrice)}
+                      {formatPrice(currentRegularPrice)}
                     </span>
                   </div>
                 )}
@@ -285,11 +293,11 @@ export default function ProductDetailView() {
                     <span>{isBn ? 'বর্তমানে আউট অব স্টক' : 'Currently Out of Stock'}</span>
                   </span>
                 ) : (
-                  (product.regularPrice) > (product.offerPrice || product.price) && (
+                  hasDiscount && (
                     <span className="text-xs sm:text-sm font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs whitespace-nowrap">
                       {isBn 
-                        ? `৳${(product.regularPrice) - (product.offerPrice || product.price)} সাশ্রয় (${Math.round((((product.regularPrice) - (product.offerPrice || product.price)) / (product.regularPrice)) * 100)}% ছাড়)` 
-                        : `Save ৳${(product.regularPrice) - (product.offerPrice || product.price)} (${Math.round((((product.regularPrice) - (product.offerPrice || product.price)) / (product.regularPrice)) * 100)}% OFF)`}
+                        ? `${formatPrice(savingsAmount)} সাশ্রয় (${formatNumber(discountPercent)}% ছাড়)` 
+                        : `Save ${formatPrice(savingsAmount)} (${discountPercent}% OFF)`}
                     </span>
                   )
                 )}

@@ -23,9 +23,15 @@ export default function ProductCard({ productKey, className = '' }) {
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
   const currentCartQty = cart[productKey] || 0;
-  const currentOfferPrice = Number(prod.price || prod.offerPrice || 0);
-  const currentRegularPrice = Number(prod.regularPrice || 0);
-  const hasDiscount = currentRegularPrice > currentOfferPrice;
+  const rawOffer = Number(prod.offerPrice || prod.offer_price || prod.sale_price || prod.salePrice || 0);
+  const rawRegular = Number(prod.regularPrice || prod.regular_price || 0);
+  const rawPrice = Number(prod.price || 0);
+
+  const currentRegularPrice = Math.max(rawRegular, (rawOffer > 0 && rawPrice > rawOffer) ? rawPrice : 0, rawPrice > 0 ? rawPrice : 0);
+  const candidateSelling = [rawOffer, rawPrice].map(Number).filter(v => !isNaN(v) && v > 0);
+  const currentOfferPrice = candidateSelling.length > 0 ? Math.min(...candidateSelling) : 0;
+
+  const hasDiscount = currentRegularPrice > currentOfferPrice && currentOfferPrice > 0;
   const savingsAmount = hasDiscount ? currentRegularPrice - currentOfferPrice : 0;
   const discountPercent = hasDiscount ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
@@ -176,12 +182,12 @@ export default function ProductCard({ productKey, className = '' }) {
           {/* Price Row: Prominent Offer Price + Regular Price Struck-Through & Right-aligned Savings */}
           <div className="flex items-end justify-between mb-2">
             <div>
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className={`text-base sm:text-lg font-extrabold font-heading tracking-tight ${isOutOfStock ? 'text-slate-500' : 'text-brand-800'}`}>
                   {formatPrice(currentOfferPrice)}
                 </span>
                 {hasDiscount && (
-                  <span className="hidden sm:inline text-xs text-slate-500 line-through font-medium">
+                  <span className="text-xs text-slate-400 line-through font-normal">
                     {formatPrice(currentRegularPrice)}
                   </span>
                 )}

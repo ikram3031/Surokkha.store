@@ -135,8 +135,16 @@ export default function ShopView() {
         }
       }
 
-      // Price filter
-      const price = Number(prod.price || prod.offerPrice || 0);
+      // Price filter helper to get effective selling price
+      const getSellingPrice = (p) => {
+        if (!p) return 0;
+        const candidates = [p.offerPrice, p.offer_price, p.sale_price, p.salePrice, p.price]
+          .map(Number)
+          .filter((v) => !isNaN(v) && v > 0);
+        return candidates.length > 0 ? Math.min(...candidates) : 0;
+      };
+
+      const price = getSellingPrice(prod);
       if (minPrice !== undefined && price < minPrice) return false;
       if (maxPrice !== undefined && price > maxPrice) return false;
 
@@ -151,8 +159,15 @@ export default function ShopView() {
     list.sort((a, b) => {
       const pA = products[a];
       const pB = products[b];
-      const priceA = Number(pA?.price || pA?.offerPrice || 0);
-      const priceB = Number(pB?.price || pB?.offerPrice || 0);
+      const getSellingPrice = (p) => {
+        if (!p) return 0;
+        const candidates = [p.offerPrice, p.offer_price, p.sale_price, p.salePrice, p.price]
+          .map(Number)
+          .filter((v) => !isNaN(v) && v > 0);
+        return candidates.length > 0 ? Math.min(...candidates) : 0;
+      };
+      const priceA = getSellingPrice(pA);
+      const priceB = getSellingPrice(pB);
       const timeA = pA?.createdTimestamp || (pA?.createdAt ? new Date(pA.createdAt).getTime() : 0);
       const timeB = pB?.createdTimestamp || (pB?.createdAt ? new Date(pB.createdAt).getTime() : 0);
 

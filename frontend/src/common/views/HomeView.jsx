@@ -198,7 +198,7 @@ export default function HomeView() {
               {/* COMBO 1: 30-Pcs Ultimate Mega Combo (৳900) - Star Product */}
               {(() => {
                 const c30Name = isBn ? (combo30Prod.name_bn || 'MO আলটিমেট ৩-ইন-১ ৩০ পিস মেগা কম্বো') : (combo30Prod.name || 'MO Ultimate 30 Pcs Combo');
-                const c30Price = combo30Prod.price || combo30Prod.offerPrice || 900;
+                const c30Price = combo30Prod.offerPrice || combo30Prod.price || 900;
                 const c30Regular = combo30Prod.regularPrice || 1200;
                 const c30Savings = c30Regular > c30Price ? c30Regular - c30Price : 300;
 
@@ -288,7 +288,7 @@ export default function HomeView() {
               {/* COMBO 2: 20-Pcs Micro-Ribbed Combo (৳650) - Limited Stock Spotlight ("রিফ্ট কম্বো") */}
               {(() => {
                 const cRibbedName = isBn ? (comboRibbedProd.name_bn || 'MO রিবড ২০ পিস স্পেশাল কম্বো') : (comboRibbedProd.name || 'MO Ribbed 20 Pcs Combo');
-                const cRibbedPrice = comboRibbedProd.price || comboRibbedProd.offerPrice || 650;
+                const cRibbedPrice = comboRibbedProd.offerPrice || comboRibbedProd.price || 650;
                 const cRibbedRegular = comboRibbedProd.regularPrice || 800;
                 const cRibbedSavings = cRibbedRegular > cRibbedPrice ? cRibbedRegular - cRibbedPrice : 150;
                 const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 5));

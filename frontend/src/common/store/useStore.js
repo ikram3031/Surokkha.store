@@ -436,12 +436,31 @@ export const useStore = create((set, get) => ({
 
         rawData.forEach((p, index) => {
           const key = p.slug || p.id || p.did || `product-${index + 1}`;
-          const rawPrice = Number(p.price || p.regularPrice || 0);
-          const rawOffer = (p.offerPrice != null && Number(p.offerPrice) > 0) ? Number(p.offerPrice) : ((p.offer_price != null && Number(p.offer_price) > 0) ? Number(p.offer_price) : null);
+          // Robust price resolution: Extract regular base price (M.R.P.) and discounted offer price
+          const regularCandidates = [p.regularPrice, p.regular_price, p.price]
+            .map(Number)
+            .filter((v) => !isNaN(v) && v > 0);
+          const offerCandidates = [p.offerPrice, p.offer_price, p.sale_price, p.salePrice]
+            .map(Number)
+            .filter((v) => !isNaN(v) && v > 0);
 
-          const resolvedRegularPrice = Number(p.regularPrice || p.regular_price || rawPrice || 0);
-          const resolvedOfferPrice = rawOffer;
-          const resolvedPrice = (resolvedOfferPrice && resolvedOfferPrice < resolvedRegularPrice) ? resolvedOfferPrice : (resolvedOfferPrice || resolvedRegularPrice);
+          let resolvedRegularPrice = regularCandidates.length > 0 ? Math.max(...regularCandidates) : 0;
+          let resolvedOfferPrice = offerCandidates.length > 0 ? Math.min(...offerCandidates) : null;
+
+          // If offer candidate happens to equal or exceed regular price, try to find a genuine lower offer
+          if (resolvedOfferPrice && resolvedOfferPrice >= resolvedRegularPrice) {
+            const allPositive = [...regularCandidates, ...offerCandidates];
+            resolvedRegularPrice = Math.max(...allPositive);
+            const lowerOffers = allPositive.filter((v) => v < resolvedRegularPrice);
+            if (lowerOffers.length > 0) {
+              resolvedOfferPrice = Math.min(...lowerOffers);
+            }
+          }
+
+          // Effective selling price: Always prefer the offer price if lower than regular base price
+          const resolvedPrice = (resolvedOfferPrice && resolvedOfferPrice < resolvedRegularPrice)
+            ? resolvedOfferPrice
+            : (resolvedOfferPrice || resolvedRegularPrice);
 
           const resolveUrl = (img) => {
             if (img && typeof img === 'string') {
