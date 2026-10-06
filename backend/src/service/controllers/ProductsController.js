@@ -287,6 +287,7 @@ export const updateProduct = async (req, res, next) => {
     if (body.chargeTax !== undefined) product.chargeTax = Boolean(body.chargeTax);
     if (body.taxRate !== undefined) product.taxRate = body.taxRate ? Number(body.taxRate) : null;
     if (body.isActive !== undefined) product.isActive = Boolean(body.isActive);
+    if (body.excludeFromMetaCatalog !== undefined) product.excludeFromMetaCatalog = Boolean(body.excludeFromMetaCatalog);
     if (body.metaData !== undefined) {
       product.metaData = {
         metaTitle: body.metaData.metaTitle || "",

@@ -538,7 +538,8 @@ const MetaCatalogGenerator = () => {
         }
       }
 
-      const response = await apiClient.get('/api/v1/products', { params });
+      params.filter = { excludeFromMetaCatalog: { $ne: true } };
+      const response = await apiClient.post('/api/v1/products/search', params);
 
       // Ignore response if another fetch was dispatched
       if (currentFetchId !== fetchCountRef.current) return;

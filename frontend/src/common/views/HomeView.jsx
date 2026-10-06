@@ -216,7 +216,7 @@ export default function HomeView() {
                           onClick={() => openProduct(COMBO_30_KEY)} 
                           className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-slate-950 border border-amber-500/40 flex-shrink-0 cursor-pointer p-1"
                         >
-                          <ProductArtwork productKey={COMBO_30_KEY} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
+                          <ProductArtwork productKey={combo30Prod} customImageUrl={combo30Prod?.imageUrl} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 
@@ -310,7 +310,7 @@ export default function HomeView() {
                           onClick={() => openProduct(COMBO_RIBBED_KEY)} 
                           className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-slate-950 border border-purple-500/40 flex-shrink-0 cursor-pointer p-1"
                         >
-                          <ProductArtwork productKey={COMBO_RIBBED_KEY} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
+                          <ProductArtwork productKey={comboRibbedProd} customImageUrl={comboRibbedProd?.imageUrl} sizeClass="w-full h-full" imgClassName="w-full h-full object-cover rounded-xl" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 

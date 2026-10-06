@@ -18,22 +18,47 @@ export default function ProductArtwork({
     : (storeProducts[productKey] ||
       (typeof productKey === 'string' && storeProducts[productKey.replace(/-condom$/, '')]) ||
       (typeof productKey === 'string' && storeProducts[`${productKey}-condom`]) ||
+      (typeof productKey === 'string' && Object.values(storeProducts).find(item => item?.id === productKey || item?.slug === productKey || item?.did === productKey || item?._id === productKey)) ||
       DEFAULT_PRODUCTS[productKey] ||
       DEFAULT_PRODUCTS['mo-dotted']);
 
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
-  let rawImg = customImageUrl || p?.imageUrl || p?.image || p?.thumbnailUrl || (Array.isArray(p?.images) && p.images[0]) || p?.photo || p?.picture || p?.featured_image || null;
+  let rawImg =
+    customImageUrl ||
+    p?.featuredImage ||
+    p?.featured_image ||
+    p?.imageUrl ||
+    p?.image_url ||
+    p?.image ||
+    p?.thumbnailUrl ||
+    p?.thumbnail_url ||
+    (Array.isArray(p?.images) && p.images.length > 0 ? p.images[0] : null) ||
+    p?.photo ||
+    p?.picture ||
+    null;
+
   let resolvedImgUrl = null;
 
   if (rawImg && typeof rawImg === 'string') {
     const trimmed = rawImg.trim();
     if (trimmed !== '' && trimmed !== '#' && trimmed !== '/#' && trimmed.toLowerCase() !== 'null' && trimmed.toLowerCase() !== 'undefined') {
-      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+      const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        try {
+          const urlObj = new URL(trimmed);
+          if ((urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') && urlObj.pathname.startsWith('/uploads')) {
+            resolvedImgUrl = cleanBase ? `${cleanBase}${urlObj.pathname}${urlObj.search}` : trimmed;
+          } else {
+            resolvedImgUrl = trimmed;
+          }
+        } catch (_) {
+          resolvedImgUrl = trimmed;
+        }
+      } else if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
         resolvedImgUrl = trimmed;
       } else {
-        const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
         const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
         resolvedImgUrl = cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
       }

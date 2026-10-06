@@ -282,7 +282,7 @@ export default function CartDrawer() {
                         onClick={() => handleItemClick(slug)}
                         className="w-16 h-18 bg-slate-50 rounded-xl p-1 flex items-center justify-center flex-shrink-0 border border-slate-200/80 overflow-hidden cursor-pointer hover:opacity-90"
                       >
-                        <ProductArtwork productKey={slug} sizeClass="w-full h-full" />
+                        <ProductArtwork productKey={item} customImageUrl={item?.imageUrl} sizeClass="w-full h-full" />
                       </button>
 
                       {/* Details */}

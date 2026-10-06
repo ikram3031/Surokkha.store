@@ -68,6 +68,7 @@ export default function ProductCard({ productKey, className = '' }) {
       >
         <ProductArtwork 
           productKey={productKey} 
+          customImageUrl={prod?.imageUrl || prod?.image_url || prod?.image || prod?.featuredImage || prod?.featured_image || (Array.isArray(prod?.images) ? prod.images[0] : null)}
           sizeClass="w-full h-full aspect-square"
           imgClassName="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
         />

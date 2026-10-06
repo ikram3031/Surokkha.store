@@ -26,6 +26,10 @@ export const listProducts = async (req, res, next) => {
 
     const count = await ProductModel.countDocuments(filter);
 
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
     res.json({
       status: "success",
       data: products.map((p) => serializeProduct(p, "en")),
@@ -58,6 +62,10 @@ export const getSingleProduct = async (req, res, next) => {
       res.status(404).json({ status: "error", message: "Product not found" });
       return;
     }
+
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
 
     res.json({
       status: "success",

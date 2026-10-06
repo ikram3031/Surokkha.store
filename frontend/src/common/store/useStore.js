@@ -15,6 +15,31 @@ import {
 
 const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
+const resolveInitialAssetUrl = (img) => {
+  if (img && typeof img === 'string') {
+    const trimmed = img.trim();
+    if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') return null;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return trimmed;
+    const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
+  }
+  return null;
+};
+
+const INITIAL_PRODUCTS = Object.entries(DEFAULT_PRODUCTS).reduce((acc, [k, prod]) => {
+  const primary = resolveInitialAssetUrl(prod.imageUrl || prod.image || (Array.isArray(prod.images) ? prod.images[0] : null));
+  const gallery = (Array.isArray(prod.images) ? prod.images : []).map(resolveInitialAssetUrl).filter(Boolean);
+  acc[k] = {
+    ...prod,
+    imageUrl: primary || prod.imageUrl,
+    image_url: primary || prod.imageUrl,
+    featuredImage: primary || prod.imageUrl,
+    images: gallery.length > 0 ? gallery : (primary ? [primary] : (prod.images || []))
+  };
+  return acc;
+}, {});
+
 // Parse initial view and slug from real browser URL pathname
 export const parseRouteFromLocation = () => {
   if (typeof window === 'undefined') return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
@@ -285,8 +310,8 @@ export const useStore = create((set, get) => ({
 
   // Dynamic Products State
   // Dynamic Products & Categories State
-  products: DEFAULT_PRODUCTS,
-  productKeys: DEFAULT_PRODUCT_KEYS.filter(k => DEFAULT_PRODUCTS[k] && !DEFAULT_PRODUCTS[k].isOutOfStock),
+  products: INITIAL_PRODUCTS,
+  productKeys: DEFAULT_PRODUCT_KEYS.filter(k => INITIAL_PRODUCTS[k] && !INITIAL_PRODUCTS[k].isOutOfStock),
   isLoadingProducts: false,
   productsError: null,
   categories: [],
@@ -327,21 +352,22 @@ export const useStore = create((set, get) => ({
     set({ isLoadingProducts: true, productsError: null });
     const currentLang = get().language || 'bn';
     try {
+      const cacheBust = `_t=${Date.now()}`;
       const endpoints = [
-        `/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}`,
-        `/api/v1/products?isActive=true&stockStatus=instock&limit=100`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100`,
-        `/api/v1/products?isActive=true&limit=100&lang=${currentLang}`,
-        `/api/v1/products?limit=100&lang=${currentLang}`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100&lang=${currentLang}`,
-        `${API_BASE_URL}/api/v1/products?limit=100&lang=${currentLang}`,
-        `/api/v1/products?isActive=true&limit=100`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100`,
-        `/api/v1/products`,
-        `${API_BASE_URL}/api/v1/products`,
-        '/api/products',
-        `${API_BASE_URL}/api/products`
+        `/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}&${cacheBust}`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}&${cacheBust}`,
+        `/api/v1/products?isActive=true&stockStatus=instock&limit=100&${cacheBust}`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100&${cacheBust}`,
+        `/api/v1/products?isActive=true&limit=100&lang=${currentLang}&${cacheBust}`,
+        `/api/v1/products?limit=100&lang=${currentLang}&${cacheBust}`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100&lang=${currentLang}&${cacheBust}`,
+        `${API_BASE_URL}/api/v1/products?limit=100&lang=${currentLang}&${cacheBust}`,
+        `/api/v1/products?isActive=true&limit=100&${cacheBust}`,
+        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100&${cacheBust}`,
+        `/api/v1/products?${cacheBust}`,
+        `${API_BASE_URL}/api/v1/products?${cacheBust}`,
+        `/api/products?${cacheBust}`,
+        `${API_BASE_URL}/api/products?${cacheBust}`
       ];
 
       let rawData = null;
@@ -350,10 +376,13 @@ export const useStore = create((set, get) => ({
       for (const endpoint of endpoints) {
         try {
           const res = await fetch(endpoint, {
+            cache: 'no-store',
             headers: {
               'Accept': 'application/json',
               'Accept-Language': currentLang,
-              'X-Language': currentLang
+              'X-Language': currentLang,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
             }
           });
           if (res.ok) {
@@ -468,17 +497,36 @@ export const useStore = create((set, get) => ({
               if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
                 return null;
               }
-              if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+              const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+              if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+                try {
+                  const urlObj = new URL(trimmed);
+                  if ((urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') && urlObj.pathname.startsWith('/uploads')) {
+                    return cleanBase ? `${cleanBase}${urlObj.pathname}${urlObj.search}` : trimmed;
+                  }
+                } catch (_) {}
                 return trimmed;
               }
-              const cleanBase = API_BASE_URL.replace(/\/$/, '');
+              if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+                return trimmed;
+              }
               const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-              return `${cleanBase}${cleanPath}`;
+              return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
             }
             return null;
           };
 
-          const rawPrimary = p.imageUrl || p.image || p.product_image || p.thumbnailUrl || (Array.isArray(p.images) ? p.images[0] : null) || null;
+          const rawPrimary =
+            p.featuredImage ||
+            p.featured_image ||
+            p.imageUrl ||
+            p.image_url ||
+            p.image ||
+            p.product_image ||
+            p.thumbnailUrl ||
+            p.thumbnail_url ||
+            (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null) ||
+            null;
           const primaryImg = resolveUrl(rawPrimary);
 
           const rawGallery = Array.isArray(p.images) ? p.images : (Array.isArray(p.gallery_images) ? p.gallery_images : (Array.isArray(p.gallery) ? p.gallery : (Array.isArray(p.galleryImages) ? p.galleryImages : [])));
@@ -613,6 +661,11 @@ export const useStore = create((set, get) => ({
             badgeColor: p.badgeColor || (key.includes('dotted') ? 'bg-rose-50 text-rose-800 border-rose-200' : key.includes('ribbed') ? 'bg-purple-50 text-purple-900 border-purple-200' : key.includes('variety') ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-brand-50 text-brand-800 border-brand-200'),
             iconType: p.iconType || (key.includes('thin') ? 'thin' : key.includes('ribbed') ? 'ribbed' : key.includes('dotted') ? 'dotted' : key.includes('combo') ? 'combo' : (key.includes('gelly') || key.includes('jelly') || key.includes('lubricant') ? 'lubricant' : 'standard')),
             imageUrl: primaryImg,
+            image_url: primaryImg,
+            featuredImage: primaryImg,
+            featured_image: primaryImg,
+            thumbnailUrl: resolveUrl(p.thumbnailUrl || p.thumbnail_url) || primaryImg,
+            thumbnail_url: resolveUrl(p.thumbnailUrl || p.thumbnail_url) || primaryImg,
             images: resolvedGallery.length > 0 ? resolvedGallery : (primaryImg ? [primaryImg] : []),
           };
 
@@ -648,6 +701,9 @@ export const useStore = create((set, get) => ({
           if (normalized[canonicalKey] && !normalized[legacyKey]) {
             normalized[legacyKey] = normalized[canonicalKey];
           }
+          if (normalized[legacyKey] && !normalized[canonicalKey]) {
+            normalized[canonicalKey] = normalized[legacyKey];
+          }
         });
 
         const currentSlug = get().selectedProductSlug;
@@ -657,8 +713,8 @@ export const useStore = create((set, get) => ({
         const finalSelectedSlug = resolvedCurrent || keys[0] || 'mo-multi-textured-latex-contraceptive-10-pcs';
 
         set({
-          products: normalized,
-          productKeys: keys,
+          products: { ...INITIAL_PRODUCTS, ...normalized },
+          productKeys: keys.length > 0 ? keys : DEFAULT_PRODUCT_KEYS.filter(k => INITIAL_PRODUCTS[k] && !INITIAL_PRODUCTS[k].isOutOfStock),
           isLoadingProducts: false,
           selectedProductSlug: finalSelectedSlug
         });

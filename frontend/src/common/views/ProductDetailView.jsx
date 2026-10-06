@@ -94,17 +94,28 @@ export default function ProductDetailView() {
     if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
       return null;
     }
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      try {
+        const urlObj = new URL(trimmed);
+        if ((urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') && urlObj.pathname.startsWith('/uploads')) {
+          return cleanBase ? `${cleanBase}${urlObj.pathname}${urlObj.search}` : trimmed;
+        }
+      } catch (_) {}
       return trimmed;
     }
-    const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+    if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+      return trimmed;
+    }
     const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
     return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
   };
 
+  const primaryCandidate = product?.imageUrl || product?.image_url || product?.featuredImage || product?.featured_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null);
+
   const galleryImages = (Array.isArray(product?.images) && product.images.length > 0
     ? product.images
-    : (product?.imageUrl ? [product.imageUrl] : []))
+    : (primaryCandidate ? [primaryCandidate] : []))
     .map(resolveImgUrl)
     .filter(Boolean);
 
@@ -183,8 +194,8 @@ export default function ProductDetailView() {
         <div className="lg:col-span-6 space-y-3">
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden aspect-square w-full max-w-md mx-auto relative shadow-xs">
             <ProductArtwork 
-              productKey={product.id} 
-              customImageUrl={selectedImage}
+              productKey={product} 
+              customImageUrl={selectedImage || primaryCandidate}
               sizeClass="w-full h-full aspect-square" 
               imgClassName="w-full h-full object-cover object-center"
             />

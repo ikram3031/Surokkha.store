@@ -1,4 +1,4 @@
-.PHONY: deploy deploy-native deploy-docker build build-backend build-dashboard build-frontend status logs logs-backend logs-dashboard logs-frontend down help sync-config
+.PHONY: deploy deploy-native deploy-docker build build-backend build-dashboard build-frontend build-catalog status logs logs-backend logs-dashboard logs-frontend down help sync-config
 
 # ── Surokkha Environment & Paths ──────────────────────────────
 CLIENT := surokkha
@@ -62,6 +62,16 @@ deploy:
 		npm run build --prefix dashboard; \
 		echo "✓ Admin Dashboard built to /opt/clients/surokkha/dashboard/dist"; \
 	fi
+
+	@# 2b. Build and deploy Product Catalog (catalog.surokkha.shop)
+	@if [ -d "catalog" ]; then \
+		echo "📦 Building Catalog (catalog.surokkha.shop)..."; \
+		npm install --prefix catalog && \
+		npm run build --prefix catalog && \
+		mkdir -p /opt/clients/surokkha/catalog/dist && \
+		cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/ 2>/dev/null || true && \
+		echo "✓ Product Catalog (catalog.surokkha.shop) deployed to /opt/clients/surokkha/catalog/dist"; \
+	fi
 	@# 3. Update Backend dependencies and restart services
 	@if [ -d "backend" ]; then \
 		echo "📦 Updating Backend dependencies..."; \
@@ -109,6 +119,15 @@ build-dashboard:
 	npm run build --prefix dashboard
 	@systemctl reload nginx 2>/dev/null || true
 	@echo "✓ Admin Dashboard deployed to /opt/clients/surokkha/dashboard/dist!"
+
+build-catalog:
+	@echo "📦 Building and deploying Surokkha Product Catalog (catalog.surokkha.shop)..."
+	npm install --prefix catalog
+	npm run build --prefix catalog
+	@mkdir -p /opt/clients/surokkha/catalog/dist
+	@cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/ 2>/dev/null || true
+	@systemctl reload nginx 2>/dev/null || true
+	@echo "✓ Product Catalog deployed to /opt/clients/surokkha/catalog/dist!"
 
 restart-backend:
 	systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true
