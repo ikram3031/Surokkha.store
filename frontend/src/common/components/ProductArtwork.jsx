@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 import { Skeleton } from './ui/skeleton';
+import { SITE_CONFIG } from '../config/siteConfig';
+
+const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
 export default function ProductArtwork({
   productKey,
@@ -30,7 +33,9 @@ export default function ProductArtwork({
       if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
         resolvedImgUrl = trimmed;
       } else {
-        resolvedImgUrl = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+        const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+        const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+        resolvedImgUrl = cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
       }
     }
   }

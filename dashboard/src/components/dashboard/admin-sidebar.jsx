@@ -106,20 +106,15 @@ export const AdminSidebar = ({ ...props }) => {
   const [openMenu, setOpenMenu] = React.useState(null)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false)
 
-  // Auto-close navigation on route transition for small screens
+  // Auto-close mobile navigation drawer on route transition
   React.useEffect(() => {
-    if (isMobile) {
-      setOpen(false)
+    if (isMobile && setOpenMobile) {
+      setOpenMobile(false)
     }
-  }, [pathname, isMobile, setOpen])
+  }, [pathname, isMobile, setOpenMobile])
 
-  // Toggles single accordion menu state, expanding sidebar if currently collapsed
+  // Toggles single accordion menu state
   const toggleMenu = (menuKey) => {
-    if (state === "collapsed") {
-      setOpen(true)
-      setOpenMenu(menuKey)
-      return
-    }
     setOpenMenu((prev) => (prev === menuKey ? null : menuKey))
   }
 
@@ -130,7 +125,11 @@ export const AdminSidebar = ({ ...props }) => {
   }
 
   const handleCloseSidebar = () => {
-    setOpen(false)
+    if (isMobile) {
+      setOpenMobile(false)
+    } else {
+      setOpen(false)
+    }
   }
 
   const userRole = user?.role || "Marketing Expert"
@@ -152,9 +151,9 @@ export const AdminSidebar = ({ ...props }) => {
 
   return (
     <Sidebar collapsible="icon" style={{ backgroundColor: 'var(--theme-sidebar, #ffffff)' }} {...props}>
-      <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-1">
+      <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
-          {state === "expanded" ? (
+          {state === "expanded" || isMobile ? (
             <>
               <div className="flex flex-col items-start gap-1 overflow-hidden">
                 <BrandLogo className="w-24 h-auto" />
@@ -175,10 +174,10 @@ export const AdminSidebar = ({ ...props }) => {
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="h-9 w-9 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-xs"
+              className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
               title="Open Sidebar"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-3.5 w-3.5" />
             </button>
           )}
         </div>

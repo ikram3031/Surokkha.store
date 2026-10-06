@@ -5,6 +5,9 @@ import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
 import ProductDetailSkeleton from '../components/ProductDetailSkeleton';
 import { trackViewContent } from '../utils/analytics';
+import { SITE_CONFIG } from '../config/siteConfig';
+
+const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
 export default function ProductDetailView() {
   const selectedSlug = useStore((state) => state.selectedProductSlug);
@@ -14,6 +17,7 @@ export default function ProductDetailView() {
   const addComboToCart = useStore((state) => state.addComboToCart);
   const openCartDrawer = useStore((state) => state.openCartDrawer);
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
+  const fetchProducts = useStore((state) => state.fetchProducts);
   
   const products = useStore((state) => state.products);
   const productKeys = useStore((state) => state.productKeys);
@@ -73,6 +77,10 @@ export default function ProductDetailView() {
   const localizedFeatures = getLocalizedFeatures(product);
 
   useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
     if (product) {
       trackViewContent(product);
       setSelectedImage(null);
@@ -80,10 +88,25 @@ export default function ProductDetailView() {
     }
   }, [product?.id]);
 
+  const resolveImgUrl = (img) => {
+    if (!img || typeof img !== 'string') return null;
+    const trimmed = img.trim();
+    if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
+      return null;
+    }
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+      return trimmed;
+    }
+    const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
+  };
+
   const galleryImages = (Array.isArray(product?.images) && product.images.length > 0
     ? product.images
     : (product?.imageUrl ? [product.imageUrl] : []))
-    .filter(img => img && typeof img === 'string' && img.trim() !== '' && img.trim() !== '#' && img.trim() !== '/#' && img.trim().toLowerCase() !== 'null' && img.trim().toLowerCase() !== 'undefined');
+    .map(resolveImgUrl)
+    .filter(Boolean);
 
   const otherKeys = productKeys.filter((k) => {
     if (k === product?.id || k === product?.slug) return false;
