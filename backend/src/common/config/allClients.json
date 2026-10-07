@@ -307,7 +307,8 @@
     "forceMembershipFromOrder": true,
     "features": {
       "season": false,
-      "brand": false,
+      "brand": true,
+      "brands": true,
       "category": true,
       "categories": true,
       "attribute": true,
@@ -477,6 +478,8 @@
       "products.new",
       "products.list",
       "products.categories",
+      "products.brands",
+      "products.attributes",
       "products.coupons",
       "reviews",
       "members",
