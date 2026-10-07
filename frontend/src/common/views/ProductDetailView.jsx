@@ -101,11 +101,11 @@ export default function ProductDetailView() {
     return url.replace(/\/thumb_([^/]+)$/, '/$1').replace(/\/thumb\/([^/]+)$/, '/$1');
   };
 
-  const primaryCandidate = product?.featuredImage || product?.featured_image || product?.imageUrl || product?.image_url || product?.product_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null);
+  const primaryCandidate = product?.featuredImage || product?.featured_image || product?.imageUrl || product?.image_url || product?.product_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null) || (Array.isArray(product?.gallery) && product.gallery.length > 0 ? product.gallery[0] : null);
 
-  const galleryImages = (Array.isArray(product?.images) && product.images.length > 0
-    ? product.images
-    : (primaryCandidate ? [primaryCandidate] : []))
+  const rawImages = (Array.isArray(product?.images) && product.images.length > 0) ? product.images : ((Array.isArray(product?.gallery) && product.gallery.length > 0) ? product.gallery : (primaryCandidate ? [primaryCandidate] : []));
+  
+  const galleryImages = rawImages
     .map(toHighRes)
     .map(resolveImgUrl)
     .filter(Boolean);
@@ -383,15 +383,16 @@ export default function ProductDetailView() {
           )}
 
 
-          {/* Detailed Description */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-              {t('productDescriptionHeading', 'Product Description')}
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              {localizedDescription}
-            </p>
-          </div>
+                      {/* Detailed Description */}
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                {t('productDescriptionHeading', 'Product Description')}
+              </h3>
+              <div 
+                className="text-xs sm:text-sm text-slate-600 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: localizedDescription }}
+              />
+            </div>
 
           {/* Variations Selection */}
           {hasVariants && (
