@@ -120,14 +120,24 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
   const keywords = new Set(["localhost", "127.0.0.1"]);
 
   const localOrigins = [
+    "http://localhost",
+    "https://localhost",
+    "http://127.0.0.1",
+    "https://127.0.0.1",
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "http://localhost:5173",
+    "https://localhost:5173",
+    "http://localhost:5174",
     "http://localhost:8001",
     "http://localhost:8005",
-    "http://localhost:3000",
-    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "https://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "https://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
     "http://127.0.0.1:8001",
     "http://127.0.0.1:8005",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
     "https://surokkha.shop",
     "https://www.surokkha.shop",
   ];
