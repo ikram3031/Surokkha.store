@@ -193,6 +193,7 @@ export default function CheckoutView() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isProcessing) return;
 
     let billingPh = shippingInfo.phone || '';
     let shipPh = shippingAddress.phone || '';

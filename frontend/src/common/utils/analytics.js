@@ -621,10 +621,14 @@ export const trackAddPaymentInfo = (paymentType = 'Cash on Delivery', totals = {
 /**
  * 7. Track Purchase (Pixel + CAPI with User Data + GA4)
  */
+const trackedPurchaseOrders = new Set();
+
 export const trackPurchase = (order, products = {}) => {
   if (!order || !order.totals) return;
 
   const orderId = String(order.orderId || ('SS-' + Date.now()));
+  if (trackedPurchaseOrders.has(orderId)) return;
+  trackedPurchaseOrders.add(orderId);
   const grandTotal = Number(order.totals.grandTotal || order.totals.subtotal || 0);
   const itemCount = Number(order.totals.itemCount || 0);
   const purchasedItems = Object.entries(order.items || {}).filter(([_, qty]) => qty > 0);
