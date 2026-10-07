@@ -96,11 +96,17 @@ export default function ProductDetailView() {
     return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
   };
 
-  const primaryCandidate = product?.imageUrl || product?.image_url || product?.featuredImage || product?.featured_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null);
+  const toHighRes = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    return url.replace(/\/thumb_([^/]+)$/, '/$1').replace(/\/thumb\/([^/]+)$/, '/$1');
+  };
+
+  const primaryCandidate = product?.featuredImage || product?.featured_image || product?.imageUrl || product?.image_url || product?.product_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null);
 
   const galleryImages = (Array.isArray(product?.images) && product.images.length > 0
     ? product.images
     : (primaryCandidate ? [primaryCandidate] : []))
+    .map(toHighRes)
     .map(resolveImgUrl)
     .filter(Boolean);
 
@@ -112,15 +118,24 @@ export default function ProductDetailView() {
     return !isOut;
   }).slice(0, 4);
 
+  const hasVariants = product?.type === 'variant' && product?.variants?.length > 0;
   const handleBuyNow = () => {
     if (isOutOfStock) return;
-    addToCart(product.id, quantity, false);
+    if (hasVariants && !selectedVariant) {
+      alert(isBn ? 'অনুগ্রহ করে ভেরিয়েশন সিলেক্ট করুন' : 'Please select a variation');
+      return;
+    }
+    addToCart(product.id, quantity, false, selectedVariant);
     navigateTo('checkout');
   };
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
-    addToCart(product.id, quantity, true);
+    if (hasVariants && !selectedVariant) {
+      alert(isBn ? 'অনুগ্রহ করে ভেরিয়েশন সিলেক্ট করুন' : 'Please select a variation');
+      return;
+    }
+    addToCart(product.id, quantity, true, selectedVariant);
     openCartDrawer();
   };
 
@@ -377,6 +392,40 @@ export default function ProductDetailView() {
               {localizedDescription}
             </p>
           </div>
+
+          {/* Variations Selection */}
+          {hasVariants && (
+            <div className="pt-2 pb-1 border-t border-slate-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                {isBn ? 'ভেরিয়েশন সিলেক্ট করুন' : 'Select Variation'}
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {product.variants.map((v, i) => {
+                  const isSelected = selectedVariant?.size === v.size;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setSelectedVariant(v);
+                        if (v.imageUrl) {
+                          const resolved = resolveImgUrl(v.imageUrl);
+                          if (resolved) setSelectedImage(resolved);
+                        }
+                      }}
+                      className={`px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg border transition-all cursor-pointer ${
+                        isSelected 
+                          ? 'border-brand-600 bg-brand-50 text-brand-900 shadow-xs ring-1 ring-brand-600/30' 
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      {v.size} {v.price > 0 && `(৳${v.price})`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Quantity & Purchase Controls */}
           <div className="pt-2 space-y-3">

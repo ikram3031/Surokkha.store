@@ -23,15 +23,25 @@ export default function ProductArtwork({
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
-  let rawImg =
+  // Un-thumb helper to always request high-res featured asset
+  const toHighRes = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    return url.replace(/\/thumb_([^/]+)$/, '/$1').replace(/\/thumb\/([^/]+)$/, '/$1');
+  };
+
+  let candidateImg =
     customImageUrl ||
+    p?.featuredImage ||
+    p?.featured_image ||
     p?.imageUrl ||
     p?.image_url ||
+    p?.product_image ||
+    (Array.isArray(p?.images) && p.images.length > 0 ? p.images[0] : null) ||
     p?.thumbnailUrl ||
     p?.thumbnail_url ||
-    (Array.isArray(p?.images) && p.images.length > 0 ? p.images[0] : null) ||
     null;
 
+  let rawImg = candidateImg ? toHighRes(candidateImg) : null;
   let resolvedImgUrl = null;
 
   if (rawImg && typeof rawImg === 'string') {

@@ -444,11 +444,27 @@ export const useStore = create((set, get) => ({
             ? resolvedOfferPrice
             : resolvedRegularPrice;
 
-          const rawPrimary = p.imageUrl || p.image_url || p.thumbnailUrl || p.thumbnail_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null) || null;
-          const primaryImg = resolveUrl(rawPrimary);
+          // High-resolution featured image resolution:
+          // Un-thumb helper to always request the full-resolution asset instead of low-res thumbnail
+          const toHighRes = (url) => {
+            if (!url || typeof url !== 'string') return url;
+            return url.replace(/\/thumb_([^/]+)$/, '/$1').replace(/\/thumb\/([^/]+)$/, '/$1');
+          };
 
-          const rawGallery = Array.isArray(p.images) ? p.images : (Array.isArray(p.gallery_images) ? p.gallery_images : []);
-          let resolvedGallery = rawGallery.map(resolveUrl).filter(Boolean);
+          const rawFeatured = p.featuredImage || p.featured_image || p.imageUrl || p.image_url || p.product_image;
+          const rawThumb = p.thumbnailUrl || p.thumbnail_url;
+          const rawGalleryCandidates = Array.isArray(p.gallery) && p.gallery.length > 0
+            ? p.gallery
+            : (Array.isArray(p.images) && p.images.length > 0
+              ? p.images
+              : (Array.isArray(p.gallery_images) ? p.gallery_images : []));
+
+          // Pick the best high-res primary image: featured/imageUrl first, then gallery first item, fallback to un-thumbed thumbnailUrl
+          const rawPrimary = rawFeatured || (rawGalleryCandidates.length > 0 ? rawGalleryCandidates[0] : null) || rawThumb || null;
+          const highResPrimary = rawPrimary ? toHighRes(rawPrimary) : null;
+          const primaryImg = resolveUrl(highResPrimary);
+
+          let resolvedGallery = rawGalleryCandidates.map(toHighRes).map(resolveUrl).filter(Boolean);
           if (primaryImg && !resolvedGallery.includes(primaryImg)) {
             resolvedGallery = [primaryImg, ...resolvedGallery];
           }
@@ -807,7 +823,7 @@ export const useStore = create((set, get) => ({
   },
 
   // Cart actions
-  addToCart: (slug, quantity = 1, showToastNotification = true) => {
+  addToCart: (slug, quantity = 1, showToastNotification = true, variant = null) => {
     const { products } = get();
     const prod = products[slug];
     if (!prod) return;
@@ -819,10 +835,12 @@ export const useStore = create((set, get) => ({
       return;
     }
 
+    const cartKey = variant ? `${slug}:::${variant.size}` : slug;
+
     set((state) => ({
       cart: {
         ...state.cart,
-        [slug]: (state.cart[slug] || 0) + quantity,
+        [cartKey]: (state.cart[cartKey] || 0) + quantity,
       }
     }));
     trackAddToCart(prod, quantity);
@@ -1044,8 +1062,10 @@ export const useStore = create((set, get) => ({
       total: totals.grandTotal,
       items: Object.entries(cart)
         .filter(([_, qty]) => qty > 0)
-        .map(([slug, qty]) => {
+        .map(([cartKey, qty]) => {
+          const [slug, variantSize] = cartKey.split(':::');
           const prod = products[slug];
+          const variant = variantSize && prod?.variants ? prod.variants.find(v => v.size === variantSize) : null;
           const rawId = prod?.mongoId || prod?._id || prod?.id || undefined;
           const itemType = prod?.itemType || (prod?.type === 'item' ? 'item' : 'product');
           return {
@@ -1054,11 +1074,11 @@ export const useStore = create((set, get) => ({
             itemType: itemType,
             productDid: prod?.did || slug,
             name: prod?.name || slug,
-            sku: prod?.sku || '',
-            image: prod?.imageUrl || prod?.image || '',
+            sku: variant?.sku || prod?.sku || '',
+            image: variant?.imageUrl || prod?.imageUrl || prod?.image || '',
             quantity: qty,
-            unitPrice: prod?.price || 400,
-            size: prod?.size || 'Standard Pack'
+            unitPrice: variant?.price || prod?.price || 400,
+            size: variant?.size || variantSize || prod?.size || 'Standard Pack'
           };
         }),
       paymentDetails: null,

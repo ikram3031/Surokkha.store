@@ -287,14 +287,20 @@ export default function CartDrawer() {
             ) : (
               /* CART ITEMS LIST */
               <div className="space-y-3.5">
-                {cartKeys.map((slug) => {
-                  const item = products[slug] || { name: slug, price: 0, regularPrice: 0 };
-                  const qty = cart[slug];
+                {cartKeys.map((cartKey) => {
+                  const parts = cartKey.split(':::');
+                  const baseSlug = parts[0];
+                  const variantName = parts[1];
+                  const baseItem = products[baseSlug] || { name: baseSlug, price: 0, regularPrice: 0 };
+                  const variant = variantName && baseItem.variants ? baseItem.variants.find(v => v.size === variantName) : null;
+                  const item = variant ? { ...baseItem, name: baseItem.name + ' (' + variantName + ')', name_bn: (baseItem.name_bn || baseItem.name) + ' (' + variantName + ')', price: variant.price || baseItem.price, imageUrl: variant.imageUrl || baseItem.imageUrl } : baseItem;
+                  const slug = baseSlug;
+                  const qty = cart[cartKey];
                   const lineTotal = item.price * qty;
 
                   return (
                     <div 
-                      key={slug} 
+                      key={cartKey} 
                       className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-2xs hover:border-slate-300 transition flex items-center gap-3.5 relative"
                     >
                       {/* Product Thumbnail */}
@@ -345,7 +351,7 @@ export default function CartDrawer() {
                           <div className="inline-flex items-center border border-slate-200 rounded-xl bg-slate-50 shadow-2xs">
                             <button
                               type="button"
-                              onClick={() => setProductQty(slug, qty - 1)}
+                              onClick={() => setProductQty(cartKey, qty - 1)}
                               className="px-2.5 py-1 text-slate-800 hover:text-slate-950 hover:bg-slate-200/60 rounded-l-xl font-bold text-sm cursor-pointer transition"
                               aria-label="Decrease quantity"
                             >
@@ -356,7 +362,7 @@ export default function CartDrawer() {
                             </span>
                             <button
                               type="button"
-                              onClick={() => setProductQty(slug, qty + 1)}
+                              onClick={() => setProductQty(cartKey, qty + 1)}
                               className="px-2.5 py-1 text-slate-800 hover:text-slate-950 hover:bg-slate-200/60 rounded-r-xl font-bold text-sm cursor-pointer transition"
                               aria-label="Increase quantity"
                             >
@@ -373,7 +379,7 @@ export default function CartDrawer() {
                       {/* Remove Button (Red Top-Right) */}
                       <button
                         type="button"
-                        onClick={() => setProductQty(slug, 0)}
+                        onClick={() => setProductQty(cartKey, 0)}
                         title={t('cart.remove', 'মুছে ফেলুন')}
                         aria-label={t('cart.remove', 'Remove Item')}
                         className="absolute top-2.5 right-2.5 text-rose-600 hover:text-rose-700 bg-rose-50/80 hover:bg-rose-100 border border-rose-200/80 p-1.5 rounded-lg transition cursor-pointer shadow-2xs"
