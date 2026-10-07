@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
+import { useItems } from "@/hooks/use-items";
 import { apiClient, baseURL, getApiBaseUrl } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useCategories, useBrands } from "@/lib/category-cache";
@@ -32,6 +33,7 @@ import {
   ArrowLeft,
   CheckCircle,
   Package,
+  Boxes,
   X,
   Layers,
   Tag,
@@ -303,7 +305,8 @@ const NewCustomOrderPage = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  // Product Catalogue filters & state
+  // Catalogue type, filters & state
+  const [catalogType, setCatalogType] = useState("products"); // "products" | "items"
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [brandFilter, setBrandFilter] = useState("All");
@@ -318,6 +321,16 @@ const NewCustomOrderPage = () => {
   });
   const products = Array.isArray(productsResponse?.data)
     ? productsResponse.data
+    : [];
+
+  const { data: itemsResponse, isLoading: itemsLoading } = useItems({
+    search: searchQuery || undefined,
+    category: categoryFilter !== "All" ? categoryFilter : undefined,
+    brand: brandFilter !== "All" ? brandFilter : undefined,
+    limit: 50,
+  });
+  const items = Array.isArray(itemsResponse?.data)
+    ? itemsResponse.data
     : [];
 
   // Cart & Dialog state
@@ -639,16 +652,60 @@ const NewCustomOrderPage = () => {
           SECTION 1 (TOP): PRODUCT SELECTION & CART ITEMS (Matched Fixed Height)
           ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Product Catalogue (Fixed Height) */}
+        {/* Left Column: Product / Item Catalogue (Fixed Height) */}
         <div className="lg:col-span-7 bg-card border rounded-2xl p-5 shadow-xs flex flex-col h-[480px]">
           <div className="flex items-center justify-between mb-3 shrink-0">
-            <h3 className="font-semibold text-base flex items-center gap-2">
-              <Package className="h-4 w-4 text-primary" />
-              {t("nav.products", "Product Catalogue")}
-            </h3>
-            <span className="text-xs text-muted-foreground">
-              {products.length} {t("products.total", "products available")}
-            </span>
+            <div className="flex items-center gap-2">
+              {catalogType === "products" ? (
+                <Package className="h-4 w-4 text-primary" />
+              ) : (
+                <Boxes className="h-4 w-4 text-primary" />
+              )}
+              <h3 className="font-semibold text-base">
+                {catalogType === "products"
+                  ? t("nav.products", "Product Catalogue")
+                  : t("nav.items", "Item Catalogue")}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setCatalogType("products")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                    catalogType === "products"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Package className="h-3.5 w-3.5" />
+                  <span>Products</span>
+                  {products.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 ml-0.5">
+                      {products.length}
+                    </Badge>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCatalogType("items")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                    catalogType === "items"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Boxes className="h-3.5 w-3.5" />
+                  <span>Items</span>
+                  {items.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 ml-0.5">
+                      {items.length}
+                    </Badge>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 shrink-0">
@@ -672,7 +729,7 @@ const NewCustomOrderPage = () => {
             <div className="relative">
               <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                placeholder={t("products.search_products", "Search by name / SKU...")}
+                placeholder={catalogType === "products" ? t("products.search_products", "Search by name / SKU...") : "Search items by name / SKU..."}
                 className="pl-8 h-8 text-xs"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -688,106 +745,215 @@ const NewCustomOrderPage = () => {
             </div>
           </div>
 
-          {/* Product Cards Scrollable List */}
+          {/* Cards Scrollable List */}
           <div className="flex-1 overflow-y-auto pr-1">
-            {productsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
-                ))}
-              </div>
-            ) : products.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12">
-                <Package className="h-10 w-10 mb-2 opacity-30" />
-                <p className="text-xs">{t("common.no_data", "No products found")}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {products.map((product) => {
-                  const inCart = cart.filter((c) => c.id.startsWith(product.id));
-                  const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
-                  const isOutOfStock = product.status === "Out of Stock";
-                  const isVariant = product.type === "variant";
-                  const displayPrice = isVariant
-                    ? Math.min(
-                        ...(product.variants || []).map((v) =>
-                          effectivePrice(v.price, v.offerPrice ?? null),
-                        ),
-                      )
-                    : effectivePrice(product.price, product.offerPrice ?? null);
+            {catalogType === "products" ? (
+              productsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+                  ))}
+                </div>
+              ) : products.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12">
+                  <Package className="h-10 w-10 mb-2 opacity-30" />
+                  <p className="text-xs">{t("common.no_data", "No products found")}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {products.map((product) => {
+                    const inCart = cart.filter((c) => c.id.startsWith(product.id));
+                    const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
+                    const isOutOfStock = product.status === "Out of Stock";
+                    const isVariant = product.type === "variant";
+                    const displayPrice = isVariant
+                      ? Math.min(
+                          ...(product.variants || []).map((v) =>
+                            effectivePrice(v.price, v.offerPrice ?? null),
+                          ),
+                        )
+                      : effectivePrice(product.price, product.offerPrice ?? null);
 
-                  return (
-                    <div
-                      key={product.id}
-                      className={`
-                        flex items-center gap-2.5 p-2.5 rounded-xl border bg-background transition-all
-                        ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-xs"}
-                        ${cartQty > 0 ? "border-primary/50 bg-primary/[0.02]" : "border-border"}
-                      `}
-                    >
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative border border-border/50">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-5 w-5 text-muted-foreground/30" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-xs leading-tight truncate">
-                          {product.name}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground truncate">
-                          {product.sku || product.category || "Item"}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xs font-bold text-primary">
-                            {formatBDT(displayPrice)}
-                          </span>
-                          {isVariant && (
-                            <Badge
-                              variant="secondary"
-                              className="text-[9px] px-1 py-0 h-4"
-                            >
-                              <Layers className="h-2 w-2 mr-0.5" />
-                              {product.variants?.length ?? 0}
-                            </Badge>
+                    return (
+                      <div
+                        key={product.id}
+                        className={`
+                          flex items-center gap-2.5 p-2.5 rounded-xl border bg-background transition-all
+                          ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-xs"}
+                          ${cartQty > 0 ? "border-primary/50 bg-primary/[0.02]" : "border-border"}
+                        `}
+                      >
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative border border-border/50">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-5 w-5 text-muted-foreground/30" />
+                            </div>
                           )}
                         </div>
-                      </div>
 
-                      <div className="flex flex-col items-center gap-0.5">
-                        {cartQty > 0 && (
-                          <span className="text-[10px] font-bold text-primary">
-                            ×{cartQty}
-                          </span>
-                        )}
-                        <button
-                          disabled={isOutOfStock}
-                          onClick={() => !isOutOfStock && setDialogProduct(product)}
-                          className={`
-                            h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
-                            ${
-                              isOutOfStock
-                                ? "bg-muted cursor-not-allowed text-muted-foreground"
-                                : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
-                            }
-                          `}
-                          title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                        </button>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-xs leading-tight truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {product.sku || product.category || "Item"}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs font-bold text-primary">
+                              {formatBDT(displayPrice)}
+                            </span>
+                            {isVariant && (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] px-1 py-0 h-4"
+                              >
+                                <Layers className="h-2 w-2 mr-0.5" />
+                                {product.variants?.length ?? 0}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-0.5">
+                          {cartQty > 0 && (
+                            <span className="text-[10px] font-bold text-primary">
+                              ×{cartQty}
+                            </span>
+                          )}
+                          <button
+                            disabled={isOutOfStock}
+                            onClick={() => !isOutOfStock && setDialogProduct(product)}
+                            className={`
+                              h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
+                              ${
+                                isOutOfStock
+                                  ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                  : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
+                              }
+                            `}
+                            title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )
+            ) : (
+              itemsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+                  ))}
+                </div>
+              ) : items.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12">
+                  <Boxes className="h-10 w-10 mb-2 opacity-30" />
+                  <p className="text-xs">No items found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {items.map((item) => {
+                    const inCart = cart.filter((c) => c.id.startsWith(item.id));
+                    const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
+                    const isOutOfStock = item.status === "Out of Stock" || item.stockStatus === "outofstock";
+                    const isVariant = item.type === "variant" && (item.variants?.length ?? 0) > 0;
+                    const displayPrice = isVariant
+                      ? Math.min(
+                          ...(item.variants || []).map((v) =>
+                            effectivePrice(v.price, v.offerPrice ?? null),
+                          ),
+                        )
+                      : effectivePrice(item.price, item.offerPrice ?? null);
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`
+                          flex items-center gap-2.5 p-2.5 rounded-xl border bg-background transition-all
+                          ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-xs"}
+                          ${cartQty > 0 ? "border-primary/50 bg-primary/[0.02]" : "border-border"}
+                        `}
+                      >
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative border border-border/50">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Boxes className="h-5 w-5 text-muted-foreground/30" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-xs leading-tight truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {item.sku || item.category || "Item"}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs font-bold text-primary">
+                              {formatBDT(displayPrice)}
+                            </span>
+                            {isVariant ? (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] px-1 py-0 h-4"
+                              >
+                                <Layers className="h-2 w-2 mr-0.5" />
+                                {item.variants?.length ?? 0}
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-[9px] px-1 py-0 h-4 border-border/60 text-muted-foreground"
+                              >
+                                Item
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-0.5">
+                          {cartQty > 0 && (
+                            <span className="text-[10px] font-bold text-primary">
+                              ×{cartQty}
+                            </span>
+                          )}
+                          <button
+                            disabled={isOutOfStock}
+                            onClick={() => !isOutOfStock && setDialogProduct({ ...item, itemType: "item" })}
+                            className={`
+                              h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
+                              ${
+                                isOutOfStock
+                                  ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                  : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
+                              }
+                            `}
+                            title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             )}
           </div>
         </div>
@@ -836,9 +1002,16 @@ const NewCustomOrderPage = () => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate leading-tight">
-                      {item.name}
-                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-xs font-semibold truncate leading-tight">
+                        {item.name}
+                      </p>
+                      {item.itemType === "item" && (
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-normal">
+                          Item
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {formatBDT(item.price)} × {item.quantity} ={" "}
                       <span className="font-bold text-foreground">

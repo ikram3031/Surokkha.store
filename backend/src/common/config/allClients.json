@@ -281,9 +281,12 @@
         "allowOfferPrice": true
       },
       "variants": {
-        "enabled": false,
-        "allowVariantImages": false,
-        "supportedDimensions": [],
+        "enabled": true,
+        "allowVariantImages": true,
+        "supportedDimensions": [
+          "size",
+          "color"
+        ],
         "defaultUnit": "piece"
       },
       "specifications": {
@@ -307,9 +310,9 @@
       "brand": false,
       "category": true,
       "categories": true,
-      "attribute": false,
-      "attributes": false,
-      "variantImage": false,
+      "attribute": true,
+      "attributes": true,
+      "variantImage": true,
       "sizeChart": false,
       "webmail": true,
       "inStoreOrder": false,
@@ -318,7 +321,7 @@
     },
     "stockManagement": {
       "simpleProduct": true,
-      "variableProduct": false
+      "variableProduct": true
     },
     "reports": {
       "enableInStoreFilter": false,

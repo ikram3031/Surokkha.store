@@ -100,6 +100,7 @@ const fetchItems = async (params) => {
       status: (p.stockStatus || "instock") === "instock" ? "In Stock" : "Out of Stock",
       image: resolveImageUrl(p.imageUrl || p.thumbnailUrl || p.image_url || p.thumbnail_url),
       type: itemType,
+      itemType: "item",
       variants,
     };
   });
