@@ -63,6 +63,8 @@ export default function ProductDetailView() {
   let maxPrice = currentOfferPrice;
   let isRange = false;
 
+  const hasVariants = product?.type === 'variant' && product?.variants?.length > 0;
+
   if (hasVariants) {
     if (selectedVariant) {
       displayOfferPrice = Number(selectedVariant.price || currentOfferPrice);
@@ -140,7 +142,6 @@ export default function ProductDetailView() {
     return !isOut;
   }).slice(0, 4);
 
-  const hasVariants = product?.type === 'variant' && product?.variants?.length > 0;
   const handleBuyNow = () => {
     if (isOutOfStock) return;
     if (hasVariants && !selectedVariant) {
