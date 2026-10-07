@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { PRODUCTS as DEFAULT_PRODUCTS, PRODUCT_KEYS as DEFAULT_PRODUCT_KEYS } from '../data/products';
 import { SITE_CONFIG } from '../config/siteConfig';
 import {
   trackPageView,
@@ -14,31 +13,6 @@ import {
 } from '../utils/analytics';
 
 const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
-
-const resolveInitialAssetUrl = (img) => {
-  if (img && typeof img === 'string') {
-    const trimmed = img.trim();
-    if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') return null;
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return trimmed;
-    const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
-    const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-    return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
-  }
-  return null;
-};
-
-const INITIAL_PRODUCTS = Object.entries(DEFAULT_PRODUCTS).reduce((acc, [k, prod]) => {
-  const primary = resolveInitialAssetUrl(prod.imageUrl || prod.image || (Array.isArray(prod.images) ? prod.images[0] : null));
-  const gallery = (Array.isArray(prod.images) ? prod.images : []).map(resolveInitialAssetUrl).filter(Boolean);
-  acc[k] = {
-    ...prod,
-    imageUrl: primary || prod.imageUrl,
-    image_url: primary || prod.imageUrl,
-    featuredImage: primary || prod.imageUrl,
-    images: gallery.length > 0 ? gallery : (primary ? [primary] : (prod.images || []))
-  };
-  return acc;
-}, {});
 
 // Parse initial view and slug from real browser URL pathname
 export const parseRouteFromLocation = () => {
@@ -310,9 +284,9 @@ export const useStore = create((set, get) => ({
 
   // Dynamic Products State
   // Dynamic Products & Categories State
-  products: INITIAL_PRODUCTS,
-  productKeys: DEFAULT_PRODUCT_KEYS.filter(k => INITIAL_PRODUCTS[k] && !INITIAL_PRODUCTS[k].isOutOfStock),
-  isLoadingProducts: false,
+  products: {},
+  productKeys: [],
+  isLoadingProducts: true,
   productsError: null,
   categories: [],
   isLoadingCategories: false,
@@ -320,26 +294,17 @@ export const useStore = create((set, get) => ({
   fetchCategories: async () => {
     set({ isLoadingCategories: true });
     try {
-      const endpoints = [
-        '/api/v1/categories',
-        `${API_BASE_URL}/api/v1/categories`,
-        '/api/categories',
-        `${API_BASE_URL}/api/categories`
-      ];
-      for (const endpoint of endpoints) {
-        try {
-          const res = await fetch(endpoint, {
-            headers: { 'Accept': 'application/json' }
-          });
-          if (res.ok) {
-            const json = await res.json();
-            const cats = Array.isArray(json) ? json : (json.data || json.categories || []);
-            if (Array.isArray(cats) && cats.length > 0) {
-              set({ categories: cats, isLoadingCategories: false });
-              return;
-            }
-          }
-        } catch { }
+      const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
+      const res = await fetch(`${cleanBase}/api/v1/categories`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const cats = Array.isArray(json) ? json : (json.data || json.categories || []);
+        if (Array.isArray(cats) && cats.length > 0) {
+          set({ categories: cats, isLoadingCategories: false });
+          return;
+        }
       }
       set({ isLoadingCategories: false });
     } catch {
@@ -347,59 +312,33 @@ export const useStore = create((set, get) => ({
     }
   },
 
-  // Fetch Dynamic Products from API with Multi-Language / data_bn Support
+  // Fetch Dynamic Products directly from API
   fetchProducts: async () => {
     set({ isLoadingProducts: true, productsError: null });
     const currentLang = get().language || 'bn';
     try {
       const cacheBust = `_t=${Date.now()}`;
-      const endpoints = [
-        `/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}&${cacheBust}`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100&lang=${currentLang}&${cacheBust}`,
-        `/api/v1/products?isActive=true&stockStatus=instock&limit=100&${cacheBust}`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&stockStatus=instock&limit=100&${cacheBust}`,
-        `/api/v1/products?isActive=true&limit=100&lang=${currentLang}&${cacheBust}`,
-        `/api/v1/products?limit=100&lang=${currentLang}&${cacheBust}`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100&lang=${currentLang}&${cacheBust}`,
-        `${API_BASE_URL}/api/v1/products?limit=100&lang=${currentLang}&${cacheBust}`,
-        `/api/v1/products?isActive=true&limit=100&${cacheBust}`,
-        `${API_BASE_URL}/api/v1/products?isActive=true&limit=100&${cacheBust}`,
-        `/api/v1/products?${cacheBust}`,
-        `${API_BASE_URL}/api/v1/products?${cacheBust}`,
-        `/api/products?${cacheBust}`,
-        `${API_BASE_URL}/api/products?${cacheBust}`
-      ];
+      const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
+      const targetUrl = `${cleanBase}/api/v1/products?limit=100&${cacheBust}`;
 
       let rawData = null;
       let rawDataBn = null;
 
-      for (const endpoint of endpoints) {
-        try {
-          const res = await fetch(endpoint, {
-            cache: 'no-store',
-            headers: {
-              'Accept': 'application/json',
-              'Accept-Language': currentLang,
-              'X-Language': currentLang,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
-          });
-          if (res.ok) {
-            const json = await res.json();
-
-            if (json && typeof json === 'object') {
-              rawDataBn = json.data_bn || json.products_bn || json.result_bn || null;
-              rawData = Array.isArray(json) ? json : (json.data || json.products || json.result || json.items || []);
-            }
-
-            if (Array.isArray(rawData) && rawData.length > 0) {
-              break;
-            }
+      try {
+        const res = await fetch(targetUrl, {
+          headers: {
+            'Accept': 'application/json'
           }
-        } catch {
-          // try next endpoint
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && typeof json === 'object') {
+            rawDataBn = json.data_bn || json.products_bn || json.result_bn || null;
+            rawData = Array.isArray(json) ? json : (json.data || json.products || json.result || json.items || []);
+          }
         }
+      } catch (e) {
+        console.error('Direct fetchProducts error:', e);
       }
 
       if (rawData && rawData.length > 0) {
@@ -666,8 +605,8 @@ export const useStore = create((set, get) => ({
           if (p.id && p.id !== key) normalized[p.id] = productObj;
           if (p._id && p._id !== key) normalized[p._id] = productObj;
 
-          // Only list active, in-stock products on website
-          if (!productObj.isOutOfStock && productObj.isActive) {
+          // List all active products on website
+          if (productObj.isActive !== false) {
             keys.push(key);
           }
         });
@@ -718,6 +657,7 @@ export const useStore = create((set, get) => ({
   },
 
   // Navigation with true Browser URL History Sync
+  navigateToCombo: () => get().navigateTo('combo'),
   navigateTo: (view, param = null, replaceHistory = false) => {
     // If cart navigation is requested, open the drawer instead of switching view
     if (view === 'cart') {
@@ -1045,11 +985,10 @@ export const useStore = create((set, get) => ({
       createdAt: nowIso
     };
 
+    const cleanApiBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
     const endpoints = [
-      `${API_BASE_URL}/api/v1/orders/new-order`,
-      `${API_BASE_URL}/api/orders/new-order`,
-      '/api/v1/orders/new-order',
-      '/api/orders/new-order'
+      `${cleanApiBase}/api/v1/orders/new-order`,
+      `${cleanApiBase}/api/orders/new-order`
     ];
 
     let responseData = null;

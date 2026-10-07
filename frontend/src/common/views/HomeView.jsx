@@ -32,26 +32,24 @@ export default function HomeView() {
     getLocalizedFeatures 
   } = useTranslation();
 
-  const MO_3_KEYS = [
-    'mo-multi-textured-latex-contraceptive-10-pcs',
-    'mo-micro-thin-latex-contraceptive-10-pcs',
-    'mo-micro-ribbed-natural-latex-contraceptive-10-pcs'
-  ];
-
-  const singleProductKeys = MO_3_KEYS.filter((k) => {
-    const p = products[k] || products[k.replace(/-condom$/, '')] || products[`${k}-condom`];
-    return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.stockAmount !== 0;
+  const nonComboKeys = productKeys.filter((k) => {
+    const p = products[k];
+    if (!p) return false;
+    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+    return !isCombo;
   });
+
+  const displaySingleKeys = nonComboKeys.length > 0 ? nonComboKeys : productKeys;
 
   const activeCombos = Object.values(products).filter(p => {
     return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.isActive !== false &&
       (p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo')));
   });
   
-  const combo30Prod = activeCombos.find(c => c.slug.includes('30') || c.slug.includes('3-in-1')) || activeCombos[0] || {};
-  const comboRibbedProd = activeCombos.find(c => c !== combo30Prod && (c.slug.includes('ribbed') || c.slug.includes('20'))) || activeCombos[1] || {};
-  const COMBO_30_KEY = combo30Prod.slug || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
-  const COMBO_RIBBED_KEY = comboRibbedProd.slug || 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
+  const combo30Prod = activeCombos.find(c => (c.slug && (c.slug.includes('30') || c.slug.includes('3-in-1'))) || (c.name && c.name.includes('30'))) || activeCombos[0] || null;
+  const comboRibbedProd = activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('ribbed') || c.slug.includes('20'))) || (c.name && c.name.includes('20')))) || activeCombos[1] || null;
+  const COMBO_30_KEY = combo30Prod?.slug || combo30Prod?.id || '';
+  const COMBO_RIBBED_KEY = comboRibbedProd?.slug || comboRibbedProd?.id || '';
 
   return (
     <div className="space-y-6 sm:space-y-8 bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 pb-4">
@@ -132,7 +130,7 @@ export default function HomeView() {
               <ProductCardSkeleton key={`skeleton-home-${idx}`} />
             ))
           ) : (
-            singleProductKeys.map((key) => (
+            displaySingleKeys.map((key) => (
               <ProductCard key={key} productKey={key} />
             ))
           )}
@@ -202,16 +200,17 @@ export default function HomeView() {
               
               {/* COMBO 1: 30-Pcs Ultimate Mega Combo (৳900) - Star Product */}
               {(() => {
-                const c30Name = isBn ? (combo30Prod.name_bn || 'MO আলটিমেট ৩-ইন-১ ৩০ পিস মেগা কম্বো') : (combo30Prod.name || 'MO Ultimate 30 Pcs Combo');
-                const c30Price = combo30Prod.offerPrice || combo30Prod.price || 900;
-                const c30Regular = combo30Prod.regularPrice || 1200;
-                const c30Savings = c30Regular > c30Price ? c30Regular - c30Price : 300;
+                if (!combo30Prod) return null;
+                const c30Name = isBn ? (combo30Prod.name_bn || combo30Prod.name) : (combo30Prod.name || combo30Prod.name_bn);
+                const c30Price = combo30Prod.offerPrice || combo30Prod.price || 0;
+                const c30Regular = combo30Prod.regularPrice || c30Price;
+                const c30Savings = c30Regular > c30Price ? c30Regular - c30Price : 0;
 
                 return (
                   <div className="bg-slate-900/90 border-2 border-amber-400/80 rounded-3xl p-5 sm:p-6 text-left relative flex flex-col justify-between shadow-2xl hover:border-amber-300 transition-all duration-300 group">
                     <div className="absolute -top-3.5 right-6 z-20 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xl flex items-center gap-1 border border-amber-300/40">
                       <span>⭐</span>
-                      <span>{isBn ? 'সবচেয়ে জনপ্রিয় মেগা কম্বো (৳৯০০)' : 'Most Popular Deal (৳900)'}</span>
+                      <span>{isBn ? `সবচেয়ে জনপ্রিয় মেগা কম্বো (${formatPrice(c30Price)})` : `Most Popular Deal (${formatPrice(c30Price)})`}</span>
                     </div>
 
                     <div className="space-y-4">
@@ -292,11 +291,12 @@ export default function HomeView() {
 
               {/* COMBO 2: 20-Pcs Micro-Ribbed Combo (৳650) - Limited Stock Spotlight ("রিফ্ট কম্বো") */}
               {(() => {
-                const cRibbedName = isBn ? (comboRibbedProd.name_bn || 'MO রিবড ২০ পিস স্পেশাল কম্বো') : (comboRibbedProd.name || 'MO Ribbed 20 Pcs Combo');
-                const cRibbedPrice = comboRibbedProd.offerPrice || comboRibbedProd.price || 650;
-                const cRibbedRegular = comboRibbedProd.regularPrice || 800;
-                const cRibbedSavings = cRibbedRegular > cRibbedPrice ? cRibbedRegular - cRibbedPrice : 150;
-                const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 5));
+                if (!comboRibbedProd) return null;
+                const cRibbedName = isBn ? (comboRibbedProd.name_bn || comboRibbedProd.name) : (comboRibbedProd.name || comboRibbedProd.name_bn);
+                const cRibbedPrice = comboRibbedProd.offerPrice || comboRibbedProd.price || 0;
+                const cRibbedRegular = comboRibbedProd.regularPrice || cRibbedPrice;
+                const cRibbedSavings = cRibbedRegular > cRibbedPrice ? cRibbedRegular - cRibbedPrice : 0;
+                const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 0));
                 const rLow = rStock > 0 && rStock <= 10;
 
                 return (

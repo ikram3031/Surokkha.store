@@ -17,6 +17,8 @@ productsRouter.post("/search", listProducts);
 
 // GET /api/v1/products/feed/meta-catalog.csv : Dynamic CSV feed for Meta Commerce Manager
 productsRouter.get("/feed/meta-catalog.csv", getMetaCatalogCsv);
+productsRouter.get("/feed/meta-catalog-store.csv", getMetaCatalogCsv);
+productsRouter.get("/feed/meta-catalog-shop.csv", getMetaCatalogCsv);
 
 productsRouter.get("/:identifier", getSingleProduct);
 

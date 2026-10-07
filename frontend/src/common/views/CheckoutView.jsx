@@ -972,7 +972,7 @@ export default function CheckoutView() {
 
               <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
                 {cartKeys.map((slug) => {
-                  const item = products[slug] || { name: slug, price: 400 };
+                  const item = products[slug] || { name: slug, price: 0 };
                   const qty = cart[slug];
                   return (
                     <div key={slug} className="flex items-center justify-between text-xs">

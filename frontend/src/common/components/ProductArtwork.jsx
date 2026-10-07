@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
 import { Skeleton } from './ui/skeleton';
 import { SITE_CONFIG } from '../config/siteConfig';
 
@@ -19,8 +18,7 @@ export default function ProductArtwork({
       (typeof productKey === 'string' && storeProducts[productKey.replace(/-condom$/, '')]) ||
       (typeof productKey === 'string' && storeProducts[`${productKey}-condom`]) ||
       (typeof productKey === 'string' && Object.values(storeProducts).find(item => item?.id === productKey || item?.slug === productKey || item?.did === productKey || item?._id === productKey)) ||
-      DEFAULT_PRODUCTS[productKey] ||
-      DEFAULT_PRODUCTS['mo-dotted']);
+      null);
 
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);

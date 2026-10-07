@@ -54,41 +54,17 @@ export default function ComboView() {
     }
   }, [comboList]);
 
-  const comboVariants = [
-    {
-      key: 'mo-dotted-condom',
-      name: isBn ? (products['mo-dotted-condom']?.name_bn || 'MO টেক্সচার্ড ম্যাট্রিক্স') : (products['mo-dotted-condom']?.name || 'MO Textured Matrix'),
-      tagline: isBn ? (products['mo-dotted-condom']?.tagline_bn || 'আইএসও সার্টিফাইড টেক্সচার্ড ল্যাটেক্স') : (products['mo-dotted-condom']?.tagline || 'ISO Certified Textured Latex'),
-      desc: isBn
-        ? (products['mo-dotted-condom']?.description_bn || 'বিশেষভাবে বিন্যস্ত মাইক্রো-টেক্সচার্ড ল্যাটেক্স ম্যাট্রিক্স যা শতভাগ কার্যকর গর্ভনিরোধক ও এসটিআই সংক্রমণ প্রতিরোধ নিশ্চিত করে।')
-        : (products['mo-dotted-condom']?.description || 'Micro-textured latex matrix engineered strictly under   standards for safe, dependable contraception.'),
-      features: isBn
-        ? (products['mo-dotted-condom']?.features_bn || ['আইএসও ৪০৭৪ সার্টিফাইড', 'নিউট্রাল পিএইচ লুব্রিকেশন', 'ইলেকট্রনিক পিনহোল টেস্টেড'])
-        : (products['mo-dotted-condom']?.features || ['  certified quality', 'Neutral pH lubrication', 'Electronically pinhole tested']),
-    },
-    {
-      key: 'mo-ultra-thin-condom',
-      name: isBn ? (products['mo-ultra-thin-condom']?.name_bn || 'MO আল্ট্রা থিন (০.০৪৫ মিমি)') : (products['mo-ultra-thin-condom']?.name || 'MO Ultra Thin (0.045mm)'),
-      tagline: isBn ? (products['mo-ultra-thin-condom']?.tagline_bn || '০.০৪৫ মিমি আল্ট্রা-থিন মেমব্রেন') : (products['mo-ultra-thin-condom']?.tagline || '0.045mm Ultra-Thin Membrane'),
-      desc: isBn
-        ? (products['mo-ultra-thin-condom']?.description_bn || 'অতি সূক্ষ্ম ও মসৃণ ০.০৪৫ মিমি মেডিক্যাল গ্রেড ল্যাটেক্স মেমব্রেন যা সর্বোচ্চ নমনীয়তার সাথে নির্ভরযোগ্য পরিবার পরিকল্পনা নিশ্চিত করে।')
-        : (products['mo-ultra-thin-condom']?.description || 'High-tensile 0.045mm medical latex formulated to provide reliable contraception without compromising durability.'),
-      features: isBn
-        ? (products['mo-ultra-thin-condom']?.features_bn || ['০.০৪৫ মিমি দেয়াল পুরুত্ব', 'স্মুথ সিলিকন লুব্রিকেশন', 'নিরাপদ পরিবার পরিকল্পনা'])
-        : (products['mo-ultra-thin-condom']?.features || ['0.045mm wall thickness', 'Smooth silicone lubrication', 'Reliable family planning']),
-    },
-    {
-      key: 'mo-ultra-ribbed-condom',
-      name: isBn ? (products['mo-ultra-ribbed-condom']?.name_bn || 'MO কনট্যুরড রিজ') : (products['mo-ultra-ribbed-condom']?.name || 'MO Contoured Ridges'),
-      tagline: isBn ? (products['mo-ultra-ribbed-condom']?.tagline_bn || 'শারীরবৃত্তীয় গ্রিপ ও আরামদায়ক ফিট') : (products['mo-ultra-ribbed-condom']?.tagline || 'Ergonomic Contoured Fit'),
-      desc: isBn
-        ? (products['mo-ultra-ribbed-condom']?.description_bn || 'ধারাবাহিক রিবড স্ট্রাকচার যা ব্যবহারের সময় পারফেক্ট গ্রিপ, আরাম ও পূর্ণাঙ্গ কন্ট্রাসেপ্টিভ সুরক্ষা প্রদান করে।')
-        : (products['mo-ultra-ribbed-condom']?.description || 'Sequential concentric ribbed construction engineered for ergonomic stability, durability, and reliable protection.'),
-      features: isBn
-        ? (products['mo-ultra-ribbed-condom']?.features_bn || ['শারীরবৃত্তীয় গ্রিপ স্ট্রাকচার', '৫২ মিমি আরামদায়ক ফিট', '১০০% ডাবল সিল টেস্টেড'])
-        : (products['mo-ultra-ribbed-condom']?.features || ['Ergonomic ribbed structure', '52mm comfortable fit', '100% double pinhole tested']),
-    }
-  ];
+  const comboVariants = productKeys
+    .map((k) => products[k])
+    .filter((p) => p && !p.isOutOfStock && p.categorySlug !== 'combo' && !p.slug?.includes('combo') && !p.name?.toLowerCase().includes('combo'))
+    .slice(0, 3)
+    .map((p) => ({
+      key: p.slug || p.id,
+      name: getLocalizedName(p),
+      tagline: getLocalizedTagline(p),
+      desc: getLocalizedDescription ? getLocalizedDescription(p) : (isBn ? (p.description_bn || p.description) : p.description),
+      features: Array.isArray(p.features) ? (isBn ? (p.features_bn || p.features) : p.features) : []
+    }));
 
   return (
     <div className="bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 min-h-screen text-slate-800 pb-16">
@@ -175,44 +151,46 @@ export default function ComboView() {
       </section>
 
       {/* 3. VARIANT BREAKDOWN (Clean Original Light Box Grid) */}
-      <section className="py-12 bg-white border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-10">
-            <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1 rounded-full border border-rose-200/60">
-              {isBn ? 'সিগনেচার টেক্সচার' : 'Signature Textures'}
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-slate-900 mt-2">
-              {isBn ? 'MO ভ্যারিয়েন্টের বিশেষত্বসমূহ' : 'Key Characteristics of Each MO Variant'}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">
-              {isBn ? 'প্রতিটি প্যাকে রয়েছে ১০টি ফ্যাক্টরি সিল করা প্রিমিয়াম ল্যাটেক্স কন্ট্রাসেপ্টিভ।' : 'Each individual pack contains 10 factory sealed electronic-tested contraceptives.'}
-            </p>
-          </div>
+      {comboVariants.length > 0 && (
+        <section className="py-12 bg-white border-y border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1 rounded-full border border-rose-200/60">
+                {isBn ? 'সিগনেচার টেক্সচার' : 'Signature Textures'}
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold text-slate-900 mt-2">
+                {isBn ? 'MO ভ্যারিয়েন্টের বিশেষত্বসমূহ' : 'Key Characteristics of Each MO Variant'}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                {isBn ? 'প্রতিটি প্যাকে রয়েছে ১০টি ফ্যাক্টরি সিল করা প্রিমিয়াম ল্যাটেক্স কন্ট্রাসেপ্টিভ।' : 'Each individual pack contains 10 factory sealed electronic-tested contraceptives.'}
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {comboVariants.map((item) => (
-              <div key={item.key} className="bg-[#faf7f8] border border-slate-200/90 rounded-2xl p-6 text-left space-y-3 hover:border-rose-300 transition">
-                <div className="w-16 h-20 rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center shadow-2xs">
-                  <ProductArtwork productKey={item.key} sizeClass="w-full h-full aspect-[4/5]" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {comboVariants.map((item) => (
+                <div key={item.key} className="bg-[#faf7f8] border border-slate-200/90 rounded-2xl p-6 text-left space-y-3 hover:border-rose-300 transition">
+                  <div className="w-16 h-20 rounded-xl bg-white border border-slate-200/80 p-1 flex items-center justify-center shadow-2xs">
+                    <ProductArtwork productKey={item.key} sizeClass="w-full h-full aspect-[4/5]" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-slate-900">{item.name}</h4>
+                    <p className="text-xs text-brand-700 font-semibold">{item.tagline}</p>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">{item.desc}</p>
+                  <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
+                    {item.features.map((feat, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-700">
+                        <span className="text-emerald-600 font-bold">✓</span>
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-base font-bold text-slate-900">{item.name}</h4>
-                  <p className="text-xs text-brand-700 font-semibold">{item.tagline}</p>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">{item.desc}</p>
-                <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
-                  {item.features.map((feat, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-700">
-                      <span className="text-emerald-600 font-bold">✓</span>
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 4. 100% DISCREET PACKAGING GUARANTEE */}
       <section className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -235,7 +213,11 @@ export default function ComboView() {
           <div className="pt-2 flex flex-col sm:flex-row justify-center gap-4">
             <button
               type="button"
-              onClick={() => buyNowDirect('ultra-thin-condoms-20pcs-combo')}
+              onClick={() => {
+                const targetKey = comboList[0]?.slug || comboList[0]?.id;
+                if (targetKey) buyNowDirect(targetKey);
+                else navigateTo('shop');
+              }}
               className="bg-brand-700 hover:bg-brand-600 text-white font-bold text-sm py-3.5 px-8 rounded-2xl shadow-md transition cursor-pointer active:scale-98"
             >
               {isBn ? 'অর্ডার করুন' : 'Order Now'}

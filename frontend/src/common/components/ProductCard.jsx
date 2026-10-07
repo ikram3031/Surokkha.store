@@ -17,7 +17,6 @@ export default function ProductCard({ productKey, className = '' }) {
   if (!prod) return null;
 
   const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
-  if (isOutOfStock) return null;
 
   const stockAmount = Number(prod.stockAmount != null ? prod.stockAmount : (prod.stock != null ? prod.stock : 50));
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;

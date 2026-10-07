@@ -267,7 +267,7 @@ export default function CartDrawer() {
               /* CART ITEMS LIST */
               <div className="space-y-3.5">
                 {cartKeys.map((slug) => {
-                  const item = products[slug] || { name: slug, price: 400, regularPrice: 400 };
+                  const item = products[slug] || { name: slug, price: 0, regularPrice: 0 };
                   const qty = cart[slug];
                   const lineTotal = item.price * qty;
 

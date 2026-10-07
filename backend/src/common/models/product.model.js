@@ -12,6 +12,7 @@ const productSchema = new Schema(
     chargeTax: { type: Boolean, default: false },
     taxRate: { type: Number, default: null },
     isActive: { type: Boolean, default: true, index: true },
+    excludeFromMetaCatalog: { type: Boolean, default: false, index: true },
     metaData: {
       metaTitle: { type: String, trim: true, default: "" },
       metaDescription: { type: String, trim: true, default: "" },

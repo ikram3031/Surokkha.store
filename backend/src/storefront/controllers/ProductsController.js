@@ -80,7 +80,10 @@ export const getSingleProduct = async (req, res, next) => {
 // Dynamically generates and returns a CSV file for Meta Commerce Manager Catalog Feed
 export const getMetaCatalogCsv = async (req, res, next) => {
   try {
-    const products = await ProductModel.find({ isActive: true }).lean();
+    const products = await ProductModel.find({
+      isActive: true,
+      excludeFromMetaCatalog: { $ne: true }
+    }).lean();
     
     // Set headers for CSV download
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');

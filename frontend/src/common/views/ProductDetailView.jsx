@@ -40,20 +40,9 @@ export default function ProductDetailView() {
     (selectedSlug && products[selectedSlug.replace(/-condom$/, '')]) ||
     (selectedSlug && products[`${selectedSlug}-condom`]) ||
     (selectedSlug && Object.values(products).find(p => p.slug === selectedSlug || p.did === selectedSlug || p.id === selectedSlug || p._id === selectedSlug)) ||
-    products[productKeys[0]] || 
-    Object.values(products)[0] || {
-    id: 'mo-dotted-condom',
-    name: 'MO Dotted',
-    brand: 'MO',
-    origin: 'Authentic MO',
-    price: 350,
-    regularPrice: 400,
-    offerPrice: 350,
-    tagline: 'Distinct raised matrix for heightened sensory texture',
-    description: 'Engineered with an array of delicately raised circular micropores.',
-    features: ['Precision raised matrix texture', 'Certified safety standard', 'Neutral pH silicone lubrication'],
-    badgeColor: 'bg-brand-50 text-brand-800 border-brand-200'
-  };
+    (productKeys.length > 0 && products[productKeys[0]]) || 
+    (Object.values(products).length > 0 && Object.values(products)[0]) || 
+    null;
 
   const isOutOfStock = Boolean(product?.isOutOfStock || product?.stockStatus === 'outofstock' || product?.stockStatus === 'out_of_stock' || product?.stockAmount === 0);
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
@@ -141,6 +130,29 @@ export default function ProductDetailView() {
 
   if (isLoadingProducts && (!product || !product.id)) {
     return <ProductDetailSkeleton />;
+  }
+
+  if (!product) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-6">
+        <div className="w-20 h-20 mx-auto rounded-full bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center text-4xl shadow-inner">
+          🔍
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900">
+          {isBn ? 'পণ্যটি খুঁজে পাওয়া যায়নি' : 'Product Not Found'}
+        </h2>
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => navigateTo('shop')}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 text-white font-bold text-xs sm:text-sm hover:bg-slate-800 transition cursor-pointer shadow-md"
+          >
+            <span>{isBn ? 'সকল পণ্য দেখুন' : 'Browse Products'}</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!isLoadingProducts && isOutOfStock) {

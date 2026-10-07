@@ -62,7 +62,7 @@ export default function ConfirmationView() {
           <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">{t('confirmation.ordered_items')}</h4>
           <div className="space-y-2.5">
             {Object.keys(lastOrder.items).map((slug) => {
-              const p = products[slug] || { name: slug, price: 400 };
+              const p = products[slug] || { name: slug, price: 0 };
               const q = lastOrder.items[slug];
               return (
                 <div key={slug} className="flex justify-between items-baseline text-xs py-1 border-b border-slate-50">
