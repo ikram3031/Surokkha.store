@@ -454,6 +454,53 @@ export const AppSidebar = ({ ...props }) => {
             </SidebarMenuItem>
           )}
 
+          {isAllowed("items") && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={pathname.startsWith("/dashboard/items")}
+                tooltip={t("nav.items", "Items")}
+                onClick={() => toggleMenu("items")}
+                className="cursor-pointer flex items-center justify-between w-full"
+              >
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-emerald-500" />
+                  <span>{t("nav.items", "Items")}</span>
+                </div>
+                <ChevronRight
+                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
+                    openMenu === "items" ? "rotate-90 text-primary" : ""
+                  }`}
+                />
+              </SidebarMenuButton>
+              {openMenu === "items" && (
+                <SidebarMenuSub>
+                  {isAllowed("items.new") && (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        isActive={pathname === "/dashboard/items/new"}
+                        render={<Link to="/dashboard/items/new" />}
+                      >
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span>{t("nav.add_item", "Add Item")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )}
+                  {isAllowed("items.list") && (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        isActive={pathname === "/dashboard/items" || pathname === "/dashboard/items/list"}
+                        render={<Link to="/dashboard/items" />}
+                      >
+                        <ListOrdered className="h-3.5 w-3.5" />
+                        <span>{t("nav.item_list", "Items List")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )}
+                </SidebarMenuSub>
+              )}
+            </SidebarMenuItem>
+          )}
+
           {isAllowed("settings") && (
             <SidebarMenuItem>
               <SidebarMenuButton

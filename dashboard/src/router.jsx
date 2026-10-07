@@ -43,6 +43,11 @@ import Coupons from './pages/dashboard/products/coupons';
 import SizeCharts from './pages/dashboard/products/sizeCharts';
 import Categories from './pages/dashboard/products/categories';
 import Brands from './pages/dashboard/products/brands';
+
+// Items
+import ItemsList from './pages/dashboard/items/itemsList';
+import AddNewItem from './pages/dashboard/items/addNewItem';
+import ItemDetails from './pages/dashboard/items/itemDetails';
 import Attributes from './pages/dashboard/products/attributes';
 import EditAttribute from './pages/dashboard/products/editAttribute';
 
@@ -468,6 +473,43 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="products.list">
                 <ProductDetails />
+              </RoleGuard>
+            ),
+          },
+        ],
+      },
+      {
+        path: 'items',
+        children: [
+          {
+            path: '',
+            element: (
+              <RoleGuard menuKey="items.list">
+                <ItemsList />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'list',
+            element: (
+              <RoleGuard menuKey="items.list">
+                <ItemsList />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'new',
+            element: (
+              <RoleGuard menuKey="items.new">
+                <AddNewItem />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <RoleGuard menuKey="items.list">
+                <ItemDetails />
               </RoleGuard>
             ),
           },

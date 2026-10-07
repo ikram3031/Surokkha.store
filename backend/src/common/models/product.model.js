@@ -9,8 +9,7 @@ const productSchema = new Schema(
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     description: { type: String, required: true, trim: true },
     longDescription: { type: String, trim: true },
-    chargeTax: { type: Boolean, default: false },
-    taxRate: { type: Number, default: null },
+
     isActive: { type: Boolean, default: true, index: true },
     excludeFromMetaCatalog: { type: Boolean, default: false, index: true },
     metaData: {
@@ -62,13 +61,7 @@ const productSchema = new Schema(
       },
     ],
 
-    // Filtering, Season & Notes
-    season: [{
-      type: String,
-      enum: ["Summer", "Winter", "Spring", "Autumn", "All-Season"],
-    }],
     tags: [{ type: String, trim: true, lowercase: true }],
-    notes: [{ type: String, trim: true }],
 
     // SEO Meta Data
     metaData: {
@@ -92,7 +85,6 @@ const productSchema = new Schema(
     // Images
     imageUrl: { type: String, required: true, trim: true },
     thumbnailUrl: { type: String, trim: true }, // Product thumbnail image
-    images: [{ type: String, trim: true }],
 
     stockStatus: {
       type: String,

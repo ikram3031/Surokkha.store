@@ -42,6 +42,7 @@ backups/
 **/backups/
 /data/
 backend/data/
+exports/
 *.gz
 *.archive
 *.dump
