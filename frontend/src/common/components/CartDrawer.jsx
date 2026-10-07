@@ -54,8 +54,25 @@ export default function CartDrawer() {
   const hasComboInCart = cartKeys.some(
     (k) => k.includes('combo') || k === 'variety-condoms-30pcs-combo' || k === 'combo-26'
   );
-  const comboProd = products['variety-condoms-30pcs-combo'] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['combo-26'];
+  
+  const comboProd = Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+    const is30 = (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'));
+    return isCombo && is30;
+  }) || Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+  }) || products['variety-condoms-30pcs-combo'] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['combo-26'];
+
   const isComboInStock = Boolean(comboProd && !comboProd.isOutOfStock && comboProd.stockStatus !== 'outofstock' && comboProd.stockStatus !== 'out_of_stock' && comboProd.stockAmount !== 0);
+  const comboOfferPrice = Number(comboProd?.offerPrice || comboProd?.price || 0);
+  const comboRegularPrice = Number(comboProd?.regularPrice || comboOfferPrice);
+  const comboSavings = comboRegularPrice > comboOfferPrice ? comboRegularPrice - comboOfferPrice : 0;
 
   const freeDeliveryThreshold = 1000;
   const progressPercent = Math.min(100, Math.round((totals.subtotal / freeDeliveryThreshold) * 100));
@@ -259,7 +276,11 @@ export default function CartDrawer() {
                     }}
                     className="w-full bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300/80 text-xs sm:text-sm font-bold py-3 px-4 rounded-2xl transition cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <span>🔥 {isBn ? 'মেগা কম্বো প্যাক যোগ করুন (৳৯০০)' : 'Add Mega Combo Pack (৳900)'}</span>
+                    <span>
+                      🔥 {isBn 
+                        ? (comboOfferPrice > 0 ? `মেগা কম্বো প্যাক যোগ করুন (${formatPrice(comboOfferPrice)})` : 'মেগা কম্বো প্যাক যোগ করুন') 
+                        : (comboOfferPrice > 0 ? `Add Mega Combo Pack (${formatPrice(comboOfferPrice)})` : 'Add Mega Combo Pack')}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -383,17 +404,23 @@ export default function CartDrawer() {
                       <span className="text-[10px] font-bold bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded uppercase">
                         🔥 {isBn ? 'মেগা সেভার' : 'Mega Saver'}
                       </span>
-                      <span className="text-[11px] text-amber-800 font-extrabold">৳৩০০ সাশ্রয়</span>
+                      {comboSavings > 0 && (
+                        <span className="text-[11px] text-amber-800 font-extrabold">{formatPrice(comboSavings)} {isBn ? 'সাশ্রয়' : 'Savings'}</span>
+                      )}
                     </div>
                     <p className="text-xs text-amber-950 font-medium leading-tight">
-                      {isBn ? '৩টি MO ভ্যারিয়েন্ট একসাথে নিন মাত্র ৳৯০০ টাকায়!' : 'Get 3 MO Packs Together for only ৳900!'}
+                      {isBn 
+                        ? (comboOfferPrice > 0 ? `৩টি MO ভ্যারিয়েন্ট একসাথে নিন মাত্র ${formatPrice(comboOfferPrice)} টাকায়!` : '৩টি MO ভ্যারিয়েন্ট একসাথে নিন বিশেষ ছাড়ে!') 
+                        : (comboOfferPrice > 0 ? `Get 3 MO Packs Together for only ${formatPrice(comboOfferPrice)}!` : 'Get 3 MO Packs Together with Special Savings!')}
                     </p>
                     <button
                       type="button"
-                      onClick={() => addComboToCart()}
+                      onClick={() => addComboToCart(comboProd?.slug || comboProd?.id)}
                       className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold py-2 px-3 rounded-xl transition cursor-pointer shadow-xs active:scale-98"
                     >
-                      {isBn ? 'কম্বো যোগ করুন (৳৯০০)' : 'Add 3-Pack Combo (৳900)'}
+                      {isBn 
+                        ? (comboOfferPrice > 0 ? `কম্বো যোগ করুন (${formatPrice(comboOfferPrice)})` : 'কম্বো যোগ করুন') 
+                        : (comboOfferPrice > 0 ? `Add 3-Pack Combo (${formatPrice(comboOfferPrice)})` : 'Add 3-Pack Combo')}
                     </button>
                   </div>
                 )}

@@ -22,17 +22,13 @@ export default function ProductCard({ productKey, className = '' }) {
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
   const currentCartQty = cart[productKey] || 0;
-  const rawOffer = Number(prod.offerPrice || prod.offer_price || prod.sale_price || prod.salePrice || 0);
-  const rawRegular = Number(prod.regularPrice || prod.regular_price || 0);
-  const rawPrice = Number(prod.price || 0);
+  const currentRegularPrice = Number(prod.price != null ? prod.price : (prod.regularPrice || 0));
+  const hasOfferPrice = prod.offerPrice != null && !isNaN(Number(prod.offerPrice)) && Number(prod.offerPrice) > 0 && Number(prod.offerPrice) < currentRegularPrice;
+  const currentOfferPrice = hasOfferPrice ? Number(prod.offerPrice) : currentRegularPrice;
 
-  const currentRegularPrice = Math.max(rawRegular, (rawOffer > 0 && rawPrice > rawOffer) ? rawPrice : 0, rawPrice > 0 ? rawPrice : 0);
-  const candidateSelling = [rawOffer, rawPrice].map(Number).filter(v => !isNaN(v) && v > 0);
-  const currentOfferPrice = candidateSelling.length > 0 ? Math.min(...candidateSelling) : 0;
-
-  const hasDiscount = currentRegularPrice > currentOfferPrice && currentOfferPrice > 0;
+  const hasDiscount = hasOfferPrice;
   const savingsAmount = hasDiscount ? currentRegularPrice - currentOfferPrice : 0;
-  const discountPercent = hasDiscount ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
+  const discountPercent = hasDiscount && currentRegularPrice > 0 ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
   const formatPrice = (val) => {
     const num = Number(val) || 0;
@@ -133,7 +129,7 @@ export default function ProductCard({ productKey, className = '' }) {
           <div className="absolute top-2 right-2 z-20 pointer-events-none select-none">
             <span className="inline-flex items-center gap-1 bg-amber-500 text-slate-950 text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-md border border-amber-300 tracking-tight">
               <span>⭐</span>
-              <span>{isBn ? 'বেস্ট ভ্যালু (৳৯০০)' : 'Best Value (৳900)'}</span>
+              <span>{isBn ? (currentOfferPrice > 0 ? `বেস্ট ভ্যালু (${formatPrice(currentOfferPrice)})` : 'বেস্ট ভ্যালু') : (currentOfferPrice > 0 ? `Best Value (${formatPrice(currentOfferPrice)})` : 'Best Value')}</span>
             </span>
           </div>
         ) : is20Pcs ? (

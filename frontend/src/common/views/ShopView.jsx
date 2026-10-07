@@ -184,10 +184,11 @@ export default function ShopView() {
       // Price filter helper to get effective selling price
       const getSellingPrice = (p) => {
         if (!p) return 0;
-        const candidates = [p.offerPrice, p.offer_price, p.sale_price, p.salePrice, p.price]
-          .map(Number)
-          .filter((v) => !isNaN(v) && v > 0);
-        return candidates.length > 0 ? Math.min(...candidates) : 0;
+        const reg = Number(p.price != null ? p.price : (p.regularPrice || 0));
+        if (p.offerPrice != null && !isNaN(Number(p.offerPrice)) && Number(p.offerPrice) > 0 && Number(p.offerPrice) < reg) {
+          return Number(p.offerPrice);
+        }
+        return reg;
       };
 
       const price = getSellingPrice(prod);
@@ -206,10 +207,11 @@ export default function ShopView() {
       const pB = products[b];
       const getSellingPrice = (p) => {
         if (!p) return 0;
-        const candidates = [p.offerPrice, p.offer_price, p.sale_price, p.salePrice, p.price]
-          .map(Number)
-          .filter((v) => !isNaN(v) && v > 0);
-        return candidates.length > 0 ? Math.min(...candidates) : 0;
+        const reg = Number(p.price != null ? p.price : (p.regularPrice || 0));
+        if (p.offerPrice != null && !isNaN(Number(p.offerPrice)) && Number(p.offerPrice) > 0 && Number(p.offerPrice) < reg) {
+          return Number(p.offerPrice);
+        }
+        return reg;
       };
       const priceA = getSellingPrice(pA);
       const priceB = getSellingPrice(pB);

@@ -349,8 +349,12 @@ export function useTranslation() {
   };
 
   const formatPrice = (price) => {
-    if (price === undefined || price === null) return '';
-    return `৳${price}`;
+    if (price === undefined || price === null || price === '') return '';
+    const num = Number(price);
+    if (isNaN(num)) return `৳${price}`;
+    if (!isBn) return `৳${num}`;
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return '৳' + String(num).replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
   };
 
   const formatNumber = (num) => {

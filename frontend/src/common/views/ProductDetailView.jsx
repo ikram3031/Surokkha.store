@@ -48,17 +48,13 @@ export default function ProductDetailView() {
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
-  const rawOffer = Number(product?.offerPrice || product?.offer_price || product?.sale_price || product?.salePrice || 0);
-  const rawRegular = Number(product?.regularPrice || product?.regular_price || 0);
-  const rawPrice = Number(product?.price || 0);
+  const currentRegularPrice = Number(product?.price != null ? product.price : (product?.regularPrice || 0));
+  const hasOfferPrice = product?.offerPrice != null && !isNaN(Number(product.offerPrice)) && Number(product.offerPrice) > 0 && Number(product.offerPrice) < currentRegularPrice;
+  const currentOfferPrice = hasOfferPrice ? Number(product.offerPrice) : currentRegularPrice;
 
-  const currentRegularPrice = Math.max(rawRegular, (rawOffer > 0 && rawPrice > rawOffer) ? rawPrice : 0, rawPrice > 0 ? rawPrice : 0);
-  const candidateSelling = [rawOffer, rawPrice].map(Number).filter(v => !isNaN(v) && v > 0);
-  const currentOfferPrice = candidateSelling.length > 0 ? Math.min(...candidateSelling) : 0;
-
-  const hasDiscount = currentRegularPrice > currentOfferPrice && currentOfferPrice > 0;
+  const hasDiscount = hasOfferPrice;
   const savingsAmount = hasDiscount ? currentRegularPrice - currentOfferPrice : 0;
-  const discountPercent = hasDiscount ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
+  const discountPercent = hasDiscount && currentRegularPrice > 0 ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
   const localizedName = getLocalizedName(product);
   const localizedTagline = getLocalizedTagline(product);
@@ -460,28 +456,41 @@ export default function ProductDetailView() {
           </div>
 
           {/* Optional Subtle Combo Recommendation */}
-          {!product.slug?.includes('combo') && (
-            <div className="pt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
-              <span className="font-medium text-slate-500">
-                {isBn ? '💡 বেশি সাশ্রয়ে কম্বো প্যাক খুঁজছেন?' : '💡 Looking for value combo packs?'}
-              </span>
-              <button
-                type="button"
-                onClick={() => openProduct('mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo')}
-                className="text-brand-700 hover:text-brand-900 font-bold underline cursor-pointer"
-              >
-                {isBn ? 'রিবড ২০ পিস (৳৬৫০)' : 'Ribbed 20 Pcs (৳650)'}
-              </button>
-              <span className="text-slate-300">•</span>
-              <button
-                type="button"
-                onClick={() => openProduct('mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo')}
-                className="text-brand-700 hover:text-brand-900 font-bold underline cursor-pointer"
-              >
-                {isBn ? '৩০ পিস মেগা কম্বো (৳৯০০)' : '30 Pcs Mega Combo (৳900)'}
-              </button>
-            </div>
-          )}
+          {!product.slug?.includes('combo') && (() => {
+            const activeCombos = Object.values(products).filter(p => {
+              if (!p || p.isActive === false) return false;
+              const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+              if (isOut) return false;
+              return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+            }).slice(0, 2);
+
+            if (activeCombos.length === 0) return null;
+
+            return (
+              <div className="pt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
+                <span className="font-medium text-slate-500">
+                  {isBn ? '💡 বেশি সাশ্রয়ে কম্বো প্যাক খুঁজছেন?' : '💡 Looking for value combo packs?'}
+                </span>
+                {activeCombos.map((cProd, idx) => {
+                  const cKey = cProd.slug || cProd.id;
+                  const cPrice = cProd.offerPrice || cProd.price;
+                  const cName = isBn ? (cProd.name_bn || cProd.name) : cProd.name;
+                  return (
+                    <React.Fragment key={cKey}>
+                      {idx > 0 && <span className="text-slate-300">•</span>}
+                      <button
+                        type="button"
+                        onClick={() => openProduct(cKey)}
+                        className="text-brand-700 hover:text-brand-900 font-bold underline cursor-pointer"
+                      >
+                        {cPrice ? `${cName} (${formatPrice(cPrice)})` : cName}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
         </div>
       </div>

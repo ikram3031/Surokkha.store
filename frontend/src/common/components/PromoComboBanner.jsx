@@ -10,8 +10,23 @@ export default function PromoComboBanner() {
   const products = useStore((state) => state.products);
   const { isBn, formatPrice, formatNumber, getLocalizedName } = useTranslation();
 
-  const comboKey = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
-  const comboProd = products[comboKey] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
+  // Dynamically detect active 30-pcs or primary combo product
+  const activeCombo = Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+    const is30 = (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'));
+    return isCombo && is30;
+  }) || Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+  });
+
+  const comboKey = activeCombo?.slug || activeCombo?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const comboProd = activeCombo || products[comboKey] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
 
   if (!comboProd || comboProd.isActive === false || comboProd.isOutOfStock || comboProd.stockStatus === 'outofstock' || comboProd.stockStatus === 'out_of_stock' || comboProd.stockAmount === 0) {
     return null;
@@ -21,10 +36,10 @@ export default function PromoComboBanner() {
   const stockAmount = Number(comboProd.stockAmount != null ? comboProd.stockAmount : (comboProd.stock != null ? comboProd.stock : 50));
   const isLowStock = stockAmount > 0 && stockAmount <= 10;
 
-  const currentOfferPrice = comboProd.offerPrice || comboProd.price || 900;
-  const currentRegularPrice = comboProd.regularPrice || 1200;
-  const savingsAmount = currentRegularPrice > currentOfferPrice ? currentRegularPrice - currentOfferPrice : 300;
-  const savingsPercent = Math.round((savingsAmount / currentRegularPrice) * 100);
+  const currentOfferPrice = Number(comboProd.offerPrice || comboProd.price || 0);
+  const currentRegularPrice = Number(comboProd.regularPrice || currentOfferPrice);
+  const savingsAmount = currentRegularPrice > currentOfferPrice ? currentRegularPrice - currentOfferPrice : 0;
+  const savingsPercent = currentRegularPrice > 0 ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;

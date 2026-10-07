@@ -12,7 +12,24 @@ const HeroSlider = () => {
 
   const navigateTo = useStore((state) => state.navigateTo);
   const navigateToCombo = useStore((state) => state.navigateToCombo);
-  const { t, isBn } = useTranslation();
+  const products = useStore((state) => state.products);
+  const { t, isBn, formatPrice } = useTranslation();
+
+  const combo30Prod = Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+    const is30 = (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'));
+    return isCombo && is30;
+  }) || Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+  });
+
+  const comboPrice = combo30Prod ? (combo30Prod.offerPrice || combo30Prod.price) : null;
 
   const isStore = Boolean(SITE_CONFIG.isStore);
   const videoUrl = `${API_BASE_URL}/uploads/assets/promo-video.mp4`;
@@ -98,14 +115,14 @@ const HeroSlider = () => {
               <>
                 সেরা ৩টি ভ্যারিয়েন্টের ৩০ পিস কম্বো প্যাকটি নিন বিশেষ ছাড়ে —{' '}
                 <span className={`${isStore ? 'text-rose-700' : 'text-amber-300'} font-extrabold underline decoration-rose-500/80 decoration-2 underline-offset-4`}>
-                  মাত্র ৯০০ টাকায়
+                  {comboPrice ? `মাত্র ${formatPrice(comboPrice)}` : 'সেরা সাশ্রয়ী মূল্যে'}
                 </span>
               </>
             ) : (
               <>
                 Get the exclusive 30-piece combo pack of the top 3 variants at a special discount —{' '}
                 <span className={`${isStore ? 'text-rose-700' : 'text-amber-300'} font-extrabold underline decoration-rose-500/80 decoration-2 underline-offset-4`}>
-                  Only ৳900
+                  {comboPrice ? `Only ${formatPrice(comboPrice)}` : 'Special Value Deal'}
                 </span>
               </>
             )}
@@ -115,10 +132,10 @@ const HeroSlider = () => {
             <button
               type="button"
               onClick={navigateToCombo}
-              aria-label={t('hero.offers_btn', '🔥 ৩০ পিস কম্বো অর্ডার করুন (৳৯০০)')}
+              aria-label={isBn ? (comboPrice ? `🔥 ৩০ পিস কম্বো (${formatPrice(comboPrice)})` : '🔥 ৩০ পিস কম্বো') : (comboPrice ? `🔥 30pcs Combo (${formatPrice(comboPrice)})` : '🔥 30pcs Combo')}
               className="w-full sm:w-64 md:w-72 bg-gradient-to-r from-[#F43F5E] via-[#E11D48] to-[#BE123C] hover:from-[#FB7185] hover:to-[#9F1239] text-white font-bold text-sm sm:text-base px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-2xl hover:shadow-rose-600/50 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-rose-400/50 text-center animate-whatsapp-vibrate ring-2 ring-rose-500/40"
             >
-              <span>{t('hero.offers_btn', '🔥 ৩০ পিস কম্বো অর্ডার করুন (৳৯০০)')}</span>
+              <span>{isBn ? (comboPrice ? `🔥 ৩০ পিস কম্বো (${formatPrice(comboPrice)})` : '🔥 ৩০ পিস কম্বো') : (comboPrice ? `🔥 30pcs Combo (${formatPrice(comboPrice)})` : '🔥 30pcs Combo')}</span>
             </button>
 
             <button

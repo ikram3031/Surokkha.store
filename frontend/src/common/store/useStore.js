@@ -417,29 +417,32 @@ export const useStore = create((set, get) => ({
         combinedRaw.forEach((p, index) => {
           const key = p.slug || p.id || p.did || `${p.itemType || 'entity'}-${index + 1}`;
 
-          // Robust price resolution: Extract regular base price (M.R.P.) and discounted offer price
-          const regularCandidates = [p.regularPrice, p.regular_price, p.price]
-            .map(Number)
-            .filter((v) => !isNaN(v) && v > 0);
-          const offerCandidates = [p.offerPrice, p.offer_price, p.sale_price, p.salePrice]
-            .map(Number)
-            .filter((v) => !isNaN(v) && v > 0);
+          // Strict schema mapping for pricing (Product model schema: price and offerPrice)
+          // 1. Regular base price is p.price (or p.regularPrice)
+          const basePrice = (p.price != null && !isNaN(Number(p.price)) && Number(p.price) > 0)
+            ? Number(p.price)
+            : (p.regularPrice != null && !isNaN(Number(p.regularPrice)) && Number(p.regularPrice) > 0)
+            ? Number(p.regularPrice)
+            : (p.regular_price != null && !isNaN(Number(p.regular_price)) && Number(p.regular_price) > 0)
+            ? Number(p.regular_price)
+            : 0;
 
-          let resolvedRegularPrice = regularCandidates.length > 0 ? Math.max(...regularCandidates) : 0;
-          let resolvedOfferPrice = offerCandidates.length > 0 ? Math.min(...offerCandidates) : null;
-
-          if (resolvedOfferPrice && resolvedOfferPrice >= resolvedRegularPrice) {
-            const allPositive = [...regularCandidates, ...offerCandidates];
-            resolvedRegularPrice = Math.max(...allPositive);
-            const lowerOffers = allPositive.filter((v) => v < resolvedRegularPrice);
-            if (lowerOffers.length > 0) {
-              resolvedOfferPrice = Math.min(...lowerOffers);
-            }
+          // 2. Offer price is ONLY valid when p.offerPrice is explicitly set (and > 0)
+          let offerPriceVal = null;
+          if (p.offerPrice != null && !isNaN(Number(p.offerPrice)) && Number(p.offerPrice) > 0) {
+            offerPriceVal = Number(p.offerPrice);
+          } else if (p.offerPrice === null || p.offerPrice === 0) {
+            // Explicitly set to null/none in dashboard
+            offerPriceVal = null;
           }
 
-          const resolvedPrice = (resolvedOfferPrice && resolvedOfferPrice < resolvedRegularPrice)
+          let resolvedRegularPrice = basePrice;
+          let resolvedOfferPrice = offerPriceVal;
+
+          // If offerPrice is set and lower than base price, it is a discounted price
+          const resolvedPrice = (resolvedOfferPrice != null && resolvedOfferPrice > 0 && resolvedOfferPrice < resolvedRegularPrice)
             ? resolvedOfferPrice
-            : (resolvedOfferPrice || resolvedRegularPrice);
+            : resolvedRegularPrice;
 
           const rawPrimary = p.imageUrl || p.image_url || p.thumbnailUrl || p.thumbnail_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null) || null;
           const primaryImg = resolveUrl(rawPrimary);
@@ -829,10 +832,27 @@ export const useStore = create((set, get) => ({
     }
   },
 
-  addComboToCart: () => {
-    const { products } = get();
-    const comboKey = 'variety-condoms-30pcs-combo';
-    const comboProd = products[comboKey] || products['combo-26'] || { id: comboKey, name: 'MO Ultimate 3-in-1 Latex Contraceptive (30 Pcs Combo)', price: 900, regularPrice: 1200 };
+  addComboToCart: (preferredKey = null) => {
+    const { products, productKeys } = get();
+    // Resolve dynamic combo product
+    let targetComboKey = preferredKey;
+    if (!targetComboKey || !products[targetComboKey]) {
+      const activeCombo = Object.values(products).find(p => {
+        if (!p || p.isActive === false) return false;
+        const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+        if (isOut) return false;
+        const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+        return isCombo;
+      });
+      targetComboKey = activeCombo?.slug || activeCombo?.id || preferredKey || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+    }
+
+    const comboProd = products[targetComboKey] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
+    if (!comboProd) {
+      const isBn = get().language === 'bn';
+      get().showToast(isBn ? `দুঃখিত, কোনো কম্বো প্যাক পাওয়া যায়নি!` : `Sorry, no combo pack found!`);
+      return;
+    }
 
     const isOutOfStock = Boolean(comboProd.isOutOfStock || comboProd.stockStatus === 'outofstock' || comboProd.stockStatus === 'out_of_stock' || comboProd.stockAmount === 0);
     if (isOutOfStock) {
@@ -841,10 +861,11 @@ export const useStore = create((set, get) => ({
       return;
     }
 
+    const resolvedKey = comboProd.slug || comboProd.id || targetComboKey;
     set((state) => ({
       cart: {
         ...state.cart,
-        [comboKey]: (state.cart[comboKey] || 0) + 1,
+        [resolvedKey]: (state.cart[resolvedKey] || 0) + 1,
       }
     }));
     trackAddToCart(comboProd, 1);

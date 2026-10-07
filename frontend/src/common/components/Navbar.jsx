@@ -12,7 +12,29 @@ const Navbar = () => {
   const openProduct = useStore((state) => state.openProduct);
   const toggleCartDrawer = useStore((state) => state.toggleCartDrawer);
   const cart = useStore((state) => state.cart);
-  const { t } = useTranslation();
+  const products = useStore((state) => state.products);
+  const { t, isBn, formatPrice } = useTranslation();
+
+  const combo30Prod = Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+    const is30 = (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'));
+    return isCombo && is30;
+  }) || Object.values(products).find(p => {
+    if (!p || p.isActive === false) return false;
+    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+    if (isOut) return false;
+    return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+  });
+
+  const comboKey = combo30Prod?.slug || combo30Prod?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const comboPrice = combo30Prod ? (combo30Prod.offerPrice || combo30Prod.price) : null;
+  const comboRegularPrice = combo30Prod ? (combo30Prod.regularPrice || combo30Prod.price) : null;
+  const comboDiscountPct = (comboRegularPrice && comboPrice && comboRegularPrice > comboPrice)
+    ? Math.round(((comboRegularPrice - comboPrice) / comboRegularPrice) * 100)
+    : 0;
   
   const isStore = Boolean(SITE_CONFIG.isStore);
   const logoImg = logoDark;
@@ -31,15 +53,21 @@ const Navbar = () => {
         <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] items-center whitespace-nowrap">
           <div className="flex items-center shrink-0">
             <div 
-              onClick={(e) => { e.stopPropagation(); openProduct('variety-condoms-30pcs-combo'); }}
+              onClick={(e) => { e.stopPropagation(); openProduct(comboKey); }}
               className="flex items-center gap-2 sm:gap-2.5 px-6 sm:px-10 cursor-pointer hover:opacity-90 transition-opacity"
             >
               <span className={`inline-flex items-center gap-1 font-bold text-[11px] sm:text-xs ${isStore ? 'text-rose-700' : 'text-amber-400'}`}>
                 <span>🔥</span>
-                <span>{t('navbar.combo_banner_lead', '২৫% স্পেশাল ডিসকাউন্ট!')}</span>
+                <span>
+                  {comboDiscountPct > 0 
+                    ? (isBn ? `${comboDiscountPct}% স্পেশাল ডিসকাউন্ট!` : `${comboDiscountPct}% Special Discount!`)
+                    : t('navbar.combo_banner_lead', 'স্পেশাল ডিসকাউন্ট!')}
+                </span>
               </span>
               <span className={`font-semibold text-[11px] sm:text-xs ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
-                {t('navbar.combo_banner_text', '৩০ পিস MO কম্বো প্যাক নিন মাত্র ৯০০ টাকায়')}
+                {isBn 
+                  ? (comboPrice ? `৩০ পিস MO কম্বো প্যাক নিন মাত্র ${formatPrice(comboPrice)} টাকায়` : '৩০ পিস MO কম্বো প্যাক নিন বিশেষ ছাড়ে') 
+                  : (comboPrice ? `Get 30 Pcs MO Combo Pack for only ${formatPrice(comboPrice)}` : 'Get 30 Pcs MO Combo Pack with Special Savings')}
               </span>
               <span className={`inline-flex items-center gap-0.5 font-bold text-[11px] sm:text-xs underline underline-offset-4 transition-colors ${
                 isStore
@@ -57,10 +85,10 @@ const Navbar = () => {
             >
               <span className={`inline-flex items-center gap-1 font-bold text-[11px] sm:text-xs ${isStore ? 'text-amber-700' : 'text-amber-300'}`}>
                 <span>🎉</span>
-                <span>{t('navbar.monthly_banner_lead', 'মাসব্যাপী অফার!')}</span>
+                <span>{t('navbar.monthly_banner_lead', 'বিশেষ অফার!')}</span>
               </span>
               <span className={`font-semibold text-[11px] sm:text-xs ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
-                {t('navbar.monthly_banner_text', 'আমাদের সকল পণ্যে সেপ্টেম্বর মাসব্যাপী ডিসকাউন্ট পাচ্ছেন')}
+                {t('navbar.monthly_banner_text', 'আমাদের সকল পণ্যে বিশেষ ছাড় উপভোগ করুন')}
               </span>
               <span className={`inline-flex items-center gap-0.5 font-bold text-[11px] sm:text-xs underline underline-offset-4 transition-colors ${
                 isStore
@@ -75,15 +103,21 @@ const Navbar = () => {
 
           <div className="flex items-center shrink-0" aria-hidden="true">
             <div 
-              onClick={(e) => { e.stopPropagation(); openProduct('variety-condoms-30pcs-combo'); }}
+              onClick={(e) => { e.stopPropagation(); openProduct(comboKey); }}
               className="flex items-center gap-2 sm:gap-2.5 px-6 sm:px-10 cursor-pointer hover:opacity-90 transition-opacity"
             >
               <span className={`inline-flex items-center gap-1 font-bold text-[11px] sm:text-xs ${isStore ? 'text-rose-700' : 'text-amber-400'}`}>
                 <span>🔥</span>
-                <span>{t('navbar.combo_banner_lead', '২৫% স্পেশাল ডিসকাউন্ট!')}</span>
+                <span>
+                  {comboDiscountPct > 0 
+                    ? (isBn ? `${comboDiscountPct}% স্পেশাল ডিসকাউন্ট!` : `${comboDiscountPct}% Special Discount!`)
+                    : t('navbar.combo_banner_lead', 'স্পেশাল ডিসকাউন্ট!')}
+                </span>
               </span>
               <span className={`font-semibold text-[11px] sm:text-xs ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
-                {t('navbar.combo_banner_text', '৩০ পিস MO কম্বো প্যাক নিন মাত্র ৯০০ টাকায়')}
+                {isBn 
+                  ? (comboPrice ? `৩০ পিস MO কম্বো প্যাক নিন মাত্র ${formatPrice(comboPrice)} টাকায়` : '৩০ পিস MO কম্বো প্যাক নিন বিশেষ ছাড়ে') 
+                  : (comboPrice ? `Get 30 Pcs MO Combo Pack for only ${formatPrice(comboPrice)}` : 'Get 30 Pcs MO Combo Pack with Special Savings')}
               </span>
               <span className={`inline-flex items-center gap-0.5 font-bold text-[11px] sm:text-xs underline underline-offset-4 transition-colors ${
                 isStore
@@ -101,10 +135,10 @@ const Navbar = () => {
             >
               <span className={`inline-flex items-center gap-1 font-bold text-[11px] sm:text-xs ${isStore ? 'text-amber-700' : 'text-amber-300'}`}>
                 <span>🎉</span>
-                <span>{t('navbar.monthly_banner_lead', 'মাসব্যাপী অফার!')}</span>
+                <span>{t('navbar.monthly_banner_lead', 'বিশেষ অফার!')}</span>
               </span>
               <span className={`font-semibold text-[11px] sm:text-xs ${isStore ? 'text-slate-800' : 'text-rose-100/90'}`}>
-                {t('navbar.monthly_banner_text', 'আমাদের সকল পণ্যে সেপ্টেম্বর মাসব্যাপী ডিসকাউন্ট পাচ্ছেন')}
+                {t('navbar.monthly_banner_text', 'আমাদের সকল পণ্যে বিশেষ ছাড় উপভোগ করুন')}
               </span>
               <span className={`inline-flex items-center gap-0.5 font-bold text-[11px] sm:text-xs underline underline-offset-4 transition-colors ${
                 isStore
