@@ -43,11 +43,15 @@ export default function HomeView() {
     return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.stockAmount !== 0;
   });
 
-  const COMBO_30_KEY = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
-  const COMBO_RIBBED_KEY = 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
-
-  const combo30Prod = products[COMBO_30_KEY] || products['variety-condoms-30pcs-combo'] || products['combo-26'] || {};
-  const comboRibbedProd = products[COMBO_RIBBED_KEY] || products['ribbed-condoms-20pcs-combo'] || {};
+  const activeCombos = Object.values(products).filter(p => {
+    return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.isActive !== false &&
+      (p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo')));
+  });
+  
+  const combo30Prod = activeCombos.find(c => c.slug.includes('30') || c.slug.includes('3-in-1')) || activeCombos[0] || {};
+  const comboRibbedProd = activeCombos.find(c => c !== combo30Prod && (c.slug.includes('ribbed') || c.slug.includes('20'))) || activeCombos[1] || {};
+  const COMBO_30_KEY = combo30Prod.slug || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const COMBO_RIBBED_KEY = comboRibbedProd.slug || 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
 
   return (
     <div className="space-y-6 sm:space-y-8 bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 pb-4">
@@ -135,9 +139,10 @@ export default function HomeView() {
         </div>
       </section>
 
-      {/* HIGH-CONVERSION SPOTLIGHT COMBO SHOWCASE (Focused on ৳900 30pcs & 20pcs Ribbed Combos) */}
-      <section id="comboSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#0b0a0e] border-2 border-brand-600/40 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
+      {/* HIGH-CONVERSION SPOTLIGHT COMBO SHOWCASE */}
+      {activeCombos.length > 0 && (
+        <section id="comboSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[#0b0a0e] border-2 border-brand-600/40 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
           
           {/* Ambient Lighting & Background */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -384,6 +389,7 @@ export default function HomeView() {
           </div>
         </div>
       </section>
+      )}
 
       {/* RANDOMIZED NON-COMBO PRODUCT CAROUSEL (Max 10 Products) */}
       <ProductCarousel maxItems={10} />

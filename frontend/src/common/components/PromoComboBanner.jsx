@@ -11,13 +11,15 @@ export default function PromoComboBanner() {
   const { isBn, formatPrice, formatNumber, getLocalizedName } = useTranslation();
 
   const comboKey = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
-  const comboProd = products[comboKey] || products['variety-condoms-30pcs-combo'] || products['combo-26'] || {};
-  const isOutOfStock = Boolean(comboProd.isOutOfStock || comboProd.stockStatus === 'outofstock' || comboProd.stockStatus === 'out_of_stock' || comboProd.stockAmount === 0);
+  const comboProd = products[comboKey] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
 
-  if (isOutOfStock) return null;
+  if (!comboProd || comboProd.isActive === false || comboProd.isOutOfStock || comboProd.stockStatus === 'outofstock' || comboProd.stockStatus === 'out_of_stock' || comboProd.stockAmount === 0) {
+    return null;
+  }
+  const isOutOfStock = false;
 
   const stockAmount = Number(comboProd.stockAmount != null ? comboProd.stockAmount : (comboProd.stock != null ? comboProd.stock : 50));
-  const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
+  const isLowStock = stockAmount > 0 && stockAmount <= 10;
 
   const currentOfferPrice = comboProd.offerPrice || comboProd.price || 900;
   const currentRegularPrice = comboProd.regularPrice || 1200;

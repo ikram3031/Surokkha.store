@@ -27,16 +27,11 @@ export default function ProductArtwork({
 
   let rawImg =
     customImageUrl ||
-    p?.featuredImage ||
-    p?.featured_image ||
     p?.imageUrl ||
     p?.image_url ||
-    p?.image ||
     p?.thumbnailUrl ||
     p?.thumbnail_url ||
     (Array.isArray(p?.images) && p.images.length > 0 ? p.images[0] : null) ||
-    p?.photo ||
-    p?.picture ||
     null;
 
   let resolvedImgUrl = null;

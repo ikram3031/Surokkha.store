@@ -516,20 +516,10 @@ export const useStore = create((set, get) => ({
             return null;
           };
 
-          const rawPrimary =
-            p.featuredImage ||
-            p.featured_image ||
-            p.imageUrl ||
-            p.image_url ||
-            p.image ||
-            p.product_image ||
-            p.thumbnailUrl ||
-            p.thumbnail_url ||
-            (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null) ||
-            null;
+          const rawPrimary = p.imageUrl || p.image_url || p.thumbnailUrl || p.thumbnail_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null) || null;
           const primaryImg = resolveUrl(rawPrimary);
 
-          const rawGallery = Array.isArray(p.images) ? p.images : (Array.isArray(p.gallery_images) ? p.gallery_images : (Array.isArray(p.gallery) ? p.gallery : (Array.isArray(p.galleryImages) ? p.galleryImages : [])));
+          const rawGallery = Array.isArray(p.images) ? p.images : (Array.isArray(p.gallery_images) ? p.gallery_images : []);
           let resolvedGallery = rawGallery.map(resolveUrl).filter(Boolean);
           if (primaryImg && !resolvedGallery.includes(primaryImg)) {
             resolvedGallery = [primaryImg, ...resolvedGallery];
@@ -713,8 +703,8 @@ export const useStore = create((set, get) => ({
         const finalSelectedSlug = resolvedCurrent || keys[0] || 'mo-multi-textured-latex-contraceptive-10-pcs';
 
         set({
-          products: { ...INITIAL_PRODUCTS, ...normalized },
-          productKeys: keys.length > 0 ? keys : DEFAULT_PRODUCT_KEYS.filter(k => INITIAL_PRODUCTS[k] && !INITIAL_PRODUCTS[k].isOutOfStock),
+          products: { ...normalized },
+          productKeys: keys,
           isLoadingProducts: false,
           selectedProductSlug: finalSelectedSlug
         });
