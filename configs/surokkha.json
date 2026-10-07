@@ -51,17 +51,18 @@
   "forceMembershipFromOrder": true,
   "features": {
     "season": false,
-    "brand": false,
+    "brand": true,
     "category": true,
     "categories": true,
-    "attribute": false,
-    "attributes": false,
+    "attribute": true,
+    "attributes": true,
     "variantImage": false,
     "sizeChart": false,
     "webmail": true,
     "inStoreOrder": false,
     "customOrders": true,
-    "multiLanguage": true
+    "multiLanguage": true,
+    "brands": true
   },
   "stockManagement": {
     "simpleProduct": true,
