@@ -56,6 +56,28 @@ export default function ProductDetailView() {
   const savingsAmount = hasDiscount ? currentRegularPrice - currentOfferPrice : 0;
   const discountPercent = hasDiscount && currentRegularPrice > 0 ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
+  let displayRegularPrice = currentRegularPrice;
+  let displayOfferPrice = currentOfferPrice;
+  let displayHasDiscount = hasDiscount;
+  let minPrice = currentOfferPrice;
+  let maxPrice = currentOfferPrice;
+  let isRange = false;
+
+  if (hasVariants) {
+    if (selectedVariant) {
+      displayOfferPrice = Number(selectedVariant.price || currentOfferPrice);
+      displayRegularPrice = Number(selectedVariant.regularPrice || displayOfferPrice);
+      displayHasDiscount = displayRegularPrice > displayOfferPrice;
+    } else {
+      const prices = product?.variants?.map(v => Number(v.price || v.regularPrice || 0)).filter(p => p > 0) || [];
+      if (prices.length > 0) {
+        minPrice = Math.min(...prices);
+        maxPrice = Math.max(...prices);
+        if (minPrice !== maxPrice) isRange = true;
+      }
+    }
+  }
+
   const localizedName = getLocalizedName(product);
   const localizedTagline = getLocalizedTagline(product);
   const localizedDescription = getLocalizedDescription(product);

@@ -30,6 +30,16 @@ export default function ProductCard({ productKey, className = '' }) {
   const savingsAmount = hasDiscount ? currentRegularPrice - currentOfferPrice : 0;
   const discountPercent = hasDiscount && currentRegularPrice > 0 ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
+  let minPrice = currentOfferPrice;
+  let maxPrice = currentOfferPrice;
+  if (hasVariants && prod.variants) {
+    const prices = prod.variants.map(v => Number(v.price || v.regularPrice || 0)).filter(p => p > 0);
+    if (prices.length > 0) {
+      minPrice = Math.min(...prices);
+      maxPrice = Math.max(...prices);
+    }
+  }
+
   const formatPrice = (val) => {
     const num = Number(val) || 0;
     if (isBn) {

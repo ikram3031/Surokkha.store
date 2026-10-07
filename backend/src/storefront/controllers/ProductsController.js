@@ -81,7 +81,9 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     const products = await ProductModel.find({
       isActive: true,
       excludeFromMetaCatalog: { $ne: true }
-    }).lean();
+    })
+      .populate("categories")
+      .lean();
     
     // Set headers for CSV download
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -101,31 +103,61 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     
     let csvData = headers.join(',') + '\n';
     
+    const reqSiteKey = String(req.query.site || req.query.siteKey || (req.headers.host?.includes('shop') ? 'shop' : 'store')).toLowerCase();
+    const siteConfig = config.sites?.[reqSiteKey];
+    const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'))).replace(/\/$/, '');
+    const brandName = config.brandName || 'Surokkha';
+
     // Construct rows
     products.forEach((p) => {
       const id = p.did || String(p._id);
       const title = p.name ? p.name.replace(/"/g, '""') : '';
-      const description = p.description ? `"${p.description.replace(/"/g, '""')}"` : '';
-      const availability = p.stockStatus === 'outofstock' ? 'out of stock' : 'in stock';
+      const cleanDesc = (p.description || '').replace(/<[^>]*>/g, '').replace(/"/g, '""');
+      const description = cleanDesc ? `"${cleanDesc}"` : '""';
+      const isOut = p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || (p.type === 'simple' && p.stockAmount === 0);
+      const availability = isOut ? 'out of stock' : 'in stock';
       const condition = 'new';
       
-      const reqSiteKey = String(req.query.site || req.query.siteKey || (req.headers.host?.includes('shop') ? 'shop' : 'store')).toLowerCase();
-      const siteConfig = config.sites?.[reqSiteKey];
-      const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'))).replace(/\/$/, '');
-      const catSlug = (p.category && typeof p.category === 'object' ? (p.category.slug || p.category.name) : (p.category || 'contraceptive'))
+      // Resolve category slug safely from populated categories or category field
+      let rawCatSlug = 'contraceptive';
+      if (Array.isArray(p.categories) && p.categories.length > 0 && p.categories[0]) {
+        rawCatSlug = p.categories[0].slug || p.categories[0].name || rawCatSlug;
+      } else if (p.category && typeof p.category === 'object') {
+        rawCatSlug = p.category.slug || p.category.name || rawCatSlug;
+      } else if (typeof p.category === 'string') {
+        rawCatSlug = p.category;
+      }
+
+      const catSlug = String(rawCatSlug || 'contraceptive')
         .toLowerCase()
         .trim()
         .replace(/[^\w\s-]/g, '')
         .replace(/[\s_-]+/g, '-');
-      const link = `${baseSiteUrl}/shop/${catSlug || 'general'}/${p.slug}`;
+
+      const link = `${baseSiteUrl}/shop/${catSlug || 'contraceptive'}/${p.slug}`;
       const imageLink = p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : `${config.apiBaseUrl || 'https://api.' + (config.domain || 'localhost')}${p.imageUrl}`) : '';
       
-      const brand = config.brandName || 'Store';
-      const price = `${(p.price || 0).toFixed(2)} BDT`;
-      
-      const salePrice = p.offerPrice ? `${p.offerPrice.toFixed(2)} BDT` : '';
-      const quantity = 150; // default for catalog
-      const productType = p.category ? 'Product' : 'Product';
+      // Price calculation: Simple product or Variant lowest/first variant price
+      let numPrice = 0;
+      let numOfferPrice = null;
+
+      if (p.type === 'variant' && Array.isArray(p.variants) && p.variants.length > 0) {
+        const firstVariant = p.variants[0];
+        numPrice = Number(firstVariant.price || 0);
+        if (firstVariant.offerPrice != null && Number(firstVariant.offerPrice) > 0 && Number(firstVariant.offerPrice) < numPrice) {
+          numOfferPrice = Number(firstVariant.offerPrice);
+        }
+      } else {
+        numPrice = Number(p.price || p.regularPrice || 0);
+        if (p.offerPrice != null && Number(p.offerPrice) > 0 && Number(p.offerPrice) < numPrice) {
+          numOfferPrice = Number(p.offerPrice);
+        }
+      }
+
+      const price = `${numPrice.toFixed(2)} BDT`;
+      const salePrice = numOfferPrice ? `${numOfferPrice.toFixed(2)} BDT` : '';
+      const quantity = p.stockAmount && p.stockAmount > 0 ? p.stockAmount : 150;
+      const productType = 'Product';
       const gender = 'unisex';
       const ageGroup = 'adult';
       
@@ -137,7 +169,7 @@ export const getMetaCatalogCsv = async (req, res, next) => {
         condition,
         link,
         imageLink,
-        brand,
+        brandName,
         price,
         '', // google_product_category
         '', // fb_product_category
