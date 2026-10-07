@@ -608,9 +608,18 @@ export const useStore = create((set, get) => ({
             regularPrice: resolvedRegularPrice,
             offerPrice: resolvedOfferPrice,
             salePrice: resolvedPrice < resolvedRegularPrice ? resolvedPrice : null,
-            stockStatus: p.stockStatus || ((p.isOutOfStock || p.availability === 'out of stock' || (p.stockStatus !== 'instock' && (p.stockAmount === 0 || p.stock === 0))) ? 'outofstock' : 'instock'),
-            isOutOfStock: Boolean(p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.availability === 'out of stock' || p.isOutOfStock === true || (p.stockStatus !== 'instock' && (p.stockAmount === 0 || p.stock === 0))),
-            stockAmount: (p.stockAmount != null) ? Number(p.stockAmount) : ((p.stock != null) ? Number(p.stock) : (p.stockStatus === 'outofstock' ? 0 : 50)),
+            stockStatus: (p.stockStatus === 'instock' || p.stockStatus === 'in_stock')
+              ? 'instock'
+              : (p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.isOutOfStock === true || p.availability === 'out of stock' || (p.stockAmount === 0 && p.stock === 0 && p.stockStatus !== 'instock'))
+                ? 'outofstock'
+                : 'instock',
+            isOutOfStock: Boolean(
+              p.stockStatus !== 'instock' && p.stockStatus !== 'in_stock' &&
+              (p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.isOutOfStock === true || p.availability === 'out of stock' || (p.stockAmount === 0 && p.stock === 0))
+            ),
+            stockAmount: (p.stockAmount != null && Number(p.stockAmount) > 0)
+              ? Number(p.stockAmount)
+              : ((p.stock != null && Number(p.stock) > 0) ? Number(p.stock) : (p.stockStatus === 'outofstock' ? 0 : 50)),
             isActive: p.isActive !== false && p.status !== 'inactive',
             createdAt: p.createdAt || p.created_at || p.createdDate || null,
             createdDate: p.createdDate || p.createdAt || p.created_at || p.updatedAt || p.updated_at || null,
