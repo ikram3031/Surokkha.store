@@ -201,7 +201,7 @@ const EditProductPage = () => {
     const fetchProduct = async () => {
       setIsLoading(true);
       try {
-        const res = await apiClient.get(`/api/items/${id}`);
+        const res = await apiClient.get(`/api/v1/items/${id}`);
         const product = res.data?.data || res.data;
 
         if (product) {
@@ -696,7 +696,7 @@ const EditProductPage = () => {
         body.variants = uploadedVariants;
       }
 
-      await apiClient.put(`/api/items/${id}`, body);
+      await apiClient.put(`/api/v1/items/${id}`, body);
       toast.success("Product updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["items"] });
       if (window.history.length > 1) {

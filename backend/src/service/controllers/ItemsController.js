@@ -87,6 +87,19 @@ export const createItem = async (req, res, next) => {
     }
     const imageUrl = rawImageUrl.trim();
     const thumbnailUrl = (body.thumbnailUrl || body.thumbnail_url || imageUrl).trim();
+    const rawGallery = body.gallery || body.images || body.galleryImages || [];
+    const gallery = Array.isArray(rawGallery)
+      ? rawGallery
+          .map((item) => {
+            if (typeof item === "string" && item.trim()) return item.trim();
+            if (typeof item === "object" && item !== null) {
+              const url = item.url || item.imageUrl || item.preview || item.src || "";
+              return typeof url === "string" && url.trim() ? url.trim() : null;
+            }
+            return null;
+          })
+          .filter(Boolean)
+      : [];
 
     const itemData = {
       name: body.name,
@@ -108,6 +121,7 @@ export const createItem = async (req, res, next) => {
       brand: brandDids,
       imageUrl,
       thumbnailUrl,
+      gallery,
       stockStatus: body.stockStatus || "instock",
       stockAmount:
         body.stockAmount !== undefined &&
@@ -229,7 +243,7 @@ export const getSingleItem = async (req, res, next) => {
       return;
     }
 
-    res.json({ data: serializeProduct(item) });
+    res.json({ status: "success", data: serializeProduct(item) });
   } catch (err) {
     next(err);
   }
@@ -292,6 +306,30 @@ export const updateItem = async (req, res, next) => {
     if (body.sections !== undefined) item.sections = body.sections;
     if (body.packageContents !== undefined) item.packageContents = body.packageContents;
     if (body.bn !== undefined) item.bn = body.bn;
+
+    const rawGallery =
+      body.gallery !== undefined
+        ? body.gallery
+        : body.images !== undefined
+        ? body.images
+        : body.galleryImages !== undefined
+        ? body.galleryImages
+        : undefined;
+
+    if (rawGallery !== undefined) {
+      item.gallery = Array.isArray(rawGallery)
+        ? rawGallery
+            .map((g) => {
+              if (typeof g === "string" && g.trim()) return g.trim();
+              if (typeof g === "object" && g !== null) {
+                const url = g.url || g.imageUrl || g.preview || g.src || "";
+                return typeof url === "string" && url.trim() ? url.trim() : null;
+              }
+              return null;
+            })
+            .filter(Boolean)
+        : [];
+    }
 
     if (body.categories !== undefined || body.category !== undefined) {
       const catInput = body.categories || body.category;

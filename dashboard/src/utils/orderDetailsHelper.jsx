@@ -241,7 +241,7 @@ export const resolvePaymentOptions = (isInStore) => {
   ];
 };
 
-// Map raw order items into editable cart items while retaining productDid and concentration.
+// Map raw order items into editable cart items while retaining productDid, productId, itemId, itemType, sku, and concentration.
 export const mapOrderItemsToCart = (items = []) =>
   (items || []).map((item, idx) => {
     const idKey = item.size ? `${idx}__${item.size}` : `${idx}`;
@@ -255,6 +255,9 @@ export const mapOrderItemsToCart = (items = []) =>
       size: item.size || "",
       concentration: item.concentration || "",
       productDid: item.productDid || "",
+      productId: item.productId || "",
+      itemId: item.itemId || "",
+      itemType: item.itemType || (item.itemId ? "item" : "product"),
     };
   });
 
@@ -350,9 +353,14 @@ export const buildUpdatePayload = ({
       name: item.name,
       quantity: item.quantity,
       unitPrice: item.price,
-      size: item.size,
+      size: item.size || "",
       concentration: item.concentration || "",
       productDid: item.productDid || "",
+      productId: item.productId || "",
+      itemId: item.itemId || "",
+      itemType: item.itemType || "product",
+      sku: item.sku || "",
+      image: item.image || "",
     })),
     totals: {
       subtotal,

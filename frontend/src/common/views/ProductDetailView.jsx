@@ -488,7 +488,19 @@ export default function ProductDetailView() {
 
       {/* FULL PRODUCT DETAILS & TECHNICAL SPECIFICATIONS SECTION (ABOVE OTHER PRODUCTS) */}
       {(() => {
-        const specsObj = (isBn ? product.specifications_bn : product.specifications) || product.specifications || product.technicalSpecs || {};
+        const rawSpecs = (isBn ? product.specifications_bn : product.specifications) || product.specifications || product.technicalSpecs || {};
+        let specsObj = {};
+        if (Array.isArray(rawSpecs)) {
+          rawSpecs.forEach((entry) => {
+            if (entry && typeof entry === 'object') {
+              const k = entry.key || entry.label || entry.name;
+              const v = entry.value || entry.val || entry.content;
+              if (k && v != null) specsObj[k] = v;
+            }
+          });
+        } else if (rawSpecs && typeof rawSpecs === 'object') {
+          specsObj = rawSpecs;
+        }
         const entries = Object.entries(specsObj);
         const hasSpecs = entries.length > 0;
 
@@ -544,7 +556,7 @@ export default function ProductDetailView() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-800">
                       {activeBenefits.map((b, idx) => {
                         const title = typeof b === 'object' ? (b.title || '') : b;
-                        const desc = typeof b === 'object' ? (b.description || '') : '';
+                        const desc = typeof b === 'object' ? (b.desc || b.description || '') : '';
                         return (
                           <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs text-left">
                             <div className="flex items-center gap-1.5 font-bold text-slate-900">
@@ -569,6 +581,80 @@ export default function ProductDetailView() {
                 </div>
               )}
             </div>
+          </div>
+        );
+      })()}
+
+      {/* DYNAMIC SECTIONS & FAQS (New Schema Support) */}
+      {(() => {
+        const activeSections = (isBn ? product.sections_bn : product.sections) || product.sections || [];
+        const activeFaqs = (isBn ? product.faqs_bn : product.faqs) || product.faqs || [];
+
+        const validSections = Array.isArray(activeSections) ? activeSections.filter(Boolean) : [];
+        const validFaqs = Array.isArray(activeFaqs) ? activeFaqs.filter(Boolean) : [];
+
+        if (validSections.length === 0 && validFaqs.length === 0) return null;
+
+        return (
+          <div className="pt-8 border-t border-slate-200/90 space-y-8">
+            {/* Custom Content Sections */}
+            {validSections.length > 0 && (
+              <div className="space-y-6">
+                {validSections.map((sec, idx) => {
+                  const title = typeof sec === 'object' ? (sec.title || sec.heading || '') : '';
+                  const content = typeof sec === 'object' ? (sec.content || sec.body || sec.text || sec.description || '') : String(sec);
+                  if (!title && !content) return null;
+                  return (
+                    <div key={idx} className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-2xs space-y-2 text-left">
+                      {title && (
+                        <h3 className="text-base sm:text-lg font-bold font-heading text-slate-900">
+                          {title}
+                        </h3>
+                      )}
+                      {content && (
+                        <div className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                          {content}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Product FAQs */}
+            {validFaqs.length > 0 && (
+              <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">💬</span>
+                  <h3 className="text-base sm:text-lg font-bold font-heading text-slate-900">
+                    {isBn ? 'সাধারণ জিজ্ঞাসা (FAQ)' : 'Frequently Asked Questions (FAQ)'}
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  {validFaqs.map((faq, idx) => {
+                    const q = typeof faq === 'object' ? (faq.question || faq.q || faq.title || '') : '';
+                    const a = typeof faq === 'object' ? (faq.answer || faq.a || faq.content || '') : String(faq);
+                    if (!q && !a) return null;
+                    return (
+                      <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200/70 shadow-2xs space-y-1.5 text-left">
+                        {q && (
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-start gap-2">
+                            <span className="text-brand-700 font-extrabold">Q:</span>
+                            <span>{q}</span>
+                          </h4>
+                        )}
+                        {a && (
+                          <p className="text-xs text-slate-600 pl-5 leading-relaxed">
+                            {a}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         );
       })()}

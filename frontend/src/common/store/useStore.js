@@ -312,36 +312,39 @@ export const useStore = create((set, get) => ({
     }
   },
 
-  // Fetch Dynamic Products directly from API
+  // Fetch Dynamic Products and Items directly from API simultaneously
   fetchProducts: async () => {
     set({ isLoadingProducts: true, productsError: null });
-    const currentLang = get().language || 'bn';
     try {
       const cacheBust = `_t=${Date.now()}`;
       const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
-      const targetUrl = `${cleanBase}/api/v1/products?limit=100&${cacheBust}`;
+      const productsUrl = `${cleanBase}/api/v1/products?limit=100&${cacheBust}`;
+      const itemsUrl = `${cleanBase}/api/v1/items?limit=100&${cacheBust}`;
 
-      let rawData = null;
-      let rawDataBn = null;
-
-      try {
-        const res = await fetch(targetUrl, {
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        if (res.ok) {
+      const [productsResult, itemsResult] = await Promise.allSettled([
+        fetch(productsUrl, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+          if (!res.ok) return [];
           const json = await res.json();
-          if (json && typeof json === 'object') {
-            rawDataBn = json.data_bn || json.products_bn || json.result_bn || null;
-            rawData = Array.isArray(json) ? json : (json.data || json.products || json.result || json.items || []);
-          }
-        }
-      } catch (e) {
-        console.error('Direct fetchProducts error:', e);
-      }
+          return Array.isArray(json) ? json : (json?.data || json?.products || json?.result || []);
+        }),
+        fetch(itemsUrl, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+          if (!res.ok) return [];
+          const json = await res.json();
+          return Array.isArray(json) ? json : (json?.data || json?.items || json?.result || []);
+        }),
+      ]);
 
-      if (rawData && rawData.length > 0) {
+      const rawProducts = (productsResult.status === 'fulfilled' && Array.isArray(productsResult.value))
+        ? productsResult.value.map((p) => ({ ...p, entityType: 'product', itemType: 'product' }))
+        : [];
+
+      const rawItems = (itemsResult.status === 'fulfilled' && Array.isArray(itemsResult.value))
+        ? itemsResult.value.map((i) => ({ ...i, entityType: 'item', itemType: 'item' }))
+        : [];
+
+      const combinedRaw = [...rawProducts, ...rawItems];
+
+      if (combinedRaw.length > 0) {
         const normalized = {};
         const keys = [];
 
@@ -372,8 +375,8 @@ export const useStore = create((set, get) => ({
           return 0;
         };
 
-        // Sort products: Active first -> Oldest CreatedDate first (original lineup at top, new arrivals at bottom)
-        rawData.sort((a, b) => {
+        // Sort: Active first -> Oldest CreatedDate first (original lineup at top, new arrivals at bottom)
+        combinedRaw.sort((a, b) => {
           const aIsActive = (a.isActive !== false && a.status !== 'inactive') ? 1 : 0;
           const bIsActive = (b.isActive !== false && b.status !== 'inactive') ? 1 : 0;
           if (aIsActive !== bIsActive) {
@@ -382,28 +385,38 @@ export const useStore = create((set, get) => ({
 
           const timeA = getCreatedTimestamp(a);
           const timeB = getCreatedTimestamp(b);
-          // Items with no timestamp or earliest timestamp come first
           if (!timeA && timeB) return -1;
           if (timeA && !timeB) return 1;
           return timeA - timeB; // Oldest first
         });
 
-        // Build a lookup map if rawDataBn is provided as an array or object
-        const bnLookup = {};
-        if (Array.isArray(rawDataBn)) {
-          rawDataBn.forEach((item, idx) => {
-            const k = item.slug || item.id || item.did || `product-${idx + 1}`;
-            bnLookup[k] = item;
-            bnLookup[idx] = item;
-          });
-        } else if (rawDataBn && typeof rawDataBn === 'object') {
-          Object.entries(rawDataBn).forEach(([k, item]) => {
-            bnLookup[k] = item;
-          });
-        }
+        const resolveUrl = (img) => {
+          if (img && typeof img === 'string') {
+            const trimmed = img.trim();
+            if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
+              return null;
+            }
+            if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+              try {
+                const urlObj = new URL(trimmed);
+                if ((urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') && urlObj.pathname.startsWith('/uploads')) {
+                  return cleanBase ? `${cleanBase}${urlObj.pathname}${urlObj.search}` : trimmed;
+                }
+              } catch (_) {}
+              return trimmed;
+            }
+            if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+              return trimmed;
+            }
+            const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+            return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
+          }
+          return null;
+        };
 
-        rawData.forEach((p, index) => {
-          const key = p.slug || p.id || p.did || `product-${index + 1}`;
+        combinedRaw.forEach((p, index) => {
+          const key = p.slug || p.id || p.did || `${p.itemType || 'entity'}-${index + 1}`;
+
           // Robust price resolution: Extract regular base price (M.R.P.) and discounted offer price
           const regularCandidates = [p.regularPrice, p.regular_price, p.price]
             .map(Number)
@@ -415,7 +428,6 @@ export const useStore = create((set, get) => ({
           let resolvedRegularPrice = regularCandidates.length > 0 ? Math.max(...regularCandidates) : 0;
           let resolvedOfferPrice = offerCandidates.length > 0 ? Math.min(...offerCandidates) : null;
 
-          // If offer candidate happens to equal or exceed regular price, try to find a genuine lower offer
           if (resolvedOfferPrice && resolvedOfferPrice >= resolvedRegularPrice) {
             const allPositive = [...regularCandidates, ...offerCandidates];
             resolvedRegularPrice = Math.max(...allPositive);
@@ -425,35 +437,9 @@ export const useStore = create((set, get) => ({
             }
           }
 
-          // Effective selling price: Always prefer the offer price if lower than regular base price
           const resolvedPrice = (resolvedOfferPrice && resolvedOfferPrice < resolvedRegularPrice)
             ? resolvedOfferPrice
             : (resolvedOfferPrice || resolvedRegularPrice);
-
-          const resolveUrl = (img) => {
-            if (img && typeof img === 'string') {
-              const trimmed = img.trim();
-              if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
-                return null;
-              }
-              const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
-              if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-                try {
-                  const urlObj = new URL(trimmed);
-                  if ((urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') && urlObj.pathname.startsWith('/uploads')) {
-                    return cleanBase ? `${cleanBase}${urlObj.pathname}${urlObj.search}` : trimmed;
-                  }
-                } catch (_) {}
-                return trimmed;
-              }
-              if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
-                return trimmed;
-              }
-              const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-              return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
-            }
-            return null;
-          };
 
           const rawPrimary = p.imageUrl || p.image_url || p.thumbnailUrl || p.thumbnail_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null) || null;
           const primaryImg = resolveUrl(rawPrimary);
@@ -464,35 +450,88 @@ export const useStore = create((set, get) => ({
             resolvedGallery = [primaryImg, ...resolvedGallery];
           }
 
-          // Extract Bengali data from p.bn, p.data_bn, bnLookup, or direct fields
-          const itemBn = (p.bn && typeof p.bn === 'object')
-            ? p.bn
-            : ((p.data_bn && typeof p.data_bn === 'object') ? p.data_bn : (bnLookup[key] || bnLookup[index] || {}));
+          // English text content as primary source of truth
+          const englishName = p.name || p.title || 'Wellness Product';
+          const englishTagline = p.tagline || p.shortDescription || p.subtitle || '';
+          const englishDescription = p.description || p.longDescription || '';
 
-          const nameBn = itemBn.name || itemBn.title || p.name_bn || p.title_bn || p.name || 'ওয়েলনেস প্রোডাক্ট';
-          const taglineBn = itemBn.tagline || itemBn.shortDescription || itemBn.subtitle || p.tagline_bn || p.shortDescription_bn || p.tagline || 'প্রিমিয়াম পার্সোনাল ওয়েলনেস স্ট্যান্ডার্ড';
-          const descriptionBn = itemBn.description || itemBn.longDescription || p.description_bn || p.longDescription_bn || p.description || 'কঠোর মান নিয়ন্ত্রণে প্রস্তুত প্রিমিয়াম গোপনীয় ব্যক্তিগত যত্ন পণ্য।';
+          // Bengali fallback mappings if available
+          const itemBn = (p.bn && typeof p.bn === 'object') ? p.bn : {};
+          const nameBn = itemBn.name || itemBn.title || p.name_bn || p.title_bn || englishName;
+          const taglineBn = itemBn.tagline || itemBn.shortDescription || itemBn.subtitle || p.tagline_bn || p.shortDescription_bn || englishTagline;
+          const descriptionBn = itemBn.description || itemBn.longDescription || p.description_bn || p.longDescription_bn || englishDescription;
 
-          const benefits = Array.isArray(p.benefits) && p.benefits.length > 0 ? p.benefits : [];
-          const benefitsBn = Array.isArray(itemBn.benefits) && itemBn.benefits.length > 0 ? itemBn.benefits : benefits;
+          // Normalize benefits
+          const rawBenefits = Array.isArray(p.benefits) && p.benefits.length > 0 ? p.benefits : [];
+          const rawBenefitsBn = Array.isArray(itemBn.benefits) && itemBn.benefits.length > 0 ? itemBn.benefits : rawBenefits;
+
+          const benefits = rawBenefits.map((b) => {
+            if (typeof b === 'object' && b !== null) {
+              return {
+                title: b.title || b.name || '',
+                description: b.description || b.desc || '',
+                desc: b.desc || b.description || '',
+                icon: b.icon || ''
+              };
+            }
+            return { title: String(b), description: '', desc: '', icon: '' };
+          });
+
+          const benefitsBn = rawBenefitsBn.map((b) => {
+            if (typeof b === 'object' && b !== null) {
+              return {
+                title: b.title || b.name || '',
+                description: b.description || b.desc || '',
+                desc: b.desc || b.description || '',
+                icon: b.icon || ''
+              };
+            }
+            return { title: String(b), description: '', desc: '', icon: '' };
+          });
+
+          // Normalize features
+          const features = benefits.length > 0
+            ? benefits.map((b) => b.title).filter(Boolean)
+            : (Array.isArray(p.features) && p.features.length > 0 ? p.features : ['Certified safety standard', 'Neutral pH lubrication', 'Tested durability']);
 
           const featuresBn = benefitsBn.length > 0
-            ? benefitsBn.map(b => (typeof b === 'object' ? (b.title || b.description || '') : b)).filter(Boolean)
+            ? benefitsBn.map((b) => b.title).filter(Boolean)
             : (Array.isArray(itemBn.features) && itemBn.features.length > 0
               ? itemBn.features
-              : (Array.isArray(p.features_bn) && p.features_bn.length > 0 ? p.features_bn : ['সার্টিফাইড সেফটি স্ট্যান্ডার্ড', 'নিউট্রাল পিএইচ সিলিকন লুব্রিকেশন', 'ইলেকট্রনিক পরীক্ষায় প্রমাণিত স্থায়িত্ব']));
+              : (Array.isArray(p.features_bn) && p.features_bn.length > 0 ? p.features_bn : features));
 
-          const features = benefits.length > 0
-            ? benefits.map(b => (typeof b === 'object' ? (b.title || b.description || '') : b)).filter(Boolean)
-            : (Array.isArray(p.features) && p.features.length > 0 ? p.features : ['Certified safety standard', 'Neutral pH silicone lubrication', 'Electronically inspected durability']);
+          // Normalize specifications: Convert array form [{key, value}] to object if needed
+          let specs = {};
+          const rawSpecs = (p.specifications && typeof p.specifications === 'object') ? p.specifications : (p.technicalSpecs || {});
+          if (Array.isArray(rawSpecs)) {
+            rawSpecs.forEach((entry) => {
+              if (entry && typeof entry === 'object') {
+                const k = entry.key || entry.label || entry.name;
+                const v = entry.value || entry.val || entry.content;
+                if (k && v != null) specs[k] = v;
+              }
+            });
+          } else if (rawSpecs && typeof rawSpecs === 'object') {
+            specs = rawSpecs;
+          }
 
-          const specs = (p.specifications && typeof p.specifications === 'object') ? p.specifications : (p.technicalSpecs || {});
-          const specsBn = (itemBn.specifications && typeof itemBn.specifications === 'object') ? itemBn.specifications : specs;
+          let specsBn = specs;
+          if (itemBn.specifications && typeof itemBn.specifications === 'object') {
+            if (Array.isArray(itemBn.specifications)) {
+              specsBn = {};
+              itemBn.specifications.forEach((entry) => {
+                if (entry && typeof entry === 'object') {
+                  const k = entry.key || entry.label || entry.name;
+                  const v = entry.value || entry.val || entry.content;
+                  if (k && v != null) specsBn[k] = v;
+                }
+              });
+            } else {
+              specsBn = itemBn.specifications;
+            }
+          }
 
-          const packSize = p.packSize || (key.includes('30pcs') || key.includes('variety') ? '30 Pieces (3 Boxes)' : (key.includes('20pcs') || key.includes('combo') ? '20 Pieces (2 Boxes)' : '10 Pieces / Box'));
-          const packSizeBn = itemBn.packSize || (key.includes('30pcs') || key.includes('variety') ? '৩০ পিস (৩টি বক্স)' : (key.includes('20pcs') || key.includes('combo') ? '২০ পিস (২টি বক্স)' : '১০ পিস প্রতি বক্স'));
-
-          const packageContents = p.packageContents || (key.includes('30pcs') || key.includes('variety') ? '3 Sealed Retail Boxes (1x Ultra Thin 10pcs + 1x Dotted 10pcs + 1x Ribbed 10pcs = 30 Pcs Total)' : (key.includes('20pcs') || key.includes('combo') ? '2 Sealed Retail Boxes (20 Individual Foils)' : '1 Sealed Retail Box (10 Individual Foils)'));
+          // Category classification
           const rawCatName = (p.category && typeof p.category === 'object' ? (p.category.name || '') : (typeof p.category === 'string' ? p.category : '')) || '';
           const rawCatSlug = (p.category && typeof p.category === 'object' ? (p.category.slug || '') : (p.categorySlug || (rawCatName ? String(rawCatName).toLowerCase().replace(/\s+/g, '-') : ''))) || '';
           const rawCatBn = (p.category && typeof p.category === 'object' && p.category.name_bn) ? p.category.name_bn : (p.category_bn || '');
@@ -514,7 +553,7 @@ export const useStore = create((set, get) => ({
             resolvedCategorySlug = 'combo';
             resolvedCategoryBn = 'কম্বো প্যাক';
           } else if (catNameLower.includes('lubricant') || catSlugLower.includes('lubricant')) {
-            resolvedCategory = 'Lubricant';
+            resolvedCategory = 'Lubricants';
             resolvedCategorySlug = 'lubricant';
             resolvedCategoryBn = 'পার্সোনাল লুব্রিকেন্ট';
           } else if (catNameLower.includes('booster') || catSlugLower.includes('booster') || catNameLower.includes('spray') || catSlugLower.includes('spray') || catNameLower.includes('performance') || catSlugLower.includes('performance')) {
@@ -531,7 +570,7 @@ export const useStore = create((set, get) => ({
               resolvedCategorySlug = 'combo';
               resolvedCategoryBn = 'কম্বো প্যাক';
             } else if (keyLower.includes('lubricant') || keyLower.includes('jelly') || keyLower.includes('gel')) {
-              resolvedCategory = 'Lubricant';
+              resolvedCategory = 'Lubricants';
               resolvedCategorySlug = 'lubricant';
               resolvedCategoryBn = 'পার্সোনাল লুব্রিকেন্ট';
             } else if (keyLower.includes('booster') || keyLower.includes('spray') || keyLower.includes('viga') || keyLower.includes('maxman')) {
@@ -545,17 +584,22 @@ export const useStore = create((set, get) => ({
             }
           }
 
+          const rawBrand = Array.isArray(p.brand) ? (p.brand[0] || 'MO') : (typeof p.brand === 'string' ? p.brand : 'MO');
+
           const productObj = {
             id: key,
             slug: key,
             did: p.did || key,
             _id: p._id || p.id,
-            name: p.name || p.title || 'Wellness Product',
+            mongoId: p._id || p.id,
+            sku: p.sku || '',
+            itemType: p.itemType || 'product',
+            entityType: p.entityType || 'product',
+            name: englishName,
             name_bn: nameBn,
             bn: itemBn,
-            data_bn: itemBn,
-            brand: p.brand && typeof p.brand === 'string' ? p.brand : 'MO',
-            origin: p.origin || 'Imported (  / CE Certified)',
+            brand: rawBrand,
+            origin: p.origin || 'Imported (CE Certified)',
             category: resolvedCategory,
             categorySlug: resolvedCategorySlug,
             category_bn: resolvedCategoryBn,
@@ -572,14 +616,15 @@ export const useStore = create((set, get) => ({
             createdDate: p.createdDate || p.createdAt || p.created_at || p.updatedAt || p.updated_at || null,
             updatedAt: p.updatedAt || p.updated_at || null,
             createdTimestamp: getCreatedTimestamp(p),
-            packSize: packSize,
-            packSize_bn: packSizeBn,
-            packageContents: packageContents,
-            packageContents_bn: packageContentsBn,
-            tagline: p.tagline || p.shortDescription || p.subtitle || 'Premium personal wellness standard',
-            tagline_bn: taglineBn,
-            description: p.description || p.longDescription || 'Premium discreet personal wellness product engineered under strict quality testing.',
-            description_bn: descriptionBn,
+            packSize: p.packSize || (key.includes('30pcs') ? '30 Pieces (3 Boxes)' : (key.includes('20pcs') ? '20 Pieces (2 Boxes)' : '10 Pieces / Box')),
+            packSize_bn: itemBn.packSize || p.packSize || '',
+            packageContents: p.packageContents || '',
+            packageContents_bn: itemBn.packageContents || p.packageContents || '',
+            expiryDate: p.expiryDate || '',
+            tagline: englishTagline || 'Premium personal wellness standard',
+            tagline_bn: taglineBn || 'প্রিমিয়াম পার্সোনাল ওয়েলনেস স্ট্যান্ডার্ড',
+            description: englishDescription || 'Premium discreet personal wellness product engineered under strict quality testing.',
+            description_bn: descriptionBn || 'কঠোর মান নিয়ন্ত্রণে প্রস্তুত প্রিমিয়াম গোপনীয় ব্যক্তিগত যত্ন পণ্য।',
             specifications: specs,
             specifications_bn: specsBn,
             technicalSpecs: specs,
@@ -605,7 +650,7 @@ export const useStore = create((set, get) => ({
           if (p.id && p.id !== key) normalized[p.id] = productObj;
           if (p._id && p._id !== key) normalized[p._id] = productObj;
 
-          // List all active products on website
+          // List all active catalog products/items on website
           if (productObj.isActive !== false) {
             keys.push(key);
           }
@@ -651,7 +696,7 @@ export const useStore = create((set, get) => ({
         set({ isLoadingProducts: false });
       }
     } catch (err) {
-      console.error('Error fetching products:', err);
+      console.error('Error fetching products and items:', err);
       set({ isLoadingProducts: false, productsError: err.message });
     }
   },
@@ -971,13 +1016,19 @@ export const useStore = create((set, get) => ({
         .filter(([_, qty]) => qty > 0)
         .map(([slug, qty]) => {
           const prod = products[slug];
+          const rawId = prod?.mongoId || prod?._id || prod?.id || undefined;
+          const itemType = prod?.itemType || (prod?.type === 'item' ? 'item' : 'product');
           return {
-            productId: prod?.mongoId || prod?._id || prod?.id || undefined,
+            productId: itemType !== 'item' ? rawId : undefined,
+            itemId: itemType === 'item' ? rawId : undefined,
+            itemType: itemType,
             productDid: prod?.did || slug,
             name: prod?.name || slug,
+            sku: prod?.sku || '',
+            image: prod?.imageUrl || prod?.image || '',
             quantity: qty,
             unitPrice: prod?.price || 400,
-            size: 'Standard Pack'
+            size: prod?.size || 'Standard Pack'
           };
         }),
       paymentDetails: null,

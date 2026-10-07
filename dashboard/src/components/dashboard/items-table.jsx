@@ -71,7 +71,7 @@ export const ItemsTable = ({
   const handleDuplicate = async (item) => {
     setDuplicatingId(item.id);
     try {
-      const res = await apiClient.get(`/api/items/${item.id}`);
+      const res = await apiClient.get(`/api/v1/items/${item.id}`);
       const fullItem = res.data?.data || res.data;
       if (!fullItem) throw new Error('No item data received');
       setDuplicateDraft(fullItem);
@@ -109,7 +109,7 @@ export const ItemsTable = ({
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      await apiClient.delete(`/api/items/${deleteTarget.id}`);
+      await apiClient.delete(`/api/v1/items/${deleteTarget.id}`);
       toast.success(t('items.item_deleted', { name: deleteTarget.name, defaultValue: `Item "${deleteTarget.name}" deleted.` }));
       queryClient.invalidateQueries({ queryKey: ['items'] });
       onSelectedIdsChange(selectedIds.filter(id => id !== deleteTarget.id));
@@ -147,11 +147,11 @@ export const ItemsTable = ({
     setIsUpdatingStock(true);
     try {
       if (stockTarget.type === 'variant') {
-        await apiClient.put(`/api/items/${stockTarget.id}`, {
+        await apiClient.put(`/api/v1/items/${stockTarget.id}`, {
           variants: targetVariants,
         });
       } else {
-        await apiClient.put(`/api/items/${stockTarget.id}`, {
+        await apiClient.put(`/api/v1/items/${stockTarget.id}`, {
           stockStatus: targetStockStatus,
         });
       }

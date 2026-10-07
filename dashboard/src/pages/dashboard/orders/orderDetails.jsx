@@ -99,6 +99,9 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
     if (!canAdd || displayPrice === null) return;
     const cartKey = isVariant ? `${product.id}__${selectedVariant.size}` : product.id;
 
+    const rawId = product.id || product._id || "";
+    const isItem = product.itemType === "item" || product.entityType === "item";
+
     onAddToCart({
       id: cartKey,
       name: isVariant ? `${product.name} (${selectedVariant.size})` : product.name,
@@ -108,7 +111,10 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
       sku: isVariant ? selectedVariant.sku || product.sku : product.sku,
       size: isVariant ? selectedVariant.size : "",
       concentration: product.concentration || "",
-      productDid: product.did || product.id || "",
+      productDid: product.did || product.sku || "",
+      productId: !isItem ? rawId : "",
+      itemId: isItem ? rawId : "",
+      itemType: isItem ? "item" : "product",
     });
 
     setSelectedVariant(null);

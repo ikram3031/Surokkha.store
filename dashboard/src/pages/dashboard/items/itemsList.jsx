@@ -143,7 +143,7 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
     setIsBulkDeleting(true);
     try {
       await Promise.all(
-        selectedIds.map((id) => apiClient.delete(`/api/items/${id}`))
+        selectedIds.map((id) => apiClient.delete(`/api/v1/items/${id}`))
       );
       toast.success(t('items.selected_deleted_success', 'Selected items deleted successfully.'));
       queryClient.invalidateQueries({ queryKey: ['items'] });
@@ -161,7 +161,7 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
     try {
       await Promise.all(
         selectedIds.map((id) =>
-          apiClient.put(`/api/items/${id}`, { stockStatus: status })
+          apiClient.put(`/api/v1/items/${id}`, { stockStatus: status })
         )
       );
       toast.success(

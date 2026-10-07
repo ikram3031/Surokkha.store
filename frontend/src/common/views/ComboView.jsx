@@ -14,7 +14,7 @@ export default function ComboView() {
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
   const products = useStore((state) => state.products);
   const productKeys = useStore((state) => state.productKeys);
-  const { t, isBn, formatPrice, getLocalizedName, getLocalizedTagline } = useTranslation();
+  const { t, isBn, formatPrice, getLocalizedName, getLocalizedTagline, getLocalizedDescription } = useTranslation();
 
   // Dynamically filter all combo categorized products from store
   const comboList = productKeys

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
 import { ProductModel } from '../../common/models/product.model.js';
+import { ItemModel } from '../../common/models/item.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
@@ -66,31 +67,46 @@ export const createOrder = async (req, res, next) => {
       }
     }
 
-    // Backend validation: Verify product exists and is in stock
+    // Backend validation: Verify product/item exists and is in stock
     const items = Array.isArray(payload.items) ? payload.items : [];
     if (items.length > 0) {
       for (const item of items) {
-        const productRef = item.productId || item.productDid || item.id || item._id;
+        const productRef = item.productId || item.itemId || item.productDid || item.id || item._id;
         const productName = item.name || item.productName || 'Product';
         
         let productDoc = null;
         if (productRef) {
           if (mongoose.Types.ObjectId.isValid(productRef)) {
             productDoc = await ProductModel.findById(productRef).select('name stockStatus isActive').lean();
+            if (!productDoc) {
+              productDoc = await ItemModel.findById(productRef).select('name stockStatus isActive').lean();
+            }
           }
           if (!productDoc) {
             productDoc = await ProductModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
           }
+          if (!productDoc) {
+            productDoc = await ItemModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
+          }
+          if (!productDoc) {
+            productDoc = await ProductModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
+          }
+          if (!productDoc) {
+            productDoc = await ItemModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
+          }
         }
         if (!productDoc && productName) {
           productDoc = await ProductModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
+          if (!productDoc) {
+            productDoc = await ItemModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
+          }
         }
 
         if (productDoc) {
           if (productDoc.isActive === false) {
-            validationErrors.push(`"\${productDoc.name || productName}" is currently unavailable.`);
+            validationErrors.push(`"${productDoc.name || productName}" is currently unavailable.`);
           } else if (String(productDoc.stockStatus || '').toLowerCase().trim() === 'outofstock') {
-            validationErrors.push(`"\${productDoc.name || productName}" is currently out of stock.`);
+            validationErrors.push(`"${productDoc.name || productName}" is currently out of stock.`);
           }
         }
       }

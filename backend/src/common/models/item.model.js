@@ -84,6 +84,7 @@ const itemSchema = new Schema(
     // Images
     imageUrl: { type: String, required: true, trim: true },
     thumbnailUrl: { type: String, trim: true },
+    gallery: [{ type: String, trim: true }],
 
     stockStatus: {
       type: String,

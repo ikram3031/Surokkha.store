@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { OrderModel } from '../models/order.model.js';
 import { ProductModel } from '../models/product.model.js';
+import { ItemModel } from '../models/item.model.js';
 import { MemberModel } from '../models/member.model.js';
 import { PaymentModel } from '../models/payment.model.js';
 import { UserModel } from '../models/user.model.js';
@@ -47,36 +48,89 @@ export const resolveUserIdFromReference = async (reference) => {
 };
 
 // Normalize checkout items into the order schema shape expected by the database.
+// Supports both 'Product' and 'Item' collections, variant sizes, skus, and IDs seamlessly.
 export const normalizeOrderItems = async (items = []) => {
-  const normalized = (items || []).map((item) => ({
-    name: item.name ?? item.productName ?? 'Unknown product',
-    quantity: Number(item.quantity || 1),
-    unitPrice: Number(item.unitPrice ?? item.price ?? 0),
-    size: item.size ?? item.variant ?? '',
-    concentration: item.concentration ?? '',
-    productDid: item.productDid ?? '',
-  }));
+  const normalized = (items || []).map((item) => {
+    const rawRef = item.productId || item.itemId || item.id || item._id || item.productDid || '';
+    const itemType = item.itemType || (item.itemId ? 'item' : item.productId ? 'product' : 'product');
+    return {
+      name: item.name ?? item.productName ?? 'Unknown product',
+      quantity: Number(item.quantity || 1),
+      unitPrice: Number(item.unitPrice ?? item.price ?? 0),
+      size: item.size ?? item.variant ?? '',
+      concentration: item.concentration ?? '',
+      productDid: item.productDid ?? (typeof rawRef === 'string' && rawRef.length === 16 ? rawRef : ''),
+      productId: item.productId || (itemType === 'product' && rawRef ? String(rawRef) : ''),
+      itemId: item.itemId || (itemType === 'item' && rawRef ? String(rawRef) : ''),
+      itemType: itemType,
+      sku: item.sku || '',
+      image: item.image || item.imageUrl || '',
+    };
+  });
 
   const needsResolution = normalized.filter((item) => !item.productDid || item.productDid.length !== 16);
   if (needsResolution.length > 0) {
-    const slugs = needsResolution.map((i) => i.productDid).filter(Boolean);
+    const refs = needsResolution.map((i) => i.productId || i.itemId || i.productDid).filter(Boolean);
+    const objectIds = refs.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
+    const slugs = refs;
     const names = needsResolution.map((i) => i.name).filter(Boolean);
-    const foundProds = await ProductModel.find({
-      $or: [
-        { did: { $in: slugs } },
-        { slug: { $in: slugs } },
-        { name: { $in: names } },
-      ],
-    }, 'did slug name').lean();
 
-    const mapBySlug = new Map(foundProds.map((p) => [p.slug, p.did]));
-    const mapByName = new Map(foundProds.map((p) => [p.name, p.did]));
-    const mapByDid = new Map(foundProds.map((p) => [p.did, p.did]));
+    // Search in both Product and Item collections
+    const [foundProds, foundItems] = await Promise.all([
+      ProductModel.find({
+        $or: [
+          ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : []),
+          { did: { $in: slugs } },
+          { slug: { $in: slugs } },
+          { name: { $in: names } },
+        ],
+      }, '_id did slug name sku type').lean(),
+      ItemModel.find({
+        $or: [
+          ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : []),
+          { did: { $in: slugs } },
+          { slug: { $in: slugs } },
+          { name: { $in: names } },
+        ],
+      }, '_id did slug name sku type').lean(),
+    ]);
+
+    const buildLookupMaps = (docs, defaultType) => {
+      const byId = new Map();
+      const byDid = new Map();
+      const bySlug = new Map();
+      const byName = new Map();
+      for (const d of docs) {
+        const info = { did: d.did, id: d._id.toString(), sku: d.sku || '', type: defaultType };
+        byId.set(d._id.toString(), info);
+        if (d.did) byDid.set(d.did, info);
+        if (d.slug) bySlug.set(d.slug, info);
+        if (d.name) byName.set(d.name, info);
+      }
+      return { byId, byDid, bySlug, byName };
+    };
+
+    const prodMaps = buildLookupMaps(foundProds, 'product');
+    const itemMaps = buildLookupMaps(foundItems, 'item');
 
     for (const item of needsResolution) {
-      const resolved = mapByDid.get(item.productDid) || mapBySlug.get(item.productDid) || mapByName.get(item.name);
+      const key = item.productId || item.itemId || item.productDid;
+      const resolved = 
+        prodMaps.byId.get(key) || prodMaps.byDid.get(key) || prodMaps.bySlug.get(key) || prodMaps.byName.get(item.name) ||
+        itemMaps.byId.get(key) || itemMaps.byDid.get(key) || itemMaps.bySlug.get(key) || itemMaps.byName.get(item.name);
+
       if (resolved) {
-        item.productDid = resolved;
+        item.productDid = resolved.did;
+        if (resolved.type === 'item') {
+          item.itemId = resolved.id;
+          item.itemType = 'item';
+        } else {
+          item.productId = resolved.id;
+          item.itemType = 'product';
+        }
+        if (!item.sku && resolved.sku) {
+          item.sku = resolved.sku;
+        }
       }
     }
   }

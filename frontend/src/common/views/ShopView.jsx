@@ -15,8 +15,9 @@ export default function ShopView() {
 
   const { t, isBn, formatNumber } = useTranslation();
 
-  // 1. Dynamic category filter ('all' or specific slug like 'combo', 'contraceptive', 'lubricants', etc.)
+  // 1. Dynamic category filter ('all' or specific slug like 'combo', 'contraceptive', 'lubricant', etc.)
   const [category, setCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState('all'); // 'all' | 'under-500' | '500-800' | 'above-800'
 
   // 2. Default sorting: Oldest to Newest (original products at top, new ones go down)
@@ -67,7 +68,7 @@ export default function ShopView() {
 
   const lubricantCount = useMemo(() => {
     return activeProducts.filter((p) => {
-      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'lubricants';
+      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'lubricant';
     }).length;
   }, [activeProducts]);
 
@@ -77,7 +78,7 @@ export default function ShopView() {
     }).length;
   }, [activeProducts]);
 
-  // Dynamic Category Extraction from products & categories
+  // Dynamic Category Extraction from products & categories (including any custom store categories)
   const dynamicCategories = useMemo(() => {
     const list = [
       { slug: 'contraceptive', name: 'Contraceptive', name_bn: 'কনট্রাসেপটিভ', count: contraceptiveCount },
@@ -85,8 +86,33 @@ export default function ShopView() {
       { slug: 'lubricant', name: 'Lubricants', name_bn: 'লুব্রিকেন্ট', count: lubricantCount },
       { slug: 'performance-booster', name: 'Performance Booster', name_bn: 'পারফরম্যান্স বুস্টার', count: boosterCount },
     ];
+
+    // Also include any extra custom categories found in active products
+    const knownSlugs = new Set(list.map((c) => c.slug));
+    const extraMap = {};
+    activeProducts.forEach((p) => {
+      const rawCatName = (typeof p.category === 'object' ? p.category?.name : p.category) || '';
+      const rawCatBn = (typeof p.category === 'object' && p.category?.name_bn) ? p.category.name_bn : (p.category_bn || rawCatName);
+      const norm = normalizeCatSlug(p.categorySlug, rawCatName || p.slug);
+      if (!knownSlugs.has(norm) && norm !== 'other' && norm) {
+        if (!extraMap[norm]) {
+          extraMap[norm] = {
+            slug: norm,
+            name: rawCatName || norm,
+            name_bn: rawCatBn || rawCatName || norm,
+            count: 0,
+          };
+        }
+        extraMap[norm].count += 1;
+      }
+    });
+
+    Object.values(extraMap).forEach((extraCat) => {
+      list.push(extraCat);
+    });
+
     return list.filter((c) => c.count > 0);
-  }, [contraceptiveCount, comboCount, lubricantCount, boosterCount]);
+  }, [contraceptiveCount, comboCount, lubricantCount, boosterCount, activeProducts]);
 
   // Dynamic counts for banner tabs
   const singleCount = contraceptiveCount;
@@ -108,10 +134,36 @@ export default function ShopView() {
 
   // Filter and sort products pipeline
   const displayedKeys = useMemo(() => {
+    const cleanQuery = String(searchQuery || '').trim().toLowerCase();
+
     let list = productKeys.filter((k) => {
       const prod = products[k];
       if (!prod) return false;
       if (prod.isActive === false || prod.status === 'inactive') return false;
+
+      // Search Filter
+      if (cleanQuery) {
+        const nameEn = String(prod?.name || prod?.title || '').toLowerCase();
+        const nameBn = String(prod?.name_bn || prod?.title_bn || '').toLowerCase();
+        const descEn = String(prod?.description || prod?.longDescription || '').toLowerCase();
+        const descBn = String(prod?.description_bn || prod?.longDescription_bn || '').toLowerCase();
+        const catName = String(typeof prod?.category === 'object' ? prod?.category?.name : prod?.category || '').toLowerCase();
+        const catBn = String(prod?.category_bn || '').toLowerCase();
+        const brand = String(prod?.brand || '').toLowerCase();
+        const slug = String(prod?.slug || k).toLowerCase();
+
+        const matches =
+          slug.includes(cleanQuery) ||
+          nameEn.includes(cleanQuery) ||
+          nameBn.includes(cleanQuery) ||
+          descEn.includes(cleanQuery) ||
+          descBn.includes(cleanQuery) ||
+          catName.includes(cleanQuery) ||
+          catBn.includes(cleanQuery) ||
+          brand.includes(cleanQuery);
+
+        if (!matches) return false;
+      }
 
       const isCombo = k.toLowerCase().includes('combo') || (prod?.name && prod.name.toLowerCase().includes('combo')) || prod?.category === 'Combo' || prod?.category === 'Combo Pack' || (prod?.category_bn && prod.category_bn.includes('কম্বো')) || (prod?.categorySlug && prod.categorySlug.includes('combo'));
 
@@ -182,16 +234,17 @@ export default function ShopView() {
     });
 
     return list;
-  }, [productKeys, products, category, minPrice, maxPrice, inStockOnly, sortBy]);
+  }, [productKeys, products, category, searchQuery, minPrice, maxPrice, inStockOnly, sortBy]);
 
   const paginatedKeys = displayedKeys.slice(0, displayCount);
   const hasMore = displayCount < displayedKeys.length;
 
   const handleResetFilters = () => {
     setCategory('all');
+    setSearchQuery('');
     setPriceRange('all');
     setSortBy('oldest');
-    setInStockOnly(true);
+    setInStockOnly(false);
     setDisplayCount(24);
   };
 
@@ -255,9 +308,9 @@ export default function ShopView() {
       {/* 2. Main Content Layout (SoulCove Structure: Toolbar + 4-column Grid with Dynamic Sidebar & Cards) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
 
-        {/* Clean Toolbar: Dynamic Product Count from API & Sort Dropdown */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-rose-200/70 gap-3">
-          <div className="flex items-center gap-2">
+        {/* Clean Toolbar: Dynamic Product Count from API, Search Input & Sort Dropdown */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-5 border-b border-rose-200/70 gap-4">
+          <div className="flex items-center justify-between gap-3">
             <span className="text-xs sm:text-sm text-slate-600 font-semibold whitespace-nowrap">
               {isBn ? 'প্রদর্শিত হচ্ছে' : 'Showing'}{' '}
               <strong className="text-slate-900 font-bold">{formatNumber(displayedKeys.length)}</strong>{' '}
@@ -265,7 +318,33 @@ export default function ShopView() {
             </span>
           </div>
 
-          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+          {/* Search Box in Toolbar */}
+          <div className="flex-1 max-w-md mx-0 md:mx-4">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isBn ? 'নাম বা ক্যাটাগরি দিয়ে সার্চ করুন...' : 'Search products or items...'}
+                className="w-full bg-white border border-rose-200 rounded-xl pl-9 pr-8 py-2 text-xs font-medium text-slate-900 placeholder:text-slate-400 shadow-2xs focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+              />
+              <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear Search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs font-bold p-0.5 cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
             {/* Mobile Filter Button */}
             <button
               type="button"

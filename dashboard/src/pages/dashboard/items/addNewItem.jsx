@@ -677,7 +677,7 @@ const AddNewItem = () => {
         body.variants = uploadedVariants;
       }
 
-      await apiClient.post("/api/items", body);
+      await apiClient.post("/api/v1/items", body);
       toast.success("Item published successfully!");
       queryClient.invalidateQueries({ queryKey: ["items"] });
       clearDuplicateDraft();

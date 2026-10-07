@@ -297,11 +297,11 @@ export default function CartDrawer() {
 
                         <div className="flex items-baseline gap-2 mt-1">
                           <span className="text-xs sm:text-sm font-extrabold text-rose-700 font-heading">
-                            ৳{item.price}
+                            {formatPrice(item.price)}
                           </span>
                           {item.regularPrice > item.price && (
                             <span className="text-[11px] text-slate-500 line-through font-medium">
-                              ৳{item.regularPrice}
+                              {formatPrice(item.regularPrice)}
                             </span>
                           )}
                         </div>
@@ -331,7 +331,7 @@ export default function CartDrawer() {
                               -
                             </button>
                             <span className="px-2.5 py-1 text-xs font-bold text-slate-900 bg-white font-mono min-w-[24px] text-center">
-                              {qty}
+                              {formatNumber(qty)}
                             </span>
                             <button
                               type="button"
@@ -344,7 +344,7 @@ export default function CartDrawer() {
                           </div>
 
                           <span className="text-xs sm:text-sm font-extrabold text-slate-900 font-mono">
-                            ৳{lineTotal}
+                            {formatPrice(lineTotal)}
                           </span>
                         </div>
                       </div>

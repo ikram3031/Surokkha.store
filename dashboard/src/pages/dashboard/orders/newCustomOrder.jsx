@@ -77,6 +77,9 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
       ? `${product.id}__${selectedVariant.size}`
       : product.id;
 
+    const rawId = product.id || product._id || "";
+    const isItem = product.itemType === "item" || product.entityType === "item";
+
     onAddToCart({
       id: cartKey,
       name: isVariant
@@ -87,6 +90,10 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
       image: product.image,
       sku: isVariant ? selectedVariant.sku || product.sku : product.sku,
       size: isVariant ? selectedVariant.size : "",
+      productId: !isItem ? rawId : "",
+      itemId: isItem ? rawId : "",
+      itemType: isItem ? "item" : "product",
+      productDid: product.did || product.sku || "",
     });
 
     setSelectedVariant(null);
@@ -514,7 +521,13 @@ const NewCustomOrderPage = () => {
           quantity: item.quantity,
           unitPrice: item.price,
           size: item.size || "",
-          concentration: "",
+          concentration: item.concentration || "",
+          productId: item.productId || "",
+          itemId: item.itemId || "",
+          itemType: item.itemType || "product",
+          productDid: item.productDid || "",
+          sku: item.sku || "",
+          image: item.image || "",
         })),
         subtotal,
         discountTotalAmount: discountAmount,

@@ -87,13 +87,13 @@ export const createProduct = async (req, res, next) => {
     }
     const imageUrl = rawImageUrl.trim();
     const thumbnailUrl = (body.thumbnailUrl || body.thumbnail_url || imageUrl).trim();
-    const rawGallery = body.images || body.galleryImages || body.gallery || [];
-    const images = Array.isArray(rawGallery)
+    const rawGallery = body.gallery || body.images || body.galleryImages || [];
+    const gallery = Array.isArray(rawGallery)
       ? rawGallery
           .map((item) => {
             if (typeof item === "string" && item.trim()) return item.trim();
             if (typeof item === "object" && item !== null) {
-              const url = item.url || item.imageUrl || item.preview || "";
+              const url = item.url || item.imageUrl || item.preview || item.src || "";
               return typeof url === "string" && url.trim() ? url.trim() : null;
             }
             return null;
@@ -106,15 +106,9 @@ export const createProduct = async (req, res, next) => {
       slug: body.slug,
       description: body.description || body.name,
       longDescription: body.longDescription || "",
-      chargeTax: Boolean(body.chargeTax),
-      taxRate: body.taxRate !== undefined && body.taxRate !== null && body.taxRate !== "" ? Number(body.taxRate) : null,
       isActive: body.isActive !== undefined ? Boolean(body.isActive) : true,
+      excludeFromMetaCatalog: body.excludeFromMetaCatalog !== undefined ? Boolean(body.excludeFromMetaCatalog) : false,
       type: body.type || "simple",
-      season: Array.isArray(body.season)
-        ? body.season
-        : typeof body.season === "string" && body.season.trim()
-        ? body.season.split(",").map((s) => s.trim()).filter(Boolean)
-        : ["All-Season"],
       tags: Array.isArray(body.tags)
         ? body.tags
             .flatMap((t) => (typeof t === "string" ? t.split(",") : t))
@@ -123,12 +117,11 @@ export const createProduct = async (req, res, next) => {
         : typeof body.tags === "string"
         ? body.tags.split(",").map((t) => t.trim()).filter(Boolean)
         : [],
-      notes: Array.isArray(body.notes) ? body.notes : [],
       categories: categoryIds,
       brand: brandDids,
       imageUrl,
       thumbnailUrl,
-      images,
+      gallery,
       stockStatus: body.stockStatus || "instock",
       stockAmount:
         body.stockAmount !== undefined &&
@@ -136,6 +129,14 @@ export const createProduct = async (req, res, next) => {
         body.stockAmount !== ""
           ? Math.max(0, Number(body.stockAmount))
           : 0,
+      origin: body.origin || "China Imported",
+      expiryDate: body.expiryDate || "2030",
+      packSize: body.packSize || "",
+      specifications: body.specifications || {},
+      benefits: Array.isArray(body.benefits) ? body.benefits : [],
+      sections: Array.isArray(body.sections) ? body.sections : [],
+      packageContents: body.packageContents || "",
+      bn: body.bn || {},
       createdBy: userId,
     };
 
@@ -242,7 +243,7 @@ export const getSingleProduct = async (req, res, next) => {
       return;
     }
 
-    res.json({ data: serializeProduct(product) });
+    res.json({ status: "success", data: serializeProduct(product) });
   } catch (err) {
     next(err);
   }
@@ -284,8 +285,6 @@ export const updateProduct = async (req, res, next) => {
     if (body.slug !== undefined) product.slug = body.slug;
     if (body.description !== undefined) product.description = body.description;
     if (body.longDescription !== undefined) product.longDescription = body.longDescription;
-    if (body.chargeTax !== undefined) product.chargeTax = Boolean(body.chargeTax);
-    if (body.taxRate !== undefined) product.taxRate = body.taxRate ? Number(body.taxRate) : null;
     if (body.isActive !== undefined) product.isActive = Boolean(body.isActive);
     if (body.excludeFromMetaCatalog !== undefined) product.excludeFromMetaCatalog = Boolean(body.excludeFromMetaCatalog);
     if (body.metaData !== undefined) {
@@ -302,13 +301,7 @@ export const updateProduct = async (req, res, next) => {
       product.thumbnailUrl = body.thumbnailUrl.trim();
     if (body.thumbnail_url && body.thumbnail_url.trim())
       product.thumbnailUrl = body.thumbnail_url.trim();
-    if (body.season !== undefined) {
-      product.season = Array.isArray(body.season)
-        ? body.season
-        : typeof body.season === "string" && body.season.trim()
-        ? body.season.split(",").map((s) => s.trim()).filter(Boolean)
-        : ["All-Season"];
-    }
+
     if (body.tags !== undefined) {
       product.tags = Array.isArray(body.tags)
         ? body.tags
@@ -319,7 +312,7 @@ export const updateProduct = async (req, res, next) => {
         ? body.tags.split(",").map((t) => t.trim()).filter(Boolean)
         : [];
     }
-    if (body.notes !== undefined) product.notes = body.notes;
+
     if (body.stockStatus !== undefined) product.stockStatus = body.stockStatus;
     if (body.stockAmount !== undefined) {
       product.stockAmount =
@@ -328,20 +321,31 @@ export const updateProduct = async (req, res, next) => {
           : 0;
     }
 
+    if (body.origin !== undefined) product.origin = body.origin;
+    if (body.expiryDate !== undefined) product.expiryDate = body.expiryDate;
+    if (body.packSize !== undefined) product.packSize = body.packSize;
+    if (body.specifications !== undefined) product.specifications = body.specifications;
+    if (body.benefits !== undefined) product.benefits = body.benefits;
+    if (body.sections !== undefined) product.sections = body.sections;
+    if (body.packageContents !== undefined) product.packageContents = body.packageContents;
+    if (body.bn !== undefined) product.bn = body.bn;
+
     const rawGallery =
-      body.images !== undefined
+      body.gallery !== undefined
+        ? body.gallery
+        : body.images !== undefined
         ? body.images
         : body.galleryImages !== undefined
         ? body.galleryImages
-        : body.gallery;
+        : undefined;
 
     if (rawGallery !== undefined) {
-      product.images = Array.isArray(rawGallery)
+      product.gallery = Array.isArray(rawGallery)
         ? rawGallery
             .map((item) => {
               if (typeof item === "string" && item.trim()) return item.trim();
               if (typeof item === "object" && item !== null) {
-                const url = item.url || item.imageUrl || item.preview || "";
+                const url = item.url || item.imageUrl || item.preview || item.src || "";
                 return typeof url === "string" && url.trim() ? url.trim() : null;
               }
               return null;

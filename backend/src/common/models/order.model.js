@@ -9,9 +9,14 @@ const orderItemSchema = new Schema(
     name: { type: String, required: true, trim: true },
     quantity: { type: Number, required: true, min: 1 },
     unitPrice: { type: Number, required: true, min: 0 },
-    size: { type: String, trim: true },
-    concentration: { type: String, trim: true },
+    size: { type: String, trim: true, default: "" },
+    concentration: { type: String, trim: true, default: "" },
     productDid: { type: String, trim: true, default: "" },
+    productId: { type: String, trim: true, default: "" },
+    itemId: { type: String, trim: true, default: "" },
+    itemType: { type: String, trim: true, default: "product" }, // 'product' | 'item' | 'custom'
+    sku: { type: String, trim: true, default: "" },
+    image: { type: String, trim: true, default: "" },
   },
   { _id: false },
 );

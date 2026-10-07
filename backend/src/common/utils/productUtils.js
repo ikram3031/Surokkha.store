@@ -110,6 +110,32 @@ export const serializeProduct = (product, lang = "en") => {
   const benefits = isBn ? (bnData.benefits || source?.benefits || []) : (source?.benefits || []);
   const sections = isBn ? (bnData.sections || source?.sections || []) : (source?.sections || []);
 
+  const rawGallery = Array.isArray(source?.gallery)
+    ? source.gallery
+    : Array.isArray(source?.images)
+    ? source.images
+    : [];
+
+  const gallery = rawGallery
+    .map((item) => {
+      if (typeof item === "string" && item.trim()) return item.trim();
+      if (typeof item === "object" && item !== null) {
+        const url = item.url || item.imageUrl || item.preview || item.src || "";
+        return typeof url === "string" && url.trim() ? url.trim() : null;
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  const imageUrl = source?.imageUrl || (gallery.length > 0 ? gallery[0] : null);
+  const thumbnailUrl = source?.thumbnailUrl || imageUrl;
+
+  delete rest.chargeTax;
+  delete rest.taxRate;
+  delete rest.images;
+  delete rest.season;
+  delete rest.notes;
+
   return {
     ...rest,
     ...(rawVariants !== undefined ? { variants: rawVariants } : {}),
@@ -138,8 +164,11 @@ export const serializeProduct = (product, lang = "en") => {
     stockAmount: typeof source?.stockAmount === "number" ? source.stockAmount : Number(source?.stockAmount || 0),
     created_at: source?.createdAt ?? null,
     updated_at: source?.updatedAt ?? null,
-    image_url: source?.imageUrl ?? null,
-    thumbnail_url: source?.thumbnailUrl ?? null,
+    imageUrl: imageUrl ?? null,
+    thumbnailUrl: thumbnailUrl ?? null,
+    gallery,
+    image_url: imageUrl ?? null,
+    thumbnail_url: thumbnailUrl ?? null,
   };
 };
 

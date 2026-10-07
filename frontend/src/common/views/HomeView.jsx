@@ -32,14 +32,18 @@ export default function HomeView() {
     getLocalizedFeatures 
   } = useTranslation();
 
-  const nonComboKeys = productKeys.filter((k) => {
+  // Filter exclusively the 3 single contraceptive products from the 'products' collection (The MO Lineup)
+  const moLineupKeys = productKeys.filter((k) => {
     const p = products[k];
     if (!p) return false;
+    const isFromProductsCollection = p.itemType === 'product' || p.entityType === 'product';
     const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-    return !isCombo;
-  });
+    const isContraceptive = p.categorySlug === 'contraceptive' || 
+      (p.slug && (p.slug.includes('contraceptive') || p.slug.includes('latex') || p.slug.includes('mo-')));
+    return isFromProductsCollection && !isCombo && isContraceptive;
+  }).slice(0, 3);
 
-  const displaySingleKeys = nonComboKeys.length > 0 ? nonComboKeys : productKeys;
+  const displaySingleKeys = moLineupKeys.length > 0 ? moLineupKeys : productKeys.slice(0, 3);
 
   const activeCombos = Object.values(products).filter(p => {
     return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.isActive !== false &&

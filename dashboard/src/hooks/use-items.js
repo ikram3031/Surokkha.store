@@ -24,7 +24,7 @@ const fetchItems = async (params) => {
   if (params?.stockStatus && params.stockStatus !== 'all') queryParams.stockStatus = params.stockStatus;
   if (params?.onSale) queryParams.onSale = true;
 
-  const response = await apiClient.get('/api/items', { params: queryParams });
+  const response = await apiClient.get('/api/v1/items', { params: queryParams });
 
   const responseData = response.data;
   let itemList = [];
