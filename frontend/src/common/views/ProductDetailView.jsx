@@ -545,7 +545,7 @@ export default function ProductDetailView() {
                   {isBn ? '💡 বেশি সাশ্রয়ে কম্বো প্যাক খুঁজছেন?' : '💡 Looking for value combo packs?'}
                 </span>
                 {activeCombos.map((cProd, idx) => {
-                  const cKey = cProd.slug || cProd.id;
+                  const cKey = (cProd.slug || cProd.id) + '-' + idx;
                   const cPrice = cProd.offerPrice || cProd.price;
                   const cName = isBn ? (cProd.name_bn || cProd.name) : cProd.name;
                   return (

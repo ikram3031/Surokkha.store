@@ -74,7 +74,7 @@ export default function ProductCard({ productKey, className = '' }) {
       >
         <ProductArtwork 
           productKey={productKey} 
-          customImageUrl={prod?.featuredImage || prod?.featured_image || prod?.imageUrl || prod?.image_url || prod?.product_image || (Array.isArray(prod?.images) ? prod.images[0] : null)}
+          customImageUrl={prod?.featuredImage || prod?.featured_image || prod?.imageUrl || prod?.image_url || prod?.product_image || (Array.isArray(prod?.images) && prod.images.length > 0 ? prod.images[0] : null) || (Array.isArray(prod?.gallery) && prod.gallery.length > 0 ? prod.gallery[0] : null)}
           sizeClass="w-full h-full aspect-square"
           imgClassName="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
         />

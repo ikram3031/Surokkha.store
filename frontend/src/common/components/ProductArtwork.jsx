@@ -29,7 +29,7 @@ export default function ProductArtwork({
     return url.replace(/\/thumb_([^/]+)$/, '/$1').replace(/\/thumb\/([^/]+)$/, '/$1');
   };
 
-  let candidateImg =
+    let candidateImg =
     customImageUrl ||
     p?.featuredImage ||
     p?.featured_image ||
@@ -37,6 +37,7 @@ export default function ProductArtwork({
     p?.image_url ||
     p?.product_image ||
     (Array.isArray(p?.images) && p.images.length > 0 ? p.images[0] : null) ||
+    (Array.isArray(p?.gallery) && p.gallery.length > 0 ? p.gallery[0] : null) ||
     p?.thumbnailUrl ||
     p?.thumbnail_url ||
     null;
