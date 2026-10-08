@@ -12,6 +12,8 @@ export const ProductModal = ({ product, onClose }) => {
     product.imageUrl || (Array.isArray(product.images) && product.images[0]) || ''
   );
   const [quantity, setQuantity] = useState(1);
+  const [variantQuantities, setVariantQuantities] = useState({});
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [isAddedFeedback, setIsAddedFeedback] = useState(false);
 
   const images = Array.isArray(product.images) && product.images.length > 0
@@ -42,6 +44,8 @@ export const ProductModal = ({ product, onClose }) => {
     };
   }, []);
 
+  const hasVariants = Boolean(product.type === 'variant' || product.type === 'variable' || (Array.isArray(product.variants) && product.variants.length > 0));
+
   const handleWhatsAppOrder = () => {
     const message = generateSingleProductOrderMessage(product, quantity);
     const url = buildWhatsAppLink(message);
@@ -49,7 +53,20 @@ export const ProductModal = ({ product, onClose }) => {
   };
 
   const handleAddToCartAndDrawer = () => {
-    addToCart(product, quantity);
+    if (hasVariants) {
+      const selectedVariants = Object.entries(variantQuantities).filter(([_, q]) => q > 0);
+      if (selectedVariants.length === 0) {
+        alert('অনুগ্রহ করে অন্তত একটি ভেরিয়েশনের পরিমাণ নির্বাচন করুন');
+        return;
+      }
+      selectedVariants.forEach(([size, q]) => {
+        const v = product.variants.find(va => va.size === size);
+        if (v) addToCart({ ...product, slug: `${product.slug}:::${v.size}`, name: `${product.name} - ${v.size}`, offerPrice: v.price || v.offerPrice || offerPrice }, q);
+      });
+    } else {
+      addToCart(product, quantity);
+    }
+    
     setIsAddedFeedback(true);
     setTimeout(() => {
       setIsAddedFeedback(false);

@@ -191,7 +191,7 @@ export default function ProductCard({ productKey, className = '' }) {
             <div>
               <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className={`text-base sm:text-lg font-extrabold font-heading tracking-tight ${isOutOfStock ? 'text-slate-500' : 'text-brand-800'}`}>
-                  {formatPrice(currentOfferPrice)}
+                  {hasVariants ? (minPrice !== maxPrice ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` : formatPrice(minPrice)) : formatPrice(currentOfferPrice)}
                 </span>
                 {hasDiscount && (
                   <span className="text-xs text-slate-400 line-through font-normal">
@@ -228,7 +228,7 @@ export default function ProductCard({ productKey, className = '' }) {
             <button
               type="button"
               disabled={isOutOfStock}
-              onClick={() => !isOutOfStock && buyNowDirect(productKey)}
+              onClick={() => !isOutOfStock && (hasVariants ? openProduct(productKey) : buyNowDirect(productKey))}
               className={`flex-1 text-xs font-bold py-2 px-2 rounded-xl transition flex items-center justify-center gap-1 ${
                 isOutOfStock
                   ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
@@ -239,6 +239,11 @@ export default function ProductCard({ productKey, className = '' }) {
                 <>
                   <span>🚫</span>
                   <span className="whitespace-nowrap">{isBn ? 'স্টক শেষ' : 'Out of Stock'}</span>
+                </>
+              ) : hasVariants ? (
+                <>
+                  <span>⚙️</span>
+                  <span className="whitespace-nowrap">{isBn ? 'বাছাই করুন' : 'Select'}</span>
                 </>
               ) : (
                 <>

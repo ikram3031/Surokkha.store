@@ -614,6 +614,8 @@ export const useStore = create((set, get) => ({
             sku: p.sku || '',
             itemType: p.itemType || 'product',
             entityType: p.entityType || 'product',
+            type: p.type || 'product',
+            variants: p.variants || null,
             name: englishName,
             name_bn: nameBn,
             bn: itemBn,

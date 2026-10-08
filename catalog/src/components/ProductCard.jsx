@@ -14,9 +14,25 @@ export const ProductCard = ({ product, onOpenModal }) => {
     ? product.discountPercentage
     : (regularPrice > offerPrice ? Math.round(((regularPrice - offerPrice) / regularPrice) * 100) : 0);
 
+  const hasVariants = product.type === 'variant' && Array.isArray(product.variants) && product.variants.length > 0;
+  let minPrice = offerPrice;
+  let maxPrice = offerPrice;
+  if (hasVariants) {
+    const prices = product.variants.map(v => Number(v.offerPrice || v.price || v.regularPrice || 0)).filter(p => p > 0);
+    if (prices.length > 0) {
+      minPrice = Math.min(...prices);
+      maxPrice = Math.max(...prices);
+    }
+  }
+
   const handleQuickAdd = (e) => {
     e.stopPropagation();
     if (product.isOutOfStock) return;
+
+    if (hasVariants) {
+      onOpenModal(product);
+      return;
+    }
 
     addToCart(product, 1);
     setIsAdded(true);
@@ -109,7 +125,7 @@ export const ProductCard = ({ product, onOpenModal }) => {
         <div className="mt-auto pt-3 flex items-baseline justify-between gap-1">
           <div className="flex items-baseline space-x-1.5 flex-wrap">
             <span className="text-base sm:text-lg font-black text-emerald-400 tracking-tight">
-              {formatPrice(offerPrice)}
+              {hasVariants ? (minPrice !== maxPrice ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` : formatPrice(minPrice)) : formatPrice(offerPrice)}
             </span>
             {regularPrice > offerPrice && (
               <span className="text-xs sm:text-sm text-slate-400 line-through">
@@ -145,6 +161,11 @@ export const ProductCard = ({ product, onOpenModal }) => {
               </>
             ) : product.isOutOfStock ? (
               <span>স্টক শেষ</span>
+            ) : hasVariants ? (
+              <>
+                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-200" />
+                <span>বাছাই করুন</span>
+              </>
             ) : (
               <>
                 <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-200" />

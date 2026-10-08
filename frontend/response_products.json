@@ -1,0 +1,1340 @@
+{
+    "status":  "success",
+    "data":  [
+                 {
+                     "slug":  "mo-multi-textured-latex-contraceptive-20-pcs-combo",
+                     "benefits":  [
+                                      {
+                                          "title":  "Exclusive Combo Discount (Save ?241 / 30% OFF)",
+                                          "description":  "Get 2 full factory boxes (20 contraceptives) for only ?559 instead of ?800 regular price."
+                                      },
+                                      {
+                                          "title":  "Micro-Dot Matrix Comfort",
+                                          "description":  "Molded micropores for ergonomic hold and friction-free glide."
+                                      },
+                                      {
+                                          "title":  "Batch Tested ISO Quality",
+                                          "description":  "Engineered for maximum tensile strength and complete reassurance."
+                                      },
+                                      {
+                                          "title":  "100% Confidential Delivery",
+                                          "description":  "Zero external product details for total privacy."
+                                      }
+                                  ],
+                     "bn":  {
+                                "name":  "MO ??????-?????????? ????????? ???????????? (?? ??? ?????)",
+                                "tagline":  "?? ??? ??????-?????????? ???? ????? — ???????? ?? ??????????? ???????? ? ???????",
+                                "description":  "?? ??? MO ??????-?????????? ???? ????? ??????? (? ????)? ???????? ?????? ????????? ??????? ? ???????? ?????????? ??????????? ????????",
+                                "packSize":  "?? ??? (??? ????)",
+                                "packageContents":  "??? ???? (???? ????? ???????????? ????? ?????)",
+                                "specifications":  {
+                                                       "????????? ??????":  "??? ???????? ????????? ???? (??? ???? ???)",
+                                                       "??????":  "???% ????????? ????? ????????? ?????????",
+                                                       "?????? ????????":  "?????? ???? ???????-?? ???????????",
+                                                       "????????????? ??????":  "?? ???? (±? ????)",
+                                                       "??????????":  "???????? ????? ????????? ??????",
+                                                       "????????????":  "ISO 4074 / CE ??????????",
+                                                       "?????????":  "???% ???? ? ???????? ???? ????"
+                                                   },
+                                "benefits":  [
+                                                 {
+                                                     "title":  "????????? ????? ???? (??? ???? ??????? / ??% ???)",
+                                                     "description":  "??? ????? ??? ???? ??? ????? ??? ???????"
+                                                 },
+                                                 {
+                                                     "title":  "????? ?? ???????? ? ?????",
+                                                     "description":  "???? ???????-?? ???????????? ???????? ??????????"
+                                                 },
+                                                 {
+                                                     "title":  "??????????? ??? ? ?????????",
+                                                     "description":  "ISO 4074 ? CE ?????????? ????? ??????? ?????????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ???? ????????",
+                                                     "description":  "??? ??? ?????? ??????? ? ????? ?? ?????????"
+                                                 }
+                                             ]
+                            },
+                     "categories":  [
+                                        {
+                                            "id":  "6ab81620a561a97a08a0de93",
+                                            "_id":  "6ab81620a561a97a08a0de93",
+                                            "did":  "4f11eb39f26fd1a7",
+                                            "name":  "Combo",
+                                            "name_bn":  "????? ?????",
+                                            "slug":  "combo",
+                                            "imageUrl":  "",
+                                            "parent":  null
+                                        }
+                                    ],
+                     "createdAt":  "2026-09-26T19:35:51.833Z",
+                     "description":  "Special 20 pieces value combo pack of authentic MO Multi-Textured contraceptive latex.",
+                     "did":  "9e0ce2f921b03ba7",
+                     "expiryDate":  "Valid until 2030 (5 Years)",
+                     "imageUrl":  "/uploads/2609/260927/dotted-condoms-20pcs-combo_main_1790487899638.jpg",
+                     "isActive":  true,
+                     "longDescription":  "\u003cp\u003eDotted Condoms 20pcs Combo includes 2 boxes of raised-dot pleasure condoms with reinforced latex walls and high-glide silicone lubrication for heightened partner excitement and reliable protection.\u003c/p\u003e",
+                     "name":  "Multi-Textured Latex Contraceptive (20 Pcs Combo)",
+                     "offerPrice":  700,
+                     "origin":  "Imported (ISO 4074 / CE Certified)",
+                     "packSize":  "20 Pieces (2 Boxes)",
+                     "packageContents":  "2 Sealed Retail Boxes (20 Individually Foil-Wrapped Multi-Textured Contraceptives)",
+                     "price":  800,
+                     "sections":  [
+                                      {
+                                          "heading":  "Dotted Pleasure Combo Advantages",
+                                          "content":  "Dotted condoms deliver unique tactile excitement that plain condoms cannot match. This 20-piece pack saves you ?241 while keeping you stocked with certified safe products."
+                                      },
+                                      {
+                                          "heading":  "Storage \u0026 Safe Handling",
+                                          "content":  "Store in a dry location below 30°C. Do not puncture foil packs with scissors or sharp objects."
+                                      }
+                                  ],
+                     "sku":  "MOCOM02",
+                     "specifications":  {
+                                            "Bundle Contents":  "2 Full Factory Boxes (20 Individual Contraceptives)",
+                                            "Material":  "100% Medical Grade Natural Rubber Latex",
+                                            "Surface Texture":  "Precision Raised Micro-Dot Matrix",
+                                            "Nominal Width":  "52mm (±2mm)",
+                                            "Lubrication":  "Neutral pH Medical-Grade Silicone Fluid",
+                                            "Quality Standards":  "ISO 4074 / CE 0123 Certified",
+                                            "Packaging":  "Discreet Unmarked Double Box"
+                                        },
+                     "stockAmount":  13,
+                     "stockStatus":  "instock",
+                     "tagline":  "20pcs Multi-Textured Value Bundle with raised matrix texture",
+                     "thumbnailUrl":  "/uploads/2609/260927/dotted-condoms-20pcs-combo_main_1790487899638.jpg",
+                     "title":  "Dotted Condoms: 20pcs Combo",
+                     "type":  "simple",
+                     "updatedAt":  "2026-10-08T04:49:49.829Z",
+                     "data_bn":  {
+                                     "name":  "MO ??????-?????????? ????????? ???????????? (?? ??? ?????)",
+                                     "tagline":  "?? ??? ??????-?????????? ???? ????? — ???????? ?? ??????????? ???????? ? ???????",
+                                     "description":  "?? ??? MO ??????-?????????? ???? ????? ??????? (? ????)? ???????? ?????? ????????? ??????? ? ???????? ?????????? ??????????? ????????"
+                                 },
+                     "gallery_images":  [
+                                            "/uploads/2609/260923/combo-26_main_1790168615316.webp",
+                                            "/uploads/2609/260923/mo-dotted_main_1790169125534.webp",
+                                            "/uploads/2609/260923/mo-dotted_main_1790169125938.webp",
+                                            "/uploads/2609/260923/mo-dotted_main_1790169126465.webp"
+                                        ],
+                     "product_image":  "/uploads/2609/260923/combo-26_main_1790168615316.webp",
+                     "offer_price":  700,
+                     "regularPrice":  800,
+                     "regular_price":  800,
+                     "brand":  [
+
+                               ],
+                     "category_id":  "6ab81620a561a97a08a0de93",
+                     "sale_price":  700,
+                     "status":  "active",
+                     "stock":  100,
+                     "createdBy":  "6ab2c988721c81cc891e69d2",
+                     "metaData":  {
+                                      "metaTitle":  "",
+                                      "metaDescription":  "",
+                                      "keywords":  [
+
+                                                   ],
+                                      "ogImage":  ""
+                                  },
+                     "tags":  [
+
+                              ],
+                     "updatedBy":  "6ab2c988721c81cc891e69d2",
+                     "salePrice":  700,
+                     "excludeFromMetaCatalog":  false,
+                     "gallery":  [
+
+                                 ],
+                     "id":  "6ab81e97721c81cc89211374",
+                     "category":  {
+                                      "id":  "6ab81620a561a97a08a0de93",
+                                      "_id":  "6ab81620a561a97a08a0de93",
+                                      "did":  "4f11eb39f26fd1a7",
+                                      "name":  "Combo",
+                                      "name_bn":  "????? ?????",
+                                      "slug":  "combo",
+                                      "imageUrl":  "",
+                                      "parent":  null
+                                  },
+                     "category_bn":  "????? ?????",
+                     "_populatedCategories":  [
+                                                  {
+                                                      "id":  "6ab81620a561a97a08a0de93",
+                                                      "_id":  "6ab81620a561a97a08a0de93",
+                                                      "did":  "4f11eb39f26fd1a7",
+                                                      "name":  "Combo",
+                                                      "name_bn":  "????? ?????",
+                                                      "slug":  "combo",
+                                                      "imageUrl":  "",
+                                                      "parent":  null
+                                                  }
+                                              ],
+                     "created_at":  "2026-09-26T19:35:51.833Z",
+                     "updated_at":  "2026-10-08T04:49:49.829Z",
+                     "image_url":  "/uploads/2609/260927/dotted-condoms-20pcs-combo_main_1790487899638.jpg",
+                     "thumbnail_url":  "/uploads/2609/260927/dotted-condoms-20pcs-combo_main_1790487899638.jpg"
+                 },
+                 {
+                     "slug":  "mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo",
+                     "benefits":  [
+                                      {
+                                          "title":  "Super Saver Value Deal (Save ?301 / 38% OFF)",
+                                          "description":  "Get 2 full factory boxes (20 contraceptives) for only ?499 instead of ?800 regular price."
+                                      },
+                                      {
+                                          "title":  "Ergonomic Contour Fitting",
+                                          "description":  "Structured spiral ribs ensure natural anatomical hold and comfort."
+                                      },
+                                      {
+                                          "title":  "Rigorous Pinhole Tested",
+                                          "description":  "Double electronic pinhole tested for maximum family planning safety."
+                                      },
+                                      {
+                                          "title":  "100% Discreet Shipping",
+                                          "description":  "Zero branding or product descriptions on the shipping box."
+                                      }
+                                  ],
+                     "bn":  {
+                                "name":  "MO ???????-???? ????????? ????????? ???????????? (?? ??? ?????)",
+                                "tagline":  "?? ??? ???????-???? ???? ????? — ??????????? ????? ? ???????",
+                                "description":  "?? ??? MO ???????-???? ???? ????? ??????? (? ????)? ???????? ????? ??? ?????? ???????? ???? ??????????",
+                                "packSize":  "?? ??? (??? ????)",
+                                "packageContents":  "??? ???? (???? ????? ???????????? ????? ?????)",
+                                "specifications":  {
+                                                       "????????? ??????":  "??? ???????? ????????? ???? (??? ???? ???)",
+                                                       "??????":  "???% ????????? ????? ????????? ?????????",
+                                                       "??????????":  "????????? ???????? ???????-???? ???????",
+                                                       "????????????? ??????":  "?? ???? (±? ????)",
+                                                       "??????????":  "???????? ????? ????????? ??????",
+                                                       "????????????":  "ISO 4074 / CE ??????????",
+                                                       "?????????":  "???% ???? ? ???????? ???? ????"
+                                                   },
+                                "benefits":  [
+                                                 {
+                                                     "title":  "???? ????? ????? ??? (??? ???? ??????? / ??% ???)",
+                                                     "description":  "??? ????? ??? ???? ??? ????? ??? ???????"
+                                                 },
+                                                 {
+                                                     "title":  "?????? ????? ? ??????????",
+                                                     "description":  "???????? ???????-???? ??????????? ???????? ??????"
+                                                 },
+                                                 {
+                                                     "title":  "???? ?????????? ???????",
+                                                     "description":  "???????? ?????? ????????? ???????? ???% ???????? ????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ???? ????????",
+                                                     "description":  "???????? ???????? ??????? ? ????? ?? ?????????"
+                                                 }
+                                             ]
+                            },
+                     "categories":  [
+                                        {
+                                            "id":  "6ab81620a561a97a08a0de93",
+                                            "_id":  "6ab81620a561a97a08a0de93",
+                                            "did":  "4f11eb39f26fd1a7",
+                                            "name":  "Combo",
+                                            "name_bn":  "????? ?????",
+                                            "slug":  "combo",
+                                            "imageUrl":  "",
+                                            "parent":  null
+                                        }
+                                    ],
+                     "createdAt":  "2026-09-26T19:35:51.830Z",
+                     "description":  "Special 20 pieces value combo pack of authentic MO Micro-Ribbed contraceptive latex. 2 full factory boxes at exceptional value.",
+                     "did":  "855cf887fda956ad",
+                     "expiryDate":  "Valid until 2030 (5 Years)",
+                     "imageUrl":  "/uploads/2609/260927/ribbed-condoms-20pcs-combo_main_1790487639641.jpg",
+                     "isActive":  true,
+                     "longDescription":  "\u003cp\u003eRibbed Condoms 20pcs Combo provides 2 boxes of textured micro-rib condoms designed for couples seeking enhanced stimulation, frictionless movement, and superior bulk savings.\u003c/p\u003e",
+                     "name":  "Ribbed Natural Latex Contraceptive (20 Pcs Combo)",
+                     "offerPrice":  700,
+                     "origin":  "Imported (ISO 4074 / CE Certified)",
+                     "packSize":  "20 Pieces (2 Boxes)",
+                     "packageContents":  "2 Sealed Retail Boxes (20 Individually Foil-Wrapped Micro-Ribbed Contraceptives)",
+                     "price":  800,
+                     "sections":  [
+                                      {
+                                          "heading":  "Why Choose the 20pcs Ribbed Combo?",
+                                          "content":  "Ribbed texture offers the most exciting sensation for adventurous couples. Buying 20 pieces together provides the best price in Bangladesh (?499) while ensuring consistent supply."
+                                      },
+                                      {
+                                          "heading":  "Quality Certification \u0026 Strength",
+                                          "content":  "Tested for high tensile burst pressure and micro-pinholes under ISO 4074 standards. Safe for vigorous intimate use."
+                                      }
+                                  ],
+                     "sku":  "MO-RB-20-CMB",
+                     "specifications":  {
+                                            "Bundle Contents":  "2 Full Factory Boxes (20 Individual Contraceptives)",
+                                            "Material":  "100% Medical Grade Natural Rubber Latex",
+                                            "Structure":  "Sequential Spiral Micro-Ribbed Contour",
+                                            "Nominal Width":  "52mm (±2mm)",
+                                            "Lubrication":  "Neutral pH Medical-Grade Silicone Fluid",
+                                            "Quality Standards":  "ISO 4074 / CE 0123 Certified",
+                                            "Packaging":  "Discreet Unmarked Double Box"
+                                        },
+                     "stockAmount":  10,
+                     "stockStatus":  "instock",
+                     "tagline":  "20pcs Ribbed Value Bundle for ergonomic contour fit \u0026 safety",
+                     "thumbnailUrl":  "/uploads/2609/260927/ribbed-condoms-20pcs-combo_main_1790487639641.jpg",
+                     "title":  "Ribbed Condoms: 20pcs Combo",
+                     "type":  "simple",
+                     "updatedAt":  "2026-10-08T04:49:33.701Z",
+                     "data_bn":  {
+                                     "name":  "MO ???????-???? ????????? ????????? ???????????? (?? ??? ?????)",
+                                     "tagline":  "?? ??? ???????-???? ???? ????? — ??????????? ????? ? ???????",
+                                     "description":  "?? ??? MO ???????-???? ???? ????? ??????? (? ????)? ???????? ????? ??? ?????? ???????? ???? ??????????"
+                                 },
+                     "gallery_images":  [
+                                            "/uploads/2609/260923/combo-26_main_1790165045296.webp",
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169221979.webp",
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169223233.webp",
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169224012.webp"
+                                        ],
+                     "product_image":  "/uploads/2609/260923/combo-26_main_1790165045296.webp",
+                     "offer_price":  650,
+                     "regularPrice":  800,
+                     "regular_price":  800,
+                     "brand":  [
+
+                               ],
+                     "category_id":  "6ab81620a561a97a08a0de93",
+                     "sale_price":  650,
+                     "status":  "active",
+                     "stock":  5,
+                     "createdBy":  "6ab2c988721c81cc891e69d2",
+                     "metaData":  {
+                                      "metaTitle":  "",
+                                      "metaDescription":  "",
+                                      "keywords":  [
+
+                                                   ],
+                                      "ogImage":  ""
+                                  },
+                     "tags":  [
+
+                              ],
+                     "updatedBy":  "6ab2c988721c81cc891e69d2",
+                     "salePrice":  650,
+                     "excludeFromMetaCatalog":  false,
+                     "gallery":  [
+
+                                 ],
+                     "id":  "6ab81e97721c81cc89211371",
+                     "category":  {
+                                      "id":  "6ab81620a561a97a08a0de93",
+                                      "_id":  "6ab81620a561a97a08a0de93",
+                                      "did":  "4f11eb39f26fd1a7",
+                                      "name":  "Combo",
+                                      "name_bn":  "????? ?????",
+                                      "slug":  "combo",
+                                      "imageUrl":  "",
+                                      "parent":  null
+                                  },
+                     "category_bn":  "????? ?????",
+                     "_populatedCategories":  [
+                                                  {
+                                                      "id":  "6ab81620a561a97a08a0de93",
+                                                      "_id":  "6ab81620a561a97a08a0de93",
+                                                      "did":  "4f11eb39f26fd1a7",
+                                                      "name":  "Combo",
+                                                      "name_bn":  "????? ?????",
+                                                      "slug":  "combo",
+                                                      "imageUrl":  "",
+                                                      "parent":  null
+                                                  }
+                                              ],
+                     "created_at":  "2026-09-26T19:35:51.830Z",
+                     "updated_at":  "2026-10-08T04:49:33.701Z",
+                     "image_url":  "/uploads/2609/260927/ribbed-condoms-20pcs-combo_main_1790487639641.jpg",
+                     "thumbnail_url":  "/uploads/2609/260927/ribbed-condoms-20pcs-combo_main_1790487639641.jpg"
+                 },
+                 {
+                     "slug":  "mo-micro-thin-latex-contraceptive-20-pcs-combo",
+                     "benefits":  [
+                                      {
+                                          "title":  "Exclusive Combo Discount (Save ?201 / 25% OFF)",
+                                          "description":  "Get 2 full factory boxes (20 contraceptives) for only ?599 instead of ?800 regular price."
+                                      },
+                                      {
+                                          "title":  "Long-Term Protection Stock",
+                                          "description":  "Adequate 20-count family planning supply in factory-sealed condition."
+                                      },
+                                      {
+                                          "title":  "Micro-Thin Body Warmth Conduction",
+                                          "description":  "0.03mm profile for maximum comfort without compromising safety."
+                                      },
+                                      {
+                                          "title":  "100% Confidential Delivery",
+                                          "description":  "Delivered in completely unmarked parcels nationwide."
+                                      }
+                                  ],
+                     "bn":  {
+                                "name":  "MO ???????-??? ????????? ???????????? (?? ??? ?????)",
+                                "tagline":  "?? ??? ???????-??? ???? ????? — ?????? ????????? ? ?????? ???????",
+                                "description":  "?? ??? MO ???????-??? ???? ????? ??????? (? ????)? ?????? ?????? ????????? ? ???????? ???% ???? ?????????? ?????? ?????",
+                                "packSize":  "?? ??? (??? ????)",
+                                "packageContents":  "??? ???? (???? ????? ???????????? ????? ?????)",
+                                "specifications":  {
+                                                       "????????? ??????":  "??? ???????? ????????? ???? (??? ???? ???)",
+                                                       "??????":  "???% ????????? ????? ????????? ?????????",
+                                                       "???????":  "?.?? ???? ???????-??? ????",
+                                                       "????????????? ??????":  "?? ???? (±? ????)",
+                                                       "??????????":  "???????? ????? ????????? ??????",
+                                                       "????????????":  "ISO 4074 / CE ??????????",
+                                                       "?????????":  "???% ???? ? ???????? ???? ????"
+                                                   },
+                                "benefits":  [
+                                                 {
+                                                     "title":  "????????? ????? ?????? (??? ???? ??????? / ??% ???)",
+                                                     "description":  "??? ????? ??? ???? ??? ????? ??? ???????"
+                                                 },
+                                                 {
+                                                     "title":  "???????????? ????????? ????",
+                                                     "description":  "?? ??????? ?? ????? ??????? ???????? ????????? ????????"
+                                                 },
+                                                 {
+                                                     "title":  "???????-??? ??????? ? ?????????",
+                                                     "description":  "?.?? ???? ???????? ???????? ???? ? ????? ????? ??????? ????????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ??????? ????????",
+                                                     "description":  "?????? ? ??? ??? ????? ????? ??? ?????????"
+                                                 }
+                                             ]
+                            },
+                     "categories":  [
+                                        {
+                                            "id":  "6ab81620a561a97a08a0de93",
+                                            "_id":  "6ab81620a561a97a08a0de93",
+                                            "did":  "4f11eb39f26fd1a7",
+                                            "name":  "Combo",
+                                            "name_bn":  "????? ?????",
+                                            "slug":  "combo",
+                                            "imageUrl":  "",
+                                            "parent":  null
+                                        }
+                                    ],
+                     "createdAt":  "2026-09-26T19:35:51.828Z",
+                     "description":  "Special 20 pieces value combo pack of authentic MO Micro-Thin contraceptive latex in 100% confidential unmarked packaging. 2 full factory boxes with exclusive bundle pricing.",
+                     "did":  "11660f3830f449eb",
+                     "expiryDate":  "Valid until 2030 (5 Years)",
+                     "imageUrl":  "/uploads/2609/260927/ultra-thin-condoms-20pcs-combo_main_1790487754394.jpg",
+                     "isActive":  true,
+                     "longDescription":  "\u003cp\u003eUltra Thin 20pcs Combo pack is designed for regular users who demand authentic skin-to-skin touch and consistent protection. Receive 2 sealed boxes (20 individual foil packs) valid until 2030 at massive bundle savings.\u003c/p\u003e",
+                     "name":  "Micro-Thin Latex Contraceptive (20 Pcs Combo)",
+                     "offerPrice":  700,
+                     "origin":  "Imported (ISO 4074 / CE Certified)",
+                     "packSize":  "20 Pieces (2 Boxes)",
+                     "packageContents":  "2 Sealed Retail Boxes (20 Individually Foil-Wrapped Micro-Thin Contraceptives)",
+                     "price":  800,
+                     "sections":  [
+                                      {
+                                          "heading":  "Combo Package Overview \u0026 Cost Advantage",
+                                          "content":  "This 20-piece combo is the most cost-effective choice for couples who value natural touch. By purchasing in a 2-box bundle, you save ?201 and minimize repeated shipping costs."
+                                      },
+                                      {
+                                          "heading":  "Preservation \u0026 Shelf Life",
+                                          "content":  "Both boxes are hermetically sealed with multi-layer foil and dated up to 2030. Keep in a dry, cool cabinet."
+                                      }
+                                  ],
+                     "sku":  "MOCOM01",
+                     "specifications":  {
+                                            "Bundle Contents":  "2 Full Factory Boxes (20 Individual Contraceptives)",
+                                            "Material":  "100% Medical Grade Natural Rubber Latex",
+                                            "Membrane Thickness":  "0.03mm Micro-Thin",
+                                            "Nominal Width":  "52mm (±2mm)",
+                                            "Lubrication":  "Neutral pH Medical-Grade Silicone Fluid",
+                                            "Quality Standards":  "ISO 4074 / CE 0123 / WHO Standard Tested",
+                                            "Packaging":  "Discreet Unmarked Double Box"
+                                        },
+                     "stockAmount":  20,
+                     "stockStatus":  "instock",
+                     "tagline":  "20pcs Micro-Thin Value Bundle for complete family planning protection",
+                     "thumbnailUrl":  "/uploads/2609/260927/ultra-thin-condoms-20pcs-combo_main_1790487754394.jpg",
+                     "title":  "Ultra Thin Condoms: 20pcs Combo",
+                     "type":  "simple",
+                     "updatedAt":  "2026-10-08T04:49:42.639Z",
+                     "data_bn":  {
+                                     "name":  "MO ???????-??? ????????? ???????????? (?? ??? ?????)",
+                                     "tagline":  "?? ??? ???????-??? ???? ????? — ?????? ????????? ? ?????? ???????",
+                                     "description":  "?? ??? MO ???????-??? ???? ????? ??????? (? ????)? ?????? ?????? ????????? ? ???????? ???% ???? ?????????? ?????? ?????"
+                                 },
+                     "gallery_images":  [
+                                            "/uploads/2609/260923/combo-26_main_1790168615316.webp",
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169170756.webp",
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169171231.webp",
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169171656.webp"
+                                        ],
+                     "product_image":  "/uploads/2609/260923/combo-26_main_1790168615316.webp",
+                     "offer_price":  599,
+                     "regularPrice":  800,
+                     "regular_price":  800,
+                     "brand":  [
+
+                               ],
+                     "category_id":  "6ab81620a561a97a08a0de93",
+                     "sale_price":  599,
+                     "status":  "active",
+                     "stock":  100,
+                     "createdBy":  "6ab2c988721c81cc891e69d2",
+                     "metaData":  {
+                                      "metaTitle":  "",
+                                      "metaDescription":  "",
+                                      "keywords":  [
+
+                                                   ],
+                                      "ogImage":  ""
+                                  },
+                     "tags":  [
+
+                              ],
+                     "updatedBy":  "6ab2c988721c81cc891e69d2",
+                     "salePrice":  599,
+                     "excludeFromMetaCatalog":  false,
+                     "gallery":  [
+
+                                 ],
+                     "id":  "6ab81e97721c81cc8921136e",
+                     "category":  {
+                                      "id":  "6ab81620a561a97a08a0de93",
+                                      "_id":  "6ab81620a561a97a08a0de93",
+                                      "did":  "4f11eb39f26fd1a7",
+                                      "name":  "Combo",
+                                      "name_bn":  "????? ?????",
+                                      "slug":  "combo",
+                                      "imageUrl":  "",
+                                      "parent":  null
+                                  },
+                     "category_bn":  "????? ?????",
+                     "_populatedCategories":  [
+                                                  {
+                                                      "id":  "6ab81620a561a97a08a0de93",
+                                                      "_id":  "6ab81620a561a97a08a0de93",
+                                                      "did":  "4f11eb39f26fd1a7",
+                                                      "name":  "Combo",
+                                                      "name_bn":  "????? ?????",
+                                                      "slug":  "combo",
+                                                      "imageUrl":  "",
+                                                      "parent":  null
+                                                  }
+                                              ],
+                     "created_at":  "2026-09-26T19:35:51.828Z",
+                     "updated_at":  "2026-10-08T04:49:42.639Z",
+                     "image_url":  "/uploads/2609/260927/ultra-thin-condoms-20pcs-combo_main_1790487754394.jpg",
+                     "thumbnail_url":  "/uploads/2609/260927/ultra-thin-condoms-20pcs-combo_main_1790487754394.jpg"
+                 },
+                 {
+                     "did":  "68c019a9c15c38dc",
+                     "slug":  "mo-micro-ribbed-natural-latex-contraceptive-10-pcs",
+                     "name":  "MO Micro-Ribbed Natural Latex Contraceptive (10 Pcs)",
+                     "title":  "MO Ultra Ribbed Condom",
+                     "brand":  [
+
+                               ],
+                     "origin":  "Imported (ISO 4074 / CE Certified)",
+                     "price":  400,
+                     "regularPrice":  400,
+                     "offerPrice":  null,
+                     "stockQuantity":  100,
+                     "productType":  "simple",
+                     "tagline":  "Sequential contour ridges for secure ergonomic fit \u0026 protection",
+                     "description":  "Featuring structured spiral ribbed ridges along the shaft for ergonomic contour fit and dependable contraceptive protection in 100% confidential packaging.",
+                     "features":  [
+                                      "Sequential micro-ribbed contours",
+                                      "Ergonomic contour fit",
+                                      "China Imported verified standard",
+                                      "Long-lasting soothing lubrication",
+                                      "100% confidential discreet packaging"
+                                  ],
+                     "status":  "active",
+                     "visibility":  "published",
+                     "badgeColor":  "bg-pink-50 text-pink-900 border-pink-200",
+                     "iconType":  "ribbed",
+                     "createdAt":  "2026-09-22T18:25:17.514Z",
+                     "updatedAt":  "2026-10-07T20:57:16.272Z",
+                     "categories":  [
+                                        {
+                                            "id":  "6ab81620a561a97a08a0de92",
+                                            "_id":  "6ab81620a561a97a08a0de92",
+                                            "did":  "ac9c7e799e9c5bc9",
+                                            "name":  "Contraceptive",
+                                            "name_bn":  "????????????",
+                                            "slug":  "contraceptive",
+                                            "imageUrl":  "",
+                                            "parent":  null
+                                        }
+                                    ],
+                     "createdBy":  "6ab2c988721c81cc891e69d2",
+                     "imageUrl":  "/uploads/2610/261007/product_mo-new-3_1791406630057.webp",
+                     "isActive":  true,
+                     "longDescription":  "\u003cp\u003eMO Ultra Ribbed condoms are engineered with precision micro-rib ridges along the body to maximize tactile friction and pleasure. Infused with non-sticky TT silicone lubricant to eliminate irritation while delivering complete peace of mind.\u003c/p\u003e",
+                     "metaData":  {
+                                      "metaTitle":  "",
+                                      "metaDescription":  "",
+                                      "keywords":  [
+
+                                                   ],
+                                      "ogImage":  ""
+                                  },
+                     "sku":  "MO-RB-10",
+                     "stockAmount":  50,
+                     "stockStatus":  "instock",
+                     "tags":  [
+
+                              ],
+                     "thumbnailUrl":  "/uploads/2610/261007/product_mo-new-3_1791406630057.webp",
+                     "type":  "simple",
+                     "updatedBy":  "6ab2c988721c81cc891e69d2",
+                     "benefits":  [
+                                      {
+                                          "title":  "Ergonomic Ribbed Contours",
+                                          "description":  "Engineered ridges provide snug anatomical hold and comfort."
+                                      },
+                                      {
+                                          "title":  "Maximum Safety Standard",
+                                          "description":  "Manufactured with high-elasticity medical latex."
+                                      },
+                                      {
+                                          "title":  "Long-Lasting Glide",
+                                          "description":  "Rich lubrication coat prevents friction and drying."
+                                      },
+                                      {
+                                          "title":  "100% Private Packaging",
+                                          "description":  "Delivered in completely unmarked secure boxes."
+                                      }
+                                  ],
+                     "bn":  {
+                                "name":  "MO ???????-???? ????????? ????????? ???????????? (?? ???)",
+                                "tagline":  "????????? ???? ??? ????????? ???????? ????? ? ????? ?????? ????????? ???????",
+                                "description":  "????? ???????? ???? ??? ??????? ???????? ????????? ????? ??? ???????? ?????? ????????? ???????? ?? ??????????? ?????????",
+                                "longDescription":  "\u003cp\u003eMO ???????-???? ????????? ????????? ????????????? ????? ????? ???????? ???? ??? ?? ???????? ????? ? ??????????? ????????? ??????? ????\u003c/p\u003e",
+                                "origin":  "????????? (ISO 4074 / CE ??????????)",
+                                "expiryDate":  "???? ??? ??????? ?????? (? ???)",
+                                "packSize":  "?? ??? ????? ????",
+                                "packageContents":  "??? ???? (???? ????? ???????????? ????? ?????)",
+                                "specifications":  {
+                                                       "?????????":  "MO",
+                                                       "??????":  "???% ????????? ????? ????????? ????? ?????????",
+                                                       "??????????":  "????????? ???????? ???????-???? ???????",
+                                                       "????????????? ??????":  "?? ???? (±? ????)",
+                                                       "???????":  "??? ???? - ??? ????",
+                                                       "??????????":  "???????? ????? ?????????-????? ??????",
+                                                       "????????????":  "ISO 4074 / CE 0123 ??????????",
+                                                       "????????? ???????":  "???% ?????????? ?????? ???????",
+                                                       "?????????":  "??? ??? ?????? ???? (???? ?????)"
+                                                   },
+                                "benefits":  [
+                                                 {
+                                                     "title":  "???????? ???????? ???????",
+                                                     "description":  "????????? ???? ??? ?? ???????? ????? ??????? ????"
+                                                 },
+                                                 {
+                                                     "title":  "???????? ?????? ????????? ???????",
+                                                     "description":  "???? ???????? ??? ????? ????? ??????? ??????????"
+                                                 },
+                                                 {
+                                                     "title":  "???????????? ??????",
+                                                     "description":  "????????? ?????? ?????????? ?? ?????????? ?????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ??????? ????????",
+                                                     "description":  "?????? ? ??? ??? ????? ????? ?? ?????????"
+                                                 }
+                                             ],
+                                "sections":  [
+                                                 {
+                                                     "heading":  "???????-???? ??? ??????",
+                                                     "content":  "???????????? ??? ??????? ?????? ????? ? ???????? ??????????"
+                                                 },
+                                                 {
+                                                     "heading":  "????? ?????????? ??????????",
+                                                     "content":  "?????????? ? ?????? ??????? ?? ???????????? ?????? ??? ?????"
+                                                 },
+                                                 {
+                                                     "heading":  "????? ??????? ????????",
+                                                     "content":  "???????? ???????? ??????? ? ????? ?? ?????????"
+                                                 }
+                                             ]
+                            },
+                     "expiryDate":  "Valid until 2030 (5 Years)",
+                     "packSize":  "10 Pieces / Box",
+                     "packageContents":  "1 Sealed Retail Box (10 Individually Foil-Wrapped Micro-Ribbed Contraceptives)",
+                     "sections":  [
+                                      {
+                                          "heading":  "Spiral Ribbed Contour Fit",
+                                          "content":  "Continuous micro-ribbed rings wrap around the profile to maintain an ergonomic, secure fit without slippage."
+                                      },
+                                      {
+                                          "heading":  "Friction-Free Lubrication",
+                                          "content":  "Pre-coated with non-evaporating medical silicone lubricant for smooth glide throughout."
+                                      },
+                                      {
+                                          "heading":  "Discreet Shipping Guarantee",
+                                          "content":  "Delivered in neutral cardboard boxes with zero product identifiers on the shipping label."
+                                      }
+                                  ],
+                     "specifications":  {
+                                            "Brand":  "MO",
+                                            "Product Line":  "Micro-Ribbed Contraceptive",
+                                            "Material":  "100% Medical Grade Natural Rubber Latex",
+                                            "Structure":  "Sequential Spiral Micro-Ribbed Contour",
+                                            "Nominal Width":  "52mm (±2mm)",
+                                            "Nominal Length":  "180mm - 200mm",
+                                            "Lubrication":  "Neutral pH Medical-Grade Silicone Fluid",
+                                            "Testing \u0026 Inspection":  "100% Electronically Tested for Tensile Strength \u0026 Micropores",
+                                            "Certifications":  "CE 0123, ISO 4074, ISO 13485 Certified",
+                                            "Packaging":  "Sealed Retail Box (10 Individual Foils)"
+                                        },
+                     "data_bn":  {
+                                     "name":  "MO ???????-???? ????????? ????????? ???????????? (?? ???)",
+                                     "tagline":  "????????? ???? ??? ????????? ???????? ????? ? ????? ?????? ????????? ???????",
+                                     "description":  "????? ???????? ???? ??? ??????? ???????? ????????? ????? ??? ???????? ?????? ????????? ???????? ?? ??????????? ?????????"
+                                 },
+                     "gallery_images":  [
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169221979.webp",
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169223233.webp",
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169224012.webp",
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169224944.webp"
+                                        ],
+                     "product_image":  "/uploads/2609/260923/mo-ultra-ribbed_main_1790169221979.webp",
+                     "category_id":  "6ab81620a561a97a08a0de92",
+                     "offer_price":  350,
+                     "regular_price":  400,
+                     "sale_price":  350,
+                     "stock":  100,
+                     "salePrice":  350,
+                     "excludeFromMetaCatalog":  false,
+                     "gallery":  [
+
+                                 ],
+                     "id":  "6ab2c80d6fa8d45f03d4ba71",
+                     "category":  {
+                                      "id":  "6ab81620a561a97a08a0de92",
+                                      "_id":  "6ab81620a561a97a08a0de92",
+                                      "did":  "ac9c7e799e9c5bc9",
+                                      "name":  "Contraceptive",
+                                      "name_bn":  "????????????",
+                                      "slug":  "contraceptive",
+                                      "imageUrl":  "",
+                                      "parent":  null
+                                  },
+                     "category_bn":  "????????????",
+                     "_populatedCategories":  [
+                                                  {
+                                                      "id":  "6ab81620a561a97a08a0de92",
+                                                      "_id":  "6ab81620a561a97a08a0de92",
+                                                      "did":  "ac9c7e799e9c5bc9",
+                                                      "name":  "Contraceptive",
+                                                      "name_bn":  "????????????",
+                                                      "slug":  "contraceptive",
+                                                      "imageUrl":  "",
+                                                      "parent":  null
+                                                  }
+                                              ],
+                     "created_at":  "2026-09-22T18:25:17.514Z",
+                     "updated_at":  "2026-10-07T20:57:16.272Z",
+                     "image_url":  "/uploads/2610/261007/product_mo-new-3_1791406630057.webp",
+                     "thumbnail_url":  "/uploads/2610/261007/product_mo-new-3_1791406630057.webp"
+                 },
+                 {
+                     "did":  "788b855254ac89fa",
+                     "slug":  "mo-micro-thin-latex-contraceptive-10-pcs",
+                     "name":  "MO Micro-Thin Latex Contraceptive (10 Pcs)",
+                     "title":  "MO Ultra Thin Condom",
+                     "brand":  [
+
+                               ],
+                     "origin":  "Imported (ISO 4074 / CE Certified)",
+                     "price":  400,
+                     "regularPrice":  400,
+                     "offerPrice":  null,
+                     "stockQuantity":  100,
+                     "productType":  "simple",
+                     "tagline":  "0.03mm featherlight profile for natural comfort \u0026 reliable protection",
+                     "description":  "Crafted with an ultra-fine natural latex membrane architecture for natural body warmth transference and maximum contraceptive reliability without compromising durability.",
+                     "features":  [
+                                      "Ultra-thin aerodynamic wall thickness",
+                                      "Silky smooth friction-reducing coat",
+                                      "China Imported authentic grade",
+                                      "Fast body-heat transference",
+                                      "Electronically inspected durability"
+                                  ],
+                     "status":  "active",
+                     "visibility":  "published",
+                     "badgeColor":  "bg-rose-50 text-rose-800 border-rose-200",
+                     "iconType":  "thin",
+                     "createdAt":  "2026-09-22T18:25:17.514Z",
+                     "updatedAt":  "2026-10-07T20:57:52.222Z",
+                     "categories":  [
+                                        {
+                                            "id":  "6ab81620a561a97a08a0de92",
+                                            "_id":  "6ab81620a561a97a08a0de92",
+                                            "did":  "ac9c7e799e9c5bc9",
+                                            "name":  "Contraceptive",
+                                            "name_bn":  "????????????",
+                                            "slug":  "contraceptive",
+                                            "imageUrl":  "",
+                                            "parent":  null
+                                        }
+                                    ],
+                     "createdBy":  "6ab2c988721c81cc891e69d2",
+                     "imageUrl":  "/uploads/2610/261007/product_mo-new-2_1791406668195.webp",
+                     "isActive":  true,
+                     "longDescription":  "\u003cp\u003eMO Ultra Thin condoms are crafted from high-grade natural rubber latex using advanced micro-membrane technology. Designed to deliver an authentic skin-to-skin feeling while strictly maintaining international safety certifications.\u003c/p\u003e",
+                     "metaData":  {
+                                      "metaTitle":  "",
+                                      "metaDescription":  "",
+                                      "keywords":  [
+
+                                                   ],
+                                      "ogImage":  ""
+                                  },
+                     "sku":  "MO-UT-10",
+                     "stockAmount":  150,
+                     "stockStatus":  "instock",
+                     "tags":  [
+
+                              ],
+                     "thumbnailUrl":  "/uploads/2610/261007/product_mo-new-2_1791406668195.webp",
+                     "type":  "simple",
+                     "updatedBy":  "6ab2c988721c81cc891e69d2",
+                     "benefits":  [
+                                      {
+                                          "title":  "100% Contraceptive Reliability",
+                                          "description":  "Engineered and batch-tested for total peace of mind in family planning."
+                                      },
+                                      {
+                                          "title":  "Ultra-Fine Sensorial Comfort",
+                                          "description":  "0.03mm membrane ensures optimal body warmth transference and natural feel."
+                                      },
+                                      {
+                                          "title":  "Dermatologically Neutral",
+                                          "description":  "Pre-lubricated with non-sticky, skin-safe medical grade fluid."
+                                      },
+                                      {
+                                          "title":  "100% Discreet Delivery",
+                                          "description":  "Shipped in plain, confidential packaging with zero exterior branding."
+                                      }
+                                  ],
+                     "bn":  {
+                                "name":  "MO ???????-??? ????????? ???????????? (?? ???)",
+                                "tagline":  "?.?? ???? ???????-??? ???? ? ????????? ???????? ??????????? ?????? ????????? ???????",
+                                "description":  "????????? ??????? ? ????? ??????????? ???????? ???? ????????? ????? ???-????? ????????? ???????? ??? ???????? ????????? ?????? ???????, ?? ?????? ?????????? ???? ?????? ? ???????",
+                                "longDescription":  "\u003cp\u003eMO ???????-??? ????????? ????????????? ????? ?.?? ???? ?????? ???? ?? ????????? ??????? ? ?????? ???? ????? ??????????? ISO 4074 ??? CE ????????????? ????? ????? ???????? ? ?????????\u003c/p\u003e",
+                                "origin":  "????????? (ISO 4074 / CE ??????????)",
+                                "expiryDate":  "???? ??? ??????? ?????? (? ???)",
+                                "packSize":  "?? ??? ????? ????",
+                                "packageContents":  "??? ???? (???? ????? ???????????? ????? ?????)",
+                                "specifications":  {
+                                                       "?????????":  "MO",
+                                                       "??????":  "???% ????????? ????? ????????? ????? ?????????",
+                                                       "????????????? ??????":  "?? ???? (±? ????)",
+                                                       "???????":  "??? ???? - ??? ????",
+                                                       "???????":  "?.?? ???? ???????-??? ????",
+                                                       "??????????":  "???????? ????? ?????????-????? ??????",
+                                                       "????????????":  "ISO 4074 / CE 0123 / WHO ??????????",
+                                                       "????????? ???????":  "???% ?????????? ?????? ???????",
+                                                       "?????????":  "??? ??? ?????? ???? (???? ???????????? ?????)"
+                                                   },
+                                "benefits":  [
+                                                 {
+                                                     "title":  "???% ??????????? ?????? ?????????",
+                                                     "description":  "???????? ??????????? ??? ? ????? ?????? ???????? ????????? ????????"
+                                                 },
+                                                 {
+                                                     "title":  "????????? ??????? ? ??????",
+                                                     "description":  "?.?? ???? ????? ???? ?? ????????? ???? ? ???????? ??????? ????"
+                                                 },
+                                                 {
+                                                     "title":  "?????-????????? ?????????",
+                                                     "description":  "?????????? ? ????? ???????? ?????? ???????????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ???? ????????",
+                                                     "description":  "???? ??? ?? ???? ???? ???????? ???? ????????"
+                                                 }
+                                             ],
+                                "sections":  [
+                                                 {
+                                                     "heading":  "?.?? ???? ???????-??? ???????? ?????????",
+                                                     "content":  "????? ??????????? ???? ?? ????????? ???? ???? ???? ???????? ??????????? ?????? ????????? ??????? ????"
+                                                 },
+                                                 {
+                                                     "heading":  "????????? ?????? ??????????",
+                                                     "content":  "????? ???????? ?????? ??????? ?? ???????????? ?????? ??????? ????"
+                                                 },
+                                                 {
+                                                     "heading":  "?????? ???????? ?????",
+                                                     "content":  "???????? ???????? ??????? ? ????? ?? ???????? ???????"
+                                                 }
+                                             ]
+                            },
+                     "expiryDate":  "Valid until 2030 (5 Years)",
+                     "packSize":  "10 Pieces / Box",
+                     "packageContents":  "1 Sealed Retail Box (10 Individually Foil-Wrapped Micro-Thin Contraceptives)",
+                     "sections":  [
+                                      {
+                                          "heading":  "Micro-Thin Engineering Architecture",
+                                          "content":  "Manufactured with high-purity natural latex to achieve a 0.03mm uniform profile without sacrificing tensile resilience or bursting pressure resistance."
+                                      },
+                                      {
+                                          "heading":  "Medical-Grade Silicone Fluid",
+                                          "content":  "Formulated with neutral pH silicone fluid that prevents drying and minimizes friction for complete comfort."
+                                      },
+                                      {
+                                          "heading":  "Discreet \u0026 Secure Delivery",
+                                          "content":  "Each order is shipped in completely anonymous, unmarked outer packaging with cash-on-delivery service nationwide."
+                                      }
+                                  ],
+                     "specifications":  {
+                                            "Brand":  "MO",
+                                            "Product Line":  "Micro-Thin Contraceptive",
+                                            "Material":  "100% Medical Grade Natural Rubber Latex",
+                                            "Nominal Width":  "52mm (±2mm)",
+                                            "Nominal Length":  "180mm - 200mm",
+                                            "Membrane Profile":  "Micro-Thin 0.03mm Sheer Layer",
+                                            "Lubrication":  "Neutral pH Medical-Grade Silicone Fluid",
+                                            "Testing \u0026 Inspection":  "100% Electronically Tested for Tensile Strength \u0026 Micropores",
+                                            "Certifications":  "CE 0123, ISO 4074, ISO 13485, WHO Standard Tested",
+                                            "Packaging":  "Sealed Retail Box (10 Individual Foils)"
+                                        },
+                     "data_bn":  {
+                                     "name":  "MO ???????-??? ????????? ???????????? (?? ???)",
+                                     "tagline":  "?.?? ???? ???????-??? ???? ? ????????? ???????? ??????????? ?????? ????????? ???????",
+                                     "description":  "????????? ??????? ? ????? ??????????? ???????? ???? ????????? ????? ???-????? ????????? ???????? ??? ???????? ????????? ?????? ???????, ?? ?????? ?????????? ???? ?????? ? ???????"
+                                 },
+                     "gallery_images":  [
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169170756.webp",
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169171231.webp",
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169171656.webp",
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169172103.webp"
+                                        ],
+                     "product_image":  "/uploads/2609/260923/mo-ultra-thin_main_1790169170756.webp",
+                     "category_id":  "6ab81620a561a97a08a0de92",
+                     "offer_price":  350,
+                     "regular_price":  400,
+                     "sale_price":  350,
+                     "stock":  100,
+                     "salePrice":  350,
+                     "excludeFromMetaCatalog":  false,
+                     "gallery":  [
+
+                                 ],
+                     "id":  "6ab2c80d6fa8d45f03d4ba70",
+                     "category":  {
+                                      "id":  "6ab81620a561a97a08a0de92",
+                                      "_id":  "6ab81620a561a97a08a0de92",
+                                      "did":  "ac9c7e799e9c5bc9",
+                                      "name":  "Contraceptive",
+                                      "name_bn":  "????????????",
+                                      "slug":  "contraceptive",
+                                      "imageUrl":  "",
+                                      "parent":  null
+                                  },
+                     "category_bn":  "????????????",
+                     "_populatedCategories":  [
+                                                  {
+                                                      "id":  "6ab81620a561a97a08a0de92",
+                                                      "_id":  "6ab81620a561a97a08a0de92",
+                                                      "did":  "ac9c7e799e9c5bc9",
+                                                      "name":  "Contraceptive",
+                                                      "name_bn":  "????????????",
+                                                      "slug":  "contraceptive",
+                                                      "imageUrl":  "",
+                                                      "parent":  null
+                                                  }
+                                              ],
+                     "created_at":  "2026-09-22T18:25:17.514Z",
+                     "updated_at":  "2026-10-07T20:57:52.222Z",
+                     "image_url":  "/uploads/2610/261007/product_mo-new-2_1791406668195.webp",
+                     "thumbnail_url":  "/uploads/2610/261007/product_mo-new-2_1791406668195.webp"
+                 },
+                 {
+                     "did":  "b9de8b186df2b554",
+                     "slug":  "mo-multi-textured-latex-contraceptive-10-pcs",
+                     "name":  "MO Multi-Textured Latex Contraceptive (10 Pcs)",
+                     "title":  "MO Dotted Condom",
+                     "brand":  [
+
+                               ],
+                     "origin":  "Imported (ISO 4074 / CE Certified)",
+                     "price":  400,
+                     "regularPrice":  400,
+                     "offerPrice":  null,
+                     "stockQuantity":  100,
+                     "productType":  "simple",
+                     "tagline":  "Precision raised dot matrix texture for secure contraceptive protection",
+                     "description":  "Engineered with precision raised circular micropores and 100% natural premium rubber latex. Manufactured under stringent ISO 4074 quality standards for resilient, dependable family planning protection.",
+                     "features":  [
+                                      "Precision raised matrix texture",
+                                      "Premium grade natural latex",
+                                      "China Imported certified standard",
+                                      "Neutral pH silicone lubrication",
+                                      "Rigorous electronic pinhole testing"
+                                  ],
+                     "status":  "active",
+                     "visibility":  "published",
+                     "badgeColor":  "bg-brand-50 text-brand-800 border-brand-200",
+                     "iconType":  "dotted",
+                     "createdAt":  "2026-09-22T18:25:17.514Z",
+                     "updatedAt":  "2026-10-07T20:57:36.540Z",
+                     "categories":  [
+                                        {
+                                            "id":  "6ab81620a561a97a08a0de92",
+                                            "_id":  "6ab81620a561a97a08a0de92",
+                                            "did":  "ac9c7e799e9c5bc9",
+                                            "name":  "Contraceptive",
+                                            "name_bn":  "????????????",
+                                            "slug":  "contraceptive",
+                                            "imageUrl":  "",
+                                            "parent":  null
+                                        }
+                                    ],
+                     "createdBy":  "6ab2c988721c81cc891e69d2",
+                     "imageUrl":  "/uploads/2610/261007/product_mo-new-1_1791406650796.webp",
+                     "isActive":  true,
+                     "longDescription":  "\u003cp\u003eMO Dotted Pleasure condoms feature strategically positioned raised matrix dots that offer intense sensory stimulation. Manufactured under strict ISO and CE compliance for enhanced intimacy with complete peace of mind.\u003c/p\u003e",
+                     "metaData":  {
+                                      "metaTitle":  "",
+                                      "metaDescription":  "",
+                                      "keywords":  [
+
+                                                   ],
+                                      "ogImage":  ""
+                                  },
+                     "sku":  "MO-DT-10",
+                     "stockAmount":  150,
+                     "stockStatus":  "instock",
+                     "tags":  [
+
+                              ],
+                     "thumbnailUrl":  "/uploads/2610/261007/product_mo-new-1_1791406650796.webp",
+                     "type":  "simple",
+                     "updatedBy":  "6ab2c988721c81cc891e69d2",
+                     "benefits":  [
+                                      {
+                                          "title":  "Enhanced Textured Grip",
+                                          "description":  "Molded dot patterns engineered for non-slip ergonomic stability."
+                                      },
+                                      {
+                                          "title":  "100% Contraceptive Security",
+                                          "description":  "Rigorous tensile strength and burst volume verified."
+                                      },
+                                      {
+                                          "title":  "Smooth Gentle Lubricant",
+                                          "description":  "Long-lasting silicone layer minimizes friction."
+                                      },
+                                      {
+                                          "title":  "Confidential Delivery",
+                                          "description":  "Plain parcel with discrete invoice handling."
+                                      }
+                                  ],
+                     "bn":  {
+                                "name":  "MO ??????-?????????? ????????? ???????????? (?? ???)",
+                                "tagline":  "??????????? ?????? ????????? ??????? ? ????????? ???? ????? ???? ?? ??????????? ????????",
+                                "description":  "??????? ? ?????? ?? ????????? ???? ?????????? ????????? ????????? ????????????? ???????? ????????? ???????, ??????? ?????? ????????? ? ??????????? ???????????? ???? ???? ??????????? ??? ???????????? ??????? ?????????",
+                                "longDescription":  "\u003cp\u003eMO ??????-?????????? ????????? ????????????? ????? ???????? ???????-?? ???????? ?? ????????? ??? ????? ? ??????????? ??????? ??? ???? ??????????? ISO 4074 ? CE ?????????\u003c/p\u003e",
+                                "origin":  "????????? (ISO 4074 / CE ??????????)",
+                                "expiryDate":  "???? ??? ??????? ?????? (? ???)",
+                                "packSize":  "?? ??? ????? ????",
+                                "packageContents":  "??? ???? (???? ????? ???????????? ????? ?????)",
+                                "specifications":  {
+                                                       "?????????":  "MO",
+                                                       "??????":  "???% ????????? ????? ????????? ????? ?????????",
+                                                       "?????? ????????":  "?????? ???? ???????-?? ???????????",
+                                                       "????????????? ??????":  "?? ???? (±? ????)",
+                                                       "???????":  "??? ???? - ??? ????",
+                                                       "??????????":  "???????? ????? ?????????-????? ??????",
+                                                       "????????????":  "ISO 4074 / CE 0123 ??????????",
+                                                       "????????? ???????":  "???% ?????????? ?????? ???????",
+                                                       "?????????":  "??? ??? ?????? ???? (???? ?????)"
+                                                   },
+                                "benefits":  [
+                                                 {
+                                                     "title":  "?????? ???????? ? ?????",
+                                                     "description":  "????? ?? ??????? ?? ??????????? ? ???? ??????? ????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ??????????? ??????????",
+                                                     "description":  "???? ?????????? ? ????? ????? ??????????? ??????????"
+                                                 },
+                                                 {
+                                                     "title":  "?????? ???? ??????????",
+                                                     "description":  "?????????? ? ???????? ????????? ???? ?????????? ?????? ???????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ??????? ????????",
+                                                     "description":  "???????? ?????? ?????? ????? ?? ?????????"
+                                                 }
+                                             ],
+                                "sections":  [
+                                                 {
+                                                     "heading":  "?? ??????????? ???????? ?????????",
+                                                     "content":  "??????? ?? ???????? ?? ?????? ????????? ????????? ???? ?????? ? ?????????"
+                                                 },
+                                                 {
+                                                     "heading":  "????? ??? ? ????????? ???????",
+                                                     "content":  "??????? ??? ??????????? CE ? ISO 4074 ????? ?????? ???????????"
+                                                 },
+                                                 {
+                                                     "heading":  "???? ? ?????? ???????",
+                                                     "content":  "???? ??? ?? ???? ????? ?????? ????? ?? ?????????"
+                                                 }
+                                             ]
+                            },
+                     "expiryDate":  "Valid until 2030 (5 Years)",
+                     "packSize":  "10 Pieces / Box",
+                     "packageContents":  "1 Sealed Retail Box (10 Individually Foil-Wrapped Multi-Textured Contraceptives)",
+                     "sections":  [
+                                      {
+                                          "heading":  "Raised Micro-Dot Architecture",
+                                          "content":  "Engineered with raised micropores along the surface for structural stability, durability, and reliable protection."
+                                      },
+                                      {
+                                          "heading":  "Double Electronic Testing",
+                                          "content":  "Every single piece is batch-inspected with 100% electronic pinhole testing before hermetic sealing."
+                                      },
+                                      {
+                                          "heading":  "Discreet Parcel Shipping",
+                                          "content":  "Packed in plain, confidential parcels with cash-on-delivery service nationwide."
+                                      }
+                                  ],
+                     "specifications":  {
+                                            "Brand":  "MO",
+                                            "Product Line":  "Multi-Textured Contraceptive",
+                                            "Material":  "100% Medical Grade Natural Rubber Latex",
+                                            "Surface Texture":  "Precision Raised Micro-Dot Matrix",
+                                            "Nominal Width":  "52mm (±2mm)",
+                                            "Nominal Length":  "180mm - 200mm",
+                                            "Lubrication":  "Neutral pH Medical-Grade Silicone Fluid",
+                                            "Testing \u0026 Inspection":  "100% Electronically Tested for Tensile Strength \u0026 Micropores",
+                                            "Certifications":  "CE 0123, ISO 4074, ISO 13485 Certified",
+                                            "Packaging":  "Sealed Retail Box (10 Individual Foils)"
+                                        },
+                     "data_bn":  {
+                                     "name":  "MO ??????-?????????? ????????? ???????????? (?? ???)",
+                                     "tagline":  "??????????? ?????? ????????? ??????? ? ????????? ???? ????? ???? ?? ??????????? ????????",
+                                     "description":  "??????? ? ?????? ?? ????????? ???? ?????????? ????????? ????????? ????????????? ???????? ????????? ???????, ??????? ?????? ????????? ? ??????????? ???????????? ???? ???? ??????????? ??? ???????????? ??????? ?????????"
+                                 },
+                     "gallery_images":  [
+                                            "/uploads/2609/260923/mo-dotted_main_1790169125534.webp",
+                                            "/uploads/2609/260923/mo-dotted_main_1790169125938.webp",
+                                            "/uploads/2609/260923/mo-dotted_main_1790169126465.webp",
+                                            "/uploads/2609/260923/mo-dotted_main_1790169126965.webp"
+                                        ],
+                     "product_image":  "/uploads/2609/260923/mo-dotted_main_1790169125534.webp",
+                     "category_id":  "6ab81620a561a97a08a0de92",
+                     "offer_price":  350,
+                     "regular_price":  400,
+                     "sale_price":  350,
+                     "stock":  100,
+                     "salePrice":  350,
+                     "excludeFromMetaCatalog":  false,
+                     "gallery":  [
+
+                                 ],
+                     "id":  "6ab2c80d6fa8d45f03d4ba6f",
+                     "category":  {
+                                      "id":  "6ab81620a561a97a08a0de92",
+                                      "_id":  "6ab81620a561a97a08a0de92",
+                                      "did":  "ac9c7e799e9c5bc9",
+                                      "name":  "Contraceptive",
+                                      "name_bn":  "????????????",
+                                      "slug":  "contraceptive",
+                                      "imageUrl":  "",
+                                      "parent":  null
+                                  },
+                     "category_bn":  "????????????",
+                     "_populatedCategories":  [
+                                                  {
+                                                      "id":  "6ab81620a561a97a08a0de92",
+                                                      "_id":  "6ab81620a561a97a08a0de92",
+                                                      "did":  "ac9c7e799e9c5bc9",
+                                                      "name":  "Contraceptive",
+                                                      "name_bn":  "????????????",
+                                                      "slug":  "contraceptive",
+                                                      "imageUrl":  "",
+                                                      "parent":  null
+                                                  }
+                                              ],
+                     "created_at":  "2026-09-22T18:25:17.514Z",
+                     "updated_at":  "2026-10-07T20:57:36.540Z",
+                     "image_url":  "/uploads/2610/261007/product_mo-new-1_1791406650796.webp",
+                     "thumbnail_url":  "/uploads/2610/261007/product_mo-new-1_1791406650796.webp"
+                 },
+                 {
+                     "slug":  "mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo",
+                     "benefits":  [
+                                      {
+                                          "title":  "Super Saver Mega Deal (Save ?400 / 33% OFF)",
+                                          "description":  "Get 3 full factory boxes (30 contraceptives) for only ?800 instead of ?1200 regular price."
+                                      },
+                                      {
+                                          "title":  "All 3 Signature Varieties",
+                                          "description":  "Experience the full MO collection: Featherlight Ultra Thin, Textured Dotted, and Ergonomic Ribbed in one bundle."
+                                      },
+                                      {
+                                          "title":  "Long-Term 30-Count Stock",
+                                          "description":  "Adequate multi-month family planning supply stored in factory-sealed individual foils."
+                                      },
+                                      {
+                                          "title":  "100% Confidential Delivery",
+                                          "description":  "Shipped in discreet plain packaging with zero exterior branding."
+                                      }
+                                  ],
+                     "bn":  {
+                                "name":  "MO ???????? ?-??-? ????????? ???????????? (?? ??? ?????)",
+                                "tagline":  "?? ??? ???? ?????? ??????? (??????? ??? + ???? + ????) — ???????? ?????? ? ????? ???????",
+                                "description":  "?? ??? ??????? ???? ?????? ??????? — ? ???? ??????? ??? (?? ???), ? ???? ???? (?? ???) ??? ? ???? ??????? ???? (?? ???)? ??? ??? ????????? ????????? ???? ????? ??? ????? (??????? ????? ???? ????)?",
+                                "packSize":  "?? ??? (??? ????)",
+                                "packageContents":  "??? ???? (?x ??????? ??? ?? ??? + ?x ???? ?? ??? + ?x ??????? ???? ?? ???)",
+                                "specifications":  {
+                                                       "????????? ??????":  "??? ???????? ???? (??? ???? ????? ???? ?????)",
+                                                       "??????????? ???????????":  "?x ??????? ??? (?? ???) + ?x ???? (?? ???) + ?x ??????? ???? (?? ???)",
+                                                       "??????":  "???% ????????? ????? ????????? ?????????",
+                                                       "????????????? ??????":  "?? ???? (±? ????)",
+                                                       "??????????":  "???????? ????? ????????? ?????? ???????????",
+                                                       "????????????":  "ISO 4074 / CE ?????????? ????? ???????",
+                                                       "?????????":  "???% ???? ? ???????? ?????? ????"
+                                                   },
+                                "benefits":  [
+                                                 {
+                                                     "title":  "????????? ???? ???? (??? ???? ??????? / ??% ???)",
+                                                     "description":  "???? ????? ??? ????? ???? ??? ????? ??? ???????"
+                                                 },
+                                                 {
+                                                     "title":  "?? ????????? ??? ???????????",
+                                                     "description":  "??????? ???, ???? ??? ???? — ????? ???? ????????????? ???????? ?? ?????"
+                                                 },
+                                                 {
+                                                     "title":  "??????????? ?? ????? ????",
+                                                     "description":  "????? ????? ???? ????????? ?????? ????????? ? ????????? ????????"
+                                                 },
+                                                 {
+                                                     "title":  "???% ??????? ??? ????????",
+                                                     "description":  "?????? ? ??? ??? ????? ????? ????? ?? ?????????"
+                                                 }
+                                             ]
+                            },
+                     "brand":  [
+
+                               ],
+                     "category_id":  "6ab81620a561a97a08a0de93",
+                     "data_bn":  {
+                                     "name":  "MO ???????? ?-??-? ????????? ???????????? (?? ??? ?????)",
+                                     "tagline":  "?? ??? ???? ?????? ??????? (??????? ??? + ???? + ????) — ???????? ?????? ? ????? ???????",
+                                     "description":  "?? ??? ??????? ???? ?????? ??????? — ? ???? ??????? ??? (?? ???), ? ???? ???? (?? ???) ??? ? ???? ??????? ???? (?? ???)? ??? ??? ????????? ????????? ???? ????? ??? ????? (??????? ????? ???? ????)?"
+                                 },
+                     "description":  "Special 30 pieces multi-variety combo bundle containing 1 box Ultra Thin (10pcs), 1 box Dotted (10pcs), and 1 box Ultra Ribbed (10pcs). 3 full factory boxes at an unbeatable promotional rate of ?800.",
+                     "did":  "3c9a5f2e8b1d704e",
+                     "gallery_images":  [
+                                            "/uploads/2609/260923/combo-26_main_1790168615316.webp",
+                                            "/uploads/2609/260923/mo-ultra-thin_main_1790169170756.webp",
+                                            "/uploads/2609/260923/mo-dotted_main_1790169125534.webp",
+                                            "/uploads/2609/260923/mo-ultra-ribbed_main_1790169221979.webp"
+                                        ],
+                     "isActive":  true,
+                     "name":  "Ultimate 3-in-1 Latex Contraceptive (30 Pcs Combo)",
+                     "offer_price":  900,
+                     "price":  1200,
+                     "product_image":  "/uploads/2609/260923/combo-26_main_1790168615316.webp",
+                     "regular_price":  1200,
+                     "sale_price":  900,
+                     "sku":  "MO-TRIO-30-CMB",
+                     "specifications":  {
+                                            "Bundle Contents":  "3 Full Factory Boxes (1x Ultra Thin 10pcs + 1x Dotted 10pcs + 1x Ribbed 10pcs = 30 Pcs Total)",
+                                            "Material":  "100% Medical Grade Natural Rubber Latex",
+                                            "Varieties Included":  "Micro-Thin (0.03mm), Precision Dotted Matrix, Spiral Contour Ribbed",
+                                            "Nominal Width":  "52mm (±2mm)",
+                                            "Lubrication":  "Neutral pH Medical-Grade Silicone Fluid",
+                                            "Quality Standards":  "ISO 4074 / CE 0123 / WHO Standard Tested",
+                                            "Packaging":  "Discreet Unmarked Triple Box"
+                                        },
+                     "status":  "active",
+                     "stock":  100,
+                     "tagline":  "30pcs Mega Trio Bundle (Ultra Thin + Dotted + Ribbed) for total protection \u0026 versatility",
+                     "updatedAt":  "2026-10-07T19:07:42.834Z",
+                     "offerPrice":  950,
+                     "regularPrice":  1200,
+                     "expiryDate":  "Valid until 2030 (5 Years)",
+                     "origin":  "Imported (ISO 4074 / CE Certified)",
+                     "packSize":  "30 Pieces (3 Boxes)",
+                     "packageContents":  "3 Sealed Retail Boxes (1x Ultra Thin 10pcs + 1x Dotted 10pcs + 1x Ribbed 10pcs = 30 Pcs Total)",
+                     "category":  {
+                                      "id":  "6ab81620a561a97a08a0de93",
+                                      "_id":  "6ab81620a561a97a08a0de93",
+                                      "did":  "4f11eb39f26fd1a7",
+                                      "name":  "Combo",
+                                      "name_bn":  "????? ?????",
+                                      "slug":  "combo",
+                                      "imageUrl":  "",
+                                      "parent":  null
+                                  },
+                     "categories":  [
+                                        {
+                                            "id":  "6ab81620a561a97a08a0de93",
+                                            "_id":  "6ab81620a561a97a08a0de93",
+                                            "did":  "4f11eb39f26fd1a7",
+                                            "name":  "Combo",
+                                            "name_bn":  "????? ?????",
+                                            "slug":  "combo",
+                                            "imageUrl":  "",
+                                            "parent":  null
+                                        }
+                                    ],
+                     "createdBy":  "6ab2c988721c81cc891e69d2",
+                     "imageUrl":  "/uploads/2609/260927/variety-condoms-30pcs-combo_main_1790487255792.jpg",
+                     "longDescription":  "",
+                     "metaData":  {
+                                      "metaTitle":  "",
+                                      "metaDescription":  "",
+                                      "keywords":  [
+
+                                                   ],
+                                      "ogImage":  ""
+                                  },
+                     "sections":  [
+
+                                  ],
+                     "stockAmount":  50,
+                     "stockStatus":  "instock",
+                     "tags":  [
+
+                              ],
+                     "thumbnailUrl":  "/uploads/2609/260927/variety-condoms-30pcs-combo_main_1790487255792.jpg",
+                     "type":  "simple",
+                     "updatedBy":  "6ab2c988721c81cc891e69d2",
+                     "salePrice":  900,
+                     "excludeFromMetaCatalog":  false,
+                     "gallery":  [
+
+                                 ],
+                     "id":  "6ab8a664721c81cc89218856",
+                     "category_bn":  "????? ?????",
+                     "_populatedCategories":  [
+                                                  {
+                                                      "id":  "6ab81620a561a97a08a0de93",
+                                                      "_id":  "6ab81620a561a97a08a0de93",
+                                                      "did":  "4f11eb39f26fd1a7",
+                                                      "name":  "Combo",
+                                                      "name_bn":  "????? ?????",
+                                                      "slug":  "combo",
+                                                      "imageUrl":  "",
+                                                      "parent":  null
+                                                  }
+                                              ],
+                     "created_at":  null,
+                     "updated_at":  "2026-10-07T19:07:42.834Z",
+                     "image_url":  "/uploads/2609/260927/variety-condoms-30pcs-combo_main_1790487255792.jpg",
+                     "thumbnail_url":  "/uploads/2609/260927/variety-condoms-30pcs-combo_main_1790487255792.jpg"
+                 }
+             ],
+    "pagination":  {
+                       "total":  7,
+                       "limit":  100,
+                       "skip":  0
+                   }
+}

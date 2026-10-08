@@ -626,7 +626,8 @@ const trackedPurchaseOrders = new Set();
 export const trackPurchase = (order, products = {}) => {
   if (!order || !order.totals) return;
 
-  const orderId = String(order.orderId || ('SS-' + Date.now()));
+  // IMPORTANT: Priority must be orderNumber to exactly match the backend CAPI event_id for Meta deduplication!
+  const orderId = String(order.orderNumber || order.orderId || ('SS-' + Date.now()));
   if (trackedPurchaseOrders.has(orderId)) return;
   trackedPurchaseOrders.add(orderId);
   const grandTotal = Number(order.totals.grandTotal || order.totals.subtotal || 0);

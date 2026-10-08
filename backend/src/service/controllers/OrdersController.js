@@ -140,11 +140,8 @@ export const createOrder = async (req, res, next) => {
       String(createdOrder.orderNumber || "").startsWith("CO");
 
     if (!isInstoreOrder && !isCustomOrder) {
-      // Safely dispatch server-side Meta Conversions API (CAPI) Purchase event for online customer storefront orders only
-      sendServerPurchaseEvent(createdOrder, req);
-
-      // Safely dispatch server-side TikTok Events API CompletePayment event for online customer storefront orders only
-      sendTikTokServerPurchaseEvent(createdOrder, req);
+      // Intentionally removed CAPI dispatch here. Admin manual orders should NOT skew Meta/TikTok ads.
+      // Storefront orders are handled in storefront/controllers/OrdersController.js
     }
 
     // Automatically record newOrder activity log
