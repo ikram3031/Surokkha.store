@@ -1,0 +1,278 @@
+diff --git a/backend/src/common/utils/productUtils.js b/backend/src/common/utils/productUtils.js
+index 13952b2..2cff4a3 100644
+--- a/backend/src/common/utils/productUtils.js
++++ b/backend/src/common/utils/productUtils.js
+@@ -26,7 +26,7 @@ export const normalizeValue = (value) => {
+ export const isPlaceholderImageUrl = (value) => typeof value === "string" && value.trim() === PLACEHOLDER_IMAGE_URL;
+ 
+ // Serializes a Mongoose product document into a clean API response format with localization and rich specifications support
+-export const serializeProduct = (product, lang = "en") => {
++export const serializeProduct = (product, lang = "en", itemType = null) => {
+   const source = product?.toObject ? product.toObject() : product;
+   const { _id, __v, ...rest } = source || {};
+   const id = source?._id?.toString?.() ?? source?.id ?? null;
+@@ -138,6 +138,7 @@ export const serializeProduct = (product, lang = "en") => {
+ 
+   return {
+     ...rest,
++    ...(itemType ? { itemType, entityType: itemType } : {}),
+     ...(rawVariants !== undefined ? { variants: rawVariants } : {}),
+     id,
+     name: source?.name || "",
+diff --git a/backend/src/storefront/controllers/ItemsController.js b/backend/src/storefront/controllers/ItemsController.js
+index 84678ef..c549c4b 100644
+--- a/backend/src/storefront/controllers/ItemsController.js
++++ b/backend/src/storefront/controllers/ItemsController.js
+@@ -32,7 +32,7 @@ export const listItems = async (req, res, next) => {
+ 
+     res.json({
+       status: "success",
+-      data: items.map((p) => serializeProduct(p, "en")),
++      data: items.map((p) => serializeProduct(p, "en", "item")),
+       pagination: {
+         total: count,
+         limit,
+@@ -68,7 +68,7 @@ export const getSingleItem = async (req, res, next) => {
+ 
+     res.json({
+       status: "success",
+-      data: serializeProduct(item, "en"),
++      data: serializeProduct(item, "en", "item"),
+     });
+   } catch (err) {
+     next(err);
+diff --git a/backend/src/storefront/controllers/ProductsController.js b/backend/src/storefront/controllers/ProductsController.js
+index 5d820b3..2158e62 100644
+--- a/backend/src/storefront/controllers/ProductsController.js
++++ b/backend/src/storefront/controllers/ProductsController.js
+@@ -32,7 +32,7 @@ export const listProducts = async (req, res, next) => {
+ 
+     res.json({
+       status: "success",
+-      data: products.map((p) => serializeProduct(p, "en")),
++      data: products.map((p) => serializeProduct(p, "en", "product")),
+       pagination: {
+         total: count,
+         limit,
+@@ -68,7 +68,7 @@ export const getSingleProduct = async (req, res, next) => {
+ 
+     res.json({
+       status: "success",
+-      data: serializeProduct(product, "en"),
++      data: serializeProduct(product, "en", "product"),
+     });
+   } catch (err) {
+     next(err);
+diff --git a/frontend/src/common/App.jsx b/frontend/src/common/App.jsx
+index 0fdc857..8e3e18c 100644
+--- a/frontend/src/common/App.jsx
++++ b/frontend/src/common/App.jsx
+@@ -37,13 +37,11 @@ export default function App() {
+   }, [fetchCategories, openCartDrawer]);
+ 
+   useEffect(() => {
+-    if (currentView !== 'product' && currentView !== 'checkout') {
+-      const state = useStore.getState();
+-      if (!state.hasFetchedAllProducts) {
+-        fetchProducts();
+-      }
++    const state = useStore.getState();
++    if (!state.hasFetchedAllProducts) {
++      fetchProducts();
+     }
+-  }, [currentView, fetchProducts]);
++  }, [fetchProducts]);
+ 
+   // Sync state when user clicks browser Back/Forward buttons
+   useEffect(() => {
+diff --git a/frontend/src/common/components/CartDrawer.jsx b/frontend/src/common/components/CartDrawer.jsx
+index b26963a..ada6658 100644
+--- a/frontend/src/common/components/CartDrawer.jsx
++++ b/frontend/src/common/components/CartDrawer.jsx
+@@ -25,6 +25,18 @@ export default function CartDrawer() {
+   const [isRendered, setIsRendered] = useState(isCartDrawerOpen);
+   const [isVisible, setIsVisible] = useState(isCartDrawerOpen);
+   const drawerRef = useRef(null);
++  const fetchProducts = useStore((state) => state.fetchProducts);
++
++  useEffect(() => {
++    if (isCartDrawerOpen) {
++      Object.keys(cart).forEach((cartKey) => {
++        const baseSlug = cartKey.split(':::')[0];
++        if (!products[baseSlug]) {
++          fetchProducts(baseSlug);
++        }
++      });
++    }
++  }, [cart, products, isCartDrawerOpen, fetchProducts]);
+ 
+   // Smooth Entry / Exit Animation Controller
+   useEffect(() => {
+@@ -293,7 +305,14 @@ export default function CartDrawer() {
+                   const variantName = parts[1];
+                   const baseItem = products[baseSlug] || { name: baseSlug, price: 0, regularPrice: 0 };
+                   const variant = variantName && baseItem.variants ? baseItem.variants.find(v => v.size === variantName) : null;
+-                  const item = variant ? { ...baseItem, name: baseItem.name + ' (' + variantName + ')', name_bn: (baseItem.name_bn || baseItem.name) + ' (' + variantName + ')', price: variant.price || baseItem.price, imageUrl: variant.imageUrl || baseItem.imageUrl } : baseItem;
++                  const item = variant ? { 
++                    ...baseItem, 
++                    name: baseItem.name + ' (' + variantName + ')', 
++                    name_bn: (baseItem.name_bn || baseItem.name) + ' (' + variantName + ')', 
++                    price: Number(variant.offerPrice > 0 ? variant.offerPrice : (variant.price || variant.regularPrice || baseItem.price || 0)), 
++                    regularPrice: Number(variant.regularPrice > 0 ? variant.regularPrice : (variant.price || baseItem.regularPrice || 0)),
++                    imageUrl: variant.imageUrl || baseItem.imageUrl 
++                  } : baseItem;
+                   const slug = baseSlug;
+                   const qty = cart[cartKey];
+                   const lineTotal = item.price * qty;
+diff --git a/frontend/src/common/store/useStore.js b/frontend/src/common/store/useStore.js
+index 0d7bdee..1199332 100644
+--- a/frontend/src/common/store/useStore.js
++++ b/frontend/src/common/store/useStore.js
+@@ -341,13 +341,13 @@ export const useStore = create((set, get) => ({
+         // Fetch all
+         set({ hasFetchedAllProducts: true });
+         [productsResult, itemsResult] = await Promise.allSettled([
+-          fetch(`${cleanBase}/api/v1/products`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
++          fetch(`${cleanBase}/api/v1/products?limit=1000`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+             if (!res.ok) return [];
+             const json = await res.json();
+             const data = json?.data || json?.products || json?.result || json;
+             return Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+           }),
+-          fetch(`${cleanBase}/api/v1/items`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
++          fetch(`${cleanBase}/api/v1/items?limit=1000`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+             if (!res.ok) return [];
+             const json = await res.json();
+             const data = json?.data || json?.items || json?.result || json;
+@@ -629,6 +629,8 @@ export const useStore = create((set, get) => ({
+             sku: p.sku || '',
+             itemType: p.itemType || 'product',
+             entityType: p.entityType || 'product',
++            type: p.type || 'product',
++            variants: p.variants || null,
+             name: englishName,
+             name_bn: nameBn,
+             bn: itemBn,
+@@ -659,6 +661,11 @@ export const useStore = create((set, get) => ({
+             createdDate: p.createdDate || p.createdAt || p.created_at || p.updatedAt || p.updated_at || null,
+             updatedAt: p.updatedAt || p.updated_at || null,
+             createdTimestamp: getCreatedTimestamp(p),
++            imageUrl: p.imageUrl || p.image_url || null,
++            thumbnailUrl: p.thumbnailUrl || p.thumbnail_url || null,
++            featuredImage: p.featuredImage || p.featured_image || null,
++            images: Array.isArray(p.images) ? p.images : [],
++            gallery: Array.isArray(p.gallery) ? p.gallery : [],
+             packSize: p.packSize || (key.includes('30pcs') ? '30 Pieces (3 Boxes)' : (key.includes('20pcs') ? '20 Pieces (2 Boxes)' : '10 Pieces / Box')),
+             packSize_bn: itemBn.packSize || p.packSize || '',
+             packageContents: p.packageContents || '',
+@@ -944,11 +951,28 @@ export const useStore = create((set, get) => ({
+     let subtotal = 0;
+     let totalItemCount = 0;
+ 
+-    Object.entries(cart).forEach(([slug, qty]) => {
++    Object.entries(cart).forEach(([cartKey, qty]) => {
+       if (qty <= 0) return;
+       totalItemCount += qty;
+-      const prod = products[slug];
+-      const itemPrice = prod ? prod.price : (slug.includes('combo') ? 900 : 400);
++      const parts = cartKey.split(':::');
++      const baseSlug = parts[0];
++      const variantSize = parts[1];
++      const prod = products[baseSlug];
++      
++      let itemPrice = 0;
++      if (prod) {
++        if (variantSize && prod.variants) {
++          const variant = prod.variants.find(v => v.size === variantSize);
++          if (variant) {
++            itemPrice = Number(variant.offerPrice > 0 ? variant.offerPrice : (variant.price || variant.regularPrice || 0));
++          }
++        }
++        if (!itemPrice) {
++          itemPrice = Number(prod.offerPrice > 0 ? prod.offerPrice : (prod.price || prod.regularPrice || 0));
++        }
++      } else {
++        itemPrice = cartKey.includes('combo') ? 900 : 0;
++      }
+       subtotal += itemPrice * qty;
+     });
+ 
+@@ -1098,7 +1122,7 @@ export const useStore = create((set, get) => ({
+             sku: variant?.sku || prod?.sku || '',
+             image: variant?.imageUrl || prod?.imageUrl || prod?.image || '',
+             quantity: qty,
+-            unitPrice: variant?.price || prod?.price || 400,
++            unitPrice: variant?.price || prod?.price || (cartKey.includes('combo') ? 900 : 0),
+             size: variant?.size || variantSize || prod?.size || 'Standard Pack'
+           };
+         }),
+diff --git a/frontend/src/common/views/CheckoutView.jsx b/frontend/src/common/views/CheckoutView.jsx
+index 0ab1a0b..7c0c1b6 100644
+--- a/frontend/src/common/views/CheckoutView.jsx
++++ b/frontend/src/common/views/CheckoutView.jsx
+@@ -68,6 +68,18 @@ export default function CheckoutView() {
+     }
+   }, []);
+ 
++  // Make absolutely sure all cart items are loaded from the backend
++  // so we don't fall back to default pricing
++  const fetchProducts = useStore((state) => state.fetchProducts);
++  useEffect(() => {
++    cartKeys.forEach((cartKey) => {
++      const baseSlug = cartKey.split(':::')[0];
++      if (!products[baseSlug]) {
++        fetchProducts(baseSlug);
++      }
++    });
++  }, [cartKeys, products, fetchProducts]);
++
+   // Sync shippingAddress initial fields if sameAsBilling is toggled
+   useEffect(() => {
+     if (!sameAsBilling) {
+@@ -972,19 +984,38 @@ export default function CheckoutView() {
+               </div>
+ 
+               <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+-                {cartKeys.map((slug) => {
+-                  const item = products[slug] || { name: slug, price: 0 };
+-                  const qty = cart[slug];
++                {cartKeys.map((cartKey) => {
++                  const parts = cartKey.split(':::');
++                  const baseSlug = parts[0];
++                  const variantName = parts[1];
++                  const baseItem = products[baseSlug] || { name: baseSlug, price: 0 };
++                  const variant = variantName && baseItem.variants ? baseItem.variants.find(v => v.size === variantName) : null;
++                  
++                  let itemPrice = baseItem.price;
++                  if (variant) {
++                    itemPrice = Number(variant.offerPrice > 0 ? variant.offerPrice : (variant.price || variant.regularPrice || 0));
++                  } else if (baseItem.offerPrice > 0) {
++                    itemPrice = baseItem.offerPrice;
++                  }
++
++                  let regularPrice = baseItem.regularPrice;
++                  if (variant) {
++                    regularPrice = Number(variant.regularPrice > 0 ? variant.regularPrice : (variant.price || 0));
++                  }
++
++                  const itemName = variant ? `${baseItem.name} (${variantName})` : baseItem.name;
++                  const qty = cart[cartKey];
++                  
+                   return (
+-                    <div key={slug} className="flex items-center justify-between text-xs">
++                    <div key={cartKey} className="flex items-center justify-between text-xs">
+                       <div className="flex items-center gap-2">
+-                        <span className="font-bold text-slate-900">{item.name}</span>
++                        <span className="font-bold text-slate-900">{itemName}</span>
+                         <span className="text-slate-600 font-bold">× {qty}</span>
+                       </div>
+                       <div className="flex items-baseline gap-1.5 font-mono">
+-                        <span className="font-bold text-slate-900">৳{item.price * qty}</span>
+-                        {item.regularPrice > item.price && (
+-                          <span className="text-[11px] text-slate-500 line-through">৳{item.regularPrice * qty}</span>
++                        <span className="font-bold text-slate-900">৳{itemPrice * qty}</span>
++                        {regularPrice > itemPrice && (
++                          <span className="text-[11px] text-slate-500 line-through">৳{regularPrice * qty}</span>
+                         )}
+                       </div>
+                     </div>

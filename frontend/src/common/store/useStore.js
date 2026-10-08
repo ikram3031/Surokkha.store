@@ -524,15 +524,9 @@ export const useStore = create((set, get) => ({
           });
 
           // Normalize features
-          const features = benefits.length > 0
-            ? benefits.map((b) => b.title).filter(Boolean)
-            : (Array.isArray(p.features) && p.features.length > 0 ? p.features : ['Certified safety standard', 'Neutral pH lubrication', 'Tested durability']);
+          const features = benefits.length > 0 ? benefits.map((b) => b.title).filter(Boolean) : (Array.isArray(p.features) ? p.features : []);
 
-          const featuresBn = benefitsBn.length > 0
-            ? benefitsBn.map((b) => b.title).filter(Boolean)
-            : (Array.isArray(itemBn.features) && itemBn.features.length > 0
-              ? itemBn.features
-              : (Array.isArray(p.features_bn) && p.features_bn.length > 0 ? p.features_bn : features));
+          const featuresBn = benefitsBn.length > 0 ? benefitsBn.map((b) => b.title).filter(Boolean) : (Array.isArray(itemBn.features) && itemBn.features.length > 0 ? itemBn.features : (Array.isArray(p.features_bn) && p.features_bn.length > 0 ? p.features_bn : features));
 
           // Normalize specifications: Convert array form [{key, value}] to object if needed
           let specs = {};
@@ -574,49 +568,9 @@ export const useStore = create((set, get) => ({
           const catSlugLower = rawCatSlug.toLowerCase();
           const keyLower = key.toLowerCase();
 
-          let resolvedCategory = rawCatName;
-          let resolvedCategorySlug = rawCatSlug;
-          let resolvedCategoryBn = rawCatBn;
-
-          if (catNameLower.includes('contraceptive') || catSlugLower.includes('contraceptive') || catNameLower.includes('condom') || catSlugLower.includes('condom')) {
-            resolvedCategory = 'Contraceptive';
-            resolvedCategorySlug = 'contraceptive';
-            resolvedCategoryBn = 'কনট্রাসেপটিভ';
-          } else if (catNameLower.includes('combo') || catSlugLower.includes('combo')) {
-            resolvedCategory = 'Combo';
-            resolvedCategorySlug = 'combo';
-            resolvedCategoryBn = 'কম্বো প্যাক';
-          } else if (catNameLower.includes('lubricant') || catSlugLower.includes('lubricant')) {
-            resolvedCategory = 'Lubricants';
-            resolvedCategorySlug = 'lubricant';
-            resolvedCategoryBn = 'পার্সোনাল লুব্রিকেন্ট';
-          } else if (catNameLower.includes('booster') || catSlugLower.includes('booster') || catNameLower.includes('spray') || catSlugLower.includes('spray') || catNameLower.includes('performance') || catSlugLower.includes('performance')) {
-            resolvedCategory = 'Performance Booster';
-            resolvedCategorySlug = 'performance-booster';
-            resolvedCategoryBn = 'পারফরম্যান্স বুস্টার';
-          } else {
-            if (keyLower.includes('contraceptive') || keyLower.includes('condom')) {
-              resolvedCategory = 'Contraceptive';
-              resolvedCategorySlug = 'contraceptive';
-              resolvedCategoryBn = 'কনট্রাসেপটিভ';
-            } else if (keyLower.includes('combo')) {
-              resolvedCategory = 'Combo';
-              resolvedCategorySlug = 'combo';
-              resolvedCategoryBn = 'কম্বো প্যাক';
-            } else if (keyLower.includes('lubricant') || keyLower.includes('jelly') || keyLower.includes('gel')) {
-              resolvedCategory = 'Lubricants';
-              resolvedCategorySlug = 'lubricant';
-              resolvedCategoryBn = 'পার্সোনাল লুব্রিকেন্ট';
-            } else if (keyLower.includes('booster') || keyLower.includes('spray') || keyLower.includes('viga') || keyLower.includes('maxman')) {
-              resolvedCategory = 'Performance Booster';
-              resolvedCategorySlug = 'performance-booster';
-              resolvedCategoryBn = 'পারফরম্যান্স বুস্টার';
-            } else {
-              resolvedCategory = rawCatName || 'Other';
-              resolvedCategorySlug = rawCatSlug || 'other';
-              resolvedCategoryBn = rawCatBn || 'অন্যান্য';
-            }
-          }
+          let resolvedCategory = rawCatName || "Uncategorized";
+          let resolvedCategorySlug = rawCatSlug || "uncategorized";
+          let resolvedCategoryBn = rawCatBn || resolvedCategory;
 
           const rawBrand = Array.isArray(p.brand) ? (p.brand[0] || 'MO') : (typeof p.brand === 'string' ? p.brand : 'MO');
 
@@ -667,14 +621,14 @@ export const useStore = create((set, get) => ({
             images: Array.isArray(p.images) ? p.images : [],
             gallery: Array.isArray(p.gallery) ? p.gallery : [],
             packSize: p.packSize || (key.includes('30pcs') ? '30 Pieces (3 Boxes)' : (key.includes('20pcs') ? '20 Pieces (2 Boxes)' : '10 Pieces / Box')),
-            packSize_bn: itemBn.packSize || p.packSize || '',
+            packSize_bn: itemBn.packSize || p.packSize || p.packSize_bn || "",
             packageContents: p.packageContents || '',
             packageContents_bn: itemBn.packageContents || p.packageContents || '',
             expiryDate: p.expiryDate || '',
             tagline: englishTagline || 'Premium personal wellness standard',
-            tagline_bn: taglineBn || 'প্রিমিয়াম পার্সোনাল ওয়েলনেস স্ট্যান্ডার্ড',
+            tagline_bn: taglineBn || englishTagline,
             description: englishDescription || 'Premium discreet personal wellness product engineered under strict quality testing.',
-            description_bn: descriptionBn || 'কঠোর মান নিয়ন্ত্রণে প্রস্তুত প্রিমিয়াম গোপনীয় ব্যক্তিগত যত্ন পণ্য।',
+            description_bn: descriptionBn || englishDescription,
             specifications: specs,
             specifications_bn: specsBn,
             technicalSpecs: specs,

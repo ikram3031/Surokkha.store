@@ -38,18 +38,6 @@ export const serializeProduct = (product, lang = "en", itemType = null) => {
       const catName = c.name ?? "";
       let localizedCatName = c.name_bn || catName;
       const lower = catName.toLowerCase();
-      if (lower === "condom" || lower === "condoms" || lower === "contraceptive" || lower === "contraceptives") {
-        localizedCatName = "কন্ট্রাসেপ্টিভ";
-      } else if (lower === "combo" || lower === "offers" || lower === "combo offer" || lower === "combo pack") {
-        localizedCatName = "কম্বো অফার";
-      } else if (lower.includes("lubricant") || lower.includes("jelly") || lower.includes("gel")) {
-        localizedCatName = "পার্সোনাল লুব্রিকেন্ট";
-      } else if (lower.includes("booster") || lower.includes("spray") || lower.includes("delay") || lower.includes("performance")) {
-        localizedCatName = "পারফরম্যান্স বুস্টার";
-      } else if (lower.includes("wellness") || lower.includes("other")) {
-        localizedCatName = "অন্যান্য ওয়েলনেস";
-      }
-
       return {
         id: c._id?.toString?.() ?? c.id ?? null,
         _id: c._id?.toString?.() ?? c.id ?? null,
@@ -70,11 +58,6 @@ export const serializeProduct = (product, lang = "en", itemType = null) => {
       const catName = source.category;
       let localizedCatName = catName;
       const lower = catName.toLowerCase();
-      if (lower.includes("lubricant")) localizedCatName = "পার্সোনাল লুব্রিকেন্ট";
-      else if (lower.includes("booster") || lower.includes("spray") || lower.includes("delay") || lower.includes("performance")) localizedCatName = "পারফরম্যান্স বুস্টার";
-      else if (lower.includes("combo")) localizedCatName = "কম্বো অফার";
-      else if (lower.includes("condom") || lower.includes("contraceptive")) localizedCatName = "কন্ট্রাসেপ্টিভ";
-
       primaryCategory = {
         name: catName,
         name_bn: localizedCatName,
@@ -102,8 +85,8 @@ export const serializeProduct = (product, lang = "en", itemType = null) => {
   const description = isBn ? (bnData.description || source?.description || "") : (source?.description || "");
   const longDescription = isBn ? (bnData.longDescription || source?.longDescription || "") : (source?.longDescription || "");
   const tagline = isBn ? (bnData.tagline || source?.tagline || "") : (source?.tagline || "");
-  const origin = isBn ? (bnData.origin || (source?.origin === "China Imported" ? "চীন থেকে সরাসরি আমদানিকৃত" : source?.origin || "চীন")) : (source?.origin || "China Imported");
-  const expiryDate = isBn ? (bnData.expiryDate || "২০৩০ সাল পর্যন্ত মেয়াদ") : (source?.expiryDate || "2030");
+  const origin = isBn ? (bnData.origin || source?.origin || "") : (source?.origin || "");
+  const expiryDate = isBn ? (bnData.expiryDate || source?.expiryDate || "") : (source?.expiryDate || "");
   const packSize = isBn ? (bnData.packSize || source?.packSize || "") : (source?.packSize || "");
   const packageContents = isBn ? (bnData.packageContents || source?.packageContents || "") : (source?.packageContents || "");
   const specifications = isBn ? (bnData.specifications || source?.specifications || {}) : (source?.specifications || {});
