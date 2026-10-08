@@ -35,9 +35,6 @@ export default function ProductDetailView() {
 
     const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [detailedProduct, setDetailedProduct] = useState(null);
-  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
-
   const baseProduct = products[selectedSlug] || 
     (selectedSlug && products[selectedSlug.replace(/-condom/, '')]) ||
     (selectedSlug && products[`-condom`]) ||
@@ -46,7 +43,7 @@ export default function ProductDetailView() {
     (Object.values(products).length > 0 && Object.values(products)[0]) || 
     null;
 
-  const product = detailedProduct || baseProduct;
+  const product = baseProduct;
 
   const isOutOfStock = Boolean(product?.isOutOfStock || product?.stockStatus === 'outofstock' || product?.stockStatus === 'out_of_stock' || product?.stockAmount === 0);
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
@@ -89,41 +86,11 @@ export default function ProductDetailView() {
   const localizedDescription = getLocalizedDescription(product);
   const localizedFeatures = getLocalizedFeatures(product);
 
-    useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
   useEffect(() => {
-    const fetchSingle = async () => {
-      if (!selectedSlug) return;
-      setIsFetchingDetail(true);
-      let type = 'product';
-      if (baseProduct && baseProduct.itemType === 'item') {
-        type = 'item';
-      }
-      const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
-      let url = `${cleanBase}/api/v1/${type}s/${selectedSlug}`;
-      try {
-        let res = await fetch(url);
-        if (!res.ok && type === 'product') {
-           url = `${cleanBase}/api/v1/items/${selectedSlug}`;
-           res = await fetch(url);
-        }
-        if (res.ok) {
-           const json = await res.json();
-           const fetchedObj = json?.data || json;
-           if (fetchedObj && (fetchedObj.id || fetchedObj._id || fetchedObj.slug)) {
-              setDetailedProduct(fetchedObj);
-           }
-        }
-      } catch (err) {
-        console.error('Failed to fetch single product details:', err);
-      } finally {
-        setIsFetchingDetail(false);
-      }
-    };
-    fetchSingle();
-  }, [selectedSlug, baseProduct?.itemType]);
+    if (selectedSlug) {
+      fetchProducts(selectedSlug, product?.itemType);
+    }
+  }, [selectedSlug, fetchProducts, product?.itemType]);
 
   useEffect(() => {
     if (product) {
@@ -139,7 +106,7 @@ export default function ProductDetailView() {
     if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
       return null;
     }
-    const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+    const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       try {
         const urlObj = new URL(trimmed);
@@ -163,7 +130,7 @@ export default function ProductDetailView() {
 
   const primaryCandidate = product?.featuredImage || product?.featured_image || product?.imageUrl || product?.image_url || product?.product_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null) || (Array.isArray(product?.gallery) && product.gallery.length > 0 ? product.gallery[0] : null);
 
-  const rawImages = (Array.isArray(product?.images) && product.images.length > 0) ? product.images : ((Array.isArray(product?.gallery) && product.gallery.length > 0) ? product.gallery : (primaryCandidate ? [primaryCandidate] : []));
+  const rawImages = Array.isArray(product?.gallery_images) ? product.gallery_images : [];
   
   const galleryImages = rawImages
     .map(toHighRes)
@@ -277,7 +244,7 @@ export default function ProductDetailView() {
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden aspect-square w-full max-w-md mx-auto relative shadow-xs">
             <ProductArtwork 
               productKey={product} 
-              customImageUrl={selectedImage || primaryCandidate}
+              customImageUrl={selectedImage || (galleryImages.length > 0 ? galleryImages[0] : primaryCandidate)}
               sizeClass="w-full h-full aspect-square" 
               imgClassName="w-full h-full object-cover object-center"
             />
