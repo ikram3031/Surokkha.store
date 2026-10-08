@@ -832,6 +832,45 @@ export const useStore = create((set, get) => ({
     }
   },
 
+  addMultipleToCart: (slug, variantsData, showToastNotification = true) => {
+    const { products } = get();
+    const prod = products[slug];
+    if (!prod) return;
+
+    const isOutOfStock = Boolean(prod.isOutOfStock || prod.stockStatus === 'outofstock' || prod.stockStatus === 'out_of_stock' || prod.stockAmount === 0);
+    if (isOutOfStock) {
+      const isBn = get().language === 'bn';
+      get().showToast(isBn ? `দুঃখিত, "${prod.name_bn || prod.name}" বর্তমানে আউট অব স্টক রয়েছে!` : `Sorry, "${prod.name}" is currently out of stock!`);
+      return;
+    }
+
+    let totalQuantity = 0;
+    const cartUpdates = {};
+    
+    variantsData.forEach(({ variant, quantity }) => {
+      const cartKey = variant ? `${slug}:::${variant.size}` : slug;
+      cartUpdates[cartKey] = quantity;
+      totalQuantity += quantity;
+    });
+
+    if (totalQuantity === 0) return;
+
+    set((state) => {
+      const newCart = { ...state.cart };
+      Object.entries(cartUpdates).forEach(([k, q]) => {
+        newCart[k] = (newCart[k] || 0) + q;
+      });
+      return { cart: newCart };
+    });
+
+    trackAddToCart(prod, totalQuantity);
+    
+    if (showToastNotification) {
+      const isBn = get().language === 'bn';
+      get().showToast(isBn ? `${prod.name_bn || prod.name} কার্টে যোগ করা হয়েছে` : `Added ${prod.name} to cart`);
+    }
+  },
+
   addComboToCart: (preferredKey = null) => {
     const { products, productKeys } = get();
     // Resolve dynamic combo product

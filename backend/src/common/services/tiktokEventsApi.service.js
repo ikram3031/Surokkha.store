@@ -189,7 +189,9 @@ export const sendTikTokServerPurchaseEvent = async (order, req = null) => {
       ...(advancedMatching && normalizedPhoneNum ? { phone: sha256(normalizedPhoneNum) } : {}),
     };
 
-    const items = Array.isArray(order.items) ? order.items : [];
+    let items = Array.isArray(order.items) ? order.items : [];
+    items = items.filter(i => i.itemType !== 'item');
+    if (items.length === 0) return;
     const contents = items.map((item) => ({
       content_id: String(item.productDid || item.sku || item.productId || item.name || ""),
       content_name: String(item.name || "Product"),

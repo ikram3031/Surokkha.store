@@ -348,6 +348,8 @@ export const trackPageView = (pageName = 'home', path = '/') => {
 export const trackViewContent = (product) => {
   if (!product) return;
   
+  const isItem = product.itemType === 'item' || product.type === 'item';
+  if (isItem) return;
   const value = Number(product.price) || 400;
   const catalogId = resolveCatalogId(product);
   const contentName = product.name || 'MO Wellness Product';
@@ -414,6 +416,9 @@ export const trackViewContent = (product) => {
  */
 export const trackAddToCart = (product, quantity = 1) => {
   if (!product) return;
+  
+  const isItem = product.itemType === 'item' || product.type === 'item';
+  if (isItem) return;
 
   const unitPrice = Number(product.price) || 400;
   const totalPrice = unitPrice * quantity;
@@ -548,9 +553,18 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
  * 5. Track InitiateCheckout (Pixel + CAPI + GA4)
  */
 export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => {
-  const cartEntries = Object.entries(cart).filter(([_, qty]) => qty > 0);
+  const cartEntries = Object.entries(cart).filter(([slug, qty]) => {
+    if (qty <= 0) return false;
+    const baseSlug = slug.split(':::')[0];
+    const p = products[baseSlug];
+    if (p && (p.itemType === 'item' || p.type === 'item')) return false;
+    return true;
+  });
+
+  if (cartEntries.length === 0) return;
+
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
-  const itemCount = Number(totals.itemCount || 0);
+  const itemCount = cartEntries.reduce((sum, [_, q]) => sum + q, 0);
   const eventId = generateEventId('ic');
 
   const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
@@ -595,9 +609,18 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
  * 6. Track AddPaymentInfo (Pixel + CAPI + GA4)
  */
 export const trackAddPaymentInfo = (paymentType = 'Cash on Delivery', totals = {}, cart = {}, products = {}) => {
+  const cartEntries = typeof cart === 'object' && cart !== null ? Object.entries(cart).filter(([slug, qty]) => {
+    if (qty <= 0) return false;
+    const baseSlug = slug.split(':::')[0];
+    const p = products[baseSlug];
+    if (p && (p.itemType === 'item' || p.type === 'item')) return false;
+    return true;
+  }) : [];
+
+  if (cartEntries.length === 0) return;
+
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
   const eventId = generateEventId('api');
-  const cartEntries = typeof cart === 'object' && cart !== null ? Object.entries(cart).filter(([_, qty]) => qty > 0) : [];
   const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
 
   const customData = {
@@ -630,9 +653,18 @@ export const trackPurchase = (order, products = {}) => {
   const orderId = String(order.orderNumber || order.orderId || ('SS-' + Date.now()));
   if (trackedPurchaseOrders.has(orderId)) return;
   trackedPurchaseOrders.add(orderId);
+  const purchasedItems = Object.entries(order.items || {}).filter(([slug, qty]) => {
+    if (qty <= 0) return false;
+    const baseSlug = slug.split(':::')[0];
+    const p = products[baseSlug];
+    if (p && (p.itemType === 'item' || p.type === 'item')) return false;
+    return true;
+  });
+
+  if (purchasedItems.length === 0) return;
+
   const grandTotal = Number(order.totals.grandTotal || order.totals.subtotal || 0);
-  const itemCount = Number(order.totals.itemCount || 0);
-  const purchasedItems = Object.entries(order.items || {}).filter(([_, qty]) => qty > 0);
+  const itemCount = purchasedItems.reduce((sum, [_, q]) => sum + q, 0);
   
   const catalogIds = [...new Set(purchasedItems.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
   const contents = purchasedItems.map(([slug, qty]) => {

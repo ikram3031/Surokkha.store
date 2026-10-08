@@ -14,6 +14,7 @@ export default function ProductDetailView() {
   const navigateTo = useStore((state) => state.navigateTo);
   const openProduct = useStore((state) => state.openProduct);
   const addToCart = useStore((state) => state.addToCart);
+  const addMultipleToCart = useStore((state) => state.addMultipleToCart);
   const addComboToCart = useStore((state) => state.addComboToCart);
   const openCartDrawer = useStore((state) => state.openCartDrawer);
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
@@ -223,10 +224,11 @@ export default function ProductDetailView() {
         alert(isBn ? 'অনুগ্রহ করে অন্তত একটি ভেরিয়েশনের পরিমাণ নির্বাচন করুন' : 'Please select quantity for at least one variation');
         return;
       }
-      selectedVariants.forEach(([size, q]) => {
+      const variantsData = selectedVariants.map(([size, q]) => {
         const v = product.variants.find(va => va.size === size);
-        if (v) addToCart(cartProductKey, q, false, v);
-      });
+        return { variant: v, quantity: q };
+      }).filter(item => item.variant);
+      addMultipleToCart(cartProductKey, variantsData, false);
     } else {
       addToCart(cartProductKey, quantity, false, null);
     }
@@ -242,10 +244,11 @@ export default function ProductDetailView() {
         alert(isBn ? 'অনুগ্রহ করে অন্তত একটি ভেরিয়েশনের পরিমাণ নির্বাচন করুন' : 'Please select quantity for at least one variation');
         return;
       }
-      selectedVariants.forEach(([size, q], idx) => {
+      const variantsData = selectedVariants.map(([size, q]) => {
         const v = product.variants.find(va => va.size === size);
-        if (v) addToCart(cartProductKey, q, idx === selectedVariants.length - 1, v);
-      });
+        return { variant: v, quantity: q };
+      }).filter(item => item.variant);
+      addMultipleToCart(cartProductKey, variantsData, true);
     } else {
       addToCart(cartProductKey, quantity, true, null);
     }

@@ -395,7 +395,10 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       }
     }
 
-    const items = Array.isArray(order.items) ? order.items : [];
+    let items = Array.isArray(order.items) ? order.items : [];
+    items = items.filter(i => i.itemType !== 'item');
+    
+    if (items.length === 0) return;
     const productDids = items.map((i) => i.productDid).filter(Boolean);
     const productNames = items.map((i) => i.name).filter(Boolean);
     const validMongoIds = items.map((i) => i.productId).filter((id) => mongoose.Types.ObjectId.isValid(id));
