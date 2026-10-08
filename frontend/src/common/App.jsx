@@ -29,13 +29,21 @@ export default function App() {
   const openCartDrawer = useStore((state) => state.openCartDrawer);
 
   useEffect(() => {
-    fetchProducts();
     if (fetchCategories) fetchCategories();
     const initial = parseRouteFromLocation();
     if (initial.openCart) {
       openCartDrawer();
     }
-  }, [fetchProducts, fetchCategories, openCartDrawer]);
+  }, [fetchCategories, openCartDrawer]);
+
+  useEffect(() => {
+    if (currentView !== 'product' && currentView !== 'checkout') {
+      const state = useStore.getState();
+      if (!state.hasFetchedAllProducts) {
+        fetchProducts();
+      }
+    }
+  }, [currentView, fetchProducts]);
 
   // Sync state when user clicks browser Back/Forward buttons
   useEffect(() => {

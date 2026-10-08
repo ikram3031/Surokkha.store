@@ -286,6 +286,7 @@ export const useStore = create((set, get) => ({
   // Dynamic Products & Categories State
   products: {},
   productKeys: [],
+  hasFetchedAllProducts: false,
   isLoadingProducts: true,
   productsError: null,
   categories: [],
@@ -313,26 +314,47 @@ export const useStore = create((set, get) => ({
   },
 
   // Fetch Dynamic Products and Items directly from API simultaneously
-  fetchProducts: async () => {
+  fetchProducts: async (singleSlug = null, itemType = null) => {
     set({ isLoadingProducts: true, productsError: null });
     try {
-      const cacheBust = `_t=${Date.now()}`;
       const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
-      const productsUrl = `${cleanBase}/api/v1/products?limit=100&${cacheBust}`;
-      const itemsUrl = `${cleanBase}/api/v1/items?limit=100&${cacheBust}`;
+      
+      let productsResult = { status: 'rejected' };
+      let itemsResult = { status: 'rejected' };
 
-      const [productsResult, itemsResult] = await Promise.allSettled([
-        fetch(productsUrl, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
-          if (!res.ok) return [];
-          const json = await res.json();
-          return Array.isArray(json) ? json : (json?.data || json?.products || json?.result || []);
-        }),
-        fetch(itemsUrl, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
-          if (!res.ok) return [];
-          const json = await res.json();
-          return Array.isArray(json) ? json : (json?.data || json?.items || json?.result || []);
-        }),
-      ]);
+      if (singleSlug) {
+        if (itemType === 'item') {
+          itemsResult = { status: 'fulfilled', value: await fetch(`${cleanBase}/api/v1/items/${singleSlug}`).then(res => res.ok ? res.json().then(j => [j?.data || j]) : []) };
+        } else if (itemType === 'product') {
+          productsResult = { status: 'fulfilled', value: await fetch(`${cleanBase}/api/v1/products/${singleSlug}`).then(res => res.ok ? res.json().then(j => [j?.data || j]) : []) };
+        } else {
+          // Unknown type: sequential fallback to avoid unnecessary parallel 404s
+          const pRes = await fetch(`${cleanBase}/api/v1/products/${singleSlug}`);
+          if (pRes.ok) {
+            productsResult = { status: 'fulfilled', value: await pRes.json().then(j => [j?.data || j]) };
+          } else {
+            const iRes = await fetch(`${cleanBase}/api/v1/items/${singleSlug}`);
+            if (iRes.ok) itemsResult = { status: 'fulfilled', value: await iRes.json().then(j => [j?.data || j]) };
+          }
+        }
+      } else {
+        // Fetch all
+        set({ hasFetchedAllProducts: true });
+        [productsResult, itemsResult] = await Promise.allSettled([
+          fetch(`${cleanBase}/api/v1/products`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+            if (!res.ok) return [];
+            const json = await res.json();
+            const data = json?.data || json?.products || json?.result || json;
+            return Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+          }),
+          fetch(`${cleanBase}/api/v1/items`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+            if (!res.ok) return [];
+            const json = await res.json();
+            const data = json?.data || json?.items || json?.result || json;
+            return Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
+          }),
+        ]);
+      }
 
       const rawProducts = (productsResult.status === 'fulfilled' && Array.isArray(productsResult.value))
         ? productsResult.value.map((p) => ({ ...p, entityType: 'product', itemType: 'product' }))
@@ -453,21 +475,14 @@ export const useStore = create((set, get) => ({
 
           const rawFeatured = p.featuredImage || p.featured_image || p.imageUrl || p.image_url || p.product_image;
           const rawThumb = p.thumbnailUrl || p.thumbnail_url;
-          const rawGalleryCandidates = Array.isArray(p.gallery) && p.gallery.length > 0
-            ? p.gallery
-            : (Array.isArray(p.images) && p.images.length > 0
-              ? p.images
-              : (Array.isArray(p.gallery_images) ? p.gallery_images : []));
+          const rawGalleryCandidates = Array.isArray(p.gallery_images) ? p.gallery_images : [];
 
           // Pick the best high-res primary image: featured/imageUrl first, then gallery first item, fallback to un-thumbed thumbnailUrl
           const rawPrimary = rawFeatured || (rawGalleryCandidates.length > 0 ? rawGalleryCandidates[0] : null) || rawThumb || null;
           const highResPrimary = rawPrimary ? toHighRes(rawPrimary) : null;
           const primaryImg = resolveUrl(highResPrimary);
 
-          let resolvedGallery = rawGalleryCandidates.map(toHighRes).map(resolveUrl).filter(Boolean);
-          if (primaryImg && !resolvedGallery.includes(primaryImg)) {
-            resolvedGallery = [primaryImg, ...resolvedGallery];
-          }
+          const resolvedGallery = rawGalleryCandidates.map(toHighRes).map(resolveUrl).filter(Boolean);
 
           // English text content as primary source of truth
           const englishName = p.name || p.title || 'Wellness Product';
@@ -668,7 +683,9 @@ export const useStore = create((set, get) => ({
             featured_image: primaryImg,
             thumbnailUrl: resolveUrl(p.thumbnailUrl || p.thumbnail_url) || primaryImg,
             thumbnail_url: resolveUrl(p.thumbnailUrl || p.thumbnail_url) || primaryImg,
-            images: resolvedGallery.length > 0 ? resolvedGallery : (primaryImg ? [primaryImg] : []),
+            images: resolvedGallery,
+            gallery: resolvedGallery,
+            gallery_images: resolvedGallery,
           };
 
           normalized[key] = productObj;
@@ -714,11 +731,15 @@ export const useStore = create((set, get) => ({
           : null;
         const finalSelectedSlug = resolvedCurrent || keys[0] || 'mo-multi-textured-latex-contraceptive-10-pcs';
 
-        set({
-          products: { ...normalized },
-          productKeys: keys,
-          isLoadingProducts: false,
-          selectedProductSlug: finalSelectedSlug
+        set((state) => {
+          const newProducts = singleSlug ? { ...state.products, ...normalized } : { ...normalized };
+          const newKeys = singleSlug ? Array.from(new Set([...state.productKeys, ...keys])) : keys;
+          return {
+            products: newProducts,
+            productKeys: newKeys,
+            isLoadingProducts: false,
+            selectedProductSlug: finalSelectedSlug
+          };
         });
       } else {
         set({ isLoadingProducts: false });
@@ -730,7 +751,7 @@ export const useStore = create((set, get) => ({
   },
 
   // Navigation with true Browser URL History Sync
-  navigateToCombo: () => get().navigateTo('combo'),
+  navigateToCombo: () => get().navigateTo('product', 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'),
   navigateTo: (view, param = null, replaceHistory = false) => {
     // If cart navigation is requested, open the drawer instead of switching view
     if (view === 'cart') {
@@ -796,7 +817,7 @@ export const useStore = create((set, get) => ({
   },
 
   navigateToCombo: () => {
-    get().navigateTo('combo');
+    get().navigateTo('product', 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo');
   },
 
   // Slider actions
