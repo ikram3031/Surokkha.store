@@ -143,6 +143,9 @@ export default function ProductDetailView() {
           const fetchedObj = json?.data || json;
           if (fetchedObj && (fetchedObj.id || fetchedObj._id || fetchedObj.slug)) {
             setDetailedProduct(fetchedObj);
+            if (!products[selectedSlug] || !products[selectedSlug].variants) {
+              fetchProducts(selectedSlug);
+            }
           }
         }
       } catch (err) {
@@ -213,6 +216,7 @@ export default function ProductDetailView() {
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
+    const cartProductKey = product.slug || product.id;
     if (hasVariants) {
       const selectedVariants = Object.entries(variantQuantities).filter(([_, q]) => q > 0);
       if (selectedVariants.length === 0) {
@@ -221,16 +225,17 @@ export default function ProductDetailView() {
       }
       selectedVariants.forEach(([size, q]) => {
         const v = product.variants.find(va => va.size === size);
-        if (v) addToCart(product.id, q, false, v);
+        if (v) addToCart(cartProductKey, q, false, v);
       });
     } else {
-      addToCart(product.id, quantity, false, null);
+      addToCart(cartProductKey, quantity, false, null);
     }
     navigateTo('checkout');
   };
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
+    const cartProductKey = product.slug || product.id;
     if (hasVariants) {
       const selectedVariants = Object.entries(variantQuantities).filter(([_, q]) => q > 0);
       if (selectedVariants.length === 0) {
@@ -239,10 +244,10 @@ export default function ProductDetailView() {
       }
       selectedVariants.forEach(([size, q], idx) => {
         const v = product.variants.find(va => va.size === size);
-        if (v) addToCart(product.id, q, idx === selectedVariants.length - 1, v);
+        if (v) addToCart(cartProductKey, q, idx === selectedVariants.length - 1, v);
       });
     } else {
-      addToCart(product.id, quantity, true, null);
+      addToCart(cartProductKey, quantity, true, null);
     }
     openCartDrawer();
   };

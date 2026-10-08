@@ -951,11 +951,28 @@ export const useStore = create((set, get) => ({
     let subtotal = 0;
     let totalItemCount = 0;
 
-    Object.entries(cart).forEach(([slug, qty]) => {
+    Object.entries(cart).forEach(([cartKey, qty]) => {
       if (qty <= 0) return;
       totalItemCount += qty;
-      const prod = products[slug];
-      const itemPrice = prod ? prod.price : (slug.includes('combo') ? 900 : 400);
+      const parts = cartKey.split(':::');
+      const baseSlug = parts[0];
+      const variantSize = parts[1];
+      const prod = products[baseSlug];
+      
+      let itemPrice = 0;
+      if (prod) {
+        if (variantSize && prod.variants) {
+          const variant = prod.variants.find(v => v.size === variantSize);
+          if (variant) {
+            itemPrice = Number(variant.offerPrice > 0 ? variant.offerPrice : (variant.price || variant.regularPrice || 0));
+          }
+        }
+        if (!itemPrice) {
+          itemPrice = Number(prod.offerPrice > 0 ? prod.offerPrice : (prod.price || prod.regularPrice || 0));
+        }
+      } else {
+        itemPrice = cartKey.includes('combo') ? 900 : 400;
+      }
       subtotal += itemPrice * qty;
     });
 

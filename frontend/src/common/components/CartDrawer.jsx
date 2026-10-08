@@ -293,7 +293,14 @@ export default function CartDrawer() {
                   const variantName = parts[1];
                   const baseItem = products[baseSlug] || { name: baseSlug, price: 0, regularPrice: 0 };
                   const variant = variantName && baseItem.variants ? baseItem.variants.find(v => v.size === variantName) : null;
-                  const item = variant ? { ...baseItem, name: baseItem.name + ' (' + variantName + ')', name_bn: (baseItem.name_bn || baseItem.name) + ' (' + variantName + ')', price: variant.price || baseItem.price, imageUrl: variant.imageUrl || baseItem.imageUrl } : baseItem;
+                  const item = variant ? { 
+                    ...baseItem, 
+                    name: baseItem.name + ' (' + variantName + ')', 
+                    name_bn: (baseItem.name_bn || baseItem.name) + ' (' + variantName + ')', 
+                    price: Number(variant.offerPrice > 0 ? variant.offerPrice : (variant.price || variant.regularPrice || baseItem.price || 0)), 
+                    regularPrice: Number(variant.regularPrice > 0 ? variant.regularPrice : (variant.price || baseItem.regularPrice || 0)),
+                    imageUrl: variant.imageUrl || baseItem.imageUrl 
+                  } : baseItem;
                   const slug = baseSlug;
                   const qty = cart[cartKey];
                   const lineTotal = item.price * qty;

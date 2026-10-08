@@ -972,19 +972,38 @@ export default function CheckoutView() {
               </div>
 
               <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
-                {cartKeys.map((slug) => {
-                  const item = products[slug] || { name: slug, price: 0 };
-                  const qty = cart[slug];
+                {cartKeys.map((cartKey) => {
+                  const parts = cartKey.split(':::');
+                  const baseSlug = parts[0];
+                  const variantName = parts[1];
+                  const baseItem = products[baseSlug] || { name: baseSlug, price: 0 };
+                  const variant = variantName && baseItem.variants ? baseItem.variants.find(v => v.size === variantName) : null;
+                  
+                  let itemPrice = baseItem.price;
+                  if (variant) {
+                    itemPrice = Number(variant.offerPrice > 0 ? variant.offerPrice : (variant.price || variant.regularPrice || 0));
+                  } else if (baseItem.offerPrice > 0) {
+                    itemPrice = baseItem.offerPrice;
+                  }
+
+                  let regularPrice = baseItem.regularPrice;
+                  if (variant) {
+                    regularPrice = Number(variant.regularPrice > 0 ? variant.regularPrice : (variant.price || 0));
+                  }
+
+                  const itemName = variant ? `${baseItem.name} (${variantName})` : baseItem.name;
+                  const qty = cart[cartKey];
+                  
                   return (
-                    <div key={slug} className="flex items-center justify-between text-xs">
+                    <div key={cartKey} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{item.name}</span>
+                        <span className="font-bold text-slate-900">{itemName}</span>
                         <span className="text-slate-600 font-bold">× {qty}</span>
                       </div>
                       <div className="flex items-baseline gap-1.5 font-mono">
-                        <span className="font-bold text-slate-900">৳{item.price * qty}</span>
-                        {item.regularPrice > item.price && (
-                          <span className="text-[11px] text-slate-500 line-through">৳{item.regularPrice * qty}</span>
+                        <span className="font-bold text-slate-900">৳{itemPrice * qty}</span>
+                        {regularPrice > itemPrice && (
+                          <span className="text-[11px] text-slate-500 line-through">৳{regularPrice * qty}</span>
                         )}
                       </div>
                     </div>
