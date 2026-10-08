@@ -341,13 +341,13 @@ export const useStore = create((set, get) => ({
         // Fetch all
         set({ hasFetchedAllProducts: true });
         [productsResult, itemsResult] = await Promise.allSettled([
-          fetch(`${cleanBase}/api/v1/products`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+          fetch(`${cleanBase}/api/v1/products?limit=1000`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
             if (!res.ok) return [];
             const json = await res.json();
             const data = json?.data || json?.products || json?.result || json;
             return Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
           }),
-          fetch(`${cleanBase}/api/v1/items`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
+          fetch(`${cleanBase}/api/v1/items?limit=1000`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
             if (!res.ok) return [];
             const json = await res.json();
             const data = json?.data || json?.items || json?.result || json;
@@ -971,7 +971,7 @@ export const useStore = create((set, get) => ({
           itemPrice = Number(prod.offerPrice > 0 ? prod.offerPrice : (prod.price || prod.regularPrice || 0));
         }
       } else {
-        itemPrice = cartKey.includes('combo') ? 900 : 400;
+        itemPrice = cartKey.includes('combo') ? 900 : 0;
       }
       subtotal += itemPrice * qty;
     });
@@ -1122,7 +1122,7 @@ export const useStore = create((set, get) => ({
             sku: variant?.sku || prod?.sku || '',
             image: variant?.imageUrl || prod?.imageUrl || prod?.image || '',
             quantity: qty,
-            unitPrice: variant?.price || prod?.price || 400,
+            unitPrice: variant?.price || prod?.price || (cartKey.includes('combo') ? 900 : 0),
             size: variant?.size || variantSize || prod?.size || 'Standard Pack'
           };
         }),

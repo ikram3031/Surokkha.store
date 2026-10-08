@@ -37,13 +37,11 @@ export default function App() {
   }, [fetchCategories, openCartDrawer]);
 
   useEffect(() => {
-    if (currentView !== 'product' && currentView !== 'checkout') {
-      const state = useStore.getState();
-      if (!state.hasFetchedAllProducts) {
-        fetchProducts();
-      }
+    const state = useStore.getState();
+    if (!state.hasFetchedAllProducts) {
+      fetchProducts();
     }
-  }, [currentView, fetchProducts]);
+  }, [fetchProducts]);
 
   // Sync state when user clicks browser Back/Forward buttons
   useEffect(() => {

@@ -68,6 +68,18 @@ export default function CheckoutView() {
     }
   }, []);
 
+  // Make absolutely sure all cart items are loaded from the backend
+  // so we don't fall back to default pricing
+  const fetchProducts = useStore((state) => state.fetchProducts);
+  useEffect(() => {
+    cartKeys.forEach((cartKey) => {
+      const baseSlug = cartKey.split(':::')[0];
+      if (!products[baseSlug]) {
+        fetchProducts(baseSlug);
+      }
+    });
+  }, [cartKeys, products, fetchProducts]);
+
   // Sync shippingAddress initial fields if sameAsBilling is toggled
   useEffect(() => {
     if (!sameAsBilling) {

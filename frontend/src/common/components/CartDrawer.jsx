@@ -25,6 +25,18 @@ export default function CartDrawer() {
   const [isRendered, setIsRendered] = useState(isCartDrawerOpen);
   const [isVisible, setIsVisible] = useState(isCartDrawerOpen);
   const drawerRef = useRef(null);
+  const fetchProducts = useStore((state) => state.fetchProducts);
+
+  useEffect(() => {
+    if (isCartDrawerOpen) {
+      Object.keys(cart).forEach((cartKey) => {
+        const baseSlug = cartKey.split(':::')[0];
+        if (!products[baseSlug]) {
+          fetchProducts(baseSlug);
+        }
+      });
+    }
+  }, [cart, products, isCartDrawerOpen, fetchProducts]);
 
   // Smooth Entry / Exit Animation Controller
   useEffect(() => {
