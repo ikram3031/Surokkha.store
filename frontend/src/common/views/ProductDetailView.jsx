@@ -33,16 +33,20 @@ export default function ProductDetailView() {
     getLocalizedFeatures 
   } = useTranslation();
 
-  const [quantity, setQuantity] = useState(1);
+    const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [detailedProduct, setDetailedProduct] = useState(null);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
 
-  const product = products[selectedSlug] || 
-    (selectedSlug && products[selectedSlug.replace(/-condom$/, '')]) ||
-    (selectedSlug && products[`${selectedSlug}-condom`]) ||
+  const baseProduct = products[selectedSlug] || 
+    (selectedSlug && products[selectedSlug.replace(/-condom/, '')]) ||
+    (selectedSlug && products[`-condom`]) ||
     (selectedSlug && Object.values(products).find(p => p.slug === selectedSlug || p.did === selectedSlug || p.id === selectedSlug || p._id === selectedSlug)) ||
     (productKeys.length > 0 && products[productKeys[0]]) || 
     (Object.values(products).length > 0 && Object.values(products)[0]) || 
     null;
+
+  const product = detailedProduct || baseProduct;
 
   const isOutOfStock = Boolean(product?.isOutOfStock || product?.stockStatus === 'outofstock' || product?.stockStatus === 'out_of_stock' || product?.stockAmount === 0);
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
@@ -85,9 +89,41 @@ export default function ProductDetailView() {
   const localizedDescription = getLocalizedDescription(product);
   const localizedFeatures = getLocalizedFeatures(product);
 
-  useEffect(() => {
+    useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  useEffect(() => {
+    const fetchSingle = async () => {
+      if (!selectedSlug) return;
+      setIsFetchingDetail(true);
+      let type = 'product';
+      if (baseProduct && baseProduct.itemType === 'item') {
+        type = 'item';
+      }
+      const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
+      let url = `${cleanBase}/api/v1/${type}s/${selectedSlug}`;
+      try {
+        let res = await fetch(url);
+        if (!res.ok && type === 'product') {
+           url = `${cleanBase}/api/v1/items/${selectedSlug}`;
+           res = await fetch(url);
+        }
+        if (res.ok) {
+           const json = await res.json();
+           const fetchedObj = json?.data || json;
+           if (fetchedObj && (fetchedObj.id || fetchedObj._id || fetchedObj.slug)) {
+              setDetailedProduct(fetchedObj);
+           }
+        }
+      } catch (err) {
+        console.error('Failed to fetch single product details:', err);
+      } finally {
+        setIsFetchingDetail(false);
+      }
+    };
+    fetchSingle();
+  }, [selectedSlug, baseProduct?.itemType]);
 
   useEffect(() => {
     if (product) {
