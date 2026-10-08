@@ -48,7 +48,7 @@ export default function ProductArtwork({
   if (rawImg && typeof rawImg === 'string') {
     const trimmed = rawImg.trim();
     if (trimmed !== '' && trimmed !== '#' && trimmed !== '/#' && trimmed.toLowerCase() !== 'null' && trimmed.toLowerCase() !== 'undefined') {
-      const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+      const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
       if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
         try {
           const urlObj = new URL(trimmed);
@@ -77,13 +77,13 @@ export default function ProductArtwork({
   if (resolvedImgUrl && !imgError) {
     return (
       <div className={`${sizeClass} relative flex items-center justify-center overflow-hidden rounded-2xl bg-slate-50`}>
-        {!imgLoaded && (
+        {/* {!imgLoaded && (
           <Skeleton className="absolute inset-0 w-full h-full rounded-2xl" />
-        )}
+        )} */}
         <img
           src={resolvedImgUrl}
           alt={p?.name || 'Product Packaging'}
-          className={`${imgClassName || "w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105 rounded-2xl"} ${imgLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+          className={`${imgClassName || "w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105 rounded-2xl"}`}
           onLoad={() => setImgLoaded(true)}
           onError={() => {
             setImgError(true);

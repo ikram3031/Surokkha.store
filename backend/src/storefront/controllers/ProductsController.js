@@ -32,7 +32,7 @@ export const listProducts = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: products.map((p) => serializeProduct(p, "en")),
+      data: products.map((p) => serializeProduct(p, "en", "product")),
       pagination: {
         total: count,
         limit,
@@ -68,7 +68,7 @@ export const getSingleProduct = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: serializeProduct(product, "en"),
+      data: serializeProduct(product, "en", "product"),
     });
   } catch (err) {
     next(err);

@@ -26,7 +26,7 @@ export const normalizeValue = (value) => {
 export const isPlaceholderImageUrl = (value) => typeof value === "string" && value.trim() === PLACEHOLDER_IMAGE_URL;
 
 // Serializes a Mongoose product document into a clean API response format with localization and rich specifications support
-export const serializeProduct = (product, lang = "en") => {
+export const serializeProduct = (product, lang = "en", itemType = null) => {
   const source = product?.toObject ? product.toObject() : product;
   const { _id, __v, ...rest } = source || {};
   const id = source?._id?.toString?.() ?? source?.id ?? null;
@@ -138,6 +138,7 @@ export const serializeProduct = (product, lang = "en") => {
 
   return {
     ...rest,
+    ...(itemType ? { itemType, entityType: itemType } : {}),
     ...(rawVariants !== undefined ? { variants: rawVariants } : {}),
     id,
     name: source?.name || "",

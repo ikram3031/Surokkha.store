@@ -18,47 +18,44 @@ export default function ProductDetailView() {
   const openCartDrawer = useStore((state) => state.openCartDrawer);
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
   const fetchProducts = useStore((state) => state.fetchProducts);
-  
+
   const products = useStore((state) => state.products);
   const productKeys = useStore((state) => state.productKeys);
 
-  const { 
-    t, 
+  const {
+    t,
     isBn,
-    formatPrice, 
-    formatNumber, 
-    getLocalizedName, 
-    getLocalizedTagline, 
-    getLocalizedDescription, 
-    getLocalizedFeatures 
+    formatPrice,
+    formatNumber,
+    getLocalizedName,
+    getLocalizedTagline,
+    getLocalizedDescription,
+    getLocalizedFeatures
   } = useTranslation();
 
   const [quantity, setQuantity] = useState(1);
   const [variantQuantities, setVariantQuantities] = useState({});
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [detailedProduct, setDetailedProduct] = useState(null);
-  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
-
-  const baseProduct = products[selectedSlug] || 
+  const baseProduct = products[selectedSlug] ||
     (selectedSlug && products[selectedSlug.replace(/-condom/, '')]) ||
     (selectedSlug && products[`-condom`]) ||
     (selectedSlug && Object.values(products).find(p => p.slug === selectedSlug || p.did === selectedSlug || p.id === selectedSlug || p._id === selectedSlug)) ||
-    (productKeys.length > 0 && products[productKeys[0]]) || 
-    (Object.values(products).length > 0 && Object.values(products)[0]) || 
+    (productKeys.length > 0 && products[productKeys[0]]) ||
+    (Object.values(products).length > 0 && Object.values(products)[0]) ||
     null;
 
-  const product = detailedProduct || baseProduct;
+  const product = baseProduct;
 
   const hasVariants = Boolean(product?.type === 'variant' || product?.type === 'variable' || (Array.isArray(product?.variants) && product.variants.length > 0));
 
   const isOutOfStock = Boolean(
-    product?.isOutOfStock || 
-    product?.stockStatus === 'outofstock' || 
-    product?.stockStatus === 'out_of_stock' || 
+    product?.isOutOfStock ||
+    product?.stockStatus === 'outofstock' ||
+    product?.stockStatus === 'out_of_stock' ||
     (!hasVariants && product?.stockAmount === 0)
   );
-  
+
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
@@ -77,19 +74,45 @@ export default function ProductDetailView() {
   let maxPrice = currentOfferPrice;
   let isRange = false;
 
+  let anySelected = false;
+  let totalSelectedQuantity = 0;
+
   if (hasVariants) {
-    if (selectedVariant) {
-      displayOfferPrice = Number(selectedVariant.price || currentOfferPrice);
-      displayRegularPrice = Number(selectedVariant.regularPrice || displayOfferPrice);
+    let totalSelectedPrice = 0;
+    let totalSelectedRegularPrice = 0;
+    
+    Object.entries(variantQuantities).forEach(([size, q]) => {
+      if (q > 0) {
+        anySelected = true;
+        totalSelectedQuantity += q;
+        const v = product?.variants?.find(va => va.size === size);
+        if (v) {
+          const vOffer = Number(v.offerPrice > 0 ? v.offerPrice : (v.price || v.regularPrice || 0));
+          const vReg = Number(v.regularPrice > 0 ? v.regularPrice : (v.price || 0));
+          totalSelectedPrice += vOffer * q;
+          totalSelectedRegularPrice += vReg * q;
+        }
+      }
+    });
+
+    if (anySelected) {
+      displayOfferPrice = totalSelectedPrice;
+      displayRegularPrice = totalSelectedRegularPrice;
       displayHasDiscount = displayRegularPrice > displayOfferPrice;
+      isRange = false;
     } else {
-      const prices = product?.variants?.map(v => Number(v.price || v.regularPrice || 0)).filter(p => p > 0) || [];
+      const prices = product?.variants?.map(v => Number(v.offerPrice > 0 ? v.offerPrice : (v.price || v.regularPrice || 0))).filter(p => p > 0) || [];
       if (prices.length > 0) {
         minPrice = Math.min(...prices);
         maxPrice = Math.max(...prices);
         if (minPrice !== maxPrice) isRange = true;
       }
     }
+  } else {
+    // Multiply by quantity for simple products
+    displayOfferPrice = currentOfferPrice * quantity;
+    displayRegularPrice = currentRegularPrice * quantity;
+    displayHasDiscount = displayRegularPrice > displayOfferPrice;
   }
 
   const localizedName = getLocalizedName(product);
@@ -97,15 +120,11 @@ export default function ProductDetailView() {
   const localizedDescription = getLocalizedDescription(product);
   const localizedFeatures = getLocalizedFeatures(product);
 
-    useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
   useEffect(() => {
     const fetchSingle = async () => {
       if (!selectedSlug) return;
       if (isLoadingProducts) return; // Wait for the main list to resolve itemType first
-      
+
       setIsFetchingDetail(true);
       let type = 'product';
       if (baseProduct && baseProduct.itemType === 'item') {
@@ -116,15 +135,15 @@ export default function ProductDetailView() {
       try {
         let res = await fetch(url);
         if (!res.ok && type === 'product') {
-           url = `${cleanBase}/api/v1/items/${selectedSlug}`;
-           res = await fetch(url);
+          url = `${cleanBase}/api/v1/items/${selectedSlug}`;
+          res = await fetch(url);
         }
         if (res.ok) {
-           const json = await res.json();
-           const fetchedObj = json?.data || json;
-           if (fetchedObj && (fetchedObj.id || fetchedObj._id || fetchedObj.slug)) {
-              setDetailedProduct(fetchedObj);
-           }
+          const json = await res.json();
+          const fetchedObj = json?.data || json;
+          if (fetchedObj && (fetchedObj.id || fetchedObj._id || fetchedObj.slug)) {
+            setDetailedProduct(fetchedObj);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch single product details:', err);
@@ -151,14 +170,14 @@ export default function ProductDetailView() {
     if (!trimmed || trimmed === '#' || trimmed === '/#' || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'undefined') {
       return null;
     }
-    const cleanBase = (API_BASE_URL || '').replace(/\/$/, '');
+    const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       try {
         const urlObj = new URL(trimmed);
         if ((urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') && urlObj.pathname.startsWith('/uploads')) {
           return cleanBase ? `${cleanBase}${urlObj.pathname}${urlObj.search}` : trimmed;
         }
-      } catch (_) {}
+      } catch (_) { }
       return trimmed;
     }
     if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
@@ -175,7 +194,9 @@ export default function ProductDetailView() {
 
   const primaryCandidate = product?.featuredImage || product?.featured_image || product?.imageUrl || product?.image_url || product?.product_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null) || (Array.isArray(product?.gallery) && product.gallery.length > 0 ? product.gallery[0] : null);
 
-  const rawImages = (Array.isArray(product?.images) && product.images.length > 0) ? product.images : ((Array.isArray(product?.gallery) && product.gallery.length > 0) ? product.gallery : (primaryCandidate ? [primaryCandidate] : []));
+  const baseRawImages = (Array.isArray(product?.images) && product.images.length > 0) ? product.images : ((Array.isArray(product?.gallery) && product.gallery.length > 0) ? product.gallery : (primaryCandidate ? [primaryCandidate] : []));
+  const variantImages = hasVariants ? (product?.variants?.map(v => v.imageUrl).filter(Boolean) || []) : [];
+  const rawImages = Array.from(new Set([...baseRawImages, ...variantImages]));
   
   const galleryImages = rawImages
     .map(toHighRes)
@@ -283,7 +304,7 @@ export default function ProductDetailView() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
-      
+
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
         <button onClick={() => navigateTo('home')} className="hover:text-brand-700 cursor-pointer">
@@ -299,26 +320,26 @@ export default function ProductDetailView() {
 
       {/* PRODUCT DETAILS MAIN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-        
+
         {/* Product Large Visual Presentation & Gallery */}
         <div className="lg:col-span-6 space-y-3">
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden aspect-square w-full max-w-md mx-auto relative shadow-xs">
-            <ProductArtwork 
-              productKey={product} 
-              customImageUrl={selectedImage || primaryCandidate}
-              sizeClass="w-full h-full aspect-square" 
+            <ProductArtwork
+              productKey={product}
+              customImageUrl={selectedImage || (galleryImages.length > 0 ? galleryImages[0] : primaryCandidate)}
+              sizeClass="w-full h-full aspect-square"
               imgClassName="w-full h-full object-cover object-center"
             />
             {/* Discount Ribbon Badge */}
             {hasDiscount && discountPercent > 0 && (
-              <div 
+              <div
                 className="absolute top-0 left-3 sm:left-4 z-20 pointer-events-none select-none drop-shadow-md"
                 title={`${discountPercent}% Discount`}
               >
-                <svg 
-                  viewBox="0 0 70 65" 
-                  className="w-11 sm:w-13 h-auto overflow-visible" 
-                  fill="none" 
+                <svg
+                  viewBox="0 0 70 65"
+                  className="w-11 sm:w-13 h-auto overflow-visible"
+                  fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <defs>
@@ -339,12 +360,12 @@ export default function ProductDetailView() {
                   {/* Top inner highlight sheen */}
                   <path d="M4 1.5 H57" stroke="#FFFFFF" strokeOpacity="0.4" strokeWidth="1.2" strokeLinecap="round" />
                   {/* White Bold Text: -<percent>% */}
-                  <text 
-                    x="29" 
-                    y="27" 
-                    textAnchor="middle" 
-                    dominantBaseline="central" 
-                    fill="#FFFFFF" 
+                  <text
+                    x="29"
+                    y="27"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="#FFFFFF"
                     style={{
                       fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                       fontSize: String(discountPercent).length > 2 ? '17px' : '19px',
@@ -379,15 +400,14 @@ export default function ProductDetailView() {
                     type="button"
                     onClick={() => setSelectedImage(imgUrl)}
                     aria-label={`${localizedName} thumbnail ${idx + 1}`}
-                    className={`relative w-16 h-16 sm:w-20 sm:h-20 aspect-square rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer p-0.5 bg-white ${
-                      isSelected 
-                        ? 'border-brand-700 shadow-xs ring-2 ring-brand-700/20' 
+                    className={`relative w-16 h-16 sm:w-20 sm:h-20 aspect-square rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer p-0.5 bg-white ${isSelected
+                        ? 'border-brand-700 shadow-xs ring-2 ring-brand-700/20'
                         : 'border-slate-200 hover:border-brand-300 opacity-70 hover:opacity-100'
-                    }`}
+                      }`}
                   >
-                    <img 
-                      src={imgUrl} 
-                      alt={`${localizedName} thumbnail ${idx + 1}`} 
+                    <img
+                      src={imgUrl}
+                      alt={`${localizedName} thumbnail ${idx + 1}`}
                       className="w-full h-full object-cover rounded-lg"
                       loading="lazy"
                     />
@@ -417,7 +437,7 @@ export default function ProductDetailView() {
               <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
                 <div>
                   <span className={`text-3xl sm:text-4xl font-extrabold font-heading ${isOutOfStock ? 'text-slate-500' : 'text-slate-900'}`}>
-                    {hasVariants && !selectedVariant && !isRange ? formatPrice(minPrice) : formatPrice(displayOfferPrice)}
+                    {hasVariants && !anySelected && isRange ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` : (hasVariants && !anySelected && !isRange ? formatPrice(minPrice) : formatPrice(displayOfferPrice))}
                   </span>
                 </div>
                 {displayHasDiscount && (
@@ -439,8 +459,8 @@ export default function ProductDetailView() {
                 ) : (
                   hasDiscount && (
                     <span className="text-xs sm:text-sm font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs whitespace-nowrap">
-                      {isBn 
-                        ? `${formatPrice(savingsAmount)} সাশ্রয় (${formatNumber(discountPercent)}% ছাড়)` 
+                      {isBn
+                        ? `${formatPrice(savingsAmount)} সাশ্রয় (${formatNumber(discountPercent)}% ছাড়)`
                         : `Save ${formatPrice(savingsAmount)} (${discountPercent}% OFF)`}
                     </span>
                   )
@@ -470,24 +490,24 @@ export default function ProductDetailView() {
           )}
 
 
-                      {/* Detailed Description */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                {t('productDescriptionHeading', 'Product Description')}
-              </h3>
-              <div 
-                className="text-xs sm:text-sm text-slate-600 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: localizedDescription }}
-              />
-            </div>
+          {/* Detailed Description */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+              {t('productDescriptionHeading', 'Product Description')}
+            </h3>
+            <div
+              className="text-xs sm:text-sm text-slate-600 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: localizedDescription }}
+            />
+          </div>
 
           {/* Variations Selection & Quantity */}
           {hasVariants ? (
             <div className="pt-2 pb-1 border-t border-slate-100 space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+              <h3 className="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-800 mb-2">
                 {isBn ? 'ভেরিয়েশন ও পরিমাণ নির্বাচন করুন' : 'Select Variations & Quantity'}
               </h3>
-              <div className="flex flex-col gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {product.variants.map((v, i) => {
                   const qty = variantQuantities[v.size] || 0;
                   const isSelected = qty > 0 || selectedVariant?.size === v.size;
@@ -501,56 +521,69 @@ export default function ProductDetailView() {
                           if (resolved) setSelectedImage(resolved);
                         }
                       }}
-                      className={`flex items-center justify-between p-2 rounded-xl border transition-all cursor-pointer ${
-                        isSelected
+                      className={`flex flex-col items-center justify-between p-2 sm:p-3 rounded-xl border transition-all cursor-pointer text-center gap-2 ${isSelected
                           ? 'border-brand-600 bg-brand-50 shadow-xs ring-1 ring-brand-600/30'
                           : 'border-slate-200 bg-white hover:border-brand-300 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="w-full aspect-square bg-white rounded-lg overflow-hidden border border-slate-100 flex items-center justify-center p-1 mb-1">
                         {v.imageUrl ? (
-                          <img src={resolveImgUrl(v.imageUrl)} alt={v.size} className="w-12 h-12 object-cover rounded-lg border border-slate-200" />
+                          <img src={resolveImgUrl(v.imageUrl)} alt={v.size} className="w-full h-full object-contain" />
                         ) : (
-                          <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 text-xs">
-                            IMG
-                          </div>
+                          <div className="text-slate-300 text-3xl">📦</div>
                         )}
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 leading-tight">{v.size}</p>
-                          <p className="text-[11px] font-semibold text-brand-700 mt-0.5">৳{v.price}</p>
-                        </div>
                       </div>
                       
-                      <div className="inline-flex items-center border rounded-lg bg-white border-slate-300 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          disabled={isOutOfStock}
-                          onClick={() => {
-                            setVariantQuantities(prev => ({ ...prev, [v.size]: Math.max(0, (prev[v.size] || 0) - 1) }));
-                            setSelectedVariant(v);
-                            if (v.imageUrl) {
-                              const resolved = resolveImgUrl(v.imageUrl);
-                              if (resolved) setSelectedImage(resolved);
-                            }
-                          }}
-                          className={`px-3 py-1.5 font-bold text-sm ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-800 hover:text-brand-700 hover:bg-slate-50'}`}
-                        >-</button>
-                        <span className="px-2 text-xs font-bold text-slate-900 min-w-[2rem] text-center border-x border-slate-200">
-                          {formatNumber(qty)}
+                      <div className="w-full flex-1 flex flex-col justify-center min-h-[2.5rem]">
+                        <span className="font-bold text-slate-800 text-xs sm:text-sm leading-tight line-clamp-2">
+                          {v.size}
                         </span>
-                        <button
-                          type="button"
-                          disabled={isOutOfStock}
-                          onClick={() => {
-                            setVariantQuantities(prev => ({ ...prev, [v.size]: (prev[v.size] || 0) + 1 }));
-                            setSelectedVariant(v);
-                            if (v.imageUrl) {
-                              const resolved = resolveImgUrl(v.imageUrl);
-                              if (resolved) setSelectedImage(resolved);
-                            }
-                          }}
-                          className={`px-3 py-1.5 font-bold text-sm ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-800 hover:text-brand-700 hover:bg-slate-50'}`}
-                        >+</button>
+                      </div>
+
+                      <div className="w-full flex justify-center mt-auto pt-1 pb-1">
+                        <div className="flex items-center justify-between w-full max-w-[120px] px-1 py-0.5 border border-slate-200 bg-white rounded-lg shadow-sm" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            disabled={isOutOfStock}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isOutOfStock) return;
+                              setVariantQuantities(prev => ({
+                                ...prev,
+                                [v.size]: Math.max(0, (prev[v.size] || 0) - 1)
+                              }));
+                              setSelectedVariant(v);
+                              if (v.imageUrl) {
+                                const resolved = resolveImgUrl(v.imageUrl);
+                                if (resolved) setSelectedImage(resolved);
+                              }
+                            }}
+                            className={`w-7 h-7 flex items-center justify-center rounded-md font-bold text-base transition-colors ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 hover:text-brand-700'}`}
+                          >
+                            -
+                          </button>
+                          <span className="w-6 text-center font-extrabold text-slate-900 text-sm">{qty}</span>
+                          <button
+                            type="button"
+                            disabled={isOutOfStock}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isOutOfStock) return;
+                              setVariantQuantities(prev => ({
+                                ...prev,
+                                [v.size]: (prev[v.size] || 0) + 1
+                              }));
+                              setSelectedVariant(v);
+                              if (v.imageUrl) {
+                                const resolved = resolveImgUrl(v.imageUrl);
+                                if (resolved) setSelectedImage(resolved);
+                              }
+                            }}
+                            className={`w-7 h-7 flex items-center justify-center rounded-md font-bold text-base transition-colors ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 hover:text-brand-700'}`}
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -562,10 +595,10 @@ export default function ProductDetailView() {
               <div className="flex items-center gap-4">
                 <span className="text-xs font-bold text-slate-800">{t('quantity', 'Quantity:')}</span>
                 <div className={`inline-flex items-center border rounded-xl ${isOutOfStock ? 'border-slate-200 bg-slate-100 opacity-60' : 'border-slate-300 bg-slate-50'}`}>
-                  <button 
+                  <button
                     type="button"
                     disabled={isOutOfStock}
-                    onClick={() => !isOutOfStock && setQuantity((q) => Math.max(1, q - 1))} 
+                    onClick={() => !isOutOfStock && setQuantity((q) => Math.max(1, q - 1))}
                     aria-label="Decrease quantity"
                     className={`px-3 py-2 font-bold text-sm ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-800 hover:text-slate-950 cursor-pointer'}`}
                   >
@@ -574,10 +607,10 @@ export default function ProductDetailView() {
                   <span className="px-4 py-2 text-xs font-bold text-slate-900 bg-white min-w-[2.5rem] text-center">
                     {formatNumber(quantity)}
                   </span>
-                  <button 
+                  <button
                     type="button"
                     disabled={isOutOfStock}
-                    onClick={() => !isOutOfStock && setQuantity((q) => q + 1)} 
+                    onClick={() => !isOutOfStock && setQuantity((q) => q + 1)}
                     aria-label="Increase quantity"
                     className={`px-3 py-2 font-bold text-sm ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-800 hover:text-slate-950 cursor-pointer'}`}
                   >
@@ -587,36 +620,34 @@ export default function ProductDetailView() {
               </div>
             </div>
           )}
-          
+
           <div className="pt-1">
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <button 
+              <button
                 type="button"
                 disabled={isOutOfStock}
-                onClick={handleAddToCart} 
+                onClick={handleAddToCart}
                 aria-label={`${t('addToCart', 'Add to Cart')} - ${localizedName}`}
-                className={`w-full text-sm font-bold py-3.5 px-4 rounded-xl border transition flex items-center justify-center gap-2 ${
-                  isOutOfStock
+                className={`w-full text-sm font-bold py-3.5 px-4 rounded-xl border transition flex items-center justify-center gap-2 ${isOutOfStock
                     ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                     : 'bg-brand-50 hover:bg-brand-100 text-brand-900 border-brand-200 cursor-pointer'
-                }`}
+                  }`}
               >
                 <svg className={`w-4 h-4 ${isOutOfStock ? 'text-slate-400' : 'text-brand-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
                 <span>{isOutOfStock ? (isBn ? 'স্টক শেষ' : 'Out of Stock') : t('addToCart', 'Add to Cart')}</span>
               </button>
-              <button 
+              <button
                 type="button"
                 disabled={isOutOfStock}
-                onClick={handleBuyNow} 
+                onClick={handleBuyNow}
                 aria-label={`${t('buyNow', 'Buy Now')} - ${localizedName}`}
-                className={`w-full text-sm font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 ${
-                  isOutOfStock
+                className={`w-full text-sm font-bold py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 ${isOutOfStock
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border border-slate-300'
                     : 'bg-brand-700 hover:bg-brand-800 text-white shadow-md cursor-pointer'
-                }`}
+                  }`}
               >
                 <span>{isOutOfStock ? (isBn ? 'স্টক শেষ (অর্ডার বন্ধ)' : 'Out of Stock') : t('buyNow', 'Buy Now')}</span>
                 {!isOutOfStock && (
@@ -863,9 +894,9 @@ export default function ProductDetailView() {
                 {t('addComplementarySubtitle', 'Combine multiple products together in one discreet shipment.')}
               </p>
             </div>
-            <button 
+            <button
               type="button"
-              onClick={addComboToCart} 
+              onClick={addComboToCart}
               className="text-xs sm:text-sm font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
             >
               {isBn ? `স্পেশাল অফারটি লুফে নিন →` : `Grab the special offer →`}
