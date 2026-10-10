@@ -207,10 +207,9 @@ const ProductAddDialog = ({
                       }}
                       className={`
                         w-full flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-all
-                        ${
-                          hasNoStock
-                            ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
-                            : isSelected
+                        ${hasNoStock
+                          ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
+                          : isSelected
                             ? "border-primary bg-primary/8 ring-1 ring-primary/30 cursor-pointer"
                             : "border-border bg-background hover:border-primary/60 hover:bg-primary/5 cursor-pointer"
                         }
@@ -399,7 +398,7 @@ const NewInStoreOrderPage = () => {
       return;
     }
     if (customerPhone.trim().length !== 10) {
-      toast.error("Please enter a valid 10-digit Phone Number.");
+      toast.error("Please enter a valid Phone Number.");
       return;
     }
     if (customerEmail.trim() && !isValidEmail(customerEmail.trim())) {
@@ -562,11 +561,10 @@ const NewInStoreOrderPage = () => {
                 <button
                   type="button"
                   onClick={() => setCatalogType("products")}
-                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                    catalogType === "products"
+                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "products"
                       ? "bg-background text-foreground shadow-sm font-semibold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <Package className="h-3.5 w-3.5" />
                   <span>Products</span>
@@ -579,11 +577,10 @@ const NewInStoreOrderPage = () => {
                 <button
                   type="button"
                   onClick={() => setCatalogType("items")}
-                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                    catalogType === "items"
+                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "items"
                       ? "bg-background text-foreground shadow-sm font-semibold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <Boxes className="h-3.5 w-3.5" />
                   <span>Items</span>
@@ -678,10 +675,10 @@ const NewInStoreOrderPage = () => {
                     const isVariant = product.type === "variant";
                     const displayPrice = isVariant
                       ? Math.min(
-                          ...(product.variants || []).map((v) =>
-                            effectivePrice(v.price, v.offerPrice ?? null),
-                          ),
-                        )
+                        ...(product.variants || []).map((v) =>
+                          effectivePrice(v.price, v.offerPrice ?? null),
+                        ),
+                      )
                       : effectivePrice(product.price, product.offerPrice ?? null);
 
                     return (
@@ -745,10 +742,9 @@ const NewInStoreOrderPage = () => {
                             }
                             className={`
                               h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer
-                              ${
-                                isOutOfStock
-                                  ? "bg-muted cursor-not-allowed text-muted-foreground"
-                                  : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-sm"
+                              ${isOutOfStock
+                                ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-sm"
                               }
                             `}
                             title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
@@ -787,10 +783,10 @@ const NewInStoreOrderPage = () => {
                     const isVariant = item.type === "variant" && (item.variants?.length ?? 0) > 0;
                     const displayPrice = isVariant
                       ? Math.min(
-                          ...(item.variants || []).map((v) =>
-                            effectivePrice(v.price, v.offerPrice ?? null),
-                          ),
-                        )
+                        ...(item.variants || []).map((v) =>
+                          effectivePrice(v.price, v.offerPrice ?? null),
+                        ),
+                      )
                       : effectivePrice(item.price, item.offerPrice ?? null);
 
                     return (
@@ -861,10 +857,9 @@ const NewInStoreOrderPage = () => {
                             }
                             className={`
                               h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer
-                              ${
-                                isOutOfStock
-                                  ? "bg-muted cursor-not-allowed text-muted-foreground"
-                                  : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-sm"
+                              ${isOutOfStock
+                                ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-sm"
                               }
                             `}
                             title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}

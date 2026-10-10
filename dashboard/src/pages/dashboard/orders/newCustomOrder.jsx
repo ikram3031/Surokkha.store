@@ -210,10 +210,9 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
                       }}
                       className={`
                         w-full flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-all
-                        ${
-                          hasNoStock
-                            ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
-                            : isSelected
+                        ${hasNoStock
+                          ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
+                          : isSelected
                             ? "border-primary bg-primary/8 ring-1 ring-primary/30 cursor-pointer"
                             : "border-border bg-background hover:border-primary/60 hover:bg-primary/5 cursor-pointer"
                         }
@@ -449,8 +448,8 @@ const NewCustomOrderPage = () => {
       toast.error("Customer Full Name is required.");
       return;
     }
-    if (customerPhone.trim().length < 10) {
-      toast.error("Please enter a valid 10-digit Phone Number.");
+    if (customerPhone.trim().length !== 10) {
+      toast.error("Please enter a valid Phone Number.");
       return;
     }
     if (customerEmail.trim() && !isValidEmail(customerEmail.trim())) {
@@ -478,7 +477,7 @@ const NewCustomOrderPage = () => {
         return;
       }
       if (shipPhone.trim().length < 10) {
-        toast.error("Shipping Recipient Phone is required.");
+        toast.error("Shipping Recipient Phone is invalid.");
         return;
       }
       if (!shipAddress.trim()) {
@@ -501,7 +500,7 @@ const NewCustomOrderPage = () => {
 
       const billingInfo = {
         fullName: customerName.trim(),
-        phone: customerPhone.startsWith("+880") ? customerPhone.trim() : `+880${customerPhone.trim()}`,
+        phone: customerPhone.startsWith("+") ? customerPhone.trim() : (customerPhone.startsWith("0") ? `+88${customerPhone.trim()}` : `+880${customerPhone.trim()}`),
         email: customerEmail.trim() || "",
         address: billingAddress.trim(),
         thana: billingThana.trim(),
@@ -511,13 +510,13 @@ const NewCustomOrderPage = () => {
 
       const shippingInfo = shipToDifferent
         ? {
-            fullName: shipRecipientName.trim(),
-            phone: shipPhone.startsWith("+880") ? shipPhone.trim() : `+880${shipPhone.trim()}`,
-            address: shipAddress.trim(),
-            thana: shipThana.trim(),
-            district: shipDistrict.trim(),
-            zip: "",
-          }
+          fullName: shipRecipientName.trim(),
+          phone: shipPhone.startsWith("+") ? shipPhone.trim() : (shipPhone.startsWith("0") ? `+88${shipPhone.trim()}` : `+880${shipPhone.trim()}`),
+          address: shipAddress.trim(),
+          thana: shipThana.trim(),
+          district: shipDistrict.trim(),
+          zip: "",
+        }
         : { ...billingInfo };
 
       const orderPayload = {
@@ -673,11 +672,10 @@ const NewCustomOrderPage = () => {
                 <button
                   type="button"
                   onClick={() => setCatalogType("products")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                    catalogType === "products"
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "products"
                       ? "bg-background text-foreground shadow-xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <Package className="h-3.5 w-3.5" />
                   <span>Products</span>
@@ -690,11 +688,10 @@ const NewCustomOrderPage = () => {
                 <button
                   type="button"
                   onClick={() => setCatalogType("items")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                    catalogType === "items"
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "items"
                       ? "bg-background text-foreground shadow-xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <Boxes className="h-3.5 w-3.5" />
                   <span>Items</span>
@@ -768,10 +765,10 @@ const NewCustomOrderPage = () => {
                     const isVariant = product.type === "variant";
                     const displayPrice = isVariant
                       ? Math.min(
-                          ...(product.variants || []).map((v) =>
-                            effectivePrice(v.price, v.offerPrice ?? null),
-                          ),
-                        )
+                        ...(product.variants || []).map((v) =>
+                          effectivePrice(v.price, v.offerPrice ?? null),
+                        ),
+                      )
                       : effectivePrice(product.price, product.offerPrice ?? null);
 
                     return (
@@ -831,10 +828,9 @@ const NewCustomOrderPage = () => {
                             onClick={() => !isOutOfStock && setDialogProduct(product)}
                             className={`
                               h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
-                              ${
-                                isOutOfStock
-                                  ? "bg-muted cursor-not-allowed text-muted-foreground"
-                                  : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
+                              ${isOutOfStock
+                                ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
                               }
                             `}
                             title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
@@ -868,10 +864,10 @@ const NewCustomOrderPage = () => {
                     const isVariant = item.type === "variant" && (item.variants?.length ?? 0) > 0;
                     const displayPrice = isVariant
                       ? Math.min(
-                          ...(item.variants || []).map((v) =>
-                            effectivePrice(v.price, v.offerPrice ?? null),
-                          ),
-                        )
+                        ...(item.variants || []).map((v) =>
+                          effectivePrice(v.price, v.offerPrice ?? null),
+                        ),
+                      )
                       : effectivePrice(item.price, item.offerPrice ?? null);
 
                     return (
@@ -938,10 +934,9 @@ const NewCustomOrderPage = () => {
                             onClick={() => !isOutOfStock && setDialogProduct({ ...item, itemType: "item" })}
                             className={`
                               h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
-                              ${
-                                isOutOfStock
-                                  ? "bg-muted cursor-not-allowed text-muted-foreground"
-                                  : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
+                              ${isOutOfStock
+                                ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
                               }
                             `}
                             title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
@@ -1101,16 +1096,16 @@ const NewCustomOrderPage = () => {
                 </label>
                 <div className="flex items-center h-9 w-full rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40 overflow-hidden">
                   <span className="bg-muted/60 h-full flex items-center px-2.5 text-xs text-muted-foreground border-r border-input font-medium select-none">
-                    +880
+                    +88
                   </span>
                   <input
                     type="text"
                     className="flex-1 h-full bg-transparent px-2.5 text-xs outline-none font-mono placeholder:text-muted-foreground"
-                    placeholder="1XXXXXXXXX"
-                    maxLength={10}
+                    placeholder="01XXXXXXXXX"
+                    maxLength={11}
                     value={customerPhone}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 11);
                       setCustomerPhone(val);
                     }}
                   />
@@ -1347,16 +1342,16 @@ const NewCustomOrderPage = () => {
                   </label>
                   <div className="flex items-center h-9 w-full rounded-lg border border-input bg-background transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40 overflow-hidden">
                     <span className="bg-muted/60 h-full flex items-center px-2.5 text-xs text-muted-foreground border-r border-input font-medium select-none">
-                      +880
+                      +88
                     </span>
                     <input
                       type="text"
                       className="flex-1 h-full bg-transparent px-2.5 text-xs outline-none font-mono placeholder:text-muted-foreground"
-                      placeholder="1XXXXXXXXX"
-                      maxLength={10}
+                      placeholder="01XXXXXXXXX"
+                      maxLength={11}
                       value={shipPhone}
                       onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 11);
                         setShipPhone(val);
                       }}
                     />
@@ -1553,33 +1548,30 @@ const NewCustomOrderPage = () => {
 
             <div className="grid grid-cols-3 gap-2">
               <div
-                className={`p-2.5 rounded-xl border text-center transition-all ${
-                  deliveryFee === 70
+                className={`p-2.5 rounded-xl border text-center transition-all ${deliveryFee === 70
                     ? "border-primary bg-primary/10 ring-1 ring-primary/40 text-primary font-bold shadow-xs"
                     : "border-border/60 bg-muted/20 opacity-50"
-                }`}
+                  }`}
               >
                 <p className="text-[11px] font-bold">Inside Dhaka</p>
                 <p className="text-xs font-mono font-extrabold mt-0.5">৳70</p>
               </div>
 
               <div
-                className={`p-2.5 rounded-xl border text-center transition-all ${
-                  deliveryFee === 90
+                className={`p-2.5 rounded-xl border text-center transition-all ${deliveryFee === 90
                     ? "border-primary bg-primary/10 ring-1 ring-primary/40 text-primary font-bold shadow-xs"
                     : "border-border/60 bg-muted/20 opacity-50"
-                }`}
+                  }`}
               >
                 <p className="text-[11px] font-bold">Suburbs</p>
                 <p className="text-xs font-mono font-extrabold mt-0.5">৳90</p>
               </div>
 
               <div
-                className={`p-2.5 rounded-xl border text-center transition-all ${
-                  deliveryFee === 120
+                className={`p-2.5 rounded-xl border text-center transition-all ${deliveryFee === 120
                     ? "border-primary bg-primary/10 ring-1 ring-primary/40 text-primary font-bold shadow-xs"
                     : "border-border/60 bg-muted/20 opacity-50"
-                }`}
+                  }`}
               >
                 <p className="text-[11px] font-bold">Outside Dhaka</p>
                 <p className="text-xs font-mono font-extrabold mt-0.5">৳120</p>
