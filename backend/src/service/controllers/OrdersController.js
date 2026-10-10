@@ -17,6 +17,7 @@ import { buildAllowedOrderUpdates,
   archiveFakeOrder,
 } from '../../common/helper/orderControllerHelper.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
+import { SpamListModel } from '../../common/models/spamList.model.js';
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from "../../common/websocket.js";
@@ -34,6 +35,21 @@ import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEvent
 export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
+
+    const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;
+    const clientPhone = payload.billingInfo?.phone || payload.phone || payload.customerInfo?.phone || null;
+
+    if (clientEmail || clientPhone) {
+      const spamQuery = { $or: [] };
+      if (clientEmail) spamQuery.$or.push({ email: clientEmail.toLowerCase() });
+      if (clientPhone) spamQuery.$or.push({ phone: clientPhone });
+
+      const isSpammer = await SpamListModel.findOne(spamQuery).lean();
+      if (isSpammer) {
+        return res.status(403).json({ success: false, message: 'Order can not be created, Please contact our support' });
+      }
+    }
+
     const validationErrors = validateOrderPayload(payload);
 
     // Backend validation: Ensure multiple coupons are not added at once (optional field)
@@ -446,6 +462,13 @@ export const updateOrder = async (req, res, next) => {
     if (order.status === 'fake') {
       try {
         await archiveFakeOrder(order, req.user?.userId || null, payload.reason || "Marked as fake order");
+        // Insert into spamList collection
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        const phone = order.billingInfo?.phone || order.shippingInfo?.phone || "";
+        const email = order.billingInfo?.email || order.shippingInfo?.email || "";
+        if (ip || phone || email) {
+          await SpamListModel.create({ ip, phone, email });
+        }
       } catch (fakeErr) {
         console.error("Error archiving fake order:", fakeErr);
       }
@@ -661,8 +684,15 @@ export const bulkUpdateOrders = async (req, res, next) => {
     // If marked as fake or cancelled in bulk, archive fake orders and remove from members' active orders
     const isBulkRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(updateFields.status);
     if (updateFields.status === 'fake') {
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
       for (const ord of orders) {
         archiveFakeOrder(ord, req.user?.userId || null, req.body?.reason || "Bulk marked as fake order").catch(e => console.error(e));
+        
+        const phone = ord.billingInfo?.phone || ord.shippingInfo?.phone || "";
+        const email = ord.billingInfo?.email || ord.shippingInfo?.email || "";
+        if (ip || phone || email) {
+          SpamListModel.create({ ip, phone, email }).catch(e => console.error("Error adding to spam list:", e));
+        }
       }
     }
 
@@ -965,3 +995,46 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
 
 
 
+
+// Fetch the spam list (Dashboard/Admin only)
+export const getSpamList = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const query = {};
+
+    const total = await SpamListModel.countDocuments(query);
+    const list = await SpamListModel.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    return res.json({
+      status: 'success',
+      data: list,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete an entry from the spam list (Dashboard/Admin only)
+export const deleteSpamListEntry = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const deleted = await SpamListModel.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ status: 'error', message: 'Spam list entry not found' });
+    }
+    return res.json({ status: 'success', message: 'Entry removed from spam list' });
+  } catch (error) {
+    next(error);
+  }
+};
