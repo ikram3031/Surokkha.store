@@ -287,6 +287,17 @@ export const AppSidebar = ({ ...props }) => {
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
+                  {isAllowed("orders.spamlist") && (
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        isActive={pathname === "/dashboard/orders/spamlist"}
+                        render={<Link to="/dashboard/orders/spamlist" />}
+                      >
+                        <ShieldAlert className="h-3.5 w-3.5 text-red-500" />
+                        <span>{t("nav.spam_list", "Spam List")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )}
                 </SidebarMenuSub>
               )}
             </SidebarMenuItem>

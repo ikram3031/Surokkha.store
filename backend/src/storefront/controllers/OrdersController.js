@@ -18,13 +18,57 @@ import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.serv
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
+import { SpamListModel } from '../../common/models/spamList.model.js';
 
 const { Types } = mongoose;
+
+// Map to track order requests for rate limiting (prevents spam/bots)
+const orderRateLimiter = new Map();
+
+// Helper to check rate limits to prevent spam from any user/bot
+const isRateLimited = (ip, email) => {
+  const limitWindow = 2 * 60 * 1000;
+  const now = Date.now();
+  
+  if (orderRateLimiter.has(ip) && now - orderRateLimiter.get(ip) < limitWindow) return true;
+  if (email && orderRateLimiter.has(email) && now - orderRateLimiter.get(email) < limitWindow) return true;
+  
+  orderRateLimiter.set(ip, now);
+  if (email) orderRateLimiter.set(email, now);
+  
+  setTimeout(() => {
+    orderRateLimiter.delete(ip);
+    if (email) orderRateLimiter.delete(email);
+  }, limitWindow);
+  
+  return false;
+};
 
 // Create a new order from checkout payload and sync related payment/member data
 export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
+
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;
+    const clientPhone = payload.billingInfo?.phone || payload.phone || payload.customerInfo?.phone || null;
+
+    if (isRateLimited(clientIp, clientEmail)) {
+      return res.status(429).json({ success: false, message: 'অত্যধিক রিকোয়েস্ট বা সন্দেহজনক কার্যকলাপ শনাক্ত করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' });
+    }
+
+    // Check if email or phone is in the spam list
+    if (clientEmail || clientPhone) {
+      const spamQuery = { $or: [] };
+      if (clientEmail) spamQuery.$or.push({ email: clientEmail.toLowerCase() });
+      if (clientPhone) spamQuery.$or.push({ phone: clientPhone });
+      
+      const isSpammer = await SpamListModel.findOne(spamQuery).lean();
+      if (isSpammer) {
+        return res.status(403).json({ success: false, message: 'Order can not be created, Please contact our support' });
+      }
+    }
+
     const validationErrors = validateOrderPayload(payload);
 
     // Backend validation: Ensure single valid coupon

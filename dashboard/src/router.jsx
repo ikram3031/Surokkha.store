@@ -54,6 +54,7 @@ import NewOrder from './pages/dashboard/orders/newOrder';
 import InStoreOrders from './pages/dashboard/orders/inStoreOrders';
 import CustomOrders from './pages/dashboard/orders/customOrders';
 import NewCustomOrder from './pages/dashboard/orders/newCustomOrder';
+import SpamList from './pages/dashboard/orders/SpamList';
 
 // Accounts
 import BalanceOverview from './pages/dashboard/accounts/balanceOverview';
@@ -557,6 +558,14 @@ export const router = createBrowserRouter([
             element: (
               <RoleGuard menuKey="orders.new">
                 <NewOrder />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'spamlist',
+            element: (
+              <RoleGuard menuKey="orders.spamlist">
+                <SpamList />
               </RoleGuard>
             ),
           },

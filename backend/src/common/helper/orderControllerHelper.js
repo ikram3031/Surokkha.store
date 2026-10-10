@@ -460,6 +460,9 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   if (payload.paymentPhone !== undefined) {
     allowedUpdates.paymentPhone = normalizeText(payload.paymentPhone);
   }
+  if (payload.orderType) {
+    allowedUpdates.orderType = payload.orderType;
+  }
   if (payload.totals) {
     allowedUpdates.totals = payload.totals;
   }

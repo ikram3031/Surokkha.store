@@ -16,6 +16,7 @@ import { buildAllowedOrderUpdates,
 } from '../../common/helper/orderControllerHelper.js';
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { LogModel } from '../../common/models/log.model.js';
+import { SpamListModel } from '../../common/models/spamList.model.js';
 import { broadcastLiveNotification } from "../../common/websocket.js";
 import { config } from '../../common/config/index.js';
 
@@ -31,6 +32,21 @@ import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEvent
 export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
+
+    const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;
+    const clientPhone = payload.billingInfo?.phone || payload.phone || payload.customerInfo?.phone || null;
+
+    if (clientEmail || clientPhone) {
+      const spamQuery = { $or: [] };
+      if (clientEmail) spamQuery.$or.push({ email: clientEmail.toLowerCase() });
+      if (clientPhone) spamQuery.$or.push({ phone: clientPhone });
+
+      const isSpammer = await SpamListModel.findOne(spamQuery).lean();
+      if (isSpammer) {
+        return res.status(403).json({ success: false, message: 'Order can not be created, Please contact our support' });
+      }
+    }
+
     const validationErrors = validateOrderPayload(payload);
 
     // Backend validation: Ensure multiple coupons are not added at once (optional field)
@@ -391,6 +407,19 @@ export const updateOrder = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
 
+    if (order.orderType === 'fake') {
+      try {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        const phone = order.billingInfo?.phone || order.shippingInfo?.phone || "";
+        const email = order.billingInfo?.email || order.shippingInfo?.email || "";
+        if (ip || phone || email) {
+          await SpamListModel.create({ ip, phone, email });
+        }
+      } catch (err) {
+        console.error("Error adding fake order to spam list:", err);
+      }
+    }
+
     const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
     const newMemberId = order.member ? order.member.toString() : null;
     const orderDid = order.did;
@@ -543,41 +572,55 @@ export const bulkDeleteOrders = async (req, res, next) => {
 
 // Bulk update orders status and paymentStatus.
 // This allows updating multiple orders at once, syncing payments and member totals.
-export const bulkUpdateOrders = async (req, res, next) => {
-  try {
-    const { ids, status, paymentStatus } = req.body;
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ status: 'error', message: 'No order IDs provided' });
-    }
+    export const bulkUpdateOrders = async (req, res, next) => {
+      try {
+        const { ids, status, paymentStatus, orderType } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+          return res.status(400).json({ status: 'error', message: 'No order IDs provided' });
+        }
+    
+        // Convert IDs to Mongoose ObjectIds where applicable
+        const objectIds = ids.map(id => Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : null).filter(Boolean);
+    
+        // Query targeting ObjectIds, custom short IDs (did), or order numbers
+        const query = {
+          $or: [
+            { _id: { $in: objectIds } },
+            { did: { $in: ids } },
+            { orderNumber: { $in: ids } }
+          ]
+        };
+    
+        // Prepare update parameters
+        const updateFields = {};
+        if (status) {
+          updateFields.status = status.toLowerCase();
+        }
+        if (orderType) {
+          updateFields.orderType = orderType.toLowerCase();
+        }
+    
+        // Find affected orders first to read references before updating
+        const orders = await OrderModel.find(query).lean();
+        if (orders.length === 0) {
+          return res.status(404).json({ status: 'error', message: 'No orders found' });
+        }
+    
+        // Update order documents status in bulk
+        if (Object.keys(updateFields).length > 0) {
+          await OrderModel.updateMany(query, { $set: updateFields });
+        }
 
-    // Convert IDs to Mongoose ObjectIds where applicable
-    const objectIds = ids.map(id => Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : null).filter(Boolean);
-
-    // Query targeting ObjectIds, custom short IDs (did), or order numbers
-    const query = {
-      $or: [
-        { _id: { $in: objectIds } },
-        { did: { $in: ids } },
-        { orderNumber: { $in: ids } }
-      ]
-    };
-
-    // Prepare update parameters
-    const updateFields = {};
-    if (status) {
-      updateFields.status = status.toLowerCase();
-    }
-
-    // Find affected orders first to read references before updating
-    const orders = await OrderModel.find(query).lean();
-    if (orders.length === 0) {
-      return res.status(404).json({ status: 'error', message: 'No orders found' });
-    }
-
-    // Update order documents status in bulk
-    if (Object.keys(updateFields).length > 0) {
-      await OrderModel.updateMany(query, { $set: updateFields });
-    }
+        if (updateFields.orderType === 'fake') {
+          const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+          for (const ord of orders) {
+            const phone = ord.billingInfo?.phone || ord.shippingInfo?.phone || "";
+            const email = ord.billingInfo?.email || ord.shippingInfo?.email || "";
+            if (ip || phone || email) {
+              SpamListModel.create({ ip, phone, email }).catch(e => console.error("Error adding to spam list:", e));
+            }
+          }
+        }
 
     // Identify distinct member IDs affected by the updates
     const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
@@ -832,3 +875,46 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
 
 
 
+
+// Fetch the spam list (Dashboard/Admin only)
+export const getSpamList = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const query = {};
+
+    const total = await SpamListModel.countDocuments(query);
+    const list = await SpamListModel.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    return res.json({
+      status: 'success',
+      data: list,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete an entry from the spam list (Dashboard/Admin only)
+export const deleteSpamListEntry = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const deleted = await SpamListModel.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ status: 'error', message: 'Spam list entry not found' });
+    }
+    return res.json({ status: 'success', message: 'Entry removed from spam list' });
+  } catch (error) {
+    next(error);
+  }
+};
