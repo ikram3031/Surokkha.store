@@ -94,7 +94,7 @@ const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
 );
 
 // Main application sidebar rendering organized multi-tenant navigation
-export const AppSidebar = ({ ...props }) => {
+export const AdminSidebar = ({ ...props }) => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
