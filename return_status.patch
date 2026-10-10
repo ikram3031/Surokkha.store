@@ -1,0 +1,455 @@
+﻿diff --git a/backend/src/common/helper/orderControllerHelper.js b/backend/src/common/helper/orderControllerHelper.js
+index 3030a3c..f6c2780 100644
+--- a/backend/src/common/helper/orderControllerHelper.js
++++ b/backend/src/common/helper/orderControllerHelper.js
+@@ -581,7 +581,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
+ 
+   if (payload.status) {
+     const s = String(payload.status).toLowerCase();
+-    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake'];
++    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
+     allowedUpdates.status = validEnums.includes(s) ? s : 'processing';
+   }
+   if (payload.shippingInfo) {
+diff --git a/backend/src/common/models/order.model.js b/backend/src/common/models/order.model.js
+index 75b670f..352a4f8 100644
+--- a/backend/src/common/models/order.model.js
++++ b/backend/src/common/models/order.model.js
+@@ -89,7 +89,7 @@ const orderSchema = new Schema(
+     status: {
+       type: String,
+       required: true,
+-      enum: [ "processing", "shipped", "completed", "cancelled", "fake"],
++      enum: [ "processing", "shipped", "completed", "cancelled", "fake", "return"],
+       default: "processing",
+     },
+     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+diff --git a/backend/src/service/controllers/OrdersController.js b/backend/src/service/controllers/OrdersController.js
+index e267536..2b6c920 100644
+--- a/backend/src/service/controllers/OrdersController.js
++++ b/backend/src/service/controllers/OrdersController.js
+@@ -1,4 +1,6 @@
+ import mongoose from 'mongoose';
++import { BillingModel } from '../../common/models/billing.model.js';
++import { BillTypeModel } from '../../common/models/billType.model.js';
+ import { validateOrderPayload } from '../../common/helper/orderHelper.js';
+ import { OrderModel } from '../../common/models/order.model.js';
+ import { ProductModel } from '../../common/models/product.model.js';
+@@ -474,6 +476,30 @@ export const updateOrder = async (req, res, next) => {
+       }
+     }
+ 
++    if (allowedUpdates.status === 'return') {
++      try {
++        await PaymentModel.updateMany({ orderId: order._id }, { $set: { isActive: false, status: 'cancelled' } });
++        if (payload.returnFee > 0) {
++          let billType = await BillTypeModel.findOne({ name: 'Return' });
++          if (!billType) {
++            billType = await BillTypeModel.create({ name: 'Return' });
++          }
++          await BillingModel.create({
++            orderId: order._id,
++            billTypeId: billType._id,
++            title: `${order.did || order.orderNumber || order._id} return`,
++            totalAmount: payload.returnFee,
++            amount: payload.returnFee,
++            pendingAmount: payload.returnFee,
++            status: 'active',
++            notes: `${order.shippingInfo?.fullName || order.billingInfo?.fullName || 'Customer'} returned ${order.items?.map(i => i.name).join(', ') || 'products'}`
++          });
++        }
++      } catch (returnErr) {
++        console.error("Error processing return status:", returnErr);
++      }
++    }
++
+     const isRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(order.status);
+     const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
+     const newMemberId = order.member ? order.member.toString() : null;
+@@ -711,12 +737,20 @@ export const bulkUpdateOrders = async (req, res, next) => {
+     const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
+ 
+     // Loop through each order to update payments
++    let returnBillType = null;
++    if (updateFields.status === 'return' && req.body.returnFee > 0) {
++      returnBillType = await BillTypeModel.findOne({ name: 'Return' });
++      if (!returnBillType) {
++        returnBillType = await BillTypeModel.create({ name: 'Return' });
++      }
++    }
++
+     for (const order of orders) {
+       const updatedOrder = await OrderModel.findById(order._id).lean();
+       if (!updatedOrder) continue;
+ 
+       // If order is fake or cancelled, payment must be cancelled and deactivated
+-      if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled') {
++      if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled' || updateFields.status === 'return') {
+         await PaymentModel.findOneAndUpdate(
+           { orderId: updatedOrder._id },
+           {
+@@ -764,6 +798,22 @@ export const bulkUpdateOrders = async (req, res, next) => {
+         // Fall back to standard payment sync based on order state
+         await syncPaymentDocument(updatedOrder);
+       }
++      if (updateFields.status === 'return' && returnBillType) {
++        try {
++          await BillingModel.create({
++            orderId: updatedOrder._id,
++            billTypeId: returnBillType._id,
++            title: `${updatedOrder.did || updatedOrder.orderNumber || updatedOrder._id} return`,
++            totalAmount: Number(req.body.returnFee),
++            amount: Number(req.body.returnFee),
++            pendingAmount: Number(req.body.returnFee),
++            status: 'active',
++            notes: `${updatedOrder.shippingInfo?.fullName || updatedOrder.billingInfo?.fullName || 'Customer'} returned ${updatedOrder.items?.map(i => i.name).join(', ') || 'products'}`
++          });
++        } catch (billingErr) {
++          console.error("Error creating return billing:", billingErr);
++        }
++      }
+     }
+ 
+     // Recalculate member totals
+diff --git a/dashboard/src/components/dashboard/orders-table.jsx b/dashboard/src/components/dashboard/orders-table.jsx
+index 846a7d5..79ceab4 100644
+--- a/dashboard/src/components/dashboard/orders-table.jsx
++++ b/dashboard/src/components/dashboard/orders-table.jsx
+@@ -11,6 +11,7 @@ import {
+ } from '@/components/ui/table';
+ import { Badge } from '@/components/ui/badge';
+ import { Button } from '@/components/ui/button';
++import { Input } from '@/components/ui/input';
+ import { Skeleton } from '@/components/ui/skeleton';
+ import { useOrders } from '@/hooks/use-orders';
+ import {
+@@ -89,6 +90,7 @@ export const OrdersTable = ({
+   const [statusTarget, setStatusTarget] = useState(null);
+   const [targetOrderStatus, setTargetOrderStatus] = useState('Not Found');
+   const [targetPaymentStatus, setTargetPaymentStatus] = useState('Not Found');
++  const [targetReturnFee, setTargetReturnFee] = useState('');
+   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+   const [sendInvoiceTarget, setSendInvoiceTarget] = useState(null);
+ 
+@@ -104,16 +106,24 @@ export const OrdersTable = ({
+     setStatusTarget(order);
+     setTargetOrderStatus(order.orderStatus || 'Not found');
+     setTargetPaymentStatus(order.paymentStatus || 'Not found');
++    setTargetReturnFee('');
+   };
+ 
+   // Submits the quick status changes from the modal
+   const handleUpdateStatus = async () => {
+     if (!statusTarget) return;
++
++    if (targetOrderStatus === 'Return' && (!targetReturnFee || targetReturnFee === '')) {
++      toast.error('Return fee is required');
++      return;
++    }
++
+     setIsUpdatingStatus(true);
+     try {
+       await apiClient.put(`/api/v1/orders/${statusTarget.id}`, {
+         status: targetOrderStatus.toLowerCase(),
+         paymentStatus: targetPaymentStatus.toLowerCase(),
++        returnFee: targetOrderStatus === 'Return' ? Number(targetReturnFee) : undefined,
+       });
+       toast.success(t('orders.order_updated_success', `Status for order #${statusTarget.orderNumber} updated successfully.`));
+       queryClient.invalidateQueries({ queryKey: ['orders'] });
+@@ -197,6 +207,8 @@ export const OrdersTable = ({
+         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_canceled', 'Cancelled')}</Badge>;
+       case 'fake':
+         return <Badge className={`${BADGE_FIXED_CLS} bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-semibold`}>Fake</Badge>;
++      case 'return':
++      case 'Return':
+       case 'returned':
+         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_returned', 'Returned')}</Badge>;
+       case 'pending':
+@@ -442,11 +454,26 @@ export const OrdersTable = ({
+                   <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                   <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                   <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
++                  <SelectItem value="Return">Return</SelectItem>
+                   <SelectItem value="Fake" className="cursor-pointer text-destructive font-semibold">Fake</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+ 
++            {targetOrderStatus === 'Return' && (
++              <div className="space-y-1.5">
++                <label className="text-xs font-semibold text-muted-foreground">
++                  Return Fee <span className="text-destructive">*</span>
++                </label>
++                <Input
++                  type="number"
++                  placeholder="Enter return fee"
++                  value={targetReturnFee}
++                  onChange={(e) => setTargetReturnFee(e.target.value)}
++                />
++              </div>
++            )}
++
+             <div className="space-y-1.5">
+               <label className="text-xs font-semibold text-muted-foreground">{t('orders.payment_status', 'Payment Status')}</label>
+               <Select value={targetPaymentStatus} onValueChange={(val) => setTargetPaymentStatus(val || "Pending")}>
+diff --git a/dashboard/src/pages/dashboard/orders/customOrders.jsx b/dashboard/src/pages/dashboard/orders/customOrders.jsx
+index 808afe0..f9e51a9 100644
+--- a/dashboard/src/pages/dashboard/orders/customOrders.jsx
++++ b/dashboard/src/pages/dashboard/orders/customOrders.jsx
+@@ -58,6 +58,7 @@ const CustomOrdersPage = () => {
+   const [bulkPaymentTarget, setBulkPaymentTarget] = useState(null);
+   const [isUpdatingBulk, setIsUpdatingBulk] = useState(false);
+   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
++  const [bulkReturnFee, setBulkReturnFee] = useState('');
+ 
+   const queryClient = useQueryClient();
+ 
+@@ -132,10 +133,10 @@ const CustomOrdersPage = () => {
+     }
+   };
+ 
+-  const handleBulkStatusChange = async (status) => {
++  const handleBulkStatusChange = async (status, returnFee) => {
+     if (!status || status === 'placeholder') return;
+     try {
+-      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status });
++      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status, returnFee: Number(returnFee) });
+       logActivity({
+         type: 'updated',
+         description: `${selectedIds.length} custom order(s) status updated to "${status}" by "${user?.name || 'Admin'}"`,
+@@ -272,6 +273,7 @@ const CustomOrdersPage = () => {
+                   <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                   <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                   <SelectItem value="Cancelled" className="cursor-pointer text-xs">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
++                  <SelectItem value="Return" className="cursor-pointer text-xs">Return</SelectItem>
+                   <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
+                 </SelectContent>
+               </Select>
+@@ -369,7 +371,12 @@ const CustomOrdersPage = () => {
+         </div>
+       </div>
+ 
+-      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => !open && setBulkStatusTarget(null)}>
++      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => {
++        if (!open) {
++          setBulkStatusTarget(null);
++          setBulkReturnFee('');
++        }
++      }}>
+         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
+           <DialogHeader>
+             <DialogTitle>{t('orders.change_status', 'Confirm Order Status Change')}</DialogTitle>
+@@ -377,18 +384,37 @@ const CustomOrdersPage = () => {
+               {t('orders.change_status_desc', `Are you sure you want to update the Order Status of ${selectedIds.length} selected custom orders to "${bulkStatusTarget}"?`)}
+             </DialogDescription>
+           </DialogHeader>
++          {bulkStatusTarget === 'Return' && (
++            <div className="py-4">
++              <label className="text-sm font-medium mb-1 block">Return Fee</label>
++              <Input
++                type="number"
++                value={bulkReturnFee}
++                onChange={(e) => setBulkReturnFee(e.target.value)}
++                placeholder="Enter return fee"
++              />
++            </div>
++          )}
+           <DialogFooter>
+-            <Button variant="outline" onClick={() => setBulkStatusTarget(null)} disabled={isUpdatingBulk}>
++            <Button variant="outline" onClick={() => {
++              setBulkStatusTarget(null);
++              setBulkReturnFee('');
++            }} disabled={isUpdatingBulk}>
+               {t('common.cancel', 'Cancel')}
+             </Button>
+             <Button
+               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
+               onClick={async () => {
+                 if (bulkStatusTarget) {
++                  if (bulkStatusTarget === 'Return' && (!bulkReturnFee || bulkReturnFee === '')) {
++                    toast.error('Return fee is required');
++                    return;
++                  }
+                   setIsUpdatingBulk(true);
+-                  await handleBulkStatusChange(bulkStatusTarget);
++                  await handleBulkStatusChange(bulkStatusTarget, bulkReturnFee);
+                   setIsUpdatingBulk(false);
+                   setBulkStatusTarget(null);
++                  setBulkReturnFee('');
+                 }
+               }}
+               disabled={isUpdatingBulk}
+diff --git a/dashboard/src/pages/dashboard/orders/inStoreOrders.jsx b/dashboard/src/pages/dashboard/orders/inStoreOrders.jsx
+index 5d5ed04..1dd68a4 100644
+--- a/dashboard/src/pages/dashboard/orders/inStoreOrders.jsx
++++ b/dashboard/src/pages/dashboard/orders/inStoreOrders.jsx
+@@ -58,6 +58,7 @@ const InStoreOrdersPage = () => {
+   const [bulkPaymentTarget, setBulkPaymentTarget] = useState(null);
+   const [isUpdatingBulk, setIsUpdatingBulk] = useState(false);
+   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
++  const [bulkReturnFee, setBulkReturnFee] = useState('');
+ 
+   const queryClient = useQueryClient();
+ 
+@@ -132,10 +133,10 @@ const InStoreOrdersPage = () => {
+     }
+   };
+ 
+-  const handleBulkStatusChange = async (status) => {
++  const handleBulkStatusChange = async (status, returnFee) => {
+     if (!status || status === 'placeholder') return;
+     try {
+-      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status });
++      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status, returnFee: Number(returnFee) });
+       logActivity({
+         type: 'updated',
+         description: `${selectedIds.length} in-store order(s) status updated to "${status}" by "${user?.name || 'Admin'}"`,
+@@ -272,6 +273,7 @@ const InStoreOrdersPage = () => {
+                   <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                   <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                   <SelectItem value="Cancelled" className="cursor-pointer text-xs">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
++                  <SelectItem value="Return" className="cursor-pointer text-xs">Return</SelectItem>
+                   <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
+                 </SelectContent>
+               </Select>
+@@ -369,7 +371,12 @@ const InStoreOrdersPage = () => {
+         </div>
+       </div>
+ 
+-      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => !open && setBulkStatusTarget(null)}>
++      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => {
++        if (!open) {
++          setBulkStatusTarget(null);
++          setBulkReturnFee('');
++        }
++      }}>
+         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
+           <DialogHeader>
+             <DialogTitle>{t('orders.change_status', 'Confirm Order Status Change')}</DialogTitle>
+@@ -377,18 +384,37 @@ const InStoreOrdersPage = () => {
+               {t('orders.change_status_desc', `Are you sure you want to update the Order Status of ${selectedIds.length} selected in-store orders to "${bulkStatusTarget}"?`)}
+             </DialogDescription>
+           </DialogHeader>
++          {bulkStatusTarget === 'Return' && (
++            <div className="py-4">
++              <label className="text-sm font-medium mb-1 block">Return Fee</label>
++              <Input
++                type="number"
++                value={bulkReturnFee}
++                onChange={(e) => setBulkReturnFee(e.target.value)}
++                placeholder="Enter return fee"
++              />
++            </div>
++          )}
+           <DialogFooter>
+-            <Button variant="outline" onClick={() => setBulkStatusTarget(null)} disabled={isUpdatingBulk}>
++            <Button variant="outline" onClick={() => {
++              setBulkStatusTarget(null);
++              setBulkReturnFee('');
++            }} disabled={isUpdatingBulk}>
+               {t('common.cancel', 'Cancel')}
+             </Button>
+             <Button
+               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
+               onClick={async () => {
+                 if (bulkStatusTarget) {
++                  if (bulkStatusTarget === 'Return' && (!bulkReturnFee || bulkReturnFee === '')) {
++                    toast.error('Return fee is required');
++                    return;
++                  }
+                   setIsUpdatingBulk(true);
+-                  await handleBulkStatusChange(bulkStatusTarget);
++                  await handleBulkStatusChange(bulkStatusTarget, bulkReturnFee);
+                   setIsUpdatingBulk(false);
+                   setBulkStatusTarget(null);
++                  setBulkReturnFee('');
+                 }
+               }}
+               disabled={isUpdatingBulk}
+diff --git a/dashboard/src/pages/dashboard/orders/ordersList.jsx b/dashboard/src/pages/dashboard/orders/ordersList.jsx
+index d31ae63..e4cfef5 100644
+--- a/dashboard/src/pages/dashboard/orders/ordersList.jsx
++++ b/dashboard/src/pages/dashboard/orders/ordersList.jsx
+@@ -70,6 +70,7 @@ const OrdersPage = () => {
+   const [bulkPaymentTarget, setBulkPaymentTarget] = useState(null);
+   const [isUpdatingBulk, setIsUpdatingBulk] = useState(false);
+   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
++  const [bulkReturnFee, setBulkReturnFee] = useState('');
+ 
+   const queryClient = useQueryClient();
+ 
+@@ -168,10 +169,10 @@ const OrdersPage = () => {
+     }
+   };
+ 
+-  const handleBulkStatusChange = async (status) => {
++  const handleBulkStatusChange = async (status, returnFee) => {
+     if (!status || status === 'placeholder') return;
+     try {
+-      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status });
++      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status, returnFee: Number(returnFee) });
+       logActivity({
+         type: 'updated',
+         description: `${selectedIds.length} order(s) status updated to "${status}" by "${user?.name || 'Admin'}"`,
+@@ -330,6 +331,7 @@ const OrdersPage = () => {
+                   <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                   <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
+                   <SelectItem value="Cancelled" className="cursor-pointer text-xs">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
++                  <SelectItem value="Return" className="cursor-pointer text-xs">Return</SelectItem>
+                   <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
+                 </SelectContent>
+               </Select>
+@@ -428,7 +430,12 @@ const OrdersPage = () => {
+         </div>
+       </div>
+ 
+-      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => !open && setBulkStatusTarget(null)}>
++      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => {
++        if (!open) {
++          setBulkStatusTarget(null);
++          setBulkReturnFee('');
++        }
++      }}>
+         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
+           <DialogHeader>
+             <DialogTitle>{t('orders.change_status', 'Confirm Order Status Change')}</DialogTitle>
+@@ -436,18 +443,37 @@ const OrdersPage = () => {
+               {t('orders.change_status_desc', `Are you sure you want to update the Order Status of ${selectedIds.length} selected orders to "${bulkStatusTarget}"?`)}
+             </DialogDescription>
+           </DialogHeader>
++          {bulkStatusTarget === 'Return' && (
++            <div className="py-4">
++              <label className="text-sm font-medium mb-1 block">Return Fee</label>
++              <Input
++                type="number"
++                value={bulkReturnFee}
++                onChange={(e) => setBulkReturnFee(e.target.value)}
++                placeholder="Enter return fee"
++              />
++            </div>
++          )}
+           <DialogFooter>
+-            <Button variant="outline" onClick={() => setBulkStatusTarget(null)} disabled={isUpdatingBulk}>
++            <Button variant="outline" onClick={() => {
++              setBulkStatusTarget(null);
++              setBulkReturnFee('');
++            }} disabled={isUpdatingBulk}>
+               {t('common.cancel', 'Cancel')}
+             </Button>
+             <Button
+               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
+               onClick={async () => {
+                 if (bulkStatusTarget) {
++                  if (bulkStatusTarget === 'Return' && (!bulkReturnFee || bulkReturnFee === '')) {
++                    toast.error('Return fee is required');
++                    return;
++                  }
+                   setIsUpdatingBulk(true);
+-                  await handleBulkStatusChange(bulkStatusTarget);
++                  await handleBulkStatusChange(bulkStatusTarget, bulkReturnFee);
+                   setIsUpdatingBulk(false);
+                   setBulkStatusTarget(null);
++                  setBulkReturnFee('');
+                 }
+               }}
+               disabled={isUpdatingBulk}

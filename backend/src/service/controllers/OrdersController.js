@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { BillingModel } from '../../common/models/billing.model.js';
+import { BillTypeModel } from '../../common/models/billType.model.js';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
 import { ProductModel } from '../../common/models/product.model.js';
@@ -474,6 +476,30 @@ export const updateOrder = async (req, res, next) => {
       }
     }
 
+    if (allowedUpdates.status === 'return') {
+      try {
+        await PaymentModel.updateMany({ orderId: order._id }, { $set: { isActive: false, status: 'cancelled' } });
+        if (payload.returnFee > 0) {
+          let billType = await BillTypeModel.findOne({ name: 'Return' });
+          if (!billType) {
+            billType = await BillTypeModel.create({ name: 'Return' });
+          }
+          await BillingModel.create({
+            orderId: order._id,
+            billTypeId: billType._id,
+            title: `${order.did || order.orderNumber || order._id} return`,
+            totalAmount: payload.returnFee,
+            amount: payload.returnFee,
+            pendingAmount: payload.returnFee,
+            status: 'active',
+            notes: `${order.shippingInfo?.fullName || order.billingInfo?.fullName || 'Customer'} returned ${order.items?.map(i => i.name).join(', ') || 'products'}`
+          });
+        }
+      } catch (returnErr) {
+        console.error("Error processing return status:", returnErr);
+      }
+    }
+
     const isRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(order.status);
     const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
     const newMemberId = order.member ? order.member.toString() : null;
@@ -711,12 +737,20 @@ export const bulkUpdateOrders = async (req, res, next) => {
     const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
 
     // Loop through each order to update payments
+    let returnBillType = null;
+    if (updateFields.status === 'return' && req.body.returnFee > 0) {
+      returnBillType = await BillTypeModel.findOne({ name: 'Return' });
+      if (!returnBillType) {
+        returnBillType = await BillTypeModel.create({ name: 'Return' });
+      }
+    }
+
     for (const order of orders) {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
 
       // If order is fake or cancelled, payment must be cancelled and deactivated
-      if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled') {
+      if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled' || updateFields.status === 'return') {
         await PaymentModel.findOneAndUpdate(
           { orderId: updatedOrder._id },
           {
@@ -763,6 +797,22 @@ export const bulkUpdateOrders = async (req, res, next) => {
       } else {
         // Fall back to standard payment sync based on order state
         await syncPaymentDocument(updatedOrder);
+      }
+      if (updateFields.status === 'return' && returnBillType) {
+        try {
+          await BillingModel.create({
+            orderId: updatedOrder._id,
+            billTypeId: returnBillType._id,
+            title: `${updatedOrder.did || updatedOrder.orderNumber || updatedOrder._id} return`,
+            totalAmount: Number(req.body.returnFee),
+            amount: Number(req.body.returnFee),
+            pendingAmount: Number(req.body.returnFee),
+            status: 'active',
+            notes: `${updatedOrder.shippingInfo?.fullName || updatedOrder.billingInfo?.fullName || 'Customer'} returned ${updatedOrder.items?.map(i => i.name).join(', ') || 'products'}`
+          });
+        } catch (billingErr) {
+          console.error("Error creating return billing:", billingErr);
+        }
       }
     }
 

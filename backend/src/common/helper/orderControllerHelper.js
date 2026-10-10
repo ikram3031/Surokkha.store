@@ -581,7 +581,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
 
   if (payload.status) {
     const s = String(payload.status).toLowerCase();
-    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake'];
+    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
     allowedUpdates.status = validEnums.includes(s) ? s : 'processing';
   }
   if (payload.shippingInfo) {

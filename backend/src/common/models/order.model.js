@@ -89,7 +89,7 @@ const orderSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: [ "processing", "shipped", "completed", "cancelled", "fake"],
+      enum: [ "processing", "shipped", "completed", "cancelled", "fake", "return"],
       default: "processing",
     },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
