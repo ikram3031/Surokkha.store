@@ -24,10 +24,37 @@ import { broadcastLiveNotification } from '../../common/websocket.js';
 
 const { Types } = mongoose;
 
+// Map to track order requests for rate limiting (prevents spam/bots)
+const orderRateLimiter = new Map();
+
+// Helper to check rate limits to prevent spam from any user/bot
+const isRateLimited = (ip, email) => {
+  const limitWindow = 2 * 60 * 1000;
+  const now = Date.now();
+  
+  if (orderRateLimiter.has(ip) && now - orderRateLimiter.get(ip) < limitWindow) return true;
+  if (email && orderRateLimiter.has(email) && now - orderRateLimiter.get(email) < limitWindow) return true;
+  
+  orderRateLimiter.set(ip, now);
+  if (email) orderRateLimiter.set(email, now);
+  
+  setTimeout(() => {
+    orderRateLimiter.delete(ip);
+    if (email) orderRateLimiter.delete(email);
+  }, limitWindow);
+  
+  return false;
+};
+
 // Create a new order from checkout payload and sync related payment/member data
 export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const clientEmail = payload.email || (payload.customerInfo && payload.customerInfo.email) || null;
+    if (isRateLimited(clientIp, clientEmail)) {
+      return res.status(429).json({ success: false, message: 'অত্যধিক রিকোয়েস্ট বা সন্দেহজনক কার্যকলাপ শনাক্ত করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' });
+    }
     const validationErrors = validateOrderPayload(payload);
 
     // Backend validation: Ensure single valid coupon
