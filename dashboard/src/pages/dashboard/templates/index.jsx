@@ -35,6 +35,7 @@ import { DynamicTokenChips } from './components/DynamicTokenChips';
 import { InvoicePaperPreview } from './components/InvoicePaperPreview';
 import { EmailPreviewCard } from './components/EmailPreviewCard';
 import { SendTestEmailModal } from './components/SendTestEmailModal';
+import invoiceLogo from '@/assets/invoice_logo.png';
 
 // Built-in presets matching backend defaults
 const TEMPLATE_PRESETS = {
@@ -51,7 +52,7 @@ const TEMPLATE_PRESETS = {
       borderRadius: '8px',
     },
     header: {
-      logoHeight: 50,
+      logoHeight: 75,
       logoPlacement: 'left',
       showHeaderAccent: true,
       documentTitle: 'INVOICE',
@@ -91,7 +92,7 @@ const TEMPLATE_PRESETS = {
       borderRadius: '0px',
     },
     header: {
-      logoHeight: 45,
+      logoHeight: 65,
       logoPlacement: 'center',
       showHeaderAccent: false,
       documentTitle: 'INVOICE',
@@ -827,9 +828,9 @@ export function TemplatesPage() {
                     <Label className="text-xs font-bold">Store Logo</Label>
                     <div className="flex items-center gap-3">
                       <div className="h-16 w-28 rounded-lg border border-border bg-white flex items-center justify-center p-1 overflow-hidden shrink-0">
-                        {config.header?.logoUrl || clientConfig.logo ? (
+                        {config.header?.logoUrl || clientConfig.logo || invoiceLogo ? (
                           <img
-                            src={config.header?.logoUrl || clientConfig.logo}
+                            src={config.header?.logoUrl || clientConfig.logo || invoiceLogo}
                             alt="Logo"
                             className="max-h-full max-w-full object-contain"
                           />

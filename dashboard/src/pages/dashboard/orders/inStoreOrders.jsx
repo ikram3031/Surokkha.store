@@ -55,6 +55,7 @@ const InStoreOrdersPage = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkStatusTarget, setBulkStatusTarget] = useState(null);
+  const [bulkReturnFee, setBulkReturnFee] = useState('');
   const [bulkPaymentTarget, setBulkPaymentTarget] = useState(null);
   const [isUpdatingBulk, setIsUpdatingBulk] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
@@ -132,10 +133,10 @@ const InStoreOrdersPage = () => {
     }
   };
 
-  const handleBulkStatusChange = async (status) => {
+  const handleBulkStatusChange = async (status, returnFee) => {
     if (!status || status === 'placeholder') return;
     try {
-      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status });
+      await apiClient.post('/api/v1/orders/bulk-update', { ids: selectedIds, status, returnFee: Number(returnFee) });
       logActivity({
         type: 'updated',
         description: `${selectedIds.length} in-store order(s) status updated to "${status}" by "${user?.name || 'Admin'}"`,
@@ -272,6 +273,7 @@ const InStoreOrdersPage = () => {
                   <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
                   <SelectItem value="Cancelled" className="cursor-pointer text-xs">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                  <SelectItem value="Return" className="cursor-pointer text-xs">Return</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -368,7 +370,12 @@ const InStoreOrdersPage = () => {
         </div>
       </div>
 
-      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => !open && setBulkStatusTarget(null)}>
+      <Dialog open={!!bulkStatusTarget} onOpenChange={(open) => {
+        if (!open) {
+          setBulkStatusTarget(null);
+          setBulkReturnFee('');
+        }
+      }}>
         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
           <DialogHeader>
             <DialogTitle>{t('orders.change_status', 'Confirm Order Status Change')}</DialogTitle>
@@ -376,18 +383,37 @@ const InStoreOrdersPage = () => {
               {t('orders.change_status_desc', `Are you sure you want to update the Order Status of ${selectedIds.length} selected in-store orders to "${bulkStatusTarget}"?`)}
             </DialogDescription>
           </DialogHeader>
+          {bulkStatusTarget === 'Return' && (
+            <div className="py-2">
+              <label className="text-sm font-medium mb-1 block">Return Fee</label>
+              <Input
+                type="number"
+                placeholder="Enter return fee"
+                value={bulkReturnFee}
+                onChange={(e) => setBulkReturnFee(e.target.value)}
+              />
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkStatusTarget(null)} disabled={isUpdatingBulk}>
+            <Button variant="outline" onClick={() => {
+              setBulkStatusTarget(null);
+              setBulkReturnFee('');
+            }} disabled={isUpdatingBulk}>
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
               onClick={async () => {
+                if (bulkStatusTarget === 'Return' && (!bulkReturnFee || bulkReturnFee === '')) {
+                  toast.error('Return fee is required');
+                  return;
+                }
                 if (bulkStatusTarget) {
                   setIsUpdatingBulk(true);
-                  await handleBulkStatusChange(bulkStatusTarget);
+                  await handleBulkStatusChange(bulkStatusTarget, bulkReturnFee);
                   setIsUpdatingBulk(false);
                   setBulkStatusTarget(null);
+                  setBulkReturnFee('');
                 }
               }}
               disabled={isUpdatingBulk}

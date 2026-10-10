@@ -46,6 +46,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { OrderAccordionDetail } from '@/components/dashboard/order-accordion-detail';
 import { formatDate } from '@/utils/dateHelper';
+import { Input } from '@/components/ui/input';
 
 // Renders the orders table with expandable accordion rows, filtering, batch selection, and inline actions
 export const OrdersTable = ({
@@ -89,6 +90,7 @@ export const OrdersTable = ({
   const [statusTarget, setStatusTarget] = useState(null);
   const [targetOrderStatus, setTargetOrderStatus] = useState('Not Found');
   const [targetPaymentStatus, setTargetPaymentStatus] = useState('Not Found');
+  const [targetReturnFee, setTargetReturnFee] = useState('');
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [sendInvoiceTarget, setSendInvoiceTarget] = useState(null);
 
@@ -104,16 +106,24 @@ export const OrdersTable = ({
     setStatusTarget(order);
     setTargetOrderStatus(order.orderStatus || 'Not found');
     setTargetPaymentStatus(order.paymentStatus || 'Not found');
+    setTargetReturnFee('');
   };
 
   // Submits the quick status changes from the modal
   const handleUpdateStatus = async () => {
     if (!statusTarget) return;
+
+    if (targetOrderStatus === 'Return' && (!targetReturnFee || targetReturnFee === '')) {
+      toast.error('Return fee is required');
+      return;
+    }
+
     setIsUpdatingStatus(true);
     try {
       await apiClient.put(`/api/v1/orders/${statusTarget.id}`, {
         status: targetOrderStatus.toLowerCase(),
         paymentStatus: targetPaymentStatus.toLowerCase(),
+        returnFee: Number(targetReturnFee),
       });
       toast.success(t('orders.order_updated_success', `Status for order #${statusTarget.orderNumber} updated successfully.`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -196,6 +206,8 @@ export const OrdersTable = ({
       case 'canceled':
         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_canceled', 'Cancelled')}</Badge>;
       case 'returned':
+      case 'return':
+      case 'Return':
         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_returned', 'Returned')}</Badge>;
       case 'pending':
       case 'unfulfilled':
@@ -440,9 +452,25 @@ export const OrdersTable = ({
                   <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
                   <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                  <SelectItem value="Return">Return</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {targetOrderStatus === 'Return' && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Return Fee <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Enter return fee"
+                  value={targetReturnFee}
+                  onChange={(e) => setTargetReturnFee(e.target.value)}
+                  className="w-full h-9"
+                />
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground">{t('orders.payment_status', 'Payment Status')}</label>

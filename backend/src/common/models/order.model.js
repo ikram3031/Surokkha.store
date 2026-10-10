@@ -84,7 +84,7 @@ const orderSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: [ "processing", "shipped", "completed", "cancelled"],
+      enum: [ "processing", "shipped", "completed", "cancelled", "return"],
       default: "processing",
     },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
@@ -96,7 +96,7 @@ const orderSchema = new Schema(
     shippingTotalAmount: { type: Number, default: 0, min: 0 },
     discountTotalAmount: { type: Number, default: 0, min: 0 },
     couponCode: { type: String, default: null, trim: true, uppercase: true },
-    orderType: { type: String, enum: ["online", "instore", "custom"], default: "online", index: true },
+    orderType: { type: String, enum: ["online", "instore", "custom", "fake"], default: "online", index: true },
     items: { type: [orderItemSchema], required: true, validate: [(items) => items.length > 0, "items must contain at least one item"] },
     totals: { type: orderTotalsSchema, required: true },
     courier: { type: courierInfoSchema, default: () => ({}) },
