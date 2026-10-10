@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
-import { format } from 'date-fns';
 import { ShieldAlert, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -124,7 +123,7 @@ export default function SpamList() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {entry.createdAt ? format(new Date(entry.createdAt), 'PP p') : '-'}
+                        {entry.createdAt ? new Date(entry.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
