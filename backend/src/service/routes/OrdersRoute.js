@@ -9,6 +9,8 @@ import {
   updateOrder,
   bulkDeleteOrders,
   bulkUpdateOrders,
+  getSpamList,
+  deleteSpamListEntry,
 } from "../controllers/OrdersController.js";
 import {
   authenticateToken,
@@ -77,6 +79,22 @@ ordersRouter.post(
   authenticateToken,
   authorizeRoles("Owner", "Admin", "Manager"),
   bulkUpdateOrders,
+);
+
+// Fetch the spam list (Dashboard/Admin only)
+ordersRouter.get(
+  "/spam/list",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin", "Manager"),
+  getSpamList
+);
+
+// Delete entry from spam list (Dashboard/Admin only)
+ordersRouter.delete(
+  "/spam/:id",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  deleteSpamListEntry
 );
 
 export default ordersRouter;

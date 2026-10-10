@@ -6,6 +6,7 @@ import { ItemModel } from '../../common/models/item.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
+import { SpamListModel } from '../../common/models/spamList.model.js';
 import { MemberModel } from '../../common/models/member.model.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import {
@@ -50,11 +51,27 @@ const isRateLimited = (ip, email) => {
 export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
+    
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-    const clientEmail = payload.email || (payload.customerInfo && payload.customerInfo.email) || null;
+    const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;
+    const clientPhone = payload.billingInfo?.phone || payload.phone || payload.customerInfo?.phone || null;
+    
     if (isRateLimited(clientIp, clientEmail)) {
       return res.status(429).json({ success: false, message: 'অত্যধিক রিকোয়েস্ট বা সন্দেহজনক কার্যকলাপ শনাক্ত করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' });
     }
+
+    // Check if email or phone is in the spam list
+    if (clientEmail || clientPhone) {
+      const spamQuery = { $or: [] };
+      if (clientEmail) spamQuery.$or.push({ email: clientEmail.toLowerCase() });
+      if (clientPhone) spamQuery.$or.push({ phone: clientPhone });
+      
+      const isSpammer = await SpamListModel.findOne(spamQuery).lean();
+      if (isSpammer) {
+        return res.status(403).json({ success: false, message: 'Order can not be created, Please contact our support' });
+      }
+    }
+
     const validationErrors = validateOrderPayload(payload);
 
     // Backend validation: Ensure single valid coupon
