@@ -6,6 +6,8 @@ import { MemberModel } from '../../common/models/member.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
+import { BillingModel } from '../../common/models/billing.model.js';
+import { BillTypeModel } from '../../common/models/billType.model.js';
 import { buildAllowedOrderUpdates,
   buildOrderDocument,
   resolveOrForceMembershipFromOrder,
@@ -420,6 +422,31 @@ export const updateOrder = async (req, res, next) => {
       }
     }
 
+    if (allowedUpdates.status === 'return') {
+      try {
+        await PaymentModel.updateMany({ orderId: order._id }, { $set: { isActive: false, status: 'cancelled' } });
+        const returnFeeNum = Number(payload.returnFee);
+        if (returnFeeNum > 0) {
+          let billType = await BillTypeModel.findOne({ name: 'Return' });
+          if (!billType) {
+            billType = await BillTypeModel.create({ name: 'Return', active: true });
+          }
+          await BillingModel.create({
+            orderId: order._id,
+            billTypeId: billType._id,
+            title: `${order.did || order.orderNumber || order._id} return`,
+            totalAmount: returnFeeNum,
+            amount: returnFeeNum,
+            pendingAmount: returnFeeNum,
+            status: 'active',
+            notes: `${order.shippingInfo?.fullName || order.billingInfo?.fullName || 'Customer'} returned ${order.items?.map(i => i.name).join(', ') || 'products'}`
+          });
+        }
+      } catch (returnErr) {
+        console.error("Error handling return billing:", returnErr);
+      }
+    }
+
     const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
     const newMemberId = order.member ? order.member.toString() : null;
     const orderDid = order.did;
@@ -539,99 +566,41 @@ export const bulkDeleteOrders = async (req, res, next) => {
 
     // Collect distinct member IDs, dids, and database ObjectIds
     const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
-    const orderDids = orders.map(o => o.did).filter(Boolean);
-    const orderDbIds = orders.map(o => o._id);
 
-    // Pull order references from the member profiles and recalculate totals
-    if (memberIds.length > 0 && orderDids.length > 0) {
-      try {
-        await MemberModel.updateMany(
-          { _id: { $in: memberIds } },
-          { $pull: { orders: { did: { $in: orderDids } } } }
-        );
-        for (const mId of memberIds) {
-          await updateMemberTotals(mId).catch(err => console.error(err));
-        }
-      } catch (memErr) {
-        console.error("Error cleaning up members on bulk order delete:", memErr);
+    let returnBillType = null;
+    const returnFeeNum = Number(req.body.returnFee);
+    if (updateFields.status === 'return' && returnFeeNum > 0) {
+      returnBillType = await BillTypeModel.findOne({ name: 'Return' });
+      if (!returnBillType) {
+        returnBillType = await BillTypeModel.create({ name: 'Return', active: true });
       }
     }
-
-    // Delete all linked payment documents in bulk
-    try {
-      await PaymentModel.deleteMany({ orderId: { $in: orderDbIds } });
-    } catch (payErr) {
-      console.error("Error deleting payments on bulk order delete:", payErr);
-    }
-
-    return res.json({ status: 'success', message: 'Orders deleted successfully' });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Bulk update orders status and paymentStatus.
-// This allows updating multiple orders at once, syncing payments and member totals.
-    export const bulkUpdateOrders = async (req, res, next) => {
-      try {
-        const { ids, status, paymentStatus, orderType } = req.body;
-        if (!Array.isArray(ids) || ids.length === 0) {
-          return res.status(400).json({ status: 'error', message: 'No order IDs provided' });
-        }
-    
-        // Convert IDs to Mongoose ObjectIds where applicable
-        const objectIds = ids.map(id => Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : null).filter(Boolean);
-    
-        // Query targeting ObjectIds, custom short IDs (did), or order numbers
-        const query = {
-          $or: [
-            { _id: { $in: objectIds } },
-            { did: { $in: ids } },
-            { orderNumber: { $in: ids } }
-          ]
-        };
-    
-        // Prepare update parameters
-        const updateFields = {};
-        if (status) {
-          updateFields.status = status.toLowerCase();
-        }
-        if (orderType) {
-          updateFields.orderType = orderType.toLowerCase();
-        }
-    
-        // Find affected orders first to read references before updating
-        const orders = await OrderModel.find(query).lean();
-        if (orders.length === 0) {
-          return res.status(404).json({ status: 'error', message: 'No orders found' });
-        }
-    
-        // Update order documents status in bulk
-        if (Object.keys(updateFields).length > 0) {
-          await OrderModel.updateMany(query, { $set: updateFields });
-        }
-
-        if (updateFields.orderType === 'fake') {
-          const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-          for (const ord of orders) {
-            const phone = ord.billingInfo?.phone || ord.shippingInfo?.phone || "";
-            const email = ord.billingInfo?.email || ord.shippingInfo?.email || "";
-            if (ip || phone || email) {
-              SpamListModel.create({ ip, phone, email }).catch(e => console.error("Error adding to spam list:", e));
-            }
-          }
-        }
-
-    // Identify distinct member IDs affected by the updates
-    const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
 
     // Loop through each order to update payments
     for (const order of orders) {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
 
-      // If a specific paymentStatus is requested in bulk payload, update the linked payment document
-      if (paymentStatus) {
+      if (updateFields.status === 'return') {
+        try {
+          await PaymentModel.updateMany({ orderId: updatedOrder._id }, { $set: { isActive: false, status: 'cancelled' } });
+          
+          if (returnFeeNum > 0 && returnBillType) {
+            await BillingModel.create({
+              orderId: updatedOrder._id,
+              billTypeId: returnBillType._id,
+              title: `${updatedOrder.did || updatedOrder.orderNumber || updatedOrder._id} return`,
+              totalAmount: returnFeeNum,
+              amount: returnFeeNum,
+              pendingAmount: returnFeeNum,
+              status: 'active',
+              notes: `${updatedOrder.shippingInfo?.fullName || updatedOrder.billingInfo?.fullName || 'Customer'} returned ${updatedOrder.items?.map(i => i.name).join(', ') || 'products'}`
+            });
+          }
+        } catch (returnErr) {
+          console.error("Error handling return billing in bulk:", returnErr);
+        }
+      } else if (paymentStatus) {
         const pStatus = paymentStatus.toLowerCase();
         const rawTotal = Number(updatedOrder.totals?.total || 0);
         const shippingFee = Number(updatedOrder.totals?.shippingFee ?? updatedOrder.shippingTotalAmount ?? 0);
