@@ -125,14 +125,12 @@ courierRouter.post(
 courierRouter.get(
   "/districts",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
   getDistrictsListController
 );
 
 courierRouter.get(
   "/districts/:cityId/thanas",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
   getDistrictThanasListController
 );
 

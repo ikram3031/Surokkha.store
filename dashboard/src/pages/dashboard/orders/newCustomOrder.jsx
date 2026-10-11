@@ -1,6 +1,7 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
+import { useItems } from "@/hooks/use-items";
 import { apiClient, baseURL, getApiBaseUrl } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useCategories, useBrands } from "@/lib/category-cache";
@@ -32,6 +33,7 @@ import {
   ArrowLeft,
   CheckCircle,
   Package,
+  Boxes,
   X,
   Layers,
   Tag,
@@ -39,17 +41,14 @@ import {
   FileText,
   Percent,
   CircleDollarSign,
-  ChevronDown,
   User,
-  Phone,
   Mail,
-  MapPin,
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { clientConfig } from "@/clientConfig";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
-import { DISTRICTS, DISTRICT_THANAS } from "@/data/districts";
+import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
 import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 
 // Modal dialog for selecting product variation & quantity
@@ -77,6 +76,9 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
       ? `${product.id}__${selectedVariant.size}`
       : product.id;
 
+    const rawId = product.id || product._id || "";
+    const isItem = product.itemType === "item" || product.entityType === "item";
+
     onAddToCart({
       id: cartKey,
       name: isVariant
@@ -87,6 +89,10 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
       image: product.image,
       sku: isVariant ? selectedVariant.sku || product.sku : product.sku,
       size: isVariant ? selectedVariant.size : "",
+      productId: !isItem ? rawId : "",
+      itemId: isItem ? rawId : "",
+      itemType: isItem ? "item" : "product",
+      productDid: product.did || product.sku || "",
     });
 
     setSelectedVariant(null);
@@ -201,10 +207,9 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
                       }}
                       className={`
                         w-full flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-all
-                        ${
-                          hasNoStock
-                            ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
-                            : isSelected
+                        ${hasNoStock
+                          ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
+                          : isSelected
                             ? "border-primary bg-primary/8 ring-1 ring-primary/30 cursor-pointer"
                             : "border-border bg-background hover:border-primary/60 hover:bg-primary/5 cursor-pointer"
                         }
@@ -296,7 +301,8 @@ const NewCustomOrderPage = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  // Product Catalogue filters & state
+  // Catalogue type, filters & state
+  const [catalogType, setCatalogType] = useState("products"); // "products" | "items"
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [brandFilter, setBrandFilter] = useState("All");
@@ -313,6 +319,16 @@ const NewCustomOrderPage = () => {
     ? productsResponse.data
     : [];
 
+  const { data: itemsResponse, isLoading: itemsLoading } = useItems({
+    search: searchQuery || undefined,
+    category: categoryFilter !== "All" ? categoryFilter : undefined,
+    brand: brandFilter !== "All" ? brandFilter : undefined,
+    limit: 50,
+  });
+  const items = Array.isArray(itemsResponse?.data)
+    ? itemsResponse.data
+    : [];
+
   // Cart & Dialog state
   const [cart, setCart] = useState([]);
   const [dialogProduct, setDialogProduct] = useState(null);
@@ -327,8 +343,6 @@ const NewCustomOrderPage = () => {
   const [billingAddress, setBillingAddress] = useState("");
   const [billingDistrict, setBillingDistrict] = useState("Dhaka");
   const [billingThana, setBillingThana] = useState("");
-  const [isDistrictOpen, setIsDistrictOpen] = useState(false);
-  const [isThanaOpen, setIsThanaOpen] = useState(false);
 
   // Shipping State (Conditional if "Ship to a different address" is checked)
   const [shipToDifferent, setShipToDifferent] = useState(false);
@@ -337,8 +351,6 @@ const NewCustomOrderPage = () => {
   const [shipAddress, setShipAddress] = useState("");
   const [shipDistrict, setShipDistrict] = useState("Dhaka");
   const [shipThana, setShipThana] = useState("");
-  const [isShipDistrictOpen, setIsShipDistrictOpen] = useState(false);
-  const [isShipThanaOpen, setIsShipThanaOpen] = useState(false);
 
   // Order Notes & Payment
   const [orderNotes, setOrderNotes] = useState("");
@@ -429,8 +441,8 @@ const NewCustomOrderPage = () => {
       toast.error("Customer Full Name is required.");
       return;
     }
-    if (customerPhone.trim().length < 10) {
-      toast.error("Please enter a valid 10-digit Phone Number.");
+    if (customerPhone.trim().length !== 10) {
+      toast.error("Please enter a valid Phone Number.");
       return;
     }
     if (customerEmail.trim() && !isValidEmail(customerEmail.trim())) {
@@ -458,7 +470,7 @@ const NewCustomOrderPage = () => {
         return;
       }
       if (shipPhone.trim().length < 10) {
-        toast.error("Shipping Recipient Phone is required.");
+        toast.error("Shipping Recipient Phone is invalid.");
         return;
       }
       if (!shipAddress.trim()) {
@@ -481,7 +493,7 @@ const NewCustomOrderPage = () => {
 
       const billingInfo = {
         fullName: customerName.trim(),
-        phone: customerPhone.startsWith("+880") ? customerPhone.trim() : `+880${customerPhone.trim()}`,
+        phone: customerPhone.startsWith("+") ? customerPhone.trim() : (customerPhone.startsWith("0") ? `+88${customerPhone.trim()}` : `+880${customerPhone.trim()}`),
         email: customerEmail.trim() || "",
         address: billingAddress.trim(),
         thana: billingThana.trim(),
@@ -491,13 +503,13 @@ const NewCustomOrderPage = () => {
 
       const shippingInfo = shipToDifferent
         ? {
-            fullName: shipRecipientName.trim(),
-            phone: shipPhone.startsWith("+880") ? shipPhone.trim() : `+880${shipPhone.trim()}`,
-            address: shipAddress.trim(),
-            thana: shipThana.trim(),
-            district: shipDistrict.trim(),
-            zip: "",
-          }
+          fullName: shipRecipientName.trim(),
+          phone: shipPhone.startsWith("+") ? shipPhone.trim() : (shipPhone.startsWith("0") ? `+88${shipPhone.trim()}` : `+880${shipPhone.trim()}`),
+          address: shipAddress.trim(),
+          thana: shipThana.trim(),
+          district: shipDistrict.trim(),
+          zip: "",
+        }
         : { ...billingInfo };
 
       const orderPayload = {
@@ -514,7 +526,13 @@ const NewCustomOrderPage = () => {
           quantity: item.quantity,
           unitPrice: item.price,
           size: item.size || "",
-          concentration: "",
+          concentration: item.concentration || "",
+          productId: item.productId || "",
+          itemId: item.itemId || "",
+          itemType: item.itemType || "product",
+          productDid: item.productDid || "",
+          sku: item.sku || "",
+          image: item.image || "",
         })),
         subtotal,
         discountTotalAmount: discountAmount,
@@ -626,16 +644,58 @@ const NewCustomOrderPage = () => {
           SECTION 1 (TOP): PRODUCT SELECTION & CART ITEMS (Matched Fixed Height)
           ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Product Catalogue (Fixed Height) */}
+        {/* Left Column: Product / Item Catalogue (Fixed Height) */}
         <div className="lg:col-span-7 bg-card border rounded-2xl p-5 shadow-xs flex flex-col h-[480px]">
           <div className="flex items-center justify-between mb-3 shrink-0">
-            <h3 className="font-semibold text-base flex items-center gap-2">
-              <Package className="h-4 w-4 text-primary" />
-              {t("nav.products", "Product Catalogue")}
-            </h3>
-            <span className="text-xs text-muted-foreground">
-              {products.length} {t("products.total", "products available")}
-            </span>
+            <div className="flex items-center gap-2">
+              {catalogType === "products" ? (
+                <Package className="h-4 w-4 text-primary" />
+              ) : (
+                <Boxes className="h-4 w-4 text-primary" />
+              )}
+              <h3 className="font-semibold text-base">
+                {catalogType === "products"
+                  ? t("nav.products", "Product Catalogue")
+                  : t("nav.items", "Item Catalogue")}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setCatalogType("products")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "products"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  <Package className="h-3.5 w-3.5" />
+                  <span>Products</span>
+                  {products.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 ml-0.5">
+                      {products.length}
+                    </Badge>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCatalogType("items")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "items"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  <Boxes className="h-3.5 w-3.5" />
+                  <span>Items</span>
+                  {items.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 ml-0.5">
+                      {items.length}
+                    </Badge>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 shrink-0">
@@ -659,7 +719,7 @@ const NewCustomOrderPage = () => {
             <div className="relative">
               <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                placeholder={t("products.search_products", "Search by name / SKU...")}
+                placeholder={catalogType === "products" ? t("products.search_products", "Search by name / SKU...") : "Search items by name / SKU..."}
                 className="pl-8 h-8 text-xs"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -675,106 +735,213 @@ const NewCustomOrderPage = () => {
             </div>
           </div>
 
-          {/* Product Cards Scrollable List */}
+          {/* Cards Scrollable List */}
           <div className="flex-1 overflow-y-auto pr-1">
-            {productsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
-                ))}
-              </div>
-            ) : products.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12">
-                <Package className="h-10 w-10 mb-2 opacity-30" />
-                <p className="text-xs">{t("common.no_data", "No products found")}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {products.map((product) => {
-                  const inCart = cart.filter((c) => c.id.startsWith(product.id));
-                  const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
-                  const isOutOfStock = product.status === "Out of Stock";
-                  const isVariant = product.type === "variant";
-                  const displayPrice = isVariant
-                    ? Math.min(
+            {catalogType === "products" ? (
+              productsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+                  ))}
+                </div>
+              ) : products.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12">
+                  <Package className="h-10 w-10 mb-2 opacity-30" />
+                  <p className="text-xs">{t("common.no_data", "No products found")}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {products.map((product) => {
+                    const inCart = cart.filter((c) => c.id.startsWith(product.id));
+                    const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
+                    const isOutOfStock = product.status === "Out of Stock";
+                    const isVariant = product.type === "variant";
+                    const displayPrice = isVariant
+                      ? Math.min(
                         ...(product.variants || []).map((v) =>
                           effectivePrice(v.price, v.offerPrice ?? null),
                         ),
                       )
-                    : effectivePrice(product.price, product.offerPrice ?? null);
+                      : effectivePrice(product.price, product.offerPrice ?? null);
 
-                  return (
-                    <div
-                      key={product.id}
-                      className={`
-                        flex items-center gap-2.5 p-2.5 rounded-xl border bg-background transition-all
-                        ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-xs"}
-                        ${cartQty > 0 ? "border-primary/50 bg-primary/[0.02]" : "border-border"}
-                      `}
-                    >
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative border border-border/50">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-5 w-5 text-muted-foreground/30" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-xs leading-tight truncate">
-                          {product.name}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground truncate">
-                          {product.sku || product.category || "Item"}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xs font-bold text-primary">
-                            {formatBDT(displayPrice)}
-                          </span>
-                          {isVariant && (
-                            <Badge
-                              variant="secondary"
-                              className="text-[9px] px-1 py-0 h-4"
-                            >
-                              <Layers className="h-2 w-2 mr-0.5" />
-                              {product.variants?.length ?? 0}
-                            </Badge>
+                    return (
+                      <div
+                        key={product.id}
+                        className={`
+                          flex items-center gap-2.5 p-2.5 rounded-xl border bg-background transition-all
+                          ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-xs"}
+                          ${cartQty > 0 ? "border-primary/50 bg-primary/[0.02]" : "border-border"}
+                        `}
+                      >
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative border border-border/50">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-5 w-5 text-muted-foreground/30" />
+                            </div>
                           )}
                         </div>
-                      </div>
 
-                      <div className="flex flex-col items-center gap-0.5">
-                        {cartQty > 0 && (
-                          <span className="text-[10px] font-bold text-primary">
-                            ×{cartQty}
-                          </span>
-                        )}
-                        <button
-                          disabled={isOutOfStock}
-                          onClick={() => !isOutOfStock && setDialogProduct(product)}
-                          className={`
-                            h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
-                            ${
-                              isOutOfStock
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-xs leading-tight truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {product.sku || product.category || "Item"}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs font-bold text-primary">
+                              {formatBDT(displayPrice)}
+                            </span>
+                            {isVariant && (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] px-1 py-0 h-4"
+                              >
+                                <Layers className="h-2 w-2 mr-0.5" />
+                                {product.variants?.length ?? 0}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-0.5">
+                          {cartQty > 0 && (
+                            <span className="text-[10px] font-bold text-primary">
+                              ×{cartQty}
+                            </span>
+                          )}
+                          <button
+                            disabled={isOutOfStock}
+                            onClick={() => !isOutOfStock && setDialogProduct(product)}
+                            className={`
+                              h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
+                              ${isOutOfStock
                                 ? "bg-muted cursor-not-allowed text-muted-foreground"
                                 : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
-                            }
-                          `}
-                          title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                        </button>
+                              }
+                            `}
+                            title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )
+            ) : (
+              itemsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+                  ))}
+                </div>
+              ) : items.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12">
+                  <Boxes className="h-10 w-10 mb-2 opacity-30" />
+                  <p className="text-xs">No items found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {items.map((item) => {
+                    const inCart = cart.filter((c) => c.id.startsWith(item.id));
+                    const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
+                    const isOutOfStock = item.status === "Out of Stock" || item.stockStatus === "outofstock";
+                    const isVariant = item.type === "variant" && (item.variants?.length ?? 0) > 0;
+                    const displayPrice = isVariant
+                      ? Math.min(
+                        ...(item.variants || []).map((v) =>
+                          effectivePrice(v.price, v.offerPrice ?? null),
+                        ),
+                      )
+                      : effectivePrice(item.price, item.offerPrice ?? null);
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`
+                          flex items-center gap-2.5 p-2.5 rounded-xl border bg-background transition-all
+                          ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-xs"}
+                          ${cartQty > 0 ? "border-primary/50 bg-primary/[0.02]" : "border-border"}
+                        `}
+                      >
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative border border-border/50">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Boxes className="h-5 w-5 text-muted-foreground/30" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-xs leading-tight truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {item.sku || item.category || "Item"}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs font-bold text-primary">
+                              {formatBDT(displayPrice)}
+                            </span>
+                            {isVariant ? (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] px-1 py-0 h-4"
+                              >
+                                <Layers className="h-2 w-2 mr-0.5" />
+                                {item.variants?.length ?? 0}
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-[9px] px-1 py-0 h-4 border-border/60 text-muted-foreground"
+                              >
+                                Item
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-0.5">
+                          {cartQty > 0 && (
+                            <span className="text-[10px] font-bold text-primary">
+                              ×{cartQty}
+                            </span>
+                          )}
+                          <button
+                            disabled={isOutOfStock}
+                            onClick={() => !isOutOfStock && setDialogProduct({ ...item, itemType: "item" })}
+                            className={`
+                              h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer
+                              ${isOutOfStock
+                                ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"
+                              }
+                            `}
+                            title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             )}
           </div>
         </div>
@@ -823,9 +990,16 @@ const NewCustomOrderPage = () => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate leading-tight">
-                      {item.name}
-                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-xs font-semibold truncate leading-tight">
+                        {item.name}
+                      </p>
+                      {item.itemType === "item" && (
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-normal">
+                          Item
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {formatBDT(item.price)} × {item.quantity} ={" "}
                       <span className="font-bold text-foreground">
@@ -915,16 +1089,16 @@ const NewCustomOrderPage = () => {
                 </label>
                 <div className="flex items-center h-9 w-full rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40 overflow-hidden">
                   <span className="bg-muted/60 h-full flex items-center px-2.5 text-xs text-muted-foreground border-r border-input font-medium select-none">
-                    +880
+                    +88
                   </span>
                   <input
                     type="text"
                     className="flex-1 h-full bg-transparent px-2.5 text-xs outline-none font-mono placeholder:text-muted-foreground"
-                    placeholder="1XXXXXXXXX"
-                    maxLength={10}
+                    placeholder="01XXXXXXXXX"
+                    maxLength={11}
                     value={customerPhone}
                     onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 11);
                       setCustomerPhone(val);
                     }}
                   />
@@ -966,145 +1140,39 @@ const NewCustomOrderPage = () => {
                 />
               </div>
 
-              {/* District Searchable Dropdown */}
-              <div className="relative">
+              {/* District Searchable Combobox */}
+              <div>
                 <label className="block text-xs font-bold text-foreground mb-1">
                   District <span className="text-destructive">*</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Select / search district..."
-                    value={billingDistrict}
-                    onFocus={() => setIsDistrictOpen(true)}
-                    onBlur={() => setTimeout(() => setIsDistrictOpen(false), 200)}
-                    onChange={(e) => {
-                      setBillingDistrict(e.target.value);
-                      setBillingThana("");
-                      setIsDistrictOpen(true);
-                    }}
-                    className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition cursor-pointer"
-                  />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                    {billingDistrict ? (
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setBillingDistrict("");
-                          setBillingThana("");
-                          setIsDistrictOpen(true);
-                        }}
-                        className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                    )}
-                  </div>
-                </div>
-
-                {isDistrictOpen && (
-                  <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                    {[...DISTRICTS]
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .filter((d) => d.name.toLowerCase().includes((billingDistrict || "").toLowerCase()))
-                      .map((d) => (
-                        <button
-                          key={d.id}
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setBillingDistrict(d.name);
-                            setBillingThana("");
-                            setIsDistrictOpen(false);
-                          }}
-                          className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                        >
-                          {d.name}
-                        </button>
-                      ))}
-                  </div>
-                )}
+                <DistrictCombobox
+                  value={billingDistrict}
+                  onChange={(val) => {
+                    setBillingDistrict(val);
+                    setBillingThana("");
+                  }}
+                  placeholder="Select district..."
+                />
               </div>
 
-              {/* Thana Searchable Dropdown */}
-              <div className="relative">
+              {/* Thana Searchable Combobox */}
+              <div>
                 <label className="block text-xs font-bold text-foreground mb-1">
                   Thana / Area{" "}
                   {["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict) && (
                     <span className="text-destructive">*</span>
                   )}
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required={["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)}
-                    placeholder={
-                      ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)
-                        ? "Select thana..."
-                        : "Enter thana / upazila"
-                    }
-                    value={billingThana}
-                    onFocus={() => {
-                      if (["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)) {
-                        setIsThanaOpen(true);
-                      }
-                    }}
-                    onBlur={() => setTimeout(() => setIsThanaOpen(false), 200)}
-                    onChange={(e) => {
-                      setBillingThana(e.target.value);
-                      if (["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)) {
-                        setIsThanaOpen(true);
-                      }
-                    }}
-                    className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
-                  />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                    {billingThana ? (
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setBillingThana("");
-                          if (["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)) {
-                            setIsThanaOpen(true);
-                          }
-                        }}
-                        className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    ) : ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict) ? (
-                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                    ) : null}
-                  </div>
-                </div>
-
-                {isThanaOpen && ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict) && (
-                  <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                    {(DISTRICT_THANAS[billingDistrict] || [])
-                      .filter((tItem) =>
-                        tItem.name.toLowerCase().includes((billingThana || "").toLowerCase()),
-                      )
-                      .map((tItem) => (
-                        <button
-                          key={tItem.name}
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setBillingThana(tItem.name);
-                            setIsThanaOpen(false);
-                          }}
-                          className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                        >
-                          {tItem.name}
-                        </button>
-                      ))}
-                  </div>
-                )}
+                <ThanaCombobox
+                  district={billingDistrict}
+                  value={billingThana}
+                  onChange={(val) => setBillingThana(val)}
+                  placeholder={
+                    ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)
+                      ? "Select thana..."
+                      : "Select or enter thana / upazila"
+                  }
+                />
               </div>
             </div>
 
@@ -1161,16 +1229,16 @@ const NewCustomOrderPage = () => {
                   </label>
                   <div className="flex items-center h-9 w-full rounded-lg border border-input bg-background transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/40 overflow-hidden">
                     <span className="bg-muted/60 h-full flex items-center px-2.5 text-xs text-muted-foreground border-r border-input font-medium select-none">
-                      +880
+                      +88
                     </span>
                     <input
                       type="text"
                       className="flex-1 h-full bg-transparent px-2.5 text-xs outline-none font-mono placeholder:text-muted-foreground"
-                      placeholder="1XXXXXXXXX"
-                      maxLength={10}
+                      placeholder="01XXXXXXXXX"
+                      maxLength={11}
                       value={shipPhone}
                       onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 11);
                         setShipPhone(val);
                       }}
                     />
@@ -1191,144 +1259,38 @@ const NewCustomOrderPage = () => {
                 </div>
 
                 {/* Shipping District */}
-                <div className="relative">
+                <div>
                   <label className="block text-xs font-bold text-foreground mb-1">
                     Shipping District <span className="text-destructive">*</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Select shipping district..."
-                      value={shipDistrict}
-                      onFocus={() => setIsShipDistrictOpen(true)}
-                      onBlur={() => setTimeout(() => setIsShipDistrictOpen(false), 200)}
-                      onChange={(e) => {
-                        setShipDistrict(e.target.value);
-                        setShipThana("");
-                        setIsShipDistrictOpen(true);
-                      }}
-                      className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition cursor-pointer"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                      {shipDistrict ? (
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setShipDistrict("");
-                            setShipThana("");
-                            setIsShipDistrictOpen(true);
-                          }}
-                          className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                      )}
-                    </div>
-                  </div>
-
-                  {isShipDistrictOpen && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                      {[...DISTRICTS]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .filter((d) => d.name.toLowerCase().includes((shipDistrict || "").toLowerCase()))
-                        .map((d) => (
-                          <button
-                            key={d.id}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShipDistrict(d.name);
-                              setShipThana("");
-                              setIsShipDistrictOpen(false);
-                            }}
-                            className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                          >
-                            {d.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
+                  <DistrictCombobox
+                    value={shipDistrict}
+                    onChange={(val) => {
+                      setShipDistrict(val);
+                      setShipThana("");
+                    }}
+                    placeholder="Select shipping district..."
+                  />
                 </div>
 
                 {/* Shipping Thana */}
-                <div className="relative">
+                <div>
                   <label className="block text-xs font-bold text-foreground mb-1">
                     Shipping Thana / Area{" "}
                     {["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict) && (
                       <span className="text-destructive">*</span>
                     )}
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required={["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)}
-                      placeholder={
-                        ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)
-                          ? "Select thana..."
-                          : "Enter thana / upazila"
-                      }
-                      value={shipThana}
-                      onFocus={() => {
-                        if (["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)) {
-                          setIsShipThanaOpen(true);
-                        }
-                      }}
-                      onBlur={() => setTimeout(() => setIsShipThanaOpen(false), 200)}
-                      onChange={(e) => {
-                        setShipThana(e.target.value);
-                        if (["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)) {
-                          setIsShipThanaOpen(true);
-                        }
-                      }}
-                      className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                      {shipThana ? (
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setShipThana("");
-                            if (["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)) {
-                              setIsShipThanaOpen(true);
-                            }
-                          }}
-                          className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      ) : ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict) ? (
-                        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {isShipThanaOpen && ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict) && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                      {(DISTRICT_THANAS[shipDistrict] || [])
-                        .filter((tItem) =>
-                          tItem.name.toLowerCase().includes((shipThana || "").toLowerCase()),
-                        )
-                        .map((tItem) => (
-                          <button
-                            key={tItem.name}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShipThana(tItem.name);
-                              setIsShipThanaOpen(false);
-                            }}
-                            className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                          >
-                            {tItem.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
+                  <ThanaCombobox
+                    district={shipDistrict}
+                    value={shipThana}
+                    onChange={(val) => setShipThana(val)}
+                    placeholder={
+                      ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)
+                        ? "Select thana..."
+                        : "Select or enter thana / upazila"
+                    }
+                  />
                 </div>
               </div>
             </div>
@@ -1367,33 +1329,30 @@ const NewCustomOrderPage = () => {
 
             <div className="grid grid-cols-3 gap-2">
               <div
-                className={`p-2.5 rounded-xl border text-center transition-all ${
-                  deliveryFee === 70
+                className={`p-2.5 rounded-xl border text-center transition-all ${deliveryFee === 70
                     ? "border-primary bg-primary/10 ring-1 ring-primary/40 text-primary font-bold shadow-xs"
                     : "border-border/60 bg-muted/20 opacity-50"
-                }`}
+                  }`}
               >
                 <p className="text-[11px] font-bold">Inside Dhaka</p>
                 <p className="text-xs font-mono font-extrabold mt-0.5">৳70</p>
               </div>
 
               <div
-                className={`p-2.5 rounded-xl border text-center transition-all ${
-                  deliveryFee === 90
+                className={`p-2.5 rounded-xl border text-center transition-all ${deliveryFee === 90
                     ? "border-primary bg-primary/10 ring-1 ring-primary/40 text-primary font-bold shadow-xs"
                     : "border-border/60 bg-muted/20 opacity-50"
-                }`}
+                  }`}
               >
                 <p className="text-[11px] font-bold">Suburbs</p>
                 <p className="text-xs font-mono font-extrabold mt-0.5">৳90</p>
               </div>
 
               <div
-                className={`p-2.5 rounded-xl border text-center transition-all ${
-                  deliveryFee === 120
+                className={`p-2.5 rounded-xl border text-center transition-all ${deliveryFee === 120
                     ? "border-primary bg-primary/10 ring-1 ring-primary/40 text-primary font-bold shadow-xs"
                     : "border-border/60 bg-muted/20 opacity-50"
-                }`}
+                  }`}
               >
                 <p className="text-[11px] font-bold">Outside Dhaka</p>
                 <p className="text-xs font-mono font-extrabold mt-0.5">৳120</p>
