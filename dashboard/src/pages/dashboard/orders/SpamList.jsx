@@ -72,7 +72,7 @@ export default function SpamList() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -106,7 +106,7 @@ export default function SpamList() {
                     <TableRow key={entry._id || entry.id}>
                       <TableCell>
                         {entry.email ? (
-                          <Badge variant="outline" className="text-red-500 border-red-200">
+                          <Badge variant="outline" className="text-red-500 border-none">
                             {entry.email}
                           </Badge>
                         ) : (
@@ -129,6 +129,7 @@ export default function SpamList() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="border-none"
                           onClick={() => handleDelete(entry._id || entry.id)}
                           disabled={deleteMutation.isLoading}
                         >
