@@ -90,6 +90,7 @@ const orderSchema = new Schema(
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     member: { type: Schema.Types.ObjectId, ref: "Member", required: false },
+    customer: { type: Schema.Types.ObjectId, ref: "Customer", required: false, default: null, index: true },
     billingInfo: { type: billingInfoSchema, required: true },
     shippingInfo: { type: shippingInfoSchema, required: true },
     paymentMethod: { type: String, required: true, trim: true },

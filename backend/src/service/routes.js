@@ -3,6 +3,7 @@ import express from "express";
 import dashProductRouter from "./routes/dashProduct.route.js";
 import dashAssetsRouter from "./routes/dashAssets.route.js";
 import productsRouter from "./routes/ProductsRoute.js";
+import itemsRouter from "./routes/ItemsRoute.js";
 import reviewRouter from "./routes/ReviewRoute.js";
 import imagesRouter from "./routes/ImagesRoute.js";
 import authRouter from "./routes/AuthRoute.js";
@@ -39,15 +40,18 @@ import attributeRouter from "./routes/attribute.route.js";
 import mediaAuditRouter from "./routes/mediaAuditRoute.js";
 import developerRouter from "./routes/DeveloperRoute.js";
 import courierRouter from "./routes/CourierRoute.js";
-import stylesRouter from "./routes/StylesRoute.js";
+import customerRouter from "./routes/CustomerRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
+import stylesRouter from "./routes/StylesRoute.js";
 
 const serviceRouter = Router();
 
 // Dashboard admin and business management service routes
+serviceRouter.use("/styles", stylesRouter);
 serviceRouter.use("/dash/products", dashProductRouter);
 serviceRouter.use("/dash/assets", dashAssetsRouter);
 serviceRouter.use("/products", productsRouter);
+serviceRouter.use("/items", itemsRouter);
 serviceRouter.use("/reviews", reviewRouter);
 serviceRouter.use("/images", imagesRouter);
 serviceRouter.use("/auth", authRouter);
@@ -97,8 +101,8 @@ serviceRouter.use("/developer", developerRouter);
 serviceRouter.use(attributeRouter);
 serviceRouter.use("/attribute", attributeRouter);
 serviceRouter.use("/courier", courierRouter);
+serviceRouter.use("/customers", customerRouter);
 serviceRouter.use("/admin/media-audit", mediaAuditRouter);
-serviceRouter.use("/styles", stylesRouter);
 serviceRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket

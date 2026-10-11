@@ -29,6 +29,7 @@ import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.serv
 import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
 import { compileTransactionalEmailHtml } from '../../common/templates/invoices/templateEngine.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
+import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
 export const createOrder = async (req, res, next) => {
@@ -119,6 +120,13 @@ export const createOrder = async (req, res, next) => {
 
     const orderData = await buildOrderDocument(payload);
     const createdOrder = await OrderModel.create(orderData);
+
+    // Sync / Upsert Customer collection record with automatic history diff tracking
+    await upsertCustomerFromOrder({
+      order: createdOrder,
+      payload,
+      updatedBy: req.user?.did || req.user?.id || "staff",
+    });
 
     const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
 

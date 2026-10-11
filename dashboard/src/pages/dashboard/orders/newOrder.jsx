@@ -45,6 +45,11 @@ import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderIn
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
 import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
+import { useCustomerSearch, formatPhoneForOrderInput } from "@/hooks/use-customers";
+import {
+  CustomerSuggestionsDropdown,
+  SelectedCustomerBanner,
+} from "@/components/orders/CustomerLookup";
 
 // Renders the modal dialog for selecting product variant and quantity before adding to cart
 const ProductAddDialog = ({
@@ -342,8 +347,38 @@ const NewInStoreOrderPage = () => {
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerDistrict, setCustomerDistrict] = useState("Dhaka");
   const [customerThana, setCustomerThana] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [activeLookupField, setActiveLookupField] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const activeLookupQuery =
+    activeLookupField === "phone"
+      ? customerPhone
+      : activeLookupField === "email"
+      ? customerEmail
+      : activeLookupField === "name"
+      ? customerName
+      : "";
+
+  const { customers: matchedCustomers, isLoading: isSearchingCustomers } = useCustomerSearch(
+    activeLookupQuery,
+    Boolean(activeLookupField)
+  );
+
+  const handleSelectCustomer = useCallback((c) => {
+    if (!c) return;
+    setSelectedCustomer(c);
+    const fullName = c.fullName || [c.firstName, c.lastName].filter(Boolean).join(" ");
+    if (fullName) setCustomerName(fullName);
+    if (c.phone) setCustomerPhone(formatPhoneForOrderInput(c.phone, 10));
+    if (c.email) setCustomerEmail(c.email);
+    if (c.address) setCustomerAddress(c.address);
+    if (c.district) setCustomerDistrict(c.district);
+    if (c.thana !== undefined) setCustomerThana(c.thana || "");
+    setActiveLookupField(null);
+    toast.success(`Auto-filled customer: ${fullName || c.phone}`);
+  }, []);
 
   const paymentOptions = useMemo(() => resolvePaymentOptions(true), []);
 
@@ -528,6 +563,7 @@ const NewInStoreOrderPage = () => {
     setCustomerAddress("");
     setCustomerDistrict("Dhaka");
     setCustomerThana("");
+    setSelectedCustomer(null);
     setDiscount("");
   };
 
@@ -893,17 +929,50 @@ const NewInStoreOrderPage = () => {
           <div className="bg-card border rounded-xl p-5 shadow-sm">
             <h3 className="font-semibold text-base mb-3">{t("orders.customer_info", "Customer Info")}</h3>
             <div className="space-y-3">
-              <div>
+              {selectedCustomer && (
+                <SelectedCustomerBanner
+                  customer={selectedCustomer}
+                  currentValues={{
+                    name: customerName,
+                    phone: customerPhone,
+                    email: customerEmail,
+                    address: customerAddress,
+                    district: customerDistrict,
+                    thana: customerThana,
+                  }}
+                  onClear={() => setSelectedCustomer(null)}
+                  phoneLength={10}
+                />
+              )}
+
+              <div className="relative">
                 <label className="text-xs text-muted-foreground mb-1 block">
                   {t("orders.customer_name", "Customer Name")} <span className="text-destructive">*</span>
                 </label>
                 <Input
                   placeholder={t("orders.customer", "Walk-in Customer")}
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onFocus={() => setActiveLookupField("name")}
+                  onBlur={() =>
+                    setTimeout(
+                      () => setActiveLookupField((prev) => (prev === "name" ? null : prev)),
+                      200
+                    )
+                  }
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    setActiveLookupField("name");
+                  }}
+                />
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "name"}
+                  onSelect={handleSelectCustomer}
                 />
               </div>
-              <div>
+
+              <div className="relative">
                 <label className="text-xs text-muted-foreground mb-1 block">
                   {t("common.phone", "Phone Number")} <span className="text-destructive">*</span>
                 </label>
@@ -917,16 +986,31 @@ const NewInStoreOrderPage = () => {
                     placeholder="1XXXXXXXXX"
                     maxLength={10}
                     value={customerPhone}
+                    onFocus={() => setActiveLookupField("phone")}
+                    onBlur={() =>
+                      setTimeout(
+                        () => setActiveLookupField((prev) => (prev === "phone" ? null : prev)),
+                        200
+                      )
+                    }
                     onChange={(e) => {
                       const val = e.target.value
                         .replace(/\D/g, "")
                         .slice(0, 10);
                       setCustomerPhone(val);
+                      setActiveLookupField("phone");
                     }}
                   />
                 </div>
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "phone"}
+                  onSelect={handleSelectCustomer}
+                />
               </div>
-              <div>
+
+              <div className="relative">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-muted-foreground block">
                     {t("common.email", "Email")} ({t("common.optional", "Optional")})
@@ -941,8 +1025,24 @@ const NewInStoreOrderPage = () => {
                   type="email"
                   placeholder="email@example.com"
                   value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onFocus={() => setActiveLookupField("email")}
+                  onBlur={() =>
+                    setTimeout(
+                      () => setActiveLookupField((prev) => (prev === "email" ? null : prev)),
+                      200
+                    )
+                  }
+                  onChange={(e) => {
+                    setCustomerEmail(e.target.value);
+                    setActiveLookupField("email");
+                  }}
                   className={isEmailInvalid ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "email"}
+                  onSelect={handleSelectCustomer}
                 />
               </div>
               <div>

@@ -49,6 +49,11 @@ import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { clientConfig } from "@/clientConfig";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
 import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
+import { useCustomerSearch, formatPhoneForOrderInput } from "@/hooks/use-customers";
+import {
+  CustomerSuggestionsDropdown,
+  SelectedCustomerBanner,
+} from "@/components/orders/CustomerLookup";
 import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 
 // Modal dialog for selecting product variation & quantity
@@ -343,6 +348,8 @@ const NewCustomOrderPage = () => {
   const [billingAddress, setBillingAddress] = useState("");
   const [billingDistrict, setBillingDistrict] = useState("Dhaka");
   const [billingThana, setBillingThana] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [activeLookupField, setActiveLookupField] = useState(null);
 
   // Shipping State (Conditional if "Ship to a different address" is checked)
   const [shipToDifferent, setShipToDifferent] = useState(false);
@@ -359,6 +366,34 @@ const NewCustomOrderPage = () => {
   // Custom Discount State (Percentage vs Fixed Amount)
   const [discountType, setDiscountType] = useState("fixed"); // 'fixed' or 'percent'
   const [discountValue, setDiscountValue] = useState("");
+
+  const customerLookupQuery =
+    activeLookupField === "phone"
+      ? customerPhone
+      : activeLookupField === "email"
+      ? customerEmail
+      : activeLookupField === "name"
+      ? customerName
+      : "";
+
+  const { customers: customerSuggestions, isLoading: isSearchingCustomers } = useCustomerSearch(
+    customerLookupQuery,
+    Boolean(activeLookupField)
+  );
+
+  const handleSelectCustomer = useCallback((c) => {
+    if (!c) return;
+    setSelectedCustomer(c);
+    const fullName = c.fullName || [c.firstName, c.lastName].filter(Boolean).join(" ");
+    if (fullName) setCustomerName(fullName);
+    if (c.phone) setCustomerPhone(formatPhoneForOrderInput(c.phone, 11));
+    if (c.email) setCustomerEmail(c.email);
+    if (c.address) setBillingAddress(c.address);
+    if (c.district) setBillingDistrict(c.district);
+    if (c.thana !== undefined) setBillingThana(c.thana || "");
+    setActiveLookupField(null);
+    toast.success(`Auto-filled customer: ${fullName || c.phone}`);
+  }, []);
 
   const paymentOptions = useMemo(() => resolvePaymentOptions(false), []);
 
@@ -603,6 +638,7 @@ const NewCustomOrderPage = () => {
   const closeCompletedDialog = () => {
     setCompletedOrder(null);
     setCart([]);
+    setSelectedCustomer(null);
     setCustomerName("");
     setCustomerPhone("");
     setCustomerEmail("");
@@ -1060,7 +1096,7 @@ const NewCustomOrderPage = () => {
                   {t("checkout.billing_title", "Customer & Billing Information")}
                 </h3>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Enter customer delivery address matching Surokkha standard
+                  Search existing customer by phone/email or enter new customer address
                 </p>
               </div>
               <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md">
@@ -1068,22 +1104,48 @@ const NewCustomOrderPage = () => {
               </span>
             </div>
 
+            <SelectedCustomerBanner
+              selectedCustomer={selectedCustomer}
+              onClear={() => setSelectedCustomer(null)}
+              currentValues={{
+                name: customerName,
+                phone: customerPhone,
+                email: customerEmail,
+                address: billingAddress,
+                district: billingDistrict,
+                thana: billingThana,
+              }}
+            />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Customer Full Name */}
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 relative">
                 <label className="block text-xs font-bold text-foreground mb-1">
                   Customer Full Name <span className="text-destructive">*</span>
                 </label>
                 <Input
-                  placeholder="e.g. Rahat Ahmed"
+                  placeholder="e.g. Rahat Ahmed (type name to search existing)"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onFocus={() => setActiveLookupField("name")}
+                  onBlur={() => setTimeout(() => setActiveLookupField(null), 180)}
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    setActiveLookupField("name");
+                  }}
                   className="h-9 text-xs"
+                />
+                <CustomerSuggestionsDropdown
+                  open={activeLookupField === "name" && customerLookupQuery.length >= 2}
+                  customers={customerSuggestions}
+                  isLoading={isSearchingCustomers}
+                  selectedCustomerId={selectedCustomer?._id}
+                  onSelect={handleSelectCustomer}
+                  onClose={() => setActiveLookupField(null)}
                 />
               </div>
 
               {/* Mobile Phone Number */}
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-bold text-foreground mb-1">
                   Phone Number <span className="text-destructive">*</span>
                 </label>
@@ -1097,16 +1159,27 @@ const NewCustomOrderPage = () => {
                     placeholder="01XXXXXXXXX"
                     maxLength={11}
                     value={customerPhone}
+                    onFocus={() => setActiveLookupField("phone")}
+                    onBlur={() => setTimeout(() => setActiveLookupField(null), 180)}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, "").slice(0, 11);
                       setCustomerPhone(val);
+                      setActiveLookupField("phone");
                     }}
                   />
                 </div>
+                <CustomerSuggestionsDropdown
+                  open={activeLookupField === "phone" && customerLookupQuery.length >= 2}
+                  customers={customerSuggestions}
+                  isLoading={isSearchingCustomers}
+                  selectedCustomerId={selectedCustomer?._id}
+                  onSelect={handleSelectCustomer}
+                  onClose={() => setActiveLookupField(null)}
+                />
               </div>
 
               {/* Email Address */}
-              <div>
+              <div className="relative">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-bold text-foreground block">
                     Email Address ({t("common.optional", "Optional")})
@@ -1121,8 +1194,21 @@ const NewCustomOrderPage = () => {
                   type="email"
                   placeholder="customer@example.com"
                   value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onFocus={() => setActiveLookupField("email")}
+                  onBlur={() => setTimeout(() => setActiveLookupField(null), 180)}
+                  onChange={(e) => {
+                    setCustomerEmail(e.target.value);
+                    setActiveLookupField("email");
+                  }}
                   className={`h-9 text-xs ${isEmailInvalid ? "border-destructive" : ""}`}
+                />
+                <CustomerSuggestionsDropdown
+                  open={activeLookupField === "email" && customerLookupQuery.length >= 2}
+                  customers={customerSuggestions}
+                  isLoading={isSearchingCustomers}
+                  selectedCustomerId={selectedCustomer?._id}
+                  onSelect={handleSelectCustomer}
+                  onClose={() => setActiveLookupField(null)}
                 />
               </div>
 
