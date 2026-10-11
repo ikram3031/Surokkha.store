@@ -1,5 +1,6 @@
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
+import { DistrictModel, ThanaModel } from "../../common/models/district.model.js";
 import {
   getPathaoConfig,
   testPathaoConnection,
@@ -13,6 +14,11 @@ import {
   createPathaoBulkOrders,
   getPathaoOrderInfo,
 } from "../../common/services/pathao.service.js";
+import {
+  syncLocationsFromPathaoAPI,
+  seedBaselineDistrictsAndThanas,
+} from "../../common/services/pathaoLocationSync.service.js";
+
 
 // Mask sensitive string helper
 const maskString = (str) => {
@@ -516,3 +522,70 @@ export const trackOrderController = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Sync / Update District and Thana collections using Pathao API
+ */
+export const syncPathaoLocationsController = async (req, res, next) => {
+  try {
+    const config = await getPathaoConfig();
+    const hasCredentials = Boolean(config.clientId && config.clientSecret && config.username && config.password);
+
+    if (!hasCredentials) {
+      // If credentials not yet configured, seed baseline as helpful fallback
+      const seedResult = await seedBaselineDistrictsAndThanas();
+      return res.json({
+        status: "partial",
+        message: "Pathao API credentials are not yet configured in Settings. Seeded 64 standard Bangladesh districts and thanas.",
+        data: seedResult,
+      });
+    }
+
+    const syncResult = await syncLocationsFromPathaoAPI();
+    return res.json({
+      status: "success",
+      message: `Successfully synchronized ${syncResult.districtsCount} districts and ${syncResult.thanasCount} thanas from Pathao API!`,
+      data: syncResult,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get all stored Districts from MongoDB
+ */
+export const getDistrictsListController = async (req, res, next) => {
+  try {
+    const districts = await DistrictModel.find({ isActive: true }).sort({ name: 1 }).lean();
+    return res.json({
+      status: "success",
+      count: districts.length,
+      data: districts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get all stored Thanas / Zones for a specific District (by cityId) from MongoDB
+ */
+export const getDistrictThanasListController = async (req, res, next) => {
+  try {
+    const { cityId } = req.params;
+    if (!cityId) {
+      return res.status(400).json({ status: "error", message: "cityId is required" });
+    }
+
+    const thanas = await ThanaModel.find({ cityId: Number(cityId), isActive: true }).sort({ name: 1 }).lean();
+    return res.json({
+      status: "success",
+      count: thanas.length,
+      data: thanas,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
