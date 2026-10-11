@@ -575,10 +575,18 @@ export const getDistrictThanasListController = async (req, res, next) => {
   try {
     const { cityId } = req.params;
     if (!cityId) {
-      return res.status(400).json({ status: "error", message: "cityId is required" });
+      return res.status(400).json({ status: "error", message: "cityId or district name is required" });
     }
 
-    const thanas = await ThanaModel.find({ cityId: Number(cityId), isActive: true }).sort({ name: 1 }).lean();
+    const numCityId = Number(cityId);
+    let query;
+    if (!isNaN(numCityId) && numCityId > 0) {
+      query = { cityId: numCityId, isActive: true };
+    } else {
+      query = { districtName: new RegExp(`^${cityId.trim()}$`, "i"), isActive: true };
+    }
+
+    const thanas = await ThanaModel.find(query).sort({ name: 1 }).lean();
     return res.json({
       status: "success",
       count: thanas.length,

@@ -44,6 +44,7 @@ import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderIn
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
+import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
 
 // Renders the modal dialog for selecting product variant and quantity before adding to cart
 const ProductAddDialog = ({
@@ -339,6 +340,8 @@ const NewInStoreOrderPage = () => {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [customerDistrict, setCustomerDistrict] = useState("Dhaka");
+  const [customerThana, setCustomerThana] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -414,8 +417,8 @@ const NewInStoreOrderPage = () => {
         phone: `+880${customerPhone.trim()}`,
         email: customerEmail.trim() || "",
         address: customerAddress.trim() || "In-Store",
-        thana: "Dhaka",
-        district: "Dhaka",
+        thana: customerThana.trim() || "Dhaka",
+        district: customerDistrict.trim() || "Dhaka",
         zip: "1000",
       };
 
@@ -485,6 +488,8 @@ const NewInStoreOrderPage = () => {
         customerEmail: customerEmail.trim() || "",
         customerPhone: `+880${customerPhone.trim()}`,
         customerAddress: customerAddress.trim() || "In-Store",
+        customerDistrict: customerDistrict.trim() || "Dhaka",
+        customerThana: customerThana.trim() || "",
         subtotalAmount: subtotal,
         discountAmount: discountAmount,
         totalAmount: finalTotal,
@@ -516,6 +521,14 @@ const NewInStoreOrderPage = () => {
 
   const closeCompletedDialog = () => {
     setCompletedOrder(null);
+    setCart([]);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail("");
+    setCustomerAddress("");
+    setCustomerDistrict("Dhaka");
+    setCustomerThana("");
+    setDiscount("");
   };
 
   return (
@@ -942,6 +955,33 @@ const NewInStoreOrderPage = () => {
                   onChange={(e) => setCustomerAddress(e.target.value)}
                 />
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    {t("orders.district", "District")}
+                  </label>
+                  <DistrictCombobox
+                    value={customerDistrict}
+                    onChange={(val) => {
+                      setCustomerDistrict(val);
+                      setCustomerThana("");
+                    }}
+                    placeholder={t("orders.select_district", "Select district...")}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    {t("orders.thana", "Thana / Area")}
+                  </label>
+                  <ThanaCombobox
+                    district={customerDistrict}
+                    value={customerThana}
+                    onChange={(val) => setCustomerThana(val)}
+                    placeholder={t("orders.select_thana", "Select thana / area...")}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1203,6 +1243,14 @@ const NewInStoreOrderPage = () => {
                     </p>
                     <p>{completedOrder.customerPhone}</p>
                   </div>
+                  <div className="col-span-2">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {t("orders.district", "Location")}
+                    </p>
+                    <p className="font-medium text-foreground">
+                      {completedOrder.customerDistrict}{completedOrder.customerThana ? ` (${completedOrder.customerThana})` : ""}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1253,6 +1301,8 @@ const NewInStoreOrderPage = () => {
             email: completedOrder.customerEmail,
             phone: completedOrder.customerPhone,
             address: completedOrder.customerAddress,
+            district: completedOrder.customerDistrict,
+            thana: completedOrder.customerThana,
           },
         } : null)}
       />
