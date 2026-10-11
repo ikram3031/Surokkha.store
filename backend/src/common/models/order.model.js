@@ -95,6 +95,7 @@ const orderSchema = new Schema(
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     member: { type: Schema.Types.ObjectId, ref: "Member", required: false },
+    customer: { type: Schema.Types.ObjectId, ref: "Customer", required: false, index: true },
     billingInfo: { type: billingInfoSchema, required: true },
     shippingInfo: { type: shippingInfoSchema, required: true },
     paymentMethod: { type: String, required: true, trim: true },
@@ -116,6 +117,7 @@ const orderSchema = new Schema(
     totals: { type: orderTotalsSchema, required: true },
     courier: { type: courierInfoSchema, default: () => ({}) },
     ipAddress: { type: String, trim: true, default: null, index: true },
+    fb_login_id: { type: String, trim: true, default: null, index: true },
     active: { type: Boolean, default: true, index: true },
   },
   {

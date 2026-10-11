@@ -40,6 +40,7 @@ import attributeRouter from "./routes/attribute.route.js";
 import mediaAuditRouter from "./routes/mediaAuditRoute.js";
 import developerRouter from "./routes/DeveloperRoute.js";
 import courierRouter from "./routes/CourierRoute.js";
+import customerRouter from "./routes/CustomerRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 import stylesRouter from "./routes/StylesRoute.js";
 
@@ -100,6 +101,7 @@ serviceRouter.use("/developer", developerRouter);
 serviceRouter.use(attributeRouter);
 serviceRouter.use("/attribute", attributeRouter);
 serviceRouter.use("/courier", courierRouter);
+serviceRouter.use("/customers", customerRouter);
 serviceRouter.use("/admin/media-audit", mediaAuditRouter);
 serviceRouter.get("/search-products", searchProducts);
 

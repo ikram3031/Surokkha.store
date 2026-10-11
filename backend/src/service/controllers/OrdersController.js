@@ -32,6 +32,7 @@ import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.serv
 import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
 import { compileTransactionalEmailHtml } from '../../common/templates/invoices/templateEngine.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
+import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
 export const createOrder = async (req, res, next) => {
@@ -142,6 +143,11 @@ export const createOrder = async (req, res, next) => {
 
     await syncPaymentDocument(createdOrder, payload);
     await syncMemberOrderSnapshot(resolvedMemberId || orderData.member, createdOrder, payload);
+    await upsertCustomerFromOrder({
+      order: createdOrder,
+      payload,
+      updatedBy: req.user?.name || req.user?.did || "staff",
+    });
 
     // Safely trigger non-blocking email notifications for Customer and Admin
     sendOrderEmailsAsynchronously(createdOrder);
