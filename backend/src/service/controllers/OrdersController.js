@@ -1,13 +1,14 @@
 import mongoose from 'mongoose';
+import { BillingModel } from '../../common/models/billing.model.js';
+import { BillTypeModel } from '../../common/models/billType.model.js';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
 import { ProductModel } from '../../common/models/product.model.js';
+import { ItemModel } from '../../common/models/item.model.js';
 import { MemberModel } from '../../common/models/member.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
-import { BillingModel } from '../../common/models/billing.model.js';
-import { BillTypeModel } from '../../common/models/billType.model.js';
 import { buildAllowedOrderUpdates,
   buildOrderDocument,
   resolveOrForceMembershipFromOrder,
@@ -15,10 +16,12 @@ import { buildAllowedOrderUpdates,
   syncPaymentDocument,
   updateMemberOrderReference,
   updateMemberTotals,
+  archiveFakeOrder,
 } from '../../common/helper/orderControllerHelper.js';
+import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
+import { SpamListModel } from '../../common/models/spamList.model.js';
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { LogModel } from '../../common/models/log.model.js';
-import { SpamListModel } from '../../common/models/spamList.model.js';
 import { broadcastLiveNotification } from "../../common/websocket.js";
 import { config } from '../../common/config/index.js';
 
@@ -80,24 +83,39 @@ export const createOrder = async (req, res, next) => {
       }
     }
 
-    // Backend validation: Verify product exists and is in stock
+    // Backend validation: Verify product/item exists and is in stock
     const items = Array.isArray(payload.items) ? payload.items : [];
     if (items.length > 0) {
       for (const item of items) {
-        const productRef = item.productId || item.productDid || item.id || item._id;
+        const productRef = item.productId || item.itemId || item.productDid || item.id || item._id;
         const productName = item.name || item.productName || 'Product';
         
         let productDoc = null;
         if (productRef) {
           if (mongoose.Types.ObjectId.isValid(productRef)) {
             productDoc = await ProductModel.findById(productRef).select('name stockStatus isActive').lean();
+            if (!productDoc) {
+              productDoc = await ItemModel.findById(productRef).select('name stockStatus isActive').lean();
+            }
           }
           if (!productDoc) {
             productDoc = await ProductModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
           }
+          if (!productDoc) {
+            productDoc = await ItemModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
+          }
+          if (!productDoc) {
+            productDoc = await ProductModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
+          }
+          if (!productDoc) {
+            productDoc = await ItemModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
+          }
         }
         if (!productDoc && productName) {
           productDoc = await ProductModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
+          if (!productDoc) {
+            productDoc = await ItemModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
+          }
         }
 
         if (productDoc) {
@@ -118,20 +136,18 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
-    const orderData = await buildOrderDocument(payload);
+    const orderData = await buildOrderDocument(payload, req);
     const createdOrder = await OrderModel.create(orderData);
-
-    // Sync / Upsert Customer collection record with automatic history diff tracking
-    await upsertCustomerFromOrder({
-      order: createdOrder,
-      payload,
-      updatedBy: req.user?.did || req.user?.id || "staff",
-    });
 
     const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
 
     await syncPaymentDocument(createdOrder, payload);
     await syncMemberOrderSnapshot(resolvedMemberId || orderData.member, createdOrder, payload);
+    await upsertCustomerFromOrder({
+      order: createdOrder,
+      payload,
+      updatedBy: req.user?.name || req.user?.did || "staff",
+    });
 
     // Safely trigger non-blocking email notifications for Customer and Admin
     sendOrderEmailsAsynchronously(createdOrder);
@@ -148,11 +164,8 @@ export const createOrder = async (req, res, next) => {
       String(createdOrder.orderNumber || "").startsWith("CO");
 
     if (!isInstoreOrder && !isCustomOrder) {
-      // Safely dispatch server-side Meta Conversions API (CAPI) Purchase event for online customer storefront orders only
-      sendServerPurchaseEvent(createdOrder, req);
-
-      // Safely dispatch server-side TikTok Events API CompletePayment event for online customer storefront orders only
-      sendTikTokServerPurchaseEvent(createdOrder, req);
+      // Intentionally removed CAPI dispatch here. Admin manual orders should NOT skew Meta/TikTok ads.
+      // Storefront orders are handled in storefront/controllers/OrdersController.js
     }
 
     // Automatically record newOrder activity log
@@ -212,7 +225,28 @@ export const listOrders = async (req, res, next) => {
     }
 
     if (req.query.status) {
-      andConditions.push({ status: req.query.status.toLowerCase() });
+      const rawStatuses = Array.isArray(req.query.status)
+        ? req.query.status.join(',')
+        : String(req.query.status);
+      const parsedStatuses = rawStatuses
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s && s !== 'all');
+
+      if (parsedStatuses.length === 1) {
+        andConditions.push({ status: parsedStatuses[0] });
+        // If explicitly requesting 'fake', allow active: false orders to be included
+        if (parsedStatuses[0] === 'fake' && req.query.active === undefined) {
+          const activeCondIdx = andConditions.findIndex((c) => c.active === true);
+          if (activeCondIdx !== -1) andConditions.splice(activeCondIdx, 1);
+        }
+      } else if (parsedStatuses.length > 1) {
+        andConditions.push({ status: { $in: parsedStatuses } });
+        if (parsedStatuses.includes('fake') && req.query.active === undefined) {
+          const activeCondIdx = andConditions.findIndex((c) => c.active === true);
+          if (activeCondIdx !== -1) andConditions.splice(activeCondIdx, 1);
+        }
+      }
     }
 
     if (req.query.orderType === 'custom') {
@@ -314,18 +348,25 @@ export const listOrders = async (req, res, next) => {
       .lean();
 
     const orderIds = orders.map((o) => o._id);
-    const payments = await PaymentModel.find({ orderId: { $in: orderIds } }).select('orderId status').lean();
-    const paymentMap = new Map(payments.map((p) => [p.orderId.toString(), p.status]));
+    const payments = await PaymentModel.find({ orderId: { $in: orderIds } })
+      .select('orderId status paidAmount pendingAmount totalAmount paymentPhone paymentMethod')
+      .lean();
+    const paymentMap = new Map(payments.map((p) => [p.orderId.toString(), p]));
 
-        const data = orders.map((order) => {
-      const pStatus = paymentMap.get(order._id.toString());
+    const data = orders.map((order) => {
+      const payment = paymentMap.get(order._id.toString());
+      const pStatus = payment?.status || order.paymentStatus;
       const fallbackPaid = ['completed', 'shipped'].includes(order.status);
       const effectivePaymentStatus = pStatus || (fallbackPaid ? 'paid' : 'pending');
+      const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
       return {
         ...order,
         id: order._id.toString(),
         customer: order.billingInfo,
         paymentStatus: effectivePaymentStatus,
+        paidAmount: effectivePaid,
+        paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
+        paymentDetails: payment || null,
       };
     });
 
@@ -359,13 +400,17 @@ export const getOrderById = async (req, res, next) => {
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
     const fallbackPaid = ['completed', 'shipped'].includes(order.status);
-    const effectivePaymentStatus = payment?.status || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
 
     const orderWithCustomer = {
       ...order,
       id: order._id.toString(),
       customer: order.billingInfo,
       paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
+      paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
+      paymentDetails: payment || null,
     };
 
     return res.json({ status: 'success', data: orderWithCustomer });
@@ -408,6 +453,15 @@ export const updateOrder = async (req, res, next) => {
       affectedMemberIds.add(payload.memberId);
     }
 
+    if (allowedUpdates.status === 'fake') {
+      allowedUpdates.active = false;
+    }
+
+    if (allowedUpdates.status === 'return') {
+      allowedUpdates.paymentStatus = 'returned';
+      allowedUpdates.paidAmount = 0;
+    }
+
     const order = await OrderModel.findOneAndUpdate(query, allowedUpdates, {
       new: true,
       runValidators: true,
@@ -417,50 +471,73 @@ export const updateOrder = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
 
-    if (order.orderType === 'fake') {
+    // If order was marked as fake, archive it to fake_orders collection
+    if (order.status === 'fake') {
       try {
+        await archiveFakeOrder(order, req.user?.userId || null, payload.reason || "Marked as fake order");
+        // Insert into spamList collection
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
         const phone = order.billingInfo?.phone || order.shippingInfo?.phone || "";
         const email = order.billingInfo?.email || order.shippingInfo?.email || "";
         if (ip || phone || email) {
           await SpamListModel.create({ ip, phone, email });
         }
-      } catch (err) {
-        console.error("Error adding fake order to spam list:", err);
+      } catch (fakeErr) {
+        console.error("Error archiving fake order:", fakeErr);
       }
     }
 
     if (allowedUpdates.status === 'return') {
       try {
-        await PaymentModel.updateMany({ orderId: order._id }, { $set: { isActive: false, status: 'cancelled' } });
-        const returnFeeNum = Number(payload.returnFee);
-        if (returnFeeNum > 0) {
+        await PaymentModel.updateMany(
+          { orderId: order._id },
+          { $set: { isActive: false, active: false, status: 'cancelled', paidAmount: 0 } }
+        );
+        await PaymentModel.findOneAndUpdate(
+          { orderId: order._id },
+          {
+            $set: {
+              paymentMethod: order.paymentMethod || 'manual',
+              paymentPhone: order.billingInfo?.phone || '',
+              totalAmount: 0,
+              paidAmount: 0,
+              pendingAmount: 0,
+              amount: 0,
+              status: 'cancelled',
+              isActive: false,
+              active: false,
+            }
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        if (payload.returnFee > 0) {
           let billType = await BillTypeModel.findOne({ name: 'Return' });
           if (!billType) {
-            billType = await BillTypeModel.create({ name: 'Return', active: true });
+            billType = await BillTypeModel.create({ name: 'Return' });
           }
           await BillingModel.create({
             orderId: order._id,
             billTypeId: billType._id,
             title: `${order.did || order.orderNumber || order._id} return`,
-            totalAmount: returnFeeNum,
-            amount: returnFeeNum,
-            pendingAmount: returnFeeNum,
+            totalAmount: payload.returnFee,
+            amount: payload.returnFee,
+            pendingAmount: payload.returnFee,
             status: 'active',
             notes: `${order.shippingInfo?.fullName || order.billingInfo?.fullName || 'Customer'} returned ${order.items?.map(i => i.name).join(', ') || 'products'}`
           });
         }
       } catch (returnErr) {
-        console.error("Error handling return billing:", returnErr);
+        console.error("Error processing return status:", returnErr);
       }
     }
 
+    const isRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(order.status);
     const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
     const newMemberId = order.member ? order.member.toString() : null;
     const orderDid = order.did;
     const orderValue = Number(order.totals?.total || 0);
 
-    if (oldMemberId && oldMemberId !== newMemberId) {
+    if (oldMemberId && (oldMemberId !== newMemberId || isRemovedStatus)) {
       await MemberModel.updateOne(
         { _id: oldMemberId },
         { $pull: { orders: { did: orderDid } } },
@@ -468,10 +545,17 @@ export const updateOrder = async (req, res, next) => {
     }
 
     if (newMemberId) {
-      await updateMemberOrderReference(newMemberId, orderDid, orderValue);
+      if (isRemovedStatus) {
+        await MemberModel.updateOne(
+          { _id: newMemberId },
+          { $pull: { orders: { did: orderDid } } },
+        );
+      } else {
+        await updateMemberOrderReference(newMemberId, orderDid, orderValue);
+      }
     }
 
-        await syncPaymentDocument(order, payload);
+    await syncPaymentDocument(order, payload);
 
     if (oldMemberId) affectedMemberIds.add(oldMemberId);
     if (newMemberId) affectedMemberIds.add(newMemberId);
@@ -481,14 +565,19 @@ export const updateOrder = async (req, res, next) => {
     }
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
+    const isCancelledOrder = ['fake', 'cancelled', 'canceled'].includes(order.status);
     const fallbackPaid = ['completed', 'shipped'].includes(order.status);
-    const effectivePaymentStatus = payment?.status || (fallbackPaid ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (isCancelledOrder ? 'cancelled' : fallbackPaid ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
 
     const orderWithCustomer = {
       ...order,
       id: order._id.toString(),
       customer: order.billingInfo,
       paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
+      paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
+      paymentDetails: payment || null,
     };
 
     return res.status(200).json({ status: 'success', data: orderWithCustomer });
@@ -609,7 +698,7 @@ export const bulkDeleteOrders = async (req, res, next) => {
 // This allows updating multiple orders at once, syncing payments and member totals.
 export const bulkUpdateOrders = async (req, res, next) => {
   try {
-    const { ids, status, paymentStatus, orderType } = req.body;
+    const { ids, status, paymentStatus } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ status: 'error', message: 'No order IDs provided' });
     }
@@ -630,9 +719,12 @@ export const bulkUpdateOrders = async (req, res, next) => {
     const updateFields = {};
     if (status) {
       updateFields.status = status.toLowerCase();
+      if (updateFields.status === 'fake') {
+        updateFields.active = false;
+      }
     }
-    if (orderType) {
-      updateFields.orderType = orderType.toLowerCase();
+    if (paymentStatus) {
+      updateFields.paymentStatus = paymentStatus.toLowerCase();
     }
 
     // Find affected orders first to read references before updating
@@ -646,9 +738,13 @@ export const bulkUpdateOrders = async (req, res, next) => {
       await OrderModel.updateMany(query, { $set: updateFields });
     }
 
-    if (updateFields.orderType === 'fake') {
+    // If marked as fake or cancelled in bulk, archive fake orders and remove from members' active orders
+    const isBulkRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(updateFields.status);
+    if (updateFields.status === 'fake') {
       const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
       for (const ord of orders) {
+        archiveFakeOrder(ord, req.user?.userId || null, req.body?.reason || "Bulk marked as fake order").catch(e => console.error(e));
+        
         const phone = ord.billingInfo?.phone || ord.shippingInfo?.phone || "";
         const email = ord.billingInfo?.email || ord.shippingInfo?.email || "";
         if (ip || phone || email) {
@@ -657,43 +753,54 @@ export const bulkUpdateOrders = async (req, res, next) => {
       }
     }
 
-    let returnBillType = null;
-    const returnFeeNum = Number(req.body.returnFee);
-    if (updateFields.status === 'return' && returnFeeNum > 0) {
-      try {
-        returnBillType = await BillTypeModel.findOne({ name: 'Return' });
-        if (!returnBillType) {
-          returnBillType = await BillTypeModel.create({ name: 'Return', active: true });
+    if (isBulkRemovedStatus) {
+      for (const ord of orders) {
+        if (ord.member && ord.did) {
+          MemberModel.updateOne(
+            { _id: ord.member },
+            { $pull: { orders: { did: ord.did } } }
+          ).catch(e => console.error(e));
         }
-      } catch (err) {
-        console.error("Error fetching/creating Return bill type in bulkUpdateOrders:", err);
       }
     }
 
+    // Identify distinct member IDs affected by the updates
+    const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
+
     // Loop through each order to update payments
+    let returnBillType = null;
+    if (updateFields.status === 'return' && req.body.returnFee > 0) {
+      returnBillType = await BillTypeModel.findOne({ name: 'Return' });
+      if (!returnBillType) {
+        returnBillType = await BillTypeModel.create({ name: 'Return' });
+      }
+    }
+
     for (const order of orders) {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
 
-      if (updateFields.status === 'return') {
-        try {
-          await PaymentModel.updateMany({ orderId: updatedOrder._id }, { $set: { isActive: false, status: 'cancelled' } });
-          
-          if (returnFeeNum > 0 && returnBillType) {
-            await BillingModel.create({
-              orderId: updatedOrder._id,
-              billTypeId: returnBillType._id,
-              title: `${updatedOrder.did || updatedOrder.orderNumber || updatedOrder._id} return`,
-              totalAmount: returnFeeNum,
-              amount: returnFeeNum,
-              pendingAmount: returnFeeNum,
-              status: 'active',
-              notes: `${updatedOrder.shippingInfo?.fullName || updatedOrder.billingInfo?.fullName || 'Customer'} returned ${updatedOrder.items?.map(i => i.name).join(', ') || 'products'}`
-            });
-          }
-        } catch (returnErr) {
-          console.error("Error handling return billing in bulk:", returnErr);
-        }
+      // If order is fake or cancelled, payment must be cancelled and deactivated
+      if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled' || updateFields.status === 'return') {
+        await PaymentModel.findOneAndUpdate(
+          { orderId: updatedOrder._id },
+          {
+            paymentMethod: updatedOrder.paymentMethod,
+            paymentPhone: updatedOrder.billingInfo?.phone || '',
+            totalAmount: 0,
+            paidAmount: 0,
+            pendingAmount: 0,
+            amount: 0,
+            status: 'cancelled',
+            isActive: false,
+            active: false,
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        await OrderModel.findByIdAndUpdate(updatedOrder._id, {
+          paymentStatus: updateFields.status === 'return' ? 'returned' : 'cancelled',
+          paidAmount: 0,
+        });
       } else if (paymentStatus) {
         const pStatus = paymentStatus.toLowerCase();
         const rawTotal = Number(updatedOrder.totals?.total || 0);
@@ -715,14 +822,31 @@ export const bulkUpdateOrders = async (req, res, next) => {
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+        await OrderModel.findByIdAndUpdate(updatedOrder._id, {
+          paymentStatus: pStatus,
+          paidAmount,
+        });
       } else {
         // Fall back to standard payment sync based on order state
         await syncPaymentDocument(updatedOrder);
       }
+      if (updateFields.status === 'return' && returnBillType) {
+        try {
+          await BillingModel.create({
+            orderId: updatedOrder._id,
+            billTypeId: returnBillType._id,
+            title: `${updatedOrder.did || updatedOrder.orderNumber || updatedOrder._id} return`,
+            totalAmount: Number(req.body.returnFee),
+            amount: Number(req.body.returnFee),
+            pendingAmount: Number(req.body.returnFee),
+            status: 'active',
+            notes: `${updatedOrder.shippingInfo?.fullName || updatedOrder.billingInfo?.fullName || 'Customer'} returned ${updatedOrder.items?.map(i => i.name).join(', ') || 'products'}`
+          });
+        } catch (billingErr) {
+          console.error("Error creating return billing:", billingErr);
+        }
+      }
     }
-
-    // Identify distinct member IDs affected by the updates
-    const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
 
     // Recalculate member totals
     if (memberIds.length > 0) {
@@ -760,6 +884,10 @@ export const getOrderInvoiceView = async (req, res, next) => {
     const totalAmount = Number(order.totals?.total !== undefined ? order.totals.total : (order.totalAmount !== undefined ? order.totalAmount : calculatedTotal));
     const couponCode = order.couponCode ? String(order.couponCode).trim().toUpperCase() : null;
 
+    const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (['completed', 'shipped'].includes(order.status) ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? totalAmount : 0);
+
     const formattedOrderData = {
       orderId: order.orderNumber || order.did || order._id?.toString()?.slice(-6),
       status: order.status || 'processing',
@@ -794,6 +922,8 @@ export const getOrderInvoiceView = async (req, res, next) => {
       couponCode,
       totalAmount,
       paymentMethod: order.paymentMethod || "Cash on Delivery",
+      paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
     };
 
     const clientKey = order.client || config.clientKey || 'surokkha';
@@ -858,6 +988,10 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
     const couponCode = order.couponCode ? String(order.couponCode).trim().toUpperCase() : null;
     const formattedOrderId = order.orderNumber || order.did || order._id?.toString()?.slice(-6);
 
+    const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (['completed', 'shipped'].includes(order.status) ? 'paid' : 'pending');
+    const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? totalAmount : 0);
+
     const formattedOrderData = {
       orderId: formattedOrderId,
       status: order.status || "processing",
@@ -892,6 +1026,8 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
       couponCode,
       totalAmount,
       paymentMethod: order.paymentMethod || "Cash on Delivery",
+      paymentStatus: effectivePaymentStatus,
+      paidAmount: effectivePaid,
     };
 
     let templateConfig = null;
