@@ -61,16 +61,16 @@ export const createOrder = async (req, res, next) => {
       return res.status(429).json({ success: false, message: 'অত্যধিক রিকোয়েস্ট বা সন্দেহজনক কার্যকলাপ শনাক্ত করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' });
     }
 
-    // Check if email or phone is in the spam list
-    if (clientEmail || clientPhone) {
-      const spamQuery = { $or: [] };
-      if (clientEmail) spamQuery.$or.push({ email: clientEmail.toLowerCase() });
-      if (clientPhone) spamQuery.$or.push({ phone: clientPhone });
-      
-      const isSpammer = await SpamListModel.findOne(spamQuery).lean();
-      if (isSpammer) {
-        return res.status(403).json({ success: false, message: 'Order can not be created, Please contact our support' });
-      }
+    // Check if IP, email or phone is in the spam list
+    const spamQuery = { $or: [{ ip: clientIp }] };
+    if (clientEmail) spamQuery.$or.push({ email: clientEmail.toLowerCase() });
+    if (clientPhone) {
+      const coreSpamPhone = clientPhone.replace(/\D/g, '').slice(-10);
+      if (coreSpamPhone) spamQuery.$or.push({ phone: { $regex: coreSpamPhone } });
+    }
+    const isSpammer = await SpamListModel.findOne(spamQuery).lean();
+    if (isSpammer) {
+      return res.status(403).json({ success: false, message: 'Order can not be created, Please contact our support' });
     }
 
     const validationErrors = validateOrderPayload(payload);

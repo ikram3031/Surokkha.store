@@ -1,5 +1,4 @@
 import { buildSurokkhaOrderInvoiceHtml } from "./surokkhaOrderInvoice.js";
-import { buildDashboardInvoiceHtml } from "../dashboardInvoiceTemplate.js";
 import { config } from "../../config/index.js";
 import { compileA4InvoiceHtml } from "./templateEngine.js";
 
@@ -50,11 +49,9 @@ export const getClientInvoiceHtml = ({
 
 export {
   buildSurokkhaOrderInvoiceHtml,
-  buildDashboardInvoiceHtml,
 };
 
 export default {
   getClientInvoiceHtml,
   buildSurokkhaOrderInvoiceHtml,
-  buildDashboardInvoiceHtml,
 };

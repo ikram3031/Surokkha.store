@@ -1,21 +1,15 @@
 /**
- * Surokkha Personal Wellness Store — Order Complete Invoice & Email Template
- * Tailored specifically for authentic MO personal wellness products with 100% discreet packaging.
- * 
- * Design specifications:
- * - 100% Clean White background (#FFFFFF) - No dark blocks
- * - Centered Official Surokkha Logo
- * - Next Line: Bold Centered Invoice ID
- * - Next Line: Centered Status Badge (Order Confirmed)
- * - Clean structured metadata & itemized breakdown
- * - 100% Discreet packaging guarantee
- * - Clean light footer with official WhatsApp & support links
+ * Surokkha common order invoice template (A4) shared by the dashboard and the storefront.
+ * Used as the default when no active DB template (StoreSettings.templates) is configured.
+ *
+ * Design: maroon/rose ramp sampled from the logo, blush header band, blush table header,
+ * single deep-maroon grand total block, discreet footer with support contacts.
  *
  * @param {Object} params
  * @param {Object} params.order - Formatted order data
  * @param {boolean} [params.isPrintView=false] - When true, triggers auto-print for PDF saving
- * @param {string} [params.logoUrl] - Public Surokkha Logo URL
- * @returns {string} Fully responsive, standalone HTML string
+ * @param {string} [params.logoUrl] - Public Surokkha logo URL
+ * @returns {string} Standalone HTML string
  */
 export const buildSurokkhaOrderInvoiceHtml = ({
   order = {},
@@ -32,7 +26,6 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     orderType = "online",
     createdAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
     customerName = "Valued Customer",
-    customerEmail = "",
     customerPhone = "N/A",
     billingAddress = {},
     shippingAddress = null,
@@ -45,9 +38,9 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     paymentMethod = "Cash on Delivery (COD)",
   } = order;
 
-  const finalShipping = shippingAddress || billingAddress;
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const taka = (n) => "৳" + Number(n || 0).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // Formats address object or string cleanly
   const formatAddress = (addr) => {
     if (!addr) return "N/A";
     if (typeof addr === "string") return addr;
@@ -61,504 +54,170 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     return parts.length > 0 ? parts.join(", ") : "N/A";
   };
 
-  const deliveryAddressStr = formatAddress(finalShipping);
+  const deliveryAddress = formatAddress(shippingAddress || billingAddress);
+
+  const methodLower = String(paymentMethod).toLowerCase();
   const rawPaymentStatus = String(order.paymentStatus || "").toLowerCase();
   const paidAmount = Number(order.paidAmount || 0);
-  const isPaid = status === "completed" || paymentMethod.toLowerCase().includes("paid") || rawPaymentStatus === "paid";
-  const isPartial = rawPaymentStatus === "partial" || rawPaymentStatus === "partially_paid" || (paidAmount > 0 && paidAmount < Number(totalAmount));
+  const total = Number(totalAmount || 0);
   const isCustom = orderType === "custom" || String(orderId).startsWith("CO");
-  const isInstore = !isCustom && (orderType === "instore" || String(orderId).startsWith("IS") || paymentMethod.toLowerCase().includes("instore") || paymentMethod.toLowerCase().includes("office"));
+  const isInstore = !isCustom && (orderType === "instore" || String(orderId).startsWith("IS") || methodLower.includes("instore") || methodLower.includes("office"));
+  const isPaid = status === "completed" || methodLower.includes("paid") || rawPaymentStatus === "paid";
+  const isPartial = !isPaid && (rawPaymentStatus === "partial" || rawPaymentStatus === "partially_paid" || (paidAmount > 0 && paidAmount < total));
+  const due = Math.max(0, total - paidAmount);
 
-  let statusBadgeText = isCustom ? "✓ CUSTOM ORDER" : "✓ ORDER CONFIRMED";
-  let statusBadgeBg = isCustom ? "#FFFFFF" : "#FFFFFF";
-  let statusBadgeColor = isCustom ? "#1D4ED8" : "#9F1239";
-  let statusBadgeBorder = isCustom ? "#BFDBFE" : "#FECDD3";
+  const typeTag = isCustom ? "Custom Order" : isInstore ? "In-store Order" : "Online Order";
+  const payPill = isPaid || isInstore
+    ? { cls: "paid", text: "Paid" }
+    : isPartial
+      ? { cls: "partial", text: "Partial Payment" }
+      : { cls: "pending", text: "Pending (COD)" };
 
-  if (status === "completed" || isPaid) {
-    statusBadgeText = "✓ ORDER COMPLETED";
-    statusBadgeBg = "#FFFFFF";
-    statusBadgeColor = "#166534";
-    statusBadgeBorder = "#BBF7D0";
-  } else if (status === "shipped") {
-    statusBadgeText = "🚚 IN TRANSIT / SHIPPED";
-    statusBadgeBg = "#FFFFFF";
-    statusBadgeColor = "#3730A3";
-    statusBadgeBorder = "#C7D2FE";
-  } else if (status === "cancelled") {
-    statusBadgeText = "✕ CANCELLED";
-    statusBadgeBg = "#FFFFFF";
-    statusBadgeColor = "#991B1B";
-    statusBadgeBorder = "#FECACA";
-  } else if (isInstore) {
-    statusBadgeText = "🏢 IN-STORE ORDER";
-    statusBadgeBg = "#FFFFFF";
-    statusBadgeColor = "#92400E";
-    statusBadgeBorder = "#FDE68A";
-  }
-
-  const paymentStatusText = isPaid || isInstore ? "Paid / Confirmed" : isPartial ? "Partial Payment" : "Pending (COD)";
-  const paymentStatusColor = isPaid || isInstore ? "#15803D" : isPartial ? "#D97706" : "#BE123C";
-
-  // Build product item rows
-  const itemRowsHtml = items.map((item, index) => {
-    const itemName = item.productName || item.name || "MO Wellness Product";
+  const itemRows = items.map((item) => {
+    const name = item.productName || item.name || "Product";
     const variantParts = [item.size, item.variant, item.variantName, item.packType].filter(Boolean);
-    const variant = [...new Set(variantParts)].join(" • ") || item.variantName || item.size || "Standard Pack";
+    const variant = [...new Set(variantParts)].join(" • ");
     const qty = Number(item.quantity || 1);
     const unitPrice = Number(item.unitPrice || item.price || 0);
-    const itemTotal = Number(item.subtotal || (unitPrice * qty) || 0);
-
+    const lineTotal = Number(item.subtotal || unitPrice * qty || 0);
     return `
-      <tr style="background-color: #FFFFFF; border-bottom: 1px solid #F1F5F9;">
-        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #0F172A; vertical-align: top;">
-          <strong style="color: #0F172A; font-weight: 700; font-size: 14px;">${itemName}</strong>
-          ${variant ? `<div style="font-size: 11.5px; color: #0F172A; font-weight: 600; margin-top: 3px;">✦ ${variant}</div>` : ""}
-        </td>
-        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #1E293B; text-align: center; vertical-align: top;">
-          ${qty}
-        </td>
-        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #1E293B; text-align: right; vertical-align: top; white-space: nowrap;">
-          ৳${unitPrice.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </td>
-        <td style="padding: 12px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13.5px; color: #0F172A; font-weight: 700; text-align: right; vertical-align: top; white-space: nowrap;">
-          ৳${itemTotal.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </td>
-      </tr>
-    `;
+      <tr>
+        <td class="item">${esc(name)}${variant ? `<span class="variant">${esc(variant)}</span>` : ""}</td>
+        <td>${qty}</td>
+        <td>${taka(unitPrice)}</td>
+        <td><b>${taka(lineTotal)}</b></td>
+      </tr>`;
   }).join("");
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Surokkha Invoice #${orderId}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invoice ${esc(orderId)} · Surokkha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    :root {
+      --maroon-900: #3a0d1a; --maroon-700: #4c1222; --maroon-500: #7a2a41; --maroon-300: #b9808f;
+      --rose-600: #a82141; --rose-300: #dba0ae; --blush-100: #f6e8ec; --blush-50: #fbf4f6;
+      --ink: #2a171e; --muted: #7d6a72; --line: #eddde2; --paper: #ffffff; --desk: #f1ecee;
+      --paid: #1b7f45; --partial: #b45309;
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     }
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: #FFFFFF;
-      color: #0F172A;
-      margin: 0;
-      padding: 24px 12px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
-      -webkit-font-smoothing: antialiased;
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px 16px; background: var(--desk); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sheet { max-width: 794px; margin: 0 auto; background: var(--paper); overflow: hidden; box-shadow: 0 1px 2px rgba(58,13,26,.06), 0 14px 34px rgba(58,13,26,.10); }
+    .bar { height: 8px; background: linear-gradient(90deg, var(--maroon-700) 0%, var(--maroon-700) 62%, var(--rose-600) 100%); }
+    header { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 48px 30px; background: linear-gradient(180deg, var(--blush-50), var(--paper)); }
+    .logo { display: block; width: 300px; max-width: 80%; height: auto; }
+    h1 { margin: 6px 0 0; font-size: 20px; font-weight: 700; letter-spacing: .02em; color: var(--maroon-700); }
+    .tag { display: inline-block; padding: 3px 14px; border-radius: 999px; background: var(--blush-100); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--rose-600); }
+    .body { padding: 0 48px 36px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; padding-block: 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .meta > div { min-width: 0; }
+    .label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--maroon-300); margin: 0 0 8px; }
+    .meta p { margin: 0 0 4px; overflow-wrap: anywhere; }
+    .meta b { font-weight: 600; color: var(--maroon-700); }
+    .name { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .pill { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .pill.pending { background: var(--blush-100); color: var(--rose-600); }
+    .pill.paid { background: #e3f4ea; color: var(--paid); }
+    .pill.partial { background: #fef3c7; color: var(--partial); }
+    .table-wrap { overflow-x: auto; padding-block: 24px 8px; }
+    table { width: 100%; border-collapse: collapse; min-width: 480px; font-variant-numeric: tabular-nums; }
+    thead th { text-align: right; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--maroon-500); background: var(--blush-100); padding: 10px 12px; }
+    thead th:first-child { text-align: left; border-radius: 8px 0 0 8px; }
+    thead th:last-child { border-radius: 0 8px 8px 0; }
+    td { text-align: right; padding: 14px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    td:first-child { text-align: left; }
+    td.item { font-weight: 600; color: var(--maroon-700); }
+    .variant { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--muted); }
+    .totals { margin-left: auto; width: min(100%, 340px); padding-top: 12px; font-variant-numeric: tabular-nums; }
+    .row { display: flex; justify-content: space-between; gap: 16px; padding: 6px 12px; color: var(--muted); }
+    .row.discount { color: var(--rose-600); font-weight: 600; }
+    .row.paidrow { color: var(--paid); font-weight: 600; }
+    .code { display: inline-block; padding: 0 8px; border: 1px dashed var(--rose-300); border-radius: 6px; background: var(--blush-50); font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--rose-600); }
+    .grand { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 10px; padding: 14px 16px; border-radius: 10px; color: #fff; background: linear-gradient(100deg, var(--maroon-900), var(--maroon-700) 60%, var(--maroon-500)); }
+    .grand .k { font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--rose-300); }
+    .grand .v { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
+    .cod { margin: 10px 0 0; text-align: right; font-size: 12px; color: var(--rose-600); font-weight: 600; }
+    footer { margin-top: 36px; padding: 18px 48px 22px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 12px; color: var(--muted); background: var(--blush-50); border-top: 1px solid var(--line); }
+    footer .thanks { font-family: var(--font-display); font-size: 16px; color: var(--maroon-700); }
+    footer .heart { color: var(--rose-600); }
+    footer .slogan { font-size: 10.5px; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--maroon-500); }
+    footer a { color: var(--maroon-700); }
+    .actions-bar { max-width: 794px; margin: 16px auto 0; text-align: center; }
+    .btn-print { padding: 10px 20px; border: 0; border-radius: 8px; background: var(--maroon-700); color: #fff; font: 600 13px var(--font-body); cursor: pointer; }
+    @media (max-width: 560px) {
+      header { padding: 28px 20px 24px; }
+      .body { padding: 0 20px 28px; }
+      footer { padding-inline: 20px; }
+      .meta { grid-template-columns: 1fr; }
     }
-    .invoice-wrapper {
-      max-width: 680px;
-      width: 100%;
-      min-height: calc(100vh - 80px);
-      margin: 0 auto;
-      background-color: #FFFFFF;
-      border: 1px solid #E2E8F0;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
-    }
-    .brand-header-bar {
-      height: 5px;
-      background: #E2E8F0;
-    }
-    
-    /* Centered Header Section */
-    .invoice-header-center {
-      padding: 32px 24px 24px 24px;
-      text-align: center;
-      background-color: #FFFFFF;
-      border-bottom: 1px solid #F1F5F9;
-    }
-    .invoice-logo-img {
-      max-height: 80px;
-      height: 75px;
-      width: auto;
-      max-width: 360px;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto 16px auto;
-    }
-    .invoice-id-line {
-      font-size: 20px;
-      font-weight: 800;
-      color: #0F172A;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-    }
-    .invoice-id-line span {
-      color: #0F172A;
-    }
-    .invoice-status-badge {
-      display: inline-block;
-      padding: 5px 16px;
-      background-color: ${statusBadgeBg};
-      color: ${statusBadgeColor};
-      border: 1px solid ${statusBadgeBorder};
-      border-radius: 9999px;
-      font-size: 11.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.75px;
-    }
-    
-    /* Meta Information Cards */
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      padding: 24px 32px;
-      background-color: #FFFFFF;
-      border-bottom: 1px solid #E2E8F0;
-    }
-    .meta-card h4 {
-      font-size: 11px;
-      font-weight: 700;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.75px;
-      margin-bottom: 8px;
-    }
-    .meta-card p {
-      font-size: 13px;
-      line-height: 1.5;
-      color: #0F172A;
-    }
-    
-    /* Items Section */
-    .items-container {
-      padding: 24px 32px;
-      background-color: #FFFFFF;
-      flex: 1 0 auto;
-    }
-    .items-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 4px;
-    }
-    .items-table th {
-      background-color: #FFFFFF;
-      color: #334155;
-      font-size: 11.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 12px 16px;
-      text-align: left;
-    }
-    .items-table th:first-child {
-      border-top-left-radius: 8px;
-    }
-    .items-table th:last-child {
-      border-top-right-radius: 8px;
-    }
-    .items-table th.text-center { text-align: center; }
-    .items-table th.text-right { text-align: right; }
-    
-    .totals-container {
-      margin-top: 20px;
-      border-top: 2px solid #E2E8F0;
-      padding-top: 14px;
-      display: flex;
-      justify-content: flex-end;
-    }
-    .totals-table {
-      width: 300px;
-      border-collapse: collapse;
-    }
-    .totals-table td {
-      padding: 6px 0;
-      font-size: 13.5px;
-      color: #475569;
-    }
-    .totals-table td.amount {
-      text-align: right;
-      font-weight: 600;
-      color: #1E293B;
-    }
-    .coupon-tag {
-      display: inline-block;
-      background: #DCFCE7;
-      color: #166534;
-      border: 1px dashed #86EFAC;
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      font-family: monospace;
-      letter-spacing: 0.5px;
-      margin-left: 4px;
-      vertical-align: middle;
-    }
-    .totals-table tr.grand-total td {
-      padding-top: 12px;
-      border-top: 1px solid #E2E8F0;
-      font-size: 15px;
-      font-weight: 700;
-      color: #0F172A;
-    }
-    .totals-table tr.grand-total td.amount {
-      color: #0F172A;
-      font-size: 19px;
-      font-weight: 800;
-    }
-    
-    /* Discreet Packaging Notice Box */
-    .discreet-notice-box {
-      margin: 10px 32px 24px 32px;
-      padding: 14px 18px;
-      background-color: #FFFFFF;
-      border: 1px solid #E2E8F0;
-      border-radius: 12px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    .discreet-notice-box h5 {
-      font-size: 12px;
-      font-weight: 700;
-      color: #0F172A;
-      margin-bottom: 3px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .discreet-notice-box p {
-      font-size: 11.5px;
-      color: #334155;
-      line-height: 1.45;
-    }
-    
-    /* Clean Light Footer */
-    .invoice-footer-wrapper {
-      margin-top: auto;
-      width: 100%;
-    }
-    .invoice-footer-light {
-      padding: 20px 32px;
-      background-color: #FFFFFF;
-      border-top: 1px solid #E2E8F0;
-      color: #475569;
-      text-align: center;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-    .invoice-footer-light a {
-      color: #0F172A;
-      text-decoration: none;
-      font-weight: 700;
-    }
-    .authenticity-seal {
-      display: inline-block;
-      margin-bottom: 8px;
-      padding: 4px 14px;
-      border: 1px solid #E2E8F0;
-      border-radius: 9999px;
-      color: #0F172A;
-      background-color: #FFFFFF;
-      font-size: 10.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* Action Buttons (Hidden on Print) */
-    .actions-bar {
-      max-width: 680px;
-      margin: 16px auto 0 auto;
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-    }
-    .btn-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 20px;
-      font-size: 13px;
-      font-weight: 700;
-      border-radius: 10px;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s ease;
-    }
-    .btn-print {
-      background-color: #FFFFFF;
-      color: #334155;
-    }
-    .btn-print:hover {
-      background-color: #9F1239;
-    }
-
-    @page {
-      size: A4 portrait;
-      margin: 6mm 8mm;
-    }
+    @page { size: A4; margin: 8mm; }
     @media print {
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      html, body {
-        background-color: #FFFFFF !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        height: 100% !important;
-        min-height: 100% !important;
-        width: 100% !important;
-      }
-      .invoice-wrapper {
-        border: none !important;
-        box-shadow: none !important;
-        max-width: 100% !important;
-        width: 100% !important;
-        border-radius: 0 !important;
-        min-height: calc(297mm - 14mm) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        page-break-after: avoid;
-        break-after: avoid;
-      }
-      .items-container {
-        flex: 1 0 auto !important;
-      }
-      .invoice-footer-wrapper {
-        margin-top: auto !important;
-        width: 100% !important;
-        page-break-inside: avoid;
-        break-inside: avoid;
-      }
-      .actions-bar {
-        display: none !important;
-      }
-      .invoice-logo-img {
-        max-height: 75px !important;
-        height: 70px !important;
-        max-width: 340px !important;
-        margin-bottom: 12px !important;
-      }
+      body { background: #fff; padding: 0; }
+      .sheet { box-shadow: none; max-width: none; }
+      .actions-bar { display: none; }
     }
   </style>
 </head>
 <body ${isPrintView ? 'onload="setTimeout(function(){ window.print(); }, 400)"' : ""}>
-  <div class="invoice-wrapper">
-    <div class="brand-header-bar"></div>
+  <main class="sheet">
+    <div class="bar"></div>
+    <header>
+      <img class="logo" src="${esc(cleanLogoUrl)}" alt="Surokkha — Safe today, tomorrow">
+      <h1>INVOICE #${esc(orderId)}</h1>
+      <span class="tag">${esc(typeTag)}</span>
+    </header>
 
-    <!-- Centered Header Section -->
-    <div class="invoice-header-center">
-      <img
-        src="${cleanLogoUrl}"
-        alt="Surokkha"
-        class="invoice-logo-img"
-        height="75"
-        style="max-height: 80px; height: 75px; width: auto; max-width: 360px; object-fit: contain; display: block; margin: 0 auto 16px auto; border: 0; outline: none;"
-      />
-      <div class="invoice-id-line">INVOICE <span>#${orderId}</span></div>
-      <div>
-        <span class="invoice-status-badge">${statusBadgeText}</span>
-      </div>
-    </div>
+    <div class="body">
+      <section class="meta">
+        <div>
+          <p class="label">Customer &amp; Delivery</p>
+          <p class="name">${esc(customerName)}</p>
+          <p>${esc(customerPhone)}</p>
+          <p style="margin-top:10px"><b>Shipping address</b><br>${esc(deliveryAddress)}</p>
+        </div>
+        <div>
+          <p class="label">Order &amp; Payment</p>
+          <p><b>Order date:</b> ${esc(createdAt)}</p>
+          <p><b>Payment method:</b> ${esc(paymentMethod)}</p>
+          <p><b>Payment status:</b> <span class="pill ${payPill.cls}">${payPill.text}</span></p>
+          <p style="margin-top:10px"><b>Helpline:</b> 01600905774 (WhatsApp)</p>
+        </div>
+      </section>
 
-    <!-- Meta Information Cards -->
-    <div class="meta-grid">
-      <div class="meta-card">
-        <h4>Customer & Delivery Details</h4>
-        <p><strong>${customerName}</strong></p>
-        <p style="color: #334155;">${customerPhone}</p>
-        ${customerEmail ? `<p style="color: #334155; font-size: 12px;">${customerEmail}</p>` : ""}
-        <p style="margin-top: 6px; font-size: 12.5px;"><strong>${isInstore ? 'Pickup Location:' : 'Shipping Address:'}</strong><br />${isInstore ? '🏢 Store Pickup' : deliveryAddressStr}</p>
-      </div>
-      
-      <div class="meta-card">
-        <h4>Order Summary & Payment</h4>
-        <p><strong>Order Date:</strong> ${createdAt}</p>
-        <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-        <p><strong>Payment Status:</strong> <span style="color: ${paymentStatusColor}; font-weight: 700;">${paymentStatusText}</span></p>
-        <p style="margin-top: 6px; font-size: 12.5px;"><strong>Customer Helpline:</strong><br /><a href="https://wa.me/8801600905774" target="_blank" style="color: #0F172A; text-decoration: none; font-weight: 700;">01600905774</a> (WhatsApp Available)</p>
-      </div>
-    </div>
-
-    <!-- Items Section -->
-    <div class="items-container">
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>Product & Pack Details</th>
-            <th class="text-center" style="width: 60px;">Qty</th>
-            <th class="text-right" style="width: 100px;">Unit Price</th>
-            <th class="text-right" style="width: 100px;">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemRowsHtml}
-        </tbody>
-      </table>
-
-      <!-- Totals Table -->
-      <div class="totals-container">
-        <table class="totals-table">
-          <tr>
-            <td>Items Subtotal:</td>
-            <td class="amount">৳${Number(subtotal).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          </tr>
-          <tr>
-            <td>Delivery Fee:</td>
-            <td class="amount">${Number(shippingFee) > 0 ? `৳${Number(shippingFee).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '<span style="color: #0F172A; font-weight: 600;">Free</span>'}</td>
-          </tr>
-          ${Number(discountAmount) > 0 ? `
-          <tr>
-            <td style="color: #0F172A; font-weight: 600;">
-              Discount ${couponCode ? `<span class="coupon-tag">${couponCode}</span>` : ""}:
-            </td>
-            <td class="amount" style="color: #0F172A; font-weight: 700;">-৳${Number(discountAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          </tr>` : ""}
-          <tr class="grand-total">
-            <td>Grand Total (BDT):</td>
-            <td class="amount">৳${Number(totalAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          </tr>
-          ${isPartial && paidAmount > 0 ? `
-          <tr>
-            <td style="color: #166534; font-weight: 600;">Paid / Advance Amount:</td>
-            <td class="amount" style="color: #166534; font-weight: 700;">৳${Number(paidAmount).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          </tr>
-          <tr class="grand-total">
-            <td style="color: #D97706;">Remaining Due (BDT):</td>
-            <td class="amount" style="color: #D97706;">৳${Math.max(0, Number(totalAmount) - Number(paidAmount)).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          </tr>` : ""}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Product</th><th>Qty</th><th>Unit price</th><th>Total</th></tr></thead>
+          <tbody>${itemRows}</tbody>
         </table>
       </div>
-    </div>
 
-    <!-- Bottom Footer Wrapper fixed at bottom -->
-    <div class="invoice-footer-wrapper">
-      <!-- Thank you message above footer -->
-      <div style="padding: 16px 32px; text-align: center; font-size: 12.5px; color: #334155; border-top: 1px solid #F1F5F9; background-color: #FFFFFF;">
-        Thank you for choosing <a href="https://surokkha.store" target="_blank" style="color: #0F172A; text-decoration: none; font-weight: 700;"><strong>Surokkha.store</strong></a> — Trusted Destination for Personal Wellness
-      </div>
-
-      <!-- Surokkha Clean Light Footer -->
-      <div class="invoice-footer-light">
-        <p style="font-size: 11.5px; color: #334155; margin: 0;">
-          For questions or assistance, reach out via WhatsApp at <a href="https://wa.me/8801600905774" target="_blank" style="text-decoration: underline;">01600905774</a> or email <a href="mailto:support@surokkha.store">support@surokkha.store</a>.
-        </p>
+      <div class="totals">
+        <div class="row"><span>Subtotal</span><span>${taka(subtotal)}</span></div>
+        ${Number(discountAmount) > 0 ? `<div class="row discount"><span>Discount${couponCode ? ` <span class="code">${esc(couponCode)}</span>` : ""}</span><span>−${taka(discountAmount)}</span></div>` : ""}
+        <div class="row"><span>Delivery fee</span><span>${Number(shippingFee) > 0 ? taka(shippingFee) : "Free"}</span></div>
+        <div class="grand"><span class="k">Grand total (BDT)</span><span class="v">${taka(total)}</span></div>
+        ${isPartial && paidAmount > 0 ? `
+        <div class="row paidrow" style="margin-top:8px"><span>Paid / Advance</span><span>${taka(paidAmount)}</span></div>
+        <p class="cod">Collect on delivery: ${taka(due)}</p>` : isPaid || isInstore ? "" : `<p class="cod">Collect on delivery: ${taka(total)}</p>`}
       </div>
     </div>
-  </div>
+
+    <footer>
+      <span class="thanks">Thank you for choosing Surokkha <span class="heart">♥</span></span>
+      <span class="slogan">Safe today • Tomorrow</span>
+      <span style="flex-basis:100%">Questions? WhatsApp <a href="https://wa.me/8801600905774">01600905774</a> or <a href="mailto:support@surokkha.store">support@surokkha.store</a></span>
+    </footer>
+  </main>
 
   <div class="actions-bar">
-    <button onclick="window.print()" class="btn-action btn-print">
-      🖨️ Print / Save as PDF
-    </button>
+    <button onclick="window.print()" class="btn-print">🖨️ Print / Save as PDF</button>
   </div>
 </body>
 </html>
