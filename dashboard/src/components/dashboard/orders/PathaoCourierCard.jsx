@@ -1,22 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Truck,
-  Package,
   CheckCircle2,
-  AlertCircle,
   ExternalLink,
   RefreshCw,
   Copy,
   Check,
   Send,
-  MapPin,
-  Phone,
-  User,
   Clock,
-  ChevronDown,
-  Info,
 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -77,6 +69,54 @@ const PathaoCourierCard = ({
   const [specialInstruction, setSpecialInstruction] = useState("");
   const [estimatedPrice, setEstimatedPrice] = useState(null);
   const [isCalculatingRate, setIsCalculatingRate] = useState(false);
+  const [pathaoConfig, setPathaoConfig] = useState(null);
+
+  // Memoized select items with human-readable labels for Base UI Select
+  const storeItems = useMemo(
+    () =>
+      stores.map((s) => ({
+        value: String(s.store_id),
+        label: s.store_name
+          ? `${s.store_name}${s.store_address ? ` (${s.store_address})` : ""}`
+          : String(s.store_id),
+      })),
+    [stores]
+  );
+
+  const cityItems = useMemo(
+    () =>
+      cities.map((c) => ({
+        value: String(c.city_id),
+        label: c.city_name || String(c.city_id),
+      })),
+    [cities]
+  );
+
+  const zoneItems = useMemo(
+    () =>
+      zones.map((z) => ({
+        value: String(z.zone_id),
+        label: z.zone_name || String(z.zone_id),
+      })),
+    [zones]
+  );
+
+  const areaItems = useMemo(
+    () =>
+      areas.map((a) => ({
+        value: String(a.area_id),
+        label: a.area_name || String(a.area_id),
+      })),
+    [areas]
+  );
+
+  const deliverySpeedItems = useMemo(
+    () => [
+      { value: "48", label: "Normal Delivery (48h)" },
+      { value: "12", label: "On Demand (12h)" },
+    ],
+    []
+  );
 
   const courier = order?.courier || {};
   const hasConsignment = Boolean(courier?.consignmentId);
@@ -179,8 +219,30 @@ const PathaoCourierCard = ({
       ]);
 
       const cfg = configRes.data?.data || {};
-      const stList = storesRes.data?.data || [];
+      setPathaoConfig(cfg);
+      let stList = storesRes.data?.data || [];
       const cityList = citiesRes.data?.data || [];
+
+      if (stList.length === 0 && cfg.storeId) {
+        stList = [
+          {
+            store_id: cfg.storeId,
+            store_name: cfg.storeName || "Primary Store",
+            store_address: cfg.storeAddress || "",
+          },
+        ];
+      } else {
+        stList = stList.map((s) => {
+          if (cfg.storeId && String(s.store_id) === String(cfg.storeId)) {
+            return {
+              ...s,
+              store_name: s.store_name || cfg.storeName || "Primary Store",
+              store_address: s.store_address || cfg.storeAddress || "",
+            };
+          }
+          return s;
+        });
+      }
 
       setStores(stList);
       setCities(cityList);
@@ -454,14 +516,30 @@ const PathaoCourierCard = ({
           <div className="space-y-1.5">
             <label className="text-xs font-semibold">Pickup Store <span className="text-destructive">*</span></label>
             {stores.length > 0 ? (
-              <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
+              <Select value={selectedStoreId} onValueChange={setSelectedStoreId} items={storeItems}>
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Select Pickup Store" />
+                  <SelectValue placeholder="Select Pickup Store">
+                    {(val) => {
+                      if (!val) return null;
+                      const s = stores.find((st) => String(st.store_id) === String(val));
+                      if (s) {
+                        return s.store_address
+                          ? `${s.store_name} (${s.store_address})`
+                          : s.store_name;
+                      }
+                      if (pathaoConfig?.storeName && String(pathaoConfig.storeId) === String(val)) {
+                        return pathaoConfig.storeAddress
+                          ? `${pathaoConfig.storeName} (${pathaoConfig.storeAddress})`
+                          : pathaoConfig.storeName;
+                      }
+                      return `Store #${val}`;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-56">
                   {stores.map((s) => (
                     <SelectItem key={s.store_id} value={String(s.store_id)}>
-                      {s.store_name} ({s.store_address})
+                      {s.store_name} {s.store_address ? `(${s.store_address})` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -529,9 +607,15 @@ const PathaoCourierCard = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold">City <span className="text-destructive">*</span></label>
-              <Select value={selectedCity} onValueChange={handleCityChange}>
+              <Select value={selectedCity} onValueChange={handleCityChange} items={cityItems}>
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Select City" />
+                  <SelectValue placeholder="Select City">
+                    {(val) => {
+                      if (!val) return null;
+                      const c = cities.find((item) => String(item.city_id) === String(val));
+                      return c ? c.city_name : `City #${val}`;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="max-h-56">
                   {cities.map((c) => (
@@ -545,9 +629,15 @@ const PathaoCourierCard = ({
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold">Zone <span className="text-destructive">*</span></label>
-              <Select value={selectedZone} onValueChange={handleZoneChange} disabled={!selectedCity || zones.length === 0}>
+              <Select value={selectedZone} onValueChange={handleZoneChange} disabled={!selectedCity || zones.length === 0} items={zoneItems}>
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder={!selectedCity ? "Select city first" : "Select Zone"} />
+                  <SelectValue placeholder={!selectedCity ? "Select city first" : "Select Zone"}>
+                    {(val) => {
+                      if (!val) return null;
+                      const z = zones.find((item) => String(item.zone_id) === String(val));
+                      return z ? z.zone_name : `Zone #${val}`;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="max-h-56">
                   {zones.map((z) => (
@@ -563,9 +653,15 @@ const PathaoCourierCard = ({
               <label className="text-xs font-semibold">
                 Area / Thana {areas.length > 0 && <span className="text-destructive">*</span>}
               </label>
-              <Select value={selectedArea} onValueChange={setSelectedArea} disabled={!selectedZone || areas.length === 0}>
+              <Select value={selectedArea} onValueChange={setSelectedArea} disabled={!selectedZone || areas.length === 0} items={areaItems}>
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Select Area" />
+                  <SelectValue placeholder={!selectedZone ? "Select zone first" : areas.length === 0 ? "No area needed" : "Select Area / Thana"}>
+                    {(val) => {
+                      if (!val) return null;
+                      const a = areas.find((item) => String(item.area_id) === String(val));
+                      return a ? a.area_name : `Area #${val}`;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="max-h-56">
                   {areas.map((a) => (
@@ -594,13 +690,15 @@ const PathaoCourierCard = ({
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold">Delivery Speed</label>
-              <Select value={String(deliveryType)} onValueChange={(v) => setDeliveryType(Number(v))}>
+              <Select value={String(deliveryType)} onValueChange={(v) => setDeliveryType(Number(v))} items={deliverySpeedItems}>
                 <SelectTrigger className="h-9 text-xs">
-                  <SelectValue />
+                  <SelectValue placeholder="Select Speed">
+                    {(val) => (String(val) === "12" ? "On Demand (12h)" : "Normal Delivery (48h)")}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="48">Normal (48h)</SelectItem>
-                  <SelectItem value="12">On Demand</SelectItem>
+                  <SelectItem value="48">Normal Delivery (48h)</SelectItem>
+                  <SelectItem value="12">On Demand (12h)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
