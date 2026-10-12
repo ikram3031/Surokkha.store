@@ -12,6 +12,7 @@ import {
   createOrderConsignmentController,
   createBulkOrderConsignmentsController,
   trackOrderController,
+  syncPathaoOrdersController,
   syncPathaoLocationsController,
   getDistrictsListController,
   getDistrictThanasListController,
@@ -104,6 +105,14 @@ courierRouter.post(
   authenticateToken,
   authorizeRoles("Owner", "Admin", "Manager"),
   createBulkOrderConsignmentsController
+);
+
+// Manual bulk sync of order statuses & COD payments from Pathao
+courierRouter.post(
+  "/pathao/orders/sync",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin", "Manager"),
+  syncPathaoOrdersController
 );
 
 // Tracking Info

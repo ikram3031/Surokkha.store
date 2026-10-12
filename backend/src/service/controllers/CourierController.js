@@ -1,3 +1,4 @@
+import { syncPathaoOrders } from "../../common/services/pathaoOrderSync.service.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { DistrictModel, ThanaModel } from "../../common/models/district.model.js";
@@ -57,6 +58,8 @@ export const getPathaoSettings = async (req, res, next) => {
         lastTestedAt: config.lastTestedAt,
         lastTestStatus: config.lastTestStatus,
         lastTestMessage: config.lastTestMessage,
+        lastOrderSyncAt: pathao.lastOrderSyncAt || null,
+        lastOrderSyncSummary: pathao.lastOrderSyncSummary || "",
         isPersistedInDb: Boolean(pathao?.clientId),
       },
     });
@@ -597,3 +600,15 @@ export const getDistrictThanasListController = async (req, res, next) => {
   }
 };
 
+
+/**
+ * Manually trigger Pathao order status & payment synchronization
+ */
+export const syncPathaoOrdersController = async (req, res, next) => {
+  try {
+    const result = await syncPathaoOrders("MANUAL");
+    return res.json({ status: "success", data: result });
+  } catch (error) {
+    next(error);
+  }
+};

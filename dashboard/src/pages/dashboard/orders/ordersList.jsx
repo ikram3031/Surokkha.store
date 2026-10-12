@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { OrdersTable } from '@/components/dashboard/orders-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import PathaoSyncBar from '@/components/dashboard/orders/PathaoSyncBar';
 import { Search, Download, PlusCircle, Trash2, X, Filter } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 
@@ -206,7 +207,10 @@ const OrdersPage = () => {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">{t('orders.title', 'Orders Management')}</h2>
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">{t('orders.title', 'Orders Management')}</h2>
+          <PathaoSyncBar />
+        </div>
         <div className="flex items-center gap-2">
           {!isReadOnly && clientConfig?.features?.customOrders && (
             <Button variant="outline" nativeButton={false} render={<Link to="/dashboard/orders/custom/new" />}>
