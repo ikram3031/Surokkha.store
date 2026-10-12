@@ -5,15 +5,10 @@ const developerRouter = Router();
 
 // Verifies developer or authorized administrative staff access
 const verifyDeveloperAccess = (req, res, next) => {
-  const userEmail = req.user?.email ? String(req.user.email).toLowerCase().trim() : "";
   const userRole = req.user?.role ? String(req.user.role).toLowerCase().trim() : "";
-  const allowedRoles = ["owner", "admin", "manager", "developer"];
+  const allowedRoles = ["owner", "admin"];
 
-  const extraDevEmails = process.env.DEVELOPER_EMAILS
-    ? process.env.DEVELOPER_EMAILS.split(",").map((e) => e.trim().toLowerCase())
-    : [];
-
-  if (allowedRoles.includes(userRole) || (userEmail && extraDevEmails.includes(userEmail))) {
+  if (allowedRoles.includes(userRole)) {
     return next();
   }
 

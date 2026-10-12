@@ -11,6 +11,11 @@ export const hasMenuAccess = (role, menuKey) => {
     return true;
   }
 
+  // System & API logs are restricted to Owner/Admin regardless of role config
+  if (menuKey === 'logs' || menuKey === 'tools.logs') {
+    return false;
+  }
+
   if (menuKey === 'admin' || menuKey.startsWith('admin.') || menuKey.startsWith('admin/')) {
     return false;
   }
