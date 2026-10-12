@@ -229,7 +229,7 @@ const CPanelManager = () => {
                 {containers.map((c) => (
                   <tr key={c.name} className="hover:bg-muted/20 transition-colors">
                     <td className="py-3.5 px-4 font-mono font-medium text-white flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
+                      <span className="h-2 w-2 rounded bg-emerald-400"></span>
                       {c.name}
                     </td>
                     <td className="py-3.5 px-4 text-slate-300">

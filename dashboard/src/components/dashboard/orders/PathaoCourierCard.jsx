@@ -846,7 +846,7 @@ const PathaoCourierCard = ({
               <div>
                 <span className="text-xs text-muted-foreground block">Delivery Status</span>
                 <span className="font-semibold text-foreground capitalize flex items-center gap-1.5 mt-0.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                  <span className="h-2 w-2 rounded bg-emerald-500 inline-block" />
                   {trackingData?.order_status || courier.orderStatus || "In Transit"}
                 </span>
               </div>

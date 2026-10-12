@@ -346,7 +346,7 @@ export const MemberDetails = () => {
 
         <div className="h-44 bg-card border rounded-2xl p-6 animate-pulse space-y-4">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 bg-muted rounded-full" />
+            <div className="h-16 w-16 bg-muted rounded" />
             <div className="space-y-2">
               <div className="h-5 w-48 bg-muted rounded" />
               <div className="h-4 w-32 bg-muted rounded" />
@@ -366,7 +366,7 @@ export const MemberDetails = () => {
   if (isError || !member) {
     return (
       <div className="flex-1 p-6 md:p-12 flex flex-col items-center justify-center max-w-lg mx-auto text-center space-y-4">
-        <div className="h-16 w-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+        <div className="h-16 w-16 rounded bg-destructive/10 text-destructive flex items-center justify-center">
           <AlertCircle className="h-8 w-8" />
         </div>
         <div>
@@ -788,7 +788,7 @@ export const MemberDetails = () => {
                 </Table>
               ) : (
                 <div className="p-12 text-center space-y-3">
-                  <div className="h-12 w-12 rounded-full bg-muted/60 text-muted-foreground flex items-center justify-center mx-auto">
+                  <div className="h-12 w-12 rounded bg-muted/60 text-muted-foreground flex items-center justify-center mx-auto">
                     <ShoppingBag className="h-6 w-6" />
                   </div>
                   <div>

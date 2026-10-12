@@ -30,7 +30,7 @@ export function InvoicePaperPreview({
   const borderColor = branding.borderColor || '#e2e8f0';
   const mutedTextColor = branding.mutedTextColor || '#64748b';
   const fontFamily = branding.fontFamily || 'Inter, sans-serif';
-  const borderRadius = typeof branding.borderRadius === 'number' ? `${branding.borderRadius}px` : (branding.borderRadius || '8px');
+  const borderRadius = typeof branding.borderRadius === 'number' ? `${branding.borderRadius}px` : (branding.borderRadius || '4px');
 
   // Dynamic Spacing & Padding
   const pagePadding = branding.pagePadding !== undefined ? `${branding.pagePadding}px` : '32px';
@@ -209,7 +209,7 @@ export function InvoicePaperPreview({
                 </div>
                 <div className="flex items-center gap-2 justify-start sm:justify-end pt-1">
                   <span
-                    className="px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider text-white shadow-xs"
+                    className="px-2.5 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider text-white shadow-xs"
                     style={{ backgroundColor: secondaryColor }}
                   >
                     {order.paymentStatus || 'PAID'}

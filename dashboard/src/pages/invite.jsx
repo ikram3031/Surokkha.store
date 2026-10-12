@@ -140,7 +140,7 @@ export default function InvitePage() {
           {/* STATE 1: LOADING */}
           {verifyStatus === 'loading' && (
             <div className="space-y-4 py-4 text-center">
-              <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+              <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded animate-spin mx-auto" />
               <p className="text-xs text-muted-foreground">
                 Verifying your invitation link...
               </p>
@@ -150,7 +150,7 @@ export default function InvitePage() {
           {/* STATE 2: ALREADY REGISTERED */}
           {verifyStatus === 'already_registered' && (
             <div className="text-center space-y-4 py-3">
-              <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+              <div className="h-12 w-12 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
                 <UserCheck className="h-6 w-6" />
               </div>
 
@@ -183,7 +183,7 @@ export default function InvitePage() {
           {/* STATE 3: ERROR / EXPIRED LINK */}
           {verifyStatus === 'error' && (
             <div className="text-center space-y-4 py-3">
-              <div className="h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+              <div className="h-12 w-12 rounded bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
                 <AlertTriangle className="h-6 w-6" />
               </div>
 
@@ -282,7 +282,7 @@ export default function InvitePage() {
                     {r.valid ? (
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                     ) : (
-                      <div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40 shrink-0" />
+                      <div className="h-3.5 w-3.5 rounded border border-muted-foreground/40 shrink-0" />
                     )}
                     <span className={r.valid ? 'text-foreground font-medium' : 'text-muted-foreground'}>
                       {r.label}
@@ -305,7 +305,7 @@ export default function InvitePage() {
           {/* STATE 5: SUCCESS CONFIRMATION */}
           {isSuccess && (
             <div className="text-center space-y-3 py-4">
-              <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto animate-bounce">
+              <div className="h-12 w-12 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto animate-bounce">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
               <h3 className="font-bold text-base text-foreground">

@@ -402,7 +402,7 @@ export default function EditAttributePage() {
                           setNewValueImage(null);
                           setNewValueImagePreview(null);
                         }}
-                        className="h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shrink-0"
+                        className="h-5 w-5 bg-destructive text-destructive-foreground rounded flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shrink-0"
                         title="Remove Image"
                       >
                         <X className="h-3 w-3" />
@@ -467,7 +467,7 @@ export default function EditAttributePage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveExistingValueImage(idx)}
-                            className="absolute -top-2 -right-2 size-7 rounded-full bg-destructive text-destructive-foreground border-2 border-background shadow-md hover:scale-115 flex items-center justify-center cursor-pointer transition-all z-20"
+                            className="absolute -top-2 -right-2 size-7 rounded bg-destructive text-destructive-foreground border-2 border-background shadow-md hover:scale-115 flex items-center justify-center cursor-pointer transition-all z-20"
                             title="Remove Image"
                           >
                             <X className="h-4 w-4 stroke-[2.5]" />

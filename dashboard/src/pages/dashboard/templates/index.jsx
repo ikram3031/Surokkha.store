@@ -612,11 +612,11 @@ export function TemplatesPage() {
                       </div>
                       <div className="flex items-center gap-1.5 mt-2">
                         <span
-                          className="h-3.5 w-3.5 rounded-full border border-black/10"
+                          className="h-3.5 w-3.5 rounded border border-black/10"
                           style={{ backgroundColor: preset.branding.primaryColor }}
                         />
                         <span
-                          className="h-3.5 w-3.5 rounded-full border border-black/10"
+                          className="h-3.5 w-3.5 rounded border border-black/10"
                           style={{ backgroundColor: preset.branding.secondaryColor }}
                         />
                         <span className="text-[10px] text-muted-foreground font-mono ml-1 truncate">

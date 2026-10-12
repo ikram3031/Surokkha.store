@@ -286,7 +286,7 @@ export function ReviewsTable({
                         {isApproved ? (
                           <Badge
                             variant="outline"
-                            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
+                            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 font-medium px-2 py-0.5 rounded inline-flex items-center gap-1 shrink-0"
                           >
                             <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                             <span>Approved</span>
@@ -294,7 +294,7 @@ export function ReviewsTable({
                         ) : (
                           <Badge
                             variant="outline"
-                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
+                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 font-medium px-2 py-0.5 rounded inline-flex items-center gap-1 shrink-0"
                           >
                             <XCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
                             <span>Not Approved</span>

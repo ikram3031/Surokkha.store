@@ -103,7 +103,7 @@ export const InspectModal = ({ item, onClose, onRerun, watermarkConfig }) => {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <X className="h-5 w-5" />
             </button>

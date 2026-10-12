@@ -22,7 +22,7 @@ const AdminStylesPage = () => {
     sidebarColor: '#ffffff',
     textColor: '#0f172a',
     fontFamily: 'Plus Jakarta Sans',
-    borderRadius: 8
+    borderRadius: 4
   });
   
   const type = 'Admin'; // Or Stoorefr for storefront, here Admin.

@@ -105,7 +105,7 @@ export const BeforeAfterSlider = ({
         className="absolute top-0 bottom-0 z-10 w-0.5 bg-primary shadow-md pointer-events-none"
         style={{ left: `${sliderPosition}%` }}
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-background text-primary shadow-md border border-primary/40">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded bg-background text-primary shadow-md border border-primary/40">
           <ArrowLeftRight className="h-3 w-3" />
         </div>
       </div>

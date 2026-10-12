@@ -248,7 +248,7 @@ export const SupportDesk = () => {
             <Server className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-2xl font-bold text-emerald-500 mt-2 flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded bg-emerald-500 animate-pulse" />
             99.9%
           </div>
           <div className="text-[11px] text-muted-foreground mt-0.5">Live VPS Operational</div>
@@ -321,7 +321,7 @@ export const SupportDesk = () => {
 
                   <div className="flex items-center gap-2">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase flex items-center gap-1 ${
+                      className={`px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase flex items-center gap-1 ${
                         ticket.status === "resolved" || ticket.status === "closed"
                           ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
                           : ticket.status === "in_progress"
@@ -332,7 +332,7 @@ export const SupportDesk = () => {
                       {ticket.status === "resolved" ? (
                         <CheckCircle2 className="w-3 h-3" />
                       ) : (
-                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded bg-current animate-pulse" />
                       )}
                       {ticket.status.replace("_", " ")}
                     </span>

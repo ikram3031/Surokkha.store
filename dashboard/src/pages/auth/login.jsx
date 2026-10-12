@@ -227,7 +227,7 @@ const LoginPage = () => {
   if (isAuthLoading) {
     return (
       <div className="min-h-screen w-screen bg-background flex flex-col items-center justify-center gap-3 text-muted-foreground">
-        <div className="h-8 w-8 border-3 border-border border-t-primary rounded-full animate-spin" />
+        <div className="h-8 w-8 border-3 border-border border-t-primary rounded animate-spin" />
         <span className="text-xs font-medium font-sans">{t('common.loading', 'Booting secure session...')}</span>
       </div>
     );
@@ -323,7 +323,7 @@ const LoginPage = () => {
                       className="w-full h-11 flex items-center justify-center font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl transition-all cursor-pointer shadow-sm"
                     >
                       {isSubmitting ? (
-                        <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
+                        <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded animate-spin mr-2" />
                       ) : (
                         <LogIn className="h-[18px] w-[18px] mr-2" />
                       )}
@@ -405,7 +405,7 @@ const LoginPage = () => {
                   className="w-full h-12 flex items-center justify-center font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   {is2faVerifying ? (
-                    <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
+                    <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded animate-spin mr-2" />
                   ) : null}
                   {is2faVerifying ? 'Verifying…' : 'Verify'}
                 </Button>
@@ -429,7 +429,7 @@ const LoginPage = () => {
                   className="w-full h-12 flex items-center justify-center font-bold text-sm border-primary/30 text-primary hover:bg-primary/10 rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   {isRequestingQr ? (
-                    <div className="h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin mr-2" />
+                    <div className="h-4 w-4 border-2 border-primary/30 border-t-primary rounded animate-spin mr-2" />
                   ) : null}
                   {isRequestingQr ? 'Sending Email…' : 'Get QRCode Via Email'}
                 </Button>

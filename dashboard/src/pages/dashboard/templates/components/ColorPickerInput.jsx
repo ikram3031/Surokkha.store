@@ -210,7 +210,7 @@ export function ColorPickerInput({
                 type="button"
                 onClick={() => handleColorPick(color)}
                 title={color}
-                className={`h-3.5 w-3.5 rounded-full border transition-all cursor-pointer ${
+                className={`h-3.5 w-3.5 rounded border transition-all cursor-pointer ${
                   isSelected
                     ? 'ring-2 ring-primary ring-offset-1 scale-125 border-white'
                     : 'border-black/15 hover:scale-125'
