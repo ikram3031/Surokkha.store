@@ -501,7 +501,7 @@ const PathaoCourierCard = ({
 
   const renderDispatchDialog = () => (
     <Dialog open={isDispatchOpen} onOpenChange={setIsDispatchOpen}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl md:max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Truck className="h-5 w-5 text-primary" /> Dispatch Order #{order?.orderNumber} to Pathao
