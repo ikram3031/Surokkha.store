@@ -6,6 +6,7 @@ import { createShutdownHandler } from "../common/helper/sutdownHelper.js";
 import { initWebSocketServer } from "../common/websocket.js";
 import { initMediaSchedulers, stopMediaSchedulers } from "../common/schedulers/mediaScheduler.js";
 import { initHeartbeatScheduler, stopHeartbeatScheduler } from "../common/schedulers/heartbeat.scheduler.js";
+import { initBackupScheduler, stopBackupScheduler } from "../common/schedulers/backupScheduler.js";
 
 // Bootstraps dedicated business logic dashboard and management API server instance
 export const bootstrapService = async () => {
@@ -25,6 +26,7 @@ export const bootstrapService = async () => {
   const wss = initWebSocketServer(server);
   initMediaSchedulers();
   initHeartbeatScheduler();
+  initBackupScheduler();
 
   if (env.IMAP_SYNC_ENABLED) {
     import("../common/services/imapSync.service.js")
@@ -41,6 +43,7 @@ export const bootstrapService = async () => {
   const shutdown = (signal) => {
     stopHeartbeatScheduler();
     stopMediaSchedulers();
+    stopBackupScheduler();
     const handler = createShutdownHandler(server);
     return handler(signal);
   };
