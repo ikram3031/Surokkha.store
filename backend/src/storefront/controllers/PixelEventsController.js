@@ -15,6 +15,8 @@ export const trackAddToCart = async (req, res) => {
       category,
       fbp,
       fbc,
+      fb_login_id,
+      fbLoginId,
       eventId,
       eventSourceUrl,
       user = {},
@@ -29,12 +31,20 @@ export const trackAddToCart = async (req, res) => {
       });
     }
 
+    const resolvedFbLoginId = fb_login_id || fbLoginId || user?.fb_login_id || user?.fbLoginId || '';
     const enrichedReq = { ...req };
-    if (fbp || fbc) {
+    enrichedReq.body = { ...req.body, ...(resolvedFbLoginId ? { fb_login_id: resolvedFbLoginId } : {}) };
+    if (fbp || fbc || resolvedFbLoginId) {
       enrichedReq.cookies = enrichedReq.cookies || {};
       if (fbp) enrichedReq.cookies._fbp = fbp;
       if (fbc) enrichedReq.cookies._fbc = fbc;
+      if (resolvedFbLoginId) enrichedReq.cookies.fb_login_id = resolvedFbLoginId;
     }
+
+    const enrichedUser = {
+      ...user,
+      ...(resolvedFbLoginId ? { fb_login_id: resolvedFbLoginId } : {}),
+    };
 
     const product = {
       did: contentId,
@@ -51,7 +61,7 @@ export const trackAddToCart = async (req, res) => {
       req: enrichedReq,
       eventId,
       eventSourceUrl,
-      user,
+      user: enrichedUser,
     });
 
     sendTikTokServerAddToCartEvent({
@@ -61,7 +71,7 @@ export const trackAddToCart = async (req, res) => {
       req: enrichedReq,
       eventId,
       eventSourceUrl,
-      user,
+      user: enrichedUser,
     });
 
     return res.json({ status: 'success', message: 'AddToCart event dispatched.' });
@@ -82,6 +92,8 @@ export const trackViewContent = async (req, res) => {
       category,
       fbp,
       fbc,
+      fb_login_id,
+      fbLoginId,
       eventId,
       eventSourceUrl,
       user = {},
@@ -96,12 +108,20 @@ export const trackViewContent = async (req, res) => {
       });
     }
 
+    const resolvedFbLoginId = fb_login_id || fbLoginId || user?.fb_login_id || user?.fbLoginId || '';
     const enrichedReq = { ...req };
-    if (fbp || fbc) {
+    enrichedReq.body = { ...req.body, ...(resolvedFbLoginId ? { fb_login_id: resolvedFbLoginId } : {}) };
+    if (fbp || fbc || resolvedFbLoginId) {
       enrichedReq.cookies = enrichedReq.cookies || {};
       if (fbp) enrichedReq.cookies._fbp = fbp;
       if (fbc) enrichedReq.cookies._fbc = fbc;
+      if (resolvedFbLoginId) enrichedReq.cookies.fb_login_id = resolvedFbLoginId;
     }
+
+    const enrichedUser = {
+      ...user,
+      ...(resolvedFbLoginId ? { fb_login_id: resolvedFbLoginId } : {}),
+    };
 
     const product = {
       did: contentId,
@@ -116,7 +136,7 @@ export const trackViewContent = async (req, res) => {
       req: enrichedReq,
       eventId,
       eventSourceUrl,
-      user,
+      user: enrichedUser,
     });
 
     return res.json({ status: 'success', message: 'ViewContent event dispatched.' });

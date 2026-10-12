@@ -12,11 +12,15 @@ import {
   createOrderConsignmentController,
   createBulkOrderConsignmentsController,
   trackOrderController,
+  syncPathaoLocationsController,
+  getDistrictsListController,
+  getDistrictThanasListController,
 } from "../controllers/CourierController.js";
 import {
   authenticateToken,
   authorizeRoles,
 } from "../../common/middlewares/auth.middleware.js";
+
 
 const courierRouter = Router();
 
@@ -110,4 +114,25 @@ courierRouter.get(
   trackOrderController
 );
 
+// Location Sync & Lookups (Districts & Thanas)
+courierRouter.post(
+  "/pathao/sync-locations",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  syncPathaoLocationsController
+);
+
+courierRouter.get(
+  "/districts",
+  authenticateToken,
+  getDistrictsListController
+);
+
+courierRouter.get(
+  "/districts/:cityId/thanas",
+  authenticateToken,
+  getDistrictThanasListController
+);
+
 export default courierRouter;
+

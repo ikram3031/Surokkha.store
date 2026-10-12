@@ -174,6 +174,7 @@ export const testMetaPixelConnection = async (req, res, next) => {
     const targetPixelId = (req.body?.pixelId || currentConfig.pixelId || "").trim();
     const targetAccessToken = (req.body?.accessToken || currentConfig.accessToken || "").trim();
     const targetTestEventCode = (req.body?.testEventCode ?? currentConfig.testEventCode ?? "").trim();
+    const targetFbLoginId = (req.body?.fbLoginId || req.body?.fb_login_id || "").trim();
 
     if (!targetPixelId || !targetAccessToken) {
       return res.status(400).json({
@@ -186,6 +187,7 @@ export const testMetaPixelConnection = async (req, res, next) => {
       pixelId: targetPixelId,
       accessToken: targetAccessToken,
       testEventCode: targetTestEventCode,
+      fbLoginId: targetFbLoginId,
     });
 
     const isSuccess = testResult.success === true;

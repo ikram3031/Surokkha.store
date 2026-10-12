@@ -31,29 +31,54 @@ const normalizePhone = (phone = "") => {
 };
 
 // Resolves active Meta Pixel configuration from database, client config (multi-site aware), and environment fallbacks
-export const getMetaPixelConfig = async (reqOrDomain = null) => {
+export const getMetaPixelConfig = async (reqOrDomain = null, secondaryReq = null) => {
   try {
-    let hostname = '';
     let isShop = false;
+    const primary = reqOrDomain;
+    const req = secondaryReq || (primary?.headers ? primary : null);
 
-    if (typeof reqOrDomain === 'string') {
-      hostname = reqOrDomain.toLowerCase().trim();
-      isShop = hostname === 'shop' || hostname.includes('surokkha.shop') || hostname.includes('shop');
-    } else if (reqOrDomain?.headers) {
-      hostname = (
-        reqOrDomain.headers['x-site-key'] ||
-        reqOrDomain.headers['x-forwarded-host'] ||
-        reqOrDomain.headers.host ||
-        reqOrDomain.headers.origin ||
-        reqOrDomain.headers.referer ||
-        ''
-      ).toLowerCase();
-      isShop = hostname === 'shop' || hostname.includes('surokkha.shop') || hostname.includes('shop');
-    } else if (reqOrDomain?.siteKey) {
-      isShop = String(reqOrDomain.siteKey).toLowerCase().trim() === 'shop';
-    } else if (reqOrDomain?.clientDomain || reqOrDomain?.domain) {
-      hostname = String(reqOrDomain.clientDomain || reqOrDomain.domain).toLowerCase();
-      isShop = hostname === 'shop' || hostname.includes('surokkha.shop') || hostname.includes('shop');
+    // 1. Explicit siteKey flag (e.g. from Order document or req.body or direct siteKey property)
+    const siteKey = (
+      primary?.siteKey ||
+      primary?.body?.siteKey ||
+      req?.body?.siteKey ||
+      (typeof primary === 'string' && (primary === 'shop' || primary === 'store') ? primary : null)
+    );
+
+    if (siteKey) {
+      isShop = String(siteKey).toLowerCase().trim() === 'shop';
+    } else {
+      // 2. Order number prefix check (SSH = Surokkha Shop, SST/SS = Surokkha Store)
+      const orderNum = String(primary?.orderNumber || primary?.orderId || req?.body?.orderNumber || '').toUpperCase().trim();
+      if (orderNum.startsWith('SSH')) {
+        isShop = true;
+      } else if (orderNum.startsWith('SST') || orderNum.startsWith('SS')) {
+        isShop = false;
+      } else {
+        // 3. Domain or origin check (origin / referer of customer storefront takes priority over backend API host)
+        const originStr = String(
+          req?.headers?.origin ||
+          req?.headers?.referer ||
+          req?.headers?.['x-site-key'] ||
+          req?.headers?.['x-client-domain'] ||
+          ''
+        ).toLowerCase();
+
+        const domainStr = String(
+          primary?.clientDomain ||
+          primary?.domain ||
+          req?.body?.clientDomain ||
+          (typeof primary === 'string' ? primary : '')
+        ).toLowerCase();
+
+        if (originStr.includes('shop') || domainStr.includes('shop')) {
+          isShop = true;
+        } else if (originStr.includes('store') || domainStr.includes('store')) {
+          isShop = false;
+        } else if (req?.headers?.host && String(req.headers.host).toLowerCase().includes('shop')) {
+          isShop = true;
+        }
+      }
     }
 
     let doc = null;
@@ -124,7 +149,7 @@ export const getMetaPixelConfig = async (reqOrDomain = null) => {
 };
 
 // Dispatches a live verification test event to Meta Graph API
-export const testMetaCapiConnection = async ({ pixelId, accessToken, testEventCode = "" }) => {
+export const testMetaCapiConnection = async ({ pixelId, accessToken, testEventCode = "", fbLoginId = "" }) => {
   if (!pixelId || !accessToken) {
     return {
       success: false,
@@ -143,6 +168,7 @@ export const testMetaCapiConnection = async ({ pixelId, accessToken, testEventCo
         action_source: "website",
         user_data: {
           client_user_agent: "Flexivia-WL-Ecom/Backend-CAPI-Tester",
+          ...(fbLoginId ? { fb_login_id: String(fbLoginId).trim() } : {}),
         },
         custom_data: {
           test: true,
@@ -199,6 +225,38 @@ const getCookie = (req, name) => {
   return match ? decodeURIComponent(match[1]) : "";
 };
 
+// Extracts Facebook Login ID (App-Scoped User ID) from source object, req, or cookies
+export const extractFbLoginId = (source = null, req = null) => {
+  if (!source && !req) return "";
+  let fbId = "";
+  if (typeof source === "string") {
+    fbId = source;
+  } else if (source && typeof source === "object") {
+    fbId =
+      source.fb_login_id ||
+      source.fbLoginId ||
+      source.facebookId ||
+      source.user?.fb_login_id ||
+      source.user?.fbLoginId ||
+      source.user?.facebookId ||
+      "";
+  }
+  if (!fbId && req) {
+    fbId =
+      req.body?.fb_login_id ||
+      req.body?.fbLoginId ||
+      req.body?.facebookId ||
+      req.query?.fb_login_id ||
+      req.query?.fbLoginId ||
+      req.headers?.["x-fb-login-id"] ||
+      getCookie(req, "fb_login_id") ||
+      getCookie(req, "_fb_login_id") ||
+      getCookie(req, "fblid") ||
+      "";
+  }
+  return String(fbId || "").trim();
+};
+
 // Extracts real client IP address (preserving native IPv6 and IPv4)
 export const extractClientIp = (req) => {
   if (!req) return "";
@@ -218,6 +276,10 @@ export const extractClientIp = (req) => {
   return ip.trim();
 };
 
+// In-memory deduplication cache for server-side purchase events (prevents duplicate dispatches within 60s)
+const recentServerPurchases = new Map();
+const PURCHASE_DEDUPLICATION_WINDOW_MS = 60 * 1000;
+
 // Sends server-side Purchase event to Meta Conversions API asynchronously
 export const sendServerPurchaseEvent = async (order, req = null) => {
   try {
@@ -232,7 +294,26 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       return;
     }
 
-    const metaConfig = await getMetaPixelConfig(req || order);
+    const resolvedOrderNumber = String(order?.orderNumber || order?.orderId || order?._id || "").trim();
+    if (!resolvedOrderNumber) {
+      return;
+    }
+
+    // Server-side idempotent deduplication guard
+    const now = Date.now();
+    for (const [key, timestamp] of recentServerPurchases.entries()) {
+      if (now - timestamp > PURCHASE_DEDUPLICATION_WINDOW_MS) {
+        recentServerPurchases.delete(key);
+      }
+    }
+
+    if (recentServerPurchases.has(resolvedOrderNumber)) {
+      console.log(`[Meta CAPI Server] Deduplication guard: Purchase event for order ${resolvedOrderNumber} was already dispatched recently. Skipping.`);
+      return;
+    }
+    recentServerPurchases.set(resolvedOrderNumber, now);
+
+    const metaConfig = await getMetaPixelConfig(order, req);
 
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) {
       return;
@@ -254,6 +335,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
 
     const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || "";
     const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || "";
+    const fbLoginId = extractFbLoginId(order, req);
 
     const rawEmail = (
       customer.email ||
@@ -286,6 +368,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
       ...(fbp ? { fbp } : {}),
       ...(fbc ? { fbc } : {}),
+      ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
 
     if (advancedMatching) {
@@ -344,12 +427,15 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
         let resolvedDob = rawDob;
 
         // If not in req.body, try member database lookup
-        if ((!resolvedGender || !resolvedDob) && (memberId || memberEmail)) {
+        if (mongoose.connection?.readyState === 1 && (!resolvedGender || !resolvedDob || !userData.fb_login_id) && (memberId || memberEmail)) {
           const query = memberId
             ? { _id: memberId }
             : { email: memberEmail.toLowerCase() };
-          const memberDoc = await MemberModel.findOne(query).select("gender dob dateOfBirth").lean().catch(() => null);
+          const memberDoc = await MemberModel.findOne(query).select("gender dob dateOfBirth fbLoginId facebookId").lean().catch(() => null);
           if (memberDoc) {
+            if (!userData.fb_login_id && (memberDoc.fbLoginId || memberDoc.facebookId)) {
+              userData.fb_login_id = String(memberDoc.fbLoginId || memberDoc.facebookId).trim();
+            }
             if (!resolvedGender && memberDoc.gender) resolvedGender = String(memberDoc.gender).toLowerCase().trim();
             if (!resolvedDob && (memberDoc.dob || memberDoc.dateOfBirth)) {
               resolvedDob = memberDoc.dob || memberDoc.dateOfBirth;
@@ -403,16 +489,19 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     const productNames = items.map((i) => i.name).filter(Boolean);
     const validMongoIds = items.map((i) => i.productId).filter((id) => mongoose.Types.ObjectId.isValid(id));
 
-    const dbProducts = await ProductModel.find(
-      {
-        $or: [
-          ...(validMongoIds.length ? [{ _id: { $in: validMongoIds } }] : []),
-          ...(productDids.length ? [{ did: { $in: productDids } }, { slug: { $in: productDids } }] : []),
-          ...(productNames.length ? [{ name: { $in: productNames } }] : []),
-        ],
-      },
-      'slug did _id sku name'
-    ).lean();
+    let dbProducts = [];
+    if (mongoose.connection?.readyState === 1) {
+      dbProducts = (await ProductModel.find(
+        {
+          $or: [
+            ...(validMongoIds.length ? [{ _id: { $in: validMongoIds } }] : []),
+            ...(productDids.length ? [{ did: { $in: productDids } }, { slug: { $in: productDids } }] : []),
+            ...(productNames.length ? [{ name: { $in: productNames } }] : []),
+          ],
+        },
+        'slug did _id sku name'
+      ).lean().catch(() => [])) || [];
+    }
 
     const dbMap = new Map();
     dbProducts.forEach((p) => {
@@ -443,13 +532,13 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       contents,
       content_ids: contentIds,
       num_items: items.reduce((acc, i) => acc + (i.quantity || 1), 0),
-      order_id: String(order.orderNumber || order._id || ""),
+      order_id: resolvedOrderNumber,
     };
 
     const eventPayload = {
       event_name: "Purchase",
       event_time: Math.floor(Date.now() / 1000),
-      event_id: String(order.orderNumber || order.orderId || order._id),
+      event_id: resolvedOrderNumber,
       action_source: "website",
       user_data: userData,
       custom_data: customData,
@@ -508,12 +597,14 @@ export const sendServerViewContentEvent = async ({
     const clientUserAgent = req?.headers?.["user-agent"] || "";
     const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || "";
     const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || "";
+    const fbLoginId = extractFbLoginId(user, req);
 
     const userData = {
       ...(clientIp ? { client_ip_address: clientIp } : {}),
       ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
       ...(fbp ? { fbp } : {}),
       ...(fbc ? { fbc } : {}),
+      ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
 
     if (advancedMatching && user) {
@@ -635,12 +726,14 @@ export const sendServerAddToCartEvent = async ({
     const clientUserAgent = req?.headers?.["user-agent"] || "";
     const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || "";
     const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || "";
+    const fbLoginId = extractFbLoginId(user, req);
 
     const userData = {
       ...(clientIp ? { client_ip_address: clientIp } : {}),
       ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
       ...(fbp ? { fbp } : {}),
       ...(fbc ? { fbc } : {}),
+      ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
 
     if (advancedMatching && user) {
@@ -749,12 +842,14 @@ export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, 
     const clientUserAgent = req?.headers?.['user-agent'] || '';
     const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, '_fbp') || '';
     const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, '_fbc') || '';
+    const fbLoginId = extractFbLoginId(user, req);
 
     const userData = {
       ...(clientIp ? { client_ip_address: clientIp } : {}),
       ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
       ...(fbp ? { fbp } : {}),
       ...(fbc ? { fbc } : {}),
+      ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
 
     if (advancedMatching && user) {
@@ -829,12 +924,14 @@ export const sendServerAddPaymentInfoEvent = async ({ customData, req = null, ev
     const clientUserAgent = req?.headers?.['user-agent'] || '';
     const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, '_fbp') || '';
     const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, '_fbc') || '';
+    const fbLoginId = extractFbLoginId(user, req);
 
     const userData = {
       ...(clientIp ? { client_ip_address: clientIp } : {}),
       ...(clientIp && clientUserAgent ? { client_user_agent: clientUserAgent } : {}),
       ...(fbp ? { fbp } : {}),
       ...(fbc ? { fbc } : {}),
+      ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
 
     if (advancedMatching && user) {

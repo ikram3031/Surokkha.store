@@ -216,6 +216,7 @@ export const buildOrderDocument = async (payload, req = null) => {
       total: calculatedTotal,
     },
     ipAddress: normalizeText(payload.ipAddress || (req ? extractClientIp(req) : '')) || null,
+    fb_login_id: normalizeText(payload.fb_login_id || payload.fbLoginId || req?.body?.fb_login_id || req?.body?.fbLoginId || req?.cookies?.fb_login_id || req?.cookies?._fb_login_id || '') || null,
   };
 };
 
@@ -514,6 +515,7 @@ export const resolveOrForceMembershipFromOrder = async (createdOrder, payload = 
         },
       ],
       totalOrderAmount: Number(createdOrder.totals?.total || 0),
+      fbLoginId: normalizeText(payload.fb_login_id || payload.fbLoginId || createdOrder.fb_login_id || "") || null,
     };
 
     const createdMember = await MemberModel.create(newMemberData);
@@ -570,6 +572,10 @@ export const syncMemberOrderSnapshot = async (memberId, createdOrder, payload = 
   if (payload.shippingInfo && typeof payload.shippingInfo === 'object') {
     memberUpdates.$set = { ...(memberUpdates.$set || {}), shippingInfo: payload.shippingInfo };
   }
+  const rawFbLoginId = normalizeText(payload.fb_login_id || payload.fbLoginId || createdOrder.fb_login_id || "");
+  if (rawFbLoginId) {
+    memberUpdates.$set = { ...(memberUpdates.$set || {}), fbLoginId: rawFbLoginId };
+  }
 
   await MemberModel.findByIdAndUpdate(memberId, memberUpdates, { new: true, runValidators: true });
   await updateMemberTotals(memberId);
@@ -581,7 +587,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
 
   if (payload.status) {
     const s = String(payload.status).toLowerCase();
-    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake'];
+    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
     allowedUpdates.status = validEnums.includes(s) ? s : 'processing';
   }
   if (payload.shippingInfo) {

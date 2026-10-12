@@ -10,11 +10,10 @@ import {
   Activity,
   HelpCircle,
   Store,
-  MapPin,
   Calculator,
   ExternalLink,
 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -514,7 +513,17 @@ export default function PathaoCourierSettingsPage() {
                     }}
                   >
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="Select Pickup Store" />
+                      <SelectValue placeholder="Select Pickup Store">
+                        {(val) => {
+                          if (!val) return null;
+                          const s = stores.find((st) => String(st.store_id) === String(val));
+                          return s
+                            ? `${s.store_name} (${s.store_address || ''})`
+                            : storeName
+                            ? `${storeName} (${storeAddress || val})`
+                            : `Store #${val}`;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {stores.map((st) => (
@@ -567,7 +576,9 @@ export default function PathaoCourierSettingsPage() {
                     onValueChange={(val) => setDefaultItemType(Number(val))}
                   >
                     <SelectTrigger id="defaultItemType" className="h-9 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="Select Item Type">
+                        {(val) => (String(val) === '1' ? 'Document' : 'Parcel (Standard Goods)')}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="2">Parcel (Standard Goods)</SelectItem>
@@ -585,7 +596,9 @@ export default function PathaoCourierSettingsPage() {
                     onValueChange={(val) => setDefaultDeliveryType(Number(val))}
                   >
                     <SelectTrigger id="defaultDeliveryType" className="h-9 text-xs">
-                      <SelectValue />
+                      <SelectValue placeholder="Select Delivery Speed">
+                        {(val) => (String(val) === '12' ? 'On Demand (Same / Next Day)' : 'Standard Normal (48 Hours)')}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="48">Standard Normal (48 Hours)</SelectItem>
@@ -629,7 +642,13 @@ export default function PathaoCourierSettingsPage() {
                 </div>
                 <Select value={calcCity} onValueChange={handleCityChange}>
                   <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder={cities.length === 0 ? "Click 'Load Cities' above" : "Select City"} />
+                    <SelectValue placeholder={cities.length === 0 ? "Click 'Load Cities' above" : "Select City"}>
+                      {(val) => {
+                        if (!val) return null;
+                        const c = cities.find((ci) => String(ci.city_id) === String(val));
+                        return c ? c.city_name : `City #${val}`;
+                      }}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
                     {cities.map((c) => (
@@ -647,7 +666,13 @@ export default function PathaoCourierSettingsPage() {
                   <label className="text-xs font-medium">Zone</label>
                   <Select value={calcZone} onValueChange={handleZoneChange} disabled={loadingZones}>
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder={loadingZones ? 'Loading zones...' : 'Select Zone'} />
+                      <SelectValue placeholder={loadingZones ? 'Loading zones...' : 'Select Zone'}>
+                        {(val) => {
+                          if (!val) return null;
+                          const z = zones.find((zo) => String(zo.zone_id) === String(val));
+                          return z ? z.zone_name : `Zone #${val}`;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                       {zones.map((z) => (
@@ -666,7 +691,13 @@ export default function PathaoCourierSettingsPage() {
                   <label className="text-xs font-medium">Area / Thana</label>
                   <Select value={calcArea} onValueChange={setCalcArea} disabled={loadingAreas}>
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Select Specific Area" />
+                      <SelectValue placeholder="Select Specific Area">
+                        {(val) => {
+                          if (!val) return null;
+                          const a = areas.find((ar) => String(ar.area_id) === String(val));
+                          return a ? `${a.area_name} ${a.home_delivery_available ? '(Home Delivery)' : ''}`.trim() : `Area #${val}`;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                       {areas.map((a) => (

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
 import { useItems } from "@/hooks/use-items";
@@ -41,17 +41,19 @@ import {
   FileText,
   Percent,
   CircleDollarSign,
-  ChevronDown,
   User,
-  Phone,
   Mail,
-  MapPin,
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { clientConfig } from "@/clientConfig";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
-import { DISTRICTS, DISTRICT_THANAS } from "@/data/districts";
+import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
+import { useCustomerSearch, formatPhoneForOrderInput } from "@/hooks/use-customers";
+import {
+  CustomerSuggestionsDropdown,
+  SelectedCustomerBanner,
+} from "@/components/orders/CustomerLookup";
 import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 
 // Modal dialog for selecting product variation & quantity
@@ -346,8 +348,8 @@ const NewCustomOrderPage = () => {
   const [billingAddress, setBillingAddress] = useState("");
   const [billingDistrict, setBillingDistrict] = useState("Dhaka");
   const [billingThana, setBillingThana] = useState("");
-  const [isDistrictOpen, setIsDistrictOpen] = useState(false);
-  const [isThanaOpen, setIsThanaOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [activeLookupField, setActiveLookupField] = useState(null);
 
   // Shipping State (Conditional if "Ship to a different address" is checked)
   const [shipToDifferent, setShipToDifferent] = useState(false);
@@ -356,8 +358,6 @@ const NewCustomOrderPage = () => {
   const [shipAddress, setShipAddress] = useState("");
   const [shipDistrict, setShipDistrict] = useState("Dhaka");
   const [shipThana, setShipThana] = useState("");
-  const [isShipDistrictOpen, setIsShipDistrictOpen] = useState(false);
-  const [isShipThanaOpen, setIsShipThanaOpen] = useState(false);
 
   // Order Notes & Payment
   const [orderNotes, setOrderNotes] = useState("");
@@ -366,6 +366,34 @@ const NewCustomOrderPage = () => {
   // Custom Discount State (Percentage vs Fixed Amount)
   const [discountType, setDiscountType] = useState("fixed"); // 'fixed' or 'percent'
   const [discountValue, setDiscountValue] = useState("");
+
+  const customerLookupQuery =
+    activeLookupField === "phone"
+      ? customerPhone
+      : activeLookupField === "email"
+      ? customerEmail
+      : activeLookupField === "name"
+      ? customerName
+      : "";
+
+  const { customers: customerSuggestions, isLoading: isSearchingCustomers } = useCustomerSearch(
+    customerLookupQuery,
+    Boolean(activeLookupField)
+  );
+
+  const handleSelectCustomer = useCallback((c) => {
+    if (!c) return;
+    setSelectedCustomer(c);
+    const fullName = c.fullName || [c.firstName, c.lastName].filter(Boolean).join(" ");
+    if (fullName) setCustomerName(fullName);
+    if (c.phone) setCustomerPhone(formatPhoneForOrderInput(c.phone, 11));
+    if (c.email) setCustomerEmail(c.email);
+    if (c.address) setBillingAddress(c.address);
+    if (c.district) setBillingDistrict(c.district);
+    if (c.thana !== undefined) setBillingThana(c.thana || "");
+    setActiveLookupField(null);
+    toast.success(`Auto-filled customer: ${fullName || c.phone}`);
+  }, []);
 
   const paymentOptions = useMemo(() => resolvePaymentOptions(false), []);
 
@@ -610,6 +638,7 @@ const NewCustomOrderPage = () => {
   const closeCompletedDialog = () => {
     setCompletedOrder(null);
     setCart([]);
+    setSelectedCustomer(null);
     setCustomerName("");
     setCustomerPhone("");
     setCustomerEmail("");
@@ -1067,7 +1096,7 @@ const NewCustomOrderPage = () => {
                   {t("checkout.billing_title", "Customer & Billing Information")}
                 </h3>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Enter customer delivery address matching Surokkha standard
+                  Search existing customer by phone/email or enter new customer address
                 </p>
               </div>
               <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-md">
@@ -1075,22 +1104,48 @@ const NewCustomOrderPage = () => {
               </span>
             </div>
 
+            <SelectedCustomerBanner
+              selectedCustomer={selectedCustomer}
+              onClear={() => setSelectedCustomer(null)}
+              currentValues={{
+                name: customerName,
+                phone: customerPhone,
+                email: customerEmail,
+                address: billingAddress,
+                district: billingDistrict,
+                thana: billingThana,
+              }}
+            />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Customer Full Name */}
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 relative">
                 <label className="block text-xs font-bold text-foreground mb-1">
                   Customer Full Name <span className="text-destructive">*</span>
                 </label>
                 <Input
-                  placeholder="e.g. Rahat Ahmed"
+                  placeholder="e.g. Rahat Ahmed (type name to search existing)"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onFocus={() => setActiveLookupField("name")}
+                  onBlur={() => setTimeout(() => setActiveLookupField(null), 180)}
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    setActiveLookupField("name");
+                  }}
                   className="h-9 text-xs"
+                />
+                <CustomerSuggestionsDropdown
+                  open={activeLookupField === "name" && customerLookupQuery.length >= 2}
+                  customers={customerSuggestions}
+                  isLoading={isSearchingCustomers}
+                  selectedCustomerId={selectedCustomer?._id}
+                  onSelect={handleSelectCustomer}
+                  onClose={() => setActiveLookupField(null)}
                 />
               </div>
 
               {/* Mobile Phone Number */}
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-bold text-foreground mb-1">
                   Phone Number <span className="text-destructive">*</span>
                 </label>
@@ -1104,16 +1159,27 @@ const NewCustomOrderPage = () => {
                     placeholder="01XXXXXXXXX"
                     maxLength={11}
                     value={customerPhone}
+                    onFocus={() => setActiveLookupField("phone")}
+                    onBlur={() => setTimeout(() => setActiveLookupField(null), 180)}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, "").slice(0, 11);
                       setCustomerPhone(val);
+                      setActiveLookupField("phone");
                     }}
                   />
                 </div>
+                <CustomerSuggestionsDropdown
+                  open={activeLookupField === "phone" && customerLookupQuery.length >= 2}
+                  customers={customerSuggestions}
+                  isLoading={isSearchingCustomers}
+                  selectedCustomerId={selectedCustomer?._id}
+                  onSelect={handleSelectCustomer}
+                  onClose={() => setActiveLookupField(null)}
+                />
               </div>
 
               {/* Email Address */}
-              <div>
+              <div className="relative">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-bold text-foreground block">
                     Email Address ({t("common.optional", "Optional")})
@@ -1128,8 +1194,21 @@ const NewCustomOrderPage = () => {
                   type="email"
                   placeholder="customer@example.com"
                   value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onFocus={() => setActiveLookupField("email")}
+                  onBlur={() => setTimeout(() => setActiveLookupField(null), 180)}
+                  onChange={(e) => {
+                    setCustomerEmail(e.target.value);
+                    setActiveLookupField("email");
+                  }}
                   className={`h-9 text-xs ${isEmailInvalid ? "border-destructive" : ""}`}
+                />
+                <CustomerSuggestionsDropdown
+                  open={activeLookupField === "email" && customerLookupQuery.length >= 2}
+                  customers={customerSuggestions}
+                  isLoading={isSearchingCustomers}
+                  selectedCustomerId={selectedCustomer?._id}
+                  onSelect={handleSelectCustomer}
+                  onClose={() => setActiveLookupField(null)}
                 />
               </div>
 
@@ -1147,145 +1226,39 @@ const NewCustomOrderPage = () => {
                 />
               </div>
 
-              {/* District Searchable Dropdown */}
-              <div className="relative">
+              {/* District Searchable Combobox */}
+              <div>
                 <label className="block text-xs font-bold text-foreground mb-1">
                   District <span className="text-destructive">*</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Select / search district..."
-                    value={billingDistrict}
-                    onFocus={() => setIsDistrictOpen(true)}
-                    onBlur={() => setTimeout(() => setIsDistrictOpen(false), 200)}
-                    onChange={(e) => {
-                      setBillingDistrict(e.target.value);
-                      setBillingThana("");
-                      setIsDistrictOpen(true);
-                    }}
-                    className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition cursor-pointer"
-                  />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                    {billingDistrict ? (
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setBillingDistrict("");
-                          setBillingThana("");
-                          setIsDistrictOpen(true);
-                        }}
-                        className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                    )}
-                  </div>
-                </div>
-
-                {isDistrictOpen && (
-                  <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                    {[...DISTRICTS]
-                      .sort((a, b) => a.name.localeCompare(b.name))
-                      .filter((d) => d.name.toLowerCase().includes((billingDistrict || "").toLowerCase()))
-                      .map((d) => (
-                        <button
-                          key={d.id}
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setBillingDistrict(d.name);
-                            setBillingThana("");
-                            setIsDistrictOpen(false);
-                          }}
-                          className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                        >
-                          {d.name}
-                        </button>
-                      ))}
-                  </div>
-                )}
+                <DistrictCombobox
+                  value={billingDistrict}
+                  onChange={(val) => {
+                    setBillingDistrict(val);
+                    setBillingThana("");
+                  }}
+                  placeholder="Select district..."
+                />
               </div>
 
-              {/* Thana Searchable Dropdown */}
-              <div className="relative">
+              {/* Thana Searchable Combobox */}
+              <div>
                 <label className="block text-xs font-bold text-foreground mb-1">
                   Thana / Area{" "}
                   {["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict) && (
                     <span className="text-destructive">*</span>
                   )}
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required={["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)}
-                    placeholder={
-                      ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)
-                        ? "Select thana..."
-                        : "Enter thana / upazila"
-                    }
-                    value={billingThana}
-                    onFocus={() => {
-                      if (["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)) {
-                        setIsThanaOpen(true);
-                      }
-                    }}
-                    onBlur={() => setTimeout(() => setIsThanaOpen(false), 200)}
-                    onChange={(e) => {
-                      setBillingThana(e.target.value);
-                      if (["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)) {
-                        setIsThanaOpen(true);
-                      }
-                    }}
-                    className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
-                  />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                    {billingThana ? (
-                      <button
-                        type="button"
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          setBillingThana("");
-                          if (["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)) {
-                            setIsThanaOpen(true);
-                          }
-                        }}
-                        className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    ) : ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict) ? (
-                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                    ) : null}
-                  </div>
-                </div>
-
-                {isThanaOpen && ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict) && (
-                  <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                    {(DISTRICT_THANAS[billingDistrict] || [])
-                      .filter((tItem) =>
-                        tItem.name.toLowerCase().includes((billingThana || "").toLowerCase()),
-                      )
-                      .map((tItem) => (
-                        <button
-                          key={tItem.name}
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setBillingThana(tItem.name);
-                            setIsThanaOpen(false);
-                          }}
-                          className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                        >
-                          {tItem.name}
-                        </button>
-                      ))}
-                  </div>
-                )}
+                <ThanaCombobox
+                  district={billingDistrict}
+                  value={billingThana}
+                  onChange={(val) => setBillingThana(val)}
+                  placeholder={
+                    ["Dhaka", "Gazipur", "Narayanganj"].includes(billingDistrict)
+                      ? "Select thana..."
+                      : "Select or enter thana / upazila"
+                  }
+                />
               </div>
             </div>
 
@@ -1372,144 +1345,38 @@ const NewCustomOrderPage = () => {
                 </div>
 
                 {/* Shipping District */}
-                <div className="relative">
+                <div>
                   <label className="block text-xs font-bold text-foreground mb-1">
                     Shipping District <span className="text-destructive">*</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Select shipping district..."
-                      value={shipDistrict}
-                      onFocus={() => setIsShipDistrictOpen(true)}
-                      onBlur={() => setTimeout(() => setIsShipDistrictOpen(false), 200)}
-                      onChange={(e) => {
-                        setShipDistrict(e.target.value);
-                        setShipThana("");
-                        setIsShipDistrictOpen(true);
-                      }}
-                      className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition cursor-pointer"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                      {shipDistrict ? (
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setShipDistrict("");
-                            setShipThana("");
-                            setIsShipDistrictOpen(true);
-                          }}
-                          className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                      )}
-                    </div>
-                  </div>
-
-                  {isShipDistrictOpen && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                      {[...DISTRICTS]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .filter((d) => d.name.toLowerCase().includes((shipDistrict || "").toLowerCase()))
-                        .map((d) => (
-                          <button
-                            key={d.id}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShipDistrict(d.name);
-                              setShipThana("");
-                              setIsShipDistrictOpen(false);
-                            }}
-                            className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                          >
-                            {d.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
+                  <DistrictCombobox
+                    value={shipDistrict}
+                    onChange={(val) => {
+                      setShipDistrict(val);
+                      setShipThana("");
+                    }}
+                    placeholder="Select shipping district..."
+                  />
                 </div>
 
                 {/* Shipping Thana */}
-                <div className="relative">
+                <div>
                   <label className="block text-xs font-bold text-foreground mb-1">
                     Shipping Thana / Area{" "}
                     {["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict) && (
                       <span className="text-destructive">*</span>
                     )}
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required={["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)}
-                      placeholder={
-                        ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)
-                          ? "Select thana..."
-                          : "Enter thana / upazila"
-                      }
-                      value={shipThana}
-                      onFocus={() => {
-                        if (["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)) {
-                          setIsShipThanaOpen(true);
-                        }
-                      }}
-                      onBlur={() => setTimeout(() => setIsShipThanaOpen(false), 200)}
-                      onChange={(e) => {
-                        setShipThana(e.target.value);
-                        if (["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)) {
-                          setIsShipThanaOpen(true);
-                        }
-                      }}
-                      className="w-full text-xs bg-background border border-input rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                      {shipThana ? (
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setShipThana("");
-                            if (["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)) {
-                              setIsShipThanaOpen(true);
-                            }
-                          }}
-                          className="p-0.5 rounded-full text-muted-foreground hover:text-destructive transition cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      ) : ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict) ? (
-                        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {isShipThanaOpen && ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict) && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-popover border border-border rounded-xl z-50 py-1 shadow-lg divide-y divide-border/40 scrollbar-thin">
-                      {(DISTRICT_THANAS[shipDistrict] || [])
-                        .filter((tItem) =>
-                          tItem.name.toLowerCase().includes((shipThana || "").toLowerCase()),
-                        )
-                        .map((tItem) => (
-                          <button
-                            key={tItem.name}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShipThana(tItem.name);
-                              setIsShipThanaOpen(false);
-                            }}
-                            className="w-full text-left px-3.5 py-2 text-xs hover:bg-primary/10 hover:text-primary transition cursor-pointer"
-                          >
-                            {tItem.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
+                  <ThanaCombobox
+                    district={shipDistrict}
+                    value={shipThana}
+                    onChange={(val) => setShipThana(val)}
+                    placeholder={
+                      ["Dhaka", "Gazipur", "Narayanganj"].includes(shipDistrict)
+                        ? "Select thana..."
+                        : "Select or enter thana / upazila"
+                    }
+                  />
                 </div>
               </div>
             </div>

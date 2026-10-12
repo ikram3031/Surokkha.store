@@ -83,6 +83,7 @@ const memberSchema = new Schema(
     totalPaidAmount: { type: Number, default: 0, min: 0 },
     gender: { type: String, trim: true, lowercase: true, default: null }, // "m" or "f" — used for Meta CAPI ge parameter
     dob: { type: Date, default: null }, // Date of birth — used for Meta CAPI db parameter (YYYYMMDD)
+    fbLoginId: { type: String, trim: true, default: null, index: true }, // Facebook Login ID — used for Meta CAPI fb_login_id parameter
     refreshTokens: {
       type: [
         {

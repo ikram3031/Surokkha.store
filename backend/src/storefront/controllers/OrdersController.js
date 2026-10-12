@@ -22,6 +22,7 @@ import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.serv
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
+import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
 const { Types } = mongoose;
 
@@ -210,6 +211,11 @@ export const createOrder = async (req, res, next) => {
 
     await syncPaymentDocument(createdOrder, payload);
     await syncMemberOrderSnapshot(resolvedMemberId || orderData.member, createdOrder, payload);
+    await upsertCustomerFromOrder({
+      order: createdOrder,
+      payload,
+      updatedBy: "storefront_checkout",
+    });
 
     // Non-blocking email notifications for Customer and Admin
     sendOrderEmailsAsynchronously(createdOrder);

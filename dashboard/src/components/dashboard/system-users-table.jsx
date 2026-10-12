@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Mail } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Mail, KeyRound } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
@@ -26,7 +26,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/lib/auth-context';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import { ResetPasswordDialog } from '@/components/dashboard/reset-password-dialog';
 import { formatDateTime } from '@/utils/dateHelper';
 
 export function SystemUsersTable({
@@ -57,6 +59,8 @@ export function SystemUsersTable({
 
   const [toggling, setToggling] = useState(null);
   const [resendingInvite, setResendingInvite] = useState(null);
+  const [resetPasswordTarget, setResetPasswordTarget] = useState(null);
+  const { user: currentUser } = useAuth();
 
   const handleToggleStatus = async (id, currentStatus) => {
     setToggling(id);
@@ -252,7 +256,15 @@ export function SystemUsersTable({
                           {resendingInvite === user.id ? 'Sending Invite...' : 'Resend Invite Email'}
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)}>
+                      <DropdownMenuItem
+                        onClick={() => setResetPasswordTarget(user)}
+                        className="cursor-pointer font-medium"
+                        disabled={currentUser?.role === 'Admin' && user.role === 'Owner'}
+                      >
+                        <KeyRound className="h-4 w-4 mr-2 text-primary" />
+                        Reset Password
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)} className="cursor-pointer">
                         Toggle Active Status
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -283,6 +295,12 @@ export function SystemUsersTable({
         isDeleting={isRevoking}
         title="Revoke Access"
         description={`Are you sure you want to revoke access for ${deleteTarget?.name ?? ''}?`}
+      />
+      <ResetPasswordDialog
+        open={!!resetPasswordTarget}
+        onOpenChange={(open) => !open && setResetPasswordTarget(null)}
+        user={resetPasswordTarget}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['system-users'] })}
       />
     </div>
   );

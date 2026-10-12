@@ -9,7 +9,9 @@ import { renderUserInviteEmail } from "../../common/templates/userInviteEmailTem
 import {
   validateCreateUserPayload,
   validateUpdateUserPayload,
+  validateResetPasswordPayload,
 } from "../../common/helper/userControllerHelper.js";
+import { LogModel } from "../../common/models/log.model.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
 // Dispatches user invitation email via active SMTP configuration
@@ -220,11 +222,11 @@ export const updateUser = async (req, res, next) => {
       if (emailExists) return res.status(409).json({ status: "error", message: "A user with this email already exists" });
     }
 
-    user.name = payload.name.trim();
-    user.email = payload.email.toLowerCase().trim();
-    user.phone = payload.phone.trim();
-    user.role = payload.role || user.role;
-    user.isActive = payload.isActive !== undefined ? Boolean(payload.isActive) : user.isActive;
+    if (payload.name !== undefined) user.name = payload.name.trim();
+    if (payload.email !== undefined) user.email = payload.email.toLowerCase().trim();
+    if (payload.phone !== undefined) user.phone = payload.phone.trim();
+    if (payload.role !== undefined) user.role = payload.role;
+    if (payload.isActive !== undefined) user.isActive = Boolean(payload.isActive);
 
     if (payload.password) {
       user.passwordHash = await hashPassword(payload.password);
@@ -311,6 +313,77 @@ export const updateProfile = async (req, res, next) => {
     await user.save();
 
     res.json({ status: "success", data: user.toJSON() });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reset a system user's password (Owner or Admin action)
+ */
+export const resetUserPassword = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const payload = req.body ?? {};
+
+    const validationErrors = validateResetPasswordPayload(payload);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        message: validationErrors.join(", "),
+        errors: validationErrors,
+      });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: "error", message: "User not found." });
+    }
+
+    const requesterRole = req.user?.role || "";
+    // Owner protection: Admin cannot reset an Owner's password
+    if (requesterRole === "Admin" && user.role === "Owner") {
+      return res.status(403).json({
+        status: "error",
+        message: "Insufficient permissions: Administrators cannot reset an Owner's password.",
+      });
+    }
+
+    const passwordHash = await hashPassword(payload.password.trim());
+    user.passwordHash = passwordHash;
+    user.isActive = true;
+    user.inviteToken = null;
+    user.inviteTokenExpiresAt = null;
+    await user.save();
+
+    // Log the password reset activity
+    try {
+      const actorName = req.user?.name || req.user?.email || "Admin";
+      const actorDid = req.user?.did || req.user?.userId || "system";
+      await LogModel.create({
+        type: "user",
+        typeDid: user.did || user.id || "user",
+        description: `${actorName} reset the password for system user ${user.name} (${user.email}).`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.warn("Failed to create log for password reset:", logErr);
+    }
+
+    return res.json({
+      status: "success",
+      message: `Password for ${user.name} has been reset successfully.`,
+      data: {
+        id: user.id || user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    });
   } catch (error) {
     next(error);
   }

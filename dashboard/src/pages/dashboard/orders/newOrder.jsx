@@ -44,6 +44,12 @@ import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderIn
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
+import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
+import { useCustomerSearch, formatPhoneForOrderInput } from "@/hooks/use-customers";
+import {
+  CustomerSuggestionsDropdown,
+  SelectedCustomerBanner,
+} from "@/components/orders/CustomerLookup";
 
 // Renders the modal dialog for selecting product variant and quantity before adding to cart
 const ProductAddDialog = ({
@@ -339,8 +345,40 @@ const NewInStoreOrderPage = () => {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [customerDistrict, setCustomerDistrict] = useState("Dhaka");
+  const [customerThana, setCustomerThana] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [activeLookupField, setActiveLookupField] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const activeLookupQuery =
+    activeLookupField === "phone"
+      ? customerPhone
+      : activeLookupField === "email"
+      ? customerEmail
+      : activeLookupField === "name"
+      ? customerName
+      : "";
+
+  const { customers: matchedCustomers, isLoading: isSearchingCustomers } = useCustomerSearch(
+    activeLookupQuery,
+    Boolean(activeLookupField)
+  );
+
+  const handleSelectCustomer = useCallback((c) => {
+    if (!c) return;
+    setSelectedCustomer(c);
+    const fullName = c.fullName || [c.firstName, c.lastName].filter(Boolean).join(" ");
+    if (fullName) setCustomerName(fullName);
+    if (c.phone) setCustomerPhone(formatPhoneForOrderInput(c.phone, 10));
+    if (c.email) setCustomerEmail(c.email);
+    if (c.address) setCustomerAddress(c.address);
+    if (c.district) setCustomerDistrict(c.district);
+    if (c.thana !== undefined) setCustomerThana(c.thana || "");
+    setActiveLookupField(null);
+    toast.success(`Auto-filled customer: ${fullName || c.phone}`);
+  }, []);
 
   const paymentOptions = useMemo(() => resolvePaymentOptions(true), []);
 
@@ -414,8 +452,8 @@ const NewInStoreOrderPage = () => {
         phone: `+880${customerPhone.trim()}`,
         email: customerEmail.trim() || "",
         address: customerAddress.trim() || "In-Store",
-        thana: "Dhaka",
-        district: "Dhaka",
+        thana: customerThana.trim() || "Dhaka",
+        district: customerDistrict.trim() || "Dhaka",
         zip: "1000",
       };
 
@@ -485,6 +523,8 @@ const NewInStoreOrderPage = () => {
         customerEmail: customerEmail.trim() || "",
         customerPhone: `+880${customerPhone.trim()}`,
         customerAddress: customerAddress.trim() || "In-Store",
+        customerDistrict: customerDistrict.trim() || "Dhaka",
+        customerThana: customerThana.trim() || "",
         subtotalAmount: subtotal,
         discountAmount: discountAmount,
         totalAmount: finalTotal,
@@ -516,6 +556,15 @@ const NewInStoreOrderPage = () => {
 
   const closeCompletedDialog = () => {
     setCompletedOrder(null);
+    setCart([]);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail("");
+    setCustomerAddress("");
+    setCustomerDistrict("Dhaka");
+    setCustomerThana("");
+    setSelectedCustomer(null);
+    setDiscount("");
   };
 
   return (
@@ -880,17 +929,50 @@ const NewInStoreOrderPage = () => {
           <div className="bg-card border rounded-xl p-5 shadow-sm">
             <h3 className="font-semibold text-base mb-3">{t("orders.customer_info", "Customer Info")}</h3>
             <div className="space-y-3">
-              <div>
+              {selectedCustomer && (
+                <SelectedCustomerBanner
+                  customer={selectedCustomer}
+                  currentValues={{
+                    name: customerName,
+                    phone: customerPhone,
+                    email: customerEmail,
+                    address: customerAddress,
+                    district: customerDistrict,
+                    thana: customerThana,
+                  }}
+                  onClear={() => setSelectedCustomer(null)}
+                  phoneLength={10}
+                />
+              )}
+
+              <div className="relative">
                 <label className="text-xs text-muted-foreground mb-1 block">
                   {t("orders.customer_name", "Customer Name")} <span className="text-destructive">*</span>
                 </label>
                 <Input
                   placeholder={t("orders.customer", "Walk-in Customer")}
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onFocus={() => setActiveLookupField("name")}
+                  onBlur={() =>
+                    setTimeout(
+                      () => setActiveLookupField((prev) => (prev === "name" ? null : prev)),
+                      200
+                    )
+                  }
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    setActiveLookupField("name");
+                  }}
+                />
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "name"}
+                  onSelect={handleSelectCustomer}
                 />
               </div>
-              <div>
+
+              <div className="relative">
                 <label className="text-xs text-muted-foreground mb-1 block">
                   {t("common.phone", "Phone Number")} <span className="text-destructive">*</span>
                 </label>
@@ -904,16 +986,31 @@ const NewInStoreOrderPage = () => {
                     placeholder="1XXXXXXXXX"
                     maxLength={10}
                     value={customerPhone}
+                    onFocus={() => setActiveLookupField("phone")}
+                    onBlur={() =>
+                      setTimeout(
+                        () => setActiveLookupField((prev) => (prev === "phone" ? null : prev)),
+                        200
+                      )
+                    }
                     onChange={(e) => {
                       const val = e.target.value
                         .replace(/\D/g, "")
                         .slice(0, 10);
                       setCustomerPhone(val);
+                      setActiveLookupField("phone");
                     }}
                   />
                 </div>
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "phone"}
+                  onSelect={handleSelectCustomer}
+                />
               </div>
-              <div>
+
+              <div className="relative">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-muted-foreground block">
                     {t("common.email", "Email")} ({t("common.optional", "Optional")})
@@ -928,8 +1025,24 @@ const NewInStoreOrderPage = () => {
                   type="email"
                   placeholder="email@example.com"
                   value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onFocus={() => setActiveLookupField("email")}
+                  onBlur={() =>
+                    setTimeout(
+                      () => setActiveLookupField((prev) => (prev === "email" ? null : prev)),
+                      200
+                    )
+                  }
+                  onChange={(e) => {
+                    setCustomerEmail(e.target.value);
+                    setActiveLookupField("email");
+                  }}
                   className={isEmailInvalid ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "email"}
+                  onSelect={handleSelectCustomer}
                 />
               </div>
               <div>
@@ -941,6 +1054,33 @@ const NewInStoreOrderPage = () => {
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    {t("orders.district", "District")}
+                  </label>
+                  <DistrictCombobox
+                    value={customerDistrict}
+                    onChange={(val) => {
+                      setCustomerDistrict(val);
+                      setCustomerThana("");
+                    }}
+                    placeholder={t("orders.select_district", "Select district...")}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    {t("orders.thana", "Thana / Area")}
+                  </label>
+                  <ThanaCombobox
+                    district={customerDistrict}
+                    value={customerThana}
+                    onChange={(val) => setCustomerThana(val)}
+                    placeholder={t("orders.select_thana", "Select thana / area...")}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1203,6 +1343,14 @@ const NewInStoreOrderPage = () => {
                     </p>
                     <p>{completedOrder.customerPhone}</p>
                   </div>
+                  <div className="col-span-2">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {t("orders.district", "Location")}
+                    </p>
+                    <p className="font-medium text-foreground">
+                      {completedOrder.customerDistrict}{completedOrder.customerThana ? ` (${completedOrder.customerThana})` : ""}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1253,6 +1401,8 @@ const NewInStoreOrderPage = () => {
             email: completedOrder.customerEmail,
             phone: completedOrder.customerPhone,
             address: completedOrder.customerAddress,
+            district: completedOrder.customerDistrict,
+            thana: completedOrder.customerThana,
           },
         } : null)}
       />

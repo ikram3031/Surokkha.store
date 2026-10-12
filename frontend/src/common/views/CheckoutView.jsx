@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { DISTRICTS, DISTRICT_THANAS } from '../data/districts';
 import { trackInitiateCheckout, trackAddPaymentInfo } from '../utils/analytics';
@@ -33,6 +33,7 @@ export default function CheckoutView() {
   const removeCoupon = useStore((state) => state.removeCoupon);
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isDistrictOpen, setIsDistrictOpen] = useState(false);
   const [isShipDistrictOpen, setIsShipDistrictOpen] = useState(false);
@@ -205,7 +206,7 @@ export default function CheckoutView() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isProcessing) return;
+    if (isSubmittingRef.current || isProcessing) return;
 
     let billingPh = shippingInfo.phone || '';
     let shipPh = shippingAddress.phone || '';
@@ -287,11 +288,13 @@ export default function CheckoutView() {
       }
     }
 
+    isSubmittingRef.current = true;
     setIsProcessing(true);
 
     try {
       await submitOrder();
     } catch (err) {
+      isSubmittingRef.current = false;
       setIsProcessing(false);
       const rawMsg = err?.message || '';
       let userMsg = t('checkout.error_order_failed');
