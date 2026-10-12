@@ -145,6 +145,8 @@ export const AppSidebar = ({ ...props }) => {
     if ((menuKey === "orders.instore" || menuKey === "orders.new") && features?.inStoreOrder === false) return false
     if ((menuKey === "orders.custom" || menuKey === "orders.custom-new") && !features?.customOrders) return false
     if (menuKey === "cpanel" && (clientConfig?.modules?.cpanelAccess === false || features?.cpanelAccess === false)) return false
+    if (menuKey === "templates" && features?.templates === false) return false
+    if ((menuKey === "items" || menuKey.startsWith("items.")) && features?.items === false) return false
 
     return hasMenuAccess(userRole, menuKey)
   }
@@ -339,17 +341,6 @@ export const AppSidebar = ({ ...props }) => {
               </SidebarMenuButton>
               {openMenu === "products" && (
                 <SidebarMenuSub>
-                  {isAllowed("products.new") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/new"}
-                        render={<Link to="/dashboard/products/new" />}
-                      >
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span>{t("nav.add_product", "Add Product")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
                   {isAllowed("products.list") && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton

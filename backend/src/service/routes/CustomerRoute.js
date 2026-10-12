@@ -1,5 +1,7 @@
 import { Router } from "express";
 import {
+  createCustomerController,
+  deleteCustomerController,
   searchCustomersController,
   lookupCustomerController,
   getCustomersListController,
@@ -17,7 +19,14 @@ const customerRouter = Router();
 customerRouter.get("/search", authenticateToken, searchCustomersController);
 customerRouter.get("/lookup", authenticateToken, lookupCustomerController);
 
-// Customer management
+// Customer CRUD
+customerRouter.post(
+  "/",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin", "Manager"),
+  createCustomerController
+);
+
 customerRouter.get(
   "/",
   authenticateToken,
@@ -37,6 +46,13 @@ customerRouter.put(
   authenticateToken,
   authorizeRoles("Owner", "Admin", "Manager"),
   updateCustomerController
+);
+
+customerRouter.delete(
+  "/:id",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  deleteCustomerController
 );
 
 export default customerRouter;

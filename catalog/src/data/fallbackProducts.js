@@ -7,7 +7,7 @@
  * - Covers all 14 official products from Surokkha inventory
  */
 
-export const CDN_BASE = 'https://api.surokkha.store';
+export const CDN_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.surokkha.store';
 
 export const resolveImageUrl = (path) => {
   if (!path) return '';
