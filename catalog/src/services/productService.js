@@ -1,6 +1,6 @@
 import { FALLBACK_PRODUCTS, resolveImageUrl } from '../data/fallbackProducts';
 
-const API_BASE_URL = 'https://api.surokkha.store';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.surokkha.store';
 
 /**
  * Maps any backend category or slug to one of our 4 standard catalog categories:
@@ -92,42 +92,43 @@ export const normalizeProduct = (apiItem) => {
   };
 };
 
+const fetchEndpoint = async (url, signal) => {
+  const res = await fetch(url, { headers: { Accept: 'application/json' }, signal });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+};
+
 /**
- * Fetches products from live endpoint with automatic fallback
+ * Fetches products + items from live API, merges, and falls back to local dataset on failure
  */
 export const fetchCatalogProducts = async () => {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const url = `${API_BASE_URL}/api/v1/products?limit=100`;
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-      signal: controller.signal,
-    });
+    const [productItems, customItems] = await Promise.all([
+      fetchEndpoint(`${API_BASE_URL}/api/v1/products?limit=200&isActive=true`, controller.signal),
+      fetchEndpoint(`${API_BASE_URL}/api/v1/items?limit=200&isActive=true`, controller.signal),
+    ]);
 
     clearTimeout(timeoutId);
 
-    if (!res.ok) {
-      console.warn(`[Catalog] API error HTTP ${res.status}, using fallbackProducts`);
-      return FALLBACK_PRODUCTS;
-    }
-
-    const json = await res.json();
-    const rawList = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+    const seen = new Set();
+    const rawList = [...productItems, ...customItems].filter((p) => {
+      const key = p.slug || p.id || p._id;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     if (rawList.length === 0) {
       console.warn('[Catalog] API returned empty data, using fallbackProducts');
       return FALLBACK_PRODUCTS;
     }
 
-    // Map each API product
     const normalized = rawList.map(normalizeProduct);
 
-    // Ensure all 14 fallback items are present (in case API only returns a subset)
     const existingSlugs = new Set(normalized.map((p) => p.slug));
     const missingFallbacks = FALLBACK_PRODUCTS.filter((p) => !existingSlugs.has(p.slug));
 
