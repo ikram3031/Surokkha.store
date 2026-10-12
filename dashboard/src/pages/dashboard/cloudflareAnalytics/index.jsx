@@ -69,7 +69,7 @@ const MiniSparkline = ({ data = [], color = '#0051C3' }) => {
 const GlobeVisualizer = () => {
   return (
     <div className="relative w-44 h-44 flex items-center justify-center shrink-0">
-      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/10 via-sky-500/5 to-transparent border border-blue-500/20 shadow-inner" />
+      <div className="absolute inset-0 rounded bg-gradient-to-tr from-blue-500/10 via-sky-500/5 to-transparent border border-blue-500/20 shadow-inner" />
       <svg viewBox="0 0 160 160" className="w-40 h-40 text-blue-500/80 animate-pulse">
         <circle cx="80" cy="80" r="72" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
         <circle cx="80" cy="80" r="54" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.3" />
@@ -251,8 +251,8 @@ const CloudflareTrafficOverviewPage = () => {
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-foreground">
               Cloudflare Traffic Overview
             </h1>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="h-1.5 w-1.5 rounded bg-emerald-500 animate-pulse" />
               Live Edge
             </span>
           </div>
@@ -319,7 +319,7 @@ const CloudflareTrafficOverviewPage = () => {
               >
                 <Globe className={`h-3.5 w-3.5 ${isSelected ? 'text-white' : 'text-muted-foreground'}`} />
                 <span>{site.name}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
                   isSelected ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
                 }`}>
                   {site.domain}
@@ -395,7 +395,7 @@ const CloudflareTrafficOverviewPage = () => {
 
               <div className="flex items-center gap-2">
                 {isSelected ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0051C3] dark:text-blue-400 bg-[#0051C3]/10 px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0051C3] dark:text-blue-400 bg-[#0051C3]/10 px-2.5 py-1 rounded">
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     Viewing
                   </span>
@@ -470,14 +470,14 @@ const CloudflareTrafficOverviewPage = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-muted-foreground">Requests over time</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
               {currentSite?.domain}
             </span>
           </div>
           <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground/60 cursor-pointer" />
         </div>
         <div className="flex items-center gap-2 mb-3">
-          <span className="h-2 w-2 rounded-full bg-[#0051C3]" />
+          <span className="h-2 w-2 rounded bg-[#0051C3]" />
           <span className="text-xs font-semibold text-foreground">Total requests: {summary.totalRequests}</span>
         </div>
 
@@ -491,7 +491,7 @@ const CloudflareTrafficOverviewPage = () => {
                 contentStyle={{
                   backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
                   borderColor: isDark ? '#334155' : '#E2E8F0',
-                  borderRadius: '8px',
+                  borderRadius: '4px',
                   fontSize: '11.5px',
                   padding: '6px 10px',
                 }}
@@ -521,7 +521,7 @@ const CloudflareTrafficOverviewPage = () => {
           <div className="flex items-center gap-4 text-xs font-medium mb-2 flex-wrap">
             {devices.map((d, i) => (
               <div key={i} className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
+                <span className="h-2 w-2 rounded" style={{ backgroundColor: d.color }} />
                 <span>{d.name} <strong className="font-semibold text-foreground">{d.formattedCount}</strong></span>
               </div>
             ))}
@@ -548,7 +548,7 @@ const CloudflareTrafficOverviewPage = () => {
                   contentStyle={{
                     backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
                     borderColor: isDark ? '#334155' : '#E2E8F0',
-                    borderRadius: '8px',
+                    borderRadius: '4px',
                     fontSize: '11px',
                   }}
                 />
@@ -571,8 +571,8 @@ const CloudflareTrafficOverviewPage = () => {
               {countries.slice(0, 10).map((c, idx) => (
                 <div key={idx} className="flex items-center justify-between text-xs gap-3">
                   <span className="text-muted-foreground truncate w-32 shrink-0">{c.name}</span>
-                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden flex-1">
-                    <div className="h-full bg-[#0051C3] rounded-full" style={{ width: `${c.relativeWidth}%` }} />
+                  <div className="w-full h-1.5 bg-muted rounded overflow-hidden flex-1">
+                    <div className="h-full bg-[#0051C3] rounded" style={{ width: `${c.relativeWidth}%` }} />
                   </div>
                   <span className="font-mono text-foreground font-semibold text-right w-12 shrink-0">{c.formattedCount}</span>
                 </div>
@@ -591,19 +591,19 @@ const CloudflareTrafficOverviewPage = () => {
 
         <div className="flex items-center gap-5 text-xs font-medium flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#0051C3]" />
+            <span className="h-2 w-2 rounded bg-[#0051C3]" />
             <span>2xx <strong className="font-semibold text-foreground">{statusCodes['2xx']?.formattedCount}</strong></span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#06B6D4]" />
+            <span className="h-2 w-2 rounded bg-[#06B6D4]" />
             <span>3xx <strong className="font-semibold text-foreground">{statusCodes['3xx']?.formattedCount}</strong></span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#F59E0B]" />
+            <span className="h-2 w-2 rounded bg-[#F59E0B]" />
             <span>4xx <strong className="font-semibold text-foreground">{statusCodes['4xx']?.formattedCount}</strong></span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#EC4899]" />
+            <span className="h-2 w-2 rounded bg-[#EC4899]" />
             <span>5xx <strong className="font-semibold text-foreground">{statusCodes['5xx']?.formattedCount}</strong></span>
           </div>
         </div>
@@ -628,8 +628,8 @@ const CloudflareTrafficOverviewPage = () => {
             {topPaths.slice(0, 12).map((item, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs gap-2 py-0.5">
                 <span className="font-mono text-[11px] text-foreground truncate w-44 shrink-0" title={item.name}>{item.name}</span>
-                <div className="w-full h-1 bg-muted rounded-full overflow-hidden flex-1">
-                  <div className="h-full bg-[#0051C3] rounded-full" style={{ width: `${item.relativeWidth}%` }} />
+                <div className="w-full h-1 bg-muted rounded overflow-hidden flex-1">
+                  <div className="h-full bg-[#0051C3] rounded" style={{ width: `${item.relativeWidth}%` }} />
                 </div>
                 <span className="font-mono text-[11px] text-muted-foreground text-right w-10 shrink-0">{item.formattedCount}</span>
               </div>
@@ -647,8 +647,8 @@ const CloudflareTrafficOverviewPage = () => {
             {topHosts.slice(0, 12).map((item, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs gap-2 py-0.5">
                 <span className="font-mono text-[11px] text-foreground truncate w-44 shrink-0" title={item.name}>{item.name}</span>
-                <div className="w-full h-1 bg-muted rounded-full overflow-hidden flex-1">
-                  <div className="h-full bg-[#0051C3] rounded-full" style={{ width: `${item.relativeWidth}%` }} />
+                <div className="w-full h-1 bg-muted rounded overflow-hidden flex-1">
+                  <div className="h-full bg-[#0051C3] rounded" style={{ width: `${item.relativeWidth}%` }} />
                 </div>
                 <span className="font-mono text-[11px] text-muted-foreground text-right w-10 shrink-0">{item.formattedCount}</span>
               </div>
@@ -666,8 +666,8 @@ const CloudflareTrafficOverviewPage = () => {
             {topClientIps.slice(0, 12).map((item, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs gap-2 py-0.5">
                 <span className="font-mono text-[11px] text-foreground truncate w-36 shrink-0" title={item.name}>{item.name}</span>
-                <div className="w-full h-1 bg-muted rounded-full overflow-hidden flex-1">
-                  <div className="h-full bg-[#0051C3] rounded-full" style={{ width: `${item.relativeWidth}%` }} />
+                <div className="w-full h-1 bg-muted rounded overflow-hidden flex-1">
+                  <div className="h-full bg-[#0051C3] rounded" style={{ width: `${item.relativeWidth}%` }} />
                 </div>
                 <span className="font-mono text-[11px] text-muted-foreground text-right w-10 shrink-0">{item.formattedCount}</span>
               </div>
@@ -688,8 +688,8 @@ const CloudflareTrafficOverviewPage = () => {
             {topBrowsers.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs gap-2 py-0.5">
                 <span className="text-[11.5px] text-foreground truncate w-36 shrink-0">{item.name}</span>
-                <div className="w-full h-1 bg-muted rounded-full overflow-hidden flex-1">
-                  <div className="h-full bg-[#0051C3] rounded-full" style={{ width: `${item.relativeWidth}%` }} />
+                <div className="w-full h-1 bg-muted rounded overflow-hidden flex-1">
+                  <div className="h-full bg-[#0051C3] rounded" style={{ width: `${item.relativeWidth}%` }} />
                 </div>
                 <span className="font-mono text-[11px] text-muted-foreground text-right w-10 shrink-0">{item.formattedCount}</span>
               </div>
@@ -707,8 +707,8 @@ const CloudflareTrafficOverviewPage = () => {
             {topOperatingSystems.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs gap-2 py-0.5">
                 <span className="text-[11.5px] text-foreground truncate w-36 shrink-0">{item.name}</span>
-                <div className="w-full h-1 bg-muted rounded-full overflow-hidden flex-1">
-                  <div className="h-full bg-[#0051C3] rounded-full" style={{ width: `${item.relativeWidth}%` }} />
+                <div className="w-full h-1 bg-muted rounded overflow-hidden flex-1">
+                  <div className="h-full bg-[#0051C3] rounded" style={{ width: `${item.relativeWidth}%` }} />
                 </div>
                 <span className="font-mono text-[11px] text-muted-foreground text-right w-10 shrink-0">{item.formattedCount}</span>
               </div>
@@ -726,8 +726,8 @@ const CloudflareTrafficOverviewPage = () => {
             {topUserAgents.slice(0, 6).map((item, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs gap-2 py-0.5">
                 <span className="font-mono text-[10px] text-foreground truncate w-40 shrink-0" title={item.name}>{item.name}</span>
-                <div className="w-full h-1 bg-muted rounded-full overflow-hidden flex-1">
-                  <div className="h-full bg-[#0051C3] rounded-full" style={{ width: `${item.relativeWidth}%` }} />
+                <div className="w-full h-1 bg-muted rounded overflow-hidden flex-1">
+                  <div className="h-full bg-[#0051C3] rounded" style={{ width: `${item.relativeWidth}%` }} />
                 </div>
                 <span className="font-mono text-[11px] text-muted-foreground text-right w-10 shrink-0">{item.formattedCount}</span>
               </div>

@@ -184,7 +184,7 @@ const BillingsPage = () => {
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-16 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell className="text-right"><span className="h-8 w-8 ml-auto block bg-muted animate-pulse rounded" /></TableCell>
                   </TableRow>
                 ))

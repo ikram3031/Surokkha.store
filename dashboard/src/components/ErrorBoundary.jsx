@@ -24,7 +24,7 @@ export const ErrorBoundary = ({ children }) => {
   if (hasError) {
     return (
       <div className="min-h-[400px] w-full flex flex-col items-center justify-center p-6 text-center space-y-4 bg-card rounded-2xl border border-border my-8">
-        <div className="p-3.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20">
+        <div className="p-3.5 rounded bg-destructive/10 text-destructive border border-destructive/20">
           <AlertTriangle className="h-8 w-8" />
         </div>
         <div className="space-y-1.5 max-w-md">
@@ -67,7 +67,7 @@ export const RouteErrorElement = ({ error: propError }) => {
 
   return (
     <div className="min-h-[80vh] w-full flex flex-col items-center justify-center p-6 text-center space-y-6">
-      <div className="p-4 rounded-full bg-destructive/10 text-destructive border border-destructive/20 animate-pulse">
+      <div className="p-4 rounded bg-destructive/10 text-destructive border border-destructive/20 animate-pulse">
         <AlertTriangle className="h-12 w-12" />
       </div>
       

@@ -335,7 +335,7 @@ const TikTokPixelPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-3 rounded-lg border border-border/60 bg-background/60 space-y-1.5">
                 <p className="font-semibold text-foreground flex items-center gap-1.5">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">1</span>
+                  <span className="h-5 w-5 rounded bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">1</span>
                   Where to find your Pixel ID
                 </p>
                 <p className="text-[11px] leading-relaxed">
@@ -345,7 +345,7 @@ const TikTokPixelPage = () => {
 
               <div className="p-3 rounded-lg border border-border/60 bg-background/60 space-y-1.5">
                 <p className="font-semibold text-foreground flex items-center gap-1.5">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">2</span>
+                  <span className="h-5 w-5 rounded bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">2</span>
                   Generating Events API Token
                 </p>
                 <p className="text-[11px] leading-relaxed">
@@ -355,7 +355,7 @@ const TikTokPixelPage = () => {
 
               <div className="p-3 rounded-lg border border-border/60 bg-background/60 space-y-1.5">
                 <p className="font-semibold text-foreground flex items-center gap-1.5">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">3</span>
+                  <span className="h-5 w-5 rounded bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">3</span>
                   Event Deduplication
                 </p>
                 <p className="text-[11px] leading-relaxed">
@@ -365,7 +365,7 @@ const TikTokPixelPage = () => {
 
               <div className="p-3 rounded-lg border border-border/60 bg-background/60 space-y-1.5">
                 <p className="font-semibold text-foreground flex items-center gap-1.5">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">4</span>
+                  <span className="h-5 w-5 rounded bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">4</span>
                   Testing &amp; Verification
                 </p>
                 <p className="text-[11px] leading-relaxed">

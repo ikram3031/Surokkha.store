@@ -263,13 +263,13 @@ export const ProductDataCard = ({
                   <SelectContent className="bg-popover border shadow-md">
                     <SelectItem value="instock">
                       <span className="flex items-center gap-1.5 font-medium">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                        <span className="h-2 w-2 rounded bg-emerald-500 inline-block" />
                         In Stock
                       </span>
                     </SelectItem>
                     <SelectItem value="outofstock">
                       <span className="flex items-center gap-1.5 font-medium">
-                        <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                        <span className="h-2 w-2 rounded bg-red-500 inline-block" />
                         Out of Stock
                       </span>
                     </SelectItem>
@@ -555,13 +555,13 @@ export const ProductDataCard = ({
                       <SelectContent className="bg-popover border shadow-md">
                         <SelectItem value="instock" className="cursor-pointer">
                           <span className="flex items-center gap-1.5 font-medium text-emerald-600">
-                            <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                            <span className="h-2 w-2 rounded bg-emerald-500 inline-block" />
                             In Stock
                           </span>
                         </SelectItem>
                         <SelectItem value="outofstock" className="cursor-pointer">
                           <span className="flex items-center gap-1.5 font-medium text-red-600">
-                            <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                            <span className="h-2 w-2 rounded bg-red-500 inline-block" />
                             Out of Stock
                           </span>
                         </SelectItem>
@@ -712,13 +712,13 @@ export const ProductDataCard = ({
                   <SelectContent className="bg-popover border shadow-md">
                     <SelectItem value="instock">
                       <span className="flex items-center gap-1.5 font-medium">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                        <span className="h-2 w-2 rounded bg-emerald-500 inline-block" />
                         In Stock
                       </span>
                     </SelectItem>
                     <SelectItem value="outofstock">
                       <span className="flex items-center gap-1.5 font-medium">
-                        <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                        <span className="h-2 w-2 rounded bg-red-500 inline-block" />
                         Out of Stock
                       </span>
                     </SelectItem>

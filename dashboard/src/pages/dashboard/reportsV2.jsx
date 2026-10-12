@@ -102,7 +102,7 @@ const SalesTooltip = ({ active, payload, label }) => {
       {payload.map((entry, index) => (
         <div key={index} className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color || entry.stroke }} />
+            <span className="h-2 w-2 rounded" style={{ backgroundColor: entry.color || entry.stroke }} />
             <span className="text-muted-foreground">{entry.name}:</span>
           </div>
           <span className="font-semibold text-foreground">
@@ -168,7 +168,7 @@ const PaymentTooltip = ({ active, payload, totalAmount }) => {
 const EmptyState = ({ title = 'No Data Available', description = 'There are no records matching your current filter selection.', icon: Icon = Layers }) => {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center border rounded-lg bg-card/50 my-2">
-      <div className="p-3 rounded-full bg-muted text-muted-foreground mb-3">
+      <div className="p-3 rounded bg-muted text-muted-foreground mb-3">
         <Icon className="w-6 h-6" />
       </div>
       <h4 className="text-sm font-semibold text-foreground">{title}</h4>
@@ -186,7 +186,7 @@ const ReportsSkeleton = () => {
           <Card key={i} className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded" />
             </div>
             <Skeleton className="h-8 w-32" />
             <Skeleton className="h-3 w-40" />
@@ -380,7 +380,7 @@ const ReportsV2Page = () => {
           </div>
           <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-2">
             <span>Real-time performance metrics</span>
-            <span className="h-1 w-1 rounded-full bg-muted-foreground" />
+            <span className="h-1 w-1 rounded bg-muted-foreground" />
             <span className="font-medium text-foreground/80">{dateRangeDescription}</span>
           </p>
         </div>
@@ -1006,7 +1006,7 @@ const ReportsV2Page = () => {
                             {paymentChartData.map((item) => (
                               <div key={item.name} className="flex items-center justify-between p-1.5 rounded-md bg-muted/30">
                                 <div className="flex items-center gap-1.5 truncate">
-                                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                                  <span className="w-2.5 h-2.5 rounded shrink-0" style={{ backgroundColor: item.color }} />
                                   <span className="text-muted-foreground truncate">{item.name}</span>
                                 </div>
                                 <span className="font-semibold text-foreground text-[11px]">
@@ -1049,7 +1049,7 @@ const ReportsV2Page = () => {
                             <TableRow key={i} className="hover:bg-muted/30 transition-colors">
                               <TableCell className="font-medium uppercase text-foreground">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                                  <span className="w-2 h-2 rounded" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
                                   <span>{method._id || 'Unknown'}</span>
                                 </div>
                               </TableCell>
@@ -1198,7 +1198,7 @@ const ReportsV2Page = () => {
                           <TableRow>
                             <TableCell colSpan={5} className="text-center h-32">
                               <div className="flex flex-col items-center justify-center p-6 text-center">
-                                <div className="p-3 rounded-full bg-emerald-500/10 text-emerald-600 mb-2">
+                                <div className="p-3 rounded bg-emerald-500/10 text-emerald-600 mb-2">
                                   <CheckCircle2 className="w-6 h-6" />
                                 </div>
                                 <h4 className="text-sm font-semibold text-foreground">All Inventory Healthy</h4>

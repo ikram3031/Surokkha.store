@@ -496,12 +496,12 @@ export const PaymentTypesPage = () => {
                   <TableRow key={i}>
                     <TableCell className="px-4"><span className="h-4 w-4 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-24 block bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><span className="h-5 w-24 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-40 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-12 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-16 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-8 w-20 block bg-muted animate-pulse rounded ml-auto" /></TableCell>
                   </TableRow>
                 ))
@@ -509,7 +509,7 @@ export const PaymentTypesPage = () => {
                 <TableRow>
                   <TableCell colSpan={9} className="h-48 text-center">
                     <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                      <div className="p-3 bg-muted/40 rounded-full">
+                      <div className="p-3 bg-muted/40 rounded">
                         <CreditCard className="w-8 h-8 opacity-40" />
                       </div>
                       <p className="text-sm font-semibold text-foreground">No payment methods found</p>

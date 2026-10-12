@@ -243,7 +243,7 @@ export const ProductsTable = ({
                 {hasBrand && <TableCell><Skeleton className="h-4 w-20" /></TableCell>}
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-20 rounded" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></TableCell>
               </TableRow>
             ))
@@ -437,13 +437,13 @@ export const ProductsTable = ({
                         <SelectContent className="bg-popover border shadow-md">
                           <SelectItem value="instock" className="text-xs cursor-pointer">
                             <span className="flex items-center gap-1.5 font-medium text-emerald-600">
-                              <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                              <span className="h-2 w-2 rounded bg-emerald-500 inline-block" />
                               {t('products.in_stock')}
                             </span>
                           </SelectItem>
                           <SelectItem value="outofstock" className="text-xs cursor-pointer">
                             <span className="flex items-center gap-1.5 font-medium text-red-600">
-                              <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                              <span className="h-2 w-2 rounded bg-red-500 inline-block" />
                               {t('products.out_of_stock')}
                             </span>
                           </SelectItem>

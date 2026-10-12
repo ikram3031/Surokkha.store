@@ -402,12 +402,12 @@ export const InvestorsPage = () => {
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-20 block bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><span className="h-5 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-36 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell className="text-right"><span className="h-8 w-16 ml-auto block bg-muted animate-pulse rounded" /></TableCell>
                   </TableRow>
@@ -424,7 +424,7 @@ export const InvestorsPage = () => {
                     <TableRow key={inv.id} className="hover:bg-muted/30">
                       <TableCell className="font-semibold text-xs text-foreground">
                         <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-purple-500/15 text-purple-600 font-bold flex items-center justify-center text-xs">
+                          <div className="h-7 w-7 rounded bg-purple-500/15 text-purple-600 font-bold flex items-center justify-center text-xs">
                             {inv.name.charAt(0).toUpperCase()}
                           </div>
                           <div>

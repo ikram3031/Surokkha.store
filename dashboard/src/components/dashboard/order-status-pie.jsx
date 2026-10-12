@@ -87,7 +87,7 @@ export const OrderStatusPie = ({ range = '30days' }) => {
                       backgroundColor: isDark ? '#1f2937' : '#ffffff',
                       borderColor: isDark ? '#374151' : '#e5e7eb',
                       color: isDark ? '#f9fafb' : '#111827',
-                      borderRadius: '6px',
+                      borderRadius: '4px',
                       fontSize: '12px',
                     }}
                     formatter={(value, name) => [
@@ -110,7 +110,7 @@ export const OrderStatusPie = ({ range = '30days' }) => {
                 <div key={item.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5 truncate">
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      className="w-2.5 h-2.5 rounded shrink-0"
                       style={{ backgroundColor: item.color }}
                     />
                     <span className="text-muted-foreground truncate">{item.name}</span>

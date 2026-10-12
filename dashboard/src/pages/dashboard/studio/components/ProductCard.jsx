@@ -75,7 +75,7 @@ export const ProductCard = ({
         {/* Processing State Overlay */}
         {item.status === 'processing' && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/80 backdrop-blur-xs p-4 text-center">
-            <div className="relative mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 border border-primary/40 text-primary">
+            <div className="relative mb-3 flex h-10 w-10 items-center justify-center rounded bg-primary/20 border border-primary/40 text-primary">
               <Sparkles className="h-5 w-5 animate-spin" />
             </div>
             <span className="text-sm font-semibold text-foreground">
@@ -90,19 +90,19 @@ export const ProductCard = ({
         {/* Status Badge */}
         <div className="absolute top-2 left-2 z-10">
           {item.status === 'completed' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 backdrop-blur-md">
+            <span className="inline-flex items-center gap-1 rounded bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 backdrop-blur-md">
               <CheckCircle2 className="h-3 w-3" />
               <span>Ready ({item.resultElapsedMs ? Math.round(item.resultElapsedMs / 1000) : 0}s)</span>
             </span>
           )}
           {item.status === 'error' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-destructive/20 border border-destructive/30 px-2 py-0.5 text-[10px] font-semibold text-destructive backdrop-blur-md">
+            <span className="inline-flex items-center gap-1 rounded bg-destructive/20 border border-destructive/30 px-2 py-0.5 text-[10px] font-semibold text-destructive backdrop-blur-md">
               <AlertCircle className="h-3 w-3" />
               <span>Error</span>
             </span>
           )}
           {item.status === 'idle' && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground backdrop-blur-md">
+            <span className="inline-flex items-center gap-1 rounded bg-muted/80 border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground backdrop-blur-md">
               <Clock className="h-3 w-3" />
               <span>Staged</span>
             </span>

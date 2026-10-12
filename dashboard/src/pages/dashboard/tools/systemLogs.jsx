@@ -199,7 +199,7 @@ export default function SystemLogs() {
           <div className="flex items-center gap-2">
             <h2 className="text-3xl font-bold tracking-tight">System & API Logs</h2>
             <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded bg-emerald-500 animate-pulse" />
               Live Stream
             </Badge>
           </div>
@@ -290,9 +290,9 @@ export default function SystemLogs() {
         {/* Terminal Title Bar */}
         <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/90 border-b border-zinc-800 text-[11px] text-zinc-400">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-yellow-500/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-green-500/80 inline-block" />
+            <span className="h-3 w-3 rounded bg-red-500/80 inline-block" />
+            <span className="h-3 w-3 rounded bg-yellow-500/80 inline-block" />
+            <span className="h-3 w-3 rounded bg-green-500/80 inline-block" />
             <span className="ml-2 font-semibold text-zinc-300 flex items-center gap-1.5">
               <Terminal className="h-3.5 w-3.5 text-primary" /> API Request & System Logs
             </span>
@@ -301,7 +301,7 @@ export default function SystemLogs() {
           <div className="flex items-center gap-3">
             <span>Buffer: {filteredLogs.length} items</span>
             <span className="text-emerald-400 flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="h-1.5 w-1.5 rounded bg-emerald-400 animate-ping" />
               Connected
             </span>
           </div>

@@ -405,7 +405,7 @@ const AttributesPage = () => {
                       <Button
                         size="icon"
                         variant="outline"
-                        className="h-8 w-8 rounded-full border-border/80 hover:bg-primary/15 hover:text-primary hover:border-primary/40 cursor-pointer transition-all"
+                        className="h-8 w-8 rounded border-border/80 hover:bg-primary/15 hover:text-primary hover:border-primary/40 cursor-pointer transition-all"
                         title="Edit Attribute"
                         onClick={() => openEditDialog(attr)}
                       >
@@ -414,7 +414,7 @@ const AttributesPage = () => {
                       <Button
                         size="icon"
                         variant="outline"
-                        className="h-8 w-8 rounded-full text-destructive border-destructive/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/50 cursor-pointer transition-all"
+                        className="h-8 w-8 rounded text-destructive border-destructive/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/50 cursor-pointer transition-all"
                         title="Delete Attribute"
                         onClick={() => setDeleteTarget(attr)}
                       >
@@ -577,7 +577,7 @@ const AttributesPage = () => {
                             setNewValueImage(null);
                             setNewValueImagePreview(null);
                           }}
-                          className="h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shrink-0"
+                          className="h-5 w-5 bg-destructive text-destructive-foreground rounded flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shrink-0"
                           title="Remove Image"
                         >
                           <X className="h-3 w-3" />
@@ -637,7 +637,7 @@ const AttributesPage = () => {
                           <button
                             type="button"
                             onClick={() => handleRemoveExistingValueImage(idx)}
-                            className="absolute -top-2 -right-2 size-6.5 rounded-full bg-destructive text-destructive-foreground border-2 border-background shadow-md hover:scale-115 flex items-center justify-center cursor-pointer transition-all z-20"
+                            className="absolute -top-2 -right-2 size-6.5 rounded bg-destructive text-destructive-foreground border-2 border-background shadow-md hover:scale-115 flex items-center justify-center cursor-pointer transition-all z-20"
                             title="Remove Image"
                           >
                             <X className="h-3.5 w-3.5 stroke-[2.5]" />

@@ -164,7 +164,7 @@ export const AdminSidebar = ({ ...props }) => {
               <button
                 type="button"
                 onClick={handleCloseSidebar}
-                className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                className="h-7 w-7 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
                 title="Close Sidebar"
               >
                 <X className="h-3.5 w-3.5" />
@@ -174,7 +174,7 @@ export const AdminSidebar = ({ ...props }) => {
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+              className="h-7 w-7 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
               title="Open Sidebar"
             >
               <Menu className="h-3.5 w-3.5" />
@@ -922,10 +922,10 @@ export const AdminSidebar = ({ ...props }) => {
                   title={user?.name || "User Account"}
                 >
                   <div className="relative shrink-0">
-                    <div className="h-9 w-9 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-sm">
+                    <div className="h-9 w-9 rounded bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-sm">
                       {user?.name?.charAt(0)?.toUpperCase() || "B"}
                     </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-sidebar" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded bg-emerald-500 border-2 border-sidebar" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-sidebar-foreground truncate leading-tight group-hover/user:text-primary transition-colors">
@@ -966,11 +966,11 @@ export const AdminSidebar = ({ ...props }) => {
               render={
                 <button
                   type="button"
-                  className="relative h-8 w-8 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-xs cursor-pointer hover:bg-primary/30 transition-all"
+                  className="relative h-8 w-8 rounded bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-xs cursor-pointer hover:bg-primary/30 transition-all"
                   title={user?.name || "User Account"}
                 >
                   {user?.name?.charAt(0)?.toUpperCase() || "B"}
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border-2 border-sidebar" />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded bg-emerald-500 border-2 border-sidebar" />
                 </button>
               }
             />
@@ -1002,7 +1002,7 @@ export const AdminSidebar = ({ ...props }) => {
       <Dialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
         <DialogContent className="sm:max-w-[420px] p-6 text-center">
           <DialogHeader className="space-y-2">
-            <div className="mx-auto h-12 w-12 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-primary mb-1">
+            <div className="mx-auto h-12 w-12 rounded bg-primary/15 border border-primary/30 flex items-center justify-center text-primary mb-1">
               <LogOut className="h-6 w-6" />
             </div>
             <DialogTitle className="text-lg font-bold text-foreground text-center">

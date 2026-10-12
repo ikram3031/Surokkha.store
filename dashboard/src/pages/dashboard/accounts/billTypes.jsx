@@ -325,7 +325,7 @@ export const BillTypesPage = () => {
                     <TableCell><span className="h-4 w-48 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-12 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell className="text-right"><span className="h-8 w-16 ml-auto block bg-muted animate-pulse rounded" /></TableCell>
                   </TableRow>
@@ -354,7 +354,7 @@ export const BillTypesPage = () => {
                       </TableCell>
                       <TableCell className="font-semibold text-xs text-foreground">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-primary" />
+                          <span className="w-2 h-2 rounded bg-primary" />
                           <span>{type.name}</span>
                         </div>
                       </TableCell>

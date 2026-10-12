@@ -59,7 +59,7 @@ const CustomChartTooltip = ({ active, payload, label }) => {
         <div key={index} className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5">
             <span
-              className="h-2.5 w-2.5 rounded-full"
+              className="h-2.5 w-2.5 rounded"
               style={{ backgroundColor: entry.color || entry.stroke }}
             />
             <span className="text-muted-foreground font-medium">{entry.name}:</span>
@@ -209,7 +209,7 @@ export const BalanceOverview = () => {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* 1. Total Receipt */}
         <Card className="border-border/60 shadow-sm relative overflow-hidden bg-gradient-to-br from-card to-emerald-500/5">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t('accounts.total_receipt', 'Total Receipt')}
@@ -231,7 +231,7 @@ export const BalanceOverview = () => {
 
         {/* 2. Total Bills */}
         <Card className="border-border/60 shadow-sm relative overflow-hidden bg-gradient-to-br from-card to-red-500/5">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t('accounts.total_bills', 'Total Bills & Returns')}
@@ -253,7 +253,7 @@ export const BalanceOverview = () => {
 
         {/* 3. Total Investments */}
         <Card className="border-border/60 shadow-sm relative overflow-hidden bg-gradient-to-br from-card to-purple-500/5">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t('accounts.total_investments', 'Total Investments')}
@@ -274,7 +274,7 @@ export const BalanceOverview = () => {
 
         {/* 4. Total Cash Balance (Receipts + Investments - Bills) */}
         <Card className="border-border/60 shadow-sm relative overflow-hidden bg-gradient-to-br from-card to-blue-500/5">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t('accounts.total_cash_balance', 'Total Cash Balance')}
@@ -422,10 +422,10 @@ export const BalanceOverview = () => {
 
               <div className="flex items-center gap-3 text-xs font-semibold">
                 <span className="flex items-center gap-1 text-emerald-600">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Payments (Green)
+                  <span className="w-2.5 h-2.5 rounded bg-emerald-500" /> Payments (Green)
                 </span>
                 <span className="flex items-center gap-1 text-red-600">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Bills (Red)
+                  <span className="w-2.5 h-2.5 rounded bg-red-500" /> Bills (Red)
                 </span>
               </div>
             </div>

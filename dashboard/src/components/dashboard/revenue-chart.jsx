@@ -87,7 +87,7 @@ export const RevenueChart = () => {
                   backgroundColor: isDark ? '#1f2937' : '#ffffff',
                   borderColor: isDark ? '#374151' : '#e5e7eb',
                   color: isDark ? '#f9fafb' : '#111827',
-                  borderRadius: '6px',
+                  borderRadius: '4px',
                 }}
                 formatter={(value) => [value, t('overview.orders', 'Orders')]}
               />

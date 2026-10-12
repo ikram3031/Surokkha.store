@@ -141,7 +141,7 @@ export function EmailPreviewCard({
                   {tenant.brandName || 'FLEXIVIA'}
                 </h2>
               )}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-xs text-white mt-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold bg-white/20 backdrop-blur-xs text-white mt-1">
                 <PackageCheck className="h-3.5 w-3.5" />
                 <span>Order Confirmation {tokenData.orderId}</span>
               </div>
