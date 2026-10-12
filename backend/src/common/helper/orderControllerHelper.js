@@ -609,8 +609,13 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   if (payload.paymentPhone !== undefined) {
     allowedUpdates.paymentPhone = normalizeText(payload.paymentPhone);
   }
-  if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
-    allowedUpdates.paymentStatus = String(payload.paymentStatus).toLowerCase().trim();
+  if (allowedUpdates.status === 'return' || String(payload.status || '').toLowerCase().trim() === 'return') {
+    allowedUpdates.paymentStatus = 'returned';
+    allowedUpdates.paidAmount = 0;
+  } else if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
+    let rawStatus = String(payload.paymentStatus).toLowerCase().trim();
+    if (rawStatus === 'n/a') rawStatus = 'n-a';
+    allowedUpdates.paymentStatus = rawStatus;
   } else if (payload.paidAmount !== undefined) {
     const currentTotal = Number(payload.totals?.total ?? existingOrder.totals?.total ?? 0);
     const paid = Number(payload.paidAmount || 0);

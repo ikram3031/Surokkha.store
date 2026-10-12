@@ -22,6 +22,7 @@ const paymentSchema = new Schema(
       default: "pending",
     },
     isActive: { type: Boolean, default: true, index: true },
+    active: { type: Boolean, default: true, index: true },
     notes: { type: String, trim: true, default: "" },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },

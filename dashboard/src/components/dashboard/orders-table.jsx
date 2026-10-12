@@ -120,11 +120,20 @@ export const OrdersTable = ({
 
     setIsUpdatingStatus(true);
     try {
-      await apiClient.put(`/api/v1/orders/${statusTarget.id}`, {
+      const payload = {
         status: targetOrderStatus.toLowerCase(),
-        paymentStatus: targetPaymentStatus.toLowerCase(),
-        returnFee: targetOrderStatus === 'Return' ? Number(targetReturnFee) : undefined,
-      });
+      };
+
+      if (targetOrderStatus === 'Return') {
+        payload.returnFee = Number(targetReturnFee);
+        payload.paymentStatus = 'returned';
+      } else {
+        if (targetPaymentStatus && targetPaymentStatus !== 'Not found' && targetPaymentStatus !== 'N/A') {
+          payload.paymentStatus = targetPaymentStatus.toLowerCase();
+        }
+      }
+
+      await apiClient.put(`/api/v1/orders/${statusTarget.id}`, payload);
       toast.success(t('orders.order_updated_success', `Status for order #${statusTarget.orderNumber} updated successfully.`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['order', statusTarget.id] });
@@ -474,20 +483,21 @@ export const OrdersTable = ({
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">{t('orders.payment_status', 'Payment Status')}</label>
-              <Select value={targetPaymentStatus} onValueChange={(val) => setTargetPaymentStatus(val || "Pending")}>
-                <SelectTrigger className="w-full h-9 cursor-pointer">
-                  <SelectValue placeholder={t('orders.payment_status', 'Payment status')} />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
-                  <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
-                  <SelectItem value="Partial">{t('orders.status_partial', 'Partial')}</SelectItem>
-                  <SelectItem value="N/A">N/A</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {targetOrderStatus !== 'Return' && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">{t('orders.payment_status', 'Payment Status')}</label>
+                <Select value={targetPaymentStatus} onValueChange={(val) => setTargetPaymentStatus(val || "Pending")}>
+                  <SelectTrigger className="w-full h-9 cursor-pointer">
+                    <SelectValue placeholder={t('orders.payment_status', 'Payment status')} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border shadow-md" side="bottom">
+                    <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
+                    <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
+                    <SelectItem value="Partial">{t('orders.status_partial', 'Partial')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
