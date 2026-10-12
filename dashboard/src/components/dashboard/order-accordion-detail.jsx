@@ -97,10 +97,16 @@ export const OrderAccordionDetail = ({ order }) => {
   const handleUpdateStatus = async () => {
     setIsUpdating(true);
     try {
-      await apiClient.put(`/api/v1/orders/${order.id}`, {
+      const payload = {
         status: orderStatus.toLowerCase(),
-        paymentStatus: paymentStatus.toLowerCase(),
-      });
+      };
+      if (orderStatus.toLowerCase() === 'return') {
+        payload.paymentStatus = 'returned';
+      } else {
+        payload.paymentStatus = paymentStatus.toLowerCase();
+      }
+
+      await apiClient.put(`/api/v1/orders/${order.id}`, payload);
 
       logActivity({
         type: 'updated',
@@ -573,27 +579,30 @@ export const OrderAccordionDetail = ({ order }) => {
                       <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                       <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
                       <SelectItem value="Cancelled" className="cursor-pointer text-xs text-destructive">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                      <SelectItem value="Return" className="cursor-pointer text-xs">Return</SelectItem>
                       <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div>
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">
-                    {t('orders.payment_status', 'Payment Status')}
-                  </label>
-                  <Select value={paymentStatus} onValueChange={(val) => val && setPaymentStatus(val)}>
-                    <SelectTrigger className="h-8 text-xs cursor-pointer w-full bg-background">
-                      <SelectValue placeholder={t('orders.payment_status', 'Payment Status')} />
-                    </SelectTrigger>
-                    <SelectContent side="bottom" className="bg-popover border shadow-md">
-                      <SelectItem value="Paid" className="cursor-pointer text-xs">{t('orders.status_paid', 'Paid')}</SelectItem>
-                      <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
-                      <SelectItem value="Failed" className="cursor-pointer text-xs text-destructive">{t('common.error', 'Failed')}</SelectItem>
-                      <SelectItem value="Partial" className="cursor-pointer text-xs">{t('orders.status_partial', 'Partial')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {orderStatus !== 'Return' && (
+                  <div>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">
+                      {t('orders.payment_status', 'Payment Status')}
+                    </label>
+                    <Select value={paymentStatus} onValueChange={(val) => val && setPaymentStatus(val)}>
+                      <SelectTrigger className="h-8 text-xs cursor-pointer w-full bg-background">
+                        <SelectValue placeholder={t('orders.payment_status', 'Payment Status')} />
+                      </SelectTrigger>
+                      <SelectContent side="bottom" className="bg-popover border shadow-md">
+                        <SelectItem value="Paid" className="cursor-pointer text-xs">{t('orders.status_paid', 'Paid')}</SelectItem>
+                        <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
+                        <SelectItem value="Failed" className="cursor-pointer text-xs text-destructive">{t('common.error', 'Failed')}</SelectItem>
+                        <SelectItem value="Partial" className="cursor-pointer text-xs">{t('orders.status_partial', 'Partial')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             </div>
           </div>

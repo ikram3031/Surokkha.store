@@ -457,6 +457,11 @@ export const updateOrder = async (req, res, next) => {
       allowedUpdates.active = false;
     }
 
+    if (allowedUpdates.status === 'return') {
+      allowedUpdates.paymentStatus = 'returned';
+      allowedUpdates.paidAmount = 0;
+    }
+
     const order = await OrderModel.findOneAndUpdate(query, allowedUpdates, {
       new: true,
       runValidators: true,
@@ -484,7 +489,27 @@ export const updateOrder = async (req, res, next) => {
 
     if (allowedUpdates.status === 'return') {
       try {
-        await PaymentModel.updateMany({ orderId: order._id }, { $set: { isActive: false, status: 'cancelled' } });
+        await PaymentModel.updateMany(
+          { orderId: order._id },
+          { $set: { isActive: false, active: false, status: 'cancelled', paidAmount: 0 } }
+        );
+        await PaymentModel.findOneAndUpdate(
+          { orderId: order._id },
+          {
+            $set: {
+              paymentMethod: order.paymentMethod || 'manual',
+              paymentPhone: order.billingInfo?.phone || '',
+              totalAmount: 0,
+              paidAmount: 0,
+              pendingAmount: 0,
+              amount: 0,
+              status: 'cancelled',
+              isActive: false,
+              active: false,
+            }
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
         if (payload.returnFee > 0) {
           let billType = await BillTypeModel.findOne({ name: 'Return' });
           if (!billType) {
@@ -768,11 +793,12 @@ export const bulkUpdateOrders = async (req, res, next) => {
             amount: 0,
             status: 'cancelled',
             isActive: false,
+            active: false,
           },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
         await OrderModel.findByIdAndUpdate(updatedOrder._id, {
-          paymentStatus: 'cancelled',
+          paymentStatus: updateFields.status === 'return' ? 'returned' : 'cancelled',
           paidAmount: 0,
         });
       } else if (paymentStatus) {

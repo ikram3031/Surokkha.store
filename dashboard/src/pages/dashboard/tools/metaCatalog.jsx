@@ -1507,11 +1507,11 @@ const MetaCatalogGenerator = () => {
               </Button>
             </div>
           ) : (
-            <div className="rounded-xl border bg-card overflow-hidden shadow-2xs">
+            <div className="rounded-xl border border-[#e5e7eb] bg-[#f3f4f6] text-[#111827] overflow-hidden shadow-2xs">
               <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse">
+                <table className="w-full text-xs text-left border-collapse bg-[#f3f4f6] text-[#111827]">
                   <thead>
-                    <tr className="bg-muted/40 border-b text-muted-foreground font-medium">
+                    <tr className="bg-[#e5e7eb] border-b border-[#e5e7eb] text-[#4b5563] font-medium">
                       <th className="p-3 w-10 text-center">Remove</th>
                       <th className="p-3 min-w-[220px]">Product Title</th>
                       <th className="p-3 min-w-[120px]">Category</th>
@@ -1661,10 +1661,10 @@ const MetaCatalogGenerator = () => {
               No products selected. Please add products from the Browse tab.
             </div>
           ) : (
-            <div className="rounded-xl border bg-card overflow-hidden font-mono text-[11px]">
+            <div className="rounded-xl border border-[#e5e7eb] bg-[#f3f4f6] text-[#111827] overflow-hidden font-mono text-[11px]">
               <div className="overflow-x-auto max-h-[550px]">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-muted/80 sticky top-0 z-10 border-b shadow-2xs">
+                <table className="w-full text-left border-collapse bg-[#f3f4f6] text-[#111827]">
+                  <thead className="bg-[#e5e7eb] sticky top-0 z-10 border-b border-[#e5e7eb] shadow-2xs">
                     <tr>
                       {['id', 'title', 'availability', 'price', 'sale_price', 'brand', 'product_type', 'link', 'image_link'].map(
                         (col) => (

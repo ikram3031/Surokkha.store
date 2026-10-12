@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { RevenueChart } from '@/components/dashboard/revenue-chart';
 import { OrderStatusPie } from '@/components/dashboard/order-status-pie';
+import { OrderFulfillmentChart } from '@/components/dashboard/order-fulfillment-chart';
 import { RecentTransactionsTable } from '@/components/dashboard/recent-transactions-table';
 import { DollarSign, Users, CreditCard, Activity } from 'lucide-react';
 import { useDashboardKpi } from '@/hooks/use-dashboard-kpi';
@@ -80,6 +81,10 @@ const DashboardPage = () => {
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
         <RevenueChart />
         <OrderStatusPie range="30days" />
+      </div>
+
+      <div className="grid gap-4 grid-cols-1">
+        <OrderFulfillmentChart />
       </div>
 
       <div className="grid gap-4 grid-cols-1">

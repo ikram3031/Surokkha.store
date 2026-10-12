@@ -1058,11 +1058,11 @@ const SizeChartsPage = () => {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border/90 overflow-x-auto bg-card shadow-xs">
-                <table className="w-full text-xs text-left border-collapse table-fixed min-w-[500px]">
+              <div className="rounded-xl border border-[#e5e7eb] overflow-x-auto bg-[#f3f4f6] text-[#111827] shadow-xs">
+                <table className="w-full text-xs text-left border-collapse table-fixed min-w-[500px] bg-[#f3f4f6] text-[#111827]">
                   <thead>
-                    <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
-                      <th className="p-3 font-bold text-foreground uppercase tracking-wider w-28 border-r text-center">
+                    <tr className="border-b border-[#e5e7eb] bg-[#e5e7eb] text-[#4b5563] font-semibold">
+                      <th className="p-3 font-bold text-[#111827] uppercase tracking-wider w-28 border-r border-[#e5e7eb] text-center">
                         {activeAttribute?.name || 'Size'}
                       </th>
                       {columns.map((col) => (
