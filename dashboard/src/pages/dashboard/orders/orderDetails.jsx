@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { clientConfig } from "@/clientConfig";
 import PathaoCourierCard from "@/components/dashboard/orders/PathaoCourierCard";
 import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
+import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -344,20 +345,20 @@ const OrderDetailsPage = () => {
       const bInfo = getBillingInfo(order);
       const sInfo = getShippingInfo(order);
 
-      setBillingName(bInfo.fullName);
-      setBillingPhone(bInfo.phone.replace(/^\+880?/, ""));
-      setBillingEmail(bInfo.email);
-      setBillingAddress(bInfo.address);
-      setBillingThana(bInfo.thana);
+      setBillingName(bInfo.fullName || "");
+      setBillingPhone((bInfo.phone || "").replace(/^\+880?/, ""));
+      setBillingEmail(bInfo.email || "");
+      setBillingAddress(bInfo.address || "");
+      setBillingThana(bInfo.thana || "");
       setBillingDistrict(bInfo.district || "Dhaka");
-      setBillingZip(bInfo.zip);
+      setBillingZip(bInfo.zip || "");
 
-      setShippingName(sInfo.fullName || bInfo.fullName);
-      setShippingPhone((sInfo.phone || bInfo.phone).replace(/^\+880?/, ""));
-      setShippingAddress(sInfo.address || bInfo.address);
-      setShippingThana(sInfo.thana || bInfo.thana);
+      setShippingName(sInfo.fullName || bInfo.fullName || "");
+      setShippingPhone((sInfo.phone || bInfo.phone || "").replace(/^\+880?/, ""));
+      setShippingAddress(sInfo.address || bInfo.address || "");
+      setShippingThana(sInfo.thana || bInfo.thana || "");
       setShippingDistrict(sInfo.district || bInfo.district || "Dhaka");
-      setShippingZip(sInfo.zip || bInfo.zip);
+      setShippingZip(sInfo.zip || bInfo.zip || "");
 
       const isSame =
         !sInfo.address ||
@@ -1465,12 +1466,24 @@ const OrderDetailsPage = () => {
                       <Input placeholder="Street address details" value={billingAddress} onChange={(e) => setBillingAddress(e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-0.5 block">Thana</label>
-                      <Input placeholder="Thana" value={billingThana} onChange={(e) => setBillingThana(e.target.value)} />
+                      <label className="text-xs text-muted-foreground mb-0.5 block">District / City *</label>
+                      <DistrictCombobox
+                        value={billingDistrict}
+                        onChange={(val) => {
+                          setBillingDistrict(val);
+                          setBillingThana("");
+                        }}
+                        placeholder="Select district..."
+                      />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-0.5 block">District / City *</label>
-                      <Input placeholder="District" value={billingDistrict} onChange={(e) => setBillingDistrict(e.target.value)} />
+                      <label className="text-xs text-muted-foreground mb-0.5 block">Thana</label>
+                      <ThanaCombobox
+                        district={billingDistrict}
+                        value={billingThana}
+                        onChange={(val) => setBillingThana(val)}
+                        placeholder="Select thana..."
+                      />
                     </div>
                     <div className="col-span-2 sm:col-span-1">
                       <label className="text-xs text-muted-foreground mb-0.5 block">Postal Code / Zip</label>
@@ -1525,12 +1538,24 @@ const OrderDetailsPage = () => {
                         <Input placeholder="Street address details" value={shippingAddress} onChange={(e) => setShippingAddress(e.target.value)} />
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground mb-0.5 block">Thana</label>
-                        <Input placeholder="Thana" value={shippingThana} onChange={(e) => setShippingThana(e.target.value)} />
+                        <label className="text-xs text-muted-foreground mb-0.5 block">District / City *</label>
+                        <DistrictCombobox
+                          value={shippingDistrict}
+                          onChange={(val) => {
+                            setShippingDistrict(val);
+                            setShippingThana("");
+                          }}
+                          placeholder="Select district..."
+                        />
                       </div>
                       <div>
-                        <label className="text-xs text-muted-foreground mb-0.5 block">District / City *</label>
-                        <Input placeholder="District" value={shippingDistrict} onChange={(e) => setShippingDistrict(e.target.value)} />
+                        <label className="text-xs text-muted-foreground mb-0.5 block">Thana</label>
+                        <ThanaCombobox
+                          district={shippingDistrict}
+                          value={shippingThana}
+                          onChange={(val) => setShippingThana(val)}
+                          placeholder="Select thana..."
+                        />
                       </div>
                       <div className="col-span-2 sm:col-span-1">
                         <label className="text-xs text-muted-foreground mb-0.5 block">Postal Code / Zip</label>
