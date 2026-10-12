@@ -29,7 +29,8 @@ import {
   Settings,
   LogOut,
   User,
-  ChevronRight,
+  ChevronDown,
+  ChevronsUpDown,
   Mail,
   Image as ImageIcon,
   Images,
@@ -77,6 +78,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { hasMenuAccess } from "@/lib/rbac"
 
@@ -93,6 +95,78 @@ const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
   </svg>
 );
 
+const navItemClass = "relative h-9 gap-2.5 font-medium text-sidebar-foreground data-active:bg-primary/10 data-active:font-semibold data-active:text-foreground data-active:before:absolute data-active:before:-left-3 data-active:before:bottom-2 data-active:before:top-2 data-active:before:w-[3px] data-active:before:rounded-r data-active:before:bg-primary data-active:[&>svg]:text-primary group-data-[collapsible=icon]:data-active:before:-left-1.5"
+
+// Section caption rendered above a navigation group, collapsing to a divider in rail mode
+const NavLabel = ({ children }) => (
+  <li
+    role="presentation"
+    className="px-2.5 pb-1.5 pt-3.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/80 group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:bg-sidebar-border group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-[0px]"
+  >
+    {children}
+  </li>
+)
+
+// Expandable parent entry with animated accordion submenu
+const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, children }) => (
+  <SidebarMenuItem>
+    <SidebarMenuButton
+      tooltip={label}
+      onClick={() => onToggle(id)}
+      aria-expanded={open}
+      data-has-active={active ? "true" : "false"}
+      className="relative h-9 cursor-pointer justify-between font-medium text-sidebar-foreground data-[has-active=true]:text-foreground data-[has-active=true]:[&>div>svg]:text-primary group-data-[collapsible=icon]:data-[has-active=true]:bg-primary/10"
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
+        <Icon className="h-4 w-4" />
+        <span className="truncate">{label}</span>
+      </div>
+      <ChevronDown
+        className={cn(
+          "h-3.5 w-3.5 opacity-60 transition-transform duration-200 group-data-[collapsible=icon]:hidden",
+          open && "rotate-180"
+        )}
+      />
+    </SidebarMenuButton>
+    <div
+      className={cn(
+        "grid transition-[grid-template-rows] duration-200 ease-out group-data-[collapsible=icon]:hidden",
+        open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+      )}
+    >
+      <div className={cn("min-h-0 overflow-hidden transition-[visibility] duration-200", open ? "visible" : "invisible")}>
+        <SidebarMenuSub className="mx-0 ml-[1.1rem] my-1 translate-x-0 gap-px border-sidebar-border px-2 py-0">
+          {children}
+        </SidebarMenuSub>
+      </div>
+    </div>
+  </SidebarMenuItem>
+)
+
+// Submenu link with active indicator bar
+const NavSub = ({ to, active, icon: Icon, iconClass = "", children, className = "" }) => (
+  <SidebarMenuSubItem>
+    <SidebarMenuSubButton
+      isActive={active}
+      render={<Link to={to} />}
+      className={cn(
+        "relative h-8 translate-x-0 rounded-md px-2.5 text-[13px] data-active:bg-primary/10 data-active:font-semibold data-active:text-foreground data-active:before:absolute data-active:before:-left-[calc(0.5rem+1px)] data-active:before:bottom-1.5 data-active:before:top-1.5 data-active:before:w-0.5 data-active:before:rounded-full data-active:before:bg-primary",
+        className
+      )}
+    >
+      {Icon && <Icon className={cn("h-3.5 w-3.5", iconClass)} />}
+      <span>{children}</span>
+    </SidebarMenuSubButton>
+  </SidebarMenuSubItem>
+)
+
+// Sub-section caption inside a submenu
+const SubLabel = ({ children }) => (
+  <div className="px-2 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+    {children}
+  </div>
+)
+
 // Main application sidebar rendering organized multi-tenant navigation
 export const AppSidebar = ({ ...props }) => {
   const { t } = useTranslation()
@@ -100,21 +174,73 @@ export const AppSidebar = ({ ...props }) => {
   const navigate = useNavigate()
   const pathname = location.pathname
   const { user, logout } = useAuth()
-  const { state, setOpen, isMobile, setOpenMobile, toggleSidebar } = useSidebar()
-  const { brandName, features } = clientConfig
+  const { state, setOpen, isMobile, setOpenMobile } = useSidebar()
+  const { features } = clientConfig
 
   const [openMenu, setOpenMenu] = React.useState(null)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false)
 
-  // Auto-close mobile navigation drawer on route transition
+  const userRole = user?.role || "Marketing Expert"
+
+  // Evaluates menu visibility based on tenant feature flags and role access
+  const isAllowed = (menuKey) => {
+    if (menuKey === "products.categories" && (features?.category === false || features?.categories === false)) return false
+    if ((menuKey === "products.attributes" || menuKey.startsWith("products.attributes")) && (features?.attribute === false || features?.attributes === false)) return false
+    if (menuKey === "products.brands" && features?.brand === false) return false
+    if (menuKey === "season" && features?.season === false) return false
+    if ((menuKey === "tools.messages" || menuKey === "webmail") && features?.webmail === false) return false
+    if (menuKey === "products.size-charts" && !features?.sizeChart) return false
+    if ((menuKey === "orders.instore" || menuKey === "orders.new") && features?.inStoreOrder === false) return false
+    if ((menuKey === "orders.custom" || menuKey === "orders.custom-new") && !features?.customOrders) return false
+    if (menuKey === "cpanel" && (clientConfig?.modules?.cpanelAccess === false || features?.cpanelAccess === false)) return false
+    if (menuKey === "templates" && features?.templates === false) return false
+    if ((menuKey === "items" || menuKey.startsWith("items.")) && features?.items === false) return false
+
+    return hasMenuAccess(userRole, menuKey)
+  }
+
+  const showOverview = isAllowed("overview")
+  const showWebmail = isAllowed("webmail") || isAllowed("tools.messages")
+  const showOrders = isAllowed("orders")
+  const showProducts = isAllowed("products")
+  const showSettings = isAllowed("settings")
+  const showAccounts = isAllowed("accounts") || isAllowed("accounts.bills") || isAllowed("accounts.payments") || isAllowed("accounts.investors") || isAllowed("accounts.investments") || isAllowed("accounts.balance") || isAllowed("billing") || isAllowed("admin")
+  const showAdmin = isAllowed("admin") || isAllowed("reports") || isAllowed("users") || isAllowed("customers") || isAllowed("members") || isAllowed("trash") || isAllowed("cpanel")
+  const showTools = isAllowed("tools") || isAllowed("logs") || isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("activity-logs") || isAllowed("tools.activity-logs")
+
+  const activeGroup =
+    pathname.startsWith("/dashboard/orders") ? "orders"
+    : (pathname.startsWith("/dashboard/products") || pathname === "/dashboard/settings/products" || pathname.startsWith("/dashboard/reviews")) ? "products"
+    : pathname.startsWith("/dashboard/settings") ? "settings"
+    : (pathname.startsWith("/dashboard/accounts") || pathname.startsWith("/dashboard/billing")) ? "accounts"
+    : (pathname.startsWith("/dashboard/reports") || pathname.startsWith("/dashboard/users") || pathname.startsWith("/dashboard/members") || pathname.startsWith("/dashboard/tools/support") || pathname.startsWith("/dashboard/cpanel") || pathname.startsWith("/dashboard/trash")) ? "admin"
+    : (pathname.startsWith("/dashboard/analytics") || pathname.startsWith("/dashboard/tools/analytics") || pathname.startsWith("/dashboard/cloudflare") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs") || pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize") || pathname.startsWith("/dashboard/tools/meta-catalog") || pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs")) ? "tools"
+    : null
+
+  const settingsProductsActive = pathname === "/dashboard/settings/products"
+  const paymentMethodsActive =
+    pathname === "/dashboard/accounts/payments/methods" ||
+    pathname === "/dashboard/accounts/payments/types" ||
+    pathname === "/dashboard/accounts/bills/payment-methods" ||
+    pathname === "/dashboard/accounts/payment-methods"
+
+  // Auto-close mobile navigation drawer and open the active group on route transition
   React.useEffect(() => {
     if (isMobile && setOpenMobile) {
       setOpenMobile(false)
     }
-  }, [pathname, isMobile, setOpenMobile])
+    if (activeGroup) {
+      setOpenMenu(activeGroup)
+    }
+  }, [pathname, isMobile, setOpenMobile, activeGroup])
 
-  // Toggles single accordion menu state
+  // Toggles accordion state, expanding the rail first when collapsed
   const toggleMenu = (menuKey) => {
+    if (!isMobile && state === "collapsed") {
+      setOpen(true)
+      setOpenMenu(menuKey)
+      return
+    }
     setOpenMenu((prev) => (prev === menuKey ? null : menuKey))
   }
 
@@ -132,27 +258,11 @@ export const AppSidebar = ({ ...props }) => {
     }
   }
 
-  const userRole = user?.role || "Marketing Expert"
-
-  // Evaluates menu visibility based on tenant feature flags and role access
-  const isAllowed = (menuKey) => {
-    if (menuKey === "products.categories" && (features?.category === false || features?.categories === false)) return false
-    if ((menuKey === "products.attributes" || menuKey.startsWith("products.attributes")) && (features?.attribute === false || features?.attributes === false)) return false
-    if (menuKey === "products.brands" && features?.brand === false) return false
-    if (menuKey === "season" && features?.season === false) return false
-    if ((menuKey === "tools.messages" || menuKey === "webmail") && features?.webmail === false) return false
-    if (menuKey === "products.size-charts" && !features?.sizeChart) return false
-    if ((menuKey === "orders.instore" || menuKey === "orders.new") && features?.inStoreOrder === false) return false
-    if ((menuKey === "orders.custom" || menuKey === "orders.custom-new") && !features?.customOrders) return false
-    if (menuKey === "cpanel" && (clientConfig?.modules?.cpanelAccess === false || features?.cpanelAccess === false)) return false
-    if (menuKey === "templates" && features?.templates === false) return false
-
-    return hasMenuAccess(userRole, menuKey)
-  }
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || "B"
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="h-14 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
           {state === "expanded" || isMobile ? (
             <>
@@ -165,33 +275,36 @@ export const AppSidebar = ({ ...props }) => {
               <button
                 type="button"
                 onClick={handleCloseSidebar}
-                className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                className="h-8 w-8 rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                 title="Close Sidebar"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             </>
           ) : (
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="h-7 w-7 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+              className="h-8 w-8 rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
               title="Open Sidebar"
             >
-              <Menu className="h-3.5 w-3.5" />
+              <Menu className="h-4 w-4" />
             </button>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-3 group-data-[collapsible=icon]:px-1 group-data-[collapsible=icon]:py-4">
-        <SidebarMenu className="group-data-[collapsible=icon]:gap-4">
-          {isAllowed("overview") && (
+      <SidebarContent className="px-3 pb-3 group-data-[collapsible=icon]:px-1.5">
+        <SidebarMenu className="gap-0.5">
+          {(showOverview || showWebmail) && <NavLabel>{t("nav.group_main", "Main")}</NavLabel>}
+
+          {showOverview && (
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={pathname === "/dashboard"}
                 tooltip={t("nav.overview", "Overview")}
                 render={<Link to="/dashboard" />}
+                className={navItemClass}
               >
                 <LayoutDashboard className="h-4 w-4" />
                 <span>{t("nav.overview", "Overview")}</span>
@@ -199,12 +312,13 @@ export const AppSidebar = ({ ...props }) => {
             </SidebarMenuItem>
           )}
 
-          {(isAllowed("webmail") || isAllowed("tools.messages")) && (
+          {showWebmail && (
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={pathname === "/dashboard/tools/messages" || pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"}
+                isActive={pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"}
                 tooltip={t("nav.webmail", "Webmail")}
                 render={<Link to="/dashboard/tools/messages" />}
+                className={navItemClass}
               >
                 <Mail className="h-4 w-4" />
                 <span>{t("nav.webmail", "Webmail")}</span>
@@ -212,799 +326,318 @@ export const AppSidebar = ({ ...props }) => {
             </SidebarMenuItem>
           )}
 
-          {isAllowed("orders") && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={pathname.startsWith("/dashboard/orders")}
-                tooltip={t("nav.orders", "Orders")}
-                onClick={() => toggleMenu("orders")}
-                className="cursor-pointer flex items-center justify-between w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="h-4 w-4" />
-                  <span>{t("nav.orders", "Orders")}</span>
-                </div>
-                <ChevronRight
-                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
-                    openMenu === "orders" ? "rotate-90 text-primary" : ""
-                  }`}
-                />
-              </SidebarMenuButton>
-              {openMenu === "orders" && (
-                <SidebarMenuSub>
-                  {isAllowed("orders.custom-new") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/custom/new" || pathname === "/dashboard/orders/custom-new"}
-                        render={<Link to="/dashboard/orders/custom/new" />}
-                      >
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span>{t("nav.new_custom_order", "New Custom Order")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("orders.new") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/new"}
-                        render={<Link to="/dashboard/orders/new" />}
-                      >
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span>{t("nav.new_in_store_order", "New In-Store Order")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("orders.list") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders"}
-                        render={<Link to="/dashboard/orders" />}
-                      >
-                        <ListOrdered className="h-3.5 w-3.5" />
-                        <span>{t("nav.orders_list", "Orders List")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("orders.custom") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/custom"}
-                        render={<Link to="/dashboard/orders/custom" />}
-                      >
-                        <ShoppingBag className="h-3.5 w-3.5" />
-                        <span>{t("nav.custom_orders", "Custom Orders")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("orders.instore") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/in-store" || pathname === "/dashboard/orders/instore"}
-                        render={<Link to="/dashboard/orders/in-store" />}
-                      >
-                        <Store className="h-3.5 w-3.5" />
-                        <span>{t("nav.in_store_orders", "In-Store Orders")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("orders.spamlist") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/orders/spamlist"}
-                        render={<Link to="/dashboard/orders/spamlist" />}
-                      >
-                        <ShieldAlert className="h-3.5 w-3.5 text-red-500" />
-                        <span>{t("nav.spam_list", "Spam List")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                </SidebarMenuSub>
+          {(showOrders || showProducts) && <NavLabel>{t("nav.group_commerce", "Commerce")}</NavLabel>}
+
+          {showOrders && (
+            <NavGroup id="orders" icon={ShoppingBag} label={t("nav.orders", "Orders")} active={activeGroup === "orders"} open={openMenu === "orders"} onToggle={toggleMenu}>
+              {isAllowed("orders.custom-new") && (
+                <NavSub to="/dashboard/orders/custom/new" active={pathname === "/dashboard/orders/custom/new" || pathname === "/dashboard/orders/custom-new"} icon={PlusCircle}>
+                  {t("nav.new_custom_order", "New Custom Order")}
+                </NavSub>
               )}
-            </SidebarMenuItem>
+              {isAllowed("orders.new") && (
+                <NavSub to="/dashboard/orders/new" active={pathname === "/dashboard/orders/new"} icon={PlusCircle}>
+                  {t("nav.new_in_store_order", "New In-Store Order")}
+                </NavSub>
+              )}
+              {isAllowed("orders.list") && (
+                <NavSub to="/dashboard/orders" active={pathname === "/dashboard/orders"} icon={ListOrdered}>
+                  {t("nav.orders_list", "Orders List")}
+                </NavSub>
+              )}
+              {isAllowed("orders.custom") && (
+                <NavSub to="/dashboard/orders/custom" active={pathname === "/dashboard/orders/custom"} icon={ShoppingBag}>
+                  {t("nav.custom_orders", "Custom Orders")}
+                </NavSub>
+              )}
+              {isAllowed("orders.instore") && (
+                <NavSub to="/dashboard/orders/in-store" active={pathname === "/dashboard/orders/in-store" || pathname === "/dashboard/orders/instore"} icon={Store}>
+                  {t("nav.in_store_orders", "In-Store Orders")}
+                </NavSub>
+              )}
+              {isAllowed("orders.spamlist") && (
+                <NavSub to="/dashboard/orders/spamlist" active={pathname === "/dashboard/orders/spamlist"} icon={ShieldAlert} iconClass="text-red-500">
+                  {t("nav.spam_list", "Spam List")}
+                </NavSub>
+              )}
+            </NavGroup>
           )}
 
-          {isAllowed("products") && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={
-                  pathname.startsWith("/dashboard/products") ||
-                  pathname === "/dashboard/settings/products" ||
-                  pathname.startsWith("/dashboard/reviews")
-                }
-                tooltip={t("nav.products", "Products")}
-                onClick={() => toggleMenu("products")}
-                className="cursor-pointer flex items-center justify-between w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4" />
-                  <span>{t("nav.products", "Products")}</span>
-                </div>
-                <ChevronRight
-                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
-                    openMenu === "products" ? "rotate-90 text-primary" : ""
-                  }`}
-                />
-              </SidebarMenuButton>
-              {openMenu === "products" && (
-                <SidebarMenuSub>
-                  {isAllowed("products.new") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/new"}
-                        render={<Link to="/dashboard/products/new" />}
-                      >
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        <span>{t("nav.add_product", "Add Product")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.list") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products" || pathname === "/dashboard/products/list"}
-                        render={<Link to="/dashboard/products" />}
-                      >
-                        <ListOrdered className="h-3.5 w-3.5" />
-                        <span>{t("nav.product_list", "Product List")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.on-sale") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/on-sale"}
-                        render={<Link to="/dashboard/products/on-sale" />}
-                      >
-                        <Tag className="h-3.5 w-3.5" />
-                        <span>{t("nav.on_sale", "On Sale")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.miniature") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/miniature"}
-                        render={<Link to="/dashboard/products/miniature" />}
-                      >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span>{t("nav.miniature", "Miniature")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("products.showcases") || isAllowed("settings")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/settings/products"}
-                        render={<Link to="/dashboard/settings/products" />}
-                      >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span>{t("nav.showcases", "Showcases")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.categories") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/categories"}
-                        render={<Link to="/dashboard/products/categories" />}
-                      >
-                        <Receipt className="h-3.5 w-3.5" />
-                        <span>{t("nav.categories", "Categories")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.brands") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/brands"}
-                        render={<Link to="/dashboard/products/brands" />}
-                      >
-                        <CreditCard className="h-3.5 w-3.5" />
-                        <span>{t("nav.brands", "Brands")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.attributes") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/products/attributes")}
-                        render={<Link to="/dashboard/products/attributes" />}
-                      >
-                        <Sliders className="h-3.5 w-3.5" />
-                        <span>{t("nav.attributes", "Attributes")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.coupons") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/coupons"}
-                        render={<Link to="/dashboard/products/coupons" />}
-                      >
-                        <Ticket className="h-3.5 w-3.5" />
-                        <span>{t("nav.coupons", "Coupons")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("products.size-charts") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/products/size-charts"}
-                        render={<Link to="/dashboard/products/size-charts" />}
-                      >
-                        <Ruler className="h-3.5 w-3.5" />
-                        <span>{t("nav.size_charts", "Size Charts")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("products.reviews") || isAllowed("reviews")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/reviews")}
-                        render={<Link to="/dashboard/reviews" />}
-                      >
-                        <Star className="h-3.5 w-3.5" />
-                        <span>{t("nav.reviews", "Reviews")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                </SidebarMenuSub>
+          {showProducts && (
+            <NavGroup id="products" icon={Package} label={t("nav.products", "Products")} active={activeGroup === "products"} open={openMenu === "products"} onToggle={toggleMenu}>
+              {isAllowed("products.list") && (
+                <NavSub to="/dashboard/products" active={pathname === "/dashboard/products" || pathname === "/dashboard/products/list"} icon={ListOrdered}>
+                  {t("nav.product_list", "Product List")}
+                </NavSub>
               )}
-            </SidebarMenuItem>
+              {isAllowed("products.on-sale") && (
+                <NavSub to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag}>
+                  {t("nav.on_sale", "On Sale")}
+                </NavSub>
+              )}
+              {isAllowed("products.miniature") && (
+                <NavSub to="/dashboard/products/miniature" active={pathname === "/dashboard/products/miniature"} icon={Sparkles}>
+                  {t("nav.miniature", "Miniature")}
+                </NavSub>
+              )}
+              {(isAllowed("products.showcases") || isAllowed("settings")) && (
+                <NavSub to="/dashboard/settings/products" active={settingsProductsActive} icon={Sparkles}>
+                  {t("nav.showcases", "Showcases")}
+                </NavSub>
+              )}
+              {isAllowed("products.categories") && (
+                <NavSub to="/dashboard/products/categories" active={pathname === "/dashboard/products/categories"} icon={Receipt}>
+                  {t("nav.categories", "Categories")}
+                </NavSub>
+              )}
+              {isAllowed("products.brands") && (
+                <NavSub to="/dashboard/products/brands" active={pathname === "/dashboard/products/brands"} icon={CreditCard}>
+                  {t("nav.brands", "Brands")}
+                </NavSub>
+              )}
+              {isAllowed("products.attributes") && (
+                <NavSub to="/dashboard/products/attributes" active={pathname.startsWith("/dashboard/products/attributes")} icon={Sliders}>
+                  {t("nav.attributes", "Attributes")}
+                </NavSub>
+              )}
+              {isAllowed("products.coupons") && (
+                <NavSub to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket}>
+                  {t("nav.coupons", "Coupons")}
+                </NavSub>
+              )}
+              {isAllowed("products.size-charts") && (
+                <NavSub to="/dashboard/products/size-charts" active={pathname === "/dashboard/products/size-charts"} icon={Ruler}>
+                  {t("nav.size_charts", "Size Charts")}
+                </NavSub>
+              )}
+              {(isAllowed("products.reviews") || isAllowed("reviews")) && (
+                <NavSub to="/dashboard/reviews" active={pathname.startsWith("/dashboard/reviews")} icon={Star}>
+                  {t("nav.reviews", "Reviews")}
+                </NavSub>
+              )}
+            </NavGroup>
           )}
 
-          {isAllowed("settings") && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={pathname.startsWith("/dashboard/settings") && pathname !== "/dashboard/settings/products"}
-                tooltip={t("nav.settings", "Settings")}
-                onClick={() => toggleMenu("settings")}
-                className="cursor-pointer flex items-center justify-between w-full"
+          {(showAccounts || showAdmin) && <NavLabel>{t("nav.group_manage", "Manage")}</NavLabel>}
+
+          {showAccounts && (
+            <NavGroup id="accounts" icon={Landmark} label={t("nav.accounts", "Accounts")} active={activeGroup === "accounts"} open={openMenu === "accounts"} onToggle={toggleMenu}>
+              <NavSub
+                to="/dashboard/accounts/balance"
+                active={pathname === "/dashboard/accounts/balance" || pathname === "/dashboard/accounts" || pathname === "/dashboard/billing"}
+                icon={Scale}
+                iconClass="text-blue-500"
               >
-                <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  <span>{t("nav.settings", "Settings")}</span>
-                </div>
-                <ChevronRight
-                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
-                    openMenu === "settings" ? "rotate-90 text-primary" : ""
-                  }`}
-                />
-              </SidebarMenuButton>
-              {openMenu === "settings" && (
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/cms")}
-                      render={<Link to="/dashboard/settings/cms-content" />}
-                    >
-                      <ImageIcon className="h-3.5 w-3.5" />
-                      <span>{t("nav.cms_content", "CMS Content")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
+                {t("nav.account_balance", "Account Balance")}
+              </NavSub>
 
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/seo")}
-                      render={<Link to="/dashboard/settings/seo" />}
-                    >
-                      <Search className="h-3.5 w-3.5" />
-                      <span>{t("nav.general_seo", "General & SEO")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
+              <SubLabel>{t("nav.bills", "Bills")}</SubLabel>
+              <NavSub to="/dashboard/accounts/bills/new" active={pathname === "/dashboard/accounts/bills/new"} icon={PlusCircle} iconClass="text-red-500">
+                {t("nav.add_bill", "Add New")}
+              </NavSub>
+              <NavSub to="/dashboard/accounts/bills/types" active={pathname === "/dashboard/accounts/bills/types"} icon={Tag} iconClass="text-amber-500">
+                {t("nav.bill_types", "Bill Types")}
+              </NavSub>
+              <NavSub to="/dashboard/accounts/payments/methods" active={paymentMethodsActive} icon={CreditCard} iconClass="text-emerald-500">
+                {t("nav.payment_methods", "Payment Methods")}
+              </NavSub>
+              <NavSub to="/dashboard/accounts/bills" active={pathname === "/dashboard/accounts/bills" || pathname === "/dashboard/billing/billings"} icon={Receipt} iconClass="text-red-500">
+                {t("nav.all_bills", "All Bills")}
+              </NavSub>
 
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/meta-pixel")}
-                      render={<Link to="/dashboard/settings/meta-pixel" />}
-                    >
-                      <Share2 className="h-3.5 w-3.5" />
-                      <span>{t("nav.meta_pixel", "Meta Pixel")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
+              <SubLabel>{t("nav.payments", "Payments")}</SubLabel>
+              <NavSub to="/dashboard/accounts/payments/new" active={pathname === "/dashboard/accounts/payments/new"} icon={PlusCircle} iconClass="text-emerald-500">
+                {t("nav.add_payment", "Add New")}
+              </NavSub>
+              <NavSub to="/dashboard/accounts/payments/methods" active={paymentMethodsActive} icon={CreditCard} iconClass="text-emerald-500">
+                {t("nav.payment_methods", "Payment Methods")}
+              </NavSub>
+              <NavSub to="/dashboard/accounts/payments" active={pathname === "/dashboard/accounts/payments" || pathname === "/dashboard/billing/payments"} icon={Receipt} iconClass="text-emerald-500">
+                {t("nav.all_payments", "All Payments")}
+              </NavSub>
 
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/tiktok-pixel")}
-                      render={<Link to="/dashboard/settings/tiktok-pixel" />}
-                    >
-                      <TikTokIcon className="h-3.5 w-3.5 shrink-0" />
-                      <span>{t("nav.tiktok_pixel", "TikTok Pixel")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-
-
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/pathao-courier") || pathname.startsWith("/dashboard/settings/pathao")}
-                      render={<Link to="/dashboard/settings/pathao-courier" />}
-                    >
-                      <Truck className="h-3.5 w-3.5 text-red-500" />
-                      <span>{t("nav.pathao_courier", "Pathao Courier")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/smtp")}
-                      render={<Link to="/dashboard/settings/smtp" />}
-                    >
-                      <Mail className="h-3.5 w-3.5 text-indigo-500" />
-                      <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-
-                  {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={
-                          pathname.startsWith("/dashboard/settings/templates") ||
-                          pathname === "/dashboard/templates"
-                        }
-                        render={<Link to="/dashboard/settings/templates" />}
-                      >
-                        <Receipt className="h-3.5 w-3.5 text-blue-500" />
-                        <span>{t("nav.templates", "Invoice & Templates")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/admin-view") || pathname.startsWith("/admin")}
-                      render={<Link to="/admin" />}
-                    >
-                      <LayoutDashboard className="h-3.5 w-3.5 text-orange-500" />
-                      <span>{t("nav.admin_view", "Admin View")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/settings/styles")}
-                      render={<Link to="/dashboard/settings/styles" />}
-                      className="ml-4"
-                    >
-                      <Wrench className="h-3.5 w-3.5" />
-                      <span>{t("nav.styles", "Styles")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-
-                </SidebarMenuSub>
-              )}
-            </SidebarMenuItem>
+              <SubLabel>{t("nav.investments", "Investments")}</SubLabel>
+              <NavSub to="/dashboard/accounts/investors" active={pathname === "/dashboard/accounts/investors"} icon={Users} iconClass="text-purple-500">
+                {t("nav.investors", "Investors")}
+              </NavSub>
+              <NavSub to="/dashboard/accounts/investments" active={pathname === "/dashboard/accounts/investments"} icon={TrendingUp} iconClass="text-purple-500">
+                {t("nav.investments_list", "Investments")}
+              </NavSub>
+            </NavGroup>
           )}
 
-          {(isAllowed("accounts") || isAllowed("accounts.bills") || isAllowed("accounts.payments") || isAllowed("accounts.investors") || isAllowed("accounts.investments") || isAllowed("accounts.balance") || isAllowed("billing") || isAllowed("admin")) && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={
-                  pathname.startsWith("/dashboard/accounts") ||
-                  pathname.startsWith("/dashboard/billing")
-                }
-                tooltip={t("nav.accounts", "Accounts")}
-                onClick={() => toggleMenu("accounts")}
-                className="cursor-pointer flex items-center justify-between w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <Landmark className="h-4 w-4" />
-                  <span>{t("nav.accounts", "Accounts")}</span>
-                </div>
-                <ChevronRight
-                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
-                    openMenu === "accounts" ? "rotate-90 text-primary" : ""
-                  }`}
-                />
-              </SidebarMenuButton>
-              {openMenu === "accounts" && (
-                <SidebarMenuSub>
-                  {/* Account Balance */}
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/balance" || pathname === "/dashboard/accounts" || pathname === "/dashboard/billing"}
-                      render={<Link to="/dashboard/accounts/balance" />}
-                    >
-                      <Scale className="h-3.5 w-3.5 text-blue-500" />
-                      <span>{t("nav.account_balance", "Account Balance")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-
-                  {/* Bills Submenu Group */}
-                  <div className="px-2 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
-                    {t("nav.bills", "Bills")}
-                  </div>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/bills/new"}
-                      render={<Link to="/dashboard/accounts/bills/new" />}
-                    >
-                      <PlusCircle className="h-3.5 w-3.5 text-red-500" />
-                      <span>{t("nav.add_bill", "Add New")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/bills/types"}
-                      render={<Link to="/dashboard/accounts/bills/types" />}
-                    >
-                      <Tag className="h-3.5 w-3.5 text-amber-500" />
-                      <span>{t("nav.bill_types", "Bill Types")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={
-                        pathname === "/dashboard/accounts/payments/methods" ||
-                        pathname === "/dashboard/accounts/payments/types" ||
-                        pathname === "/dashboard/accounts/bills/payment-methods" ||
-                        pathname === "/dashboard/accounts/payment-methods"
-                      }
-                      render={<Link to="/dashboard/accounts/payments/methods" />}
-                    >
-                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>{t("nav.payment_methods", "Payment Methods")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/bills" || pathname === "/dashboard/billing/billings"}
-                      render={<Link to="/dashboard/accounts/bills" />}
-                    >
-                      <Receipt className="h-3.5 w-3.5 text-red-500" />
-                      <span>{t("nav.all_bills", "All Bills")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-
-                  {/* Payments Submenu Group */}
-                  <div className="px-2 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
-                    {t("nav.payments", "Payments")}
-                  </div>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/payments/new"}
-                      render={<Link to="/dashboard/accounts/payments/new" />}
-                    >
-                      <PlusCircle className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>{t("nav.add_payment", "Add New")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={
-                        pathname === "/dashboard/accounts/payments/methods" ||
-                        pathname === "/dashboard/accounts/payments/types" ||
-                        pathname === "/dashboard/accounts/bills/payment-methods" ||
-                        pathname === "/dashboard/accounts/payment-methods"
-                      }
-                      render={<Link to="/dashboard/accounts/payments/methods" />}
-                    >
-                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>{t("nav.payment_methods", "Payment Methods")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/payments" || pathname === "/dashboard/billing/payments"}
-                      render={<Link to="/dashboard/accounts/payments" />}
-                    >
-                      <Receipt className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>{t("nav.all_payments", "All Payments")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-
-                  {/* Investments Submenu Group */}
-                  <div className="px-2 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
-                    {t("nav.investments", "Investments")}
-                  </div>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/investors"}
-                      render={<Link to="/dashboard/accounts/investors" />}
-                    >
-                      <Users className="h-3.5 w-3.5 text-purple-500" />
-                      <span>{t("nav.investors", "Investors")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname === "/dashboard/accounts/investments"}
-                      render={<Link to="/dashboard/accounts/investments" />}
-                    >
-                      <TrendingUp className="h-3.5 w-3.5 text-purple-500" />
-                      <span>{t("nav.investments_list", "Investments")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
+          {showAdmin && (
+            <NavGroup id="admin" icon={ShieldCheck} label={t("nav.admin", "Admin")} active={activeGroup === "admin"} open={openMenu === "admin"} onToggle={toggleMenu}>
+              {(isAllowed("reports") || isAllowed("admin")) && (
+                <NavSub to="/dashboard/reports" active={pathname.startsWith("/dashboard/reports")} icon={BarChart3}>
+                  {t("nav.reports", "Reports")}
+                </NavSub>
               )}
-            </SidebarMenuItem>
+              {isAllowed("users") && (
+                <NavSub to="/dashboard/users" active={pathname.startsWith("/dashboard/users")} icon={ShieldAlert}>
+                  {t("nav.system_users", "System Users")}
+                </NavSub>
+              )}
+              {(isAllowed("customers") || isAllowed("members") || isAllowed("admin")) && (
+                <NavSub to="/dashboard/members" active={pathname.startsWith("/dashboard/members")} icon={Users}>
+                  {t("nav.customer_list", "Customer List")}
+                </NavSub>
+              )}
+              {(isAllowed("tools.support") || isAllowed("admin")) && (
+                <NavSub to="/dashboard/tools/support" active={pathname.startsWith("/dashboard/tools/support")} icon={LifeBuoy}>
+                  {t("nav.support_desk", "Support Desk")}
+                </NavSub>
+              )}
+              {isAllowed("cpanel") && (
+                <NavSub to="/dashboard/cpanel" active={pathname.startsWith("/dashboard/cpanel")} icon={Terminal} iconClass="text-emerald-400" className="text-emerald-400 font-medium">
+                  {t("nav.cpanel", "PPanel / cPanel")}
+                </NavSub>
+              )}
+              <NavSub to="/dashboard/trash" active={pathname.startsWith("/dashboard/trash")} icon={Trash2} iconClass="text-destructive" className="text-destructive font-medium">
+                {t("nav.trash", "Trash")}
+              </NavSub>
+            </NavGroup>
           )}
 
-          {(isAllowed("admin") || isAllowed("reports") || isAllowed("users") || isAllowed("customers") || isAllowed("members") || isAllowed("trash") || isAllowed("cpanel")) && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={
-                  pathname.startsWith("/dashboard/reports") ||
-                  pathname.startsWith("/dashboard/users") ||
-                  pathname.startsWith("/dashboard/members") ||
-                  pathname.startsWith("/dashboard/tools/support") ||
-                  pathname.startsWith("/dashboard/cpanel") ||
-                  pathname.startsWith("/dashboard/trash")
-                }
-                tooltip={t("nav.admin", "Admin")}
-                onClick={() => toggleMenu("admin")}
-                className="cursor-pointer flex items-center justify-between w-full"
+          {(showSettings || showTools) && <NavLabel>{t("nav.group_system", "System")}</NavLabel>}
+
+          {showSettings && (
+            <NavGroup id="settings" icon={Settings} label={t("nav.settings", "Settings")} active={activeGroup === "settings"} open={openMenu === "settings"} onToggle={toggleMenu}>
+              <NavSub to="/dashboard/settings/cms-content" active={pathname.startsWith("/dashboard/settings/cms")} icon={ImageIcon}>
+                {t("nav.cms_content", "CMS Content")}
+              </NavSub>
+              <NavSub to="/dashboard/settings/seo" active={pathname.startsWith("/dashboard/settings/seo")} icon={Search}>
+                {t("nav.general_seo", "General & SEO")}
+              </NavSub>
+              <NavSub to="/dashboard/settings/meta-pixel" active={pathname.startsWith("/dashboard/settings/meta-pixel")} icon={Share2}>
+                {t("nav.meta_pixel", "Meta Pixel")}
+              </NavSub>
+              <NavSub to="/dashboard/settings/tiktok-pixel" active={pathname.startsWith("/dashboard/settings/tiktok-pixel")} icon={TikTokIcon} iconClass="shrink-0">
+                {t("nav.tiktok_pixel", "TikTok Pixel")}
+              </NavSub>
+              <NavSub
+                to="/dashboard/settings/pathao-courier"
+                active={pathname.startsWith("/dashboard/settings/pathao-courier") || pathname.startsWith("/dashboard/settings/pathao")}
+                icon={Truck}
+                iconClass="text-red-500"
               >
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>{t("nav.admin", "Admin")}</span>
-                </div>
-                <ChevronRight
-                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
-                    openMenu === "admin" ? "rotate-90 text-primary" : ""
-                  }`}
-                />
-              </SidebarMenuButton>
-              {openMenu === "admin" && (
-                <SidebarMenuSub>
-                  {(isAllowed("reports") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/reports")}
-                        render={<Link to="/dashboard/reports" />}
-                      >
-                        <BarChart3 className="h-3.5 w-3.5" />
-                        <span>{t("nav.reports", "Reports")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("users") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/users")}
-                        render={<Link to="/dashboard/users" />}
-                      >
-                        <ShieldAlert className="h-3.5 w-3.5" />
-                        <span>{t("nav.system_users", "System Users")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("customers") || isAllowed("members") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/members")}
-                        render={<Link to="/dashboard/members" />}
-                      >
-                        <Users className="h-3.5 w-3.5" />
-                        <span>{t("nav.customer_list", "Customer List")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("tools.support") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/tools/support" || pathname.startsWith("/dashboard/tools/support")}
-                        render={<Link to="/dashboard/tools/support" />}
-                      >
-                        <LifeBuoy className="h-3.5 w-3.5" />
-                        <span>{t("nav.support_desk", "Support Desk")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("cpanel") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/cpanel")}
-                        render={<Link to="/dashboard/cpanel" />}
-                      >
-                        <Terminal className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="text-emerald-400 font-medium">{t("nav.cpanel", "PPanel / cPanel")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/dashboard/trash")}
-                      render={<Link to="/dashboard/trash" />}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                      <span className="text-destructive font-medium">{t("nav.trash", "Trash")}</span>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
+                {t("nav.pathao_courier", "Pathao Courier")}
+              </NavSub>
+              <NavSub to="/dashboard/settings/smtp" active={pathname.startsWith("/dashboard/settings/smtp")} icon={Mail} iconClass="text-indigo-500">
+                {t("nav.email_server_setup", "SMTP Configuration")}
+              </NavSub>
+              {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
+                <NavSub
+                  to="/dashboard/settings/templates"
+                  active={pathname.startsWith("/dashboard/settings/templates") || pathname === "/dashboard/templates"}
+                  icon={Receipt}
+                  iconClass="text-blue-500"
+                >
+                  {t("nav.templates", "Invoice & Templates")}
+                </NavSub>
               )}
-            </SidebarMenuItem>
+              <NavSub
+                to="/admin"
+                active={pathname.startsWith("/dashboard/settings/admin-view") || pathname.startsWith("/admin")}
+                icon={LayoutDashboard}
+                iconClass="text-orange-500"
+              >
+                {t("nav.admin_view", "Admin View")}
+              </NavSub>
+              <NavSub to="/dashboard/settings/styles" active={pathname.startsWith("/dashboard/settings/styles")} icon={Wrench} className="ml-4">
+                {t("nav.styles", "Styles")}
+              </NavSub>
+            </NavGroup>
           )}
 
-          {(isAllowed("tools") || isAllowed("logs") || isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("activity-logs") || isAllowed("tools.activity-logs")) && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={
-                  pathname.startsWith("/dashboard/analytics") ||
-                  pathname.startsWith("/dashboard/tools/analytics") ||
-                  pathname.startsWith("/dashboard/cloudflare-analytics") ||
-                  pathname.startsWith("/dashboard/tools/cloudflare-analytics") ||
-                  pathname.startsWith("/dashboard/cloudflare") ||
-                  pathname.startsWith("/dashboard/activity-logs") ||
-                  pathname.startsWith("/dashboard/tools/activity-logs") ||
-                  pathname.startsWith("/dashboard/media") ||
-                  pathname.startsWith("/dashboard/tools/bulk-image-resize") ||
-                  pathname.startsWith("/dashboard/tools/meta-catalog") ||
-                  pathname.startsWith("/dashboard/logs") ||
-                  pathname.startsWith("/dashboard/tools/logs")
-                }
-                tooltip={t("nav.tools_media", "Tools & Media")}
-                onClick={() => toggleMenu("tools")}
-                className="cursor-pointer flex items-center justify-between w-full"
-              >
-                <div className="flex items-center gap-2">
-                  <Wrench className="h-4 w-4" />
-                  <span>{t("nav.tools_media", "Tools & Media")}</span>
-                </div>
-                <ChevronRight
-                  className={`h-3.5 w-3.5 text-muted-foreground/70 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
-                    openMenu === "tools" ? "rotate-90 text-primary" : ""
-                  }`}
-                />
-              </SidebarMenuButton>
-              {openMenu === "tools" && (
-                <SidebarMenuSub>
-
-                  {Boolean(clientConfig?.cloudFlareAnalytics?.active || clientConfig?.features?.cloudflareAnalytics !== false) && (isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/cloudflare-analytics") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/cloudflare")}
-                        render={<Link to="/dashboard/cloudflare-analytics" />}
-                      >
-                        <LineChart className="h-3.5 w-3.5 text-blue-500" />
-                        <span>{t("nav.cloudflare_analytics", "Cloudflare Analytics")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("tools") || isAllowed("admin")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs")}
-                        render={<Link to="/dashboard/activity-logs" />}
-                      >
-                        <Activity className="h-3.5 w-3.5" />
-                        <span>{t("nav.activity_logs", "Activity Logs")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("tools.assets") || isAllowed("tools.media") || isAllowed("tools")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/media" || pathname.startsWith("/dashboard/media")}
-                        render={<Link to="/dashboard/media" />}
-                      >
-                        <Images className="h-3.5 w-3.5" />
-                        <span>{t("nav.all_media", "All Media")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("tools.bulk-image-resize") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/tools/bulk-image-resize"}
-                        render={<Link to="/dashboard/tools/bulk-image-resize" />}
-                      >
-                        <ImageDown className="h-3.5 w-3.5" />
-                        <span>{t("nav.bulk_image_resize", "Bulk Image Resize")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {isAllowed("tools.meta-catalog") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/dashboard/tools/meta-catalog"}
-                        render={<Link to="/dashboard/tools/meta-catalog" />}
-                      >
-                        <Share2 className="h-3.5 w-3.5" />
-                        <span>{t("nav.meta_catalog", "Meta Catalog")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                  {(isAllowed("logs") || isAllowed("tools.logs")) && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs")}
-                        render={<Link to="/dashboard/logs" />}
-                      >
-                        <Terminal className="h-3.5 w-3.5" />
-                        <span>{t("nav.system_logs", "System Logs")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
-                </SidebarMenuSub>
+          {showTools && (
+            <NavGroup id="tools" icon={Wrench} label={t("nav.tools_media", "Tools & Media")} active={activeGroup === "tools"} open={openMenu === "tools"} onToggle={toggleMenu}>
+              {Boolean(clientConfig?.cloudFlareAnalytics?.active || clientConfig?.features?.cloudflareAnalytics !== false) && (isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
+                <NavSub
+                  to="/dashboard/cloudflare-analytics"
+                  active={pathname.startsWith("/dashboard/cloudflare-analytics") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/cloudflare")}
+                  icon={LineChart}
+                  iconClass="text-blue-500"
+                >
+                  {t("nav.cloudflare_analytics", "Cloudflare Analytics")}
+                </NavSub>
               )}
-            </SidebarMenuItem>
+              {(isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("tools") || isAllowed("admin")) && (
+                <NavSub to="/dashboard/activity-logs" active={pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs")} icon={Activity}>
+                  {t("nav.activity_logs", "Activity Logs")}
+                </NavSub>
+              )}
+              {(isAllowed("tools.assets") || isAllowed("tools.media") || isAllowed("tools")) && (
+                <NavSub to="/dashboard/media" active={pathname.startsWith("/dashboard/media")} icon={Images}>
+                  {t("nav.all_media", "All Media")}
+                </NavSub>
+              )}
+              {isAllowed("tools.bulk-image-resize") && (
+                <NavSub to="/dashboard/tools/bulk-image-resize" active={pathname === "/dashboard/tools/bulk-image-resize"} icon={ImageDown}>
+                  {t("nav.bulk_image_resize", "Bulk Image Resize")}
+                </NavSub>
+              )}
+              {isAllowed("tools.meta-catalog") && (
+                <NavSub to="/dashboard/tools/meta-catalog" active={pathname === "/dashboard/tools/meta-catalog"} icon={Share2}>
+                  {t("nav.meta_catalog", "Meta Catalog")}
+                </NavSub>
+              )}
+              {(isAllowed("logs") || isAllowed("tools.logs")) && (
+                <NavSub to="/dashboard/logs" active={pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs")} icon={Terminal}>
+                  {t("nav.system_logs", "System Logs")}
+                </NavSub>
+              )}
+            </NavGroup>
           )}
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2.5 group-data-[collapsible=icon]:p-2 mt-auto">
-        <div className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-sidebar-accent/50 hover:bg-sidebar-accent/80 border border-sidebar-border/60 transition-all w-full group-data-[collapsible=icon]:hidden">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer outline-none group/user"
-                  title={user?.name || "User Account"}
-                >
-                  <div className="relative shrink-0">
-                    <div className="h-9 w-9 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-sm">
-                      {user?.name?.charAt(0)?.toUpperCase() || "B"}
-                    </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-sidebar" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-sidebar-foreground truncate leading-tight group-hover/user:text-primary transition-colors">
-                      {user?.name || "Bithy Akther"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate leading-tight mt-0.5 capitalize">
-                      {user?.role || "Frontdesk"}
-                    </p>
-                  </div>
-                </button>
-              }
-            />
-            <DropdownMenuContent side="top" align="start" sideOffset={12} className="w-48 p-1.5 shadow-xl rounded-xl border border-border/80 bg-popover">
-              <DropdownMenuItem
-                className="cursor-pointer flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg hover:bg-accent focus:bg-accent text-foreground"
-                onClick={() => setProfileModalOpen(true)}
+      <SidebarFooter className="border-t border-sidebar-border p-3 group-data-[collapsible=icon]:p-1.5 mt-auto">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                className="flex w-full items-center gap-2.5 rounded-lg p-2 text-left cursor-pointer outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0"
+                title={user?.name || "User Account"}
               >
-                <User className="h-4 w-4 text-primary" />
-                <span>{t("nav.profile", "Profile")}</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <button
-            type="button"
-            onClick={() => setLogoutConfirmOpen(true)}
-            className="h-8 w-8 shrink-0 rounded-xl bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
-            title={t("nav.logout", "Logout")}
-            aria-label="Logout"
+                <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">
+                  {userInitial}
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-sidebar bg-emerald-500" />
+                </span>
+                <span className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate text-sm font-semibold text-foreground">{user?.name || "Bithy Akther"}</span>
+                  <span className="truncate text-xs capitalize text-muted-foreground">{user?.role || "Frontdesk"}</span>
+                </span>
+                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60 group-data-[collapsible=icon]:hidden" />
+              </button>
+            }
+          />
+          <DropdownMenuContent
+            side={isMobile ? "top" : state === "collapsed" ? "right" : "top"}
+            align={isMobile || state !== "collapsed" ? "start" : "end"}
+            sideOffset={10}
+            className="w-56 p-1 shadow-xl rounded-lg border border-border bg-popover"
           >
-            <LogOut className="h-4 w-4 text-white" />
-          </button>
-        </div>
-
-        <div className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-2 w-full">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  className="relative h-8 w-8 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-xs cursor-pointer hover:bg-primary/30 transition-all"
-                  title={user?.name || "User Account"}
-                >
-                  {user?.name?.charAt(0)?.toUpperCase() || "B"}
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border-2 border-sidebar" />
-                </button>
-              }
-            />
-            <DropdownMenuContent side="right" align="end" sideOffset={12} className="w-48 p-1.5 shadow-xl rounded-xl border border-border/80 bg-popover">
-              <DropdownMenuItem
-                className="cursor-pointer flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg hover:bg-accent focus:bg-accent text-foreground"
-                onClick={() => navigate('/dashboard/profile')}
-              >
-                <User className="h-4 w-4 text-primary" />
-                <span>{t("nav.profile", "Profile")}</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <button
-            type="button"
-            onClick={() => setLogoutConfirmOpen(true)}
-            className="h-8 w-8 rounded-xl bg-destructive hover:bg-destructive/90 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
-            title={t("nav.logout", "Logout")}
-            aria-label="Logout"
-          >
-            <LogOut className="h-4 w-4 text-white" />
-          </button>
-        </div>
+            <DropdownMenuItem
+              className="cursor-pointer flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm"
+              onClick={() => navigate("/dashboard/profile")}
+            >
+              <User className="h-4 w-4" />
+              <span>{t("nav.profile", "Profile")}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm text-destructive focus:bg-primary/10 focus:text-primary"
+              onClick={() => setLogoutConfirmOpen(true)}
+            >
+              <LogOut className="h-4 w-4" />
+              <span>{t("nav.logout", "Logout")}</span>
+            </DropdownMenuItem>
+            <div className="-mx-1 mt-1 border-t px-3 pb-1 pt-1.5 font-mono text-[10px] text-muted-foreground">
+              Build v{pkg.version || "3.04.03"}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
       <SidebarRail />
 
