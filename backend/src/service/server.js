@@ -1,3 +1,4 @@
+import { initPathaoSyncScheduler, stopPathaoSyncScheduler } from "../common/schedulers/pathaoSync.scheduler.js";
 import { createServiceApp } from "./app.js";
 import { connectDatabase } from "../common/database/index.js";
 import { env } from "../common/config/env.js";
@@ -27,6 +28,7 @@ export const bootstrapService = async () => {
   initMediaSchedulers();
   initHeartbeatScheduler();
   initBackupScheduler();
+  initPathaoSyncScheduler();
 
   if (env.IMAP_SYNC_ENABLED) {
     import("../common/services/imapSync.service.js")
@@ -44,6 +46,7 @@ export const bootstrapService = async () => {
     stopHeartbeatScheduler();
     stopMediaSchedulers();
     stopBackupScheduler();
+    stopPathaoSyncScheduler();
     const handler = createShutdownHandler(server);
     return handler(signal);
   };

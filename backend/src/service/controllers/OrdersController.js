@@ -475,9 +475,10 @@ export const updateOrder = async (req, res, next) => {
     if (order.status === 'fake') {
       try {
         await archiveFakeOrder(order, req.user?.userId || null, payload.reason || "Marked as fake order");
-        // Insert into spamList collection
+        // Insert into spamList collection (normalize phone to last-11 digits for BD standard)
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-        const phone = order.billingInfo?.phone || order.shippingInfo?.phone || "";
+        const rawPhone = order.billingInfo?.phone || order.shippingInfo?.phone || "";
+        const phone = rawPhone.replace(/\D/g, '').slice(-11) || rawPhone;
         const email = order.billingInfo?.email || order.shippingInfo?.email || "";
         if (ip || phone || email) {
           await SpamListModel.create({ ip, phone, email });
@@ -745,7 +746,8 @@ export const bulkUpdateOrders = async (req, res, next) => {
       for (const ord of orders) {
         archiveFakeOrder(ord, req.user?.userId || null, req.body?.reason || "Bulk marked as fake order").catch(e => console.error(e));
         
-        const phone = ord.billingInfo?.phone || ord.shippingInfo?.phone || "";
+        const rawOrdPhone = ord.billingInfo?.phone || ord.shippingInfo?.phone || "";
+        const phone = rawOrdPhone.replace(/\D/g, '').slice(-11) || rawOrdPhone;
         const email = ord.billingInfo?.email || ord.shippingInfo?.email || "";
         if (ip || phone || email) {
           SpamListModel.create({ ip, phone, email }).catch(e => console.error("Error adding to spam list:", e));
