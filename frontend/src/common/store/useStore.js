@@ -9,6 +9,7 @@ import {
   getFbp,
   getFbc,
   getExternalId,
+  getFbLoginId,
   syncMetaUserProperties
 } from '../utils/analytics';
 
@@ -1084,6 +1085,7 @@ export const useStore = create((set, get) => ({
       shipToDifferentAddress: !sameAsBilling,
       fbp: getFbp() || undefined,
       fbc: getFbc() || undefined,
+      fb_login_id: getFbLoginId() || undefined,
       externalId: getExternalId() || undefined,
       siteKey: SITE_CONFIG.siteKey,
       clientDomain: SITE_CONFIG.domain,
@@ -1125,53 +1127,48 @@ export const useStore = create((set, get) => ({
     };
 
     const cleanApiBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
-    const endpoints = [
-      `${cleanApiBase}/api/v1/orders/new-order`,
-      `${cleanApiBase}/api/orders/new-order`
-    ];
+    const endpoint = `${cleanApiBase}/api/v1/orders/new-order`;
 
     let responseData = null;
-    let lastError = null;
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(orderPayload)
+      });
 
-    for (const ep of endpoints) {
-      try {
-        const res = await fetch(ep, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(orderPayload)
-        });
+      const json = await res.json().catch(() => null);
 
-        const json = await res.json().catch(() => null);
-
-        if (res.ok) {
-          responseData = json;
-          break;
-        } else {
-          const errMsg = json?.errors?.join(', ') || json?.message || `Server returned error ${res.status}`;
-          lastError = new Error(errMsg);
-          if (res.status === 400) {
-            throw lastError;
-          }
-        }
-      } catch (err) {
-        lastError = err;
-        if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
-          throw err;
-        }
+      if (res.ok) {
+        responseData = json;
+      } else {
+        const errMsg = json?.errors?.join(', ') || json?.message || `Server returned error ${res.status}`;
+        throw new Error(errMsg);
       }
+    } catch (err) {
+      if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+        throw err;
+      }
+      throw new Error('Failed to reach order server. Please check your connection.');
     }
 
     if (!responseData) {
-      throw lastError || new Error('Failed to reach order server. Please check your connection.');
+      throw new Error('Failed to reach order server. Please check your connection.');
     }
 
-    const resolvedOrderNumber = responseData?.data?.orderNumber || responseData?.data?.id || responseData?.orderNumber || ('SS-' + Math.floor(100000 + Math.random() * 900000));
+    const resolvedOrderNumber = String(
+      responseData?.data?.orderNumber ||
+      responseData?.data?.id ||
+      responseData?.orderNumber ||
+      ('SS-' + Math.floor(100000 + Math.random() * 900000))
+    ).trim();
 
     const newOrder = {
       orderId: resolvedOrderNumber,
+      orderNumber: resolvedOrderNumber,
       date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
       timestamp: nowIso,
       customer: {

@@ -91,6 +91,67 @@ export function getExternalId() {
   return extId;
 }
 
+// Helper: Get or extract Facebook Login ID (App-Scoped User ID)
+export function getFbLoginId() {
+  const cookieFbLoginId = getCookie('fb_login_id') || getCookie('_fb_login_id') || getCookie('fblid');
+  if (cookieFbLoginId) return cookieFbLoginId;
+
+  const storedFbLoginId = safeStorageGet('_sk_fb_login_id') || safeStorageGet('fb_login_id');
+  if (storedFbLoginId) return storedFbLoginId;
+
+  if (isBrowser) {
+    if (window._fb_login_id) return String(window._fb_login_id);
+    if (window.fbLoginId) return String(window.fbLoginId);
+
+    // Extract from Facebook JS SDK authResponse if active
+    try {
+      if (typeof window.FB?.getUserID === 'function') {
+        const uid = window.FB.getUserID();
+        if (uid) {
+          safeStorageSet('_sk_fb_login_id', String(uid));
+          return String(uid);
+        }
+      }
+      if (typeof window.FB?.getAuthResponse === 'function') {
+        const auth = window.FB.getAuthResponse();
+        if (auth?.userID) {
+          safeStorageSet('_sk_fb_login_id', String(auth.userID));
+          return String(auth.userID);
+        }
+      }
+    } catch (_) {}
+
+    // Check URL parameters (e.g. redirected from Facebook Login or social callback)
+    if (window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      const urlFbId = params.get('fb_login_id') || params.get('fbLoginId') || params.get('fb_id');
+      if (urlFbId) {
+        safeStorageSet('_sk_fb_login_id', urlFbId);
+        try {
+          document.cookie = `fb_login_id=${encodeURIComponent(urlFbId)}; path=/; max-age=7776000; SameSite=Lax`;
+        } catch (_) {}
+        return urlFbId;
+      }
+    }
+  }
+
+  return null;
+}
+
+// Setter helper: Store Facebook Login ID into browser cache and cookie
+export function setFbLoginId(fbLoginId) {
+  if (!fbLoginId) return;
+  const cleanId = String(fbLoginId).trim();
+  if (!cleanId) return;
+  safeStorageSet('_sk_fb_login_id', cleanId);
+  if (isBrowser) {
+    window._fb_login_id = cleanId;
+    try {
+      document.cookie = `fb_login_id=${encodeURIComponent(cleanId)}; path=/; max-age=7776000; SameSite=Lax`;
+    } catch (_) {}
+  }
+}
+
 // Helper: SHA-256 hash in lowercase hex
 async function sha256(str) {
   if (!str) return null;
@@ -118,6 +179,7 @@ export function getStoredUserData() {
   const name = safeStorageGet('_sk_user_name') || '';
   const district = safeStorageGet('_sk_user_district') || '';
   const extId = getExternalId();
+  const fbLoginId = getFbLoginId();
 
   return {
     phone,
@@ -128,6 +190,7 @@ export function getStoredUserData() {
     state: district || 'Dhaka',
     division: district || 'Dhaka',
     externalId: extId,
+    fb_login_id: fbLoginId || undefined,
   };
 }
 
@@ -163,6 +226,7 @@ export function syncMetaUserProperties(overrideData = null) {
       userProps.st = user.district.toLowerCase();
     }
     try {
+      window.fbq('set', 'autoConfig', false, META_PIXEL_ID);
       window.fbq('init', META_PIXEL_ID, userProps);
     } catch (_) {}
   }
@@ -376,6 +440,7 @@ export const trackViewContent = (product) => {
   const user = getStoredUserData();
   const fbp = getFbp();
   const fbc = getFbc();
+  const fbLoginId = getFbLoginId();
   try {
     fetch(`${API_BASE_URL}/api/v1/events/view-content`, {
       method: 'POST',
@@ -387,6 +452,7 @@ export const trackViewContent = (product) => {
         category: product.brand || 'Personal Wellness',
         fbp,
         fbc,
+        fb_login_id: fbLoginId || undefined,
         eventId,
         eventSourceUrl: isBrowser ? window.location.href : '',
         user
@@ -448,6 +514,7 @@ export const trackAddToCart = (product, quantity = 1) => {
   const user = getStoredUserData();
   const fbp = getFbp();
   const fbc = getFbc();
+  const fbLoginId = getFbLoginId();
   try {
     fetch(`${API_BASE_URL}/api/v1/events/add-to-cart`, {
       method: 'POST',
@@ -461,6 +528,7 @@ export const trackAddToCart = (product, quantity = 1) => {
         category: product.brand || 'Personal Wellness',
         fbp,
         fbc,
+        fb_login_id: fbLoginId || undefined,
         eventId,
         eventSourceUrl: isBrowser ? window.location.href : '',
         user
@@ -513,6 +581,7 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
   const user = getStoredUserData();
   const fbp = getFbp();
   const fbc = getFbc();
+  const fbLoginId = getFbLoginId();
   try {
     fetch(`${API_BASE_URL}/api/v1/events/add-to-cart`, {
       method: 'POST',
@@ -526,6 +595,7 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
         category: 'Personal Wellness',
         fbp,
         fbc,
+        fb_login_id: fbLoginId || undefined,
         eventId,
         eventSourceUrl: isBrowser ? window.location.href : '',
         user
@@ -650,9 +720,23 @@ export const trackPurchase = (order, products = {}) => {
   if (!order || !order.totals) return;
 
   // IMPORTANT: Priority must be orderNumber to exactly match the backend CAPI event_id for Meta deduplication!
-  const orderId = String(order.orderNumber || order.orderId || ('SS-' + Date.now()));
+  const orderId = String(order.orderNumber || order.orderId || ('SS-' + Date.now())).trim();
+  if (!orderId) return;
+
+  // 1. In-memory Set deduplication guard
   if (trackedPurchaseOrders.has(orderId)) return;
   trackedPurchaseOrders.add(orderId);
+
+  // 2. Persistent sessionStorage guard to prevent duplicate Purchase events across re-renders and back/forward navigation
+  if (isBrowser && typeof window.sessionStorage !== 'undefined') {
+    try {
+      const sessionKey = `_sk_purchased_${orderId}`;
+      if (window.sessionStorage.getItem(sessionKey)) {
+        return;
+      }
+      window.sessionStorage.setItem(sessionKey, String(Date.now()));
+    } catch (_) {}
+  }
   const purchasedItems = Object.entries(order.items || {}).filter(([slug, qty]) => {
     if (qty <= 0) return false;
     const baseSlug = slug.split(':::')[0];
@@ -687,12 +771,14 @@ export const trackPurchase = (order, products = {}) => {
     order_id: orderId
   };
 
+  const fbLoginId = order.fb_login_id || order.fbLoginId || getFbLoginId();
   const userData = {
     name: order.customer?.name,
     phone: order.customer?.mobile,
     district: order.customer?.district,
     address: order.customer?.address,
-    external_id: orderId
+    external_id: orderId,
+    ...(fbLoginId ? { fb_login_id: fbLoginId } : {})
   };
 
   // Browser Pixel with orderId as eventID (Deduplicated with server-side CAPI)
