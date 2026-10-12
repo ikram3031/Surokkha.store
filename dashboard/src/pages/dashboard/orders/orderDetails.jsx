@@ -661,15 +661,15 @@ const OrderDetailsPage = () => {
       {!isEditMode ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-card border border-border/80 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-border/60 bg-muted/20">
-                <h3 className="font-semibold text-base flex items-center gap-2">
+            <div className="bg-[#f3f4f6] text-[#111827] border border-[#e5e7eb] rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-[#e5e7eb] bg-[#e5e7eb]/40">
+                <h3 className="font-semibold text-base flex items-center gap-2 text-[#111827]">
                   <Package className="h-4 w-4 text-primary" /> Order Items
                 </h3>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs uppercase bg-muted/40 text-muted-foreground">
+                <table className="w-full text-sm text-left bg-[#f3f4f6] text-[#111827]">
+                  <thead className="text-xs uppercase bg-[#e5e7eb] text-[#4b5563]">
                     <tr>
                       <th className="px-6 py-3 font-semibold">Product</th>
                       <th className="px-6 py-3 font-semibold text-center">Size</th>
@@ -678,10 +678,10 @@ const OrderDetailsPage = () => {
                       <th className="px-6 py-3 font-semibold text-right">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/60">
+                  <tbody className="divide-y divide-[#e5e7eb]">
                     {order.items && order.items.length > 0 ? (
                       order.items.map((item, index) => (
-                        <tr key={index} className="hover:bg-muted/10">
+                        <tr key={index} className="hover:bg-[#e5e7eb]/60 transition-colors">
                           <td className="px-6 py-4 font-medium">
                             <div className="flex items-center gap-2">
                               <span>{item.name}</span>

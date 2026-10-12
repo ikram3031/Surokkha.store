@@ -293,8 +293,8 @@ export const OrdersTable = ({
                   <TableRow
                     className={`cursor-pointer transition-colors ${
                       isExpanded
-                        ? 'bg-muted/40 font-medium border-l-4 border-l-primary'
-                        : 'hover:bg-muted/20'
+                        ? 'bg-primary/10 font-medium border-l-4 border-l-primary'
+                        : 'hover:bg-[#e5e7eb]'
                     }`}
                     onClick={() => toggleOrderExpansion(order.id)}
                   >
@@ -414,7 +414,7 @@ export const OrdersTable = ({
                   </TableRow>
 
                   {isExpanded && (
-                    <TableRow className="hover:bg-transparent border-b bg-muted/10">
+                    <TableRow className="hover:bg-transparent border-b border-[#e5e7eb] bg-[#f9fafb]">
                       <TableCell colSpan={9} className="p-0">
                         <OrderAccordionDetail order={order} />
                       </TableCell>
