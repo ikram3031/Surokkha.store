@@ -3,7 +3,117 @@ import {
   searchCustomers,
   findCustomerByPhoneOrEmail,
   normalizeCustomerPhone,
+  parseCustomerNames,
 } from "../../common/services/customer.service.js";
+
+/**
+ * Manually create a new customer record
+ */
+export const createCustomerController = async (req, res, next) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      fullName,
+      phone,
+      email = "",
+      address = "",
+      thana = "",
+      district = "",
+      postcode = "",
+      notes = "",
+      source = "manual",
+    } = req.body;
+
+    const cleanPhone = normalizeCustomerPhone(phone || "");
+    const { firstName: parsedFirst, lastName: parsedLast } = parseCustomerNames(
+      fullName || "",
+      firstName || "",
+      lastName || ""
+    );
+
+    if (!parsedFirst) {
+      return res.status(400).json({ status: "error", message: "Customer name is required." });
+    }
+    if (!cleanPhone) {
+      return res.status(400).json({ status: "error", message: "A valid phone number is required." });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    const existing = await findCustomerByPhoneOrEmail({ phone: cleanPhone, email: cleanEmail });
+    if (existing) {
+      return res.status(409).json({
+        status: "error",
+        message: "A customer with this phone or email already exists.",
+        data: { id: existing._id.toString(), fullName: [existing.firstName, existing.lastName].filter(Boolean).join(" ") },
+      });
+    }
+
+    const historyEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      action: "created",
+      source: "manual",
+      updatedBy: req.user?.name || req.user?.did || "admin",
+      note: "Customer manually created from dashboard",
+    });
+
+    const customer = await CustomerModel.create({
+      firstName: parsedFirst,
+      lastName: parsedLast,
+      phone: cleanPhone,
+      email: cleanEmail,
+      address: address.trim(),
+      thana: thana.trim(),
+      district: district.trim(),
+      postcode: postcode.trim(),
+      notes: notes.trim(),
+      source,
+      history: [historyEntry],
+    });
+
+    return res.status(201).json({
+      status: "success",
+      message: "Customer created successfully.",
+      data: {
+        ...customer.toJSON(),
+        fullName: [customer.firstName, customer.lastName].filter(Boolean).join(" "),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Soft-delete a customer (sets isActive: false)
+ */
+export const deleteCustomerController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const customer = await CustomerModel.findById(id);
+    if (!customer) {
+      return res.status(404).json({ status: "error", message: "Customer not found." });
+    }
+
+    const historyEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      action: "deleted",
+      source: "manual",
+      updatedBy: req.user?.name || req.user?.did || "admin",
+      note: "Customer soft-deleted from dashboard",
+    });
+
+    customer.isActive = false;
+    customer.history.push(historyEntry);
+    await customer.save();
+
+    return res.json({ status: "success", message: "Customer deleted successfully." });
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * Quick search customers by phone, email, name, or address (for combobox/autocomplete)
