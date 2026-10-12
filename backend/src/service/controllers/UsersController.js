@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import nodemailer from "nodemailer";
+import mongoose from "mongoose";
 import { UserModel } from "../../common/models/user.model.js";
 import { AssetModel } from "../../common/models/asset.model.js";
 import { hashPassword } from "../../common/utils/password.js";
@@ -9,42 +9,46 @@ import { renderUserInviteEmail } from "../../common/templates/userInviteEmailTem
 import {
   validateCreateUserPayload,
   validateUpdateUserPayload,
+  validateResetPasswordPayload,
 } from "../../common/helper/userControllerHelper.js";
+import { LogModel } from "../../common/models/log.model.js";
+import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 
-let defaultTransport;
-
-// Dynamically retrieve or initialize SMTP transport
-const getTransport = () => {
-  if (!defaultTransport) {
-    const isSecure =
-      Number(env.SMTP_PORT) === 465 ||
-      String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-    const transportOpts = {
-      host: env.SMTP_HOST || "127.0.0.1",
-      port: Number(env.SMTP_PORT) || 25,
-      secure: isSecure,
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 8000,
-    };
-
-    if (env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER) {
-      transportOpts.auth = {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
-      };
+// Dispatches user invitation email via active SMTP configuration
+export const sendInvitationEmail = async ({ user, inviteUrl }) => {
+  try {
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured) {
+      console.warn(`[UsersController] Cannot send invitation email to ${user.email}: SMTP is not configured in DB or .env`);
+      return { success: false, reason: "SMTP credentials not configured" };
     }
 
-    defaultTransport = nodemailer.createTransport(transportOpts);
+    const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const logoUrl = clientConfig?.logoUrl || "https://admin.surokkha.store/surokkha_logo.png";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromAddress = `"${brandName}" <${fromEmail}>`;
+
+    const info = await transport.sendMail({
+      from: fromAddress,
+      to: user.email,
+      subject: `You're invited to join ${brandName} as ${user.role}`,
+      html: renderUserInviteEmail({
+        name: user.name,
+        role: user.role,
+        inviteUrl,
+        brandName,
+        logoUrl,
+      }),
+    });
+    console.log(`[UsersController] Invitation email successfully dispatched to ${user.email} (MessageId: ${info.messageId})`);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error(`[UsersController] Failed to send invitation email to ${user.email}:`, err);
+    return { success: false, error: err.message };
   }
-  return defaultTransport;
 };
 
-// List all users in the system.
+// List all users in the system
 export const listUsers = async (req, res, next) => {
   try {
     const users = await UserModel.find().lean();
@@ -54,7 +58,7 @@ export const listUsers = async (req, res, next) => {
   }
 };
 
-// Fetch a single user record by id.
+// Fetch a single user record by id
 export const getUserById = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -66,7 +70,7 @@ export const getUserById = async (req, res, next) => {
   }
 };
 
-// Create a new user / send invitation with role-aware permission checks
+// Create a new user and send invitation with role-aware permission checks
 export const createUser = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
@@ -75,7 +79,6 @@ export const createUser = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Invalid user payload", errors: validationErrors });
     }
 
-    // If creator is Admin, they cannot create Owner or Admin accounts
     const creatorRole = req.user?.role || null;
     if (creatorRole === "Admin" && (payload.role === "Owner" || payload.role === "Admin")) {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to create this role" });
@@ -89,9 +92,8 @@ export const createUser = async (req, res, next) => {
       }
     }
 
-    // Generate secure invite token
     const inviteToken = crypto.randomBytes(32).toString("hex");
-    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
     let passwordHash = null;
     if (payload.password && payload.password.trim()) {
@@ -116,14 +118,13 @@ export const createUser = async (req, res, next) => {
         passwordHash,
         inviteToken,
         inviteTokenExpiresAt,
-        isActive: Boolean(passwordHash), // Active if password explicitly provided, otherwise pending activation
-        createdBy: req.user?.userId || null,
+        isActive: Boolean(passwordHash),
+        createdBy: mongoose.isValidObjectId(req.user?.userId) ? req.user.userId : null,
       });
     }
 
-    // Resolve white-label domain for invitation link
     const origin = req.headers.origin || req.headers.referer || "";
-    let domainUrl = clientConfig?.dashboardUrl || "https://dashboard.plexivia.online";
+    let domainUrl = clientConfig?.dashboardUrl || "https://admin.surokkha.store";
     if (payload.domain) {
       domainUrl = payload.domain.startsWith("http") ? payload.domain : `https://${payload.domain}`;
     } else if (origin) {
@@ -133,47 +134,72 @@ export const createUser = async (req, res, next) => {
     }
     const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
 
-    const brandName = clientConfig?.brandName || env.SMTP_FROM_NAME || "Flexivia";
-    const logoUrl = clientConfig?.logoUrl || "/uploads/assets/logo.webp";
-    const fromEmail = env.SMTP_FROM || env.SMTP_USER || `noreply@${clientConfig?.domain || "plexivia.online"}`;
-    const fromAddress = `"${brandName}" <${fromEmail}>`;
-
-    // Send invitation email non-blockingly if SMTP is available
-    if (env.SMTP_HOST && (env.SMTP_USER || Number(env.SMTP_PORT) === 25)) {
-      Promise.resolve().then(async () => {
-        try {
-          const transport = getTransport();
-          await transport.sendMail({
-            from: fromAddress,
-            to: user.email,
-            subject: `You're invited to join ${brandName} as ${user.role}`,
-            html: renderUserInviteEmail({
-              name: user.name,
-              role: user.role,
-              inviteUrl,
-              brandName,
-              logoUrl,
-            }),
-          });
-          console.log(`[UsersController] Invitation email successfully dispatched to ${user.email}`);
-        } catch (mailErr) {
-          console.error("[UsersController] Failed to send invitation email:", mailErr);
-        }
-      });
-    }
+    const mailResult = await sendInvitationEmail({ user, inviteUrl });
 
     res.status(201).json({
       status: "success",
-      message: "User invited successfully. Invitation link sent via email.",
+      message: mailResult.success
+        ? "User invited successfully. Invitation link sent via email."
+        : "User invited successfully. (Note: Email delivery failed or SMTP not configured; share invite link manually).",
       data: user,
       inviteUrl,
+      emailSent: mailResult.success,
+      emailError: mailResult.error || (mailResult.success ? null : mailResult.reason),
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Update an existing user while enforcing role-based restrictions.
+// Resend invitation email for a pending user
+export const resendInvitation = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: "error", message: "User not found" });
+    }
+
+    if (user.isActive) {
+      return res.status(400).json({ status: "error", message: "This user account is already active" });
+    }
+
+    const inviteToken = crypto.randomBytes(32).toString("hex");
+    const inviteTokenExpiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+
+    user.inviteToken = inviteToken;
+    user.inviteTokenExpiresAt = inviteTokenExpiresAt;
+    await user.save();
+
+    const origin = req.headers.origin || req.headers.referer || "";
+    let domainUrl = clientConfig?.dashboardUrl || "https://admin.surokkha.store";
+    if (req.body?.domain) {
+      domainUrl = req.body.domain.startsWith("http") ? req.body.domain : `https://${req.body.domain}`;
+    } else if (origin) {
+      try {
+        domainUrl = new URL(origin).origin;
+      } catch (_) {}
+    }
+    const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
+
+    const mailResult = await sendInvitationEmail({ user, inviteUrl });
+
+    return res.json({
+      status: "success",
+      message: mailResult.success
+        ? "Invitation email resent successfully."
+        : "Invitation link refreshed, but email delivery failed. You can share the invitation link manually.",
+      data: user,
+      inviteUrl,
+      emailSent: mailResult.success,
+      emailError: mailResult.error || (mailResult.success ? null : mailResult.reason),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update an existing user while enforcing role-based restrictions
 export const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -186,7 +212,6 @@ export const updateUser = async (req, res, next) => {
     const user = await UserModel.findById(userId);
     if (!user) return res.status(404).json({ status: "error", message: "User not found" });
 
-    // If updater is Admin, prevent modifying Owner accounts
     const updaterRole = req.user?.role || null;
     if (updaterRole === "Admin" && user.role === "Owner") {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to modify this user" });
@@ -197,11 +222,11 @@ export const updateUser = async (req, res, next) => {
       if (emailExists) return res.status(409).json({ status: "error", message: "A user with this email already exists" });
     }
 
-    user.name = payload.name.trim();
-    user.email = payload.email.toLowerCase().trim();
-    user.phone = payload.phone.trim();
-    user.role = payload.role || user.role;
-    user.isActive = payload.isActive !== undefined ? Boolean(payload.isActive) : user.isActive;
+    if (payload.name !== undefined) user.name = payload.name.trim();
+    if (payload.email !== undefined) user.email = payload.email.toLowerCase().trim();
+    if (payload.phone !== undefined) user.phone = payload.phone.trim();
+    if (payload.role !== undefined) user.role = payload.role;
+    if (payload.isActive !== undefined) user.isActive = Boolean(payload.isActive);
 
     if (payload.password) {
       user.passwordHash = await hashPassword(payload.password);
@@ -227,7 +252,7 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
-// Delete a user and prevent unsafe admin/self-deletion cases.
+// Delete a user and prevent unsafe admin or self-deletion cases
 export const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -237,12 +262,10 @@ export const deleteUser = async (req, res, next) => {
     const user = await UserModel.findById(userId).lean();
     if (!user) return res.status(404).json({ status: "error", message: "User not found" });
 
-    // Admin cannot delete their own account
     if (requesterRole === "Admin" && requesterId === String(user._id)) {
       return res.status(403).json({ status: "error", message: "Admin cannot delete own account" });
     }
 
-    // Admin cannot delete Owner
     if (requesterRole === "Admin" && user.role === "Owner") {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to delete this user" });
     }
@@ -283,7 +306,6 @@ export const updateProfile = async (req, res, next) => {
       user.name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
     }
     
-    // User cannot change their own email
     if (payload.phone !== undefined) user.phone = payload.phone.trim();
     if (payload.address !== undefined) user.address = payload.address.trim();
     if (payload.avatar !== undefined) user.avatar = payload.avatar.trim();
@@ -291,6 +313,77 @@ export const updateProfile = async (req, res, next) => {
     await user.save();
 
     res.json({ status: "success", data: user.toJSON() });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reset a system user's password (Owner or Admin action)
+ */
+export const resetUserPassword = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const payload = req.body ?? {};
+
+    const validationErrors = validateResetPasswordPayload(payload);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({
+        status: "error",
+        message: validationErrors.join(", "),
+        errors: validationErrors,
+      });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: "error", message: "User not found." });
+    }
+
+    const requesterRole = req.user?.role || "";
+    // Owner protection: Admin cannot reset an Owner's password
+    if (requesterRole === "Admin" && user.role === "Owner") {
+      return res.status(403).json({
+        status: "error",
+        message: "Insufficient permissions: Administrators cannot reset an Owner's password.",
+      });
+    }
+
+    const passwordHash = await hashPassword(payload.password.trim());
+    user.passwordHash = passwordHash;
+    user.isActive = true;
+    user.inviteToken = null;
+    user.inviteTokenExpiresAt = null;
+    await user.save();
+
+    // Log the password reset activity
+    try {
+      const actorName = req.user?.name || req.user?.email || "Admin";
+      const actorDid = req.user?.did || req.user?.userId || "system";
+      await LogModel.create({
+        type: "user",
+        typeDid: user.did || user.id || "user",
+        description: `${actorName} reset the password for system user ${user.name} (${user.email}).`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.warn("Failed to create log for password reset:", logErr);
+    }
+
+    return res.json({
+      status: "success",
+      message: `Password for ${user.name} has been reset successfully.`,
+      data: {
+        id: user.id || user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    });
   } catch (error) {
     next(error);
   }
