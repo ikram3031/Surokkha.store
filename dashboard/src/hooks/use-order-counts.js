@@ -9,6 +9,8 @@ export function useOrderCounts(days = 30) {
       return (res.data && res.data.data) || [];
     },
     staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
   });
 }
 

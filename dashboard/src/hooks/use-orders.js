@@ -101,6 +101,8 @@ export const useOrders = (params) => {
     queryFn: () => fetchOrders(params),
     staleTime: 0,
     refetchOnMount: true,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false,
   });
 };
 
@@ -121,5 +123,7 @@ export const useOrder = (id) => {
     enabled: !!id,
     staleTime: 0,
     refetchOnMount: true,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false,
   });
 };
