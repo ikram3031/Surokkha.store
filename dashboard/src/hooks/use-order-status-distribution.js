@@ -9,6 +9,8 @@ export function useOrderStatusDistribution(range = '30days') {
       return res.data?.data?.statusCounts || {};
     },
     staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
   });
 }
 
