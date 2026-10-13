@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useOrders } from '@/hooks/use-orders';
 import {
@@ -46,7 +47,6 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { OrderAccordionDetail } from '@/components/dashboard/order-accordion-detail';
 import { formatDate } from '@/utils/dateHelper';
-import { Input } from '@/components/ui/input';
 
 // Renders the orders table with expandable accordion rows, filtering, batch selection, and inline actions
 export const OrdersTable = ({
@@ -120,11 +120,20 @@ export const OrdersTable = ({
 
     setIsUpdatingStatus(true);
     try {
-      await apiClient.put(`/api/v1/orders/${statusTarget.id}`, {
+      const payload = {
         status: targetOrderStatus.toLowerCase(),
-        paymentStatus: targetPaymentStatus.toLowerCase(),
-        returnFee: Number(targetReturnFee),
-      });
+      };
+
+      if (targetOrderStatus === 'Return') {
+        payload.returnFee = Number(targetReturnFee);
+        payload.paymentStatus = 'returned';
+      } else {
+        if (targetPaymentStatus && targetPaymentStatus !== 'Not found' && targetPaymentStatus !== 'N/A') {
+          payload.paymentStatus = targetPaymentStatus.toLowerCase();
+        }
+      }
+
+      await apiClient.put(`/api/v1/orders/${statusTarget.id}`, payload);
       toast.success(t('orders.order_updated_success', `Status for order #${statusTarget.orderNumber} updated successfully.`));
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['order', statusTarget.id] });
@@ -205,9 +214,11 @@ export const OrdersTable = ({
       case 'cancelled':
       case 'canceled':
         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_canceled', 'Cancelled')}</Badge>;
-      case 'returned':
+      case 'fake':
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-semibold`}>Fake</Badge>;
       case 'return':
       case 'Return':
+      case 'returned':
         return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_returned', 'Returned')}</Badge>;
       case 'pending':
       case 'unfulfilled':
@@ -258,7 +269,7 @@ export const OrdersTable = ({
             <TableHead className="w-[150px]">{t('orders.order_id', 'Order ID')}</TableHead>
             <TableHead className="w-[180px]">{t('orders.customer_name', 'Customer Name')}</TableHead>
             <TableHead className="w-[110px]">{t('common.date', 'Date')}</TableHead>
-            <TableHead className="w-[120px]">{t('common.total', 'Total Amount')}</TableHead>
+            <TableHead className="w-[120px]">{t('orders.order_amount', 'Order Amount')}</TableHead>
             <TableHead className="w-[120px]">{t('orders.payment_status', 'Payment')}</TableHead>
             <TableHead className="w-[120px]">{t('common.status', 'Status')}</TableHead>
             <TableHead className="w-[60px] text-right">{t('common.actions', 'Actions')}</TableHead>
@@ -291,8 +302,8 @@ export const OrdersTable = ({
                   <TableRow
                     className={`cursor-pointer transition-colors ${
                       isExpanded
-                        ? 'bg-muted/40 font-medium border-l-4 border-l-primary'
-                        : 'hover:bg-muted/20'
+                        ? 'bg-primary/10 font-medium border-l-4 border-l-primary'
+                        : 'hover:bg-[#e5e7eb]'
                     }`}
                     onClick={() => toggleOrderExpansion(order.id)}
                   >
@@ -412,7 +423,7 @@ export const OrdersTable = ({
                   </TableRow>
 
                   {isExpanded && (
-                    <TableRow className="hover:bg-transparent border-b bg-muted/10">
+                    <TableRow className="hover:bg-transparent border-b border-[#e5e7eb] bg-[#f9fafb]">
                       <TableCell colSpan={9} className="p-0">
                         <OrderAccordionDetail order={order} />
                       </TableCell>
@@ -453,6 +464,7 @@ export const OrdersTable = ({
                   <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
                   <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
                   <SelectItem value="Return">Return</SelectItem>
+                  <SelectItem value="Fake" className="cursor-pointer text-destructive font-semibold">Fake</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -467,25 +479,25 @@ export const OrdersTable = ({
                   placeholder="Enter return fee"
                   value={targetReturnFee}
                   onChange={(e) => setTargetReturnFee(e.target.value)}
-                  className="w-full h-9"
                 />
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">{t('orders.payment_status', 'Payment Status')}</label>
-              <Select value={targetPaymentStatus} onValueChange={(val) => setTargetPaymentStatus(val || "Pending")}>
-                <SelectTrigger className="w-full h-9 cursor-pointer">
-                  <SelectValue placeholder={t('orders.payment_status', 'Payment status')} />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
-                  <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
-                  <SelectItem value="Partial">{t('orders.status_partial', 'Partial')}</SelectItem>
-                  <SelectItem value="N/A">N/A</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {targetOrderStatus !== 'Return' && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground">{t('orders.payment_status', 'Payment Status')}</label>
+                <Select value={targetPaymentStatus} onValueChange={(val) => setTargetPaymentStatus(val || "Pending")}>
+                  <SelectTrigger className="w-full h-9 cursor-pointer">
+                    <SelectValue placeholder={t('orders.payment_status', 'Payment status')} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border shadow-md" side="bottom">
+                    <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
+                    <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
+                    <SelectItem value="Partial">{t('orders.status_partial', 'Partial')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <DialogFooter>

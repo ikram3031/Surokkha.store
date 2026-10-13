@@ -18,16 +18,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Mail, KeyRound } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/lib/auth-context';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import { ResetPasswordDialog } from '@/components/dashboard/reset-password-dialog';
 import { formatDateTime } from '@/utils/dateHelper';
 
 export function SystemUsersTable({
@@ -57,6 +58,9 @@ export function SystemUsersTable({
   }, [totalPages, onTotalPagesChange, responseData]);
 
   const [toggling, setToggling] = useState(null);
+  const [resendingInvite, setResendingInvite] = useState(null);
+  const [resetPasswordTarget, setResetPasswordTarget] = useState(null);
+  const { user: currentUser } = useAuth();
 
   const handleToggleStatus = async (id, currentStatus) => {
     setToggling(id);
@@ -69,6 +73,21 @@ export function SystemUsersTable({
       toast.error('Failed to update user status.');
     } finally {
       setToggling(null);
+    }
+  };
+
+  const handleResendInvite = async (id, name) => {
+    setResendingInvite(id);
+    try {
+      const res = await apiClient.post(`/api/v1/users/${id}/resend-invite`, {
+        domain: window.location.origin,
+      });
+      toast.success(res.data?.message || `Invitation email resent to ${name}.`);
+      queryClient.invalidateQueries({ queryKey: ['system-users'] });
+    } catch (err) {
+      toast.error(err.response?.data?.message || `Failed to resend invitation to ${name}.`);
+    } finally {
+      setResendingInvite(null);
     }
   };
 
@@ -227,7 +246,25 @@ export function SystemUsersTable({
                     } />
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)}>
+                      {user.status !== 'Active' && (
+                        <DropdownMenuItem
+                          disabled={resendingInvite === user.id}
+                          onClick={() => handleResendInvite(user.id, user.name)}
+                          className="cursor-pointer text-indigo-600 dark:text-indigo-400 font-medium"
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          {resendingInvite === user.id ? 'Sending Invite...' : 'Resend Invite Email'}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        onClick={() => setResetPasswordTarget(user)}
+                        className="cursor-pointer font-medium"
+                        disabled={currentUser?.role === 'Admin' && user.role === 'Owner'}
+                      >
+                        <KeyRound className="h-4 w-4 mr-2 text-primary" />
+                        Reset Password
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)} className="cursor-pointer">
                         Toggle Active Status
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -258,6 +295,12 @@ export function SystemUsersTable({
         isDeleting={isRevoking}
         title="Revoke Access"
         description={`Are you sure you want to revoke access for ${deleteTarget?.name ?? ''}?`}
+      />
+      <ResetPasswordDialog
+        open={!!resetPasswordTarget}
+        onOpenChange={(open) => !open && setResetPasswordTarget(null)}
+        user={resetPasswordTarget}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['system-users'] })}
       />
     </div>
   );

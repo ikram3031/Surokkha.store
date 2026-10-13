@@ -19,6 +19,7 @@ import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEvent
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
 import { SpamListModel } from '../../common/models/spamList.model.js';
+import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
 const { Types } = mongoose;
 
@@ -139,6 +140,13 @@ export const createOrder = async (req, res, next) => {
 
     const orderData = await buildOrderDocument(payload);
     const createdOrder = await OrderModel.create(orderData);
+
+    // Sync / Upsert Customer collection record with automatic history diff tracking
+    await upsertCustomerFromOrder({
+      order: createdOrder,
+      payload,
+      updatedBy: "customer-checkout",
+    });
 
     const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
 

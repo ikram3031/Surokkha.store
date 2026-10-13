@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
+import { useItems } from "@/hooks/use-items";
 import { apiClient, baseURL, getApiBaseUrl } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useCategories, useBrands } from "@/lib/category-cache";
@@ -33,6 +34,7 @@ import {
   ArrowLeft,
   CheckCircle,
   Package,
+  Boxes,
   X,
   Layers,
   Tag,
@@ -42,6 +44,12 @@ import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderIn
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
 import { resolvePaymentOptions, getPaymentMethodLabel } from "@/utils/orderDetailsHelper";
+import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
+import { useCustomerSearch, formatPhoneForOrderInput } from "@/hooks/use-customers";
+import {
+  CustomerSuggestionsDropdown,
+  SelectedCustomerBanner,
+} from "@/components/orders/CustomerLookup";
 
 // Renders the modal dialog for selecting product variant and quantity before adding to cart
 const ProductAddDialog = ({
@@ -74,6 +82,9 @@ const ProductAddDialog = ({
       ? `${product.id}__${selectedVariant.size}`
       : product.id;
 
+    const rawId = product.id || product._id || "";
+    const isItem = product.itemType === "item" || product.entityType === "item";
+
     onAddToCart({
       id: cartKey,
       name: isVariant
@@ -84,6 +95,10 @@ const ProductAddDialog = ({
       image: product.image,
       sku: isVariant ? selectedVariant.sku || product.sku : product.sku,
       size: isVariant ? selectedVariant.size : "",
+      productId: !isItem ? rawId : "",
+      itemId: isItem ? rawId : "",
+      itemType: isItem ? "item" : "product",
+      productDid: product.did || product.sku || "",
     });
 
     setSelectedVariant(null);
@@ -198,10 +213,9 @@ const ProductAddDialog = ({
                       }}
                       className={`
                         w-full flex items-center justify-between px-4 py-2.5 rounded-lg border text-sm transition-all
-                        ${
-                          hasNoStock
-                            ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
-                            : isSelected
+                        ${hasNoStock
+                          ? "opacity-50 cursor-not-allowed border-border bg-muted/20"
+                          : isSelected
                             ? "border-primary bg-primary/8 ring-1 ring-primary/30 cursor-pointer"
                             : "border-border bg-background hover:border-primary/60 hover:bg-primary/5 cursor-pointer"
                         }
@@ -294,6 +308,7 @@ const NewInStoreOrderPage = () => {
   const { user } = useAuth();
   const hasBrand = clientConfig?.features?.brand !== false && clientConfig?.features?.brands !== false;
 
+  const [catalogType, setCatalogType] = useState("products"); // "products" | "items"
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [brandFilter, setBrandFilter] = useState("All");
@@ -310,6 +325,16 @@ const NewInStoreOrderPage = () => {
     ? productsResponse.data
     : [];
 
+  const { data: itemsResponse, isLoading: itemsLoading } = useItems({
+    search: searchQuery || undefined,
+    category: categoryFilter !== "All" ? categoryFilter : undefined,
+    brand: brandFilter !== "All" ? brandFilter : undefined,
+    limit: 50,
+  });
+  const items = Array.isArray(itemsResponse?.data)
+    ? itemsResponse.data
+    : [];
+
   const [cart, setCart] = useState([]);
   const [dialogProduct, setDialogProduct] = useState(null);
   const [completedOrder, setCompletedOrder] = useState(null);
@@ -320,8 +345,40 @@ const NewInStoreOrderPage = () => {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [customerDistrict, setCustomerDistrict] = useState("Dhaka");
+  const [customerThana, setCustomerThana] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [activeLookupField, setActiveLookupField] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const activeLookupQuery =
+    activeLookupField === "phone"
+      ? customerPhone
+      : activeLookupField === "email"
+      ? customerEmail
+      : activeLookupField === "name"
+      ? customerName
+      : "";
+
+  const { customers: matchedCustomers, isLoading: isSearchingCustomers } = useCustomerSearch(
+    activeLookupQuery,
+    Boolean(activeLookupField)
+  );
+
+  const handleSelectCustomer = useCallback((c) => {
+    if (!c) return;
+    setSelectedCustomer(c);
+    const fullName = c.fullName || [c.firstName, c.lastName].filter(Boolean).join(" ");
+    if (fullName) setCustomerName(fullName);
+    if (c.phone) setCustomerPhone(formatPhoneForOrderInput(c.phone, 10));
+    if (c.email) setCustomerEmail(c.email);
+    if (c.address) setCustomerAddress(c.address);
+    if (c.district) setCustomerDistrict(c.district);
+    if (c.thana !== undefined) setCustomerThana(c.thana || "");
+    setActiveLookupField(null);
+    toast.success(`Auto-filled customer: ${fullName || c.phone}`);
+  }, []);
 
   const paymentOptions = useMemo(() => resolvePaymentOptions(true), []);
 
@@ -379,7 +436,7 @@ const NewInStoreOrderPage = () => {
       return;
     }
     if (customerPhone.trim().length !== 10) {
-      toast.error("Please enter a valid 10-digit Phone Number.");
+      toast.error("Please enter a valid Phone Number.");
       return;
     }
     if (customerEmail.trim() && !isValidEmail(customerEmail.trim())) {
@@ -395,8 +452,8 @@ const NewInStoreOrderPage = () => {
         phone: `+880${customerPhone.trim()}`,
         email: customerEmail.trim() || "",
         address: customerAddress.trim() || "In-Store",
-        thana: "Dhaka",
-        district: "Dhaka",
+        thana: customerThana.trim() || "Dhaka",
+        district: customerDistrict.trim() || "Dhaka",
         zip: "1000",
       };
 
@@ -411,8 +468,14 @@ const NewInStoreOrderPage = () => {
           name: item.name,
           quantity: item.quantity,
           unitPrice: item.price,
-          size: item.size,
-          concentration: "",
+          size: item.size || "",
+          concentration: item.concentration || "",
+          productId: item.productId || "",
+          itemId: item.itemId || "",
+          itemType: item.itemType || "product",
+          productDid: item.productDid || "",
+          sku: item.sku || "",
+          image: item.image || "",
         })),
         subtotal,
         discountTotalAmount: discountAmount,
@@ -460,6 +523,8 @@ const NewInStoreOrderPage = () => {
         customerEmail: customerEmail.trim() || "",
         customerPhone: `+880${customerPhone.trim()}`,
         customerAddress: customerAddress.trim() || "In-Store",
+        customerDistrict: customerDistrict.trim() || "Dhaka",
+        customerThana: customerThana.trim() || "",
         subtotalAmount: subtotal,
         discountAmount: discountAmount,
         totalAmount: finalTotal,
@@ -491,6 +556,15 @@ const NewInStoreOrderPage = () => {
 
   const closeCompletedDialog = () => {
     setCompletedOrder(null);
+    setCart([]);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerEmail("");
+    setCustomerAddress("");
+    setCustomerDistrict("Dhaka");
+    setCustomerThana("");
+    setSelectedCustomer(null);
+    setDiscount("");
   };
 
   return (
@@ -518,10 +592,55 @@ const NewInStoreOrderPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-4">
           <div className="bg-card border rounded-xl p-5 shadow-sm">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <Package className="h-5 w-5 text-primary" />
-              {t("nav.products", "Product Catalogue")}
-            </h3>
+            <div className="flex items-center justify-between gap-2 mb-4 pb-2 border-b">
+              <div className="flex items-center gap-2">
+                {catalogType === "products" ? (
+                  <Package className="h-5 w-5 text-primary" />
+                ) : (
+                  <Boxes className="h-5 w-5 text-primary" />
+                )}
+                <h3 className="font-semibold text-lg">
+                  {catalogType === "products"
+                    ? t("nav.products", "Product Catalogue")
+                    : t("nav.items", "Item Catalogue")}
+                </h3>
+              </div>
+
+              <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setCatalogType("products")}
+                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "products"
+                      ? "bg-background text-foreground shadow-sm font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  <Package className="h-3.5 w-3.5" />
+                  <span>Products</span>
+                  {products.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">
+                      {products.length}
+                    </Badge>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCatalogType("items")}
+                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "items"
+                      ? "bg-background text-foreground shadow-sm font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  <Boxes className="h-3.5 w-3.5" />
+                  <span>Items</span>
+                  {items.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">
+                      {items.length}
+                    </Badge>
+                  )}
+                </button>
+              </div>
+            </div>
 
             <div className="flex gap-2 mb-3">
               <Select
@@ -564,7 +683,7 @@ const NewInStoreOrderPage = () => {
             <div className="relative mb-4">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t("products.search_products", "Search products by name or SKU...")}
+                placeholder={catalogType === "products" ? t("products.search_products", "Search products by name or SKU...") : "Search items by name or SKU..."}
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -579,113 +698,229 @@ const NewInStoreOrderPage = () => {
               )}
             </div>
 
-            {productsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-24 rounded-lg bg-muted animate-pulse"
-                  />
-                ))}
-              </div>
-            ) : products.length === 0 ? (
-              <div className="py-16 text-center text-muted-foreground">
-                <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                <p>{t("common.no_data", "No products found")}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[540px] overflow-y-auto pr-1">
-                {products.map((product) => {
-                  const inCart = cart.filter((c) =>
-                    c.id.startsWith(product.id),
-                  );
-                  const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
-                  const isOutOfStock = product.status === "Out of Stock";
-                  const isVariant = product.type === "variant";
-                  const displayPrice = isVariant
-                    ? Math.min(
+            {catalogType === "products" ? (
+              productsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-24 rounded-lg bg-muted animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : products.length === 0 ? (
+                <div className="py-16 text-center text-muted-foreground">
+                  <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p>{t("common.no_data", "No products found")}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[540px] overflow-y-auto pr-1">
+                  {products.map((product) => {
+                    const inCart = cart.filter((c) =>
+                      c.id.startsWith(product.id),
+                    );
+                    const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
+                    const isOutOfStock = product.status === "Out of Stock";
+                    const isVariant = product.type === "variant";
+                    const displayPrice = isVariant
+                      ? Math.min(
                         ...(product.variants || []).map((v) =>
                           effectivePrice(v.price, v.offerPrice ?? null),
                         ),
                       )
-                    : effectivePrice(product.price, product.offerPrice ?? null);
+                      : effectivePrice(product.price, product.offerPrice ?? null);
 
-                  return (
-                    <div
-                      key={product.id}
-                      className={`
-                        flex items-center gap-3 p-3 rounded-xl border bg-background transition-all
-                        ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-sm"}
-                        ${cartQty > 0 ? "border-primary/50 bg-primary/3" : "border-border"}
-                      `}
-                    >
-                      <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-6 w-6 text-muted-foreground/30" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm leading-tight truncate">
-                          {product.name}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground truncate">
-                          {product.sku}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-sm font-semibold text-primary">
-                            {isVariant
-                              ? `${formatBDT(displayPrice)}`
-                              : formatBDT(displayPrice)}
-                          </span>
-                          {isVariant && (
-                            <Badge
-                              variant="secondary"
-                              className="text-[10px] px-1 py-0 gap-0.5"
-                            >
-                              <Layers className="h-2.5 w-2.5" />{" "}
-                              {product.variants?.length ?? 0} {t("products.attributes_variations", "sizes")}
-                            </Badge>
+                    return (
+                      <div
+                        key={product.id}
+                        className={`
+                          flex items-center gap-3 p-3 rounded-xl border bg-background transition-all
+                          ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-sm"}
+                          ${cartQty > 0 ? "border-primary/50 bg-primary/3" : "border-border"}
+                        `}
+                      >
+                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative">
+                          {product.image ? (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-6 w-6 text-muted-foreground/30" />
+                            </div>
                           )}
                         </div>
-                      </div>
 
-                      <div className="flex flex-col items-center gap-1">
-                        {cartQty > 0 && (
-                          <span className="text-[10px] font-semibold text-primary">
-                            ×{cartQty}
-                          </span>
-                        )}
-                        <button
-                          disabled={isOutOfStock}
-                          onClick={() =>
-                            !isOutOfStock && setDialogProduct(product)
-                          }
-                          className={`
-                            h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer
-                            ${
-                              isOutOfStock
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm leading-tight truncate">
+                            {product.name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            {product.sku}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-sm font-semibold text-primary">
+                              {isVariant
+                                ? `${formatBDT(displayPrice)}`
+                                : formatBDT(displayPrice)}
+                            </span>
+                            {isVariant && (
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] px-1 py-0 gap-0.5"
+                              >
+                                <Layers className="h-2.5 w-2.5" />{" "}
+                                {product.variants?.length ?? 0} {t("products.attributes_variations", "sizes")}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1">
+                          {cartQty > 0 && (
+                            <span className="text-[10px] font-semibold text-primary">
+                              ×{cartQty}
+                            </span>
+                          )}
+                          <button
+                            disabled={isOutOfStock}
+                            onClick={() =>
+                              !isOutOfStock && setDialogProduct(product)
+                            }
+                            className={`
+                              h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer
+                              ${isOutOfStock
                                 ? "bg-muted cursor-not-allowed text-muted-foreground"
                                 : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-sm"
-                            }
-                          `}
-                          title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
+                              }
+                            `}
+                            title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )
+            ) : (
+              itemsLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-24 rounded-lg bg-muted animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : items.length === 0 ? (
+                <div className="py-16 text-center text-muted-foreground">
+                  <Boxes className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p>No items found</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[540px] overflow-y-auto pr-1">
+                  {items.map((item) => {
+                    const inCart = cart.filter((c) =>
+                      c.id.startsWith(item.id),
+                    );
+                    const cartQty = inCart.reduce((s, c) => s + c.quantity, 0);
+                    const isOutOfStock = item.status === "Out of Stock" || item.stockStatus === "outofstock";
+                    const isVariant = item.type === "variant" && (item.variants?.length ?? 0) > 0;
+                    const displayPrice = isVariant
+                      ? Math.min(
+                        ...(item.variants || []).map((v) =>
+                          effectivePrice(v.price, v.offerPrice ?? null),
+                        ),
+                      )
+                      : effectivePrice(item.price, item.offerPrice ?? null);
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`
+                          flex items-center gap-3 p-3 rounded-xl border bg-background transition-all
+                          ${isOutOfStock ? "opacity-50" : "hover:border-primary/40 hover:shadow-sm"}
+                          ${cartQty > 0 ? "border-primary/50 bg-primary/3" : "border-border"}
+                        `}
+                      >
+                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0 relative">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Boxes className="h-6 w-6 text-muted-foreground/30" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm leading-tight truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            {item.sku}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-sm font-semibold text-primary">
+                              {isVariant
+                                ? `${formatBDT(displayPrice)}`
+                                : formatBDT(displayPrice)}
+                            </span>
+                            {isVariant ? (
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] px-1 py-0 gap-0.5"
+                              >
+                                <Layers className="h-2.5 w-2.5" />{" "}
+                                {item.variants?.length ?? 0} {t("products.attributes_variations", "sizes")}
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-border/60 text-muted-foreground"
+                              >
+                                Item
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1">
+                          {cartQty > 0 && (
+                            <span className="text-[10px] font-semibold text-primary">
+                              ×{cartQty}
+                            </span>
+                          )}
+                          <button
+                            disabled={isOutOfStock}
+                            onClick={() =>
+                              !isOutOfStock && setDialogProduct({ ...item, itemType: "item" })
+                            }
+                            className={`
+                              h-8 w-8 rounded-lg flex items-center justify-center transition-all cursor-pointer
+                              ${isOutOfStock
+                                ? "bg-muted cursor-not-allowed text-muted-foreground"
+                                : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-sm"
+                              }
+                            `}
+                            title={isOutOfStock ? t("products.out_of_stock", "Out of Stock") : t("orders.add_to_cart", "Add to cart")}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             )}
           </div>
         </div>
@@ -694,17 +929,50 @@ const NewInStoreOrderPage = () => {
           <div className="bg-card border rounded-xl p-5 shadow-sm">
             <h3 className="font-semibold text-base mb-3">{t("orders.customer_info", "Customer Info")}</h3>
             <div className="space-y-3">
-              <div>
+              {selectedCustomer && (
+                <SelectedCustomerBanner
+                  customer={selectedCustomer}
+                  currentValues={{
+                    name: customerName,
+                    phone: customerPhone,
+                    email: customerEmail,
+                    address: customerAddress,
+                    district: customerDistrict,
+                    thana: customerThana,
+                  }}
+                  onClear={() => setSelectedCustomer(null)}
+                  phoneLength={10}
+                />
+              )}
+
+              <div className="relative">
                 <label className="text-xs text-muted-foreground mb-1 block">
                   {t("orders.customer_name", "Customer Name")} <span className="text-destructive">*</span>
                 </label>
                 <Input
                   placeholder={t("orders.customer", "Walk-in Customer")}
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onFocus={() => setActiveLookupField("name")}
+                  onBlur={() =>
+                    setTimeout(
+                      () => setActiveLookupField((prev) => (prev === "name" ? null : prev)),
+                      200
+                    )
+                  }
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    setActiveLookupField("name");
+                  }}
+                />
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "name"}
+                  onSelect={handleSelectCustomer}
                 />
               </div>
-              <div>
+
+              <div className="relative">
                 <label className="text-xs text-muted-foreground mb-1 block">
                   {t("common.phone", "Phone Number")} <span className="text-destructive">*</span>
                 </label>
@@ -718,16 +986,31 @@ const NewInStoreOrderPage = () => {
                     placeholder="1XXXXXXXXX"
                     maxLength={10}
                     value={customerPhone}
+                    onFocus={() => setActiveLookupField("phone")}
+                    onBlur={() =>
+                      setTimeout(
+                        () => setActiveLookupField((prev) => (prev === "phone" ? null : prev)),
+                        200
+                      )
+                    }
                     onChange={(e) => {
                       const val = e.target.value
                         .replace(/\D/g, "")
                         .slice(0, 10);
                       setCustomerPhone(val);
+                      setActiveLookupField("phone");
                     }}
                   />
                 </div>
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "phone"}
+                  onSelect={handleSelectCustomer}
+                />
               </div>
-              <div>
+
+              <div className="relative">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-muted-foreground block">
                     {t("common.email", "Email")} ({t("common.optional", "Optional")})
@@ -742,8 +1025,24 @@ const NewInStoreOrderPage = () => {
                   type="email"
                   placeholder="email@example.com"
                   value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  onFocus={() => setActiveLookupField("email")}
+                  onBlur={() =>
+                    setTimeout(
+                      () => setActiveLookupField((prev) => (prev === "email" ? null : prev)),
+                      200
+                    )
+                  }
+                  onChange={(e) => {
+                    setCustomerEmail(e.target.value);
+                    setActiveLookupField("email");
+                  }}
                   className={isEmailInvalid ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+                <CustomerSuggestionsDropdown
+                  customers={matchedCustomers}
+                  isLoading={isSearchingCustomers}
+                  open={activeLookupField === "email"}
+                  onSelect={handleSelectCustomer}
                 />
               </div>
               <div>
@@ -755,6 +1054,33 @@ const NewInStoreOrderPage = () => {
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    {t("orders.district", "District")}
+                  </label>
+                  <DistrictCombobox
+                    value={customerDistrict}
+                    onChange={(val) => {
+                      setCustomerDistrict(val);
+                      setCustomerThana("");
+                    }}
+                    placeholder={t("orders.select_district", "Select district...")}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    {t("orders.thana", "Thana / Area")}
+                  </label>
+                  <ThanaCombobox
+                    district={customerDistrict}
+                    value={customerThana}
+                    onChange={(val) => setCustomerThana(val)}
+                    placeholder={t("orders.select_thana", "Select thana / area...")}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -797,9 +1123,16 @@ const NewInStoreOrderPage = () => {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">
-                        {item.name}
-                      </p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-xs font-medium truncate">
+                          {item.name}
+                        </p>
+                        {item.itemType === "item" && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-normal">
+                            Item
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {formatBDT(item.price)} × {item.quantity} ={" "}
                         <span className="font-semibold text-foreground">
@@ -1010,6 +1343,14 @@ const NewInStoreOrderPage = () => {
                     </p>
                     <p>{completedOrder.customerPhone}</p>
                   </div>
+                  <div className="col-span-2">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {t("orders.district", "Location")}
+                    </p>
+                    <p className="font-medium text-foreground">
+                      {completedOrder.customerDistrict}{completedOrder.customerThana ? ` (${completedOrder.customerThana})` : ""}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1060,6 +1401,8 @@ const NewInStoreOrderPage = () => {
             email: completedOrder.customerEmail,
             phone: completedOrder.customerPhone,
             address: completedOrder.customerAddress,
+            district: completedOrder.customerDistrict,
+            thana: completedOrder.customerThana,
           },
         } : null)}
       />

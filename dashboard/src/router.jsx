@@ -33,6 +33,11 @@ import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
 import AllMedia from './pages/dashboard/allMedia';
 
+// Items
+import ItemsList from './pages/dashboard/items/itemsList';
+import ItemDetails from './pages/dashboard/items/itemDetails';
+import AddNewItem from './pages/dashboard/items/addNewItem';
+
 // Products
 import ProductsList from './pages/dashboard/products/productsList';
 import OnSaleProductsList from './pages/dashboard/products/onSaleProductsList';
@@ -355,6 +360,43 @@ const dashboardRoutes = [
           { path: 'bulk-image-resize', element: <Navigate to="/dashboard/tools/bulk-image-resize" replace /> },
           { path: 'meta-catalog', element: <Navigate to="/dashboard/tools/meta-catalog" replace /> },
           { path: 'logs', element: <Navigate to="/dashboard/logs" replace /> },
+        ],
+      },
+      {
+        path: 'items',
+        children: [
+          {
+            path: '',
+            element: (
+              <RoleGuard menuKey="items.list">
+                <ItemsList />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'new',
+            element: (
+              <RoleGuard menuKey="items.list">
+                <AddNewItem />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'new/:category',
+            element: (
+              <RoleGuard menuKey="items.list">
+                <AddNewItem />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <RoleGuard menuKey="items.list">
+                <ItemDetails />
+              </RoleGuard>
+            ),
+          },
         ],
       },
       {

@@ -3,11 +3,14 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { OrderModel } from '../models/order.model.js';
 import { ProductModel } from '../models/product.model.js';
+import { ItemModel } from '../models/item.model.js';
 import { MemberModel } from '../models/member.model.js';
 import { PaymentModel } from '../models/payment.model.js';
 import { UserModel } from '../models/user.model.js';
+import { FakeOrderModel } from '../models/fakeOrder.model.js';
 import { buildOrderNumber } from './orderHelper.js';
 import { config, getClientPolicy } from '../config/index.js';
+import { extractClientIp } from '../services/facebookCapi.service.js';
 
 const { Types } = mongoose;
 
@@ -45,36 +48,89 @@ export const resolveUserIdFromReference = async (reference) => {
 };
 
 // Normalize checkout items into the order schema shape expected by the database.
+// Supports both 'Product' and 'Item' collections, variant sizes, skus, and IDs seamlessly.
 export const normalizeOrderItems = async (items = []) => {
-  const normalized = (items || []).map((item) => ({
-    name: item.name ?? item.productName ?? 'Unknown product',
-    quantity: Number(item.quantity || 1),
-    unitPrice: Number(item.unitPrice ?? item.price ?? 0),
-    size: item.size ?? item.variant ?? '',
-    concentration: item.concentration ?? '',
-    productDid: item.productDid ?? '',
-  }));
+  const normalized = (items || []).map((item) => {
+    const rawRef = item.productId || item.itemId || item.id || item._id || item.productDid || '';
+    const itemType = item.itemType || (item.itemId ? 'item' : item.productId ? 'product' : 'product');
+    return {
+      name: item.name ?? item.productName ?? 'Unknown product',
+      quantity: Number(item.quantity || 1),
+      unitPrice: Number(item.unitPrice ?? item.price ?? 0),
+      size: item.size ?? item.variant ?? '',
+      concentration: item.concentration ?? '',
+      productDid: item.productDid ?? (typeof rawRef === 'string' && rawRef.length === 16 ? rawRef : ''),
+      productId: item.productId || (itemType === 'product' && rawRef ? String(rawRef) : ''),
+      itemId: item.itemId || (itemType === 'item' && rawRef ? String(rawRef) : ''),
+      itemType: itemType,
+      sku: item.sku || '',
+      image: item.image || item.imageUrl || '',
+    };
+  });
 
   const needsResolution = normalized.filter((item) => !item.productDid || item.productDid.length !== 16);
   if (needsResolution.length > 0) {
-    const slugs = needsResolution.map((i) => i.productDid).filter(Boolean);
+    const refs = needsResolution.map((i) => i.productId || i.itemId || i.productDid).filter(Boolean);
+    const objectIds = refs.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
+    const slugs = refs;
     const names = needsResolution.map((i) => i.name).filter(Boolean);
-    const foundProds = await ProductModel.find({
-      $or: [
-        { did: { $in: slugs } },
-        { slug: { $in: slugs } },
-        { name: { $in: names } },
-      ],
-    }, 'did slug name').lean();
 
-    const mapBySlug = new Map(foundProds.map((p) => [p.slug, p.did]));
-    const mapByName = new Map(foundProds.map((p) => [p.name, p.did]));
-    const mapByDid = new Map(foundProds.map((p) => [p.did, p.did]));
+    // Search in both Product and Item collections
+    const [foundProds, foundItems] = await Promise.all([
+      ProductModel.find({
+        $or: [
+          ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : []),
+          { did: { $in: slugs } },
+          { slug: { $in: slugs } },
+          { name: { $in: names } },
+        ],
+      }, '_id did slug name sku type').lean(),
+      ItemModel.find({
+        $or: [
+          ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : []),
+          { did: { $in: slugs } },
+          { slug: { $in: slugs } },
+          { name: { $in: names } },
+        ],
+      }, '_id did slug name sku type').lean(),
+    ]);
+
+    const buildLookupMaps = (docs, defaultType) => {
+      const byId = new Map();
+      const byDid = new Map();
+      const bySlug = new Map();
+      const byName = new Map();
+      for (const d of docs) {
+        const info = { did: d.did, id: d._id.toString(), sku: d.sku || '', type: defaultType };
+        byId.set(d._id.toString(), info);
+        if (d.did) byDid.set(d.did, info);
+        if (d.slug) bySlug.set(d.slug, info);
+        if (d.name) byName.set(d.name, info);
+      }
+      return { byId, byDid, bySlug, byName };
+    };
+
+    const prodMaps = buildLookupMaps(foundProds, 'product');
+    const itemMaps = buildLookupMaps(foundItems, 'item');
 
     for (const item of needsResolution) {
-      const resolved = mapByDid.get(item.productDid) || mapBySlug.get(item.productDid) || mapByName.get(item.name);
+      const key = item.productId || item.itemId || item.productDid;
+      const resolved = 
+        prodMaps.byId.get(key) || prodMaps.byDid.get(key) || prodMaps.bySlug.get(key) || prodMaps.byName.get(item.name) ||
+        itemMaps.byId.get(key) || itemMaps.byDid.get(key) || itemMaps.bySlug.get(key) || itemMaps.byName.get(item.name);
+
       if (resolved) {
-        item.productDid = resolved;
+        item.productDid = resolved.did;
+        if (resolved.type === 'item') {
+          item.itemId = resolved.id;
+          item.itemType = 'item';
+        } else {
+          item.productId = resolved.id;
+          item.itemType = 'product';
+        }
+        if (!item.sku && resolved.sku) {
+          item.sku = resolved.sku;
+        }
       }
     }
   }
@@ -83,7 +139,7 @@ export const normalizeOrderItems = async (items = []) => {
 };
 
 // Build the Mongo order document from the incoming checkout payload.
-export const buildOrderDocument = async (payload) => {
+export const buildOrderDocument = async (payload, req = null) => {
   const createdByUserId = await resolveUserIdFromReference(payload.createdBy);
 
   const billingInfo = {
@@ -117,16 +173,37 @@ export const buildOrderDocument = async (payload) => {
     : (isInstore ? 'completed' : 'processing');
 
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
+  const resolvedSiteKey = String(payload.siteKey || (payload.clientDomain?.includes('shop') ? 'shop' : 'store')).toLowerCase().trim();
+  const resolvedDomain = payload.clientDomain || (resolvedSiteKey === 'shop' ? 'surokkha.shop' : 'surokkha.store');
+  const customPrefix = payload.orderPrefix || null;
+
+    const calculatedTotal = Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0)));
+  const rawMethod = normalizeText(payload.paymentMethod).toLowerCase();
+  const isCash = rawMethod === 'cash' || rawMethod === 'instore';
+  const initialPaidAmount = isInstore || isCash ? calculatedTotal : Number(payload.paidAmount || 0);
+  let initialPaymentStatus = 'pending';
+  if (payload.paymentStatus) {
+    initialPaymentStatus = String(payload.paymentStatus).toLowerCase().trim();
+  } else if (isInstore || (initialPaidAmount >= calculatedTotal && calculatedTotal > 0)) {
+    initialPaymentStatus = 'paid';
+  } else if (initialPaidAmount > 0) {
+    initialPaymentStatus = 'partial';
+  }
 
   return {
-    orderNumber: await buildOrderNumber(resolvedOrderType),
-    status: ['processing', 'shipped', 'completed', 'cancelled'].includes(initialStatus) ? initialStatus : 'processing',
+    orderNumber: await buildOrderNumber(resolvedOrderType, resolvedSiteKey, customPrefix),
+    siteKey: resolvedSiteKey,
+    clientDomain: resolvedDomain,
+    status: ['processing', 'shipped', 'completed', 'cancelled', 'fake'].includes(initialStatus) ? initialStatus : 'processing',
     createdBy: createdByUserId,
     updatedBy: null,
     member: payload.memberId && Types.ObjectId.isValid(payload.memberId) ? payload.memberId : undefined,
     billingInfo,
     shippingInfo,
     paymentMethod: normalizeText(payload.paymentMethod),
+    paymentStatus: initialPaymentStatus,
+    paidAmount: initialPaidAmount,
+    paymentPhone: normalizeText(payload.paymentPhone || ''),
     shippingTotalAmount: Number(payload.shippingTotalAmount || payload.shippingFee || 0),
     discountTotalAmount: Number(payload.discountTotalAmount || 0),
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
@@ -136,25 +213,17 @@ export const buildOrderDocument = async (payload) => {
       subtotal: Number(payload.subtotal || payload.subTotal || 0),
       shippingFee: Number(payload.shippingFee || payload.shippingTotalAmount || payload.shipping || 0),
       tax: Number(payload.tax || 0),
-      total: Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0))),
+      total: calculatedTotal,
     },
+    ipAddress: normalizeText(payload.ipAddress || (req ? extractClientIp(req) : '')) || null,
+    fb_login_id: normalizeText(payload.fb_login_id || payload.fbLoginId || req?.body?.fb_login_id || req?.body?.fbLoginId || req?.cookies?.fb_login_id || req?.cookies?._fb_login_id || '') || null,
   };
 };
 
 // Upsert the linked payment record so it reflects the created order totals.
 // Supports advance, partial, and full payments for COD, Cash, bKash, Nagad, Bank, Card.
 export const syncPaymentDocument = async (orderData, payload = {}) => {
-  const rawTotal = Number(orderData.totals?.total || 0);
-  const shippingFee = Number(
-    orderData.totals?.shippingFee ??
-    orderData.shippingTotalAmount ??
-    orderData.shippingFee ??
-    payload.shippingFee ??
-    payload.shippingTotalAmount ??
-    payload.shipping ??
-    0
-  );
-  const totalAmount = Math.max(0, rawTotal - shippingFee);
+  const totalAmount = Number(orderData.totals?.total ?? orderData.totalAmount ?? 0);
 
   const isInstore = 
     (payload.orderType === 'instore') || 
@@ -172,6 +241,8 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
       paidAmount = 0;
     } else if (payload.paidAmount !== undefined && payload.paidAmount !== null) {
       paidAmount = Number(payload.paidAmount);
+    } else if (orderData.paidAmount !== undefined && orderData.paidAmount !== null) {
+      paidAmount = Number(orderData.paidAmount);
     } else {
       paidAmount = 0;
     }
@@ -190,7 +261,7 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     }
   }
 
-  const orderCanceled = orderData.status === 'canceled' || orderData.status === 'cancelled';
+  const orderCanceled = orderData.status === 'canceled' || orderData.status === 'cancelled' || orderData.status === 'fake';
   if (orderCanceled) {
     paidAmount = 0;
   }
@@ -206,7 +277,7 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     paymentStatus = 'cancelled';
   } else if (isInstore) {
     paymentStatus = 'paid';
-  } else if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
+  } else if (payload?.paymentStatus !== undefined && payload?.paymentStatus !== null) {
     const pStatus = String(payload.paymentStatus).toLowerCase();
     if (['paid', 'partial', 'pending', 'n-a', 'cancelled', 'returned'].includes(pStatus)) {
       paymentStatus = pStatus;
@@ -245,16 +316,32 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
       pendingAmount,
       amount: paidAmount,
       status: paymentStatus,
+      isActive: !orderCanceled,
       createdBy: orderData.createdBy || null,
       updatedBy: orderData.updatedBy || null,
     },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
+
+  if (orderData._id) {
+    await OrderModel.findByIdAndUpdate(orderData._id, {
+      paymentStatus,
+      paidAmount,
+      paymentPhone,
+    });
+    orderData.paymentStatus = paymentStatus;
+    orderData.paidAmount = paidAmount;
+    orderData.paymentPhone = paymentPhone;
+  }
 };
 
 // Recalculate the aggregate order, paid, and pending totals for a member.
 export const computeMemberTotals = async (memberId) => {
-  const orders = await OrderModel.find({ member: memberId }).select('paymentMethod totals shippingTotalAmount').lean();
+  const orders = await OrderModel.find({
+    member: memberId,
+    active: { $ne: false },
+    status: { $nin: ['fake', 'cancelled', 'canceled'] },
+  }).select('paymentMethod totals shippingTotalAmount').lean();
   let totalOrderAmount = 0;
   let totalPaidAmount = 0;
   let totalPendingAmount = 0;
@@ -274,11 +361,23 @@ export const computeMemberTotals = async (memberId) => {
   return { totalOrderAmount, totalPaidAmount, totalPendingAmount };
 };
 
-// Apply the recalculated member totals back into the member profile record.
+// Recalculate the aggregate order, paid, and pending totals for a member, and sync isActive flag.
 export const updateMemberTotals = async (memberId) => {
   if (!memberId) return;
   const totals = await computeMemberTotals(memberId);
-  await MemberModel.findByIdAndUpdate(memberId, totals, { new: true, runValidators: true });
+  const activeOrdersCount = await OrderModel.countDocuments({
+    member: memberId,
+    active: { $ne: false },
+    status: { $nin: ['fake', 'cancelled', 'canceled'] },
+  });
+  await MemberModel.findByIdAndUpdate(
+    memberId,
+    {
+      ...totals,
+      ...(activeOrdersCount === 0 ? { isActive: false } : { isActive: true }),
+    },
+    { new: true, runValidators: true }
+  );
 };
 
 // Keep the member's embedded orders list in sync with the latest order reference.
@@ -366,6 +465,23 @@ export const resolveOrForceMembershipFromOrder = async (createdOrder, payload = 
       name: fullName,
       email: fallbackEmail,
       phone: rawPhone,
+      names: fullName ? [fullName] : [],
+      phones: rawPhone ? [rawPhone] : [],
+      emails: rawEmail ? [rawEmail] : [fallbackEmail],
+      orderProfiles: [
+        {
+          name: fullName,
+          phone: rawPhone,
+          email: rawEmail || fallbackEmail,
+          address: normalizeText(billing.address || shipping.address),
+          thana: normalizeText(billing.thana || shipping.thana),
+          district: normalizeText(billing.district || shipping.district),
+          ipAddress: createdOrder.ipAddress || null,
+          orderId: createdOrder._id,
+          orderNumber: createdOrder.orderNumber,
+          recordedAt: new Date(),
+        },
+      ],
       passwordHash,
       isActive: true,
       role: 'Customer',
@@ -399,6 +515,7 @@ export const resolveOrForceMembershipFromOrder = async (createdOrder, payload = 
         },
       ],
       totalOrderAmount: Number(createdOrder.totals?.total || 0),
+      fbLoginId: normalizeText(payload.fb_login_id || payload.fbLoginId || createdOrder.fb_login_id || "") || null,
     };
 
     const createdMember = await MemberModel.create(newMemberData);
@@ -415,17 +532,49 @@ export const resolveOrForceMembershipFromOrder = async (createdOrder, payload = 
 };
 
 // Persist the created order snapshot onto the member and refresh derived totals.
-export const syncMemberOrderSnapshot = async (memberId, createdOrder, payload) => {
+export const syncMemberOrderSnapshot = async (memberId, createdOrder, payload = {}) => {
   if (!memberId) return;
 
   const orderValue = createdOrder.totals?.total ?? 0;
-  const memberUpdates = { $addToSet: { orders: { did: createdOrder.did, value: orderValue } } };
+  const billing = createdOrder.billingInfo || payload.billingInfo || {};
+  const shipping = createdOrder.shippingInfo || payload.shippingInfo || {};
+
+  const orderName = normalizeText(billing.fullName || shipping.fullName || payload.fullName);
+  const orderPhone = normalizeText(billing.phone || shipping.phone || payload.phone);
+  const orderEmail = normalizeText(billing.email || shipping.email || payload.email).toLowerCase();
+
+  const memberUpdates = {
+    $addToSet: {
+      orders: { did: createdOrder.did, value: orderValue },
+      ...(orderName ? { names: orderName } : {}),
+      ...(orderPhone ? { phones: orderPhone } : {}),
+      ...(orderEmail ? { emails: orderEmail } : {}),
+    },
+    $push: {
+      orderProfiles: {
+        name: orderName,
+        phone: orderPhone,
+        email: orderEmail,
+        address: normalizeText(billing.address || shipping.address),
+        thana: normalizeText(billing.thana || shipping.thana),
+        district: normalizeText(billing.district || shipping.district),
+        ipAddress: createdOrder.ipAddress || null,
+        orderId: createdOrder._id,
+        orderNumber: createdOrder.orderNumber,
+        recordedAt: new Date(),
+      },
+    },
+  };
 
   if (payload.billingInfo && typeof payload.billingInfo === 'object') {
     memberUpdates.$set = { ...(memberUpdates.$set || {}), billingInfo: payload.billingInfo };
   }
   if (payload.shippingInfo && typeof payload.shippingInfo === 'object') {
     memberUpdates.$set = { ...(memberUpdates.$set || {}), shippingInfo: payload.shippingInfo };
+  }
+  const rawFbLoginId = normalizeText(payload.fb_login_id || payload.fbLoginId || createdOrder.fb_login_id || "");
+  if (rawFbLoginId) {
+    memberUpdates.$set = { ...(memberUpdates.$set || {}), fbLoginId: rawFbLoginId };
   }
 
   await MemberModel.findByIdAndUpdate(memberId, memberUpdates, { new: true, runValidators: true });
@@ -438,7 +587,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
 
   if (payload.status) {
     const s = String(payload.status).toLowerCase();
-    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'return'];
+    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
     allowedUpdates.status = validEnums.includes(s) ? s : 'processing';
   }
   if (payload.shippingInfo) {
@@ -460,8 +609,23 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   if (payload.paymentPhone !== undefined) {
     allowedUpdates.paymentPhone = normalizeText(payload.paymentPhone);
   }
-  if (payload.orderType) {
-    allowedUpdates.orderType = payload.orderType;
+  if (allowedUpdates.status === 'return' || String(payload.status || '').toLowerCase().trim() === 'return') {
+    allowedUpdates.paymentStatus = 'returned';
+    allowedUpdates.paidAmount = 0;
+  } else if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
+    let rawStatus = String(payload.paymentStatus).toLowerCase().trim();
+    if (rawStatus === 'n/a') rawStatus = 'n-a';
+    allowedUpdates.paymentStatus = rawStatus;
+  } else if (payload.paidAmount !== undefined) {
+    const currentTotal = Number(payload.totals?.total ?? existingOrder.totals?.total ?? 0);
+    const paid = Number(payload.paidAmount || 0);
+    if (paid >= currentTotal && currentTotal > 0) {
+      allowedUpdates.paymentStatus = 'paid';
+    } else if (paid > 0) {
+      allowedUpdates.paymentStatus = 'partial';
+    } else {
+      allowedUpdates.paymentStatus = 'pending';
+    }
   }
   if (payload.totals) {
     allowedUpdates.totals = payload.totals;
@@ -506,4 +670,45 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   }
 
   return allowedUpdates;
+};
+
+// Archives a fake order into the dedicated fake_orders collection.
+export const archiveFakeOrder = async (orderDoc, actorUserId = null, reason = "Marked as fake order") => {
+  if (!orderDoc || !orderDoc._id) return null;
+  try {
+    const customer = {
+      fullName: orderDoc.billingInfo?.fullName || orderDoc.shippingInfo?.fullName || "",
+      phone: orderDoc.billingInfo?.phone || orderDoc.shippingInfo?.phone || "",
+      email: orderDoc.billingInfo?.email || orderDoc.shippingInfo?.email || "",
+      address: orderDoc.billingInfo?.address || orderDoc.shippingInfo?.address || "",
+      thana: orderDoc.billingInfo?.thana || orderDoc.shippingInfo?.thana || "",
+      district: orderDoc.billingInfo?.district || orderDoc.shippingInfo?.district || "",
+      zip: orderDoc.billingInfo?.zip || orderDoc.shippingInfo?.zip || "",
+    };
+
+    const record = await FakeOrderModel.findOneAndUpdate(
+      { orderId: orderDoc._id },
+      {
+        orderId: orderDoc._id,
+        orderNumber: orderDoc.orderNumber,
+        did: orderDoc.did,
+        orderType: orderDoc.orderType || "online",
+        customer,
+        billingInfo: orderDoc.billingInfo || {},
+        shippingInfo: orderDoc.shippingInfo || {},
+        items: orderDoc.items || [],
+        totals: orderDoc.totals || {},
+        paymentMethod: orderDoc.paymentMethod || "",
+        member: orderDoc.member || null,
+        markedBy: actorUserId || null,
+        originalCreatedAt: orderDoc.createdAt || new Date(),
+        reason: reason || "Marked as fake order",
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    return record;
+  } catch (err) {
+    console.error(`[archiveFakeOrder] Failed to archive fake order ${orderDoc._id}:`, err);
+    return null;
+  }
 };

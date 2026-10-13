@@ -15,19 +15,57 @@ export const dailyOrders = async (req, res, next) => {
 
     const pipeline = [
       { $match: { active: { $ne: false }, createdAt: { $gte: from } } },
-      { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+06:00' } }, count: { $sum: 1 } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+06:00' } },
+          count: { $sum: 1 },
+          placed: {
+            $sum: {
+              $cond: [
+                { $in: ['$status', ['cancelled', 'fake']] },
+                0,
+                1,
+              ],
+            },
+          },
+          delivered: {
+            $sum: {
+              $cond: [
+                { $eq: ['$status', 'completed'] },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
       { $sort: { '_id': 1 } },
     ];
 
     const agg = await OrderModel.aggregate(pipeline);
-    const countsByDate = Object.fromEntries(agg.map((r) => [r._id, r.count]));
+    const dataByDate = Object.fromEntries(
+      agg.map((r) => [
+        r._id,
+        {
+          count: r.count || 0,
+          placed: r.placed || 0,
+          delivered: r.delivered || 0,
+        },
+      ])
+    );
 
     const result = [];
     for (let i = 0; i < days; i++) {
       // Generate date key in BD local time to match $dateToString timezone: '+06:00'
       const d = new Date(from.getTime() + i * 24 * 60 * 60 * 1000 + OFFSET_MS);
       const key = d.toISOString().slice(0, 10);
-      result.push({ date: key, count: countsByDate[key] || 0 });
+      const dayData = dataByDate[key] || { count: 0, placed: 0, delivered: 0 };
+      result.push({
+        date: key,
+        count: dayData.count,
+        placed: dayData.placed,
+        delivered: dayData.delivered,
+      });
     }
 
     return res.json({ status: 'success', data: result });
