@@ -345,6 +345,7 @@ export const listOrders = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
+      .populate('member', 'fullName phone email did')
       .lean();
 
     const orderIds = orders.map((o) => o._id);
@@ -393,7 +394,7 @@ export const getOrderById = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'Invalid order ID' });
     }
 
-        const order = await OrderModel.findById(orderId).lean();
+        const order = await OrderModel.findById(orderId).populate('member', 'fullName phone email did').lean();
     if (!order) {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
