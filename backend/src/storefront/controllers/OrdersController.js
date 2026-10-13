@@ -7,8 +7,6 @@ import { PaymentModel } from '../../common/models/payment.model.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import {
   buildOrderDocument,
-  resolveOrForceMembershipFromOrder,
-  syncMemberOrderSnapshot,
   syncPaymentDocument,
 } from '../../common/helper/orderControllerHelper.js';
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
@@ -148,10 +146,7 @@ export const createOrder = async (req, res, next) => {
       updatedBy: "customer-checkout",
     });
 
-    const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
-
     await syncPaymentDocument(createdOrder, payload);
-    await syncMemberOrderSnapshot(resolvedMemberId || orderData.member, createdOrder, payload);
 
     // Non-blocking email notifications for Customer and Admin
     sendOrderEmailsAsynchronously(createdOrder);

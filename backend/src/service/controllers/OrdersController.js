@@ -5,17 +5,12 @@ import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
 import { ProductModel } from '../../common/models/product.model.js';
 import { ItemModel } from '../../common/models/item.model.js';
-import { MemberModel } from '../../common/models/member.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import { buildAllowedOrderUpdates,
   buildOrderDocument,
-  resolveOrForceMembershipFromOrder,
-  syncMemberOrderSnapshot,
   syncPaymentDocument,
-  updateMemberOrderReference,
-  updateMemberTotals,
   archiveFakeOrder,
 } from '../../common/helper/orderControllerHelper.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
@@ -139,10 +134,7 @@ export const createOrder = async (req, res, next) => {
     const orderData = await buildOrderDocument(payload, req);
     const createdOrder = await OrderModel.create(orderData);
 
-    const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
-
     await syncPaymentDocument(createdOrder, payload);
-    await syncMemberOrderSnapshot(resolvedMemberId || orderData.member, createdOrder, payload);
     await upsertCustomerFromOrder({
       order: createdOrder,
       payload,
@@ -345,6 +337,7 @@ export const listOrders = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
+      .populate('customer', 'firstName lastName phone email did')
       .lean();
 
     const orderIds = orders.map((o) => o._id);
@@ -362,7 +355,6 @@ export const listOrders = async (req, res, next) => {
       return {
         ...order,
         id: order._id.toString(),
-        customer: order.billingInfo,
         paymentStatus: effectivePaymentStatus,
         paidAmount: effectivePaid,
         paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
@@ -393,7 +385,7 @@ export const getOrderById = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'Invalid order ID' });
     }
 
-        const order = await OrderModel.findById(orderId).lean();
+        const order = await OrderModel.findById(orderId).populate('customer', 'firstName lastName phone email did').lean();
     if (!order) {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
@@ -437,20 +429,11 @@ export const updateOrder = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
 
-    const affectedMemberIds = new Set();
-    if (existingOrder.member) {
-      affectedMemberIds.add(existingOrder.member.toString());
-    }
-
     const allowedUpdates = await buildAllowedOrderUpdates(payload, existingOrder);
 
     // Fallback updatedBy to authenticated user ID if not explicitly resolved from payload
     if (!allowedUpdates.updatedBy && req.user?.userId) {
       allowedUpdates.updatedBy = req.user.userId;
-    }
-
-    if (payload.memberId !== undefined && payload.memberId && Types.ObjectId.isValid(payload.memberId)) {
-      affectedMemberIds.add(payload.memberId);
     }
 
     if (allowedUpdates.status === 'fake') {
@@ -531,38 +514,7 @@ export const updateOrder = async (req, res, next) => {
       }
     }
 
-    const isRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(order.status);
-    const oldMemberId = existingOrder.member ? existingOrder.member.toString() : null;
-    const newMemberId = order.member ? order.member.toString() : null;
-    const orderDid = order.did;
-    const orderValue = Number(order.totals?.total || 0);
-
-    if (oldMemberId && (oldMemberId !== newMemberId || isRemovedStatus)) {
-      await MemberModel.updateOne(
-        { _id: oldMemberId },
-        { $pull: { orders: { did: orderDid } } },
-      );
-    }
-
-    if (newMemberId) {
-      if (isRemovedStatus) {
-        await MemberModel.updateOne(
-          { _id: newMemberId },
-          { $pull: { orders: { did: orderDid } } },
-        );
-      } else {
-        await updateMemberOrderReference(newMemberId, orderDid, orderValue);
-      }
-    }
-
     await syncPaymentDocument(order, payload);
-
-    if (oldMemberId) affectedMemberIds.add(oldMemberId);
-    if (newMemberId) affectedMemberIds.add(newMemberId);
-
-    for (const memberId of affectedMemberIds) {
-      await updateMemberTotals(memberId);
-    }
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
     const isCancelledOrder = ['fake', 'cancelled', 'canceled'].includes(order.status);
@@ -602,21 +554,6 @@ export const deleteOrder = async (req, res, next) => {
     const deletedOrder = await OrderModel.findOneAndUpdate(query, { $set: { active: false } }, { new: true }).lean();
     if (!deletedOrder) {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
-    }
-
-    // Safe cleanup of member reference
-    if (deletedOrder.member) {
-      try {
-        if (deletedOrder.did) {
-          await MemberModel.updateOne(
-            { _id: deletedOrder.member },
-            { $pull: { orders: { did: deletedOrder.did } } }
-          );
-        }
-        await updateMemberTotals(deletedOrder.member);
-      } catch (memErr) {
-        console.error("Error updating member totals on order delete:", memErr);
-      }
     }
 
     // Safe cleanup of payment record
@@ -661,25 +598,7 @@ export const bulkDeleteOrders = async (req, res, next) => {
     // Perform soft delete of order documents (active = false)
     await OrderModel.updateMany(deleteQuery, { $set: { active: false } });
 
-    // Collect distinct member IDs, dids, and database ObjectIds
-    const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
-    const orderDids = orders.map(o => o.did).filter(Boolean);
     const orderDbIds = orders.map(o => o._id);
-
-    // Pull order references from the member profiles and recalculate totals
-    if (memberIds.length > 0 && orderDids.length > 0) {
-      try {
-        await MemberModel.updateMany(
-          { _id: { $in: memberIds } },
-          { $pull: { orders: { did: { $in: orderDids } } } }
-        );
-        for (const mId of memberIds) {
-          await updateMemberTotals(mId).catch(err => console.error(err));
-        }
-      } catch (memErr) {
-        console.error("Error cleaning up members on bulk order delete:", memErr);
-      }
-    }
 
     // Delete all linked payment documents in bulk
     try {
@@ -752,20 +671,6 @@ export const bulkUpdateOrders = async (req, res, next) => {
         }
       }
     }
-
-    if (isBulkRemovedStatus) {
-      for (const ord of orders) {
-        if (ord.member && ord.did) {
-          MemberModel.updateOne(
-            { _id: ord.member },
-            { $pull: { orders: { did: ord.did } } }
-          ).catch(e => console.error(e));
-        }
-      }
-    }
-
-    // Identify distinct member IDs affected by the updates
-    const memberIds = [...new Set(orders.map(o => o.member).filter(Boolean))];
 
     // Loop through each order to update payments
     let returnBillType = null;
@@ -845,13 +750,6 @@ export const bulkUpdateOrders = async (req, res, next) => {
         } catch (billingErr) {
           console.error("Error creating return billing:", billingErr);
         }
-      }
-    }
-
-    // Recalculate member totals
-    if (memberIds.length > 0) {
-      for (const mId of memberIds) {
-        await updateMemberTotals(mId).catch(err => console.error(err));
       }
     }
 
