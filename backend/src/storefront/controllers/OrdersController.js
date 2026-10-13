@@ -7,12 +7,9 @@ import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
 import { SpamListModel } from '../../common/models/spamList.model.js';
-import { MemberModel } from '../../common/models/member.model.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import {
   buildOrderDocument,
-  resolveOrForceMembershipFromOrder,
-  syncMemberOrderSnapshot,
   syncPaymentDocument,
 } from '../../common/helper/orderControllerHelper.js';
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
@@ -174,14 +171,15 @@ export const createOrder = async (req, res, next) => {
 
       const matchingFake = await FakeOrderModel.findOne({ $or: fakeQueryConditions }).lean();
       if (matchingFake) {
-        // Exemption check: If existing customer already has genuine completed orders, permit order
+        // Exemption: trusted customers (totalOrders > 1) bypass fake-order block
         let isTrustedCustomer = false;
         if (corePhone) {
-          const verifiedMember = await MemberModel.findOne({
-            $or: [{ phone: { $regex: corePhone } }, { phones: { $elemMatch: { $regex: corePhone } } }],
+          const { CustomerModel } = await import('../../common/models/customer.model.js');
+          const verifiedCustomer = await CustomerModel.findOne({
+            phone: { $regex: corePhone },
             isActive: true,
           }).lean();
-          if (verifiedMember && (verifiedMember.totalOrderAmount > 0 || verifiedMember.orders?.length > 1)) {
+          if (verifiedCustomer && verifiedCustomer.totalOrders > 1) {
             isTrustedCustomer = true;
           }
         }
@@ -207,10 +205,7 @@ export const createOrder = async (req, res, next) => {
     const orderData = await buildOrderDocument(payload, req);
     const createdOrder = await OrderModel.create(orderData);
 
-    const resolvedMemberId = await resolveOrForceMembershipFromOrder(createdOrder, payload);
-
     await syncPaymentDocument(createdOrder, payload);
-    await syncMemberOrderSnapshot(resolvedMemberId || orderData.member, createdOrder, payload);
     await upsertCustomerFromOrder({
       order: createdOrder,
       payload,
@@ -419,11 +414,12 @@ export const checkPhoneStatus = async (req, res, next) => {
 
     // Exemption check for trusted existing customer
     if (corePhone) {
-      const verifiedMember = await MemberModel.findOne({
-        $or: [{ phone: { $regex: corePhone } }, { phones: { $elemMatch: { $regex: corePhone } } }],
+      const { CustomerModel } = await import('../../common/models/customer.model.js');
+      const verifiedCustomer = await CustomerModel.findOne({
+        phone: { $regex: corePhone },
         isActive: true,
       }).lean();
-      if (verifiedMember && (verifiedMember.totalOrderAmount > 0 || verifiedMember.orders?.length > 1)) {
+      if (verifiedCustomer && verifiedCustomer.totalOrders > 1) {
         return res.json({ status: 'success', isFake: false, isTrustedCustomer: true });
       }
     }
