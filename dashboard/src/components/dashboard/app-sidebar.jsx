@@ -160,6 +160,16 @@ const NavSub = ({ to, active, icon: Icon, iconClass = "", children, className = 
   </SidebarMenuSubItem>
 )
 
+// Top-level single link entry
+const NavLink = ({ to, active, icon: Icon, label }) => (
+  <SidebarMenuItem>
+    <SidebarMenuButton isActive={active} tooltip={label} render={<Link to={to} />} className={navItemClass}>
+      <Icon className="h-4 w-4" />
+      <span>{label}</span>
+    </SidebarMenuButton>
+  </SidebarMenuItem>
+)
+
 // Sub-section caption inside a submenu
 const SubLabel = ({ children }) => (
   <div className="px-2 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
@@ -201,20 +211,30 @@ export const AppSidebar = ({ ...props }) => {
 
   const showOverview = isAllowed("overview")
   const showWebmail = isAllowed("webmail") || isAllowed("tools.messages")
+  const showSupport = isAllowed("tools.support") || isAllowed("admin")
   const showOrders = isAllowed("orders")
+  const showCustomers = isAllowed("customers") || isAllowed("members") || isAllowed("admin")
+  const showReviews = isAllowed("products.reviews") || isAllowed("reviews")
   const showProducts = isAllowed("products")
+  const showOrganize = isAllowed("products.categories") || isAllowed("products.brands") || isAllowed("products.attributes") || isAllowed("products.size-charts")
+  const showMedia = isAllowed("tools.assets") || isAllowed("tools.media") || isAllowed("tools") || isAllowed("tools.bulk-image-resize")
   const showSettings = isAllowed("settings")
+  const showSettingsGroup = showSettings || isAllowed("users")
   const showAccounts = isAllowed("accounts") || isAllowed("accounts.bills") || isAllowed("accounts.payments") || isAllowed("accounts.investors") || isAllowed("accounts.investments") || isAllowed("accounts.balance") || isAllowed("billing") || isAllowed("admin")
-  const showAdmin = isAllowed("admin") || isAllowed("reports") || isAllowed("users") || isAllowed("customers") || isAllowed("members") || isAllowed("trash") || isAllowed("cpanel")
-  const showTools = isAllowed("tools") || isAllowed("logs") || isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("activity-logs") || isAllowed("tools.activity-logs")
+  const showReports = isAllowed("reports") || isAllowed("admin")
+  const showAdmin = isAllowed("admin")
+  const showSystem = isAllowed("tools") || isAllowed("logs") || isAllowed("tools.logs") || isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("cpanel") || showAdmin
+  const showItems = isAllowed("items")
+  const showAdminLayout = Boolean(features?.adminMenuLayout) && isAllowed("admin")
 
   const activeGroup =
     pathname.startsWith("/dashboard/orders") ? "orders"
-    : (pathname.startsWith("/dashboard/products") || pathname === "/dashboard/settings/products" || pathname.startsWith("/dashboard/reviews")) ? "products"
-    : pathname.startsWith("/dashboard/settings") ? "settings"
+    : pathname.startsWith("/dashboard/items") ? "items"
+    : (pathname.startsWith("/dashboard/products") || pathname === "/dashboard/settings/products") ? "products"
+    : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
     : (pathname.startsWith("/dashboard/accounts") || pathname.startsWith("/dashboard/billing")) ? "accounts"
-    : (pathname.startsWith("/dashboard/reports") || pathname.startsWith("/dashboard/users") || pathname.startsWith("/dashboard/members") || pathname.startsWith("/dashboard/tools/support") || pathname.startsWith("/dashboard/cpanel") || pathname.startsWith("/dashboard/trash")) ? "admin"
-    : (pathname.startsWith("/dashboard/analytics") || pathname.startsWith("/dashboard/tools/analytics") || pathname.startsWith("/dashboard/cloudflare") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs") || pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize") || pathname.startsWith("/dashboard/tools/meta-catalog") || pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs")) ? "tools"
+    : (pathname.startsWith("/dashboard/settings") || pathname.startsWith("/dashboard/users") || pathname.startsWith("/dashboard/tools/meta-catalog")) ? "settings"
+    : (pathname.startsWith("/dashboard/cloudflare") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/analytics") || pathname.startsWith("/dashboard/tools/analytics") || pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs") || pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs") || pathname.startsWith("/dashboard/cpanel") || pathname.startsWith("/dashboard/trash")) ? "system"
     : null
 
   const settingsProductsActive = pathname === "/dashboard/settings/products"
@@ -296,38 +316,30 @@ export const AppSidebar = ({ ...props }) => {
 
       <SidebarContent className="px-3 pb-3 group-data-[collapsible=icon]:px-1.5">
         <SidebarMenu className="gap-0.5">
-          {(showOverview || showWebmail) && <NavLabel>{t("nav.group_main", "Main")}</NavLabel>}
-
+          <NavLabel>{t("nav.group_main", "Main")}</NavLabel>
           {showOverview && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                isActive={pathname === "/dashboard"}
-                tooltip={t("nav.overview", "Overview")}
-                render={<Link to="/dashboard" />}
-                className={navItemClass}
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                <span>{t("nav.overview", "Overview")}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <NavLink to="/dashboard" active={pathname === "/dashboard"} icon={LayoutDashboard} label={t("nav.overview", "Overview")} />
           )}
-
           {showWebmail && (
+            <NavLink to="/dashboard/tools/messages" active={pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"} icon={Mail} label={t("nav.webmail", "Webmail")} />
+          )}
+          {showSupport && (
+            <NavLink to="/dashboard/tools/support" active={pathname.startsWith("/dashboard/tools/support")} icon={LifeBuoy} label={t("nav.support_desk", "Support Desk")} />
+          )}
+          {showAdminLayout && (
             <SidebarMenuItem>
               <SidebarMenuButton
-                isActive={pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"}
-                tooltip={t("nav.webmail", "Webmail")}
-                render={<Link to="/dashboard/tools/messages" />}
+                isActive={pathname.startsWith("/admin")}
+                tooltip={t("nav.admin_layout", "Admin View")}
+                render={<Link to="/admin" />}
                 className={navItemClass}
               >
-                <Mail className="h-4 w-4" />
-                <span>{t("nav.webmail", "Webmail")}</span>
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-primary">{t("nav.admin_layout", "Admin View")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
-
-          {(showOrders || showProducts) && <NavLabel>{t("nav.group_commerce", "Commerce")}</NavLabel>}
-
+          {(showOrders || showCustomers || showReviews) && <NavLabel>{t("nav.group_sell", "Sell")}</NavLabel>}
           {showOrders && (
             <NavGroup id="orders" icon={ShoppingBag} label={t("nav.orders", "Orders")} active={activeGroup === "orders"} open={openMenu === "orders"} onToggle={toggleMenu}>
               {isAllowed("orders.custom-new") && (
@@ -362,7 +374,14 @@ export const AppSidebar = ({ ...props }) => {
               )}
             </NavGroup>
           )}
+          {showCustomers && (
+            <NavLink to="/dashboard/members" active={pathname.startsWith("/dashboard/members")} icon={Users} label={t("nav.customer_list", "Customers")} />
+          )}
+          {showReviews && (
+            <NavLink to="/dashboard/reviews" active={pathname.startsWith("/dashboard/reviews")} icon={Star} label={t("nav.reviews", "Reviews")} />
+          )}
 
+          {(showProducts || showItems || showMedia) && <NavLabel>{t("nav.group_catalog", "Catalog")}</NavLabel>}
           {showProducts && (
             <NavGroup id="products" icon={Package} label={t("nav.products", "Products")} active={activeGroup === "products"} open={openMenu === "products"} onToggle={toggleMenu}>
               {isAllowed("products.list") && (
@@ -385,6 +404,12 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.showcases", "Showcases")}
                 </NavSub>
               )}
+              {isAllowed("products.coupons") && (
+                <NavSub to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket}>
+                  {t("nav.coupons", "Coupons")}
+                </NavSub>
+              )}
+              {showOrganize && <SubLabel>{t("nav.organize", "Organize")}</SubLabel>}
               {isAllowed("products.categories") && (
                 <NavSub to="/dashboard/products/categories" active={pathname === "/dashboard/products/categories"} icon={Receipt}>
                   {t("nav.categories", "Categories")}
@@ -400,26 +425,43 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.attributes", "Attributes")}
                 </NavSub>
               )}
-              {isAllowed("products.coupons") && (
-                <NavSub to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket}>
-                  {t("nav.coupons", "Coupons")}
-                </NavSub>
-              )}
               {isAllowed("products.size-charts") && (
                 <NavSub to="/dashboard/products/size-charts" active={pathname === "/dashboard/products/size-charts"} icon={Ruler}>
                   {t("nav.size_charts", "Size Charts")}
                 </NavSub>
               )}
-              {(isAllowed("products.reviews") || isAllowed("reviews")) && (
-                <NavSub to="/dashboard/reviews" active={pathname.startsWith("/dashboard/reviews")} icon={Star}>
-                  {t("nav.reviews", "Reviews")}
+            </NavGroup>
+          )}
+          {showItems && (
+            <NavGroup id="items" icon={Package} label={t("nav.items", "Items")} active={activeGroup === "items"} open={openMenu === "items"} onToggle={toggleMenu}>
+              {isAllowed("items.new") && (
+                <NavSub to="/dashboard/items/new" active={pathname === "/dashboard/items/new"} icon={PlusCircle}>
+                  {t("nav.add_item", "Add Item")}
+                </NavSub>
+              )}
+              {isAllowed("items.list") && (
+                <NavSub to="/dashboard/items" active={pathname === "/dashboard/items" || pathname === "/dashboard/items/list"} icon={ListOrdered}>
+                  {t("nav.item_list", "Items List")}
+                </NavSub>
+              )}
+            </NavGroup>
+          )}
+          {showMedia && (
+            <NavGroup id="media" icon={Images} label={t("nav.media", "Media")} active={activeGroup === "media"} open={openMenu === "media"} onToggle={toggleMenu}>
+              {(isAllowed("tools.assets") || isAllowed("tools.media") || isAllowed("tools")) && (
+                <NavSub to="/dashboard/media" active={pathname.startsWith("/dashboard/media")} icon={Images}>
+                  {t("nav.all_media", "All Media")}
+                </NavSub>
+              )}
+              {isAllowed("tools.bulk-image-resize") && (
+                <NavSub to="/dashboard/tools/bulk-image-resize" active={pathname === "/dashboard/tools/bulk-image-resize"} icon={ImageDown}>
+                  {t("nav.bulk_image_resize", "Bulk Image Resize")}
                 </NavSub>
               )}
             </NavGroup>
           )}
 
-          {(showAccounts || showAdmin) && <NavLabel>{t("nav.group_manage", "Manage")}</NavLabel>}
-
+          {(showAccounts || showReports) && <NavLabel>{t("nav.group_finance", "Finance")}</NavLabel>}
           {showAccounts && (
             <NavGroup id="accounts" icon={Landmark} label={t("nav.accounts", "Accounts")} active={activeGroup === "accounts"} open={openMenu === "accounts"} onToggle={toggleMenu}>
               <NavSub
@@ -437,9 +479,6 @@ export const AppSidebar = ({ ...props }) => {
               </NavSub>
               <NavSub to="/dashboard/accounts/bills/types" active={pathname === "/dashboard/accounts/bills/types"} icon={Tag} iconClass="text-amber-500">
                 {t("nav.bill_types", "Bill Types")}
-              </NavSub>
-              <NavSub to="/dashboard/accounts/payments/methods" active={paymentMethodsActive} icon={CreditCard} iconClass="text-emerald-500">
-                {t("nav.payment_methods", "Payment Methods")}
               </NavSub>
               <NavSub to="/dashboard/accounts/bills" active={pathname === "/dashboard/accounts/bills" || pathname === "/dashboard/billing/billings"} icon={Receipt} iconClass="text-red-500">
                 {t("nav.all_bills", "All Bills")}
@@ -465,93 +504,63 @@ export const AppSidebar = ({ ...props }) => {
               </NavSub>
             </NavGroup>
           )}
+          {showReports && (
+            <NavLink to="/dashboard/reports" active={pathname.startsWith("/dashboard/reports")} icon={BarChart3} label={t("nav.reports", "Reports")} />
+          )}
 
-          {showAdmin && (
-            <NavGroup id="admin" icon={ShieldCheck} label={t("nav.admin", "Admin")} active={activeGroup === "admin"} open={openMenu === "admin"} onToggle={toggleMenu}>
-              {(isAllowed("reports") || isAllowed("admin")) && (
-                <NavSub to="/dashboard/reports" active={pathname.startsWith("/dashboard/reports")} icon={BarChart3}>
-                  {t("nav.reports", "Reports")}
-                </NavSub>
+          {(showSettingsGroup || showSystem) && <NavLabel>{t("nav.group_system", "System")}</NavLabel>}
+          {showSettingsGroup && (
+            <NavGroup id="settings" icon={Settings} label={t("nav.settings", "Settings")} active={activeGroup === "settings"} open={openMenu === "settings"} onToggle={toggleMenu}>
+              {showSettings && (
+                <>
+                  <SubLabel>{t("nav.store_content", "Store & Content")}</SubLabel>
+                        <NavSub to="/dashboard/settings/cms-content" active={pathname.startsWith("/dashboard/settings/cms")} icon={ImageIcon}>
+                          {t("nav.cms_content", "CMS Content")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/seo" active={pathname.startsWith("/dashboard/settings/seo")} icon={Search}>
+                          {t("nav.general_seo", "General & SEO")}
+                        </NavSub>
+                        {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
+                          <NavSub to="/dashboard/settings/templates" active={pathname.startsWith("/dashboard/settings/templates") || pathname === "/dashboard/templates"} icon={Receipt} iconClass="text-blue-500">
+                            {t("nav.templates", "Invoice & Templates")}
+                          </NavSub>
+                        )}
+                        <NavSub to="/dashboard/settings/admin-view/styles" active={pathname.startsWith("/dashboard/settings/admin-view/styles")} icon={Sparkles} iconClass="text-indigo-500">
+                          {t("nav.admin_view_styles", "Admin View Styles")}
+                        </NavSub>
+                  <SubLabel>{t("nav.marketing", "Marketing")}</SubLabel>
+                        <NavSub to="/dashboard/settings/meta-pixel" active={pathname.startsWith("/dashboard/settings/meta-pixel")} icon={Share2}>
+                          {t("nav.meta_pixel", "Meta Pixel")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/tiktok-pixel" active={pathname.startsWith("/dashboard/settings/tiktok-pixel")} icon={TikTokIcon} iconClass="shrink-0">
+                          {t("nav.tiktok_pixel", "TikTok Pixel")}
+                        </NavSub>
+                        {isAllowed("tools.meta-catalog") && (
+                          <NavSub to="/dashboard/tools/meta-catalog" active={pathname === "/dashboard/tools/meta-catalog"} icon={Share2}>
+                            {t("nav.meta_catalog", "Meta Catalog")}
+                          </NavSub>
+                        )}
+                  <SubLabel>{t("nav.integrations", "Integrations")}</SubLabel>
+                        <NavSub to="/dashboard/settings/pathao-courier" active={pathname.startsWith("/dashboard/settings/pathao")} icon={Truck} iconClass="text-red-500">
+                          {t("nav.pathao_courier", "Pathao Courier")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/smtp" active={pathname.startsWith("/dashboard/settings/smtp")} icon={Mail} iconClass="text-indigo-500">
+                          {t("nav.email_server_setup", "SMTP Configuration")}
+                        </NavSub>
+                </>
               )}
               {isAllowed("users") && (
-                <NavSub to="/dashboard/users" active={pathname.startsWith("/dashboard/users")} icon={ShieldAlert}>
-                  {t("nav.system_users", "System Users")}
-                </NavSub>
+                <>
+                  <SubLabel>{t("nav.team", "Team")}</SubLabel>
+                  <NavSub to="/dashboard/users" active={pathname.startsWith("/dashboard/users")} icon={ShieldAlert}>
+                    {t("nav.system_users", "System Users")}
+                  </NavSub>
+                </>
               )}
-              {(isAllowed("customers") || isAllowed("members") || isAllowed("admin")) && (
-                <NavSub to="/dashboard/members" active={pathname.startsWith("/dashboard/members")} icon={Users}>
-                  {t("nav.customer_list", "Customer List")}
-                </NavSub>
-              )}
-              {(isAllowed("tools.support") || isAllowed("admin")) && (
-                <NavSub to="/dashboard/tools/support" active={pathname.startsWith("/dashboard/tools/support")} icon={LifeBuoy}>
-                  {t("nav.support_desk", "Support Desk")}
-                </NavSub>
-              )}
-              {isAllowed("cpanel") && (
-                <NavSub to="/dashboard/cpanel" active={pathname.startsWith("/dashboard/cpanel")} icon={Terminal} iconClass="text-emerald-400" className="text-emerald-400 font-medium">
-                  {t("nav.cpanel", "PPanel / cPanel")}
-                </NavSub>
-              )}
-              <NavSub to="/dashboard/trash" active={pathname.startsWith("/dashboard/trash")} icon={Trash2} iconClass="text-destructive" className="text-destructive font-medium">
-                {t("nav.trash", "Trash")}
-              </NavSub>
             </NavGroup>
           )}
-
-          {(showSettings || showTools) && <NavLabel>{t("nav.group_system", "System")}</NavLabel>}
-
-          {showSettings && (
-            <NavGroup id="settings" icon={Settings} label={t("nav.settings", "Settings")} active={activeGroup === "settings"} open={openMenu === "settings"} onToggle={toggleMenu}>
-              <NavSub to="/dashboard/settings/cms-content" active={pathname.startsWith("/dashboard/settings/cms")} icon={ImageIcon}>
-                {t("nav.cms_content", "CMS Content")}
-              </NavSub>
-              <NavSub to="/dashboard/settings/seo" active={pathname.startsWith("/dashboard/settings/seo")} icon={Search}>
-                {t("nav.general_seo", "General & SEO")}
-              </NavSub>
-              <NavSub to="/dashboard/settings/meta-pixel" active={pathname.startsWith("/dashboard/settings/meta-pixel")} icon={Share2}>
-                {t("nav.meta_pixel", "Meta Pixel")}
-              </NavSub>
-              <NavSub to="/dashboard/settings/tiktok-pixel" active={pathname.startsWith("/dashboard/settings/tiktok-pixel")} icon={TikTokIcon} iconClass="shrink-0">
-                {t("nav.tiktok_pixel", "TikTok Pixel")}
-              </NavSub>
-              <NavSub
-                to="/dashboard/settings/pathao-courier"
-                active={pathname.startsWith("/dashboard/settings/pathao-courier") || pathname.startsWith("/dashboard/settings/pathao")}
-                icon={Truck}
-                iconClass="text-red-500"
-              >
-                {t("nav.pathao_courier", "Pathao Courier")}
-              </NavSub>
-              <NavSub to="/dashboard/settings/smtp" active={pathname.startsWith("/dashboard/settings/smtp")} icon={Mail} iconClass="text-indigo-500">
-                {t("nav.email_server_setup", "SMTP Configuration")}
-              </NavSub>
-              {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
-                <NavSub
-                  to="/dashboard/settings/templates"
-                  active={pathname.startsWith("/dashboard/settings/templates") || pathname === "/dashboard/templates"}
-                  icon={Receipt}
-                  iconClass="text-blue-500"
-                >
-                  {t("nav.templates", "Invoice & Templates")}
-                </NavSub>
-              )}
-              <NavSub
-                to="/admin"
-                active={pathname.startsWith("/dashboard/settings/admin-view") || pathname.startsWith("/admin")}
-                icon={LayoutDashboard}
-                iconClass="text-orange-500"
-              >
-                {t("nav.admin_view", "Admin View")}
-              </NavSub>
-              <NavSub to="/dashboard/settings/styles" active={pathname.startsWith("/dashboard/settings/styles")} icon={Wrench} className="ml-4">
-                {t("nav.styles", "Styles")}
-              </NavSub>
-            </NavGroup>
-          )}
-
-          {showTools && (
-            <NavGroup id="tools" icon={Wrench} label={t("nav.tools_media", "Tools & Media")} active={activeGroup === "tools"} open={openMenu === "tools"} onToggle={toggleMenu}>
+          {showSystem && (
+            <NavGroup id="system" icon={Terminal} label={t("nav.system", "System")} active={activeGroup === "system"} open={openMenu === "system"} onToggle={toggleMenu}>
               {Boolean(clientConfig?.cloudFlareAnalytics?.active || clientConfig?.features?.cloudflareAnalytics !== false) && (isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("tools") || isAllowed("admin")) && (
                 <NavSub
                   to="/dashboard/cloudflare-analytics"
@@ -567,24 +576,19 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.activity_logs", "Activity Logs")}
                 </NavSub>
               )}
-              {(isAllowed("tools.assets") || isAllowed("tools.media") || isAllowed("tools")) && (
-                <NavSub to="/dashboard/media" active={pathname.startsWith("/dashboard/media")} icon={Images}>
-                  {t("nav.all_media", "All Media")}
-                </NavSub>
-              )}
-              {isAllowed("tools.bulk-image-resize") && (
-                <NavSub to="/dashboard/tools/bulk-image-resize" active={pathname === "/dashboard/tools/bulk-image-resize"} icon={ImageDown}>
-                  {t("nav.bulk_image_resize", "Bulk Image Resize")}
-                </NavSub>
-              )}
-              {isAllowed("tools.meta-catalog") && (
-                <NavSub to="/dashboard/tools/meta-catalog" active={pathname === "/dashboard/tools/meta-catalog"} icon={Share2}>
-                  {t("nav.meta_catalog", "Meta Catalog")}
-                </NavSub>
-              )}
               {(isAllowed("logs") || isAllowed("tools.logs")) && (
                 <NavSub to="/dashboard/logs" active={pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs")} icon={Terminal}>
                   {t("nav.system_logs", "System Logs")}
+                </NavSub>
+              )}
+              {isAllowed("cpanel") && (
+                <NavSub to="/dashboard/cpanel" active={pathname.startsWith("/dashboard/cpanel")} icon={Terminal} iconClass="text-emerald-400" className="text-emerald-400 font-medium">
+                  {t("nav.cpanel", "PPanel / cPanel")}
+                </NavSub>
+              )}
+              {showAdmin && (
+                <NavSub to="/dashboard/trash" active={pathname.startsWith("/dashboard/trash")} icon={Trash2} iconClass="text-destructive" className="text-destructive font-medium">
+                  {t("nav.trash", "Trash")}
                 </NavSub>
               )}
             </NavGroup>
