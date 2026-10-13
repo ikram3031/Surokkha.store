@@ -151,7 +151,7 @@ const GoogleAnalyticsPage = () => {
         <div className="flex items-center gap-2 flex-wrap">
           {isConfigured && isEnabled ? (
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-3 py-1 text-xs">
-              <span className="h-2 w-2 rounded bg-emerald-500 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Active in past 48h</span>
             </Badge>

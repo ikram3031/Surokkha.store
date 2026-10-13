@@ -608,7 +608,7 @@ const PathaoCourierCard = ({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold">City <span className="text-destructive">*</span></label>
               <Select value={selectedCity} onValueChange={handleCityChange} items={cityItems}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-10 text-sm">
                   <SelectValue placeholder="Select City">
                     {(val) => {
                       if (!val) return null;
@@ -630,7 +630,7 @@ const PathaoCourierCard = ({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold">Zone <span className="text-destructive">*</span></label>
               <Select value={selectedZone} onValueChange={handleZoneChange} disabled={!selectedCity || zones.length === 0} items={zoneItems}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-10 text-sm">
                   <SelectValue placeholder={!selectedCity ? "Select city first" : "Select Zone"}>
                     {(val) => {
                       if (!val) return null;
@@ -654,7 +654,7 @@ const PathaoCourierCard = ({
                 Area / Thana {areas.length > 0 && <span className="text-destructive">*</span>}
               </label>
               <Select value={selectedArea} onValueChange={setSelectedArea} disabled={!selectedZone || areas.length === 0} items={areaItems}>
-                <SelectTrigger className="h-9 text-xs">
+                <SelectTrigger className="h-10 text-sm">
                   <SelectValue placeholder={!selectedZone ? "Select zone first" : areas.length === 0 ? "No area needed" : "Select Area / Thana"}>
                     {(val) => {
                       if (!val) return null;
@@ -846,7 +846,7 @@ const PathaoCourierCard = ({
               <div>
                 <span className="text-xs text-muted-foreground block">Delivery Status</span>
                 <span className="font-semibold text-foreground capitalize flex items-center gap-1.5 mt-0.5">
-                  <span className="h-2 w-2 rounded bg-emerald-500 inline-block" />
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
                   {trackingData?.order_status || courier.orderStatus || "In Transit"}
                 </span>
               </div>

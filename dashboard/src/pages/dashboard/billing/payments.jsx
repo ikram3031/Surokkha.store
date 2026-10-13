@@ -196,7 +196,7 @@ const PaymentsPage = () => {
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <div className="bg-card border rounded-xl p-5 shadow-sm flex items-center gap-4">
-          <div className="h-10 w-10 rounded bg-emerald-500/10 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
             <CheckCircle2 className="h-5 w-5 text-emerald-500" />
           </div>
           <div>
@@ -205,7 +205,7 @@ const PaymentsPage = () => {
           </div>
         </div>
         <div className="bg-card border rounded-xl p-5 shadow-sm flex items-center gap-4">
-          <div className="h-10 w-10 rounded bg-amber-500/10 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
             <Clock className="h-5 w-5 text-amber-500" />
           </div>
           <div>
@@ -214,7 +214,7 @@ const PaymentsPage = () => {
           </div>
         </div>
         <div className="bg-card border rounded-xl p-5 shadow-sm flex items-center gap-4">
-          <div className="h-10 w-10 rounded bg-red-500/10 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center">
             <XCircle className="h-5 w-5 text-red-500" />
           </div>
           <div>
@@ -341,10 +341,10 @@ const PaymentsPage = () => {
                     </TableCell>
                     <TableCell><span className="h-4 w-24 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded-full" /></TableCell>
                     <TableCell><span className="h-4 w-24 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-16 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-5 w-20 block bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><span className="h-5 w-20 block bg-muted animate-pulse rounded-full" /></TableCell>
                     <TableCell className="text-right"><span className="h-8 w-8 ml-auto block bg-muted animate-pulse rounded-md" /></TableCell>
                   </TableRow>
                 ))

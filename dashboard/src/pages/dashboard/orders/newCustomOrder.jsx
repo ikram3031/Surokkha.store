@@ -223,12 +223,12 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
                       <div className="flex items-center gap-2">
                         <span
                           className={`
-                          h-4 w-4 rounded border-2 flex items-center justify-center flex-shrink-0
+                          h-4 w-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
                           ${hasNoStock ? "border-muted-foreground/30 bg-muted/40" : isSelected ? "border-primary bg-primary" : "border-muted-foreground/40"}
                         `}
                         >
                           {isSelected && !hasNoStock && (
-                            <span className="h-1.5 w-1.5 rounded bg-white" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
                           )}
                         </span>
                         <span className="font-medium">{v.size}</span>
@@ -1586,7 +1586,7 @@ const NewCustomOrderPage = () => {
             >
               {isSubmitting ? (
                 <>
-                  <div className="h-4 w-4 mr-2 rounded border-2 border-white border-t-transparent animate-spin" />
+                  <div className="h-4 w-4 mr-2 rounded-full border-2 border-white border-t-transparent animate-spin" />
                   Creating Custom Order...
                 </>
               ) : (

@@ -218,7 +218,7 @@ export const DropzoneAndQueue = ({
                 <span>Processing batch queue...</span>
                 <span>{batchProgress.percent}% ({batchProgress.completed}/{batchProgress.total})</span>
               </div>
-              <div className="h-2 w-full bg-muted rounded overflow-hidden">
+              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{ width: `${batchProgress.percent}%` }}

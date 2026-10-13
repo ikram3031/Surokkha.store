@@ -229,7 +229,7 @@ export const ItemsTable = ({
                 {hasBrand && <TableCell><Skeleton className="h-4 w-20" /></TableCell>}
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></TableCell>
               </TableRow>
             ))

@@ -106,7 +106,7 @@ const AnalyticsPage = () => {
               <span>Google Analytics</span>
             </h2>
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-2.5 py-1 text-xs">
-              <span className="h-2 w-2 rounded bg-emerald-500 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Stream Active (Past 48h)</span>
             </Badge>
@@ -174,7 +174,7 @@ const AnalyticsPage = () => {
                 <span>{t.label}</span>
                 {t.badge && (
                   <span
-                    className={`px-1.5 py-0.2 rounded text-[10px] font-extrabold border ${
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold border ${
                       t.badge === 'Live'
                         ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                         : 'bg-primary/10 text-primary border-primary/20'

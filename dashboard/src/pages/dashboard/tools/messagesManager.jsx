@@ -491,7 +491,7 @@ const MessagesManager = () => {
 
                   {folder.unread > 0 && (
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
                         isActive
                           ? 'bg-primary-foreground/20 text-primary-foreground'
                           : 'bg-primary/15 text-primary'
@@ -710,7 +710,7 @@ const MessagesManager = () => {
 
                     {/* Unread indicator dot */}
                     {isUnread && (
-                      <span className="h-2 w-2 rounded bg-primary shrink-0 mt-1.5" />
+                      <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />
                     )}
                   </div>
                 );
@@ -739,7 +739,7 @@ const MessagesManager = () => {
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
 
-                  <div className="h-10 w-10 rounded bg-primary/15 text-primary flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
+                  <div className="h-10 w-10 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
                     {(isWebsiteInquiryFolder ? activeMessage.name : activeMessage.from?.name || activeMessage.from?.address || 'U')
                       .charAt(0)
                       .toUpperCase()}

@@ -323,11 +323,11 @@ export default function PathaoCourierSettingsPage() {
         <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {isConnected ? (
-              <div className="p-2 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <div className="p-2 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
             ) : (
-              <div className="p-2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400">
+              <div className="p-2 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
                 <AlertCircle className="h-5 w-5" />
               </div>
             )}
@@ -641,7 +641,7 @@ export default function PathaoCourierSettingsPage() {
                   )}
                 </div>
                 <Select value={calcCity} onValueChange={handleCityChange}>
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-10 text-sm">
                     <SelectValue placeholder={cities.length === 0 ? "Click 'Load Cities' above" : "Select City"}>
                       {(val) => {
                         if (!val) return null;
@@ -665,7 +665,7 @@ export default function PathaoCourierSettingsPage() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium">Zone</label>
                   <Select value={calcZone} onValueChange={handleZoneChange} disabled={loadingZones}>
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="h-10 text-sm">
                       <SelectValue placeholder={loadingZones ? 'Loading zones...' : 'Select Zone'}>
                         {(val) => {
                           if (!val) return null;
@@ -690,7 +690,7 @@ export default function PathaoCourierSettingsPage() {
                 <div className="space-y-1">
                   <label className="text-xs font-medium">Area / Thana</label>
                   <Select value={calcArea} onValueChange={setCalcArea} disabled={loadingAreas}>
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="h-10 text-sm">
                       <SelectValue placeholder="Select Specific Area">
                         {(val) => {
                           if (!val) return null;

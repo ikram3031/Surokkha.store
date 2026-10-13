@@ -19,6 +19,9 @@ const updateFavicon = (version = '') => {
   link.href = finalUrl;
 };
 
+// Dashboard-wide border radius, independent of the tenant storefront theme
+const DASHBOARD_RADIUS = '0.25rem';
+
 // Injects tenant theme variables, browser title, and dynamic favicon matching active client
 export const ClientThemeProvider = ({ children }) => {
   useEffect(() => {

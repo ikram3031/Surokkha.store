@@ -68,7 +68,7 @@ export const LookerStudioEmbed = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-card border border-border/70 shadow-xs">
         <div className="flex items-center gap-2.5 flex-wrap">
           <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-2.5 py-1 text-xs">
-            <span className="h-2 w-2 rounded bg-emerald-500 animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <CheckCircle2 className="h-3.5 w-3.5" />
             <span>GA4 Live Stream Connected</span>
           </Badge>

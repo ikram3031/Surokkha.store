@@ -89,7 +89,7 @@ export const ReCaptcha = ({ onVerify, verified }) => {
                 <Check className="h-3.5 w-3.5 stroke-[4]" />
               </motion.div>
             ) : checking ? (
-              <div className="h-3.5 w-3.5 border-2 border-slate-600 border-t-slate-200 rounded animate-spin" />
+              <div className="h-3.5 w-3.5 border-2 border-slate-600 border-t-slate-200 rounded-full animate-spin" />
             ) : null}
           </button>
           
@@ -167,7 +167,7 @@ export const ReCaptcha = ({ onVerify, verified }) => {
                           />
                           {isSelected && (
                             <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
-                              <div className="bg-white text-slate-950 p-0.5 rounded shadow-md">
+                              <div className="bg-white text-slate-950 p-0.5 rounded-full shadow-md">
                                 <Check className="h-3 w-3 stroke-[4]" />
                               </div>
                             </div>

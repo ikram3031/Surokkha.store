@@ -259,7 +259,7 @@ function ChartLegendContent({
               <itemConfig.icon />
             ) : (
               <div
-                className="h-2.5 w-2.5 shrink-0 rounded shadow-xs"
+                className="h-2.5 w-2.5 shrink-0 rounded-full shadow-xs"
                 style={{
                   backgroundColor: itemColor,
                 }}

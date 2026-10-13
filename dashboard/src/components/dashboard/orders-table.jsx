@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -173,29 +173,42 @@ export const OrdersTable = ({
     navigate(`/dashboard/orders/${order.id}`);
   };
 
-  // Fixed-width badge helper classes with unified palette:
-  // Green (#64a338): delivered/complete/paid (white text)
-  // Yellow (#ffcc00): processing/pending/partial (dark text)
-  // Red (#e03b24): cancelled/deleted/failed (white text)
-  // Blue (#3865a3): shipped (white text)
-  // Sky (#87a2c7): confirmed (dark text)
-  const BADGE_FIXED_CLS = "w-24 justify-center text-center truncate border-transparent select-none";
+  // Soft tinted status pills with a leading dot; tones stay readable on the light table surface
+  const BADGE_TONES = {
+    green: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 [&>i]:bg-emerald-500',
+    amber: 'bg-amber-50 text-amber-800 ring-amber-600/25 [&>i]:bg-amber-500',
+    blue: 'bg-blue-50 text-blue-700 ring-blue-600/20 [&>i]:bg-blue-500',
+    sky: 'bg-sky-50 text-sky-700 ring-sky-600/20 [&>i]:bg-sky-500',
+    violet: 'bg-violet-50 text-violet-700 ring-violet-600/20 [&>i]:bg-violet-500',
+    red: 'bg-red-50 text-red-700 ring-red-600/20 [&>i]:bg-red-500',
+    darkRed: 'bg-red-100 text-red-900 ring-red-800/30 [&>i]:bg-red-800',
+    gray: 'bg-gray-100 text-gray-700 ring-gray-500/20 [&>i]:bg-gray-400',
+  };
+
+  const renderStatusBadge = (tone, label) => (
+    <Badge className={`h-6 gap-1.5 rounded-full px-2.5 font-medium ring-1 ring-inset select-none ${BADGE_TONES[tone]}`}>
+      <i className="h-1.5 w-1.5 rounded-full" />
+      {label}
+    </Badge>
+  );
 
   // Resolves the visual badge representation for payment status
   const getPaymentBadge = (status) => {
     switch (String(status).toLowerCase()) {
       case 'paid':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>{t('orders.status_paid', 'Paid')}</Badge>;
+        return renderStatusBadge('green', t('orders.status_paid', 'Paid'));
       case 'pending':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_pending', 'Pending')}</Badge>;
+        return renderStatusBadge('amber', t('orders.status_pending', 'Pending'));
       case 'partial':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_partial', 'Partial')}</Badge>;
+        return renderStatusBadge('sky', t('orders.status_partial', 'Partial'));
+      case 'returned':
+        return renderStatusBadge('red', t('orders.status_returned', 'Returned'));
       case 'failed':
       case 'cancelled':
       case 'canceled':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('common.error', 'Failed')}</Badge>;
+        return renderStatusBadge('red', t('common.error', 'Failed'));
       default:
-        return <Badge variant="outline" className={`${BADGE_FIXED_CLS}`}>{status}</Badge>;
+        return renderStatusBadge('gray', status || '—');
     }
   };
 
@@ -204,29 +217,41 @@ export const OrdersTable = ({
     switch (String(status).toLowerCase()) {
       case 'delivered':
       case 'completed':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>{t('orders.status_delivered', 'Completed')}</Badge>;
+        return renderStatusBadge('green', t('orders.status_delivered', 'Completed'));
       case 'shipped':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#3865a3] hover:bg-[#2f558a] text-white`}>{t('orders.status_shipped', 'Shipped')}</Badge>;
+        return renderStatusBadge('blue', t('orders.status_shipped', 'Shipped'));
       case 'confirmed':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#87a2c7] hover:bg-[#7693b9] text-slate-950 font-medium`}>{t('orders.status_confirmed', 'Confirmed')}</Badge>;
+        return renderStatusBadge('sky', t('orders.status_confirmed', 'Confirmed'));
       case 'processing':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_processing', 'Processing')}</Badge>;
+        return renderStatusBadge('violet', t('orders.status_processing', 'Processing'));
       case 'cancelled':
       case 'canceled':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_canceled', 'Cancelled')}</Badge>;
+        return renderStatusBadge('red', t('orders.status_canceled', 'Cancelled'));
       case 'fake':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-semibold`}>Fake</Badge>;
+        return renderStatusBadge('darkRed', 'Fake');
       case 'return':
-      case 'Return':
       case 'returned':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#e03b24] hover:bg-[#c9321d] text-white`}>{t('orders.status_returned', 'Returned')}</Badge>;
+        return renderStatusBadge('red', t('orders.status_returned', 'Returned'));
       case 'pending':
       case 'unfulfilled':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_pending', 'Pending')}</Badge>;
+        return renderStatusBadge('amber', t('orders.status_pending', 'Pending'));
       default:
-        return <Badge variant="outline" className={`${BADGE_FIXED_CLS}`}>{status}</Badge>;
+        return renderStatusBadge('gray', status || '—');
     }
   };
+
+  const formatTime = (value) => {
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
+
+  const getCustomerPhone = (order) =>
+    order.billingInfo?.phone || order.shippingInfo?.phone || order.customer?.phone || '';
+
+  const getItemCount = (order) =>
+    Array.isArray(order.items) ? order.items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0) : 0;
+
+  const CHECKBOX_CLS = 'h-4 w-4 cursor-pointer rounded accent-primary [color-scheme:light]';
 
   if (isError) {
     return (
@@ -245,14 +270,15 @@ export const OrdersTable = ({
 
   return (
     <div className="rounded-md border overflow-hidden">
-      <Table>
+      <Table className="[&_th]:h-11 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_td]:py-3">
         <TableHeader>
           <TableRow>
             <TableHead className="w-[36px] pl-3 pr-0"></TableHead>
             <TableHead className="w-[44px] px-2">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                aria-label="Select all orders on this page"
+                className={CHECKBOX_CLS}
                 checked={isAllPageSelected}
                 onChange={(e) => {
                   if (e.target.checked) {
@@ -266,13 +292,13 @@ export const OrdersTable = ({
                 }}
               />
             </TableHead>
-            <TableHead className="w-[150px]">{t('orders.order_id', 'Order ID')}</TableHead>
-            <TableHead className="w-[180px]">{t('orders.customer_name', 'Customer Name')}</TableHead>
-            <TableHead className="w-[110px]">{t('common.date', 'Date')}</TableHead>
-            <TableHead className="w-[120px]">{t('orders.order_amount', 'Order Amount')}</TableHead>
+            <TableHead className="w-[160px]">{t('orders.order_id', 'Order ID')}</TableHead>
+            <TableHead className="w-[200px]">{t('orders.customer_name', 'Customer')}</TableHead>
+            <TableHead className="w-[120px]">{t('common.date', 'Date')}</TableHead>
+            <TableHead className="w-[130px] text-right pr-6">{t('orders.order_amount', 'Amount')}</TableHead>
             <TableHead className="w-[120px]">{t('orders.payment_status', 'Payment')}</TableHead>
-            <TableHead className="w-[120px]">{t('common.status', 'Status')}</TableHead>
-            <TableHead className="w-[60px] text-right">{t('common.actions', 'Actions')}</TableHead>
+            <TableHead className="w-[130px]">{t('common.status', 'Status')}</TableHead>
+            <TableHead className="w-[60px] text-right pr-3">{t('common.actions', 'Actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -285,25 +311,30 @@ export const OrdersTable = ({
                 <TableCell className="w-[44px] px-2">
                   <Skeleton className="h-4 w-4 rounded" />
                 </TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-16 rounded" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-24 bg-gray-200" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32 bg-gray-200" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20 bg-gray-200" /></TableCell>
+                <TableCell className="pr-6"><Skeleton className="h-4 w-16 ml-auto bg-gray-200" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-20 rounded-full bg-gray-200" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-24 rounded-full bg-gray-200" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></TableCell>
               </TableRow>
             ))
           ) : orders && orders.length > 0 ? (
             orders.map((order) => {
               const isExpanded = expandedOrderIds.includes(order.id);
+              const isSelected = selectedIds.includes(order.id);
+              const phone = getCustomerPhone(order);
+              const itemCount = getItemCount(order);
               return (
-                <div key={order.id} className="contents">
+                <Fragment key={order.id}>
                   <TableRow
-                    className={`cursor-pointer transition-colors ${
+                    className={`cursor-pointer transition-colors shadow-[inset_3px_0_0_transparent] ${
                       isExpanded
-                        ? 'bg-primary/10 font-medium border-l-4 border-l-primary'
-                        : 'hover:bg-[#e5e7eb]'
+                        ? 'bg-primary/10! shadow-[inset_3px_0_0_var(--primary)] hover:bg-primary/15!'
+                        : isSelected
+                          ? 'bg-primary/5! hover:bg-primary/10!'
+                          : 'hover:bg-white!'
                     }`}
                     onClick={() => toggleOrderExpansion(order.id)}
                   >
@@ -330,8 +361,9 @@ export const OrdersTable = ({
                     >
                       <input
                         type="checkbox"
-                        className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
-                        checked={selectedIds.includes(order.id)}
+                        aria-label={`Select order ${order.orderNumber}`}
+                        className={CHECKBOX_CLS}
+                        checked={isSelected}
                         onChange={(e) => {
                           if (e.target.checked) {
                             onSelectedIdsChange([...selectedIds, order.id]);
@@ -342,47 +374,57 @@ export const OrdersTable = ({
                       />
                     </TableCell>
                     <TableCell
-                      className="max-w-[150px]"
+                      className="max-w-[160px]"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Link
                         to={`/dashboard/orders/${order.id}`}
-                        className="font-semibold truncate block text-primary hover:underline hover:text-primary/80 transition-colors"
+                        className="font-mono text-[13px] font-semibold truncate block text-primary hover:underline underline-offset-2"
                         title={order.orderNumber}
                       >
                         {order.orderNumber}
                       </Link>
-                      {order.courier?.consignmentId && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded mt-0.5 font-medium" title={`Pathao Consignment: ${order.courier.consignmentId}`}>
-                          <Truck className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                      {order.courier?.consignmentId ? (
+                        <span className="mt-1 inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20" title={`Pathao Consignment: ${order.courier.consignmentId}`}>
+                          <Truck className="h-2.5 w-2.5" />
                           {order.courier.consignmentId}
+                        </span>
+                      ) : itemCount > 0 && (
+                        <span className="mt-0.5 block text-xs text-gray-500">
+                          {itemCount} {itemCount === 1 ? 'item' : 'items'}
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="max-w-[180px]">
-                      <span className="truncate block" title={order.customerName}>{order.customerName}</span>
+                    <TableCell className="max-w-[200px]">
+                      <span className="truncate block font-medium text-gray-900" title={order.customerName}>{order.customerName}</span>
+                      {phone && (
+                        <span className="mt-0.5 block truncate font-mono text-xs text-gray-500">{phone}</span>
+                      )}
                     </TableCell>
-                    <TableCell className="w-[110px] text-muted-foreground whitespace-nowrap">
-                      {formatDate(order.date)}
+                    <TableCell className="whitespace-nowrap">
+                      <span className="block text-gray-900">{formatDate(order.date)}</span>
+                      <span className="mt-0.5 block text-xs text-gray-500">{formatTime(order.date)}</span>
                     </TableCell>
-                    <TableCell className="w-[120px] font-medium whitespace-nowrap">
-                      <span>৳{Number(order.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <TableCell className="whitespace-nowrap text-right pr-6">
+                      <span className="font-semibold tabular-nums text-gray-900">
+                        ৳{Number(order.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                       {order.couponCode && (
-                        <span className="flex items-center gap-0.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">
+                        <span className="mt-1 ml-auto flex w-fit items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
                           <Tag className="h-2.5 w-2.5" />
                           {order.couponCode}
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="w-[120px]">{getPaymentBadge(order.paymentStatus)}</TableCell>
-                    <TableCell className="w-[120px]">{getFulfillmentBadge(order.orderStatus)}</TableCell>
+                    <TableCell>{getPaymentBadge(order.paymentStatus)}</TableCell>
+                    <TableCell>{getFulfillmentBadge(order.orderStatus)}</TableCell>
                     <TableCell
-                      className="text-right w-[60px]"
+                      className="text-right pr-3"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger render={
-                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer text-gray-500 hover:bg-gray-200 hover:text-gray-900">
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
@@ -423,13 +465,13 @@ export const OrdersTable = ({
                   </TableRow>
 
                   {isExpanded && (
-                    <TableRow className="hover:bg-transparent border-b border-[#e5e7eb] bg-[#f9fafb]">
-                      <TableCell colSpan={9} className="p-0">
+                    <TableRow className="hover:bg-white! bg-white! shadow-[inset_3px_0_0_var(--primary)]">
+                      <TableCell colSpan={9} className="p-0! whitespace-normal">
                         <OrderAccordionDetail order={order} />
                       </TableCell>
                     </TableRow>
                   )}
-                </div>
+                </Fragment>
               );
             })
           ) : (

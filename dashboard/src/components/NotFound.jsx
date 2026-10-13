@@ -14,7 +14,7 @@ const NotFound = () => {
         <div className="h-24 w-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
           <FileQuestion className="h-12 w-12 text-primary" />
         </div>
-        <span className="absolute -bottom-2 px-2.5 py-0.5 rounded bg-destructive text-destructive-foreground text-[11px] font-mono font-bold shadow-md">
+        <span className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-mono font-bold shadow-md">
           404 ERROR
         </span>
       </div>

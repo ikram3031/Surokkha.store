@@ -146,7 +146,7 @@ export const NotificationBell = () => {
           >
             <Bell className="h-4 w-4 text-foreground" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-xs animate-in zoom-in">
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-xs animate-in zoom-in">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -162,7 +162,7 @@ export const NotificationBell = () => {
             <Bell className="h-4 w-4 text-primary" />
             <h4 className="text-xs font-bold text-foreground">Notifications</h4>
             {unreadCount > 0 && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
                 {unreadCount} new
               </span>
             )}
@@ -203,7 +203,7 @@ export const NotificationBell = () => {
                   }`}
                 >
                   <div
-                    className={`h-8 w-8 rounded flex items-center justify-center shrink-0 mt-0.5 ${
+                    className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                       isUnread
                         ? isMail
                           ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
@@ -232,7 +232,7 @@ export const NotificationBell = () => {
                         {formatTimeAgo(log.createdAt)}
                       </span>
                       {isUnread && (
-                        <span className="h-1.5 w-1.5 rounded bg-primary" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                       )}
                     </div>
                   </div>

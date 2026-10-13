@@ -178,7 +178,7 @@ export const MembersTable = ({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded" />
+                    <Skeleton className="h-10 w-10 rounded-full" />
                     <Skeleton className="h-4 w-32" />
                   </div>
                 </TableCell>

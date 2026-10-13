@@ -520,7 +520,7 @@ const SizeChartsPage = () => {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 rounded text-destructive/70 hover:text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
                         title="Delete Size Chart"
                         onClick={() =>
                           setDeleteTarget({
@@ -689,7 +689,7 @@ const SizeChartsPage = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => setModalOpen(false)}
-                  className="h-8 w-8 rounded text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer shrink-0 border border-border/60"
+                  className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer shrink-0 border border-border/60"
                   title="Close modal"
                 >
                   <X className="h-4 w-4" />

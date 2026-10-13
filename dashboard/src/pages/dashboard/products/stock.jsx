@@ -186,9 +186,9 @@ const StockManagementPage = () => {
                     <TableRow key={i}>
                       <TableCell><div className="flex items-center gap-3"><Skeleton className="h-10 w-10 rounded-md" /><Skeleton className="h-4 w-32" /></div></TableCell>
                       <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                      <TableCell><Skeleton className="h-5 w-16 rounded" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
                       <TableCell className="text-center"><Skeleton className="h-4 w-10 mx-auto" /></TableCell>
-                      <TableCell className="text-center"><Skeleton className="h-5 w-20 mx-auto rounded" /></TableCell>
+                      <TableCell className="text-center"><Skeleton className="h-5 w-20 mx-auto rounded-full" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                     </TableRow>
                   ))
@@ -232,7 +232,7 @@ const StockManagementPage = () => {
                             {(product.variants || []).map((v) => (
                               <span
                                 key={v.size}
-                                className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded border ${
+                                className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border ${
                                   v.stockStatus === 'outofstock' || v.stockQuantity === 0
                                     ? 'border-destructive/30 bg-destructive/5 text-destructive'
                                     : v.stockQuantity < 5
