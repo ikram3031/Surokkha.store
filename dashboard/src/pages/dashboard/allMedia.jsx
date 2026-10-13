@@ -164,7 +164,7 @@ const AllMediaPage = () => {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded bg-black/60 border border-white/20 backdrop-blur-xs">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-black/60 border border-white/20 backdrop-blur-xs">
                     {t('common.view')} &amp; {t('common.copy')}
                   </span>
                 </div>

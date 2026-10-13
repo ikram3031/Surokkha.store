@@ -179,7 +179,7 @@ export const LookerStudioSetup = ({
           {/* 4-Step Visual Workflow */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="p-3.5 rounded-xl border border-border/60 bg-card space-y-1.5 relative">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary/10 text-primary font-bold text-xs">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs">
                 1
               </span>
               <h4 className="text-xs font-bold text-foreground">Open Looker Studio</h4>
@@ -189,7 +189,7 @@ export const LookerStudioSetup = ({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/60 bg-card space-y-1.5 relative">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary/10 text-primary font-bold text-xs">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs">
                 2
               </span>
               <h4 className="text-xs font-bold text-foreground">Select GA4 Connector</h4>
@@ -199,7 +199,7 @@ export const LookerStudioSetup = ({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/60 bg-card space-y-1.5 relative">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary/10 text-primary font-bold text-xs">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs">
                 3
               </span>
               <h4 className="text-xs font-bold text-foreground">Enable Embedding</h4>
@@ -209,7 +209,7 @@ export const LookerStudioSetup = ({
             </div>
 
             <div className="p-3.5 rounded-xl border border-border/60 bg-card space-y-1.5 relative">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary/10 text-primary font-bold text-xs">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs">
                 4
               </span>
               <h4 className="text-xs font-bold text-foreground">Paste & Connect</h4>

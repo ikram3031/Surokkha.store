@@ -431,7 +431,7 @@ export const MediaPickerModal = ({
                             </div>
 
                             {selected && (
-                              <div className="absolute top-1.5 right-1.5 h-6 w-6 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-md animate-in zoom-in-50">
+                              <div className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-md animate-in zoom-in-50">
                                 {multiple ? selIndex : <Check className="h-3.5 w-3.5" />}
                               </div>
                             )}
@@ -556,7 +556,7 @@ export const MediaPickerModal = ({
                   : "border-border/80 hover:border-primary/50 hover:bg-muted/10"
               }`}
             >
-              <div className="h-16 w-16 rounded bg-primary/10 flex items-center justify-center text-primary mb-4">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
                 {isUploading ? (
                   <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (

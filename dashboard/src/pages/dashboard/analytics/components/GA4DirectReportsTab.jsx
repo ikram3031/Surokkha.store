@@ -150,7 +150,7 @@ export const GA4DirectReportsTab = ({
                 <ul className="text-[11px] text-muted-foreground space-y-1 bg-muted/30 p-2.5 rounded-lg border border-border/40">
                   {card.features.map((feat, fIdx) => (
                     <li key={fIdx} className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded bg-primary" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                       <span>{feat}</span>
                     </li>
                   ))}

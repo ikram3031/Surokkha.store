@@ -110,7 +110,7 @@ export const OrderStatusPie = ({ range = '30days' }) => {
                 <div key={item.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5 truncate">
                     <span
-                      className="w-2.5 h-2.5 rounded shrink-0"
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: item.color }}
                     />
                     <span className="text-muted-foreground truncate">{item.name}</span>

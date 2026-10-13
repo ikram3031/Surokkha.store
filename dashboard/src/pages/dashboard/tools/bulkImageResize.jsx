@@ -641,7 +641,7 @@ export default function BulkImageResize() {
           }}
         />
         <div className="flex flex-col items-center justify-center gap-2">
-          <div className="p-3.5 rounded bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+          <div className="p-3.5 rounded-full bg-primary/10 text-primary group-hover:scale-110 transition-transform">
             <Upload className="h-6 w-6" />
           </div>
           <h4 className="font-semibold text-sm text-foreground">
@@ -660,9 +660,9 @@ export default function BulkImageResize() {
             <span>Processing batch images locally...</span>
             <span className="font-mono text-primary">{progress}%</span>
           </div>
-          <div className="w-full bg-muted rounded h-2 overflow-hidden">
+          <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
             <div
-              className="bg-primary h-2 rounded transition-all duration-200"
+              className="bg-primary h-2 rounded-full transition-all duration-200"
               style={{ width: `${progress}%` }}
             />
           </div>

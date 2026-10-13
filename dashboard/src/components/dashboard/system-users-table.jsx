@@ -178,13 +178,13 @@ export function SystemUsersTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded" />
+                    <Skeleton className="h-10 w-10 rounded-full" />
                     <Skeleton className="h-4 w-32" />
                   </div>
                 </TableCell>
                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-16 rounded" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-10 rounded" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-10 rounded-full" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></TableCell>
               </TableRow>

@@ -526,7 +526,7 @@ export default function BatchImagesStudio() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight">AI Photo Studio</h1>
-            <span className="rounded bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+            <span className="rounded-full bg-primary/10 border border-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
               Gemini GenAI
             </span>
           </div>

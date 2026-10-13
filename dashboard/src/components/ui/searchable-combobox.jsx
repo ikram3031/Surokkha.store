@@ -201,7 +201,7 @@ export function SearchableCombobox({
                     handleClear(e);
                   }
                 }}
-                className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                className="flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
                 title="Clear selection"
               >
                 <X className="h-3 w-3" />
@@ -248,7 +248,7 @@ export function SearchableCombobox({
                   setActiveIndex(-1);
                   inputRef.current?.focus();
                 }}
-                className="absolute right-2 flex h-4 w-4 items-center justify-center rounded text-muted-foreground hover:text-foreground transition"
+                className="absolute right-2 flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition"
               >
                 <X className="h-3 w-3" />
               </button>

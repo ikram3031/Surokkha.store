@@ -209,7 +209,7 @@ export function InvoicePaperPreview({
                 </div>
                 <div className="flex items-center gap-2 justify-start sm:justify-end pt-1">
                   <span
-                    className="px-2.5 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider text-white shadow-xs"
+                    className="px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider text-white shadow-xs"
                     style={{ backgroundColor: secondaryColor }}
                   >
                     {order.paymentStatus || 'PAID'}

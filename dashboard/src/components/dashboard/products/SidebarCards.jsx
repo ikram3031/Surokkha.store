@@ -425,7 +425,7 @@ export const SidebarCards = ({
                   : ""
               }`}
             >
-              <div className="h-9 w-9 rounded bg-primary/15 flex items-center justify-center text-primary mb-1.5 shadow-xs">
+              <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center text-primary mb-1.5 shadow-xs">
                 <ImageIcon className="h-4.5 w-4.5" />
               </div>
               <span className="text-xs font-bold block text-foreground">
@@ -481,7 +481,7 @@ export const SidebarCards = ({
                 <button
                   type="button"
                   onClick={removeUploadedImage}
-                  className="bg-destructive text-destructive-foreground rounded p-2 shadow-md hover:bg-destructive/90 transition-colors cursor-pointer"
+                  className="bg-destructive text-destructive-foreground rounded-full p-2 shadow-md hover:bg-destructive/90 transition-colors cursor-pointer"
                   title="Remove image"
                 >
                   <X className="h-4 w-4" />
@@ -564,7 +564,7 @@ export const SidebarCards = ({
               <button
                 type="button"
                 onClick={() => removeGalleryImage(img.id)}
-                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded p-1 shadow-sm hover:bg-destructive/90 transition-colors cursor-pointer"
+                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 shadow-sm hover:bg-destructive/90 transition-colors cursor-pointer"
                 title="Remove gallery image"
               >
                 <X className="h-3 w-3" />
@@ -680,13 +680,13 @@ export const SidebarCards = ({
               {selectedCategorySlugs.map((slug) => (
                 <span
                   key={slug}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-primary/10 text-primary border border-primary/20 shadow-xs animate-in fade-in"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20 shadow-xs animate-in fade-in"
                 >
                   📁 {getCategoryLabel(slug)}
                   <button
                     type="button"
                     onClick={() => handleRemoveCategory(slug)}
-                    className="hover:text-destructive transition-colors p-0.5 rounded cursor-pointer"
+                    className="hover:text-destructive transition-colors p-0.5 rounded-full cursor-pointer"
                     title="Remove category"
                   >
                     <X className="h-3 w-3" />
@@ -786,13 +786,13 @@ export const SidebarCards = ({
               {selectedBrandSlugs.map((slug) => (
                 <span
                   key={slug}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-xs animate-in fade-in"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-xs animate-in fade-in"
                 >
                   🏷️ {getBrandLabel(slug)}
                   <button
                     type="button"
                     onClick={() => handleRemoveBrand(slug)}
-                    className="hover:text-destructive transition-colors p-0.5 rounded cursor-pointer"
+                    className="hover:text-destructive transition-colors p-0.5 rounded-full cursor-pointer"
                     title="Remove brand"
                   >
                     <X className="h-3 w-3" />
@@ -959,13 +959,13 @@ export const SidebarCards = ({
             {tags.map((t) => (
               <span
                 key={t}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-xs animate-in fade-in"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border shadow-xs animate-in fade-in"
               >
                 #{t}
                 <button
                   type="button"
                   onClick={() => handleRemoveTag(t)}
-                  className="hover:text-destructive transition-colors p-0.5 rounded cursor-pointer"
+                  className="hover:text-destructive transition-colors p-0.5 rounded-full cursor-pointer"
                   title={`Remove ${t}`}
                 >
                   <X className="h-3 w-3" />

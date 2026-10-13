@@ -31,7 +31,7 @@ export const SavePresetModal = ({ isOpen, onClose, onSave }) => {
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="h-4 w-4" />
           </button>

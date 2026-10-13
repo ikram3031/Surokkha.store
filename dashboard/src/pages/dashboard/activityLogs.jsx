@@ -364,11 +364,11 @@ const ActivityLogsPage = () => {
                         {/* Unread indicator dot */}
                         {isUnread ? (
                           <span
-                            className="h-2 w-2 rounded bg-primary shrink-0 animate-pulse shadow-xs"
+                            className="h-2 w-2 rounded-full bg-primary shrink-0 animate-pulse shadow-xs"
                             title="Unread Log"
                           />
                         ) : (
-                          <span className="h-2 w-2 rounded bg-muted-foreground/30 shrink-0" />
+                          <span className="h-2 w-2 rounded-full bg-muted-foreground/30 shrink-0" />
                         )}
 
                         <div className="space-y-0.5">

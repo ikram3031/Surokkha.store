@@ -127,7 +127,7 @@ export default function UserProfile() {
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <label className="absolute bottom-0 right-0 p-1.5 bg-primary text-primary-foreground rounded shadow-md cursor-pointer hover:bg-primary/90 transition-colors opacity-0 group-hover:opacity-100">
+                  <label className="absolute bottom-0 right-0 p-1.5 bg-primary text-primary-foreground rounded-full shadow-md cursor-pointer hover:bg-primary/90 transition-colors opacity-0 group-hover:opacity-100">
                     <Camera className="w-4 h-4" />
                     <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
                   </label>
@@ -281,8 +281,8 @@ export default function UserProfile() {
                 <div className="relative border-l border-border/60 ml-3 space-y-8 pb-4">
                   
                   <div className="relative pl-6">
-                    <div className="absolute -left-2.5 top-0.5 h-5 w-5 rounded bg-background border border-border flex items-center justify-center">
-                      <span className="h-2 w-2 rounded bg-primary/60"></span>
+                    <div className="absolute -left-2.5 top-0.5 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center">
+                      <span className="h-2 w-2 rounded-full bg-primary/60"></span>
                     </div>
                     <div>
                       <h4 className="text-sm font-bold flex items-center gap-2">
@@ -296,8 +296,8 @@ export default function UserProfile() {
                   </div>
 
                   <div className="relative pl-6">
-                    <div className="absolute -left-2.5 top-0.5 h-5 w-5 rounded bg-background border border-border flex items-center justify-center">
-                      <span className="h-2 w-2 rounded bg-muted-foreground/40"></span>
+                    <div className="absolute -left-2.5 top-0.5 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center">
+                      <span className="h-2 w-2 rounded-full bg-muted-foreground/40"></span>
                     </div>
                     <div>
                       <h4 className="text-sm font-bold">Account Verification</h4>
