@@ -343,7 +343,7 @@ export const ProductShowcaseManager = ({ showcaseKey, title, icon: TagIcon, icon
           {/* Staged Products Table */}
           <div className="rounded-lg border overflow-hidden">
             <Table>
-              <TableHeader className="bg-muted/50">
+              <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">Image</TableHead>
                   <TableHead>Product Name</TableHead>

@@ -174,7 +174,7 @@ export function ReviewsTable({
     <>
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40">
+          <TableRow>
             <TableHead className="w-[45px] px-4">
               <Checkbox
                 checked={

@@ -760,7 +760,7 @@ const ReportsV2Page = () => {
                   <CardContent className="p-0">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/40 text-xs">
+                        <TableRow className="text-xs">
                           <TableHead className="font-semibold">Date</TableHead>
                           <TableHead className="font-semibold text-center">Orders Count</TableHead>
                           <TableHead className="font-semibold text-right">Gross Sales</TableHead>
@@ -890,7 +890,7 @@ const ReportsV2Page = () => {
                   <CardContent className="p-0">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/40 text-xs">
+                        <TableRow className="text-xs">
                           <TableHead className="w-16 text-center font-semibold">Rank</TableHead>
                           <TableHead className="font-semibold">Product Name</TableHead>
                           <TableHead className="font-semibold">SKU</TableHead>
@@ -1037,7 +1037,7 @@ const ReportsV2Page = () => {
                     <CardContent className="p-0">
                       <Table>
                         <TableHeader>
-                          <TableRow className="bg-muted/40 text-xs">
+                          <TableRow className="text-xs">
                             <TableHead className="font-semibold">Payment Method</TableHead>
                             <TableHead className="font-semibold text-center">Transactions</TableHead>
                             <TableHead className="text-right font-semibold">Total Volume</TableHead>
@@ -1157,7 +1157,7 @@ const ReportsV2Page = () => {
                   <CardContent className="p-0">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/40 text-xs">
+                        <TableRow className="text-xs">
                           <TableHead className="font-semibold">Product Name</TableHead>
                           <TableHead className="font-semibold">SKU</TableHead>
                           <TableHead className="font-semibold">Type</TableHead>

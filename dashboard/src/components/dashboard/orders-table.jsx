@@ -311,12 +311,12 @@ export const OrdersTable = ({
                 <TableCell className="w-[44px] px-2">
                   <Skeleton className="h-4 w-4 rounded" />
                 </TableCell>
-                <TableCell><Skeleton className="h-4 w-24 bg-gray-200" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-32 bg-gray-200" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20 bg-gray-200" /></TableCell>
-                <TableCell className="pr-6"><Skeleton className="h-4 w-16 ml-auto bg-gray-200" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-20 rounded-full bg-gray-200" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-24 rounded-full bg-gray-200" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                <TableCell className="pr-6"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></TableCell>
               </TableRow>
             ))
@@ -334,7 +334,7 @@ export const OrdersTable = ({
                         ? 'bg-primary/10! shadow-[inset_3px_0_0_var(--primary)] hover:bg-primary/15!'
                         : isSelected
                           ? 'bg-primary/5! hover:bg-primary/10!'
-                          : 'hover:bg-white!'
+                          : 'hover:bg-muted/40'
                     }`}
                     onClick={() => toggleOrderExpansion(order.id)}
                   >
@@ -465,7 +465,7 @@ export const OrdersTable = ({
                   </TableRow>
 
                   {isExpanded && (
-                    <TableRow className="hover:bg-white! bg-white! shadow-[inset_3px_0_0_var(--primary)]">
+                    <TableRow className="hover:bg-background! bg-background! shadow-[inset_3px_0_0_var(--primary)]">
                       <TableCell colSpan={9} className="p-0! whitespace-normal">
                         <OrderAccordionDetail order={order} />
                       </TableCell>

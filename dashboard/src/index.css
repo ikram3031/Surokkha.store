@@ -56,12 +56,6 @@
   --shadow-2xl: 0px 1px 4px 0px hsl(0 0% 0% / 0.13);
   --tracking-normal: 0rem;
   --spacing: 0.25rem;
-  --table-bg: #f3f4f6;
-  --table-foreground: #111827;
-  --table-muted-foreground: #6b7280;
-  --table-border: #e5e7eb;
-  --table-row-hover: #e5e7eb;
-  --table-row-even: #ffffff;
 }
 
 .dark {
@@ -115,12 +109,6 @@
   --shadow-lg: 0px 1px 4px 0px hsl(0 0% 0% / 0.05), 0px 4px 6px -1px hsl(0 0% 0% / 0.05);
   --shadow-xl: 0px 1px 4px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
   --shadow-2xl: 0px 1px 4px 0px hsl(0 0% 0% / 0.13);
-  --table-bg: #f3f4f6;
-  --table-foreground: #111827;
-  --table-muted-foreground: #6b7280;
-  --table-border: #e5e7eb;
-  --table-row-hover: #e5e7eb;
-  --table-row-even: #ffffff;
 }
 
 @theme inline {
@@ -156,9 +144,6 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-table-bg: var(--table-bg);
-  --color-table-foreground: var(--table-foreground);
-  --color-table-border: var(--table-border);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);

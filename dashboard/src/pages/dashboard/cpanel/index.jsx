@@ -215,7 +215,7 @@ const CPanelManager = () => {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-muted/40 text-slate-300 uppercase text-[11px] font-semibold tracking-wider border-y border-sidebar-border">
+              <thead className="bg-muted/40 text-muted-foreground uppercase text-[11px] font-semibold tracking-wider border-y border-sidebar-border">
                 <tr>
                   <th className="py-3 px-4">Container Name</th>
                   <th className="py-3 px-4">Role / Port</th>
@@ -228,17 +228,17 @@ const CPanelManager = () => {
               <tbody className="divide-y divide-sidebar-border">
                 {containers.map((c) => (
                   <tr key={c.name} className="hover:bg-muted/20 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-medium text-white flex items-center gap-2">
+                    <td className="py-3.5 px-4 font-mono font-medium text-foreground flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
                       {c.name}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-300">
+                    <td className="py-3.5 px-4 text-foreground">
                       <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">
                         :{c.port}
                       </span>{' '}
                       <span className="text-xs text-muted-foreground">({c.role})</span>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-slate-300">
+                    <td className="py-3.5 px-4 font-mono text-xs text-foreground">
                       <a
                         href={`https://${c.domain}`}
                         target="_blank"
@@ -249,7 +249,7 @@ const CPanelManager = () => {
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     </td>
-                    <td className="py-3.5 px-4 text-xs font-mono text-slate-400">
+                    <td className="py-3.5 px-4 text-xs font-mono text-muted-foreground">
                       {c.cpu} / {c.memory}
                     </td>
                     <td className="py-3.5 px-4">

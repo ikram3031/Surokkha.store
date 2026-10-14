@@ -385,7 +385,7 @@ export const InvestorsPage = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableRow>
                 <TableHead className="text-xs">Investor Name</TableHead>
                 <TableHead className="text-xs">Type</TableHead>
                 <TableHead className="text-xs">Contact Info</TableHead>

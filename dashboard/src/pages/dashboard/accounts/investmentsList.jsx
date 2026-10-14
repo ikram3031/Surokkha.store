@@ -494,7 +494,7 @@ export const InvestmentsListPage = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableRow>
                 <TableHead className="w-[45px] px-4">
                   <input
                     type="checkbox"

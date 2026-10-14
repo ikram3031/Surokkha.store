@@ -2,12 +2,12 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-// Renders the data table container on the themed card surface
+// Renders the data table container on the theme background, recessed below card surfaces in dark mode
 const Table = ({ className, ...props }) => {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto bg-card text-card-foreground"
+      className="relative w-full overflow-x-auto bg-background text-foreground"
     >
       <table
         data-slot="table"
@@ -32,7 +32,7 @@ const TableHeader = ({ className, ...props }) => {
   )
 }
 
-// Renders the table body on the card surface
+// Renders the table body on the theme background
 const TableBody = ({ className, ...props }) => {
   return (
     <tbody
