@@ -217,24 +217,6 @@
   }
 }
 
-/* Universal Table styling - Light gray background invariant across dark/light mode */
-[data-slot="table-container"],
-[data-slot="table"],
-table:not(.invoice-paper-table) {
-  background-color: #f3f4f6;
-  color: #111827;
-}
-
-[data-slot="table-container"] {
-  --muted-foreground: #6b7280;
-  --border: #e5e7eb;
-}
-
-div:has(> [data-slot="table-container"]) {
-  background-color: #f3f4f6;
-  border-color: #e5e7eb;
-}
-
 .ProseMirror {
   outline: none;
 }

@@ -180,7 +180,7 @@ export const ItemsTable = ({
   const isAllPageSelected = items.length > 0 && items.every(p => selectedIds.includes(p.id));
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -429,6 +429,6 @@ export const ItemsTable = ({
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </>
   );
 };

@@ -139,7 +139,7 @@ export const MembersTable = ({
   const isAllPageSelected = members.length > 0 && members.every(m => selectedIds.includes(m.id));
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -329,6 +329,6 @@ export const MembersTable = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

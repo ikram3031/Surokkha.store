@@ -145,7 +145,7 @@ export function CouponsTable({
   const isAllPageSelected = paginatedCoupons.length > 0 && paginatedCoupons.every(c => selectedIds.includes(c.id));
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -356,6 +356,6 @@ export function CouponsTable({
             : ''
         }
       />
-    </div>
+    </>
   );
 }

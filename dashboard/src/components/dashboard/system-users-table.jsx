@@ -140,7 +140,7 @@ export function SystemUsersTable({
   const isAllPageSelected = users.length > 0 && users.every(u => selectedIds.includes(u.id));
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -302,6 +302,6 @@ export function SystemUsersTable({
         user={resetPasswordTarget}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['system-users'] })}
       />
-    </div>
+    </>
   );
 }

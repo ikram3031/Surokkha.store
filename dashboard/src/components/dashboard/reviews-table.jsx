@@ -171,207 +171,205 @@ export function ReviewsTable({
   }
 
   return (
-    <div className="rounded-md border bg-card overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/40">
-              <TableHead className="w-[45px] px-4">
-                <Checkbox
-                  checked={
-                    filteredReviews.length > 0 &&
-                    selectedIds.length === filteredReviews.length
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/40">
+            <TableHead className="w-[45px] px-4">
+              <Checkbox
+                checked={
+                  filteredReviews.length > 0 &&
+                  selectedIds.length === filteredReviews.length
+                }
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onSelectedIdsChange(filteredReviews.map((r) => r.id));
+                  } else {
+                    onSelectedIdsChange([]);
                   }
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      onSelectedIdsChange(filteredReviews.map((r) => r.id));
-                    } else {
-                      onSelectedIdsChange([]);
-                    }
-                  }}
-                  aria-label="Select all"
-                />
-              </TableHead>
-              <TableHead className="min-w-[180px]">Product</TableHead>
-              <TableHead className="min-w-[170px]">Customer</TableHead>
-              <TableHead className="min-w-[120px]">Rating</TableHead>
-              <TableHead className="min-w-[220px]">Review Content</TableHead>
-              <TableHead className="w-[140px]">Status</TableHead>
-              <TableHead className="w-[120px]">Date</TableHead>
-              <TableHead className="w-[80px] text-right">Actions</TableHead>
+                }}
+                aria-label="Select all"
+              />
+            </TableHead>
+            <TableHead className="min-w-[180px]">Product</TableHead>
+            <TableHead className="min-w-[170px]">Customer</TableHead>
+            <TableHead className="min-w-[120px]">Rating</TableHead>
+            <TableHead className="min-w-[220px]">Review Content</TableHead>
+            <TableHead className="w-[140px]">Status</TableHead>
+            <TableHead className="w-[120px]">Date</TableHead>
+            <TableHead className="w-[80px] text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredReviews.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                No reviews found matching your search and filter criteria.
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredReviews.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
-                  No reviews found matching your search and filter criteria.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredReviews.map((review) => {
-                const isApproved = Boolean(review.isApproved);
-                const isSelected = selectedIds.includes(review.id);
+          ) : (
+            filteredReviews.map((review) => {
+              const isApproved = Boolean(review.isApproved);
+              const isSelected = selectedIds.includes(review.id);
 
-                return (
-                  <TableRow
-                    key={review.id}
-                    data-state={isSelected ? 'selected' : undefined}
-                    className="hover:bg-muted/30 transition-colors"
-                  >
-                    <TableCell className="px-4">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            onSelectedIdsChange([...selectedIds, review.id]);
-                          } else {
-                            onSelectedIdsChange(
-                              selectedIds.filter((id) => id !== review.id)
-                            );
-                          }
-                        }}
-                        aria-label={`Select review for ${review.productId?.name || review.productDid}`}
+              return (
+                <TableRow
+                  key={review.id}
+                  data-state={isSelected ? 'selected' : undefined}
+                  className="hover:bg-muted/30 transition-colors"
+                >
+                  <TableCell className="px-4">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          onSelectedIdsChange([...selectedIds, review.id]);
+                        } else {
+                          onSelectedIdsChange(
+                            selectedIds.filter((id) => id !== review.id)
+                          );
+                        }
+                      }}
+                      aria-label={`Select review for ${review.productId?.name || review.productDid}`}
+                    />
+                  </TableCell>
+
+                  {/* Product */}
+                  <TableCell>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium text-foreground line-clamp-1">
+                        {review.productId?.name || 'Product'}
+                      </span>
+                      <span className="text-[11px] font-mono text-muted-foreground">
+                        DID: {review.productDid}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  {/* Customer */}
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar className="h-7 w-7 border border-border shrink-0">
+                        <AvatarFallback className="text-[10px] font-semibold bg-primary/10 text-primary">
+                          {getInitials(review.memberId?.name || review.memberDid)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-medium text-xs text-foreground truncate">
+                          {review.memberId?.name || 'Customer'}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground truncate">
+                          {review.memberId?.email || review.memberDid}
+                        </span>
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* Rating */}
+                  <TableCell>{renderStars(review.rating)}</TableCell>
+
+                  {/* Description */}
+                  <TableCell>
+                    <p
+                      className="text-xs text-foreground/85 line-clamp-2 max-w-[280px] cursor-pointer hover:text-foreground transition-colors"
+                      onClick={() => setViewReview(review)}
+                      title="Click to view full review"
+                    >
+                      {review.description}
+                    </p>
+                  </TableCell>
+
+                  {/* Status & Quick Toggle */}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {isApproved ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
+                        >
+                          <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                          <span>Approved</span>
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
+                        >
+                          <XCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                          <span>Not Approved</span>
+                        </Badge>
+                      )}
+                      <Switch
+                        size="sm"
+                        checked={isApproved}
+                        disabled={updatingId === review.id}
+                        onCheckedChange={() =>
+                          handleToggleApproval(review, isApproved)
+                        }
+                        title={isApproved ? 'Click to Unapprove' : 'Click to Approve'}
                       />
-                    </TableCell>
+                    </div>
+                  </TableCell>
 
-                    {/* Product */}
-                    <TableCell>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium text-foreground line-clamp-1">
-                          {review.productId?.name || 'Product'}
-                        </span>
-                        <span className="text-[11px] font-mono text-muted-foreground">
-                          DID: {review.productDid}
-                        </span>
-                      </div>
-                    </TableCell>
+                  {/* Date */}
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                    {review.createdAt ? formatDate(review.createdAt) : '—'}
+                  </TableCell>
 
-                    {/* Customer */}
-                    <TableCell>
-                      <div className="flex items-center gap-2.5">
-                        <Avatar className="h-7 w-7 border border-border shrink-0">
-                          <AvatarFallback className="text-[10px] font-semibold bg-primary/10 text-primary">
-                            {getInitials(review.memberId?.name || review.memberDid)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-medium text-xs text-foreground truncate">
-                            {review.memberId?.name || 'Customer'}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground truncate">
-                            {review.memberId?.email || review.memberDid}
-                          </span>
-                        </div>
-                      </div>
-                    </TableCell>
-
-                    {/* Rating */}
-                    <TableCell>{renderStars(review.rating)}</TableCell>
-
-                    {/* Description */}
-                    <TableCell>
-                      <p
-                        className="text-xs text-foreground/85 line-clamp-2 max-w-[280px] cursor-pointer hover:text-foreground transition-colors"
-                        onClick={() => setViewReview(review)}
-                        title="Click to view full review"
-                      >
-                        {review.description}
-                      </p>
-                    </TableCell>
-
-                    {/* Status & Quick Toggle */}
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {isApproved ? (
-                          <Badge
-                            variant="outline"
-                            className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
+                  {/* Actions */}
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
+                            title="Actions"
                           >
-                            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                            <span>Approved</span>
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
-                          >
-                            <XCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                            <span>Not Approved</span>
-                          </Badge>
-                        )}
-                        <Switch
-                          size="sm"
-                          checked={isApproved}
-                          disabled={updatingId === review.id}
-                          onCheckedChange={() =>
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem onClick={() => setViewReview(review)}>
+                          <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
                             handleToggleApproval(review, isApproved)
                           }
-                          title={isApproved ? 'Click to Unapprove' : 'Click to Approve'}
-                        />
-                      </div>
-                    </TableCell>
-
-                    {/* Date */}
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {review.createdAt ? formatDate(review.createdAt) : '—'}
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0"
-                              title="Actions"
-                            >
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          }
-                        />
-                        <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => setViewReview(review)}>
-                            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleToggleApproval(review, isApproved)
-                            }
-                          >
-                            {isApproved ? (
-                              <>
-                                <XCircle className="mr-2 h-4 w-4 text-amber-600" />
-                                Unapprove
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
-                                Approve
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                            onClick={() => setDeleteTarget(review)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                        >
+                          {isApproved ? (
+                            <>
+                              <XCircle className="mr-2 h-4 w-4 text-amber-600" />
+                              Unapprove
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" />
+                              Approve
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                          onClick={() => setDeleteTarget(review)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
 
       {/* View Review Modal */}
       {viewReview && (
@@ -476,6 +474,6 @@ export function ReviewsTable({
         description="Are you sure you want to delete this customer review? This action will remove it from the system."
         isDeleting={isDeleting}
       />
-    </div>
+    </>
   );
 }

@@ -2,29 +2,29 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-// Renders the data table container with persistent light gray background
+// Renders the data table container on the themed card surface
 const Table = ({ className, ...props }) => {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto rounded-md overflow-hidden bg-[#f3f4f6] text-[#111827] border border-[#e5e7eb] shadow-2xs"
+      className="relative w-full overflow-x-auto bg-card text-card-foreground"
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm bg-[#f3f4f6] text-[#111827]", className)}
+        className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />
     </div>
   )
 }
 
-// Renders the table header with primary accent branding
+// Renders the table header with a subtle muted band
 const TableHeader = ({ className, ...props }) => {
   return (
     <thead
       data-slot="table-header"
       className={cn(
-        "bg-primary text-primary-foreground [&_tr]:bg-primary [&_tr]:hover:bg-primary [&_tr]:border-b [&_tr]:border-primary/20",
+        "bg-muted/50 [&_tr]:border-b [&_tr]:hover:bg-transparent",
         className
       )}
       {...props}
@@ -32,13 +32,13 @@ const TableHeader = ({ className, ...props }) => {
   )
 }
 
-// Renders the table body with light gray background and subtle alternating rows
+// Renders the table body on the card surface
 const TableBody = ({ className, ...props }) => {
   return (
     <tbody
       data-slot="table-body"
       className={cn(
-        "bg-[#f3f4f6] text-[#111827] [&_tr:last-child]:border-0 [&_tr:nth-child(even)]:bg-[#ffffff]/60",
+        "[&_tr:last-child]:border-0",
         className
       )}
       {...props}
@@ -46,13 +46,13 @@ const TableBody = ({ className, ...props }) => {
   )
 }
 
-// Renders the table footer with light gray background
+// Renders the table footer with muted background
 const TableFooter = ({ className, ...props }) => {
   return (
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t border-[#e5e7eb] bg-[#e5e7eb]/50 font-medium text-[#111827] [&>tr]:last:border-b-0",
+        "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -60,13 +60,13 @@ const TableFooter = ({ className, ...props }) => {
   )
 }
 
-// Renders a table row with subtle hover state and light gray border
+// Renders a table row with subtle hover state
 const TableRow = ({ className, ...props }) => {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-[#e5e7eb] transition-colors hover:bg-[#e5e7eb] has-aria-expanded:bg-[#e5e7eb] data-[state=selected]:bg-[#e5e7eb]",
+        "border-b border-border transition-colors hover:bg-muted/40 has-aria-expanded:bg-muted/40 data-[state=selected]:bg-muted/60",
         className
       )}
       {...props}
@@ -74,13 +74,13 @@ const TableRow = ({ className, ...props }) => {
   )
 }
 
-// Renders a table header cell with semibold text
+// Renders a table header cell with small uppercase muted label
 const TableHead = ({ className, ...props }) => {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-left align-middle font-semibold whitespace-nowrap text-primary-foreground [&:has([role=checkbox])]:pr-0",
+        "h-11 px-3 text-left align-middle text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -88,13 +88,13 @@ const TableHead = ({ className, ...props }) => {
   )
 }
 
-// Renders a table data cell with crisp dark text
+// Renders a table data cell
 const TableCell = ({ className, ...props }) => {
   return (
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap text-[#111827] [&:has([role=checkbox])]:pr-0",
+        "px-3 py-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -110,7 +110,7 @@ const TableCaption = ({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-4 text-sm text-[#6b7280]", className)}
+      className={cn("mt-4 text-sm text-muted-foreground", className)}
       {...props}
     />
   )

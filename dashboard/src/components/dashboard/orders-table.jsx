@@ -269,7 +269,7 @@ export const OrdersTable = ({
   const locale = i18n.language?.startsWith('bn') ? 'bn-BD' : undefined;
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table className="[&_th]:h-11 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_td]:py-3">
         <TableHeader>
           <TableRow>
@@ -571,6 +571,6 @@ export const OrdersTable = ({
         onOpenChange={(open) => !open && setSendInvoiceTarget(null)}
         order={sendInvoiceTarget}
       />
-    </div>
+    </>
   );
 };
