@@ -60,13 +60,13 @@ const TableFooter = ({ className, ...props }) => {
   )
 }
 
-// Renders a table row with subtle hover state
+// Renders a table row; hover tints with the secondary color and switches cell text to primary
 const TableRow = ({ className, ...props }) => {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-border transition-colors hover:bg-muted/40 has-aria-expanded:bg-muted/40 data-[state=selected]:bg-muted/60",
+        "border-b border-border transition-colors hover:bg-secondary/20 hover:text-primary hover:[&_td]:text-primary has-aria-expanded:bg-muted/40 data-[state=selected]:bg-muted/60",
         className
       )}
       {...props}

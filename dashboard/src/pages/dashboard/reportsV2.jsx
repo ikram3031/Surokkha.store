@@ -770,7 +770,7 @@ const ReportsV2Page = () => {
                       </TableHeader>
                       <TableBody className="text-xs">
                         {timeline.data?.map((row) => (
-                          <TableRow key={row._id} className="hover:bg-muted/30 transition-colors">
+                          <TableRow key={row._id}>
                             <TableCell className="font-medium text-foreground">
                               {row._id}
                             </TableCell>
@@ -900,7 +900,7 @@ const ReportsV2Page = () => {
                       </TableHeader>
                       <TableBody className="text-xs">
                         {products.data?.map((product, i) => (
-                          <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                          <TableRow key={i}>
                             <TableCell className="text-center font-bold">
                               {i === 0 ? (
                                 <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] px-2 py-0.5">
@@ -1046,7 +1046,7 @@ const ReportsV2Page = () => {
                         </TableHeader>
                         <TableBody className="text-xs">
                           {payments.data?.map((method, i) => (
-                            <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                            <TableRow key={i}>
                               <TableCell className="font-medium uppercase text-foreground">
                                 <div className="flex items-center gap-2">
                                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
@@ -1167,7 +1167,7 @@ const ReportsV2Page = () => {
                       </TableHeader>
                       <TableBody className="text-xs">
                         {inventory.data?.alerts?.map((alert, i) => (
-                          <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                          <TableRow key={i}>
                             <TableCell className="font-medium text-foreground max-w-sm truncate">
                               {alert.name}
                             </TableCell>

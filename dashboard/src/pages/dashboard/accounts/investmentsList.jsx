@@ -539,7 +539,7 @@ export const InvestmentsListPage = () => {
                   const outstanding = Math.max(0, taken - returned);
 
                   return (
-                    <TableRow key={inv.id} className="hover:bg-muted/30">
+                    <TableRow key={inv.id}>
                       <TableCell className="w-[45px] px-4">
                         <input
                           type="checkbox"

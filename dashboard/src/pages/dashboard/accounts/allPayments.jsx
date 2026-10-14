@@ -425,7 +425,7 @@ export const AllPaymentsPage = () => {
                 </TableRow>
               ) : payments.length > 0 ? (
                 payments.map((p) => (
-                  <TableRow key={p.id} className="hover:bg-muted/30">
+                  <TableRow key={p.id}>
                     <TableCell className="w-[45px] px-4">
                       <input
                         type="checkbox"

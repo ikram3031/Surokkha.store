@@ -421,7 +421,7 @@ export const InvestorsPage = () => {
                   const isActive = inv.status === 'Active';
 
                   return (
-                    <TableRow key={inv.id} className="hover:bg-muted/30">
+                    <TableRow key={inv.id}>
                       <TableCell className="font-semibold text-xs text-foreground">
                         <div className="flex items-center gap-2">
                           <div className="h-7 w-7 rounded-full bg-purple-500/15 text-purple-600 font-bold flex items-center justify-center text-xs">

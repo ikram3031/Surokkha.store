@@ -216,7 +216,7 @@ export function ReviewsTable({
                 <TableRow
                   key={review.id}
                   data-state={isSelected ? 'selected' : undefined}
-                  className="hover:bg-muted/30 transition-colors"
+                  className="transition-colors"
                 >
                   <TableCell className="px-4">
                     <Checkbox

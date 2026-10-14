@@ -337,7 +337,7 @@ export const BillTypesPage = () => {
                   const isActive = type.status === 'Active';
 
                   return (
-                    <TableRow key={type.id} className="hover:bg-muted/30">
+                    <TableRow key={type.id}>
                       <TableCell className="w-[45px] px-4">
                         <input
                           type="checkbox"

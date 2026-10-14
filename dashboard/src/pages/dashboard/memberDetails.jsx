@@ -722,7 +722,7 @@ export const MemberDetails = () => {
                       const status = (ord.status || 'pending').toLowerCase();
 
                       return (
-                        <TableRow key={orderId} className="hover:bg-muted/40">
+                        <TableRow key={orderId}>
                           <TableCell className="font-mono font-bold text-xs">
                             <Link
                               to={`/dashboard/orders/${orderId}`}

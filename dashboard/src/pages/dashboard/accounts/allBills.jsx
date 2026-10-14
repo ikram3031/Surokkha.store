@@ -427,7 +427,7 @@ export const AllBillsPage = () => {
                 </TableRow>
               ) : billings.length > 0 ? (
                 billings.map((b) => (
-                  <TableRow key={b.id} className="hover:bg-muted/30">
+                  <TableRow key={b.id}>
                     <TableCell className="w-[45px] px-4">
                       <input
                         type="checkbox"
