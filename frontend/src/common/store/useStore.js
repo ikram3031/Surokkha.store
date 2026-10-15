@@ -92,6 +92,14 @@ export const getInitialLanguage = () => {
   return 'bn';
 };
 
+// Simple (non-variable) Items can only be ordered once; Products and variable Items allow multiple qty
+export const isSingleQtyItem = (prod) => {
+  if (!prod) return false;
+  const isItem = prod.itemType === 'item' || prod.type === 'item';
+  const hasVariants = Array.isArray(prod.variants) && prod.variants.length > 0;
+  return isItem && !hasVariants;
+};
+
 export const useStore = create((set, get) => ({
   currentView: initialRoute.view,
   selectedProductSlug: initialRoute.slug,
@@ -820,6 +828,15 @@ export const useStore = create((set, get) => ({
 
     const cartKey = variant ? `${slug}:::${variant.size}` : slug;
 
+    if (isSingleQtyItem(prod)) {
+      if (get().cart[cartKey] > 0) {
+        const isBn = get().language === 'bn';
+        get().showToast(isBn ? `"${prod.name_bn || prod.name}" ইতিমধ্যে কার্টে আছে` : `"${prod.name}" is already in cart`);
+        return;
+      }
+      quantity = 1;
+    }
+
     set((state) => ({
       cart: {
         ...state.cart,
@@ -927,6 +944,12 @@ export const useStore = create((set, get) => ({
   },
 
   setProductQty: (slug, qty) => {
+    const prod = get().products[slug.split(':::')[0]];
+    if (qty > 1 && isSingleQtyItem(prod)) {
+      const isBn = get().language === 'bn';
+      get().showToast(isBn ? `"${prod.name_bn || prod.name}" ইতিমধ্যে কার্টে আছে` : `"${prod.name}" is already in cart`);
+      return;
+    }
     set((state) => {
       const newCart = { ...state.cart };
       if (qty <= 0) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, isSingleQtyItem } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
@@ -617,10 +617,10 @@ export default function ProductDetailView() {
                   </span>
                   <button
                     type="button"
-                    disabled={isOutOfStock}
-                    onClick={() => !isOutOfStock && setQuantity((q) => q + 1)}
+                    disabled={isOutOfStock || isSingleQtyItem(product)}
+                    onClick={() => !isOutOfStock && !isSingleQtyItem(product) && setQuantity((q) => q + 1)}
                     aria-label="Increase quantity"
-                    className={`px-3 py-2 font-bold text-sm ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-800 hover:text-slate-950 cursor-pointer'}`}
+                    className={`px-3 py-2 font-bold text-sm ${isOutOfStock || isSingleQtyItem(product) ?'text-slate-400 cursor-not-allowed' : 'text-slate-800 hover:text-slate-950 cursor-pointer'}`}
                   >
                     +
                   </button>

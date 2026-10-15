@@ -188,8 +188,8 @@ export const OrderAccordionDetail = ({ order }) => {
             className="h-8 text-xs gap-1.5 cursor-pointer bg-background"
             onClick={() => setSendEmailModalOpen(true)}
           >
-            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-            {t('orders.send_invoice_email', 'Send via Email')}
+            {/* <Mail className="h-3.5 w-3.5 text-muted-foreground" /> */}
+            {t('orders.send_invoice_email', 'Email invoice')}
           </Button>
           <Button
             variant="outline"
@@ -609,11 +609,8 @@ export const OrderAccordionDetail = ({ order }) => {
 
           <div className="pt-2 border-t border-border/50">
             <Button
-              className={`w-full h-8 text-xs font-semibold cursor-pointer transition-all ${
-                hasStatusChanged
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm ring-2 ring-emerald-500/20'
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-              }`}
+              className={`w-full h-8 text-xs font-semibold cursor-pointer transition-all shadow-sm bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 ${hasStatusChanged ? 'ring-2 ring-primary/40' : ''
+                }`}
               onClick={handleUpdateStatus}
               disabled={isUpdating}
             >

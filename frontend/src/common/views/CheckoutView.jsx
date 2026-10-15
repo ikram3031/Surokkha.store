@@ -1167,6 +1167,30 @@ export default function CheckoutView() {
 
               {/* Terms & Conditions Agreement */}
               <div className="pt-2 border-t border-slate-200 space-y-3">
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-slate-900 text-xs sm:text-sm">
+                    <span className="text-base">📋</span>
+                    <span>{isBn ? 'শর্তাবলী (Terms & Conditions)' : 'Terms & Conditions'}</span>
+                  </div>
+                  <ol className="list-decimal pl-5 space-y-1.5 text-slate-800 font-medium text-xs leading-relaxed">
+                    <li>
+                      {isBn
+                        ? 'ডেলিভারিম্যানের কাছ থেকে পণ্য গ্রহণের সময় টাকা দেওয়ার আগে অবশ্যই পণ্য চেক করে নিন। পণ্য গ্রহণ করার পর তা আর ফেরত দেওয়া যাবে না।'
+                        : 'Please check the product before paying the delivery man. Once received, the product cannot be returned.'}
+                    </li>
+                    <li>
+                      {isBn
+                        ? 'যেসব পণ্য ফুল প্যাকেট হিসেবে নয়, ভেঙে (খুচরা) বিক্রি করা হয়, সেগুলোর কোনো রিটার্ন হবে না।'
+                        : 'Products sold loose (not as a full sealed pack) are not eligible for return.'}
+                    </li>
+                    <li>
+                      {isBn
+                        ? '১০০০ টাকার বেশি অর্ডারের ক্ষেত্রে ডেলিভারি চার্জের সমপরিমাণ টাকা মোবাইল ওয়ালেটে (বিকাশ/নগদ) অগ্রিম সেন্ড মানি করতে হতে পারে। অর্ডার করার পর আমাদের টিম এ বিষয়ে আপনার সাথে যোগাযোগ করবে।'
+                        : 'For orders above 1000 BDT, an advance equal to the delivery charge may need to be sent via mobile wallet (bKash/Nagad). Our team will contact you about this after you place the order.'}
+                    </li>
+                  </ol>
+                </div>
+
                 <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-800 font-medium select-none">
                   <input
                     type="checkbox"
