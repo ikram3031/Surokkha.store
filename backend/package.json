@@ -1,6 +1,6 @@
 {
 	"name": "Backend",
-	"version": "SS_1.1.00",
+	"version": "SS_1.1.01",
 	"private": true,
 	"type": "module",
 	"engines": {
