@@ -5,6 +5,7 @@ import { getR2Config, isR2Configured, recordBackupStatus } from './r2Config.serv
 import { syncUploadsToR2 } from './r2Sync.service.js';
 import { dumpDatabaseToFile } from './nodeDbDump.service.js';
 import { env } from '../config/env.js';
+import { pruneDatabaseBackups } from './r2BackupHistory.service.js';
 
 const formatBytes = (bytes) =>
   bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(2)} MB` : `${(Number(bytes || 0) / 1024).toFixed(1)} KB`;
@@ -38,7 +39,8 @@ export const executeR2Backup = async (triggeredBy = 'SCHEDULER_DAILY_3AM') => {
       accessKeyId: cfg.accessKeyId,
       secretAccessKey: cfg.secretAccessKey,
       bucketName: cfg.bucketName,
-      retentionDays: cfg.retentionDays,
+      retentionDays: (Number(cfg.keepWeeklyWeeks) || 5) * 7,
+      skipDatabasePrune: true,
       mongoUri: env.MONGODB_URI,
       nodeDump: dumpDatabaseToFile,
     });
@@ -51,11 +53,17 @@ export const executeR2Backup = async (triggeredBy = 'SCHEDULER_DAILY_3AM') => {
         : 'uploads mirror skipped';
     manifest.uploadsMirror = sync;
 
+    // Retention: keep every backup from the last N days, then one per week (Sunday) for M weeks
+    const pruned = await pruneDatabaseBackups(cfg, { keepDailyDays: cfg.keepDailyDays, keepWeeklyWeeks: cfg.keepWeeklyWeeks }).catch((err) => {
+      logger.warn({ err: err.message }, '[R2Backup] Retention prune failed');
+      return 0;
+    });
+
     const size = `DB ${manifest.database.sizeFormatted}, uploads ${uploadsText}`;
     await recordBackupStatus('success', `Saved to bucket '${manifest.bucket}' (${triggeredBy})`, size);
     await writeBackupLog(
       'created',
-      `Cloudflare R2 Backup: Database (${manifest.database.sizeFormatted}) saved; uploads mirror: ${uploadsText}. Bucket '${manifest.bucket}'.`,
+      `Cloudflare R2 Backup: Database (${manifest.database.sizeFormatted}) saved; uploads mirror: ${uploadsText}; ${pruned} old backup(s) removed. Bucket '${manifest.bucket}'.`,
       triggeredBy
     );
     logger.info({ manifest }, '[R2Backup] Cloudflare R2 backup finished successfully');

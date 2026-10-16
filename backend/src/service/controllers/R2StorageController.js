@@ -5,6 +5,8 @@ import { encryptText, decryptText } from "../../common/utils/crypto.util.js";
 import { DEFAULT_BACKUP_CRON, DEFAULT_BACKUP_TIMEZONE } from "../../common/services/r2Config.service.js";
 import { executeR2Backup, isBackupRunning } from "../../common/services/r2Backup.service.js";
 import { scheduleBackupJob, getNextBackupRun } from "../../common/schedulers/backupScheduler.js";
+import { getR2Config, isR2Configured } from "../../common/services/r2Config.service.js";
+import { listDatabaseBackups, planRetention, getBackupObject } from "../../common/services/r2BackupHistory.service.js";
 
 const maskString = (str) => {
   if (!str) return "";
@@ -24,7 +26,8 @@ const toResponse = (r2 = {}) => ({
   backupEnabled: r2.backupEnabled ?? true,
   backupCron: r2.backupCron || DEFAULT_BACKUP_CRON,
   backupTimezone: r2.backupTimezone || DEFAULT_BACKUP_TIMEZONE,
-  retentionDays: r2.retentionDays ?? 30,
+  keepDailyDays: r2.keepDailyDays ?? 7,
+  keepWeeklyWeeks: r2.keepWeeklyWeeks ?? 5,
   lastTestedAt: r2.lastTestedAt || null,
   lastTestStatus: r2.lastTestStatus || "untested",
   lastTestMessage: r2.lastTestMessage || "",
@@ -58,7 +61,8 @@ export const updateR2StorageSettings = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: `Invalid schedule: ${err.message}` });
     }
 
-    const retentionDays = Math.max(1, Math.min(365, parseInt(body.retentionDays ?? 30, 10) || 30));
+    const keepDailyDays = Math.max(1, Math.min(60, parseInt(body.keepDailyDays ?? 7, 10) || 7));
+    const keepWeeklyWeeks = Math.max(0, Math.min(52, parseInt(body.keepWeeklyWeeks ?? 5, 10) || 0));
     const update = {
       "r2Storage.isEnabled": Boolean(body.isEnabled),
       "r2Storage.accountId": String(body.accountId || "").trim(),
@@ -68,7 +72,8 @@ export const updateR2StorageSettings = async (req, res, next) => {
       "r2Storage.backupEnabled": body.backupEnabled !== false,
       "r2Storage.backupCron": backupCron,
       "r2Storage.backupTimezone": backupTimezone,
-      "r2Storage.retentionDays": retentionDays,
+      "r2Storage.keepDailyDays": keepDailyDays,
+      "r2Storage.keepWeeklyWeeks": keepWeeklyWeeks,
       updatedBy: req.user?.userId || null,
     };
     const secret = String(body.secretAccessKey || "").trim();
@@ -142,6 +147,45 @@ export const runR2BackupNow = async (req, res, next) => {
     executeR2Backup(`MANUAL:${req.user?.email || req.user?.userId || "dashboard"}`).catch(() => {});
     return res.status(202).json({ status: "success", message: "Backup started. This can take a few minutes." });
   } catch (error) {
+    next(error);
+  }
+};
+
+// GET /settings/r2-storage/backups — database backups in R2 (newest first) with which ones the retention keeps
+export const listR2Backups = async (req, res, next) => {
+  try {
+    const cfg = await getR2Config();
+    if (!isR2Configured(cfg)) return res.json({ status: "success", data: { backups: [], configured: false } });
+    const backups = await listDatabaseBackups(cfg);
+    const { remove } = planRetention(backups, { keepDailyDays: cfg.keepDailyDays, keepWeeklyWeeks: cfg.keepWeeklyWeeks });
+    const removeSet = new Set(remove.map((b) => b.key));
+    return res.json({
+      status: "success",
+      data: {
+        configured: true,
+        timezone: cfg.backupTimezone,
+        backups: backups.map((b) => ({ ...b, kind: b.ageDays < cfg.keepDailyDays ? "daily" : "weekly", willBeRemoved: removeSet.has(b.key) })),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /settings/r2-storage/backups/download?key=database/... — streams one backup file
+export const downloadR2Backup = async (req, res, next) => {
+  try {
+    const key = String(req.query.key || "");
+    const cfg = await getR2Config();
+    if (!isR2Configured(cfg)) return res.status(400).json({ status: "error", message: "R2 storage is not configured." });
+    const obj = await getBackupObject(cfg, key);
+    res.setHeader("Content-Type", "application/gzip");
+    if (obj.ContentLength) res.setHeader("Content-Length", obj.ContentLength);
+    res.setHeader("Content-Disposition", `attachment; filename="${key.split("/").pop()}"`);
+    obj.Body.pipe(res);
+  } catch (error) {
+    if (error?.name === "NoSuchKey") return res.status(404).json({ status: "error", message: "Backup not found." });
+    if (error?.message === "Invalid backup key") return res.status(400).json({ status: "error", message: error.message });
     next(error);
   }
 };

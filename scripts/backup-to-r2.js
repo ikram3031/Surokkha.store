@@ -275,7 +275,8 @@ export const runDailyR2Backup = async (overrides = {}) => {
   console.log('[Backup] Metadata manifest uploaded to R2');
 
   try {
-    const prunedDb = await pruneOldR2Backups(s3Client, BUCKET_NAME, 'database/', RETENTION_DAYS);
+    // database/ retention (7 daily + 5 weekly) is applied by the backend after the run; skip here unless run standalone
+    const prunedDb = cfg.skipDatabasePrune ? 0 : await pruneOldR2Backups(s3Client, BUCKET_NAME, 'database/', RETENTION_DAYS);
     // Never prune uploads/: that prefix is the live mirror of the uploads folder
     const prunedUploads = await pruneOldR2Backups(s3Client, BUCKET_NAME, 'archives/uploads/', RETENTION_DAYS);
     if (prunedDb > 0 || prunedUploads > 0) {

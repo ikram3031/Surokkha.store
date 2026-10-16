@@ -34,6 +34,8 @@ import {
   updateR2StorageSettings,
   testR2StorageConnection,
   runR2BackupNow,
+  listR2Backups,
+  downloadR2Backup,
 } from "../controllers/R2StorageController.js";
 
 const settingsRouter = Router();
@@ -160,6 +162,8 @@ settingsRouter.get("/r2-storage", authenticateToken, authorizeRoles("Owner", "Ad
 settingsRouter.put("/r2-storage", authenticateToken, authorizeRoles("Owner", "Admin"), updateR2StorageSettings);
 settingsRouter.post("/r2-storage/test", authenticateToken, authorizeRoles("Owner", "Admin"), testR2StorageConnection);
 settingsRouter.post("/r2-storage/backup-now", authenticateToken, authorizeRoles("Owner", "Admin"), runR2BackupNow);
+settingsRouter.get("/r2-storage/backups", authenticateToken, authorizeRoles("Owner", "Admin"), listR2Backups);
+settingsRouter.get("/r2-storage/backups/download", authenticateToken, authorizeRoles("Owner", "Admin"), downloadR2Backup);
 
 // Protected Cloudflare administration endpoints
 settingsRouter.get(

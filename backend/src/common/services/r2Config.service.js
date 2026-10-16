@@ -22,7 +22,9 @@ export const getR2Config = async () => {
       backupEnabled: r2.backupEnabled ?? true,
       backupCron: r2.backupCron || DEFAULT_BACKUP_CRON,
       backupTimezone: r2.backupTimezone || DEFAULT_BACKUP_TIMEZONE,
-      retentionDays: Number(r2.retentionDays) || 30,
+      retentionDays: Number(r2.retentionDays) || 35,
+      keepDailyDays: Number(r2.keepDailyDays) || 7,
+      keepWeeklyWeeks: Number(r2.keepWeeklyWeeks ?? 5),
     };
   }
 
@@ -36,7 +38,9 @@ export const getR2Config = async () => {
     backupEnabled: env.R2_BACKUP_ENABLED,
     backupCron: DEFAULT_BACKUP_CRON,
     backupTimezone: env.R2_BACKUP_TIMEZONE || DEFAULT_BACKUP_TIMEZONE,
-    retentionDays: env.R2_BACKUP_RETENTION_DAYS || 30,
+    retentionDays: env.R2_BACKUP_RETENTION_DAYS || 35,
+    keepDailyDays: 7,
+    keepWeeklyWeeks: 5,
   };
 };
 
