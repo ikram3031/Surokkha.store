@@ -5,9 +5,9 @@ set -e
 # Target Bucket: surokkha
 # Daily Schedule: 03:00 AM (Asia/Dhaka)
 
-export R2_ACCOUNT_ID="fa0942a4bd8e442e22f78fdb6a2a605a"
-export R2_ACCESS_KEY_ID="0fbd22ecac4786634ff398fbe388991d"
-export R2_SECRET_ACCESS_KEY="e71e7f8fbf0aa122dc6ed476eb67d74eec2eeaebb44274417a50daa20ca489d4"
+export R2_ACCOUNT_ID="${R2_ACCOUNT_ID:?set R2_ACCOUNT_ID in .env}"
+export R2_ACCESS_KEY_ID="${R2_ACCESS_KEY_ID:?set R2_ACCESS_KEY_ID in .env}"
+export R2_SECRET_ACCESS_KEY="${R2_SECRET_ACCESS_KEY:?set R2_SECRET_ACCESS_KEY in .env}"
 export R2_BUCKET_NAME="surokkha"
 export MONGODB_CONTAINER_NAME="surokkha-mongodb-live"
 export MONGODB_DB_NAME="surokkha-db"

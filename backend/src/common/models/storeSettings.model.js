@@ -391,6 +391,26 @@ const storeSettingsSchema = new Schema(
       lastOrderSyncAt: { type: Date, default: null },
       lastOrderSyncSummary: { type: String, default: "" },
     },
+    // Cloudflare R2 object storage used for automated backups (secret stored encrypted)
+    r2Storage: {
+      isEnabled: { type: Boolean, default: false },
+      accountId: { type: String, trim: true, default: "" },
+      accessKeyId: { type: String, trim: true, default: "" },
+      secretAccessKey: { type: String, default: "" },
+      bucketName: { type: String, trim: true, default: "" },
+      publicUrl: { type: String, trim: true, default: "" },
+      backupEnabled: { type: Boolean, default: true },
+      backupCron: { type: String, trim: true, default: "0 3 * * *" },
+      backupTimezone: { type: String, trim: true, default: "Asia/Dhaka" },
+      retentionDays: { type: Number, default: 30, min: 1 },
+      lastTestedAt: { type: Date, default: null },
+      lastTestStatus: { type: String, enum: ["connected", "failed", "untested"], default: "untested" },
+      lastTestMessage: { type: String, default: "" },
+      lastBackupAt: { type: Date, default: null },
+      lastBackupStatus: { type: String, enum: ["success", "failed", "running", "never"], default: "never" },
+      lastBackupMessage: { type: String, default: "" },
+      lastBackupSize: { type: String, default: "" },
+    },
     cloudflare: {
       apiToken: {
         type: String,

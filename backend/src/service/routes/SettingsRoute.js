@@ -29,6 +29,12 @@ import {
   authenticateToken,
   authorizeRoles,
 } from "../../common/middlewares/auth.middleware.js";
+import {
+  getR2StorageSettings,
+  updateR2StorageSettings,
+  testR2StorageConnection,
+  runR2BackupNow,
+} from "../controllers/R2StorageController.js";
 
 const settingsRouter = Router();
 
@@ -148,6 +154,12 @@ settingsRouter.put(
   authorizeRoles("Owner", "Admin"),
   updateImapSettings
 );
+
+// Protected Cloudflare R2 storage (backup) endpoints
+settingsRouter.get("/r2-storage", authenticateToken, authorizeRoles("Owner", "Admin"), getR2StorageSettings);
+settingsRouter.put("/r2-storage", authenticateToken, authorizeRoles("Owner", "Admin"), updateR2StorageSettings);
+settingsRouter.post("/r2-storage/test", authenticateToken, authorizeRoles("Owner", "Admin"), testR2StorageConnection);
+settingsRouter.post("/r2-storage/backup-now", authenticateToken, authorizeRoles("Owner", "Admin"), runR2BackupNow);
 
 // Protected Cloudflare administration endpoints
 settingsRouter.get(

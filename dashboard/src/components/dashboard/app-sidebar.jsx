@@ -44,6 +44,7 @@ import {
   Wallet,
   TrendingUp,
   Scale,
+  HardDrive,
 } from "lucide-react"
 
 import {
@@ -546,6 +547,9 @@ export const AppSidebar = ({ ...props }) => {
                         </NavSub>
                         <NavSub to="/dashboard/settings/smtp" active={pathname.startsWith("/dashboard/settings/smtp")} icon={Mail} iconClass="text-indigo-500">
                           {t("nav.email_server_setup", "SMTP Configuration")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/r2-storage" active={pathname.startsWith("/dashboard/settings/r2-storage")} icon={HardDrive} iconClass="text-orange-400">
+                          {t("nav.r2_storage", "R2 Storage")}
                         </NavSub>
                 </>
               )}

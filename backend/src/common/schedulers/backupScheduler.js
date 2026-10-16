@@ -1,69 +1,71 @@
+import { Cron } from 'croner';
 import { executeR2Backup } from '../services/r2Backup.service.js';
+import { getR2Config, isR2Configured, DEFAULT_BACKUP_CRON, DEFAULT_BACKUP_TIMEZONE } from '../services/r2Config.service.js';
+import { StoreSettingsModel } from '../models/storeSettings.model.js';
 import { logger } from '../config/logger.js';
 
-let backupTimeoutTimer = null;
-let backupIntervalTimer = null;
+const CATCH_UP_AFTER_MS = 26 * 60 * 60 * 1000; // a daily backup older than this counts as missed
+let backupJob = null;
+let catchUpTimer = null;
 
-// Calculates remaining milliseconds until the next 03:00 AM in Asia/Dhaka timezone
-const getMsUntilNext3AmDhaka = () => {
-  const timeZone = 'Asia/Dhaka';
-  const now = new Date();
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: false,
+const runScheduled = (trigger) =>
+  executeR2Backup(trigger).catch((err) => {
+    logger.error({ err: err.message }, `[BackupScheduler] ${trigger} backup failed`);
   });
-  const parts = Object.fromEntries(formatter.formatToParts(now).map((p) => [p.type, parseInt(p.value, 10)]));
-  const targetHour = 3;
-  let targetDate = new Date(Date.UTC(parts.year, parts.month - 1, parts.day, targetHour - 6, 0, 0));
-  if (targetDate.getTime() <= now.getTime()) {
-    targetDate = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + 1, targetHour - 6, 0, 0));
+
+// (Re)creates the cron job from the R2 Storage settings; call again after settings change
+export const scheduleBackupJob = async () => {
+  if (backupJob) {
+    backupJob.stop();
+    backupJob = null;
   }
-  return targetDate.getTime() - now.getTime();
+
+  const cfg = await getR2Config().catch(() => null);
+  if (!cfg || !cfg.backupEnabled || !isR2Configured(cfg)) {
+    logger.info('[BackupScheduler] R2 backup is disabled or not configured; no job scheduled');
+    return null;
+  }
+
+  const pattern = cfg.backupCron || DEFAULT_BACKUP_CRON;
+  const timezone = cfg.backupTimezone || DEFAULT_BACKUP_TIMEZONE;
+  try {
+    backupJob = new Cron(pattern, { timezone, protect: true, name: 'r2-backup' }, () => runScheduled('SCHEDULER_CRON'));
+  } catch (err) {
+    logger.error({ pattern, err: err.message }, '[BackupScheduler] Invalid backup cron expression; falling back to default');
+    backupJob = new Cron(DEFAULT_BACKUP_CRON, { timezone, protect: true, name: 'r2-backup' }, () => runScheduled('SCHEDULER_CRON'));
+  }
+
+  logger.info({ pattern, timezone, nextRun: backupJob.nextRun()?.toISOString() }, '[BackupScheduler] R2 backup scheduled');
+  return backupJob.nextRun();
 };
 
-// Schedules the recurring daily 3:00 AM Cloudflare R2 backup task
+// Next scheduled run time (null when no job is active)
+export const getNextBackupRun = () => backupJob?.nextRun() || null;
+
+// Starts the cron job and, if the last successful backup is too old (e.g. server was down at run time), catches up once
 export const initBackupScheduler = () => {
-  const msUntilNext3Am = getMsUntilNext3AmDhaka();
-  const hoursRemaining = (msUntilNext3Am / (1000 * 60 * 60)).toFixed(2);
-
-  logger.info(
-    { nextRunInHours: hoursRemaining, timezone: 'Asia/Dhaka', targetHour: '03:00' },
-    `[BackupScheduler] Scheduled daily R2 backup to Cloudflare (next run in ${hoursRemaining} hours at 03:00 AM Asia/Dhaka)`
-  );
-
-  backupTimeoutTimer = setTimeout(() => {
-    executeR2Backup('SCHEDULER_DAILY_3AM').catch((err) => {
-      logger.error({ err: err.message }, '[BackupScheduler] Daily 3:00 AM R2 backup execution encountered an error');
-    });
-
-    backupIntervalTimer = setInterval(() => {
-      executeR2Backup('SCHEDULER_DAILY_3AM').catch((err) => {
-        logger.error({ err: err.message }, '[BackupScheduler] Daily 3:00 AM R2 backup execution encountered an error');
-      });
-    }, 24 * 60 * 60 * 1000);
-  }, msUntilNext3Am);
+  scheduleBackupJob()
+    .then(async (nextRun) => {
+      if (!nextRun) return;
+      const doc = await StoreSettingsModel.findOne({ key: 'default' }, { r2Storage: 1 }).lean();
+      const r2 = doc?.r2Storage || {};
+      const lastOk = r2.lastBackupStatus === 'success' && r2.lastBackupAt ? new Date(r2.lastBackupAt).getTime() : 0;
+      if (Date.now() - lastOk > CATCH_UP_AFTER_MS) {
+        logger.info('[BackupScheduler] Last successful backup is older than 26h; running a catch-up backup in 2 minutes');
+        catchUpTimer = setTimeout(() => runScheduled('SCHEDULER_CATCH_UP'), 2 * 60 * 1000);
+      }
+    })
+    .catch((err) => logger.error({ err: err.message }, '[BackupScheduler] Failed to start backup scheduler'));
 };
 
-// Stops and clears all running background backup scheduler timers
+// Stops the cron job and any pending catch-up run
 export const stopBackupScheduler = () => {
-  if (backupTimeoutTimer) {
-    clearTimeout(backupTimeoutTimer);
-    backupTimeoutTimer = null;
-  }
-  if (backupIntervalTimer) {
-    clearInterval(backupIntervalTimer);
-    backupIntervalTimer = null;
-  }
-  logger.info('[BackupScheduler] Background daily backup scheduler stopped');
+  if (backupJob) backupJob.stop();
+  if (catchUpTimer) clearTimeout(catchUpTimer);
+  backupJob = null;
+  catchUpTimer = null;
+  logger.info('[BackupScheduler] Background backup scheduler stopped');
 };
 
 // Allows immediate manual triggering of the full R2 backup workflow
-export const triggerManualBackup = async (triggeredBy = 'MANUAL_TRIGGER') => {
-  return executeR2Backup(triggeredBy);
-};
+export const triggerManualBackup = async (triggeredBy = 'MANUAL_TRIGGER') => executeR2Backup(triggeredBy);

@@ -32,7 +32,7 @@ const logSchema = new Schema(
     type: {
       type: String,
       required: true,
-      enum: ["newOrder", "created", "updated", "deleted", "contactMessage", "webmailMessage"],
+      enum: ["newOrder", "created", "updated", "deleted", "error", "contactMessage", "webmailMessage"],
       default: "created",
       index: true,
     },

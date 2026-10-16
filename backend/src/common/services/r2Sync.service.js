@@ -5,8 +5,8 @@ import {
   PutObjectCommand,
   HeadObjectCommand,
 } from "@aws-sdk/client-s3";
-import { getR2Client } from "../config/r2.config.js";
-import { env } from "../config/env.js";
+import { S3Client } from "@aws-sdk/client-s3";
+import { getR2Config, isR2Configured } from "./r2Config.service.js";
 import { R2SyncLogModel } from "../models/r2SyncLog.model.js";
 import { LogModel } from "../models/log.model.js";
 import { logger } from "../config/logger.js";
@@ -91,17 +91,25 @@ export const listAllR2ObjectKeys = async (r2Client, bucketName, prefix = "upload
 };
 
 // Performs synchronization between local uploads directory and Cloudflare R2 bucket
-export const syncUploadsToR2 = async (triggeredBy = "SCHEDULER") => {
+// Mirrors the local uploads folder to R2 under the same paths, uploading only new or changed files
+export const syncUploadsToR2 = async (triggeredBy = "SCHEDULER", cfgOverride = null) => {
   const startTime = Date.now();
-  const r2Client = getR2Client();
+  const cfg = cfgOverride || (await getR2Config());
+  const bucketName = cfg?.bucketName;
 
-  if (!r2Client || !env.R2_BUCKET_NAME) {
-    logger.warn("[R2Sync] Cloudflare R2 is not fully configured in environment (.env)");
+  if (!isR2Configured(cfg)) {
+    logger.warn("[R2Sync] Cloudflare R2 is not configured (Settings → Integrations → R2 Storage)");
     return {
       status: "SKIPPED",
       message: "Cloudflare R2 credentials or bucket name missing.",
     };
   }
+
+  const r2Client = new S3Client({
+    region: "auto",
+    endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
+    credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
+  });
 
   logger.info({ triggeredBy }, "[R2Sync] Initiating Cloudflare R2 differential synchronization");
 
@@ -115,7 +123,7 @@ export const syncUploadsToR2 = async (triggeredBy = "SCHEDULER") => {
     const localFiles = await getAllLocalUploadFiles(uploadsDir, process.cwd());
 
     // Get remote R2 object map
-    const r2KeyMap = await listAllR2ObjectKeys(r2Client, env.R2_BUCKET_NAME, "uploads/");
+    const r2KeyMap = await listAllR2ObjectKeys(r2Client, bucketName, "uploads/");
 
     // Calculate files missing on R2
     const missingOnR2 = [];
@@ -137,7 +145,7 @@ export const syncUploadsToR2 = async (triggeredBy = "SCHEDULER") => {
         batch.map(async (file) => {
           const fileBuffer = await fs.promises.readFile(file.fullPath);
           const putCommand = new PutObjectCommand({
-            Bucket: env.R2_BUCKET_NAME,
+            Bucket: bucketName,
             Key: file.key,
             Body: fileBuffer,
             ContentType: getMimeType(file.ext),
@@ -179,6 +187,7 @@ export const syncUploadsToR2 = async (triggeredBy = "SCHEDULER") => {
       status: "SUCCESS",
       totalLocalFiles: localFiles.length,
       syncedCount,
+      syncedBytes: syncedFiles.reduce((sum, f) => sum + (f.size || 0), 0),
       durationMs,
     };
   } catch (error) {

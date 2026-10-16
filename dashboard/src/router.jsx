@@ -28,6 +28,7 @@ import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
+import R2StorageSettingsPage from './pages/dashboard/settings/r2StorageSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
 import AllMedia from './pages/dashboard/allMedia';
 import AdminStylesPage from './pages/dashboard/settings/adminStyles';
@@ -278,6 +279,14 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="settings">
                 <SmtpSettingsPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'r2-storage',
+            element: (
+              <RoleGuard menuKey="settings">
+                <R2StorageSettingsPage />
               </RoleGuard>
             ),
           },

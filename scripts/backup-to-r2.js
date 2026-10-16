@@ -12,6 +12,11 @@ const loadS3Package = () => {
     return require('@aws-sdk/client-s3');
   } catch {}
   try {
+    // backend/node_modules next to this scripts/ folder, regardless of the working directory
+    const besideScript = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../backend/node_modules/@aws-sdk/client-s3');
+    return require(besideScript);
+  } catch {}
+  try {
     const localBackend = path.resolve(process.cwd(), 'backend/node_modules/@aws-sdk/client-s3');
     return require(localBackend);
   } catch {}
@@ -25,13 +30,16 @@ const loadS3Package = () => {
 
 const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } = loadS3Package();
 
-const ACCOUNT_ID = process.env.R2_ACCOUNT_ID || 'fa0942a4bd8e442e22f78fdb6a2a605a';
-const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '0fbd22ecac4786634ff398fbe388991d';
-const SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || 'e71e7f8fbf0aa122dc6ed476eb67d74eec2eeaebb44274417a50daa20ca489d4';
-const BUCKET_NAME = process.env.R2_BUCKET_NAME || 'surokkha';
+// R2 credentials come from the dashboard R2 Storage settings (passed in) or the environment; never hard-coded
+const ENV_R2 = {
+  accountId: process.env.R2_ACCOUNT_ID || '',
+  accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+  bucketName: process.env.R2_BUCKET_NAME || '',
+  retentionDays: parseInt(process.env.R2_BACKUP_RETENTION_DAYS || '30', 10),
+};
 const DB_NAME = process.env.MONGODB_DB_NAME || 'surokkha-db';
 const DB_CONTAINER = process.env.MONGODB_CONTAINER_NAME || 'surokkha-mongodb-live';
-const RETENTION_DAYS = parseInt(process.env.R2_BACKUP_RETENTION_DAYS || '30', 10);
 
 // Formats a date object into a clean timestamp string
 const formatTimestamp = (date) => {
@@ -46,13 +54,13 @@ const formatTimestamp = (date) => {
 };
 
 // Initializes the AWS S3 client targeting Cloudflare R2
-const getR2Client = () => {
+export const getR2Client = (cfg) => {
   return new S3Client({
     region: 'auto',
-    endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: ACCESS_KEY_ID,
-      secretAccessKey: SECRET_ACCESS_KEY,
+      accessKeyId: cfg.accessKeyId,
+      secretAccessKey: cfg.secretAccessKey,
     },
   });
 };
@@ -124,7 +132,13 @@ const detectUploadDirs = () => {
 };
 
 // Executes the complete database and uploads backup to Cloudflare R2
-export const runDailyR2Backup = async () => {
+export const runDailyR2Backup = async (overrides = {}) => {
+  const cfg = { ...ENV_R2 };
+  for (const [k, v] of Object.entries(overrides)) if (v !== undefined && v !== null && v !== '') cfg[k] = v;
+  const missing = ['accountId', 'accessKeyId', 'secretAccessKey', 'bucketName'].filter((k) => !cfg[k]);
+  if (missing.length) throw new Error(`R2 storage is not configured (missing: ${missing.join(', ')})`);
+  const BUCKET_NAME = cfg.bucketName;
+  const RETENTION_DAYS = Number(cfg.retentionDays) || 30;
   const startTime = Date.now();
   const now = new Date();
   const timestamp = formatTimestamp(now);
@@ -134,29 +148,58 @@ export const runDailyR2Backup = async () => {
     fs.mkdirSync(tempDir, { recursive: true });
   }
 
-  const s3Client = getR2Client();
+  const s3Client = getR2Client(cfg);
   console.log(`[Backup] Starting Surokkha daily backup [ID: ${timestamp}]`);
 
   let dbSizeBytes = 0;
-  const dbArchiveFile = path.join(tempDir, `surokkha_db_${timestamp}.archive.gz`);
+  let dbArchiveFile = path.join(tempDir, `surokkha_db_${timestamp}.archive.gz`);
+  let dbExt = 'archive.gz';
+  let dbMethod = '';
 
   try {
-    const isDocker = (() => {
+    const hasCommand = (cmd) => {
       try {
-        const out = execSync(`docker ps --filter "name=${DB_CONTAINER}" --format "{{.Names}}"`, { encoding: 'utf8' });
-        return out.trim().includes(DB_CONTAINER);
+        execSync(cmd, { stdio: 'ignore' });
+        return true;
       } catch {
         return false;
       }
-    })();
+    };
+    const uri = cfg.mongoUri || process.env.MONGODB_URI || '';
 
-    if (isDocker) {
-      console.log(`[Backup] Executing MongoDB dump via Docker container: ${DB_CONTAINER}`);
-      execSync(`docker exec ${DB_CONTAINER} mongodump --db=${DB_NAME} --archive --gzip > "${dbArchiveFile}"`, { stdio: ['ignore', 'pipe', 'inherit'] });
-    } else {
-      console.log('[Backup] Executing MongoDB dump via host mongodump tool');
-      const uri = process.env.MONGODB_URI || `mongodb://127.0.0.1:27019/${DB_NAME}`;
-      execSync(`mongodump --uri="${uri}" --archive="${dbArchiveFile}" --gzip`, { stdio: 'inherit' });
+    // 1) mongodump straight over the database connection (installed in the backend image) — no docker needed
+    if (uri && hasCommand('mongodump --version')) {
+      try {
+        console.log('[Backup] Dumping MongoDB with mongodump over MONGODB_URI');
+        execSync(`mongodump --uri="${uri}" --archive="${dbArchiveFile}" --gzip`, { stdio: ['ignore', 'ignore', 'pipe'] });
+        dbMethod = 'mongodump';
+      } catch (err) {
+        console.warn('[Backup] mongodump over URI failed:', err.message);
+      }
+    }
+
+    // 2) mongodump inside the MongoDB container (only when this process can run docker)
+    if (!dbMethod && hasCommand(`docker ps --filter "name=${DB_CONTAINER}" --format "{{.Names}}"`)) {
+      try {
+        console.log(`[Backup] Dumping MongoDB via Docker container: ${DB_CONTAINER}`);
+        execSync(`docker exec ${DB_CONTAINER} mongodump --db=${DB_NAME} --archive --gzip > "${dbArchiveFile}"`, { stdio: ['ignore', 'pipe', 'pipe'] });
+        dbMethod = 'docker-mongodump';
+      } catch (err) {
+        console.warn('[Backup] docker mongodump failed:', err.message);
+      }
+    }
+
+    // 3) Fallback: the backend reads every collection itself (restore with scripts/restore-node-dump.js)
+    if (!dbMethod && typeof cfg.nodeDump === 'function') {
+      console.log('[Backup] Dumping MongoDB from inside Node (EJSON fallback)');
+      dbExt = 'ejson.gz';
+      dbArchiveFile = path.join(tempDir, `surokkha_db_${timestamp}.${dbExt}`);
+      await cfg.nodeDump(dbArchiveFile);
+      dbMethod = 'node-ejson';
+    }
+
+    if (!dbMethod) {
+      throw new Error('No way to dump the database: mongodump is not installed and docker is not available');
     }
 
     if (!fs.existsSync(dbArchiveFile) || fs.statSync(dbArchiveFile).size < 100) {
@@ -167,9 +210,9 @@ export const runDailyR2Backup = async () => {
     console.log(`[Backup] Database archive generated successfully (${(dbSizeBytes / 1024).toFixed(2)} KB)`);
 
     console.log('[Backup] Uploading database archive to Cloudflare R2...');
-    await uploadFileToR2(s3Client, BUCKET_NAME, `database/surokkha_db_${timestamp}.archive.gz`, dbArchiveFile, 'application/gzip');
-    await uploadFileToR2(s3Client, BUCKET_NAME, 'database/latest.archive.gz', dbArchiveFile, 'application/gzip');
-    console.log('[Backup] Database archive uploaded to R2 (database/surokkha_db_' + timestamp + '.archive.gz and database/latest.archive.gz)');
+    await uploadFileToR2(s3Client, BUCKET_NAME, `database/surokkha_db_${timestamp}.${dbExt}`, dbArchiveFile, 'application/gzip');
+    await uploadFileToR2(s3Client, BUCKET_NAME, `database/latest.${dbExt}`, dbArchiveFile, 'application/gzip');
+    console.log(`[Backup] Database dump (${dbMethod}) uploaded to R2 as database/surokkha_db_${timestamp}.${dbExt}`);
   } catch (err) {
     console.error('[Backup] Database backup failed:', err.message);
     throw err;
@@ -179,7 +222,8 @@ export const runDailyR2Backup = async () => {
   const uploadDirs = detectUploadDirs();
   const uploadsArchiveFile = path.join(tempDir, `surokkha_uploads_${timestamp}.tar.gz`);
 
-  if (uploadDirs.length > 0) {
+  // Uploads are mirrored file-by-file by r2Sync.service (only new/changed files); the full tar archive is opt-in
+  if (cfg.includeUploadsArchive && uploadDirs.length > 0) {
     try {
       console.log(`[Backup] Archiving upload directories: ${uploadDirs.join(', ')}`);
       const dirsList = uploadDirs.map((d) => `"${d}"`).join(' ');
@@ -190,16 +234,16 @@ export const runDailyR2Backup = async () => {
         console.log(`[Backup] Uploads archive generated successfully (${(uploadsSizeBytes / (1024 * 1024)).toFixed(2)} MB)`);
 
         console.log('[Backup] Uploading uploads archive to Cloudflare R2...');
-        await uploadFileToR2(s3Client, BUCKET_NAME, `uploads/surokkha_uploads_${timestamp}.tar.gz`, uploadsArchiveFile, 'application/gzip');
-        await uploadFileToR2(s3Client, BUCKET_NAME, 'uploads/latest.tar.gz', uploadsArchiveFile, 'application/gzip');
-        console.log('[Backup] Uploads archive uploaded to R2 (uploads/surokkha_uploads_' + timestamp + '.tar.gz and uploads/latest.tar.gz)');
+        await uploadFileToR2(s3Client, BUCKET_NAME, `archives/uploads/surokkha_uploads_${timestamp}.tar.gz`, uploadsArchiveFile, 'application/gzip');
+        await uploadFileToR2(s3Client, BUCKET_NAME, 'archives/uploads/latest.tar.gz', uploadsArchiveFile, 'application/gzip');
+        console.log('[Backup] Uploads archive uploaded to R2 (archives/uploads/)');
       }
     } catch (err) {
       console.error('[Backup] Uploads archive failed:', err.message);
       throw err;
     }
   } else {
-    console.warn('[Backup] No upload directories detected on system. Skipping uploads archive.');
+    console.log('[Backup] Uploads tar archive skipped (uploads are mirrored incrementally).');
   }
 
   const manifest = {
@@ -210,12 +254,13 @@ export const runDailyR2Backup = async () => {
     timezone: 'Asia/Dhaka',
     database: {
       dbName: DB_NAME,
-      archiveKey: `database/surokkha_db_${timestamp}.archive.gz`,
+      archiveKey: `database/surokkha_db_${timestamp}.${dbExt}`,
+      method: dbMethod,
       sizeBytes: dbSizeBytes,
       sizeFormatted: `${(dbSizeBytes / 1024).toFixed(2)} KB`,
     },
     uploads: {
-      archiveKey: uploadsSizeBytes > 0 ? `uploads/surokkha_uploads_${timestamp}.tar.gz` : null,
+      archiveKey: uploadsSizeBytes > 0 ? `archives/uploads/surokkha_uploads_${timestamp}.tar.gz` : null,
       sizeBytes: uploadsSizeBytes,
       sizeFormatted: `${(uploadsSizeBytes / (1024 * 1024)).toFixed(2)} MB`,
       directoriesIncluded: uploadDirs,
@@ -231,7 +276,8 @@ export const runDailyR2Backup = async () => {
 
   try {
     const prunedDb = await pruneOldR2Backups(s3Client, BUCKET_NAME, 'database/', RETENTION_DAYS);
-    const prunedUploads = await pruneOldR2Backups(s3Client, BUCKET_NAME, 'uploads/', RETENTION_DAYS);
+    // Never prune uploads/: that prefix is the live mirror of the uploads folder
+    const prunedUploads = await pruneOldR2Backups(s3Client, BUCKET_NAME, 'archives/uploads/', RETENTION_DAYS);
     if (prunedDb > 0 || prunedUploads > 0) {
       console.log(`[Backup] Retention cleanup: Pruned ${prunedDb} old DB backup(s) and ${prunedUploads} old upload(s) older than ${RETENTION_DAYS} days.`);
     }

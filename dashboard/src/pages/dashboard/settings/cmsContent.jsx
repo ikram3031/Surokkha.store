@@ -49,6 +49,13 @@ const DEFAULT_ASSET_SECTIONS = [
         recommendedSize: '1080p / 720p MP4',
         type: 'video',
       },
+      {
+        key: 'promo-video-mobile',
+        label: 'Promo Video (Mobile)',
+        filename: 'promo-video-mobile.mp4',
+        recommendedSize: '9:16 vertical MP4',
+        type: 'video',
+      },
     ],
   },
   {

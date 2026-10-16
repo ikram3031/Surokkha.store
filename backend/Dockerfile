@@ -25,6 +25,9 @@ COPY --from=builder /app/package.json /app/package-lock.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
 
+# mongodump for the scheduled R2 database backup (connects with MONGODB_URI, no docker needed)
+RUN apk add --no-cache mongodb-tools
+
 # Create public and uploads directories for compatibility with existing deployments
 RUN mkdir -p /app/public /app/uploads /app/src/uploads
 
