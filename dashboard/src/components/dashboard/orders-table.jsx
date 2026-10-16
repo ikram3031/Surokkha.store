@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Tag, Truck, Mail } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Tag, Truck, Mail, Eye, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiClient } from '@/lib/api-client';
 import styles from '@/styles/styles.json';
@@ -403,30 +403,34 @@ export const OrdersTable = ({
                         } />
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>{t('common.actions', 'Actions')}</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleViewDetails(order)}>
+                          <DropdownMenuItem onClick={() => handleViewDetails(order)} className="cursor-pointer whitespace-nowrap">
+                            <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
                             {t('common.details', 'View Details')}
                           </DropdownMenuItem>
                           {!isReadOnly && (
-                            <DropdownMenuItem onClick={() => handleEditOrderClick(order)}>
+                            <DropdownMenuItem onClick={() => handleEditOrderClick(order)} className="cursor-pointer whitespace-nowrap">
+                              <Pencil className="mr-2 h-4 w-4 text-muted-foreground" />
                               {t('common.edit', 'Edit Order')}
                             </DropdownMenuItem>
                           )}
                           {!isReadOnly && (
-                            <DropdownMenuItem onClick={() => handleOpenStatusModal(order)}>
+                            <DropdownMenuItem onClick={() => handleOpenStatusModal(order)} className="cursor-pointer whitespace-nowrap">
+                              <RefreshCw className="mr-2 h-4 w-4 text-muted-foreground" />
                               {t('orders.change_status', 'Change Status')}
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem onClick={() => setSendInvoiceTarget(order)} className="cursor-pointer">
+                          <DropdownMenuItem onClick={() => setSendInvoiceTarget(order)} className="cursor-pointer whitespace-nowrap">
                             <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <span>{t('orders.send_invoice_email', 'Send Invoice')}</span>
+                            <span>Email Invoice</span>
                           </DropdownMenuItem>
                           {!isReadOnly && (
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-destructive focus:text-destructive cursor-pointer"
+                                className="text-destructive focus:text-destructive cursor-pointer whitespace-nowrap"
                                 onClick={() => setDeleteTarget({ id: order.id, orderNumber: order.orderNumber })}
                               >
+                                <Trash2 className="mr-2 h-4 w-4" />
                                 {t('common.delete', 'Delete Order')}
                               </DropdownMenuItem>
                             </>
