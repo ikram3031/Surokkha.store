@@ -51,6 +51,8 @@ import { formatDate } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
 
 // Renders the orders table with expandable accordion rows, filtering, batch selection, and inline actions
+const PAGE_SIZE = 15;
+
 export const OrdersTable = ({
   searchQuery,
   statusFilter,
@@ -71,12 +73,13 @@ export const OrdersTable = ({
     status: statusFilter !== 'All' ? statusFilter : undefined,
     paymentStatus: paymentFilter !== 'All' ? paymentFilter : undefined,
     page,
-    limit: 15,
+    limit: PAGE_SIZE,
     orderType,
   });
 
   const orders = responseData?.data ?? [];
   const totalPages = responseData?.meta?.totalPages ?? 1;
+  const totalOrders = responseData?.meta?.total ?? 0;
 
   const [expandedOrderIds, setExpandedOrderIds] = useState([]);
 
@@ -264,7 +267,7 @@ export const OrdersTable = ({
 
   return (
     <>
-      <Table className="[&_th]:h-11 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_td]:py-3">
+      <Table className="[&_th]:h-9 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_td]:py-1.5 [&_td]:text-[13px]">
         <TableHeader>
           <TableRow>
             <TableHead className="w-[44px] pl-4 pr-2">
@@ -285,7 +288,8 @@ export const OrdersTable = ({
                 }}
               />
             </TableHead>
-            <TableHead className="w-[160px]">{t('orders.order_id', 'Order ID')}</TableHead>
+            <TableHead className="w-[40px] px-1 text-center">#</TableHead>
+            <TableHead className="w-[150px]">{t('orders.order_id', 'Order ID')}</TableHead>
             <TableHead className="w-[200px]">{t('orders.customer_name', 'Customer')}</TableHead>
             <TableHead className="w-[120px]">{t('common.date', 'Date')}</TableHead>
             <TableHead className="w-[130px] text-right pr-6">{t('orders.order_amount', 'Amount')}</TableHead>
@@ -301,6 +305,7 @@ export const OrdersTable = ({
                 <TableCell className="w-[44px] pl-4 pr-2">
                   <Skeleton className="h-4 w-4 rounded" />
                 </TableCell>
+                <TableCell className="px-1"><Skeleton className="h-4 w-5 mx-auto" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -311,7 +316,7 @@ export const OrdersTable = ({
               </TableRow>
             ))
           ) : orders && orders.length > 0 ? (
-            orders.map((order) => {
+            orders.map((order, index) => {
               const isExpanded = expandedOrderIds.includes(order.id);
               const isSelected = selectedIds.includes(order.id);
               const phone = getCustomerPhone(order);
@@ -346,6 +351,9 @@ export const OrdersTable = ({
                         }}
                       />
                     </TableCell>
+                    <TableCell className="w-[40px] px-1 text-center tabular-nums text-xs text-muted-foreground">
+                      {(page - 1) * PAGE_SIZE + index + 1}
+                    </TableCell>
                     <TableCell
                       className="max-w-[160px]"
                       onClick={(e) => e.stopPropagation()}
@@ -358,9 +366,9 @@ export const OrdersTable = ({
                         {order.orderNumber}
                       </Link>
                       {order.courier?.consignmentId ? (
-                        <span className="mt-1 inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20" title={`Pathao Consignment: ${order.courier.consignmentId}`}>
+                        <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-[#082F49] px-1.5 py-px text-[10px] font-semibold text-[#38BDF8] ring-1 ring-inset ring-[#0369A1]" title={`Pathao consignment: ${order.courier.consignmentId}`}>
                           <Truck className="h-2.5 w-2.5" />
-                          {order.courier.consignmentId}
+                          Pathao
                         </span>
                       ) : itemCount > 0 && (
                         <span className="mt-0.5 block text-xs text-muted-foreground">
@@ -443,7 +451,7 @@ export const OrdersTable = ({
 
                   {isExpanded && (
                     <TableRow className="hover:bg-background! bg-background! hover:text-foreground! hover:[&_td]:text-foreground! shadow-[inset_3px_0_0_var(--primary)]">
-                      <TableCell colSpan={8} className="p-0! whitespace-normal">
+                      <TableCell colSpan={9} className="p-0! whitespace-normal">
                         <OrderAccordionDetail order={order} />
                       </TableCell>
                     </TableRow>
@@ -453,13 +461,19 @@ export const OrdersTable = ({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                 {t('overview.no_recent_orders', 'No orders found.')}
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+      {!isLoading && totalOrders > 0 && (
+        <div className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+          Showing <span className="font-semibold text-foreground">{(page - 1) * PAGE_SIZE + 1}–{(page - 1) * PAGE_SIZE + orders.length}</span> of{' '}
+          <span className="font-semibold text-foreground">{totalOrders}</span> orders
+        </div>
+      )}
 
       <Dialog open={!!statusTarget} onOpenChange={(open) => !open && setStatusTarget(null)}>
         <DialogContent className="sm:max-w-[420px] bg-card text-card-foreground">
