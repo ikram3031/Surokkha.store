@@ -334,13 +334,9 @@
     },
     "cloudFlareAnalytics": {
       "active": true,
-      "zoneId": "bd131177db6d610b5d4e5beb0142108b",
-      "domain": "surokkha.store",
-      "accountEmail": "surokkha.support@gmail.com"
+      "domain": "surokkha.store"
     },
     "metaPixel": {
-      "pixelId": "1565104865301894",
-      "accessToken": "EAAdd22ZBIEXABSsMRZCWB0wUlZAiS9el5HHkQZBf3qVEdE0TEUIHfD9JHxVt12MRIBQXgvrH2bpEdZCAMQ9RjgFJdZBbtSPlJw4aybNMtZC5TDyBuaSQQx3ExjJDDKKyJrUdEzgQvZAxg19ljeim99AwKCEHZA1xgmnCyEzDZBfemqcF2xPOVnUDuoUtvETl6lQX1rswZDZD",
       "isEnabled": true,
       "enableBrowserPixel": true,
       "enableCapi": true,
@@ -355,8 +351,6 @@
         "name": "Surokkha Store",
         "orderPrefix": "SST",
         "metaPixel": {
-          "pixelId": "1840805450442709",
-          "accessToken": "EAAT9UIJphA4BSvhqCm2gUU4hTpGvlgVHnIk81H8fBmCXRTqnpC7qHRyvGdefomBsz7FpCxplnVCZCo8A0Et563m34VEwwLIbhMV54JRKcUyCCiEbhMqqfG6ZCUJeBi4UnrbiSZCEMY3MZAntZBRJUYhbnlPD1llNvjGLcf4tBen5p8IOxI34jZBXxHLC08ywZDZD",
           "isEnabled": true,
           "enableBrowserPixel": true,
           "enableCapi": true,
@@ -371,8 +365,6 @@
         "name": "Surokkha Shop",
         "orderPrefix": "SSH",
         "metaPixel": {
-          "pixelId": "1565104865301894",
-          "accessToken": "EAAdd22ZBIEXABSsMRZCWB0wUlZAiS9el5HHkQZBf3qVEdE0TEUIHfD9JHxVt12MRIBQXgvrH2bpEdZCAMQ9RjgFJdZBbtSPlJw4aybNMtZC5TDyBuaSQQx3ExjJDDKKyJrUdEzgQvZAxg19ljeim99AwKCEHZA1xgmnCyEzDZBfemqcF2xPOVnUDuoUtvETl6lQX1rswZDZD",
           "isEnabled": true,
           "enableBrowserPixel": true,
           "enableCapi": true,
@@ -381,9 +373,6 @@
       }
     },
     "cloudflare": {
-      "apiToken": "cfat_lfKJ5uXUo07iLNFoaviz5Rj6PfHTpKJecbbiDdlgee397274",
-      "accountId": "10dfabfc220dab8d36255ee6a105035d",
-      "zoneId": "bd131177db6d610b5d4e5beb0142108b",
       "isEnabled": true
     },
     "logoUrl": "/uploads/assets/logo.png?v=4",

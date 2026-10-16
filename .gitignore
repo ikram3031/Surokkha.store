@@ -63,4 +63,7 @@ configs/*.json
 !**/.env.example
 !frontend/.env.store
 !frontend/.env.shop
-!frontend/src/data/
+!frontend/src/data/
+# Local-only credential copies (never commit)
+configs/secrets/
+*.secrets.json

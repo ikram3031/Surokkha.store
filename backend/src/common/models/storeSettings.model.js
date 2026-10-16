@@ -419,6 +419,8 @@ const storeSettingsSchema = new Schema(
         default: "",
         trim: true,
       },
+      // Extra Cloudflare zones (e.g. the shop domain) used for cache purge, keyed by domain
+      zones: [{ domain: { type: String, trim: true }, zoneId: { type: String, trim: true }, _id: false }],
       zoneId: {
         type: String,
         default: "",

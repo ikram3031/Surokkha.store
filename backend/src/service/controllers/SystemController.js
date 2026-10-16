@@ -80,6 +80,27 @@ export const getMetadata = async (req, res, next) => {
   }
 };
 
+// Cloudflare zone IDs come from Settings (storesettings.cloudflare.zoneId / .zones), never from code
+const loadCloudflareZoneMap = async () => {
+  const map = {};
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: 'default' }, { cloudflare: 1 }).lean();
+    for (const z of doc?.cloudflare?.zones || []) {
+      if (z?.domain && z?.zoneId) map[z.domain.toLowerCase()] = z.zoneId;
+    }
+    const mainDomain = (config.domain || '').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+    if (doc?.cloudflare?.zoneId && mainDomain) map[mainDomain] = doc.cloudflare.zoneId.trim();
+  } catch {}
+  // short aliases used by the dashboard (store / shop / client key)
+  for (const [domain, zoneId] of Object.entries({ ...map })) {
+    const label = domain.split('.')[0];
+    if (!map[label]) map[label] = zoneId;
+    if (domain.endsWith('.store') && !map.store) map.store = zoneId;
+    if (domain.endsWith('.shop') && !map.shop) map.shop = zoneId;
+  }
+  return map;
+};
+
 const resolveCloudflareToken = async () => {
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_API_TOKEN.trim()) {
     return decryptText(process.env.CLOUDFLARE_API_TOKEN.trim());
@@ -114,21 +135,7 @@ export const purgeSystemCache = async (req, res, next) => {
     const domain = (config.domain || `${clientKey}.store`).replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
     const token = await resolveCloudflareToken();
 
-    const ZONE_MAP = {
-      'surokkha.store': 'bd131177db6d610b5d4e5beb0142108b',
-      'surokkha.shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
-      'store': 'bd131177db6d610b5d4e5beb0142108b',
-      'shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
-      'surokkha': 'bd131177db6d610b5d4e5beb0142108b',
-      'engulfic.com': 'b8baf3af57594678d588a9391b3a7023',
-      'engulfic': 'b8baf3af57594678d588a9391b3a7023',
-      'kawaiikutir.shop': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'kawaiikutir': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'decantre.com': '532fc0163ee268da83584fe3be20e3bc',
-      'decantre': '532fc0163ee268da83584fe3be20e3bc',
-      'toyoland.com': '6e159fb7a28e83161c565d3ecad4e565',
-      'toyoland': '6e159fb7a28e83161c565d3ecad4e565',
-    };
+    const ZONE_MAP = await loadCloudflareZoneMap();
 
     let dbZoneId = '';
     try {
@@ -141,9 +148,9 @@ export const purgeSystemCache = async (req, res, next) => {
 
     if (requestedDomain) {
       if (requestedDomain === 'shop' || requestedDomain.includes('shop')) {
-        zonesToPurge.push({ domain: 'surokkha.shop', zoneId: '04c8761bb5ec8b966b0c6748e27d4b4c' });
+        zonesToPurge.push({ domain: 'surokkha.shop', zoneId: (ZONE_MAP['surokkha.shop'] || '') });
       } else if (requestedDomain === 'store' || requestedDomain.includes('store')) {
-        zonesToPurge.push({ domain: 'surokkha.store', zoneId: dbZoneId || 'bd131177db6d610b5d4e5beb0142108b' });
+        zonesToPurge.push({ domain: 'surokkha.store', zoneId: dbZoneId || (ZONE_MAP['surokkha.store'] || '') });
       } else if (ZONE_MAP[requestedDomain]) {
         zonesToPurge.push({ domain: requestedDomain, zoneId: ZONE_MAP[requestedDomain] });
       }
@@ -159,7 +166,7 @@ export const purgeSystemCache = async (req, res, next) => {
         });
       }
       if (zonesToPurge.length === 0) {
-        const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
+        const zoneId = dbZoneId || config.cloudflare?.zoneId || ZONE_MAP[domain] || ZONE_MAP[clientKey] || (ZONE_MAP['surokkha.store'] || '');
         zonesToPurge.push({ domain, zoneId });
       }
     }
@@ -227,23 +234,7 @@ export const getCloudflareAnalytics = async (req, res, next) => {
     const token = await resolveCloudflareToken();
     const range = req.query.range || '24h';
 
-    const ZONE_MAP = {
-      'surokkha.store': 'bd131177db6d610b5d4e5beb0142108b',
-      'surokkha.shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
-      'store': 'bd131177db6d610b5d4e5beb0142108b',
-      'shop': '04c8761bb5ec8b966b0c6748e27d4b4c',
-      'surokkha': 'bd131177db6d610b5d4e5beb0142108b',
-      'engulfic.com': 'b8baf3af57594678d588a9391b3a7023',
-      'engulfic': 'b8baf3af57594678d588a9391b3a7023',
-      'kawaiikutir.shop': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'kawaiikutir': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'decantre.com': '532fc0163ee268da83584fe3be20e3bc',
-      'decantre': '532fc0163ee268da83584fe3be20e3bc',
-      'plexihub.space': 'a921a4fedf2527415e2d92c4344143d0',
-      'plexivia.com': '60b3f5bace729c8b9e2a185ba7ab2d33',
-      'plexivia.online': 'd9fea54d2180f18bf9acdd8b77daffc3',
-      'southernhermainoverseas.site': '0ea0658d9d8852cb447d196a78f8a6b0',
-    };
+    const ZONE_MAP = await loadCloudflareZoneMap();
 
     const sitesList = config.sites && typeof config.sites === 'object'
       ? Object.entries(config.sites).map(([k, s]) => ({
@@ -255,8 +246,8 @@ export const getCloudflareAnalytics = async (req, res, next) => {
           zoneId: s.cloudflare?.zoneId || ZONE_MAP[s.domain] || ZONE_MAP[k] || '',
         }))
       : [
-          { key: 'store', name: 'Surokkha Store', domain: 'surokkha.store', url: 'https://surokkha.store', orderPrefix: 'SST', zoneId: 'bd131177db6d610b5d4e5beb0142108b' },
-          { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SSH', zoneId: '04c8761bb5ec8b966b0c6748e27d4b4c' },
+          { key: 'store', name: 'Surokkha Store', domain: 'surokkha.store', url: 'https://surokkha.store', orderPrefix: 'SST', zoneId: (ZONE_MAP['surokkha.store'] || '') },
+          { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SSH', zoneId: (ZONE_MAP['surokkha.shop'] || '') },
         ];
 
     const requestedParam = (req.query.domain || req.query.site || '').trim().toLowerCase();
@@ -268,11 +259,11 @@ export const getCloudflareAnalytics = async (req, res, next) => {
       if (requestedParam === 'shop' || requestedParam.includes('shop')) {
         targetDomain = 'surokkha.shop';
         activeSiteKey = 'shop';
-        zoneId = ZONE_MAP['surokkha.shop'] || '04c8761bb5ec8b966b0c6748e27d4b4c';
+        zoneId = ZONE_MAP['surokkha.shop'] || '';
       } else if (requestedParam === 'store' || requestedParam.includes('store')) {
         targetDomain = 'surokkha.store';
         activeSiteKey = 'store';
-        zoneId = ZONE_MAP['surokkha.store'] || 'bd131177db6d610b5d4e5beb0142108b';
+        zoneId = ZONE_MAP['surokkha.store'] || '';
       } else if (ZONE_MAP[requestedParam]) {
         targetDomain = requestedParam;
         zoneId = ZONE_MAP[requestedParam];
@@ -282,7 +273,7 @@ export const getCloudflareAnalytics = async (req, res, next) => {
     if (!targetDomain) {
       targetDomain = (config.domain || 'surokkha.store').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
       activeSiteKey = targetDomain.includes('shop') ? 'shop' : 'store';
-      zoneId = config.cloudflare?.zoneId || ZONE_MAP[targetDomain] || ZONE_MAP[clientKey] || 'bd131177db6d610b5d4e5beb0142108b';
+      zoneId = config.cloudflare?.zoneId || ZONE_MAP[targetDomain] || ZONE_MAP[clientKey] || (ZONE_MAP['surokkha.store'] || '');
     }
 
     let dbZoneId = '';

@@ -36,9 +36,6 @@
     "active": false
   },
   "googleAnalytics": {
-    "measurementId": "G-V2H268T9Q5",
-    "gtmId": "",
-    "propertyId": "",
     "streamName": "Engulfic Web Stream",
     "isVerified": true,
     "enhancedMeasurement": true

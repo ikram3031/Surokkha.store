@@ -61,4 +61,11 @@ if (!parsed.success) {
   throw new Error(`Environment validation failed: ${errorMessages}`);
 }
 
+// In production, secrets must come from .env — never from the development defaults in this file
+const DEV_ACCESS_TOKEN_SECRET = "dev_jwt_access_token_secret_key_at_least_20_chars";
+if (parsed.data.NODE_ENV === "production" && parsed.data.ACCESS_TOKEN_SECRET === DEV_ACCESS_TOKEN_SECRET) {
+  console.error("❌ ACCESS_TOKEN_SECRET is not set in .env. Refusing to start in production with the development default.");
+  process.exit(1);
+}
+
 export const env = parsed.data;

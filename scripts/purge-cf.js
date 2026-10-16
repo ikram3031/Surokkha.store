@@ -28,16 +28,15 @@ const decryptText = (text, secret = process.env.ACCESS_TOKEN_SECRET) => {
   }
 };
 
-const ZONE_MAP = {
-  "engulfic.com": "b8baf3af57594678d588a9391b3a7023",
-  "engulfic": "b8baf3af57594678d588a9391b3a7023",
-  "decantre.com": "532fc0163ee268da83584fe3be20e3bc",
-  "decantre": "532fc0163ee268da83584fe3be20e3bc",
-  "toyoland.com": "6e159fb7a28e83161c565d3ecad4e565",
-  "toyoland": "6e159fb7a28e83161c565d3ecad4e565",
-  "surokkha.store": "bd131177db6d610b5d4e5beb0142108b",
-  "surokkha": "bd131177db6d610b5d4e5beb0142108b",
-};
+// Zone IDs are not kept in the repo: pass them as JSON, e.g. CF_ZONE_MAP='{"surokkha.store":"<zone id>"}'
+const ZONE_MAP = (() => {
+  try {
+    return JSON.parse(process.env.CF_ZONE_MAP || '{}');
+  } catch {
+    console.error('CF_ZONE_MAP is not valid JSON');
+    return {};
+  }
+})();
 
 const resolveToken = (target) => {
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_API_TOKEN.trim()) {

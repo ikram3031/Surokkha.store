@@ -41,8 +41,8 @@ const collectTelemetryData = () => {
 // Sends non-blocking telemetry heartbeat payload to the Central Cloudflare Hub
 export const sendHeartbeat = async () => {
   const hubUrl = env.CENTRAL_HUB_URL || process.env.CENTRAL_HUB_URL;
-  if (!hubUrl) {
-    // Silently skip if central hub URL is not configured
+  if (!hubUrl || !env.CENTRAL_HUB_SECRET) {
+    // Silently skip if the central hub URL or its shared secret is not configured
     return;
   }
 
@@ -57,7 +57,7 @@ export const sendHeartbeat = async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-hub-secret": env.CENTRAL_HUB_SECRET || "wlecom-fleet-secret",
+        "x-hub-secret": env.CENTRAL_HUB_SECRET,
       },
       body: JSON.stringify(payload),
       signal: controller.signal,

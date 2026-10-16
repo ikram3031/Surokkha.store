@@ -19,14 +19,11 @@ export function getSiteConfig() {
   const brandName = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_BRAND_NAME) ||
     (siteKey === 'shop' ? 'Surokkha Shop' : 'Surokkha Store');
 
-  const pixelId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_META_PIXEL_ID) ||
-    (siteKey === 'shop' ? '1565104865301894' : '1840805450442709');
+  const pixelId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_META_PIXEL_ID) || '';
 
-  const domainVerification = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FACEBOOK_DOMAIN_VERIFICATION) ||
-    '19j8puwsyouoywx76lomib7lsa6g7t';
+  const domainVerification = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FACEBOOK_DOMAIN_VERIFICATION) || '';
 
-  const gaMeasurementId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GA_MEASUREMENT_ID) ||
-    'G-3JHW9WK6GG';
+  const gaMeasurementId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GA_MEASUREMENT_ID) || '';
 
   const apiBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
     'https://api.surokkha.store';

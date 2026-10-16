@@ -27,7 +27,11 @@ const decryptText = (text, secret = process.env.ACCESS_TOKEN_SECRET) => {
   }
 };
 
-const zoneId = "bd131177db6d610b5d4e5beb0142108b";
+const zoneId = process.env.CF_ZONE_ID || process.argv[2] || "";
+if (!zoneId) {
+  console.error("Set CF_ZONE_ID (or pass the zone id as the first argument)");
+  process.exit(1);
+}
 
 const resolveToken = () => {
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_API_TOKEN.trim()) {

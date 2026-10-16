@@ -230,7 +230,7 @@ const MetaCatalogGenerator = () => {
         name: site.name || (key === 'store' ? 'Surokkha Store' : key === 'shop' ? 'Surokkha Shop' : key),
         domain: site.domain || (key === 'store' ? 'surokkha.store' : 'surokkha.shop'),
         url: (site.url || site.storefrontUrl || (site.domain ? `https://${site.domain}` : '')).replace(/\/$/, ''),
-        pixelId: site.metaPixel?.pixelId || (key === 'store' ? '1840805450442709' : key === 'shop' ? '1565104865301894' : ''),
+        pixelId: site.metaPixel?.pixelId || '',
       }));
     }
     return [
@@ -239,14 +239,14 @@ const MetaCatalogGenerator = () => {
         name: 'Surokkha Store',
         domain: 'surokkha.store',
         url: 'https://surokkha.store',
-        pixelId: '1840805450442709',
+        pixelId: '',
       },
       {
         key: 'shop',
         name: 'Surokkha Shop',
         domain: 'surokkha.shop',
         url: 'https://surokkha.shop',
-        pixelId: '1565104865301894',
+        pixelId: '',
       },
     ];
   }, []);
@@ -261,7 +261,7 @@ const MetaCatalogGenerator = () => {
       name: clientConfig?.brandName || 'Store',
       domain: clientConfig?.domain || 'surokkha.store',
       url: siteUrl || 'https://surokkha.store',
-      pixelId: '1840805450442709',
+      pixelId: '',
     };
   }, [configuredSites, activeSiteKey, siteUrl]);
 
@@ -271,7 +271,7 @@ const MetaCatalogGenerator = () => {
       name: 'Surokkha Store',
       domain: 'surokkha.store',
       url: 'https://surokkha.store',
-      pixelId: '1840805450442709',
+      pixelId: '',
     };
   }, [configuredSites]);
 
@@ -281,7 +281,7 @@ const MetaCatalogGenerator = () => {
       name: 'Surokkha Shop',
       domain: 'surokkha.shop',
       url: 'https://surokkha.shop',
-      pixelId: '1565104865301894',
+      pixelId: '',
     };
   }, [configuredSites]);
 
@@ -1750,7 +1750,7 @@ const MetaCatalogGenerator = () => {
                   <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                     <span>1. Surokkha Store Feed (surokkha.store)</span>
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">Pixel: 1840805450442709</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">Pixel: {storeSite.pixelId || 'not set'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Input
@@ -1779,7 +1779,7 @@ const MetaCatalogGenerator = () => {
                   <span className="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">
                     <span>2. Surokkha Shop Feed (surokkha.shop)</span>
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">Pixel: 1565104865301894</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">Pixel: {shopSite.pixelId || 'not set'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Input

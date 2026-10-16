@@ -273,7 +273,7 @@ const MetaPixelPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">Meta Pixel / Dataset ID</label>
                   <Input
-                    placeholder="e.g. 1565104865301894"
+                    placeholder="e.g. 123456789012345"
                     value={storePixelId}
                     onChange={(e) => setStorePixelId(e.target.value)}
                     disabled={isLoading}
@@ -398,7 +398,7 @@ const MetaPixelPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">Meta Pixel / Dataset ID</label>
                   <Input
-                    placeholder="e.g. 1565104865301894"
+                    placeholder="e.g. 123456789012345"
                     value={shopPixelId}
                     onChange={(e) => setShopPixelId(e.target.value)}
                     disabled={isLoading}

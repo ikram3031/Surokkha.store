@@ -212,13 +212,11 @@ Date: ${dateStr}
 
 1. SUROKKHA STORE CATALOG:
    - Target Storefront: https://surokkha.store
-   - Meta Pixel ID: 1840805450442709
    - File: meta_catalog_${storeName}_${dateStr}.${format}
    - Scheduled Feed URL: https://api.surokkha.store/api/v1/products/feed/meta-catalog-store.csv
 
 2. SUROKKHA SHOP CATALOG:
    - Target Storefront: https://surokkha.shop
-   - Meta Pixel ID: 1565104865301894
    - File: meta_catalog_${shopName}_${dateStr}.${format}
    - Scheduled Feed URL: https://api.surokkha.store/api/v1/products/feed/meta-catalog-shop.csv
 

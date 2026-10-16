@@ -21,11 +21,26 @@
     "inStoreOrder": true
   },
   "inStorePaymentMethods": [
-    { "value": "cash", "label": "Cash" },
-    { "value": "card", "label": "Card" },
-    { "value": "bank", "label": "Bank" },
-    { "value": "bkash", "label": "bKash" },
-    { "value": "nagad", "label": "Nagad" }
+    {
+      "value": "cash",
+      "label": "Cash"
+    },
+    {
+      "value": "card",
+      "label": "Card"
+    },
+    {
+      "value": "bank",
+      "label": "Bank"
+    },
+    {
+      "value": "bkash",
+      "label": "bKash"
+    },
+    {
+      "value": "nagad",
+      "label": "Nagad"
+    }
   ],
   "stockManagement": {
     "simpleProduct": true,
@@ -34,15 +49,17 @@
   "reports": {
     "enableInStoreFilter": true,
     "enableExport": true,
-    "enabledTabs": ["sales", "products", "payments", "inventory"]
+    "enabledTabs": [
+      "sales",
+      "products",
+      "payments",
+      "inventory"
+    ]
   },
   "cloudFlareAnalytics": {
     "active": false
   },
   "googleAnalytics": {
-    "measurementId": "G-95TCXBZG7W",
-    "gtmId": "GTM-DEC883Z",
-    "propertyId": "419823412",
     "streamName": "Decantre Web Stream",
     "isVerified": true,
     "enhancedMeasurement": true
@@ -56,9 +73,24 @@
         "title": "Hero Slider Carousel",
         "description": "Main sliding banners displayed on store homepage (Recommended: 1920x650 px, max 2MB)",
         "slots": [
-          { "key": "slider-1", "label": "Slide 1", "filename": "slider-1.webp", "recommendedSize": "1920x650" },
-          { "key": "slider-2", "label": "Slide 2", "filename": "slider-2.webp", "recommendedSize": "1920x650" },
-          { "key": "slider-3", "label": "Slide 3", "filename": "slider-3.webp", "recommendedSize": "1920x650" }
+          {
+            "key": "slider-1",
+            "label": "Slide 1",
+            "filename": "slider-1.webp",
+            "recommendedSize": "1920x650"
+          },
+          {
+            "key": "slider-2",
+            "label": "Slide 2",
+            "filename": "slider-2.webp",
+            "recommendedSize": "1920x650"
+          },
+          {
+            "key": "slider-3",
+            "label": "Slide 3",
+            "filename": "slider-3.webp",
+            "recommendedSize": "1920x650"
+          }
         ]
       },
       {
@@ -66,8 +98,18 @@
         "title": "Promotional Banners",
         "description": "Special campaign and announcement banner images",
         "slots": [
-          { "key": "banner-main", "label": "Main Promo Banner", "filename": "banner-main.webp", "recommendedSize": "1200x400" },
-          { "key": "banner-top", "label": "Top Announcement Banner", "filename": "banner-top.webp", "recommendedSize": "1920x100" }
+          {
+            "key": "banner-main",
+            "label": "Main Promo Banner",
+            "filename": "banner-main.webp",
+            "recommendedSize": "1200x400"
+          },
+          {
+            "key": "banner-top",
+            "label": "Top Announcement Banner",
+            "filename": "banner-top.webp",
+            "recommendedSize": "1920x100"
+          }
         ]
       },
       {
@@ -75,8 +117,18 @@
         "title": "Brand & Identity",
         "description": "Brand logo and browser favicon files",
         "slots": [
-          { "key": "logo", "label": "Header Logo", "filename": "logo.webp", "recommendedSize": "500x200" },
-          { "key": "favicon", "label": "Favicon Icon", "filename": "favicon.ico", "recommendedSize": "64x64" }
+          {
+            "key": "logo",
+            "label": "Header Logo",
+            "filename": "logo.webp",
+            "recommendedSize": "500x200"
+          },
+          {
+            "key": "favicon",
+            "label": "Favicon Icon",
+            "filename": "favicon.ico",
+            "recommendedSize": "64x64"
+          }
         ]
       }
     ]
@@ -117,7 +169,6 @@
     "trash",
     "settings"
   ],
-
   "theme": {
     "light": {
       "--background": "#ffffff",
