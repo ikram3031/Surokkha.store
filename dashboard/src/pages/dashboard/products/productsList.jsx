@@ -440,7 +440,7 @@ const ProductsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = n
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="cancel"
               onClick={() => setBulkStockConfirmStatus(null)}
               disabled={isBulkStockUpdating}
             >

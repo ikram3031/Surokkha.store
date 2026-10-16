@@ -419,7 +419,7 @@ export const ReturnInvestmentModal = ({
           <DialogFooter className="pt-2 border-t flex items-center justify-between gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="cancel"
               size="sm"
               onClick={() => onOpenChange(false)}
             >

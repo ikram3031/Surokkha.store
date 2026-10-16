@@ -1132,7 +1132,7 @@ const MetaCatalogGenerator = () => {
 
         {activeTab === 'staged' && stagedMap.size > 0 && (
           <Button
-            variant="outline"
+            variant="cancel"
             size="sm"
             onClick={clearAllStaged}
             className="text-xs h-8 text-destructive hover:bg-destructive/10"

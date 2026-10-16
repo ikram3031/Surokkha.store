@@ -570,7 +570,7 @@ export const AddNewBillPage = () => {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="cancel"
                   onClick={() => navigate('/dashboard/accounts/bills')}
                   className="w-full text-xs"
                 >
@@ -612,7 +612,7 @@ export const AddNewBillPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setNewTypeModalOpen(false)}>
+            <Button variant="cancel" size="sm" onClick={() => setNewTypeModalOpen(false)}>
               Cancel
             </Button>
             <Button size="sm" onClick={handleCreateNewType} disabled={!newTypeName.trim()}>

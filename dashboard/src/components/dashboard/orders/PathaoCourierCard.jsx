@@ -750,7 +750,7 @@ const PathaoCourierCard = ({
           <DialogFooter className="pt-3 gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="cancel"
               onClick={() => setIsDispatchOpen(false)}
               disabled={isSubmitting}
             >

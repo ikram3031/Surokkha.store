@@ -202,7 +202,7 @@ export const GA4ConfigModal = ({ open, onOpenChange, brandName = 'Store', onSett
         <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t">
           <Button
             type="button"
-            variant="outline"
+            variant="cancel"
             onClick={() => onOpenChange(false)}
             className="text-xs cursor-pointer"
           >

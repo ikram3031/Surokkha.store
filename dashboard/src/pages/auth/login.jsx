@@ -414,7 +414,7 @@ const LoginPage = () => {
                 <Button
                   type="button"
                   onClick={handleCancel}
-                  variant="outline"
+                  variant="cancel"
                   className="w-full h-12 flex items-center justify-center font-bold text-sm bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/30 rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   Cancel

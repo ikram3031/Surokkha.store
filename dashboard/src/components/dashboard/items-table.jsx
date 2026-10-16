@@ -419,7 +419,7 @@ export const ItemsTable = ({
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setStockTarget(null)}>
+              <Button variant="cancel" onClick={() => setStockTarget(null)}>
                 {t('common.cancel')}
               </Button>
               <Button onClick={handleSaveStock} disabled={isUpdatingStock}>

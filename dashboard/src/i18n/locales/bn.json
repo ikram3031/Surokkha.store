@@ -224,6 +224,7 @@
     "order_created_success": "অর্ডার সফলভাবে তৈরি হয়েছে!",
     "order_updated_success": "অর্ডার সফলভাবে আপডেট হয়েছে!",
     "status_pending": "অপেক্ষমান",
+    "status_hold": "হোল্ড",
     "status_confirmed": "নিশ্চিতকৃত",
     "status_processing": "প্রক্রিয়াধীন",
     "status_shipped": "শিপমেন্টকৃত",

@@ -68,7 +68,7 @@ export const getMetadata = async (req, res, next) => {
       data: {
         clientKey: config.clientKey || 'surokkha',
         brandName: config.brandName || 'Surokkha',
-        orderStatuses: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'returned'],
+        orderStatuses: ['pending', 'confirmed', 'processing', 'hold', 'shipped', 'delivered', 'completed', 'cancelled', 'returned'],
         paymentMethods: ['Cash on Delivery (COD)', 'bKash', 'Nagad', 'Rocket', 'Bank Transfer', 'In-Store POS Cash'],
         paymentStatuses: ['pending', 'paid', 'partially_paid', 'failed', 'refunded'],
         currencies: ['BDT'],

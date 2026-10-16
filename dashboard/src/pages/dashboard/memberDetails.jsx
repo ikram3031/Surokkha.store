@@ -334,7 +334,7 @@ export const MemberDetails = () => {
       <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
           <Button
-            variant="ghost"
+            variant="cancel"
             size="sm"
             onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/dashboard/members')}
             className="h-9 px-2"
@@ -836,7 +836,7 @@ export const MemberDetails = () => {
                   </Button>
                 ) : (
                   <Button
-                    variant="ghost"
+                    variant="cancel"
                     size="sm"
                     onClick={() => setIsEditingProfile(false)}
                     className="h-8 text-xs cursor-pointer"
@@ -910,7 +910,7 @@ export const MemberDetails = () => {
                   <div className="pt-4 border-t flex justify-end gap-2">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="cancel"
                       size="sm"
                       onClick={() => setIsEditingProfile(false)}
                       disabled={updateProfileMutation.isPending}
@@ -970,7 +970,7 @@ export const MemberDetails = () => {
                         <span>Copy Billing to Shipping</span>
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="cancel"
                         size="sm"
                         onClick={() => setIsEditingAddresses(false)}
                         className="h-8 text-xs"
@@ -1151,7 +1151,7 @@ export const MemberDetails = () => {
                   <div className="pt-2 flex justify-end gap-2">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="cancel"
                       size="sm"
                       onClick={() => setIsEditingAddresses(false)}
                       className="text-xs"
@@ -1282,7 +1282,7 @@ export const MemberDetails = () => {
             <DialogFooter className="pt-3 border-t">
               <Button
                 type="button"
-                variant="outline"
+                variant="cancel"
                 size="sm"
                 onClick={() => setPasswordModalOpen(false)}
                 disabled={isChangingPassword}

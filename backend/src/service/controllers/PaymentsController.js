@@ -57,7 +57,11 @@ export const createPayment = async (req, res, next) => {
       createdBy: req.user?.userId || null,
     };
 
-    const payment = await PaymentModel.create(paymentData);
+    // One payment record per order: update the order's existing record instead of adding a duplicate
+    const existingForOrder = paymentData.orderId ? await PaymentModel.findOne({ orderId: paymentData.orderId }) : null;
+    const payment = existingForOrder
+      ? await PaymentModel.findByIdAndUpdate(existingForOrder._id, { ...paymentData, createdBy: existingForOrder.createdBy }, { new: true })
+      : await PaymentModel.create(paymentData);
     if (payment.orderId) {
       await OrderModel.findByIdAndUpdate(payment.orderId, {
         paymentStatus: status,
@@ -244,6 +248,25 @@ export const updatePayment = async (req, res, next) => {
 
     allowedUpdates.updatedBy = req.user?.userId || null;
 
+    // Keep amounts consistent: paid + pending = total, and a "paid" status means fully paid
+    const touchesAmounts = ['totalAmount', 'paidAmount', 'pendingAmount', 'status'].some((k) => k in allowedUpdates);
+    if (touchesAmounts) {
+      const existing = await PaymentModel.findOne(query).lean();
+      if (existing) {
+        const total = allowedUpdates.totalAmount ?? existing.totalAmount ?? 0;
+        let paid = allowedUpdates.paidAmount ?? existing.paidAmount ?? 0;
+        if (allowedUpdates.status === 'paid' && allowedUpdates.paidAmount === undefined) paid = total;
+        if (['pending', 'failed'].includes(allowedUpdates.status) && allowedUpdates.paidAmount === undefined) paid = 0;
+        paid = Math.min(total, Math.max(0, paid));
+        allowedUpdates.paidAmount = paid;
+        allowedUpdates.amount = paid;
+        if (allowedUpdates.pendingAmount === undefined) allowedUpdates.pendingAmount = Math.max(0, total - paid);
+        if (!allowedUpdates.status && !['returned', 'cancelled'].includes(existing.status)) {
+          allowedUpdates.status = paid >= total && total > 0 ? 'paid' : paid > 0 ? 'partial' : 'pending';
+        }
+      }
+    }
+
     const payment = await PaymentModel.findOneAndUpdate(query, allowedUpdates, {
       new: true,
       runValidators: true,
@@ -381,7 +404,12 @@ export const bulkDeletePayments = async (req, res, next) => {
       $or: [{ _id: { $in: objectIds } }, { did: { $in: ids } }],
     };
 
+    // Reset the linked orders, same as single delete
+    const linkedOrderIds = (await PaymentModel.find(deleteQuery).distinct("orderId")).filter(Boolean);
     const result = await PaymentModel.deleteMany(deleteQuery);
+    if (linkedOrderIds.length > 0) {
+      await OrderModel.updateMany({ _id: { $in: linkedOrderIds } }, { $set: { paymentStatus: "pending", paidAmount: 0 } });
+    }
     return res.json({ status: "success", message: `${result.deletedCount} payment records deleted successfully` });
   } catch (error) {
     logger.error({ error }, "Failed to bulk delete payments");

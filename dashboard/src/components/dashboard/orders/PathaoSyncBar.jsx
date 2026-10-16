@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw, Truck } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api-client';
 import { formatDateTime } from '@/utils/dateHelper';
 
@@ -38,18 +37,23 @@ const PathaoSyncBar = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <Truck className="h-3.5 w-3.5" />
+    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 py-1 pl-3 pr-1 text-xs text-muted-foreground">
+      <Truck className="h-3.5 w-3.5 text-primary" />
       <span>
-        Pathao last synced:{' '}
+        Pathao synced:{' '}
         <span className="font-medium text-foreground">
-          {data?.lastOrderSyncAt ? formatDateTime(data.lastOrderSyncAt) : 'Not synced yet'}
+          {data?.lastOrderSyncAt ? formatDateTime(data.lastOrderSyncAt) : 'Never'}
         </span>
       </span>
-      <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={handleSync} disabled={isSyncing}>
+      <button
+        type="button"
+        onClick={handleSync}
+        disabled={isSyncing}
+        className="inline-flex h-6 items-center gap-1.5 rounded-full bg-primary/15 px-2.5 font-medium text-primary transition-colors hover:bg-primary/25 disabled:opacity-60 cursor-pointer"
+      >
         <RefreshCw className={`h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
-        Sync now
-      </Button>
+        {isSyncing ? 'Syncing…' : 'Sync now'}
+      </button>
     </div>
   );
 };

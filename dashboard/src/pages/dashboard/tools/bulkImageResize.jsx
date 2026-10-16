@@ -403,7 +403,7 @@ export default function BulkImageResize() {
           {files.length > 0 && (
             <>
               <Button
-                variant="outline"
+                variant="cancel"
                 size="sm"
                 onClick={clearAllFiles}
                 disabled={isProcessing}

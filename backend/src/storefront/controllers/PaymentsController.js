@@ -1,3 +1,4 @@
+import { syncPaymentDocument } from "../../common/helper/orderControllerHelper.js";
 import mongoose from "mongoose";
 import { PaymentModel } from "../../common/models/payment.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
@@ -28,25 +29,23 @@ export const createPayment = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Valid referenced order not found" });
     }
 
+    // Route through the shared sync so the order and its single payment record stay in step
+    // (no duplicate records, and none before the order has shipped)
     const orderDoc = await OrderModel.findById(resolvedOrderId).lean();
-    let netAmount = Number(amount || 0);
-    if (orderDoc) {
-      const rawTotal = Number(amount !== undefined ? amount : (orderDoc.totals?.total || 0));
-      const shippingFee = Number(orderDoc.totals?.shippingFee ?? orderDoc.shippingTotalAmount ?? 0);
-      netAmount = Math.max(0, rawTotal - shippingFee);
+    if (!orderDoc) {
+      return res.status(400).json({ status: "error", message: "Valid referenced order not found" });
     }
-
-    const payment = await PaymentModel.create({
+    if (paymentPhone) await OrderModel.findByIdAndUpdate(resolvedOrderId, { paymentPhone });
+    await syncPaymentDocument(
+      { ...orderDoc, ...(paymentMethod ? { paymentMethod } : {}), ...(paymentPhone ? { paymentPhone } : {}) },
+      { paymentStatus: status || "pending", ...(amount !== undefined ? { paidAmount: Number(amount) } : {}) }
+    );
+    if (transactionId) await PaymentModel.updateOne({ orderId: resolvedOrderId }, { $set: { transactionId } });
+    const payment = (await PaymentModel.findOne({ orderId: resolvedOrderId }).lean()) || {
       orderId: resolvedOrderId,
-      amount: netAmount,
-      totalAmount: netAmount,
-      paidAmount: status === "paid" ? netAmount : 0,
-      pendingAmount: status === "paid" ? 0 : netAmount,
-      paymentMethod: paymentMethod || "Cash on Delivery",
-      paymentPhone: paymentPhone || "",
-      transactionId: transactionId || "",
       status: status || "pending",
-    });
+      note: "Recorded on the order; payment record opens when the order ships",
+    };
 
     return res.status(201).json({ status: "success", data: payment });
   } catch (err) {

@@ -1028,7 +1028,7 @@ const MessagesManager = () => {
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="cancel"
                   size="sm"
                   onClick={() => setIsComposeOpen(false)}
                   className="text-xs"

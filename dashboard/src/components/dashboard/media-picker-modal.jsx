@@ -378,7 +378,7 @@ export const MediaPickerModal = ({
                     {activeSearch && (
                       <Button
                         type="button"
-                        variant="link"
+                        variant="cancel"
                         size="sm"
                         onClick={handleClearSearch}
                         className="mt-2 text-xs cursor-pointer"
@@ -604,7 +604,7 @@ export const MediaPickerModal = ({
             {selectedItems.length > 0 && (
               <Button
                 type="button"
-                variant="ghost"
+                variant="cancel"
                 size="sm"
                 onClick={() => setSelectedItems([])}
                 className="text-xs text-muted-foreground hover:text-destructive h-8 px-2.5 cursor-pointer"
@@ -617,7 +617,7 @@ export const MediaPickerModal = ({
           <div className="flex items-center gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="cancel"
               size="sm"
               onClick={() => onOpenChange(false)}
               className="text-xs h-8 px-3.5 cursor-pointer"

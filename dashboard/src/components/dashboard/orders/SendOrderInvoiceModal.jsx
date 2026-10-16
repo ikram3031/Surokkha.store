@@ -102,7 +102,7 @@ export const SendOrderInvoiceModal = ({
           <DialogFooter className="pt-2 flex items-center justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="cancel"
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isSending}

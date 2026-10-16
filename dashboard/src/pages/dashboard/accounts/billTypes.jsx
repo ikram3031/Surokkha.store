@@ -520,7 +520,7 @@ export const BillTypesPage = () => {
             </div>
 
             <DialogFooter className="pt-3">
-              <Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+              <Button type="button" variant="cancel" size="sm" onClick={() => setModalOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" size="sm" disabled={isAdding || isUpdating}>

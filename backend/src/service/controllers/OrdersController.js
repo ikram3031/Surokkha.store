@@ -11,7 +11,6 @@ import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import { buildAllowedOrderUpdates,
   buildOrderDocument,
   syncPaymentDocument,
-  canHavePaymentDocument,
   archiveFakeOrder,
 } from '../../common/helper/orderControllerHelper.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
@@ -266,25 +265,12 @@ export const listOrders = async (req, res, next) => {
     }
 
     if (req.query.paymentStatus) {
+      // order.paymentStatus is kept in step with the payment record by syncPaymentDocument
       const pStatus = req.query.paymentStatus.toLowerCase();
-      const matchingPayments = await PaymentModel.find({ status: pStatus }).distinct('orderId');
-      if (pStatus === 'paid') {
-        andConditions.push({
-          $or: [
-            { _id: { $in: matchingPayments } },
-            { status: { $in: ['completed', 'shipped'] } }
-          ]
-        });
-      } else if (pStatus === 'pending') {
-        const paidPayments = await PaymentModel.find({ status: 'paid' }).distinct('orderId');
-        andConditions.push({
-          $and: [
-            { _id: { $nin: paidPayments } },
-            { status: { $nin: ['completed', 'shipped'] } }
-          ]
-        });
+      if (pStatus === 'pending') {
+        andConditions.push({ $or: [{ paymentStatus: 'pending' }, { paymentStatus: null }, { paymentStatus: { $exists: false } }] });
       } else {
-        andConditions.push({ _id: { $in: matchingPayments } });
+        andConditions.push({ paymentStatus: pStatus });
       }
     }
 
@@ -350,7 +336,7 @@ export const listOrders = async (req, res, next) => {
     const data = orders.map((order) => {
       const payment = paymentMap.get(order._id.toString());
       const pStatus = payment?.status || order.paymentStatus;
-      const fallbackPaid = ['completed', 'shipped'].includes(order.status);
+      const fallbackPaid = order.status === 'completed';
       const effectivePaymentStatus = pStatus || (fallbackPaid ? 'paid' : 'pending');
       const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
       return {
@@ -392,7 +378,7 @@ export const getOrderById = async (req, res, next) => {
     }
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
-    const fallbackPaid = ['completed', 'shipped'].includes(order.status);
+    const fallbackPaid = order.status === 'completed';
     const effectivePaymentStatus = payment?.status || order.paymentStatus || (fallbackPaid ? 'paid' : 'pending');
     const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
 
@@ -473,27 +459,7 @@ export const updateOrder = async (req, res, next) => {
 
     if (allowedUpdates.status === 'return') {
       try {
-        await PaymentModel.updateMany(
-          { orderId: order._id },
-          { $set: { isActive: false, active: false, status: 'cancelled', paidAmount: 0 } }
-        );
-        await PaymentModel.findOneAndUpdate(
-          { orderId: order._id },
-          {
-            $set: {
-              paymentMethod: order.paymentMethod || 'manual',
-              paymentPhone: order.billingInfo?.phone || '',
-              totalAmount: 0,
-              paidAmount: 0,
-              pendingAmount: 0,
-              amount: 0,
-              status: 'cancelled',
-              isActive: false,
-              active: false,
-            }
-          },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
+        // Payment zeroing for returns is handled by syncPaymentDocument below
         if (payload.returnFee > 0) {
           let billType = await BillTypeModel.findOne({ name: 'Return' });
           if (!billType) {
@@ -519,7 +485,7 @@ export const updateOrder = async (req, res, next) => {
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
     const isCancelledOrder = ['fake', 'cancelled', 'canceled'].includes(order.status);
-    const fallbackPaid = ['completed', 'shipped'].includes(order.status);
+    const fallbackPaid = order.status === 'completed';
     const effectivePaymentStatus = payment?.status || order.paymentStatus || (isCancelledOrder ? 'cancelled' : fallbackPaid ? 'paid' : 'pending');
     const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? (order.totals?.total ?? 0) : 0);
 
@@ -638,6 +604,11 @@ export const bulkUpdateOrders = async (req, res, next) => {
     const updateFields = {};
     if (status) {
       updateFields.status = status.toLowerCase();
+      // updateMany skips schema validation, so check the status against the model enum here
+      const allowedStatuses = OrderModel.schema.path('status').enumValues;
+      if (!allowedStatuses.includes(updateFields.status)) {
+        return res.status(400).json({ status: 'error', message: `Invalid order status: ${status}` });
+      }
       if (updateFields.status === 'fake') {
         updateFields.active = false;
       }
@@ -685,59 +656,10 @@ export const bulkUpdateOrders = async (req, res, next) => {
     for (const order of orders) {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
-      // Orders that never shipped have no payment record; don't create one for them here
-      const canCollect = await canHavePaymentDocument(updatedOrder);
-
-      // If order is fake or cancelled, payment must be cancelled and deactivated
-      if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled' || updateFields.status === 'return') {
-        if (canCollect) await PaymentModel.findOneAndUpdate(
-          { orderId: updatedOrder._id },
-          {
-            paymentMethod: updatedOrder.paymentMethod,
-            paymentPhone: updatedOrder.billingInfo?.phone || '',
-            totalAmount: 0,
-            paidAmount: 0,
-            pendingAmount: 0,
-            amount: 0,
-            status: 'cancelled',
-            isActive: false,
-            active: false,
-          },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-        await OrderModel.findByIdAndUpdate(updatedOrder._id, {
-          paymentStatus: updateFields.status === 'return' ? 'returned' : 'cancelled',
-          paidAmount: 0,
-        });
-      } else if (paymentStatus) {
-        const pStatus = paymentStatus.toLowerCase();
-        const rawTotal = Number(updatedOrder.totals?.total || 0);
-        const shippingFee = Number(updatedOrder.totals?.shippingFee ?? updatedOrder.shippingTotalAmount ?? 0);
-        const totalAmount = Math.max(0, rawTotal - shippingFee);
-        const paidAmount = pStatus === 'paid' ? totalAmount : 0;
-        const pendingAmount = Math.max(0, totalAmount - paidAmount);
-
-        if (canCollect) await PaymentModel.findOneAndUpdate(
-          { orderId: updatedOrder._id },
-          {
-            paymentMethod: updatedOrder.paymentMethod,
-            paymentPhone: updatedOrder.billingInfo?.phone || '',
-            totalAmount,
-            paidAmount,
-            pendingAmount,
-            amount: paidAmount,
-            status: pStatus,
-          },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-        await OrderModel.findByIdAndUpdate(updatedOrder._id, {
-          paymentStatus: pStatus,
-          paidAmount,
-        });
-      } else {
-        // Fall back to standard payment sync based on order state
-        await syncPaymentDocument(updatedOrder);
-      }
+      // syncPaymentDocument keeps the order's payment fields and its payment record in step
+      // (zeroes cancelled/fake/returned orders, only creates a record once the order has shipped)
+      const isClosingStatus = ['fake', 'cancelled', 'canceled', 'return'].includes(updateFields.status);
+      await syncPaymentDocument(updatedOrder, !isClosingStatus && paymentStatus ? { paymentStatus: paymentStatus.toLowerCase() } : {});
       if (updateFields.status === 'return' && returnBillType) {
         try {
           await BillingModel.create({
@@ -786,7 +708,7 @@ export const getOrderInvoiceView = async (req, res, next) => {
     const couponCode = order.couponCode ? String(order.couponCode).trim().toUpperCase() : null;
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
-    const effectivePaymentStatus = payment?.status || order.paymentStatus || (['completed', 'shipped'].includes(order.status) ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (order.status === 'completed' ? 'paid' : 'pending');
     const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? totalAmount : 0);
 
     const formattedOrderData = {
@@ -890,7 +812,7 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
     const formattedOrderId = order.orderNumber || order.did || order._id?.toString()?.slice(-6);
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
-    const effectivePaymentStatus = payment?.status || order.paymentStatus || (['completed', 'shipped'].includes(order.status) ? 'paid' : 'pending');
+    const effectivePaymentStatus = payment?.status || order.paymentStatus || (order.status === 'completed' ? 'paid' : 'pending');
     const effectivePaid = payment?.paidAmount ?? order.paidAmount ?? (effectivePaymentStatus === 'paid' ? totalAmount : 0);
 
     const formattedOrderData = {

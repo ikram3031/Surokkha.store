@@ -483,7 +483,7 @@ export const ProductsTable = ({
 
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="cancel"
               onClick={() => setStockTarget(null)}
               disabled={isUpdatingStock}
             >

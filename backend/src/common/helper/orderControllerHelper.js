@@ -246,7 +246,8 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     (orderData.billingInfo?.email && orderData.billingInfo.email.includes('instore@'));
 
   let paidAmount = 0;
-  if (isInstore || orderData.status === 'completed') {
+  const hasExplicitPaymentStatus = payload.paymentStatus !== undefined && payload.paymentStatus !== null;
+  if (isInstore || (orderData.status === 'completed' && !hasExplicitPaymentStatus)) {
     paidAmount = totalAmount;
   } else if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
     const pStatus = String(payload.paymentStatus).toLowerCase();
@@ -277,12 +278,14 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
   }
 
   const orderCanceled = orderData.status === 'canceled' || orderData.status === 'cancelled' || orderData.status === 'fake';
-  if (orderCanceled) {
+  const orderReturned = orderData.status === 'return';
+  // Cancelled, fake and returned orders collect nothing and owe nothing
+  if (orderCanceled || orderReturned) {
     paidAmount = 0;
   }
 
   paidAmount = Math.min(totalAmount, Math.max(0, paidAmount));
-  const pendingAmount = orderCanceled ? 0 : Math.max(0, totalAmount - paidAmount);
+  const pendingAmount = orderCanceled || orderReturned ? 0 : Math.max(0, totalAmount - paidAmount);
 
   let paymentStatus = 'pending';
   const rawMethod = normalizeText(orderData.paymentMethod || payload.paymentMethod).toLowerCase();
@@ -290,6 +293,8 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
 
   if (orderCanceled) {
     paymentStatus = 'cancelled';
+  } else if (orderReturned) {
+    paymentStatus = 'returned';
   } else if (isInstore) {
     paymentStatus = 'paid';
   } else if (payload?.paymentStatus !== undefined && payload?.paymentStatus !== null) {
@@ -332,7 +337,8 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
       pendingAmount,
       amount: paidAmount,
       status: paymentStatus,
-      isActive: !orderCanceled,
+      isActive: !orderCanceled && !orderReturned,
+      active: !orderCanceled && !orderReturned,
       createdBy: orderData.createdBy || null,
       updatedBy: orderData.updatedBy || null,
     },
@@ -364,7 +370,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
 
   if (payload.status) {
     const s = String(payload.status).toLowerCase();
-    const validEnums = ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
+    const validEnums = ['pending', 'processing', 'hold', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
     allowedUpdates.status = validEnums.includes(s) ? s : 'pending';
   }
   if (payload.shippingInfo) {

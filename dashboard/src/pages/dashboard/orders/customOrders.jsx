@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 import { logActivity } from '@/lib/activity-logger';
 import { useAuth } from '@/lib/auth-context';
 import styles from '@/styles/styles.json';
+import { getStatusOptionClass } from '@/utils/statusColors';
 
 // Renders the dedicated management page for custom orders (order ID prefixed with CO)
 const CustomOrdersPage = () => {
@@ -170,7 +171,7 @@ const CustomOrdersPage = () => {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{t('nav.custom_orders', 'Custom Orders')}</h2>
           <p className="text-muted-foreground text-sm mt-0.5">
@@ -178,11 +179,11 @@ const CustomOrdersPage = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" nativeButton={false} render={<Link to="/dashboard/orders/custom/new" />}>
+          <Button size="lg" className="h-9 px-4" nativeButton={false} render={<Link to="/dashboard/orders/custom/new" />}>
             <PlusCircle className="mr-2 h-4 w-4" />
             {t('orders.new_custom_order', 'New Custom Order')}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" size="lg" className="h-9 px-4">
             <Download className="mr-2 h-4 w-4" />
             {t('common.export', 'Export Orders')}
           </Button>
@@ -222,11 +223,12 @@ const CustomOrdersPage = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
                   <SelectItem value="All">{t('orders.order_status', 'Order Status')}: {t('common.all', 'All')}</SelectItem>
-                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
-                  <SelectItem value="Processing">{t('orders.status_processing', 'Processing')}</SelectItem>
-                  <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
-                  <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
-                  <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                  <SelectItem value="Pending" className={` ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Processing" className={` ${getStatusOptionClass('Processing')}`.trim()}>{t('orders.status_processing', 'Processing')}</SelectItem>
+                  <SelectItem value="Hold" className={` ${getStatusOptionClass('Hold')}`.trim()}>{t('orders.status_hold', 'Hold')}</SelectItem>
+                  <SelectItem value="Shipped" className={` ${getStatusOptionClass('Shipped')}`.trim()}>{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                  <SelectItem value="Completed" className={` ${getStatusOptionClass('Completed')}`.trim()}>{t('orders.status_delivered', 'Completed')}</SelectItem>
+                  <SelectItem value="Cancelled" className={` ${getStatusOptionClass('Cancelled')}`.trim()}>{t('orders.status_canceled', 'Cancelled')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -240,9 +242,9 @@ const CustomOrdersPage = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
                   <SelectItem value="All">{t('orders.payment_status', 'Payment')}: {t('common.all', 'All')}</SelectItem>
-                  <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
-                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
-                  <SelectItem value="Failed">{t('common.error', 'Failed')}</SelectItem>
+                  <SelectItem value="Paid" className={` ${getStatusOptionClass('Paid')}`.trim()}>{t('orders.status_paid', 'Paid')}</SelectItem>
+                  <SelectItem value="Pending" className={` ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Failed" className={` ${getStatusOptionClass('Failed')}`.trim()}>{t('common.error', 'Failed')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -259,9 +261,9 @@ const CustomOrdersPage = () => {
                   <span>{t('orders.payment_status', 'Payment Status')}</span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Paid" className="cursor-pointer text-xs">{t('orders.status_paid', 'Paid')}</SelectItem>
-                  <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
-                  <SelectItem value="Failed" className="cursor-pointer text-xs">{t('common.error', 'Failed')}</SelectItem>
+                  <SelectItem value="Paid" className={`cursor-pointer text-xs ${getStatusOptionClass('Paid')}`.trim()}>{t('orders.status_paid', 'Paid')}</SelectItem>
+                  <SelectItem value="Pending" className={`cursor-pointer text-xs ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Failed" className={`cursor-pointer text-xs ${getStatusOptionClass('Failed')}`.trim()}>{t('common.error', 'Failed')}</SelectItem>
                   <SelectItem value="Refunded" className="cursor-pointer text-xs">{t('orders.status_returned', 'Refunded')}</SelectItem>
                 </SelectContent>
               </Select>
@@ -271,13 +273,14 @@ const CustomOrdersPage = () => {
                   <span>{t('orders.order_status', 'Order Status')}</span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
-                  <SelectItem value="Processing" className="cursor-pointer text-xs">{t('orders.status_processing', 'Processing')}</SelectItem>
-                  <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
-                  <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
-                  <SelectItem value="Cancelled" className="cursor-pointer text-xs">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
-                  <SelectItem value="Return" className="cursor-pointer text-xs">Return</SelectItem>
-                  <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
+                  <SelectItem value="Pending" className={`cursor-pointer text-xs ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Processing" className={`cursor-pointer text-xs ${getStatusOptionClass('Processing')}`.trim()}>{t('orders.status_processing', 'Processing')}</SelectItem>
+                  <SelectItem value="Hold" className={`cursor-pointer text-xs ${getStatusOptionClass('Hold')}`.trim()}>{t('orders.status_hold', 'Hold')}</SelectItem>
+                  <SelectItem value="Shipped" className={`cursor-pointer text-xs ${getStatusOptionClass('Shipped')}`.trim()}>{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                  <SelectItem value="Completed" className={`cursor-pointer text-xs ${getStatusOptionClass('Completed')}`.trim()}>{t('orders.status_delivered', 'Completed')}</SelectItem>
+                  <SelectItem value="Cancelled" className={`cursor-pointer text-xs ${getStatusOptionClass('Cancelled')}`.trim()}>{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                  <SelectItem value="Return" className={`cursor-pointer text-xs ${getStatusOptionClass('Return')}`.trim()}>Return</SelectItem>
+                  <SelectItem value="Fake" className={`cursor-pointer text-xs ${getStatusOptionClass('Fake')}`.trim()}>Fake</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -399,7 +402,7 @@ const CustomOrdersPage = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
+            <Button variant="cancel" onClick={() => {
               setBulkStatusTarget(null);
               setBulkReturnFee('');
             }} disabled={isUpdatingBulk}>
@@ -437,7 +440,7 @@ const CustomOrdersPage = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkPaymentTarget(null)} disabled={isUpdatingBulk}>
+            <Button variant="cancel" onClick={() => setBulkPaymentTarget(null)} disabled={isUpdatingBulk}>
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button

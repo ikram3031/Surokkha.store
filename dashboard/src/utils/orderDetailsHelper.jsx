@@ -147,6 +147,7 @@ export const getBackendStatus = (fullStatus) => {
   if (s === "completed") return "completed";
   if (s === "fake") return "fake";
   if (s === "processing") return "processing";
+  if (s === "hold") return "hold";
   return "pending";
 };
 

@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 
 const STATUS_CONFIG = {
   processing: { key: 'orders.status_processing', defaultLabel: 'Processing', color: '#ffcc00' },
+  hold: { key: 'orders.status_hold', defaultLabel: 'Hold', color: '#C084FC' },
   shipped: { key: 'orders.status_shipped', defaultLabel: 'Shipped', color: '#3865a3' },
   confirmed: { key: 'orders.status_confirmed', defaultLabel: 'Confirmed', color: '#87a2c7' },
   completed: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#64a338' },

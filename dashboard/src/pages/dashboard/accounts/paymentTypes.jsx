@@ -960,7 +960,7 @@ export const PaymentTypesPage = () => {
             <DialogFooter className="gap-2 sm:gap-0 pt-3 border-t">
               <Button
                 type="button"
-                variant="outline"
+                variant="cancel"
                 size="sm"
                 onClick={() => setModalOpen(false)}
                 className="text-xs cursor-pointer"

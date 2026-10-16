@@ -48,6 +48,7 @@ import {
 } from '@/utils/orderDetailsHelper';
 import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import { formatDateTime } from '@/utils/dateHelper';
+import { getStatusOptionClass } from '@/utils/statusColors';
 
 // Renders an expanded accordion panel containing full order details and inline status management
 export const OrderAccordionDetail = ({ order }) => {
@@ -575,13 +576,14 @@ export const OrderAccordionDetail = ({ order }) => {
                       <SelectValue placeholder={t('orders.order_status', 'Order Status')} />
                     </SelectTrigger>
                     <SelectContent side="bottom" className="bg-popover border shadow-md">
-                      <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
-                      <SelectItem value="Processing" className="cursor-pointer text-xs">{t('orders.status_processing', 'Processing')}</SelectItem>
-                      <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
-                      <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
-                      <SelectItem value="Cancelled" className="cursor-pointer text-xs text-destructive">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
-                      <SelectItem value="Return" className="cursor-pointer text-xs">Return</SelectItem>
-                      <SelectItem value="Fake" className="cursor-pointer text-xs text-destructive font-semibold">Fake</SelectItem>
+                      <SelectItem value="Pending" className={`cursor-pointer text-xs ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                      <SelectItem value="Processing" className={`cursor-pointer text-xs ${getStatusOptionClass('Processing')}`.trim()}>{t('orders.status_processing', 'Processing')}</SelectItem>
+                      <SelectItem value="Hold" className={`cursor-pointer text-xs ${getStatusOptionClass('Hold')}`.trim()}>{t('orders.status_hold', 'Hold')}</SelectItem>
+                      <SelectItem value="Shipped" className={`cursor-pointer text-xs ${getStatusOptionClass('Shipped')}`.trim()}>{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                      <SelectItem value="Completed" className={`cursor-pointer text-xs ${getStatusOptionClass('Completed')}`.trim()}>{t('orders.status_delivered', 'Completed')}</SelectItem>
+                      <SelectItem value="Cancelled" className={`cursor-pointer text-xs ${getStatusOptionClass('Cancelled')}`.trim()}>{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                      <SelectItem value="Return" className={`cursor-pointer text-xs ${getStatusOptionClass('Return')}`.trim()}>Return</SelectItem>
+                      <SelectItem value="Fake" className={`cursor-pointer text-xs ${getStatusOptionClass('Fake')}`.trim()}>Fake</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -596,10 +598,10 @@ export const OrderAccordionDetail = ({ order }) => {
                         <SelectValue placeholder={t('orders.payment_status', 'Payment Status')} />
                       </SelectTrigger>
                       <SelectContent side="bottom" className="bg-popover border shadow-md">
-                        <SelectItem value="Paid" className="cursor-pointer text-xs">{t('orders.status_paid', 'Paid')}</SelectItem>
-                        <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
-                        <SelectItem value="Failed" className="cursor-pointer text-xs text-destructive">{t('common.error', 'Failed')}</SelectItem>
-                        <SelectItem value="Partial" className="cursor-pointer text-xs">{t('orders.status_partial', 'Partial')}</SelectItem>
+                        <SelectItem value="Paid" className={`cursor-pointer text-xs ${getStatusOptionClass('Paid')}`.trim()}>{t('orders.status_paid', 'Paid')}</SelectItem>
+                        <SelectItem value="Pending" className={`cursor-pointer text-xs ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                        <SelectItem value="Failed" className={`cursor-pointer text-xs text-destructive ${getStatusOptionClass('Failed')}`.trim()}>{t('common.error', 'Failed')}</SelectItem>
+                        <SelectItem value="Partial" className={`cursor-pointer text-xs ${getStatusOptionClass('Partial')}`.trim()}>{t('orders.status_partial', 'Partial')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

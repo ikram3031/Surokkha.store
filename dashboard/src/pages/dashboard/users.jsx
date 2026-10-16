@@ -227,7 +227,7 @@ const UsersPage = () => {
                 </Select>
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
+                <Button type="button" variant="cancel" onClick={() => setIsInviteOpen(false)}>
                   {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>

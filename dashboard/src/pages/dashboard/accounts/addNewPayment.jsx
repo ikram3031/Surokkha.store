@@ -475,7 +475,7 @@ export const AddNewPaymentPage = () => {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="cancel"
                   onClick={() => navigate('/dashboard/accounts/payments')}
                   className="w-full text-xs"
                 >

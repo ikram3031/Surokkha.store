@@ -2,16 +2,21 @@ import { OrderModel } from "../models/order.model.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { getPathaoConfig, getPathaoOrderInfo } from "./pathao.service.js";
 import { logger } from "../config/logger.js";
-import { ensurePaymentOnShip } from "../helper/orderControllerHelper.js";
+import { ensurePaymentOnShip, syncPaymentDocument } from "../helper/orderControllerHelper.js";
 
 const OPEN_STATUSES = ["pending", "processing", "shipped"];
 let isRunning = false;
 
 // Maps a Pathao status slug to the internal order/payment outcome (see docs/PATHAO_COURIER_API_DOCUMENTATION.md §7.2)
+const DELIVERED_SLUGS = ["delivered", "payment_invoice", "paid", "invoiced"];
+const PARTIAL_SLUGS = ["partial_delivery", "partial_delivered"];
+const RETURNED_SLUGS = ["returned", "return", "paid_return"];
+
 const mapPathaoStatus = (rawSlug) => {
   const slug = String(rawSlug || "").toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  if (slug === "delivered") return { status: "completed", paymentStatus: "paid" };
-  if (slug === "returned") return { status: "return", paymentStatus: "returned" };
+  if (DELIVERED_SLUGS.includes(slug)) return { status: "completed", paymentStatus: "paid" };
+  if (PARTIAL_SLUGS.includes(slug)) return { status: "completed", paymentStatus: "partial" };
+  if (RETURNED_SLUGS.includes(slug)) return { status: "return", paymentStatus: "returned" };
   return { status: "shipped", paymentStatus: null };
 };
 
@@ -55,19 +60,28 @@ export const syncPathaoOrders = async (trigger = "SCHEDULER") => {
           });
         }
 
-        if (order.status !== mapped.status) {
-          order.status = mapped.status;
-        }
-        if (mapped.paymentStatus && order.paymentStatus !== mapped.paymentStatus) {
-          order.paymentStatus = mapped.paymentStatus;
-          if (mapped.paymentStatus === "paid") order.paidAmount = order.totals?.total ?? order.paidAmount;
-        }
+        const statusChanged = order.status !== mapped.status;
+        if (statusChanged) order.status = mapped.status;
 
         if (changed || order.isModified()) {
           await order.save();
-          // Opens payment collection if this sync is the order's first move to shipped/completed
-          await ensurePaymentOnShip(order);
           updated += 1;
+        }
+
+        if (mapped.paymentStatus) {
+          // Delivered / partial / returned: reconcile the payment record (creates it if the order never had one)
+          const codCollected = Number(data.collected_amount ?? data.amount_to_collect ?? NaN);
+          const paidAmount =
+            mapped.paymentStatus === "paid" ? undefined
+            : mapped.paymentStatus === "returned" ? 0
+            : Number.isFinite(codCollected) ? codCollected : undefined;
+          await syncPaymentDocument(order.toObject(), {
+            paymentStatus: mapped.paymentStatus,
+            ...(paidAmount !== undefined ? { paidAmount } : {}),
+          });
+        } else {
+          // Still in transit: make sure payment collection is open
+          await ensurePaymentOnShip(order.toObject());
         }
       } catch (err) {
         failed += 1;

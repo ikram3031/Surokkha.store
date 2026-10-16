@@ -417,7 +417,7 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkStockConfirmStatus(null)}>
+            <Button variant="cancel" onClick={() => setBulkStockConfirmStatus(null)}>
               {t('common.cancel')}
             </Button>
             <Button

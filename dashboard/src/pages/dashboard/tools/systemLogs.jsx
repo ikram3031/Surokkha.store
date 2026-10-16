@@ -220,7 +220,7 @@ export default function SystemLogs() {
           </Button>
 
           <Button
-            variant="outline"
+            variant="cancel"
             size="sm"
             onClick={() => setLogs([])}
             className="shadow-2xs text-xs text-muted-foreground hover:text-destructive"

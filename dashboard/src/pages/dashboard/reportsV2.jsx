@@ -489,7 +489,7 @@ const ReportsV2Page = () => {
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
-              variant="outline"
+              variant="cancel"
               size="sm"
               onClick={() => setIsCustomDialogOpen(false)}
             >

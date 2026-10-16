@@ -822,7 +822,7 @@ export const InvestmentsListPage = () => {
             </div>
 
             <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setAddModalOpen(false)}>
+              <Button type="button" variant="cancel" size="sm" onClick={() => setAddModalOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" size="sm" disabled={isAdding || isUpdating}>

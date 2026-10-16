@@ -801,7 +801,7 @@ const SizeChartsPage = () => {
                         {selectedSizes.length > 0 && (
                           <Button
                             type="button"
-                            variant="ghost"
+                            variant="cancel"
                             size="sm"
                             onClick={handleClearAllSizes}
                             className="h-7 text-xs px-2 text-muted-foreground hover:text-destructive cursor-pointer"
@@ -855,7 +855,7 @@ const SizeChartsPage = () => {
               <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="cancel"
                   onClick={() => setModalOpen(false)}
                   className="cursor-pointer text-xs"
                 >
@@ -1131,7 +1131,7 @@ const SizeChartsPage = () => {
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="cancel"
                     onClick={() => setModalOpen(false)}
                     disabled={isSaving}
                     className="cursor-pointer text-xs"

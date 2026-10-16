@@ -81,6 +81,7 @@ import {
 } from "@/utils/orderDetailsHelper";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from '@/utils/dateHelper';
+import { getStatusOptionClass } from '@/utils/statusColors';
 
 const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -379,6 +380,7 @@ const OrderDetailsPage = () => {
         fake: "Fake",
         processing: "Processing",
         pending: "Pending",
+        hold: "Hold",
       };
       const curStatus = String(order.status || order.orderStatus || "").toLowerCase();
       setOrderStatus(statusMap[curStatus] || "Pending");
@@ -1672,12 +1674,13 @@ const OrderDetailsPage = () => {
                       <SelectValue placeholder="Select Status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="Processing">Processing</SelectItem>
-                      <SelectItem value="Shipped">Shipped</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                      <SelectItem value="Fake" className="text-destructive font-medium">Fake</SelectItem>
+                      <SelectItem value="Pending" className={` ${getStatusOptionClass('Pending')}`.trim()}>Pending</SelectItem>
+                      <SelectItem value="Processing" className={` ${getStatusOptionClass('Processing')}`.trim()}>Processing</SelectItem>
+                      <SelectItem value="Hold" className={` ${getStatusOptionClass('Hold')}`.trim()}>Hold</SelectItem>
+                      <SelectItem value="Shipped" className={` ${getStatusOptionClass('Shipped')}`.trim()}>Shipped</SelectItem>
+                      <SelectItem value="Completed" className={` ${getStatusOptionClass('Completed')}`.trim()}>Completed</SelectItem>
+                      <SelectItem value="Cancelled" className={` ${getStatusOptionClass('Cancelled')}`.trim()}>Cancelled</SelectItem>
+                      <SelectItem value="Fake" className={`font-medium ${getStatusOptionClass('Fake')}`.trim()}>Fake</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

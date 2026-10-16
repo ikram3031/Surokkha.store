@@ -163,7 +163,7 @@ export const DateRangeFilter = ({
           </div>
           <DialogFooter className="flex justify-end gap-2">
             <Button
-              variant="outline"
+              variant="cancel"
               size="sm"
               onClick={() => {
                 setCustomOpen(false);

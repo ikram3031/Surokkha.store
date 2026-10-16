@@ -621,7 +621,7 @@ export function CouponDialog({ open, onOpenChange, couponToEdit }) {
           <DialogFooter className="border-t pt-4">
             <Button
               type="button"
-              variant="outline"
+              variant="cancel"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >

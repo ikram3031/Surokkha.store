@@ -48,6 +48,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { OrderAccordionDetail } from '@/components/dashboard/order-accordion-detail';
 import { formatDate } from '@/utils/dateHelper';
+import { getStatusOptionClass } from '@/utils/statusColors';
 
 // Renders the orders table with expandable accordion rows, filtering, batch selection, and inline actions
 export const OrdersTable = ({
@@ -477,13 +478,14 @@ export const OrdersTable = ({
                   <SelectValue placeholder={t('orders.order_status', 'Order status')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
-                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
-                  <SelectItem value="Processing">{t('orders.status_processing', 'Processing')}</SelectItem>
-                  <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
-                  <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
-                  <SelectItem value="Cancelled">{t('orders.status_canceled', 'Cancelled')}</SelectItem>
-                  <SelectItem value="Return">Return</SelectItem>
-                  <SelectItem value="Fake" className="cursor-pointer text-destructive font-semibold">Fake</SelectItem>
+                  <SelectItem value="Pending" className={` ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Processing" className={` ${getStatusOptionClass('Processing')}`.trim()}>{t('orders.status_processing', 'Processing')}</SelectItem>
+                  <SelectItem value="Hold" className={` ${getStatusOptionClass('Hold')}`.trim()}>{t('orders.status_hold', 'Hold')}</SelectItem>
+                  <SelectItem value="Shipped" className={` ${getStatusOptionClass('Shipped')}`.trim()}>{t('orders.status_shipped', 'Shipped')}</SelectItem>
+                  <SelectItem value="Completed" className={` ${getStatusOptionClass('Completed')}`.trim()}>{t('orders.status_delivered', 'Completed')}</SelectItem>
+                  <SelectItem value="Cancelled" className={` ${getStatusOptionClass('Cancelled')}`.trim()}>{t('orders.status_canceled', 'Cancelled')}</SelectItem>
+                  <SelectItem value="Return" className={` ${getStatusOptionClass('Return')}`.trim()}>Return</SelectItem>
+                  <SelectItem value="Fake" className={`cursor-pointer ${getStatusOptionClass('Fake')}`.trim()}>Fake</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -510,9 +512,9 @@ export const OrdersTable = ({
                     <SelectValue placeholder={t('orders.payment_status', 'Payment status')} />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border shadow-md" side="bottom">
-                    <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
-                    <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
-                    <SelectItem value="Partial">{t('orders.status_partial', 'Partial')}</SelectItem>
+                    <SelectItem value="Pending" className={` ${getStatusOptionClass('Pending')}`.trim()}>{t('orders.status_pending', 'Pending')}</SelectItem>
+                    <SelectItem value="Paid" className={` ${getStatusOptionClass('Paid')}`.trim()}>{t('orders.status_paid', 'Paid')}</SelectItem>
+                    <SelectItem value="Partial" className={` ${getStatusOptionClass('Partial')}`.trim()}>{t('orders.status_partial', 'Partial')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -520,7 +522,7 @@ export const OrdersTable = ({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setStatusTarget(null)} disabled={isUpdatingStatus}>
+            <Button variant="cancel" onClick={() => setStatusTarget(null)} disabled={isUpdatingStatus}>
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button

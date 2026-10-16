@@ -387,9 +387,9 @@ const storeSettingsSchema = new Schema(
       lastTestMessage: {
         type: String,
         default: "",
+      },
       lastOrderSyncAt: { type: Date, default: null },
       lastOrderSyncSummary: { type: String, default: "" },
-      },
     },
     cloudflare: {
       apiToken: {

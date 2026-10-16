@@ -451,7 +451,7 @@ export const SupportDesk = () => {
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0 pt-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+              <Button type="button" variant="cancel" size="sm" onClick={() => setModalOpen(false)}>
                 Cancel
               </Button>
               <Button

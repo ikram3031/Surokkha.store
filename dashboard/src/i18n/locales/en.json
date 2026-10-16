@@ -224,6 +224,7 @@
     "order_created_success": "Order created successfully!",
     "order_updated_success": "Order updated successfully!",
     "status_pending": "Pending",
+    "status_hold": "Hold",
     "status_confirmed": "Confirmed",
     "status_processing": "Processing",
     "status_shipped": "Shipped",

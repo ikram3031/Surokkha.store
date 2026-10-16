@@ -313,7 +313,7 @@ const MembersPage = () => {
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="cancel"
               onClick={() => setBulkInactiveOpen(false)}
               disabled={isBulkInactiveUpdating}
             >

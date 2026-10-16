@@ -334,7 +334,7 @@ export function ResetPasswordDialog({
           <DialogFooter className="pt-2 gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="cancel"
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
