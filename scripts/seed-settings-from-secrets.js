@@ -57,6 +57,21 @@ put('cloudflare.accountEmail', secrets.cloudFlareAnalytics?.accountEmail);
 if (typeof cf.isEnabled === 'boolean') put('cloudflare.isEnabled', cf.isEnabled);
 put('cloudflare.zones', secrets.cloudflareZones);
 
+const r2 = secrets.r2Storage || {};
+put('r2Storage.accountId', r2.accountId);
+put('r2Storage.accessKeyId', r2.accessKeyId);
+if (r2.secretAccessKey) put('r2Storage.secretAccessKey', encryptText(r2.secretAccessKey));
+put('r2Storage.bucketName', r2.bucketName);
+put('r2Storage.publicUrl', r2.publicUrl);
+put('r2Storage.backupCron', r2.backupCron);
+put('r2Storage.backupTimezone', r2.backupTimezone);
+for (const k of ['keepDailyDays', 'keepWeeklyWeeks']) if (Number.isFinite(r2[k])) put(`r2Storage.${k}`, r2[k]);
+// switches: the schema defaults them, so set them whenever R2 credentials are being filled in
+if (r2.accessKeyId && (force || !get(doc, 'r2Storage.accessKeyId'))) {
+  if (typeof r2.isEnabled === 'boolean') { $set['r2Storage.isEnabled'] = r2.isEnabled; filled.push('r2Storage.isEnabled'); }
+  if (typeof r2.backupEnabled === 'boolean') { $set['r2Storage.backupEnabled'] = r2.backupEnabled; filled.push('r2Storage.backupEnabled'); }
+}
+
 const ga = secrets.googleAnalytics || secrets.dashboardClientConfig?.googleAnalytics || {};
 for (const k of ['measurementId', 'gtmId', 'propertyId', 'streamName']) put(`googleAnalytics.${k}`, ga[k]);
 
