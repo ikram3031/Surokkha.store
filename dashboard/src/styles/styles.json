@@ -44,6 +44,6 @@
     "row": "border-b border-border transition-colors hover:bg-secondary/20 hover:text-primary hover:[&_td]:text-primary has-aria-expanded:bg-muted/40 data-[state=selected]:bg-muted/60",
     "head": "h-11 px-3 text-left align-middle text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0",
     "cell": "px-3 py-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
-    "wrapper": "bg-card text-card-foreground shadow-sm border rounded-lg overflow-hidden"
+    "wrapper": "bg-card text-card-foreground shadow-sm border rounded-none overflow-hidden"
   }
 }

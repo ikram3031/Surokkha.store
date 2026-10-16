@@ -271,3 +271,10 @@ input[type="number"] {
   appearance: textfield;
 }
 
+
+/* Tables are square-cornered everywhere: flatten the cards/wrappers that directly hold a table */
+[data-slot="table-container"],
+:has(> [data-slot="table-container"]),
+:has(> * > [data-slot="table-container"]) {
+  border-radius: 0;
+}

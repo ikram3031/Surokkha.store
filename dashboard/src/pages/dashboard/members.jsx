@@ -207,7 +207,7 @@ const MembersPage = () => {
         </div>
       </div>
 
-      <div className="bg-card text-card-foreground shadow-sm border rounded-xl overflow-hidden">
+      <div className="bg-card text-card-foreground shadow-sm border rounded-none overflow-hidden">
         <div className="overflow-x-auto">
           <MembersTable
             searchQuery={debouncedSearch}
