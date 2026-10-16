@@ -618,7 +618,7 @@ export default function ProductDetailView() {
                   <button
                     type="button"
                     disabled={isOutOfStock || isSingleQtyItem(product)}
-                    onClick={() => !isOutOfStock && !isSingleQtyItem(product) && setQuantity((q) => q + 1)}
+                    onClick={() => !isOutOfStock && !isSingleQtyItem(product) && setQuantity((q) => Math.min(10, q + 1))}
                     aria-label="Increase quantity"
                     className={`px-3 py-2 font-bold text-sm ${isOutOfStock || isSingleQtyItem(product) ?'text-slate-400 cursor-not-allowed' : 'text-slate-800 hover:text-slate-950 cursor-pointer'}`}
                   >

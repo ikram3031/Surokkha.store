@@ -67,7 +67,12 @@ export const createOrder = async (req, res, next) => {
     }
     const isSpammer = await SpamListModel.findOne(spamQuery).lean();
     if (isSpammer) {
-      return res.status(403).json({ success: false, message: 'Order can not be created, Please contact our support' });
+      return res.status(403).json({
+        success: false,
+        code: 'CONTACT_REQUIRED',
+        reason: 'spam',
+        message: 'Sorry, you cannot place this order. Please contact us.',
+      });
     }
 
     const validationErrors = validateOrderPayload(payload);
@@ -111,6 +116,35 @@ export const createOrder = async (req, res, next) => {
 
     // Backend validation: Verify product/item exists and is in stock
     const items = Array.isArray(payload.items) ? payload.items : [];
+
+    // Block bulk/troll orders: cap quantity per item and per order
+    const MAX_QTY_PER_ITEM = 10;
+    const MAX_QTY_PER_ORDER = 20;
+    const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+    const overItem = items.find((item) => Number(item.quantity || 1) > MAX_QTY_PER_ITEM);
+    // Orders above this amount must be placed by contacting support
+    const MAX_ORDER_AMOUNT = 3000;
+    const itemsSubtotal = items.reduce(
+      (sum, item) => sum + Number(item.unitPrice ?? item.price ?? 0) * Number(item.quantity || 1),
+      0
+    );
+    if (Math.max(itemsSubtotal, Number(payload.subtotal || 0)) > MAX_ORDER_AMOUNT) {
+      return res.status(400).json({
+        status: 'error',
+        code: 'CONTACT_REQUIRED',
+        reason: 'amount_limit',
+        message: 'Please contact us to order these items',
+      });
+    }
+
+    if (overItem || totalQty > MAX_QTY_PER_ORDER) {
+      return res.status(400).json({
+        status: 'error',
+        message: `একটি পণ্য সর্বোচ্চ ${MAX_QTY_PER_ITEM}টি এবং এক অর্ডারে মোট সর্বোচ্চ ${MAX_QTY_PER_ORDER}টি অর্ডার করা যাবে। বেশি পরিমাণে কিনতে আমাদের সাথে যোগাযোগ করুন।`,
+        errors: ['Order quantity exceeds the allowed limit.'],
+      });
+    }
+
     if (items.length > 0) {
       for (const item of items) {
         const productRef = item.productId || item.itemId || item.productDid || item.id || item._id;

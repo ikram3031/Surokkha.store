@@ -13,6 +13,7 @@ export default function CheckoutView() {
   const openCartDrawer = useStore((state) => state.openCartDrawer);
   const getCartTotals = useStore((state) => state.getCartTotals);
   const submitOrder = useStore((state) => state.submitOrder);
+  const [contactModal, setContactModal] = useState(null);
   const showToast = useStore((state) => state.showToast);
 
   const shippingInfo = useStore((state) => state.shippingInfo);
@@ -296,6 +297,10 @@ export default function CheckoutView() {
     } catch (err) {
       isSubmittingRef.current = false;
       setIsProcessing(false);
+      if (err?.code === 'CONTACT_REQUIRED') {
+        setContactModal({ reason: err.reason, message: err.message });
+        return;
+      }
       const rawMsg = err?.message || '';
       let userMsg = t('checkout.error_order_failed');
       if (rawMsg.toLowerCase().includes('failed to fetch') || rawMsg.toLowerCase().includes('networkerror')) {
@@ -311,6 +316,33 @@ export default function CheckoutView() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 animate-fade-in text-left">
+
+      {contactModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4">
+          <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+            <button
+              type="button"
+              onClick={() => setContactModal(null)}
+              aria-label="Close"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+            >
+              ✕
+            </button>
+            <h3 className="mb-2 text-lg font-bold text-slate-900">
+              {contactModal.reason === 'spam' ? 'Sorry!' : 'Contact Us'}
+            </h3>
+            <p className="mb-5 text-sm text-slate-600">{contactModal.message}</p>
+            <a
+              href={`https://wa.me/8801600905774?text=${encodeURIComponent('Hello Surokkha, I want to place an order.')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-[#25D366] px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
+            >
+              Contact on WhatsApp
+            </a>
+          </div>
+        </div>
+      )}
       
       {/* Page Header */}
       <div className="border-b border-slate-200 pb-5">

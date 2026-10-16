@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 export default function SpamList() {
   const { t } = useTranslation();
@@ -106,18 +105,14 @@ export default function SpamList() {
                     <TableRow key={entry._id || entry.id}>
                       <TableCell>
                         {entry.email ? (
-                          <Badge variant="outline" className="text-red-500 border-none">
-                            {entry.email}
-                          </Badge>
+                          <span className="text-sm text-foreground">{entry.email}</span>
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {entry.phone ? (
-                          <Badge variant="outline" className="text-red-500 border-red-200">
-                            {entry.phone}
-                          </Badge>
+                          <span className="font-mono text-sm text-foreground">{entry.phone}</span>
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}

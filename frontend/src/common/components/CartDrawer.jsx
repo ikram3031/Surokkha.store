@@ -381,7 +381,7 @@ export default function CartDrawer() {
                             </span>
                             <button
                               type="button"
-                              onClick={() => setProductQty(cartKey, qty + 1)}
+                              onClick={() => setProductQty(cartKey, Math.min(10, qty + 1))}
                               className="px-2.5 py-1 text-slate-800 hover:text-slate-950 hover:bg-slate-200/60 rounded-r-xl font-bold text-sm cursor-pointer transition"
                               aria-label="Increase quantity"
                             >

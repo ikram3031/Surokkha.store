@@ -8,6 +8,8 @@ const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha
 // Hero banner video and showcase slider component
 const HeroSlider = () => {
   const [videoError, setVideoError] = useState(false);
+  const [mobileVideoFailed, setMobileVideoFailed] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches);
   const videoRef = useRef(null);
 
   const navigateTo = useStore((state) => state.navigateTo);
@@ -33,6 +35,15 @@ const HeroSlider = () => {
 
   const isStore = Boolean(SITE_CONFIG.isStore);
   const videoUrl = `${API_BASE_URL}/uploads/assets/promo-video.mp4`;
+  const mobileVideoUrl = `${API_BASE_URL}/uploads/assets/promo-video-mobile.mp4`;
+  const useMobileVideo = isMobile && !mobileVideoFailed;
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const onChange = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
   const posterUrl = `${API_BASE_URL}/uploads/assets/slider-2.webp`;
 
   useEffect(() => {
@@ -58,14 +69,14 @@ const HeroSlider = () => {
           {!videoError ? (
             <video
               ref={videoRef}
-              src={videoUrl}
+              src={useMobileVideo ? mobileVideoUrl : videoUrl}
               poster={posterUrl}
               autoPlay
               loop
               muted
               playsInline
               preload="auto"
-              onError={() => setVideoError(true)}
+              onError={() => (useMobileVideo ? setMobileVideoFailed(true) : setVideoError(true))}
               className={`w-full h-full object-cover object-center scale-105 ${isStore ? 'opacity-95' : 'opacity-85'} transition-opacity duration-1000`}
             />
           ) : (

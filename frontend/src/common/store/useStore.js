@@ -1169,7 +1169,12 @@ export const useStore = create((set, get) => ({
         responseData = json;
       } else {
         const errMsg = json?.errors?.join(', ') || json?.message || `Server returned error ${res.status}`;
-        throw new Error(errMsg);
+        const error = new Error(errMsg);
+        if (json?.code) {
+          error.code = json.code;
+          error.reason = json.reason;
+        }
+        throw error;
       }
     } catch (err) {
       if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
