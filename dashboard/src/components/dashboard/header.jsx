@@ -36,18 +36,18 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center justify-between gap-2 sm:gap-4 border-b bg-background/95 backdrop-blur-md px-3 sm:px-6">
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        <SidebarTrigger className="h-8.5 w-8.5 rounded-lg border border-border/50 text-foreground hover:bg-muted/80 shrink-0 cursor-pointer" />
+        <SidebarTrigger className="h-8.5 w-8.5 rounded-lg border border-[#C5A059]/40 bg-[#C5A059]/15 text-[#C5A059] hover:bg-[#C5A059]/25 hover:text-[#C5A059] shrink-0 cursor-pointer" />
         <Button
           type="button"
           variant="outline"
           size="icon"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="h-8.5 w-8.5 rounded-lg border border-border/50 text-foreground hover:bg-muted/80 shrink-0 cursor-pointer"
+          className="h-8.5 w-8.5 rounded-lg border-primary bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground shrink-0 cursor-pointer"
           title={t('common.refresh', 'Refresh')}
           aria-label={t('common.refresh', 'Refresh')}
         >
-          <RotateCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
+          <RotateCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
         <div className="md:hidden flex items-center">
           <BrandLogo className="w-[85px] sm:w-[110px] h-auto" />

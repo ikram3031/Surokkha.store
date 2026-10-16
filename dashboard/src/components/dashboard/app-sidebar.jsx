@@ -282,7 +282,7 @@ export const AppSidebar = ({ ...props }) => {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="h-14 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="h-14 sm:h-16 shrink-0 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
           {state === "expanded" || isMobile ? (
             <>
