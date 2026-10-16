@@ -196,8 +196,9 @@ export const getOrderStatusDistribution = async (req, res, next) => {
 
     const currentStart = new Date(todayLocalMidnight.getTime() - (days - 1) * 24 * 60 * 60 * 1000 - OFFSET_MS);
 
+    // Fake orders are stored inactive (active: false), so include them by status; other inactive orders are deleted
     const agg = await OrderModel.aggregate([
-      { $match: { active: { $ne: false }, createdAt: { $gte: currentStart } } },
+      { $match: { createdAt: { $gte: currentStart }, $or: [{ active: { $ne: false } }, { status: 'fake' }] } },
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
 

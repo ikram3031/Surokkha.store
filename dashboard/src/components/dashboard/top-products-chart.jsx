@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { useTopProducts } from '@/hooks/use-top-products';
@@ -11,10 +11,13 @@ const METRICS = {
   salesAmount: { label: 'Amount', format: (v) => `৳${Number(v || 0).toLocaleString()}` },
 };
 
+// One color per bar (no red, so bars don't read as errors)
+const BAR_COLORS = ['#38BDF8', '#4ADE80', '#FACC15', '#C084FC', '#FB923C', '#2DD4BF', '#F472B6', '#A3E635'];
+
 const chartConfig = {
   unitsSold: { label: 'Units sold', color: 'var(--primary)' },
   salesAmount: { label: 'Sales amount', color: 'var(--primary)' },
-  label: { color: 'var(--primary-foreground)' },
+  label: { color: '#111111' },
 };
 
 // Horizontal bar chart of the best-selling products, switchable between units sold and sales amount
@@ -42,7 +45,7 @@ export const TopProductsChart = ({ range = '30days' }) => {
               type="button"
               onClick={() => setMetric(key)}
               className={`cursor-pointer rounded px-2.5 py-1 font-medium transition-colors ${
-                metric === key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                metric === key ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {m.label}
@@ -85,8 +88,11 @@ export const TopProductsChart = ({ range = '30days' }) => {
                   />
                 }
               />
-              <Bar dataKey={metric} fill={`var(--color-${metric})`} radius={4} minPointSize={140}>
-                <LabelList dataKey="shortName" position="insideLeft" offset={8} className="fill-(--color-label)" fontSize={12} />
+              <Bar dataKey={metric} radius={4} minPointSize={140}>
+                {chartData.map((p, i) => (
+                  <Cell key={p._id || p.name} fill={BAR_COLORS[i % BAR_COLORS.length]} />
+                ))}
+                <LabelList dataKey="shortName" position="insideLeft" offset={8} className="fill-(--color-label) font-medium" fontSize={12} />
                 <LabelList
                   dataKey={metric}
                   position="right"

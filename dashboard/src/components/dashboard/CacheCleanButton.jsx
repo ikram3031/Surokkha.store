@@ -51,10 +51,10 @@ export const CacheCleanButton = () => {
       size="sm"
       onClick={handleCleanCache}
       disabled={isPurging}
-      className={`h-8 gap-1.5 px-2.5 text-xs font-mono font-medium transition-all duration-200 border-border/80 hover:bg-muted/80 ${
+      className={`h-8 gap-1.5 px-2.5 text-xs font-mono font-medium transition-all duration-200 ${
         isSuccess
-          ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/10'
-          : 'text-muted-foreground hover:text-foreground'
+          ? 'border-emerald-500/50! text-emerald-400! bg-emerald-500/15!'
+          : 'border-[#713F12]! bg-[#27210F]! text-[#FACC15]! hover:bg-[#3a2f12]!'
       }`}
       title={t('nav.clean_cache', 'Clean Cache')}
       aria-label="Clean cache"
@@ -64,7 +64,7 @@ export const CacheCleanButton = () => {
       ) : isSuccess ? (
         <Check className="h-3.5 w-3.5 text-emerald-500" />
       ) : (
-        <Sparkles className="h-3.5 w-3.5 text-orange-500 hover:scale-110 transition-transform" />
+        <Sparkles className="h-3.5 w-3.5 text-[#FACC15] hover:scale-110 transition-transform" />
       )}
       <span className="hidden sm:inline">
         {isPurging ? t('common.loading', 'Cleaning...') : isSuccess ? t('common.saved', 'Cleaned') : t('nav.clean_cache', 'Clean Cache')}

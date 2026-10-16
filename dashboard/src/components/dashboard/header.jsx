@@ -43,11 +43,11 @@ export const Header = () => {
           size="icon"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="h-8.5 w-8.5 rounded-lg border-primary bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground shrink-0 cursor-pointer"
+          className="h-8.5 w-8.5 rounded-lg border-primary! bg-primary! text-white! hover:bg-primary/85! shrink-0 cursor-pointer"
           title={t('common.refresh', 'Refresh')}
           aria-label={t('common.refresh', 'Refresh')}
         >
-          <RotateCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RotateCw className={`h-4 w-4 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
         <div className="md:hidden flex items-center">
           <BrandLogo className="w-[85px] sm:w-[110px] h-auto" />
