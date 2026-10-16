@@ -5,17 +5,20 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
 
+// Colors match the status pills / dropdown palette
 const STATUS_CONFIG = {
-  processing: { key: 'orders.status_processing', defaultLabel: 'Processing', color: '#ffcc00' },
+  pending: { key: 'orders.status_pending', defaultLabel: 'Pending', color: '#A8A29E' },
+  processing: { key: 'orders.status_processing', defaultLabel: 'Processing', color: '#FACC15' },
+  confirmed: { key: 'orders.status_confirmed', defaultLabel: 'Confirmed', color: '#FACC15' },
   hold: { key: 'orders.status_hold', defaultLabel: 'Hold', color: '#C084FC' },
-  shipped: { key: 'orders.status_shipped', defaultLabel: 'Shipped', color: '#3865a3' },
-  confirmed: { key: 'orders.status_confirmed', defaultLabel: 'Confirmed', color: '#87a2c7' },
-  completed: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#64a338' },
-  delivered: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#64a338' },
-  cancelled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#e03b24' },
-  canceled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#e03b24' },
-  returned: { key: 'orders.status_returned', defaultLabel: 'Returned', color: '#e03b24' },
-  pending: { key: 'orders.status_pending', defaultLabel: 'Pending', color: '#ffcc00' },
+  shipped: { key: 'orders.status_shipped', defaultLabel: 'Shipped', color: '#38BDF8' },
+  completed: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#4ADE80' },
+  delivered: { key: 'orders.status_delivered', defaultLabel: 'Delivered', color: '#4ADE80' },
+  cancelled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#F87171' },
+  canceled: { key: 'orders.status_canceled', defaultLabel: 'Canceled', color: '#F87171' },
+  return: { key: 'orders.status_returned', defaultLabel: 'Returned', color: '#FB923C' },
+  returned: { key: 'orders.status_returned', defaultLabel: 'Returned', color: '#FB923C' },
+  fake: { key: 'orders.status_fake', defaultLabel: 'Fake', color: '#B91C1C' },
 };
 
 // Renders the order distribution donut pie chart with interactive status legend

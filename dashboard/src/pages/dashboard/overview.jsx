@@ -5,6 +5,7 @@ import { RevenueChart } from '@/components/dashboard/revenue-chart';
 import { OrderStatusPie } from '@/components/dashboard/order-status-pie';
 import { OrderFulfillmentChart } from '@/components/dashboard/order-fulfillment-chart';
 import { RecentTransactionsTable } from '@/components/dashboard/recent-transactions-table';
+import { TopProductsChart } from '@/components/dashboard/top-products-chart';
 import { DollarSign, Users, CreditCard, Activity } from 'lucide-react';
 import { useDashboardKpi } from '@/hooks/use-dashboard-kpi';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -87,8 +88,9 @@ const DashboardPage = () => {
         <OrderFulfillmentChart />
       </div>
 
-      <div className="grid gap-4 grid-cols-1">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <RecentTransactionsTable />
+        <TopProductsChart range="30days" />
       </div>
     </div>
   );

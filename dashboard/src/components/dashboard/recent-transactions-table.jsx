@@ -76,7 +76,7 @@ export const RecentTransactionsTable = () => {
   };
 
   return (
-    <Card className="col-span-1 lg:col-span-3">
+    <Card className="col-span-1 min-w-0">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div>
           <CardTitle>{t('overview.recent_orders', 'Recent Orders')}</CardTitle>

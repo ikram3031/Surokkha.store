@@ -201,13 +201,8 @@ export const getOrderStatusDistribution = async (req, res, next) => {
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
 
-    const counts = {
-      processing: 0,
-      shipped: 0,
-      completed: 0,
-      cancelled: 0,
-      fake: 0,
-    };
+    // One bucket per order status in the model (pending, processing, hold, shipped, ...)
+    const counts = Object.fromEntries(OrderModel.schema.path('status').enumValues.map((st) => [st, 0]));
 
     agg.forEach((item) => {
       if (item._id && typeof counts[item._id] !== 'undefined') {
@@ -226,4 +221,39 @@ export const getOrderStatusDistribution = async (req, res, next) => {
   }
 };
 
-export default { dailyOrders, getKpiStats, getOrderStatusDistribution };
+// Best-selling products over a range: units sold and sales amount (cancelled, fake and returned orders excluded)
+export const getTopProducts = async (req, res, next) => {
+  try {
+    const OFFSET_MS = 6 * 60 * 60 * 1000; // BD Timezone (+06:00)
+    const daysByRange = { today: 1, '7days': 7, '30days': 30, '3months': 90 };
+    const days = daysByRange[req.query.range] || 30;
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit || '8', 10)));
+
+    const todayLocalMidnight = new Date(Date.now() + OFFSET_MS);
+    todayLocalMidnight.setUTCHours(0, 0, 0, 0);
+    const start = new Date(todayLocalMidnight.getTime() - (days - 1) * 24 * 60 * 60 * 1000 - OFFSET_MS);
+
+    const products = await OrderModel.aggregate([
+      { $match: { active: { $ne: false }, createdAt: { $gte: start }, status: { $nin: ['cancelled', 'fake', 'return'] } } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$items.productId', ''] } }, 0] }, '$items.productId', '$items.name'] },
+          name: { $first: '$items.name' },
+          image: { $first: '$items.image' },
+          unitsSold: { $sum: '$items.quantity' },
+          salesAmount: { $sum: { $multiply: ['$items.quantity', '$items.unitPrice'] } },
+          orderCount: { $sum: 1 },
+        },
+      },
+      { $sort: { unitsSold: -1, salesAmount: -1 } },
+      { $limit: limit },
+    ]);
+
+    return res.json({ status: 'success', data: { range: req.query.range || '30days', products } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { dailyOrders, getKpiStats, getOrderStatusDistribution, getTopProducts };
