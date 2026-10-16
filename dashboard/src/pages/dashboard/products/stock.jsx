@@ -22,6 +22,7 @@ import { Search, Package, AlertTriangle, CheckCircle2, XCircle, TrendingDown } f
 import { useProducts } from '@/hooks/use-products';
 import { useCategories, useBrands } from '@/lib/category-cache';
 import { clientConfig } from '@/clientConfig';
+import styles from '@/styles/styles.json';
 
 // Renders the product stock management dashboard with stock status breakdown and filter controls
 const StockManagementPage = () => {
@@ -166,9 +167,9 @@ const StockManagementPage = () => {
         </div>
       </div>
 
-      <div className="bg-card text-card-foreground shadow-sm border rounded-lg">
-        <div className="p-6">
-          <div className="rounded-md border">
+      <div className={styles.table.wrapper}>
+        <div className="overflow-x-auto">
+          <div>
             <Table>
               <TableHeader>
                 <TableRow>

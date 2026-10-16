@@ -1,6 +1,7 @@
 import { syncPathaoOrders } from "../../common/services/pathaoOrderSync.service.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
+import { ensurePaymentOnShip } from "../../common/helper/orderControllerHelper.js";
 import { DistrictModel, ThanaModel } from "../../common/models/district.model.js";
 import {
   getPathaoConfig,
@@ -447,6 +448,8 @@ export const createOrderConsignmentController = async (req, res, next) => {
       };
 
       updatedOrder = await OrderModel.findOneAndUpdate(filter, updateQuery, { new: true });
+      // First ship opens payment collection for the order
+      if (updatedOrder) await ensurePaymentOnShip(updatedOrder);
     }
 
     return res.json({

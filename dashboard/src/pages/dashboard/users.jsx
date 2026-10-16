@@ -34,6 +34,7 @@ import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import styles from '@/styles/styles.json';
 
 // Renders the system users and staff management dashboard with invite modal and role controls
 const UsersPage = () => {
@@ -284,8 +285,8 @@ const UsersPage = () => {
         </div>
       </div>
       
-      <div className="bg-card text-card-foreground shadow-sm border rounded-lg">
-        <div className="p-6">
+      <div className={styles.table.wrapper}>
+        <div className="overflow-x-auto">
           <SystemUsersTable
             searchQuery={debouncedSearch}
             roleFilter={roleFilter}
@@ -296,7 +297,7 @@ const UsersPage = () => {
           />
 
           {totalPages > 1 && (
-            <div className="border-t mt-4 pt-3">
+            <div className="py-3">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>

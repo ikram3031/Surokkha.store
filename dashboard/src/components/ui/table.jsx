@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import styles from "@/styles/styles.json"
 
 // Renders the data table container on the theme background, recessed below card surfaces in dark mode
 const Table = ({ className, ...props }) => {
@@ -18,13 +19,13 @@ const Table = ({ className, ...props }) => {
   )
 }
 
-// Renders the table header with a subtle muted band
+// Renders the table header on a solid primary band with primary-foreground text
 const TableHeader = ({ className, ...props }) => {
   return (
     <thead
       data-slot="table-header"
       className={cn(
-        "bg-muted/50 [&_tr]:border-b [&_tr]:hover:bg-transparent",
+        styles.table.header,
         className
       )}
       {...props}
@@ -66,7 +67,7 @@ const TableRow = ({ className, ...props }) => {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-border transition-colors hover:bg-secondary/20 hover:text-primary hover:[&_td]:text-primary has-aria-expanded:bg-muted/40 data-[state=selected]:bg-muted/60",
+        styles.table.row,
         className
       )}
       {...props}
@@ -80,7 +81,7 @@ const TableHead = ({ className, ...props }) => {
     <th
       data-slot="table-head"
       className={cn(
-        "h-11 px-3 text-left align-middle text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0",
+        styles.table.head,
         className
       )}
       {...props}
@@ -94,7 +95,7 @@ const TableCell = ({ className, ...props }) => {
     <td
       data-slot="table-cell"
       className={cn(
-        "px-3 py-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        styles.table.cell,
         className
       )}
       {...props}

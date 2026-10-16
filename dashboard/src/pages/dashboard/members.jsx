@@ -208,7 +208,7 @@ const MembersPage = () => {
       </div>
 
       <div className="bg-card text-card-foreground shadow-sm border rounded-xl overflow-hidden">
-        <div className="p-6">
+        <div className="overflow-x-auto">
           <MembersTable
             searchQuery={debouncedSearch}
             segmentFilter={segmentFilter}
@@ -219,7 +219,7 @@ const MembersPage = () => {
           />
 
           {totalPages > 1 && (
-            <div className="border-t mt-4 pt-3">
+            <div className="py-3">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>

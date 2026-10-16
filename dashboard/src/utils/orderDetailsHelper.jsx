@@ -146,7 +146,8 @@ export const getBackendStatus = (fullStatus) => {
   if (s === "cancelled") return "cancelled";
   if (s === "completed") return "completed";
   if (s === "fake") return "fake";
-  return "processing";
+  if (s === "processing") return "processing";
+  return "pending";
 };
 
 // Calculate remaining pending balance from net total and paid amount.

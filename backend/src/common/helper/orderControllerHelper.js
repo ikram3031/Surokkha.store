@@ -167,9 +167,8 @@ export const buildOrderDocument = async (payload, req = null) => {
 
   const isInstore = payload.orderType === 'instore';
   const isCustom = payload.orderType === 'custom';
-  const initialStatus = payload.status 
-    ? String(payload.status).toLowerCase() 
-    : (isInstore ? 'completed' : 'processing');
+  // Every new order (online, custom, in-store) starts as pending regardless of input
+  const initialStatus = 'pending';
 
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
   const resolvedSiteKey = String(payload.siteKey || (payload.clientDomain?.includes('shop') ? 'shop' : 'store')).toLowerCase().trim();
@@ -193,7 +192,7 @@ export const buildOrderDocument = async (payload, req = null) => {
     orderNumber: await buildOrderNumber(resolvedOrderType, resolvedSiteKey, customPrefix),
     siteKey: resolvedSiteKey,
     clientDomain: resolvedDomain,
-    status: ['processing', 'shipped', 'completed', 'cancelled', 'fake'].includes(initialStatus) ? initialStatus : 'processing',
+    status: initialStatus,
     createdBy: createdByUserId,
     updatedBy: null,
     billingInfo,
@@ -216,6 +215,24 @@ export const buildOrderDocument = async (payload, req = null) => {
     ipAddress: normalizeText(payload.ipAddress || (req ? extractClientIp(req) : '')) || null,
     fb_login_id: normalizeText(payload.fb_login_id || payload.fbLoginId || req?.body?.fb_login_id || req?.body?.fbLoginId || req?.cookies?.fb_login_id || req?.cookies?._fb_login_id || '') || null,
   };
+};
+
+// Payment collection opens only once an order is shipped; pending/processing orders have no payment record.
+export const PAYMENT_COLLECTION_STATUSES = ['shipped', 'completed', 'return'];
+
+// True when the order already has a payment record or has reached a status that opens payment collection.
+export const canHavePaymentDocument = async (order) => {
+  if (!order?._id) return false;
+  if (PAYMENT_COLLECTION_STATUSES.includes(String(order.status || '').toLowerCase())) return true;
+  return Boolean(await PaymentModel.exists({ orderId: order._id }));
+};
+
+// Creates the payment record the first time an order reaches shipped (no-op if it already exists).
+export const ensurePaymentOnShip = async (order, payload = {}) => {
+  if (!order?._id) return;
+  if (!PAYMENT_COLLECTION_STATUSES.includes(String(order.status || '').toLowerCase())) return;
+  if (await PaymentModel.exists({ orderId: order._id })) return;
+  await syncPaymentDocument(order, payload);
 };
 
 // Upsert the linked payment record so it reflects the created order totals.
@@ -304,7 +321,8 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     orderData.billingInfo?.phone ||
     '';
 
-  await PaymentModel.findOneAndUpdate(
+  // Pending/processing orders keep payment info on the order only; the payment record is created on first ship
+  if (await canHavePaymentDocument(orderData)) await PaymentModel.findOneAndUpdate(
     { orderId: orderData._id },
     {
       paymentMethod: orderData.paymentMethod,
@@ -346,8 +364,8 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
 
   if (payload.status) {
     const s = String(payload.status).toLowerCase();
-    const validEnums = ['processing', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
-    allowedUpdates.status = validEnums.includes(s) ? s : 'processing';
+    const validEnums = ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'fake', 'return'];
+    allowedUpdates.status = validEnums.includes(s) ? s : 'pending';
   }
   if (payload.shippingInfo) {
     allowedUpdates.shippingInfo = {

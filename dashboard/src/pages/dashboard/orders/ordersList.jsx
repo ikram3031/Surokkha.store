@@ -48,6 +48,7 @@ import { logActivity } from '@/lib/activity-logger';
 import { useAuth } from '@/lib/auth-context';
 import { isReadOnlyRole } from '@/lib/rbac';
 import { clientConfig } from '@/clientConfig';
+import styles from '@/styles/styles.json';
 
 // Renders orders list management dashboard page
 const OrdersPage = () => {
@@ -113,6 +114,7 @@ const OrdersPage = () => {
   }, [searchInput]);
 
   const statusOptions = [
+    { value: 'Pending', label: t('orders.status_pending', 'Pending') },
     { value: 'Processing', label: t('orders.status_processing', 'Processing') },
     { value: 'Shipped', label: t('orders.status_shipped', 'Shipped') },
     { value: 'Completed', label: t('orders.status_delivered', 'Completed') },
@@ -331,6 +333,7 @@ const OrdersPage = () => {
                   <span>{t('orders.order_status', 'Order Status')}</span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
+                  <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
                   <SelectItem value="Processing" className="cursor-pointer text-xs">{t('orders.status_processing', 'Processing')}</SelectItem>
                   <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
@@ -354,8 +357,8 @@ const OrdersPage = () => {
         </div>
       </div>
       
-      <div className="bg-card text-card-foreground shadow-sm border rounded-lg">
-        <div className="p-6">
+      <div className={styles.table.wrapper}>
+        <div className="overflow-x-auto">
           <OrdersTable
             searchQuery={debouncedSearch}
             statusFilter={statusFilter}
@@ -368,7 +371,7 @@ const OrdersPage = () => {
             isReadOnly={isReadOnly}
           />
 
-          <div className="border-t mt-4 pt-3">
+          <div className="py-3">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>

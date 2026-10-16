@@ -309,7 +309,7 @@ const OrderDetailsPage = () => {
   const [paidAmount, setPaidAmount] = useState(0);
   const [paymentPhone, setPaymentPhone] = useState("");
 
-  const [orderStatus, setOrderStatus] = useState("Processing");
+  const [orderStatus, setOrderStatus] = useState("Pending");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [shippingFee, setShippingFee] = useState(0);
   const [cart, setCart] = useState([]);
@@ -378,9 +378,10 @@ const OrderDetailsPage = () => {
         cancelled: "Cancelled",
         fake: "Fake",
         processing: "Processing",
+        pending: "Pending",
       };
       const curStatus = String(order.status || order.orderStatus || "").toLowerCase();
-      setOrderStatus(statusMap[curStatus] || "Processing");
+      setOrderStatus(statusMap[curStatus] || "Pending");
 
       setDiscountAmount(order.discountTotalAmount || 0);
       setShippingFee(order.totals?.shippingFee ?? order.shippingTotalAmount ?? 0);
@@ -1666,11 +1667,12 @@ const OrderDetailsPage = () => {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <label className="text-muted-foreground mb-1 block">Status</label>
-                  <Select value={orderStatus} onValueChange={(val) => setOrderStatus(val ?? "Processing")}>
+                  <Select value={orderStatus} onValueChange={(val) => setOrderStatus(val ?? "Pending")}>
                     <SelectTrigger className="w-full h-8">
                       <SelectValue placeholder="Select Status" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="Pending">Pending</SelectItem>
                       <SelectItem value="Processing">Processing</SelectItem>
                       <SelectItem value="Shipped">Shipped</SelectItem>
                       <SelectItem value="Completed">Completed</SelectItem>

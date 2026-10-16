@@ -56,13 +56,13 @@ export const OrderAccordionDetail = ({ order }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const [orderStatus, setOrderStatus] = useState(order.orderStatus || 'Processing');
+  const [orderStatus, setOrderStatus] = useState(order.orderStatus || 'Pending');
   const [paymentStatus, setPaymentStatus] = useState(order.paymentStatus || 'Pending');
   const [isUpdating, setIsUpdating] = useState(false);
   const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
 
   useEffect(() => {
-    setOrderStatus(order.orderStatus || 'Processing');
+    setOrderStatus(order.orderStatus || 'Pending');
     setPaymentStatus(order.paymentStatus || 'Pending');
   }, [order.orderStatus, order.paymentStatus]);
 
@@ -91,7 +91,7 @@ export const OrderAccordionDetail = ({ order }) => {
   const shippingAddressText = formatFullAddress(shipping);
 
   const hasStatusChanged =
-    orderStatus.toLowerCase() !== (order.orderStatus || 'Processing').toLowerCase() ||
+    orderStatus.toLowerCase() !== (order.orderStatus || 'Pending').toLowerCase() ||
     paymentStatus.toLowerCase() !== (order.paymentStatus || 'Pending').toLowerCase();
 
   const handleUpdateStatus = async () => {
@@ -575,6 +575,7 @@ export const OrderAccordionDetail = ({ order }) => {
                       <SelectValue placeholder={t('orders.order_status', 'Order Status')} />
                     </SelectTrigger>
                     <SelectContent side="bottom" className="bg-popover border shadow-md">
+                      <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
                       <SelectItem value="Processing" className="cursor-pointer text-xs">{t('orders.status_processing', 'Processing')}</SelectItem>
                       <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                       <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>

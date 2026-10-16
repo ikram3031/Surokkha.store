@@ -37,6 +37,7 @@ import { toast } from 'sonner';
 import { clientConfig } from '@/clientConfig';
 import { useAuth } from '@/lib/auth-context';
 import { isReadOnlyRole } from '@/lib/rbac';
+import styles from '@/styles/styles.json';
 
 // Renders the items management interface with search, filters, pagination, and bulk stock controls
 const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null }) => {
@@ -315,8 +316,8 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
         </div>
       </div>
 
-      <div className="bg-card text-card-foreground shadow-sm border rounded-lg">
-        <div className="p-6">
+      <div className={styles.table.wrapper}>
+        <div className="overflow-x-auto">
           <ItemsTable
             searchQuery={debouncedSearch}
             categoryFilter={categoryFilter}
@@ -331,7 +332,7 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
           />
 
           {totalPages > 1 && (
-            <div className="border-t mt-4 pt-3">
+            <div className="py-3">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>

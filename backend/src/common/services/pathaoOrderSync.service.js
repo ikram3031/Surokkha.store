@@ -2,8 +2,9 @@ import { OrderModel } from "../models/order.model.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { getPathaoConfig, getPathaoOrderInfo } from "./pathao.service.js";
 import { logger } from "../config/logger.js";
+import { ensurePaymentOnShip } from "../helper/orderControllerHelper.js";
 
-const OPEN_STATUSES = ["processing", "shipped"];
+const OPEN_STATUSES = ["pending", "processing", "shipped"];
 let isRunning = false;
 
 // Maps a Pathao status slug to the internal order/payment outcome (see docs/PATHAO_COURIER_API_DOCUMENTATION.md §7.2)
@@ -64,6 +65,8 @@ export const syncPathaoOrders = async (trigger = "SCHEDULER") => {
 
         if (changed || order.isModified()) {
           await order.save();
+          // Opens payment collection if this sync is the order's first move to shipped/completed
+          await ensurePaymentOnShip(order);
           updated += 1;
         }
       } catch (err) {

@@ -11,6 +11,7 @@ import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import { buildAllowedOrderUpdates,
   buildOrderDocument,
   syncPaymentDocument,
+  canHavePaymentDocument,
   archiveFakeOrder,
 } from '../../common/helper/orderControllerHelper.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
@@ -684,10 +685,12 @@ export const bulkUpdateOrders = async (req, res, next) => {
     for (const order of orders) {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
+      // Orders that never shipped have no payment record; don't create one for them here
+      const canCollect = await canHavePaymentDocument(updatedOrder);
 
       // If order is fake or cancelled, payment must be cancelled and deactivated
       if (updateFields.status === 'fake' || updateFields.status === 'cancelled' || updateFields.status === 'canceled' || updateFields.status === 'return') {
-        await PaymentModel.findOneAndUpdate(
+        if (canCollect) await PaymentModel.findOneAndUpdate(
           { orderId: updatedOrder._id },
           {
             paymentMethod: updatedOrder.paymentMethod,
@@ -714,7 +717,7 @@ export const bulkUpdateOrders = async (req, res, next) => {
         const paidAmount = pStatus === 'paid' ? totalAmount : 0;
         const pendingAmount = Math.max(0, totalAmount - paidAmount);
 
-        await PaymentModel.findOneAndUpdate(
+        if (canCollect) await PaymentModel.findOneAndUpdate(
           { orderId: updatedOrder._id },
           {
             paymentMethod: updatedOrder.paymentMethod,

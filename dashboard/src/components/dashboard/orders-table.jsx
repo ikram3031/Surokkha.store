@@ -25,6 +25,7 @@ import {
 import { MoreHorizontal, AlertCircle, Tag, Truck, Mail } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiClient } from '@/lib/api-client';
+import styles from '@/styles/styles.json';
 import { SendOrderInvoiceModal } from '@/components/dashboard/orders/SendOrderInvoiceModal';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -173,21 +174,11 @@ export const OrdersTable = ({
     navigate(`/dashboard/orders/${order.id}`);
   };
 
-  // Soft tinted status pills with a leading dot; tones stay readable on the light table surface
-  const BADGE_TONES = {
-    green: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 [&>i]:bg-emerald-500',
-    amber: 'bg-amber-50 text-amber-800 ring-amber-600/25 [&>i]:bg-amber-500',
-    blue: 'bg-blue-50 text-blue-700 ring-blue-600/20 [&>i]:bg-blue-500',
-    sky: 'bg-sky-50 text-sky-700 ring-sky-600/20 [&>i]:bg-sky-500',
-    violet: 'bg-violet-50 text-violet-700 ring-violet-600/20 [&>i]:bg-violet-500',
-    red: 'bg-red-50 text-red-700 ring-red-600/20 [&>i]:bg-red-500',
-    darkRed: 'bg-red-100 text-red-900 ring-red-800/30 [&>i]:bg-red-800',
-    gray: 'bg-gray-100 text-gray-700 ring-gray-500/20 [&>i]:bg-gray-400',
-  };
+  // Status pill tones come from styles/styles.json
+  const BADGE_TONES = styles.badge.status.tones;
 
   const renderStatusBadge = (tone, label) => (
-    <Badge className={`h-6 gap-1.5 rounded-full px-2.5 font-medium ring-1 ring-inset select-none ${BADGE_TONES[tone]}`}>
-      <i className="h-1.5 w-1.5 rounded-full" />
+    <Badge className={`${styles.badge.status.base} ${BADGE_TONES[tone]}`}>
       {label}
     </Badge>
   );
@@ -196,19 +187,19 @@ export const OrdersTable = ({
   const getPaymentBadge = (status) => {
     switch (String(status).toLowerCase()) {
       case 'paid':
-        return renderStatusBadge('green', t('orders.status_paid', 'Paid'));
+        return renderStatusBadge('delivered', t('orders.status_paid', 'Paid'));
       case 'pending':
-        return renderStatusBadge('amber', t('orders.status_pending', 'Pending'));
+        return renderStatusBadge('pending', t('orders.status_pending', 'Pending'));
       case 'partial':
-        return renderStatusBadge('sky', t('orders.status_partial', 'Partial'));
+        return renderStatusBadge('processing', t('orders.status_partial', 'Partial'));
       case 'returned':
-        return renderStatusBadge('red', t('orders.status_returned', 'Returned'));
+        return renderStatusBadge('cancelled', t('orders.status_returned', 'Returned'));
       case 'failed':
       case 'cancelled':
       case 'canceled':
-        return renderStatusBadge('red', t('common.error', 'Failed'));
+        return renderStatusBadge('cancelled', t('common.error', 'Failed'));
       default:
-        return renderStatusBadge('gray', status || '—');
+        return renderStatusBadge('pending', status || '—');
     }
   };
 
@@ -217,26 +208,28 @@ export const OrdersTable = ({
     switch (String(status).toLowerCase()) {
       case 'delivered':
       case 'completed':
-        return renderStatusBadge('green', t('orders.status_delivered', 'Completed'));
+        return renderStatusBadge('delivered', t('orders.status_delivered', 'Completed'));
       case 'shipped':
-        return renderStatusBadge('blue', t('orders.status_shipped', 'Shipped'));
+        return renderStatusBadge('shipped', t('orders.status_shipped', 'Shipped'));
       case 'confirmed':
-        return renderStatusBadge('sky', t('orders.status_confirmed', 'Confirmed'));
+        return renderStatusBadge('processing', t('orders.status_confirmed', 'Confirmed'));
       case 'processing':
-        return renderStatusBadge('violet', t('orders.status_processing', 'Processing'));
+        return renderStatusBadge('processing', t('orders.status_processing', 'Processing'));
       case 'cancelled':
       case 'canceled':
-        return renderStatusBadge('red', t('orders.status_canceled', 'Cancelled'));
+        return renderStatusBadge('cancelled', t('orders.status_canceled', 'Cancelled'));
       case 'fake':
-        return renderStatusBadge('darkRed', 'Fake');
+        return renderStatusBadge('fake', 'Fake');
       case 'return':
       case 'returned':
-        return renderStatusBadge('red', t('orders.status_returned', 'Returned'));
+        return renderStatusBadge('cancelled', t('orders.status_returned', 'Returned'));
+      case 'hold':
+        return renderStatusBadge('hold', t('orders.status_hold', 'Hold'));
       case 'pending':
       case 'unfulfilled':
-        return renderStatusBadge('amber', t('orders.status_pending', 'Pending'));
+        return renderStatusBadge('pending', t('orders.status_pending', 'Pending'));
       default:
-        return renderStatusBadge('gray', status || '—');
+        return renderStatusBadge('pending', status || '—');
     }
   };
 
@@ -369,23 +362,23 @@ export const OrdersTable = ({
                           {order.courier.consignmentId}
                         </span>
                       ) : itemCount > 0 && (
-                        <span className="mt-0.5 block text-xs text-gray-500">
+                        <span className="mt-0.5 block text-xs text-muted-foreground">
                           {itemCount} {itemCount === 1 ? 'item' : 'items'}
                         </span>
                       )}
                     </TableCell>
                     <TableCell className="max-w-[200px]">
-                      <span className="truncate block font-medium text-gray-900" title={order.customerName}>{order.customerName}</span>
+                      <span className="truncate block font-medium text-foreground" title={order.customerName}>{order.customerName}</span>
                       {phone && (
-                        <span className="mt-0.5 block truncate font-mono text-xs text-gray-500">{phone}</span>
+                        <span className="mt-0.5 block truncate font-mono text-xs text-muted-foreground">{phone}</span>
                       )}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      <span className="block text-gray-900">{formatDate(order.date)}</span>
-                      <span className="mt-0.5 block text-xs text-gray-500">{formatTime(order.date)}</span>
+                      <span className="block text-foreground">{formatDate(order.date)}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">{formatTime(order.date)}</span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-right pr-6">
-                      <span className="font-semibold tabular-nums text-gray-900">
+                      <span className="font-semibold tabular-nums text-foreground">
                         ৳{Number(order.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                       {order.couponCode && (
@@ -403,7 +396,7 @@ export const OrdersTable = ({
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger render={
-                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer text-gray-500 hover:bg-gray-200 hover:text-gray-900">
+                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer text-muted-foreground hover:bg-gray-200 hover:text-foreground">
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
@@ -480,6 +473,7 @@ export const OrdersTable = ({
                   <SelectValue placeholder={t('orders.order_status', 'Order status')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
+                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
                   <SelectItem value="Processing">{t('orders.status_processing', 'Processing')}</SelectItem>
                   <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>

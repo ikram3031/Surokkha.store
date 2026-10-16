@@ -36,6 +36,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { logActivity } from '@/lib/activity-logger';
 import { useAuth } from '@/lib/auth-context';
+import styles from '@/styles/styles.json';
 
 // Renders the dedicated management page for custom orders (order ID prefixed with CO)
 const CustomOrdersPage = () => {
@@ -221,6 +222,7 @@ const CustomOrdersPage = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
                   <SelectItem value="All">{t('orders.order_status', 'Order Status')}: {t('common.all', 'All')}</SelectItem>
+                  <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
                   <SelectItem value="Processing">{t('orders.status_processing', 'Processing')}</SelectItem>
                   <SelectItem value="Shipped">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed">{t('orders.status_delivered', 'Completed')}</SelectItem>
@@ -269,6 +271,7 @@ const CustomOrdersPage = () => {
                   <span>{t('orders.order_status', 'Order Status')}</span>
                 </SelectTrigger>
                 <SelectContent className="bg-popover border shadow-md" side="bottom">
+                  <SelectItem value="Pending" className="cursor-pointer text-xs">{t('orders.status_pending', 'Pending')}</SelectItem>
                   <SelectItem value="Processing" className="cursor-pointer text-xs">{t('orders.status_processing', 'Processing')}</SelectItem>
                   <SelectItem value="Shipped" className="cursor-pointer text-xs">{t('orders.status_shipped', 'Shipped')}</SelectItem>
                   <SelectItem value="Completed" className="cursor-pointer text-xs">{t('orders.status_delivered', 'Completed')}</SelectItem>
@@ -292,8 +295,8 @@ const CustomOrdersPage = () => {
         </div>
       </div>
 
-      <div className="bg-card text-card-foreground shadow-sm border rounded-lg">
-        <div className="p-6">
+      <div className={styles.table.wrapper}>
+        <div className="overflow-x-auto">
           <OrdersTable
             searchQuery={debouncedSearch}
             statusFilter={statusFilter}
@@ -305,7 +308,7 @@ const CustomOrdersPage = () => {
             orderType="custom"
           />
 
-          <div className="border-t mt-4 pt-3">
+          <div className="py-3">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
