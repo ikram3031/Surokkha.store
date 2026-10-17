@@ -52,17 +52,16 @@ export default function ProductCard({ productKey, className = '' }) {
 
   const localizedName = isBn ? (prod.name_bn || prod.name) : (prod.name || prod.title);
 
-  // Combo highlight classification
-  const is30Pcs = productKey.includes('30pcs') || productKey.includes('variety') || productKey === 'combo-26' || (prod.name && prod.name.includes('30'));
-  const is20Pcs = productKey.includes('20pcs') || (prod.name && prod.name.includes('20'));
-  const isTrio = is30Pcs;
+  // Combo badge only for Products in the "Combo" category
+  const isProduct = prod.itemType !== 'item' && prod.type !== 'item';
+  const isCombo = isProduct && String(prod.categorySlug || '').toLowerCase() === 'combo';
 
   return (
     <div 
       className={`group bg-white rounded-2xl border transition-all duration-300 flex flex-col justify-between overflow-hidden relative shadow-2xs hover:shadow-lg hover:-translate-y-0.5 ${
         isOutOfStock
           ? 'border-slate-200 opacity-90'
-          : is20Pcs || isTrio 
+          : isCombo
           ? 'border-amber-300/80 hover:border-amber-400 ring-1 ring-amber-100/60' 
           : 'border-slate-200/90 hover:border-brand-500/60'
       } ${currentCartQty > 0 ? 'ring-2 ring-brand-600/30 border-brand-600' : ''} ${className}`}
@@ -136,18 +135,11 @@ export default function ProductCard({ productKey, className = '' }) {
               <span>{isBn ? `অনলি ${formatNumber(stockAmount)}টি বাকি!` : `Only ${stockAmount} left!`}</span>
             </span>
           </div>
-        ) : is30Pcs ? (
-          <div className="absolute top-2 right-2 z-20 pointer-events-none select-none">
-            <span className="inline-flex items-center gap-1 bg-amber-500 text-slate-950 text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-md border border-amber-300 tracking-tight">
-              <span>⭐</span>
-              <span>{isBn ? (currentOfferPrice > 0 ? `বেস্ট ভ্যালু (${formatPrice(currentOfferPrice)})` : 'বেস্ট ভ্যালু') : (currentOfferPrice > 0 ? `Best Value (${formatPrice(currentOfferPrice)})` : 'Best Value')}</span>
-            </span>
-          </div>
-        ) : is20Pcs ? (
+        ) : isCombo ? (
           <div className="absolute top-2 right-2 z-20 pointer-events-none select-none">
             <span className="inline-flex items-center gap-1 bg-rose-950/85 text-amber-300 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full shadow-md border border-amber-500/40 tracking-tight">
               <span>⚡</span>
-              <span>{isBn ? '২০ পিস কম্বো' : '20 Pcs Combo'}</span>
+              <span>{isBn ? 'কম্বো' : 'Combo'}</span>
             </span>
           </div>
         ) : null}

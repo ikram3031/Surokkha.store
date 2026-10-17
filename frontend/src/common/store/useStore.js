@@ -703,7 +703,10 @@ export const useStore = create((set, get) => ({
 
         set((state) => {
           const newProducts = singleSlug ? { ...state.products, ...normalized } : { ...normalized };
-          const newKeys = singleSlug ? Array.from(new Set([...state.productKeys, ...keys])) : keys;
+          // Out-of-stock products stay in `products` (direct links/cart) but are hidden from every listing
+          const isOut = (p) => !p || p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0;
+          const allKeys = singleSlug ? Array.from(new Set([...state.productKeys, ...keys])) : keys;
+          const newKeys = allKeys.filter((k) => !isOut(newProducts[k]));
           return {
             products: newProducts,
             productKeys: newKeys,
