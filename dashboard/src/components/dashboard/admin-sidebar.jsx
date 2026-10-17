@@ -229,6 +229,7 @@ export const AdminSidebar = ({ ...props }) => {
               <SidebarMenuButton
                 isActive={pathname.startsWith("/admin/orders")}
                 tooltip={t("nav.orders", "Orders")}
+                closeOnClick={false}
                 onClick={() => toggleMenu("orders")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
@@ -313,6 +314,7 @@ export const AdminSidebar = ({ ...props }) => {
                   pathname.startsWith("/admin/reviews")
                 }
                 tooltip={t("nav.products", "Products")}
+                closeOnClick={false}
                 onClick={() => toggleMenu("products")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
@@ -459,6 +461,7 @@ export const AdminSidebar = ({ ...props }) => {
               <SidebarMenuButton
                 isActive={pathname.startsWith("/admin/settings") && pathname !== "/admin/settings/products"}
                 tooltip={t("nav.settings", "Settings")}
+                closeOnClick={false}
                 onClick={() => toggleMenu("settings")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
@@ -572,6 +575,7 @@ export const AdminSidebar = ({ ...props }) => {
                   pathname.startsWith("/admin/billing")
                 }
                 tooltip={t("nav.accounts", "Accounts")}
+                closeOnClick={false}
                 onClick={() => toggleMenu("accounts")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
@@ -720,6 +724,7 @@ export const AdminSidebar = ({ ...props }) => {
                   pathname.startsWith("/admin/trash")
                 }
                 tooltip={t("nav.admin", "Admin")}
+                closeOnClick={false}
                 onClick={() => toggleMenu("admin")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >
@@ -822,6 +827,7 @@ export const AdminSidebar = ({ ...props }) => {
                   pathname.startsWith("/admin/tools/logs")
                 }
                 tooltip={t("nav.tools_media", "Tools & Media")}
+                closeOnClick={false}
                 onClick={() => toggleMenu("tools")}
                 className="cursor-pointer flex items-center justify-between w-full"
               >

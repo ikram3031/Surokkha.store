@@ -478,6 +478,7 @@ function SidebarMenuButton({
   size = "default",
   tooltip,
   className,
+  closeOnClick = true,
   ...props
 }) {
   const { isMobile, state, setOpenMobile } = useSidebar()
@@ -487,7 +488,8 @@ function SidebarMenuButton({
       {
         className: cn(sidebarMenuButtonVariants({ variant, size }), className),
         onClick: () => {
-          if (isMobile) {
+          // Accordion triggers pass closeOnClick={false} so the mobile drawer stays open to reveal the submenu
+          if (isMobile && closeOnClick) {
             setOpenMobile(false)
           }
         },

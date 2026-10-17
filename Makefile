@@ -23,8 +23,11 @@ help:
 	@echo "  make deploy-docker      Containerized deployment via Docker Compose"
 	@echo ""
 	@echo "Component Builds (Native VPS Mode):"
-	@echo "  make build-frontend     Build Storefront and deploy to /opt/clients/surokkha/dist"
+	@echo "  make build-store        Build Store and deploy to /opt/clients/surokkha/store"
+	@echo "  make build-shop         Build Shop and deploy to /opt/clients/surokkha/shop"
+	@echo "  make build-frontend     Build both Store & Shop storefronts"
 	@echo "  make build-dashboard    Build Admin Dashboard and deploy to /opt/clients/surokkha/dashboard"
+	@echo "  make build-catalog      Build Product Catalog (catalog.surokkha.shop)"
 	@echo "  make restart-backend    Restart systemd services (surokkha-storefront & surokkha-dashboard)"
 	@echo ""
 	@echo "Status & Health:"
@@ -43,33 +46,50 @@ deploy:
 	@$(MAKE) sync-config
 	@# 1. Build and deploy Customer Storefronts (Store & Shop)
 	@if [ -d "frontend" ]; then \
+		set -e; \
 		echo "📦 Building Storefronts (store & shop)..."; \
-		npm install --prefix frontend && \
-		npm run build:store --prefix frontend && \
-		mkdir -p /opt/clients/surokkha/store && \
-		cp -r frontend/store/* /opt/clients/surokkha/store/ 2>/dev/null || true && \
-		echo "✓ Storefront (surokkha.store) deployed to /opt/clients/surokkha/store" && \
-		npm run build:shop --prefix frontend && \
-		mkdir -p /opt/clients/surokkha/shop && \
-		cp -r frontend/shop/* /opt/clients/surokkha/shop/ 2>/dev/null || true && \
+		npm install --prefix frontend; \
+		echo "🔨 Building Surokkha Store (store)..."; \
+		npm run build:store --prefix frontend; \
+		mkdir -p /opt/clients/surokkha/store; \
+		cp -r frontend/store/* /opt/clients/surokkha/store/; \
+		if [ -d "/opt/clients/surokkha/dist" ]; then \
+			echo "🔄 Also syncing to legacy /opt/clients/surokkha/dist..."; \
+			cp -r frontend/store/* /opt/clients/surokkha/dist/; \
+		fi; \
+		echo "✓ Storefront (surokkha.store) deployed to /opt/clients/surokkha/store"; \
+		echo "🔨 Building Surokkha Shop (shop)..."; \
+		npm run build:shop --prefix frontend; \
+		mkdir -p /opt/clients/surokkha/shop; \
+		cp -r frontend/shop/* /opt/clients/surokkha/shop/; \
 		echo "✓ Storefront (surokkha.shop) deployed to /opt/clients/surokkha/shop"; \
 	fi
 
 	@# 2. Build and deploy Admin Dashboard
 	@if [ -d "dashboard" ]; then \
+		set -e; \
 		echo "📦 Building Admin Dashboard..."; \
 		npm install --prefix dashboard; \
 		npm run build --prefix dashboard; \
-		echo "✓ Admin Dashboard built to /opt/clients/surokkha/dashboard/dist"; \
+		if [ -d "/var/www/admin.surokkha.store" ]; then \
+			mkdir -p /var/www/admin.surokkha.store/dist; \
+			cp -r dashboard/dist/* /var/www/admin.surokkha.store/dist/; \
+		fi; \
+		if [ -d "/opt/clients/surokkha/dashboard" ]; then \
+			mkdir -p /opt/clients/surokkha/dashboard/dist; \
+			cp -r dashboard/dist/* /opt/clients/surokkha/dashboard/dist/; \
+		fi; \
+		echo "✓ Admin Dashboard built and deployed"; \
 	fi
 
 	@# 2b. Build and deploy Product Catalog (catalog.surokkha.shop)
 	@if [ -d "catalog" ]; then \
+		set -e; \
 		echo "📦 Building Catalog (catalog.surokkha.shop)..."; \
-		npm install --prefix catalog && \
-		npm run build --prefix catalog && \
-		mkdir -p /opt/clients/surokkha/catalog/dist && \
-		cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/ 2>/dev/null || true && \
+		npm install --prefix catalog; \
+		npm run build --prefix catalog; \
+		mkdir -p /opt/clients/surokkha/catalog/dist; \
+		cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/; \
 		echo "✓ Product Catalog (catalog.surokkha.shop) deployed to /opt/clients/surokkha/catalog/dist"; \
 	fi
 	@# 3. Update Backend dependencies and restart services
@@ -88,6 +108,11 @@ deploy:
 	elif [ -f "frontend/scripts/notify-deploy.js" ]; then \
 		node frontend/scripts/notify-deploy.js --bump 2>/dev/null || true; \
 	fi
+	@# 6. Purge Cloudflare Edge Cache if configured
+	@if [ -f "scripts/purge-cf.js" ]; then \
+		echo "🌐 Purging Cloudflare cache..."; \
+		node scripts/purge-cf.js surokkha 2>/dev/null || true; \
+	fi
 	@echo "🎉 Surokkha Deployment successfully finished without downtime!"
 
 build: deploy
@@ -97,7 +122,11 @@ build-store:
 	npm install --prefix frontend
 	npm run build:store --prefix frontend
 	@mkdir -p /opt/clients/surokkha/store
-	@cp -r frontend/store/* /opt/clients/surokkha/store/ 2>/dev/null || true
+	@cp -r frontend/store/* /opt/clients/surokkha/store/
+	@if [ -d "/opt/clients/surokkha/dist" ]; then \
+		echo "🔄 Also syncing to legacy /opt/clients/surokkha/dist..."; \
+		cp -r frontend/store/* /opt/clients/surokkha/dist/; \
+	fi
 	@systemctl reload nginx 2>/dev/null || true
 	@echo "✓ Surokkha Store deployed to /opt/clients/surokkha/store!"
 
@@ -106,7 +135,7 @@ build-shop:
 	npm install --prefix frontend
 	npm run build:shop --prefix frontend
 	@mkdir -p /opt/clients/surokkha/shop
-	@cp -r frontend/shop/* /opt/clients/surokkha/shop/ 2>/dev/null || true
+	@cp -r frontend/shop/* /opt/clients/surokkha/shop/
 	@systemctl reload nginx 2>/dev/null || true
 	@echo "✓ Surokkha Shop deployed to /opt/clients/surokkha/shop!"
 

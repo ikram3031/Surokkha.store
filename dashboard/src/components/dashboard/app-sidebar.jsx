@@ -113,6 +113,7 @@ const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, children }) =
   <SidebarMenuItem>
     <SidebarMenuButton
       tooltip={label}
+      closeOnClick={false}
       onClick={() => onToggle(id)}
       aria-expanded={open}
       data-has-active={active ? "true" : "false"}
