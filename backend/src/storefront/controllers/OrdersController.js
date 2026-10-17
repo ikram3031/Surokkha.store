@@ -237,6 +237,8 @@ export const createOrder = async (req, res, next) => {
     }
 
     const orderData = await buildOrderDocument(payload, req);
+    // Keep the customer's IP so marking the order fake later blocks the customer, not the admin
+    orderData.ipAddress = clientIp;
     const createdOrder = await OrderModel.create(orderData);
 
     await syncPaymentDocument(createdOrder, payload);

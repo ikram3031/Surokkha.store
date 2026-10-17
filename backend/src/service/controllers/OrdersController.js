@@ -462,7 +462,7 @@ export const updateOrder = async (req, res, next) => {
       try {
         await archiveFakeOrder(order, req.user?.userId || null, payload.reason || "Marked as fake order");
         // Insert into spamList collection (normalize phone to last-11 digits for BD standard)
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        const ip = order.ipAddress || null;
         const rawPhone = order.billingInfo?.phone || order.shippingInfo?.phone || "";
         const phone = rawPhone.replace(/\D/g, '').slice(-11) || rawPhone;
         const email = order.billingInfo?.email || order.shippingInfo?.email || "";
@@ -695,8 +695,8 @@ export const bulkUpdateOrders = async (req, res, next) => {
     // If marked as fake or cancelled in bulk, archive fake orders and remove from members' active orders
     const isBulkRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(updateFields.status);
     if (updateFields.status === 'fake') {
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
       for (const ord of orders) {
+        const ip = ord.ipAddress || null;
         archiveFakeOrder(ord, req.user?.userId || null, req.body?.reason || "Bulk marked as fake order").catch(e => console.error(e));
         
         const rawOrdPhone = ord.billingInfo?.phone || ord.shippingInfo?.phone || "";
