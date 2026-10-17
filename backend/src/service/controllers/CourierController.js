@@ -2,6 +2,7 @@ import { syncPathaoOrders } from "../../common/services/pathaoOrderSync.service.
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { ensurePaymentOnShip } from "../../common/helper/orderControllerHelper.js";
+import { LogModel } from "../../common/models/log.model.js";
 import { DistrictModel, ThanaModel } from "../../common/models/district.model.js";
 import {
   getPathaoConfig,
@@ -126,6 +127,22 @@ export const updatePathaoSettings = async (req, res, next) => {
       { $set: updatePayload },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     ).lean();
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} updated Pathao Courier settings.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for Pathao settings update:", logErr);
+    }
 
     return res.json({
       status: "success",
@@ -452,6 +469,23 @@ export const createOrderConsignmentController = async (req, res, next) => {
       if (updatedOrder) await ensurePaymentOnShip(updatedOrder);
     }
 
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      const orderRef = updatedOrder?.orderNumber || orderId || "unknown";
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} dispatched order #${orderRef} to Pathao. Consignment ID: ${consignmentId}`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for Pathao dispatch:", logErr);
+    }
+
     return res.json({
       status: "success",
       message: `Order dispatched to Pathao successfully! Consignment ID: ${consignmentId}`,
@@ -484,6 +518,23 @@ export const createBulkOrderConsignmentsController = async (req, res, next) => {
     }
 
     const result = await createPathaoBulkOrders(orders);
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} bulk dispatched ${orders.length} order(s) to Pathao.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for Pathao bulk dispatch:", logErr);
+    }
+
     return res.json({ status: "success", data: result });
   } catch (error) {
     next(error);

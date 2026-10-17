@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { PaymentModel } from "../../common/models/payment.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { logger } from "../../common/config/logger.js";
+import { LogModel } from "../../common/models/log.model.js";
 
 const { Types } = mongoose;
 
@@ -70,6 +71,23 @@ export const createPayment = async (req, res, next) => {
       });
     }
     const populated = await PaymentModel.findById(payment._id).populate("orderId").lean();
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      const paymentRef = (populated || payment).did || (populated || payment)._id;
+      await LogModel.create({
+        type: "created",
+        typeDid: "110",
+        description: `${actorName} recorded a payment of ${paidAmount} (${status}) for payment #${paymentRef}.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for payment create:", logErr);
+    }
 
     return res.status(201).json({
       status: "success",
@@ -289,6 +307,22 @@ export const updatePayment = async (req, res, next) => {
       }
     }
 
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} updated payment #${payment.did || targetId}.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for payment update:", logErr);
+    }
+
     return res.json({ status: "success", data: payment });
   } catch (error) {
     next(error);
@@ -312,6 +346,22 @@ export const deletePayment = async (req, res, next) => {
         paymentStatus: "pending",
         paidAmount: 0,
       });
+    }
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "deleted",
+        typeDid: "666",
+        description: `${actorName} deleted payment #${deletedPayment.did || targetId}.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for payment delete:", logErr);
     }
 
     return res.json({ status: "success", message: "Payment record deleted successfully" });
@@ -384,6 +434,22 @@ export const bulkUpdatePayments = async (req, res, next) => {
       }
     }
 
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} bulk updated ${payments.length} payment(s) to status "${targetStatus}".`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for bulk payment update:", logErr);
+    }
+
     return res.json({ status: "success", message: "Payments updated successfully" });
   } catch (error) {
     logger.error({ error }, "Failed to bulk update payments");
@@ -410,6 +476,22 @@ export const bulkDeletePayments = async (req, res, next) => {
     if (linkedOrderIds.length > 0) {
       await OrderModel.updateMany({ _id: { $in: linkedOrderIds } }, { $set: { paymentStatus: "pending", paidAmount: 0 } });
     }
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "deleted",
+        typeDid: "666",
+        description: `${actorName} bulk deleted ${result.deletedCount} payment record(s).`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for bulk payment delete:", logErr);
+    }
+
     return res.json({ status: "success", message: `${result.deletedCount} payment records deleted successfully` });
   } catch (error) {
     logger.error({ error }, "Failed to bulk delete payments");

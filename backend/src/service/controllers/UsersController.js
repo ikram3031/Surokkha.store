@@ -136,6 +136,22 @@ export const createUser = async (req, res, next) => {
 
     const mailResult = await sendInvitationEmail({ user, inviteUrl });
 
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "created",
+        typeDid: "110",
+        description: `${actorName} created system user ${user.name} (${user.email}) with role ${user.role}.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for user create:", logErr);
+    }
+
     res.status(201).json({
       status: "success",
       message: mailResult.success
@@ -246,6 +262,22 @@ export const updateUser = async (req, res, next) => {
 
     await user.save();
 
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} updated system user ${user.name} (${user.email}).`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for user update:", logErr);
+    }
+
     res.json({ status: "success", data: user.toJSON() });
   } catch (error) {
     next(error);
@@ -271,6 +303,23 @@ export const deleteUser = async (req, res, next) => {
     }
 
     await UserModel.findByIdAndDelete(userId);
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "deleted",
+        typeDid: "666",
+        description: `${actorName} deleted system user ${user.name} (${user.email}).`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for user delete:", logErr);
+    }
+
     res.json({ status: "success", message: "User deleted successfully" });
   } catch (error) {
     next(error);

@@ -30,6 +30,23 @@ import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEvent
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
+
+// Human-readable title, payee and notes for the bill created when an order is returned
+const buildReturnBillDetails = (order) => {
+  const orderRef = order.orderNumber || order.did || order._id;
+  const customer = order.shippingInfo || order.billingInfo || {};
+  const customerName = customer.fullName || order.billingInfo?.fullName || 'Customer';
+  const items = (order.items || [])
+    .map((i) => `${i.name}${i.size ? ` (${i.size})` : ''} x${i.quantity || 1}`)
+    .join(', ');
+  return {
+    title: `Return fee - Order #${orderRef} - ${customerName}`,
+    name: customerName,
+    billingPhone: customer.phone || order.billingInfo?.phone || '',
+    notes: `Order #${orderRef} returned by ${customerName}${customer.phone ? ` (${customer.phone})` : ''}. Items: ${items || 'products'}. Order total: ৳${order.totals?.total ?? 0}`,
+  };
+};
+
 export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
@@ -468,12 +485,11 @@ export const updateOrder = async (req, res, next) => {
           await BillingModel.create({
             orderId: order._id,
             billTypeId: billType._id,
-            title: `${order.did || order.orderNumber || order._id} return`,
+            ...buildReturnBillDetails(order),
             totalAmount: payload.returnFee,
             amount: payload.returnFee,
             pendingAmount: payload.returnFee,
             status: 'active',
-            notes: `${order.shippingInfo?.fullName || order.billingInfo?.fullName || 'Customer'} returned ${order.items?.map(i => i.name).join(', ') || 'products'}`
           });
         }
       } catch (returnErr) {
@@ -497,6 +513,22 @@ export const updateOrder = async (req, res, next) => {
       paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
       paymentDetails: payment || null,
     };
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} updated order #${order.orderNumber || order.did || orderId}.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for order update:", logErr);
+    }
 
     return res.status(200).json({ status: 'success', data: orderWithCustomer });
   } catch (error) {
@@ -527,6 +559,22 @@ export const deleteOrder = async (req, res, next) => {
       await PaymentModel.findOneAndDelete({ orderId: deletedOrder._id });
     } catch (payErr) {
       console.error("Error deleting linked payment record:", payErr);
+    }
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "deleted",
+        typeDid: "666",
+        description: `${actorName} deleted order #${deletedOrder.orderNumber || deletedOrder.did || orderId}.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for order delete:", logErr);
     }
 
     return res.json({ status: 'success', message: 'Order deleted successfully' });
@@ -571,6 +619,22 @@ export const bulkDeleteOrders = async (req, res, next) => {
       await PaymentModel.deleteMany({ orderId: { $in: orderDbIds } });
     } catch (payErr) {
       console.error("Error deleting payments on bulk order delete:", payErr);
+    }
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      await LogModel.create({
+        type: "deleted",
+        typeDid: "666",
+        description: `${actorName} bulk deleted ${orders.length} order(s).`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for bulk order delete:", logErr);
     }
 
     return res.json({ status: 'success', message: 'Orders deleted successfully' });
@@ -665,17 +729,35 @@ export const bulkUpdateOrders = async (req, res, next) => {
           await BillingModel.create({
             orderId: updatedOrder._id,
             billTypeId: returnBillType._id,
-            title: `${updatedOrder.did || updatedOrder.orderNumber || updatedOrder._id} return`,
+            ...buildReturnBillDetails(updatedOrder),
             totalAmount: Number(req.body.returnFee),
             amount: Number(req.body.returnFee),
             pendingAmount: Number(req.body.returnFee),
             status: 'active',
-            notes: `${updatedOrder.shippingInfo?.fullName || updatedOrder.billingInfo?.fullName || 'Customer'} returned ${updatedOrder.items?.map(i => i.name).join(', ') || 'products'}`
           });
         } catch (billingErr) {
           console.error("Error creating return billing:", billingErr);
         }
       }
+    }
+
+    try {
+      const actorDid = req.user?.did || "staff";
+      const actorName = req.user?.name || "System Admin";
+      const parts = [];
+      if (status) parts.push(`status → ${status}`);
+      if (paymentStatus) parts.push(`paymentStatus → ${paymentStatus}`);
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} bulk updated ${orders.length} order(s): ${parts.join(", ") || "no changes"}.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.error("Failed to create log for bulk order update:", logErr);
     }
 
     return res.json({ status: 'success', message: 'Orders updated successfully' });
