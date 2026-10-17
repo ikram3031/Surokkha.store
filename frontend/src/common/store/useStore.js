@@ -484,7 +484,7 @@ export const useStore = create((set, get) => ({
 
           const rawFeatured = p.featuredImage || p.featured_image || p.imageUrl || p.image_url || p.product_image;
           const rawThumb = p.thumbnailUrl || p.thumbnail_url;
-          const rawGalleryCandidates = Array.isArray(p.gallery_images) ? p.gallery_images : [];
+          const rawGalleryCandidates = Array.isArray(p.gallery) ? p.gallery : [];
 
           // Pick the best high-res primary image: featured/imageUrl first, then gallery first item, fallback to un-thumbed thumbnailUrl
           const rawPrimary = rawFeatured || (rawGalleryCandidates.length > 0 ? rawGalleryCandidates[0] : null) || rawThumb || null;

@@ -293,9 +293,9 @@ const EditProductPage = () => {
             );
           }
 
-          if (Array.isArray(product.images)) {
+          if (Array.isArray(product.gallery)) {
             setGalleryImages(
-              product.images.map((img, index) => ({
+              product.gallery.map((img, index) => ({
                 id: `loaded-${index}-${Date.now()}`,
                 file: null,
                 preview: img.url || img,
