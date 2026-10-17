@@ -352,6 +352,9 @@ export const updateProduct = async (req, res, next) => {
             })
             .filter(Boolean)
         : [];
+      // Drop legacy gallery fields so an emptied gallery doesn't fall back to old images
+      product.set("gallery_images", undefined, { strict: false });
+      product.set("images", undefined, { strict: false });
     }
 
     if (userId) {

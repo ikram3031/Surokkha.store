@@ -93,11 +93,9 @@ export const serializeProduct = (product, lang = "en", itemType = null) => {
   const benefits = isBn ? (bnData.benefits || source?.benefits || []) : (source?.benefits || []);
   const sections = isBn ? (bnData.sections || source?.sections || []) : (source?.sections || []);
 
-  const rawGallery = Array.isArray(source?.gallery)
-    ? source.gallery
-    : Array.isArray(source?.images)
-    ? source.images
-    : [];
+  // Mongoose defaults gallery to [], so fall back to legacy gallery_images / images whenever gallery is empty
+  const rawGallery = [source?.gallery, source?.gallery_images, source?.images]
+    .find((list) => Array.isArray(list) && list.length > 0) || [];
 
   const gallery = rawGallery
     .map((item) => {
