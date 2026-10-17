@@ -20,8 +20,8 @@ export default function ShopView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState('all'); // 'all' | 'under-500' | '500-800' | 'above-800'
 
-  // 2. Default sorting: Oldest to Newest (original products at top, new ones go down)
-  const [sortBy, setSortBy] = useState('oldest');
+  // 2. Default sorting: Newest first (latest products at top)
+  const [sortBy, setSortBy] = useState('newest');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [displayCount, setDisplayCount] = useState(24);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -201,7 +201,7 @@ export default function ShopView() {
 
       return true;
     });
-
+    // Sorting (Default: Newest first, latest products at top)
     // Sorting (Default: Oldest to Newest, original lineup at top, new arrivals at bottom)
     list.sort((a, b) => {
       const pA = products[a];
@@ -246,7 +246,7 @@ export default function ShopView() {
     setCategory('all');
     setSearchQuery('');
     setPriceRange('all');
-    setSortBy('oldest');
+    setSortBy('newest');
     setInStockOnly(false);
     setDisplayCount(24);
   };
@@ -370,8 +370,8 @@ export default function ShopView() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="h-10 text-xs bg-white border border-rose-200 rounded-xl px-3 text-slate-800 font-semibold shadow-2xs focus:outline-none focus:border-brand-600 cursor-pointer"
               >
-                <option value="oldest">{isBn ? 'আগের পণ্য প্রথমে (ডিফল্ট)' : 'Oldest First (Default)'}</option>
-                <option value="newest">{isBn ? 'নতুন কালেকশন' : 'Newest Drops'}</option>
+                <option value="newest">{isBn ? 'নতুন পণ্য প্রথমে (ডিফল্ট)' : 'Newest First (Default)'}</option>
+                <option value="oldest">{isBn ? 'আগের পণ্য প্রথমে' : 'Oldest First'}</option>
                 <option value="price-asc">{isBn ? 'দাম: কম থেকে বেশি' : 'Price: Low to High'}</option>
                 <option value="price-desc">{isBn ? 'দাম: বেশি থেকে কম' : 'Price: High to Low'}</option>
                 <option value="featured">{isBn ? 'জনপ্রিয়তা অনুযায়ী' : 'Featured'}</option>

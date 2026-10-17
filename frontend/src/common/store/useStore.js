@@ -581,7 +581,7 @@ export const useStore = create((set, get) => ({
           let resolvedCategorySlug = rawCatSlug || "uncategorized";
           let resolvedCategoryBn = rawCatBn || resolvedCategory;
 
-          const rawBrand = Array.isArray(p.brand) ? (p.brand[0] || 'MO') : (typeof p.brand === 'string' ? p.brand : 'MO');
+          const rawBrand = p.brandName || (Array.isArray(p.brand) ? (p.brand[0] || 'MO') : (typeof p.brand === 'string' ? p.brand : 'MO'));
 
           const productObj = {
             id: key,

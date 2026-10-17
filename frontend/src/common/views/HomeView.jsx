@@ -51,7 +51,12 @@ export default function HomeView() {
   });
   
   const combo30Prod = activeCombos.find(c => (c.slug && (c.slug.includes('30') || c.slug.includes('3-in-1'))) || (c.name && c.name.includes('30'))) || activeCombos[0] || null;
-  const comboRibbedProd = activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('ribbed') || c.slug.includes('20'))) || (c.name && c.name.includes('20')))) || activeCombos[1] || null;
+  // Right combo card is pinned to this product; falls back to the auto-picked combo if it's missing or inactive
+  const RIGHT_COMBO_PRODUCT_ID = '6ad3ceaa778c3e05ca22b2bd';
+  const pinnedRightProd = products[RIGHT_COMBO_PRODUCT_ID];
+  const isPinnedRightActive = pinnedRightProd && pinnedRightProd.isActive !== false && !pinnedRightProd.isOutOfStock &&
+    pinnedRightProd.stockStatus !== 'outofstock' && pinnedRightProd.stockStatus !== 'out_of_stock';
+  const comboRibbedProd = (isPinnedRightActive && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) || activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('ribbed') || c.slug.includes('20'))) || (c.name && c.name.includes('20')))) || activeCombos[1] || null;
   const COMBO_30_KEY = combo30Prod?.slug || combo30Prod?.id || '';
   const COMBO_RIBBED_KEY = comboRibbedProd?.slug || comboRibbedProd?.id || '';
 

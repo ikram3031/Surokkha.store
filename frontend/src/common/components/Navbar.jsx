@@ -15,7 +15,13 @@ const Navbar = () => {
   const products = useStore((state) => state.products);
   const { t, isBn, formatPrice } = useTranslation();
 
-  const combo30Prod = Object.values(products).find(p => {
+  // Marquee offer is pinned to the Combo Special 30 pcs product; falls back to auto-detection if it's inactive or out of stock
+  const MARQUEE_PRODUCT_ID = '6ad3ceaa778c3e05ca22b2bd';
+  const pinnedMarqueeProd = products[MARQUEE_PRODUCT_ID];
+  const isPinnedMarqueeAvailable = pinnedMarqueeProd && pinnedMarqueeProd.isActive !== false &&
+    !(pinnedMarqueeProd.isOutOfStock || pinnedMarqueeProd.stockStatus === 'outofstock' || pinnedMarqueeProd.stockStatus === 'out_of_stock' || pinnedMarqueeProd.stockAmount === 0);
+
+  const combo30Prod = (isPinnedMarqueeAvailable ? pinnedMarqueeProd : null) || Object.values(products).find(p => {
     if (!p || p.isActive === false) return false;
     const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
     if (isOut) return false;

@@ -486,3 +486,21 @@ export const parsePagination = (input = {}) => {
 
   return { skip, limit };
 };
+
+// Adds brandName / brandNames to serialized products by resolving their brand dids in one query
+export const attachBrandNames = async (products) => {
+  const list = Array.isArray(products) ? products : [products];
+  const dids = [...new Set(list.flatMap((p) => (Array.isArray(p?.brand) ? p.brand : p?.brand ? [p.brand] : [])))];
+  if (dids.length === 0) return products;
+
+  const brands = await BrandModel.find({ did: { $in: dids } }, { did: 1, name: 1 }).lean();
+  const nameByDid = new Map(brands.map((b) => [b.did, b.name]));
+
+  for (const p of list) {
+    if (!p) continue;
+    const brandDids = Array.isArray(p.brand) ? p.brand : p.brand ? [p.brand] : [];
+    p.brandNames = brandDids.map((did) => nameByDid.get(did)).filter(Boolean);
+    p.brandName = p.brandNames[0] || "";
+  }
+  return products;
+};

@@ -200,12 +200,13 @@ export default function ProductDetailView() {
 
   const baseRawImages = (Array.isArray(product?.images) && product.images.length > 0) ? product.images : ((Array.isArray(product?.gallery) && product.gallery.length > 0) ? product.gallery : (primaryCandidate ? [primaryCandidate] : []));
   const variantImages = hasVariants ? (product?.variants?.map(v => v.imageUrl).filter(Boolean) || []) : [];
-  const rawImages = Array.from(new Set([...baseRawImages, ...variantImages]));
+  // Featured image (imageUrl) is shown first; gallery and variant images follow as thumbnails
+  const rawImages = Array.from(new Set([primaryCandidate, ...baseRawImages, ...variantImages].filter(Boolean)));
   
   const galleryImages = rawImages
     .map(toHighRes)
     .map(resolveImgUrl)
-    .filter(Boolean);
+    .filter((url, i, arr) => url && arr.indexOf(url) === i);
 
   const otherKeys = productKeys.filter((k) => {
     if (k === product?.id || k === product?.slug) return false;

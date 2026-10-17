@@ -2,6 +2,7 @@ import { config } from "../../common/config/index.js";
 import { ProductModel } from "../../common/models/product.model.js";
 import {
   serializeProduct,
+  attachBrandNames,
   buildProductFilter,
   buildProductSort,
   parsePagination,
@@ -32,7 +33,7 @@ export const listProducts = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: products.map((p) => serializeProduct(p, "en", "product")),
+      data: await attachBrandNames(products.map((p) => serializeProduct(p, "en", "product"))),
       pagination: {
         total: count,
         limit,
@@ -68,7 +69,7 @@ export const getSingleProduct = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: serializeProduct(product, "en", "product"),
+      data: await attachBrandNames(serializeProduct(product, "en", "product")),
     });
   } catch (err) {
     next(err);
