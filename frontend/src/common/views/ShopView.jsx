@@ -36,6 +36,12 @@ export default function ShopView() {
     return s || 'other';
   };
 
+  // Combo is decided only by the product's own category, not by "combo" in its name or slug
+  const isComboCategory = (p) => {
+    const catName = typeof p?.category === 'object' ? p?.category?.name : p?.category;
+    return normalizeCatSlug(p?.categorySlug, catName || '') === 'combo';
+  };
+
   // Base list of active (and optionally in-stock) products
   const activeProducts = useMemo(() => {
     return productKeys.map((k) => products[k]).filter((p) => {
@@ -50,19 +56,14 @@ export default function ShopView() {
 
   const contraceptiveCount = useMemo(() => {
     return activeProducts.filter((p) => {
-      const isCombo = (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-      if (isCombo) return false;
+      if (isComboCategory(p)) return false;
       return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'contraceptive';
     }).length;
   }, [activeProducts]);
 
   const comboCount = useMemo(() => {
     return activeProducts.filter((p) => {
-      return (
-        normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'combo' ||
-        (p.slug && p.slug.includes('combo')) ||
-        (p.name && p.name.toLowerCase().includes('combo'))
-      );
+      return isComboCategory(p);
     }).length;
   }, [activeProducts]);
 
@@ -165,7 +166,7 @@ export default function ShopView() {
         if (!matches) return false;
       }
 
-      const isCombo = k.toLowerCase().includes('combo') || (prod?.name && prod.name.toLowerCase().includes('combo')) || prod?.category === 'Combo' || prod?.category === 'Combo Pack' || (prod?.category_bn && prod.category_bn.includes('কম্বো')) || (prod?.categorySlug && prod.categorySlug.includes('combo'));
+      const isCombo = isComboCategory(prod);
 
       // Category filter
       if (category !== 'all') {

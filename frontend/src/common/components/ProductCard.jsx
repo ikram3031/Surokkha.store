@@ -22,7 +22,8 @@ export default function ProductCard({ productKey, className = '' }) {
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
   const currentCartQty = cart[productKey] || 0;
-  const currentRegularPrice = Number(prod.price != null ? prod.price : (prod.regularPrice || 0));
+  // `price` is already the selling (offer) price, so compare against regularPrice
+  const currentRegularPrice = Number(prod.regularPrice || prod.price || 0);
   const hasOfferPrice = prod.offerPrice != null && !isNaN(Number(prod.offerPrice)) && Number(prod.offerPrice) > 0 && Number(prod.offerPrice) < currentRegularPrice;
   const currentOfferPrice = hasOfferPrice ? Number(prod.offerPrice) : currentRegularPrice;
 
@@ -92,13 +93,13 @@ export default function ProductCard({ productKey, className = '' }) {
             >
               <defs>
                 <linearGradient id={`discountGrad-${productKey}`} x1="29" y1="0" x2="29" y2="64" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#FF0D1B" />
-                  <stop offset="45%" stopColor="#EE000A" />
-                  <stop offset="100%" stopColor="#C00003" />
+                  <stop offset="0%" stopColor="#10B981" />
+                  <stop offset="45%" stopColor="#059669" />
+                  <stop offset="100%" stopColor="#047857" />
                 </linearGradient>
                 <linearGradient id={`foldGrad-${productKey}`} x1="58" y1="0" x2="70" y2="13" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#B30005" />
-                  <stop offset="100%" stopColor="#660002" />
+                  <stop offset="0%" stopColor="#065F46" />
+                  <stop offset="100%" stopColor="#022C22" />
                 </linearGradient>
               </defs>
               {/* 3D Fold tab at top right */}
