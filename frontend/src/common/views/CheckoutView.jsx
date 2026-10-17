@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
-import { DISTRICTS, DISTRICT_THANAS } from '../data/districts';
+import { DISTRICTS } from '../data/districts';
+import LocationSelect, { useThanas } from '../components/LocationSelect';
 import { trackInitiateCheckout, trackAddPaymentInfo } from '../utils/analytics';
 import { useTranslation } from '../i18n/useTranslation';
 import { SITE_CONFIG } from '../config/siteConfig';
@@ -44,6 +45,18 @@ export default function CheckoutView() {
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [shipPhoneError, setShipPhoneError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const billingThanas = useThanas(shippingInfo.district);
+  const shippingThanas = useThanas(sameAsBilling ? '' : shippingAddress.district);
+
+  const clearFieldError = (...keys) => {
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      keys.forEach((k) => delete next[k]);
+      return next;
+    });
+  };
 
   const totals = getCartTotals();
   const appliedCoupon = totals.appliedCoupon || storeAppliedCoupon;
@@ -109,6 +122,37 @@ export default function CheckoutView() {
   if (totals.itemCount === 0) {
     return null;
   }
+
+  const DISTRICT_NAMES = DISTRICTS.map((d) => d.name).sort((a, b) => a.localeCompare(b));
+  const noMatchText = isBn ? 'কোনো মিল পাওয়া যায়নি' : 'No matching results';
+  const loadingText = isBn ? 'লোড হচ্ছে...' : 'Loading...';
+  const selectDistrictFirstText = isBn ? 'আগে জেলা নির্বাচন করুন' : 'Select district first';
+
+  // District/thana must be picked from the dropdown lists
+  const getLocationErrors = () => {
+    const errs = {};
+    const districtMsg = isBn ? 'অনুগ্রহ করে তালিকা থেকে আপনার জেলা নির্বাচন করুন' : 'Please select your district from the list';
+    const thanaMsg = isBn ? 'অনুগ্রহ করে তালিকা থেকে আপনার থানা / উপজেলা নির্বাচন করুন' : 'Please select your thana / upazila from the list';
+    const check = (district, thana, thanaOptions, dKey, tKey) => {
+      if (!district || !DISTRICT_NAMES.includes(district)) {
+        errs[dKey] = districtMsg;
+      } else if (thanaOptions.length > 0 && !thanaOptions.includes(thana)) {
+        // Without a thana list for this district there is nothing to pick, so it can't be required
+        errs[tKey] = thanaMsg;
+      }
+    };
+    check(shippingInfo.district, shippingInfo.thana, billingThanas.options, 'district', 'thana');
+    if (!sameAsBilling) {
+      check(shippingAddress.district, shippingAddress.thana, shippingThanas.options, 'shipDistrict', 'shipThana');
+    }
+    return errs;
+  };
+
+  const FIELD_IDS = { district: 'billingDistrict', thana: 'billingThana', shipDistrict: 'shipDistrict', shipThana: 'shipThana' };
+  const scrollToField = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   const convertBnToEnDigits = (str) => {
     if (!str) return '';
@@ -224,26 +268,33 @@ export default function CheckoutView() {
       if (!shippingInfo.address?.trim() && shippingAddress.address?.trim()) {
         setShippingInfo({ address: shippingAddress.address });
       }
-      if (!shippingInfo.district?.trim() && shippingAddress.district?.trim()) {
-        setShippingInfo({ district: shippingAddress.district });
-      }
-      if (!shippingInfo.thana?.trim() && shippingAddress.thana?.trim()) {
-        setShippingInfo({ thana: shippingAddress.thana });
-      }
     }
 
     const emailErr = validateEmail(shippingInfo.email);
     const phErr = validatePhoneValue(billingPh);
     const shipPhErr = !sameAsBilling ? validatePhoneValue(shipPh) : '';
     
-    const billingDistrict = (shippingInfo.district || shippingAddress.district || '').trim();
-    const billingThana = (shippingInfo.thana || shippingAddress.thana || '').trim();
     const shippingDistrict = (shippingAddress.district || '').trim();
-    const shippingThana = (shippingAddress.thana || '').trim();
+    const locationErrs = getLocationErrors();
 
     setEmailError(emailErr);
     setPhoneError(phErr);
     setShipPhoneError(shipPhErr);
+    setFieldErrors(locationErrs);
+
+    // Show every inline error, then jump to the first invalid field
+    const firstInvalid = (phErr && 'billingPhone')
+      || (locationErrs.district && FIELD_IDS.district)
+      || (locationErrs.thana && FIELD_IDS.thana)
+      || (shipPhErr && 'shipPhone')
+      || (locationErrs.shipDistrict && FIELD_IDS.shipDistrict)
+      || (locationErrs.shipThana && FIELD_IDS.shipThana);
+    if (firstInvalid) {
+      scrollToField(firstInvalid);
+      const firstLocErr = Object.values(locationErrs)[0];
+      showToast(phErr ? t('checkout.error_phone_invalid') : (firstLocErr || t('checkout.error_ship_phone_invalid')));
+      return;
+    }
 
     if (!agreedToTerms) {
       showToast(t('checkout.error_agree_terms'));
@@ -265,12 +316,6 @@ export default function CheckoutView() {
       return;
     }
 
-    const subDistricts = ['dhaka', 'gazipur', 'narayanganj'];
-    if (subDistricts.includes(billingDistrict.toLowerCase()) && !billingThana) {
-      showToast(t('checkout.error_thana_required'));
-      return;
-    }
-
     // Conditional Shipping Validation when shipToDifferentAddress is true
     if (!sameAsBilling) {
       if (!shippingAddress.fullName?.trim() || !shippingAddress.address?.trim() || !shippingDistrict) {
@@ -280,11 +325,6 @@ export default function CheckoutView() {
 
       if (shipPhErr) {
         showToast(t('checkout.error_ship_phone_invalid'));
-        return;
-      }
-
-      if (subDistricts.includes(shippingDistrict.toLowerCase()) && !shippingThana) {
-        showToast(t('checkout.error_ship_thana_required'));
         return;
       }
     }
@@ -504,151 +544,41 @@ export default function CheckoutView() {
                   />
                 </div>
 
-                {/* District Searchable Dropdown */}
-                <div className={`relative ${isDistrictOpen ? 'z-50' : 'z-20'}`}>
+                {/* District Dropdown (must pick from list) */}
+                <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="billingDistrict">
                     {t('checkout.district')} <span className="text-rose-500">*</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="billingDistrict"
-                      required
-                      placeholder={t('checkout.district_placeholder')}
-                      value={shippingInfo.district || ''}
-                      onFocus={() => setIsDistrictOpen(true)}
-                      onBlur={() => setTimeout(() => setIsDistrictOpen(false), 200)}
-                      onChange={(e) => {
-                        setShippingInfo({ district: e.target.value, thana: '' });
-                        setIsDistrictOpen(true);
-                      }}
-                      className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition pr-10 cursor-pointer"
-                    />
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      {shippingInfo.district ? (
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setShippingInfo({ district: '', thana: '' });
-                            setIsDistrictOpen(true);
-                          }}
-                          className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
-                          title={t('checkout.clear_district')}
-                          aria-label={t('checkout.clear_district')}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      ) : (
-                        <div className="pointer-events-none text-slate-400 p-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {isDistrictOpen && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl z-[9999] py-1 shadow-2xl divide-y divide-slate-100 scrollbar-thin ring-1 ring-black/10">
-                      {[...DISTRICTS]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .filter(d => d.name.toLowerCase().includes((shippingInfo.district || '').toLowerCase()))
-                        .map((d) => (
-                          <button
-                            key={d.id}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShippingInfo({ district: d.name, thana: '' });
-                              setIsDistrictOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-2.5 bg-white text-slate-700 hover:text-brand-900 hover:bg-brand-50 text-xs transition cursor-pointer"
-                          >
-                            {d.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
+                  <LocationSelect
+                    id="billingDistrict"
+                    value={shippingInfo.district || ''}
+                    options={DISTRICT_NAMES}
+                    onSelect={(name) => { setShippingInfo({ district: name, thana: '' }); clearFieldError('district', 'thana'); }}
+                    onOpenChange={setIsDistrictOpen}
+                    placeholder={t('checkout.district_placeholder')}
+                    error={fieldErrors.district}
+                    clearLabel={t('checkout.clear_district')}
+                    emptyText={noMatchText}
+                  />
                 </div>
-
-                {/* Thana Searchable Dropdown */}
-                <div className={`relative ${isThanaOpen ? 'z-50' : 'z-20'}`}>
+                
+                {/* Thana Dropdown (must pick from list) */}
+                <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="billingThana">
-                    {t('checkout.thana')} {['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district) && <span className="text-rose-500">*</span>}
+                    {t('checkout.thana')} <span className="text-rose-500">*</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="billingThana"
-                      required={['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district)}
-                      placeholder={['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district) ? t('checkout.thana_placeholder_select') : t('checkout.thana_placeholder_enter')}
-                      value={shippingInfo.thana || ''}
-                      onFocus={() => {
-                        if (['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district)) {
-                          setIsThanaOpen(true);
-                        }
-                      }}
-                      onBlur={() => setTimeout(() => setIsThanaOpen(false), 200)}
-                      onChange={(e) => {
-                        setShippingInfo({ thana: e.target.value });
-                        if (['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district)) {
-                          setIsThanaOpen(true);
-                        }
-                      }}
-                      className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition pr-10"
-                    />
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      {shippingInfo.thana ? (
-                        <button
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            setShippingInfo({ thana: '' });
-                            if (['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district)) {
-                              setIsThanaOpen(true);
-                            }
-                          }}
-                          className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
-                          title={t('checkout.clear_thana')}
-                          aria-label={t('checkout.clear_thana')}
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      ) : ['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district) ? (
-                        <div className="pointer-events-none text-slate-400 p-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {isThanaOpen && ['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingInfo.district) && (
-                    <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl z-[9999] py-1 shadow-2xl divide-y divide-slate-100 scrollbar-thin ring-1 ring-black/10">
-                      {(DISTRICT_THANAS[shippingInfo.district] || [])
-                        .filter(tItem => tItem.name.toLowerCase().includes((shippingInfo.thana || '').toLowerCase()))
-                        .map((tItem) => (
-                          <button
-                            key={tItem.name}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShippingInfo({ thana: tItem.name });
-                              setIsThanaOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-2.5 bg-white text-slate-700 hover:text-brand-900 hover:bg-brand-50 text-xs transition cursor-pointer"
-                          >
-                            {tItem.name}
-                          </button>
-                        ))}
-                    </div>
-                  )}
+                  <LocationSelect
+                    id="billingThana"
+                    value={shippingInfo.thana || ''}
+                    options={billingThanas.options}
+                    disabled={!shippingInfo.district}
+                    onSelect={(name) => { setShippingInfo({ thana: name }); clearFieldError('thana'); }}
+                    onOpenChange={setIsThanaOpen}
+                    placeholder={shippingInfo.district ? t('checkout.thana_placeholder_select') : selectDistrictFirstText}
+                    error={fieldErrors.thana}
+                    clearLabel={t('checkout.clear_thana')}
+                    emptyText={billingThanas.loading ? loadingText : noMatchText}
+                  />
                 </div>
               </div>
 
@@ -735,151 +665,43 @@ export default function CheckoutView() {
                     />
                   </div>
 
-                  {/* Shipping District */}
-                  <div className={`relative ${isShipDistrictOpen ? 'z-50' : 'z-20'}`}>
+                  {/* Shipping District (must pick from list) */}
+                  <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="shipDistrict">
                       {t('checkout.shipping_district')} <span className="text-rose-500">*</span>
                     </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="shipDistrict"
-                        required={!sameAsBilling}
-                        placeholder={t('checkout.shipping_district_placeholder')}
-                        value={shippingAddress.district || ''}
-                        onFocus={() => setIsShipDistrictOpen(true)}
-                        onBlur={() => setTimeout(() => setIsShipDistrictOpen(false), 200)}
-                        onChange={(e) => {
-                          setShippingAddress({ district: e.target.value, thana: '' });
-                          setIsShipDistrictOpen(true);
-                        }}
-                        className="w-full text-xs sm:text-sm bg-white border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition pr-10 cursor-pointer"
-                      />
-                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                        {shippingAddress.district ? (
-                          <button
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShippingAddress({ district: '', thana: '' });
-                              setIsShipDistrictOpen(true);
-                            }}
-                            className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
-                            title={t('checkout.clear_district')}
-                            aria-label={t('checkout.clear_district')}
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        ) : (
-                          <div className="pointer-events-none text-slate-400 p-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {isShipDistrictOpen && (
-                      <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl z-[9999] py-1 shadow-2xl divide-y divide-slate-100 scrollbar-thin ring-1 ring-black/10">
-                        {[...DISTRICTS]
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .filter(d => d.name.toLowerCase().includes((shippingAddress.district || '').toLowerCase()))
-                          .map((d) => (
-                            <button
-                              key={d.id}
-                              type="button"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                setShippingAddress({ district: d.name, thana: '' });
-                                setIsShipDistrictOpen(false);
-                              }}
-                              className="w-full text-left px-4 py-2.5 bg-white text-slate-700 hover:text-brand-900 hover:bg-brand-50 text-xs transition cursor-pointer"
-                            >
-                              {d.name}
-                            </button>
-                          ))}
-                      </div>
-                    )}
+                    <LocationSelect
+                      id="shipDistrict"
+                      value={shippingAddress.district || ''}
+                      options={DISTRICT_NAMES}
+                      onSelect={(name) => { setShippingAddress({ district: name, thana: '' }); clearFieldError('shipDistrict', 'shipThana'); }}
+                      onOpenChange={setIsShipDistrictOpen}
+                      placeholder={t('checkout.shipping_district_placeholder')}
+                      error={fieldErrors.shipDistrict}
+                      clearLabel={t('checkout.clear_district')}
+                      emptyText={noMatchText}
+                      inputClassName="bg-white"
+                    />
                   </div>
-
-                  {/* Shipping Thana */}
-                  <div className={`relative ${isShipThanaOpen ? 'z-50' : 'z-20'}`}>
+                  
+                  {/* Shipping Thana (must pick from list) */}
+                  <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="shipThana">
-                      {t('checkout.shipping_thana')} {['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district) && <span className="text-rose-500">*</span>}
+                      {t('checkout.shipping_thana')} <span className="text-rose-500">*</span>
                     </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="shipThana"
-                        required={!sameAsBilling && ['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district)}
-                        placeholder={['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district) ? t('checkout.thana_placeholder_select') : t('checkout.thana_placeholder_enter')}
-                        value={shippingAddress.thana || ''}
-                        onFocus={() => {
-                          if (['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district)) {
-                            setIsShipThanaOpen(true);
-                          }
-                        }}
-                        onBlur={() => setTimeout(() => setIsShipThanaOpen(false), 200)}
-                        onChange={(e) => {
-                          setShippingAddress({ thana: e.target.value });
-                          if (['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district)) {
-                            setIsShipThanaOpen(true);
-                          }
-                        }}
-                        className="w-full text-xs sm:text-sm bg-white border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition pr-10"
-                      />
-                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                        {shippingAddress.thana ? (
-                          <button
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setShippingAddress({ thana: '' });
-                              if (['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district)) {
-                                setIsShipThanaOpen(true);
-                              }
-                            }}
-                            className="p-1 rounded-full text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition cursor-pointer"
-                            title={t('checkout.clear_thana')}
-                            aria-label={t('checkout.clear_thana')}
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        ) : ['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district) ? (
-                          <div className="pointer-events-none text-slate-400 p-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    {isShipThanaOpen && ['Dhaka', 'Gazipur', 'Narayanganj'].includes(shippingAddress.district) && (
-                      <div className="absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-xl z-[9999] py-1 shadow-2xl divide-y divide-slate-100 scrollbar-thin ring-1 ring-black/10">
-                        {(DISTRICT_THANAS[shippingAddress.district] || [])
-                          .filter(tItem => tItem.name.toLowerCase().includes((shippingAddress.thana || '').toLowerCase()))
-                          .map((tItem) => (
-                            <button
-                              key={tItem.name}
-                              type="button"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                setShippingAddress({ thana: tItem.name });
-                                setIsShipThanaOpen(false);
-                              }}
-                              className="w-full text-left px-4 py-2.5 bg-white text-slate-700 hover:text-brand-900 hover:bg-brand-50 text-xs transition cursor-pointer"
-                            >
-                              {tItem.name}
-                            </button>
-                          ))}
-                      </div>
-                    )}
+                    <LocationSelect
+                      id="shipThana"
+                      value={shippingAddress.thana || ''}
+                      options={shippingThanas.options}
+                      disabled={!shippingAddress.district}
+                      onSelect={(name) => { setShippingAddress({ thana: name }); clearFieldError('shipThana'); }}
+                      onOpenChange={setIsShipThanaOpen}
+                      placeholder={shippingAddress.district ? t('checkout.thana_placeholder_select') : selectDistrictFirstText}
+                      error={fieldErrors.shipThana}
+                      clearLabel={t('checkout.clear_thana')}
+                      emptyText={shippingThanas.loading ? loadingText : noMatchText}
+                      inputClassName="bg-white"
+                    />
                   </div>
                 </div>
               </div>
