@@ -484,7 +484,8 @@ export const useStore = create((set, get) => ({
 
           const rawFeatured = p.featuredImage || p.featured_image || p.imageUrl || p.image_url || p.product_image;
           const rawThumb = p.thumbnailUrl || p.thumbnail_url;
-          const rawGalleryCandidates = Array.isArray(p.gallery) ? p.gallery : [];
+          // Old products keep their gallery in gallery_images; newer ones use gallery
+          const rawGalleryCandidates = [p.gallery, p.gallery_images, p.images].find((list) => Array.isArray(list) && list.length > 0) || [];
 
           // Pick the best high-res primary image: featured/imageUrl first, then gallery first item, fallback to un-thumbed thumbnailUrl
           const rawPrimary = rawFeatured || (rawGalleryCandidates.length > 0 ? rawGalleryCandidates[0] : null) || rawThumb || null;
