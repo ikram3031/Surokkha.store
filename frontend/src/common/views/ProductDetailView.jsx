@@ -31,6 +31,8 @@ export default function ProductDetailView() {
     getLocalizedName,
     getLocalizedTagline,
     getLocalizedDescription,
+    getLocalizedShortDescription,
+    getLocalizedLongDescription,
     getLocalizedFeatures
   } = useTranslation();
 
@@ -38,6 +40,8 @@ export default function ProductDetailView() {
   const [variantQuantities, setVariantQuantities] = useState({});
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
+  const [detailedProduct, setDetailedProduct] = useState(null);
   const baseProduct = products[selectedSlug] ||
     (selectedSlug && products[selectedSlug.replace(/-condom/, '')]) ||
     (selectedSlug && products[`-condom`]) ||
@@ -46,7 +50,7 @@ export default function ProductDetailView() {
     (Object.values(products).length > 0 && Object.values(products)[0]) ||
     null;
 
-  const product = baseProduct;
+  const product = detailedProduct ? { ...baseProduct, ...detailedProduct } : baseProduct;
 
   const hasVariants = Boolean(product?.type === 'variant' || product?.type === 'variable' || (Array.isArray(product?.variants) && product.variants.length > 0));
 
@@ -119,6 +123,11 @@ export default function ProductDetailView() {
   const localizedName = getLocalizedName(product);
   const localizedTagline = getLocalizedTagline(product);
   const localizedDescription = getLocalizedDescription(product);
+  const localizedShortDescription = getLocalizedShortDescription ? getLocalizedShortDescription(product) : '';
+  const localizedLongDescription = getLocalizedLongDescription ? getLocalizedLongDescription(product) : localizedDescription;
+  const cleanShort = (localizedShortDescription || '').trim();
+  const cleanLong = (localizedLongDescription || '').replace(/<[^>]*>/g, '').trim();
+  const hasDistinctShortDesc = cleanShort.length > 0 && cleanShort !== cleanLong;
   const localizedFeatures = getLocalizedFeatures(product);
 
   useEffect(() => {
@@ -438,6 +447,11 @@ export default function ProductDetailView() {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold text-slate-900">
               {localizedName}
             </h1>
+            {hasDistinctShortDesc && (
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2.5">
+                {localizedShortDescription}
+              </p>
+            )}
           </div>
 
           {/* Price display with Offer Price, Regular Price and Right-aligned Savings Badge */}
@@ -506,7 +520,7 @@ export default function ProductDetailView() {
             </h3>
             <div
               className="text-xs sm:text-sm text-slate-600 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: localizedDescription }}
+              dangerouslySetInnerHTML={{ __html: localizedLongDescription || localizedDescription }}
             />
           </div>
 

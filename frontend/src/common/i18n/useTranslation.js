@@ -299,29 +299,65 @@ export function useTranslation() {
     return product.tagline || product.shortDescription || product.subtitle || '';
   };
 
-  const getLocalizedDescription = (product) => {
+  const getLocalizedShortDescription = (product) => {
     if (!product) return '';
     if (isBn) {
-      if (product.data_bn && (product.data_bn.description || product.data_bn.longDescription)) {
-        return product.data_bn.description || product.data_bn.longDescription;
+      if (product.data_bn && (product.data_bn.description || product.data_bn.shortDescription)) {
+        return product.data_bn.description || product.data_bn.shortDescription;
       }
-      if (product.description_bn || product.longDescription_bn) {
-        return product.description_bn || product.longDescription_bn;
+      if (product.shortDescription_bn) {
+        return product.shortDescription_bn;
       }
-      if (product.bn && (product.bn.description || product.bn.longDescription)) {
-        return product.bn.description || product.bn.longDescription;
+      if (product.description_bn) {
+        return product.description_bn;
+      }
+      if (product.bn && (product.bn.description || product.bn.shortDescription)) {
+        return product.bn.description || product.bn.shortDescription;
       }
     } else {
-      if (product.data_en && (product.data_en.description || product.data_en.longDescription)) {
-        return product.data_en.description || product.data_en.longDescription;
+      if (product.data_en && (product.data_en.description || product.data_en.shortDescription)) {
+        return product.data_en.description || product.data_en.shortDescription;
       }
-      if (product.en && (product.en.description || product.en.longDescription)) {
-        return product.en.description || product.en.longDescription;
+      if (product.en && (product.en.description || product.en.shortDescription)) {
+        return product.en.description || product.en.shortDescription;
+      }
+      if (product.shortDescription) {
+        return product.shortDescription;
       }
     }
-    return product.description || product.longDescription || '';
+    return product.description || product.shortDescription || '';
   };
 
+  const getLocalizedLongDescription = (product) => {
+    if (!product) return '';
+    if (isBn) {
+      if (product.data_bn && product.data_bn.longDescription) {
+        return product.data_bn.longDescription;
+      }
+      if (product.longDescription_bn) {
+        return product.longDescription_bn;
+      }
+      if (product.bn && product.bn.longDescription) {
+        return product.bn.longDescription;
+      }
+      return getLocalizedShortDescription(product);
+    } else {
+      if (product.data_en && product.data_en.longDescription) {
+        return product.data_en.longDescription;
+      }
+      if (product.en && product.en.longDescription) {
+        return product.en.longDescription;
+      }
+      if (product.longDescription) {
+        return product.longDescription;
+      }
+      return getLocalizedShortDescription(product);
+    }
+  };
+
+  const getLocalizedDescription = (product) => {
+    return getLocalizedLongDescription(product) || getLocalizedShortDescription(product);
+  };
   const getLocalizedFeatures = (product) => {
     if (!product) return [];
     if (isBn) {
@@ -374,6 +410,8 @@ export function useTranslation() {
     getLocalizedName,
     getLocalizedTagline,
     getLocalizedDescription,
+    getLocalizedShortDescription,
+    getLocalizedLongDescription,
     getLocalizedFeatures,
     formatPrice,
     formatNumber

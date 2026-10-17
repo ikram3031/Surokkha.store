@@ -497,13 +497,17 @@ export const useStore = create((set, get) => ({
           // English text content as primary source of truth
           const englishName = p.name || p.title || 'Wellness Product';
           const englishTagline = p.tagline || p.shortDescription || p.subtitle || '';
-          const englishDescription = p.description || p.longDescription || '';
+          const englishShortDescription = p.description || p.shortDescription || '';
+          const englishLongDescription = p.longDescription || p.description || '';
+          const englishDescription = englishLongDescription || englishShortDescription;
 
           // Bengali fallback mappings if available
           const itemBn = (p.bn && typeof p.bn === 'object') ? p.bn : {};
           const nameBn = itemBn.name || itemBn.title || p.name_bn || p.title_bn || englishName;
           const taglineBn = itemBn.tagline || itemBn.shortDescription || itemBn.subtitle || p.tagline_bn || p.shortDescription_bn || englishTagline;
-          const descriptionBn = itemBn.description || itemBn.longDescription || p.description_bn || p.longDescription_bn || englishDescription;
+          const shortDescriptionBn = itemBn.description || itemBn.shortDescription || p.description_bn || p.shortDescription_bn || englishShortDescription;
+          const longDescriptionBn = itemBn.longDescription || p.longDescription_bn || itemBn.description || p.description_bn || englishLongDescription;
+          const descriptionBn = longDescriptionBn || shortDescriptionBn;
 
           // Normalize benefits
           const rawBenefits = Array.isArray(p.benefits) && p.benefits.length > 0 ? p.benefits : [];
@@ -639,6 +643,10 @@ export const useStore = create((set, get) => ({
             tagline_bn: taglineBn || englishTagline,
             description: englishDescription || 'Premium discreet personal wellness product engineered under strict quality testing.',
             description_bn: descriptionBn || englishDescription,
+            shortDescription: englishShortDescription,
+            shortDescription_bn: shortDescriptionBn,
+            longDescription: englishLongDescription,
+            longDescription_bn: longDescriptionBn,
             specifications: specs,
             specifications_bn: specsBn,
             technicalSpecs: specs,

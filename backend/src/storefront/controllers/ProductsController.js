@@ -14,6 +14,7 @@ export const listProducts = async (req, res, next) => {
     const method = (req.method || "GET").toUpperCase();
 
     const queryOptions = method === "POST" ? req.body : req.query;
+    const lang = queryOptions?.lang || (req.headers["accept-language"]?.includes("bn") ? "bn" : "en");
     const filter = await buildProductFilter(queryOptions);
     const sort = buildProductSort(queryOptions);
     const { limit, skip } = parsePagination(queryOptions);
@@ -33,7 +34,7 @@ export const listProducts = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: await attachBrandNames(products.map((p) => serializeProduct(p, "en", "product"))),
+      data: await attachBrandNames(products.map((p) => serializeProduct(p, lang, "product"))),
       pagination: {
         total: count,
         limit,
@@ -49,6 +50,7 @@ export const listProducts = async (req, res, next) => {
 export const getSingleProduct = async (req, res, next) => {
   try {
     const identifier = req.params.identifier;
+    const lang = req.query.lang || (req.headers["accept-language"]?.includes("bn") ? "bn" : "en");
     const isObjectId = typeof identifier === "string" && /^[0-9a-fA-F]{24}$/.test(identifier);
     const filter = isObjectId
       ? { $or: [{ _id: identifier }, { slug: identifier }, { did: identifier }] }
@@ -69,7 +71,7 @@ export const getSingleProduct = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: await attachBrandNames(serializeProduct(product, "en", "product")),
+      data: await attachBrandNames(serializeProduct(product, lang, "product")),
     });
   } catch (err) {
     next(err);
