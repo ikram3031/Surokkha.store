@@ -266,3 +266,11 @@ input[type="number"] {
   appearance: textfield;
 }
 
+
+/* Square corners on all tables and their immediate wrappers */
+table,
+[data-slot="table-container"],
+*:has(> [data-slot="table-container"]),
+*:has(> table) {
+  border-radius: 0 !important;
+}

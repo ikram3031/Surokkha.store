@@ -5,7 +5,7 @@ This document describes all dashboard analytical and business intelligence endpo
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Base Path

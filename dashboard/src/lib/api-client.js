@@ -19,7 +19,7 @@ export const getApiBaseUrl = () => {
     clientConfig?.dashboardApiUrl ||
     clientConfig?.serviceApiBaseUrl ||
     clientConfig?.apiBaseUrl ||
-    'https://api.plexivia.online'
+    'https://api.example.com'
   );
 };
 
@@ -29,7 +29,7 @@ export const getStorefrontApiBaseUrl = () => {
     import.meta.env.VITE_STOREFRONT_API_BASE_URL ||
     clientConfig?.storefrontApiUrl ||
     clientConfig?.apiBaseUrl ||
-    'https://store.plexivia.online'
+    'https://store.example.com'
   );
 };
 
@@ -41,7 +41,7 @@ export const getWebSocketUrl = () => {
     const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     return `${protocol}//${url.host}/ws`;
   } catch (_) {
-    return 'wss://api.plexivia.online/ws';
+    return 'wss://api.example.com/ws';
   }
 };
 

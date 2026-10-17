@@ -1,8 +1,22 @@
 // Generic order domain utilities: validation and number generation.
 import { OrderModel } from '../models/order.model.js';
-import { config } from '../config/index.js';
+import { config, getClientPolicy } from '../config/index.js';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+// Pushes address detail errors (minimum address length, mandatory thana/area) per client checkout policy
+const validateAddressDetail = (info, prefix, errors) => {
+  const minAddressLength = Number(getClientPolicy('checkout.minAddressLength', 0)) || 0;
+  const requireArea = getClientPolicy('checkout.requireArea', false) === true;
+  const address = typeof info?.address === 'string' ? info.address.trim() : '';
+  const thana = typeof info?.thana === 'string' ? info.thana.trim() : '';
+  if (address && minAddressLength > 0 && address.length < minAddressLength) {
+    errors.push(`${prefix}.address must be at least ${minAddressLength} characters (house, road, area)`);
+  }
+  if (requireArea && !thana) {
+    errors.push(`${prefix}.thana (area) is required`);
+  }
+};
 
 export const validateOrderPayload = (body) => {
   const errors = [];
@@ -46,6 +60,7 @@ export const validateOrderPayload = (body) => {
     if (typeof district !== 'string' || district.trim() === '') {
       errors.push('billingInfo.district is required');
     }
+    validateAddressDetail(hasBillingInfo ? billing : body, 'billingInfo', errors);
   } else if (isCustom) {
     // Custom orders require address & district for delivery, email is optional but validated if provided
     if (typeof address !== 'string' || address.trim() === '') {
@@ -81,6 +96,9 @@ export const validateOrderPayload = (body) => {
     }
     if (typeof shipping.district !== 'string' || shipping.district.trim() === '') {
       errors.push('shippingInfo.district is required when shipping to a different address');
+    }
+    if (!isCustom) {
+      validateAddressDetail(shipping, 'shippingInfo', errors);
     }
   }
 

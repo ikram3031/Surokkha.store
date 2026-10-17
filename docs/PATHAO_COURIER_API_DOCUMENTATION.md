@@ -26,7 +26,7 @@ This document provides a comprehensive, production-grade technical specification
 7. [Tracking & Status Reconciliation](#7-tracking--status-reconciliation)
    - [7.1 Order Short Info / Live Tracking](#71-get-order-short-info)
    - [7.2 Status Lifecycle & Transition Matrix](#72-status-lifecycle--transition-matrix)
-8. [Surokkha.store Implementation Mapping](#8-surokkhastore-implementation-mapping)
+8. [Surokkha.store Implementation Mapping](#8-demostore-implementation-mapping)
 
 ---
 

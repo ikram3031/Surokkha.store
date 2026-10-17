@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Tag, ChevronDown, ChevronRight, Truck, Mail } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Tag, Truck, Mail } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiClient } from '@/lib/api-client';
 import { SendOrderInvoiceModal } from '@/components/dashboard/orders/SendOrderInvoiceModal';
@@ -181,6 +181,9 @@ export const OrdersTable = ({
   // Sky (#87a2c7): confirmed (dark text)
   const BADGE_FIXED_CLS = "w-24 justify-center text-center truncate border-transparent select-none";
 
+  // Formats a taka amount without decimals for compact table cells
+  const formatAmount = (value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+
   // Resolves the visual badge representation for payment status
   const getPaymentBadge = (status) => {
     switch (String(status).toLowerCase()) {
@@ -189,7 +192,7 @@ export const OrdersTable = ({
       case 'pending':
         return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_pending', 'Pending')}</Badge>;
       case 'partial':
-        return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>{t('orders.status_partial', 'Partial')}</Badge>;
+        return <Badge className={`${BADGE_FIXED_CLS} bg-[#f28c28] hover:bg-[#d97a1f] text-white font-medium`}>{t('orders.status_partial', 'Partial')}</Badge>;
       case 'failed':
       case 'cancelled':
       case 'canceled':
@@ -244,12 +247,11 @@ export const OrdersTable = ({
   const locale = i18n.language?.startsWith('bn') ? 'bn-BD' : undefined;
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[36px] pl-3 pr-0"></TableHead>
-            <TableHead className="w-[44px] px-2">
+            <TableHead className="w-[44px] pl-4 pr-2">
               <input
                 type="checkbox"
                 className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
@@ -279,10 +281,7 @@ export const OrdersTable = ({
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell className="w-[36px] pl-3 pr-0">
-                  <Skeleton className="h-4 w-4 rounded" />
-                </TableCell>
-                <TableCell className="w-[44px] px-2">
+                <TableCell className="w-[44px] pl-4 pr-2">
                   <Skeleton className="h-4 w-4 rounded" />
                 </TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -303,29 +302,12 @@ export const OrdersTable = ({
                     className={`cursor-pointer transition-colors ${
                       isExpanded
                         ? 'bg-primary/10 font-medium border-l-4 border-l-primary'
-                        : 'hover:bg-[#e5e7eb]'
+                        : ''
                     }`}
                     onClick={() => toggleOrderExpansion(order.id)}
                   >
-                    <TableCell className="w-[36px] pl-3 pr-0 text-muted-foreground">
-                      <button
-                        type="button"
-                        className="p-1 rounded hover:bg-muted/50 transition-transform"
-                        aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleOrderExpansion(order.id);
-                        }}
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="h-4 w-4 text-primary" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </button>
-                    </TableCell>
                     <TableCell
-                      className="w-[44px] px-2"
+                      className="w-[44px] pl-4 pr-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <input
@@ -374,7 +356,16 @@ export const OrdersTable = ({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="w-[120px]">{getPaymentBadge(order.paymentStatus)}</TableCell>
+                    <TableCell className="w-[120px]">
+                      {getPaymentBadge(order.paymentStatus)}
+                      {String(order.paymentStatus).toLowerCase() === 'partial' && Number(order.paidAmount || 0) > 0 && (
+                        <span className="block text-[10px] leading-tight mt-1 whitespace-nowrap">
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{t('orders.paid_short', 'Paid')} ৳{formatAmount(order.paidAmount)}</span>
+                          <span className="text-muted-foreground"> · </span>
+                          <span className="text-amber-600 dark:text-amber-400 font-semibold">{t('orders.due_short', 'Due')} ৳{formatAmount(order.paymentDetails?.pendingAmount ?? Math.max(0, Number(order.totalAmount || 0) - Number(order.paidAmount || 0)))}</span>
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell className="w-[120px]">{getFulfillmentBadge(order.orderStatus)}</TableCell>
                     <TableCell
                       className="text-right w-[60px]"
@@ -423,8 +414,8 @@ export const OrdersTable = ({
                   </TableRow>
 
                   {isExpanded && (
-                    <TableRow className="hover:bg-transparent border-b border-[#e5e7eb] bg-[#f9fafb]">
-                      <TableCell colSpan={9} className="p-0">
+                    <TableRow className="hover:bg-background! bg-background! hover:text-foreground! hover:[&_td]:text-foreground! border-b">
+                      <TableCell colSpan={8} className="p-0">
                         <OrderAccordionDetail order={order} />
                       </TableCell>
                     </TableRow>
@@ -434,7 +425,7 @@ export const OrdersTable = ({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                 {t('overview.no_recent_orders', 'No orders found.')}
               </TableCell>
             </TableRow>
@@ -529,6 +520,6 @@ export const OrdersTable = ({
         onOpenChange={(open) => !open && setSendInvoiceTarget(null)}
         order={sendInvoiceTarget}
       />
-    </div>
+    </>
   );
 };

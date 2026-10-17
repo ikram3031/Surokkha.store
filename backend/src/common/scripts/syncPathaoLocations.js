@@ -23,7 +23,7 @@ const parseArgs = () => {
 
 async function main() {
   const args = parseArgs();
-  const dbUri = args.uri || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/surokkha";
+  const dbUri = args.uri || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/ecom_demo";
 
   console.log("==========================================================");
   console.log("   PATHAO COURIER: DISTRICT & THANA SYNC UTILITY");

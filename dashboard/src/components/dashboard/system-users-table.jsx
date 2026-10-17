@@ -26,6 +26,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { ResetPasswordDialog } from '@/components/dashboard/reset-password-dialog';
@@ -57,7 +58,9 @@ export function SystemUsersTable({
     }
   }, [totalPages, onTotalPagesChange, responseData]);
 
+  const { t } = useTranslation();
   const [toggling, setToggling] = useState(null);
+  const [togglingMail, setTogglingMail] = useState(null);
   const [resendingInvite, setResendingInvite] = useState(null);
   const [resetPasswordTarget, setResetPasswordTarget] = useState(null);
   const { user: currentUser } = useAuth();
@@ -73,6 +76,20 @@ export function SystemUsersTable({
       toast.error('Failed to update user status.');
     } finally {
       setToggling(null);
+    }
+  };
+
+  const handleToggleMail = async (id, currentVal) => {
+    setTogglingMail(id);
+    const newVal = !currentVal;
+    try {
+      await apiClient.put(`/api/v1/users/${id}`, { receiveEmailNotifications: newVal });
+      toast.success(`Email notification ${newVal ? 'activated' : 'deactivated'}.`);
+      queryClient.invalidateQueries({ queryKey: ['system-users'] });
+    } catch {
+      toast.error('Failed to update email notification settings.');
+    } finally {
+      setTogglingMail(null);
     }
   };
 
@@ -140,7 +157,7 @@ export function SystemUsersTable({
   const isAllPageSelected = users.length > 0 && users.every(u => selectedIds.includes(u.id));
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -165,6 +182,7 @@ export function SystemUsersTable({
             <TableHead>Email</TableHead>
             <TableHead>Assigned Role</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>{t('admin.get_mail', 'Get Mail')}</TableHead>
             <TableHead>Last Login</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -184,6 +202,7 @@ export function SystemUsersTable({
                 </TableCell>
                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-10 rounded-full" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-10 rounded-full" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></TableCell>
@@ -233,6 +252,22 @@ export function SystemUsersTable({
                     </label>
                   </div>
                 </TableCell>
+                <TableCell>
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id={`mail-${user.id}`} 
+                      checked={user.receiveEmailNotifications !== false}
+                      onCheckedChange={() => handleToggleMail(user.id, user.receiveEmailNotifications !== false)}
+                      disabled={togglingMail === user.id}
+                    />
+                    <label 
+                      htmlFor={`mail-${user.id}`} 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {user.receiveEmailNotifications !== false ? 'Active' : 'Inactive'}
+                    </label>
+                  </div>
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {formatDateTime(user.lastLogin)}
                 </TableCell>
@@ -267,6 +302,9 @@ export function SystemUsersTable({
                       <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)} className="cursor-pointer">
                         Toggle Active Status
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleMail(user.id, user.receiveEmailNotifications !== false)} className="cursor-pointer">
+                        Toggle Get Mail
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive cursor-pointer"
@@ -281,7 +319,7 @@ export function SystemUsersTable({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={8} className="h-24 text-center">
                 No system users found.
               </TableCell>
             </TableRow>
@@ -302,6 +340,6 @@ export function SystemUsersTable({
         user={resetPasswordTarget}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['system-users'] })}
       />
-    </div>
+    </>
   );
 }

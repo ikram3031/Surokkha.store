@@ -28,6 +28,7 @@ import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
 import { compileTransactionalEmailHtml } from '../../common/templates/invoices/templateEngine.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
+import { decrementStockForOrder } from '../../common/services/stock.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
 export const createOrder = async (req, res, next) => {
@@ -133,6 +134,7 @@ export const createOrder = async (req, res, next) => {
 
     const orderData = await buildOrderDocument(payload, req);
     const createdOrder = await OrderModel.create(orderData);
+    await decrementStockForOrder(createdOrder);
 
     await syncPaymentDocument(createdOrder, payload);
     await upsertCustomerFromOrder({
@@ -708,10 +710,13 @@ export const bulkUpdateOrders = async (req, res, next) => {
         });
       } else if (paymentStatus) {
         const pStatus = paymentStatus.toLowerCase();
-        const rawTotal = Number(updatedOrder.totals?.total || 0);
-        const shippingFee = Number(updatedOrder.totals?.shippingFee ?? updatedOrder.shippingTotalAmount ?? 0);
-        const totalAmount = Math.max(0, rawTotal - shippingFee);
-        const paidAmount = pStatus === 'paid' ? totalAmount : 0;
+        // Use the full order total (same basis as syncPaymentDocument) so both collections agree.
+        const totalAmount = Number(updatedOrder.totals?.total || 0);
+        const paidAmount = pStatus === 'paid'
+          ? totalAmount
+          : pStatus === 'partial'
+            ? Math.min(totalAmount, Number(updatedOrder.paidAmount || 0))
+            : 0;
         const pendingAmount = Math.max(0, totalAmount - paidAmount);
 
         await PaymentModel.findOneAndUpdate(
@@ -824,7 +829,7 @@ export const getOrderInvoiceView = async (req, res, next) => {
       paidAmount: effectivePaid,
     };
 
-    const clientKey = order.client || config.clientKey || 'surokkha';
+    const clientKey = order.client || config.clientKey || 'demo';
 
     let templateConfig = null;
     try {
@@ -945,7 +950,7 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
     }
 
     const brandDisplayName = smtpConfig.fromName || config.brandName || "Surokkha";
-    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'example.com'}`;
     const fromAddress = `"${brandDisplayName}" <${fromEmail}>`;
 
     const htmlContent = compileTransactionalEmailHtml({

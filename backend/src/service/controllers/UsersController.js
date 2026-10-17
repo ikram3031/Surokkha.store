@@ -24,8 +24,8 @@ export const sendInvitationEmail = async ({ user, inviteUrl }) => {
     }
 
     const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
-    const logoUrl = clientConfig?.logoUrl || "https://admin.surokkha.store/surokkha_logo.png";
-    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const logoUrl = clientConfig?.logoUrl || "https://admin.example.com/logo.png";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "example.com"}`;
     const fromAddress = `"${brandName}" <${fromEmail}>`;
 
     const info = await transport.sendMail({
@@ -107,6 +107,7 @@ export const createUser = async (req, res, next) => {
       existing.inviteToken = inviteToken;
       existing.inviteTokenExpiresAt = inviteTokenExpiresAt;
       if (passwordHash) existing.passwordHash = passwordHash;
+      if (payload.receiveEmailNotifications !== undefined) existing.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
       await existing.save();
       user = existing;
     } else {
@@ -119,12 +120,13 @@ export const createUser = async (req, res, next) => {
         inviteToken,
         inviteTokenExpiresAt,
         isActive: Boolean(passwordHash),
+        receiveEmailNotifications: payload.receiveEmailNotifications !== undefined ? Boolean(payload.receiveEmailNotifications) : true,
         createdBy: mongoose.isValidObjectId(req.user?.userId) ? req.user.userId : null,
       });
     }
 
     const origin = req.headers.origin || req.headers.referer || "";
-    let domainUrl = clientConfig?.dashboardUrl || "https://admin.surokkha.store";
+    let domainUrl = clientConfig?.dashboardUrl || "https://admin.example.com";
     if (payload.domain) {
       domainUrl = payload.domain.startsWith("http") ? payload.domain : `https://${payload.domain}`;
     } else if (origin) {
@@ -172,7 +174,7 @@ export const resendInvitation = async (req, res, next) => {
     await user.save();
 
     const origin = req.headers.origin || req.headers.referer || "";
-    let domainUrl = clientConfig?.dashboardUrl || "https://admin.surokkha.store";
+    let domainUrl = clientConfig?.dashboardUrl || "https://admin.example.com";
     if (req.body?.domain) {
       domainUrl = req.body.domain.startsWith("http") ? req.body.domain : `https://${req.body.domain}`;
     } else if (origin) {
@@ -227,6 +229,7 @@ export const updateUser = async (req, res, next) => {
     if (payload.phone !== undefined) user.phone = payload.phone.trim();
     if (payload.role !== undefined) user.role = payload.role;
     if (payload.isActive !== undefined) user.isActive = Boolean(payload.isActive);
+    if (payload.receiveEmailNotifications !== undefined) user.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
 
     if (payload.password) {
       user.passwordHash = await hashPassword(payload.password);
@@ -309,6 +312,7 @@ export const updateProfile = async (req, res, next) => {
     if (payload.phone !== undefined) user.phone = payload.phone.trim();
     if (payload.address !== undefined) user.address = payload.address.trim();
     if (payload.avatar !== undefined) user.avatar = payload.avatar.trim();
+    if (payload.receiveEmailNotifications !== undefined) user.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
 
     await user.save();
 

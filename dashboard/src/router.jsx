@@ -26,6 +26,9 @@ import ProductShowcasesPage from './pages/dashboard/settings/productShowcases';
 import MetaPixelPage from './pages/dashboard/settings/metaPixel';
 import TikTokPixelPage from './pages/dashboard/settings/tiktokPixel';
 import CMSContentPage from './pages/dashboard/settings/cmsContent';
+import CmsBusinessPage from './pages/dashboard/cms/business';
+import CmsOffersPage from './pages/dashboard/cms/offers';
+import CmsHomepagePage from './pages/dashboard/cms/homepage';
 import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
@@ -94,7 +97,26 @@ import RoleGuard from './components/RoleGuard';
 import NotFound from './components/NotFound';
 import { RouteErrorElement } from './components/ErrorBoundary';
 
-const dashboardRoutes = [
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Navigate to="/dashboard" replace />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
+    errorElement: <RouteErrorElement />,
+  },
+  {
+    path: '/invite',
+    element: <InvitePage />,
+    errorElement: <RouteErrorElement />,
+  },
+  {
+    path: '/dashboard',
+    element: <DashboardLayout />,
+    errorElement: <RouteErrorElement />,
+    children: [
       {
         path: '',
         element: (
@@ -232,15 +254,8 @@ const dashboardRoutes = [
               </RoleGuard>
             ),
           },
-          {
-            path: 'cms-content',
-            element: (
-              <RoleGuard menuKey="settings">
-                <CMSContentPage />
-              </RoleGuard>
-            ),
-          },
-          { path: 'cms', element: <Navigate to="cms-content" replace /> },
+          { path: 'cms-content', element: <Navigate to="/dashboard/cms/business" replace /> },
+          { path: 'cms', element: <Navigate to="/dashboard/cms/business" replace /> },
           {
             path: 'google-analytics',
             element: (
@@ -305,6 +320,36 @@ const dashboardRoutes = [
         element: <AllMedia />,
       },
       {
+        path: 'cms',
+        children: [
+          { path: '', element: <Navigate to="business" replace /> },
+          {
+            path: 'business',
+            element: (
+              <RoleGuard menuKey="settings">
+                <CmsBusinessPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'offers',
+            element: (
+              <RoleGuard menuKey="settings">
+                <CmsOffersPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'homepage',
+            element: (
+              <RoleGuard menuKey="settings">
+                <CmsHomepagePage />
+              </RoleGuard>
+            ),
+          },
+        ],
+      },
+      {
         path: 'tools',
         children: [
           { path: '', element: <Navigate to="messages" replace /> },
@@ -318,7 +363,7 @@ const dashboardRoutes = [
           },
           {
             path: 'assets',
-            element: <Navigate to="/dashboard/settings/cms-content" replace />,
+            element: <Navigate to="/dashboard/cms/business" replace />,
           },
           { path: 'media', element: <Navigate to="/dashboard/media" replace /> },
           {
@@ -761,34 +806,30 @@ const dashboardRoutes = [
         path: '*',
         element: <NotFound />,
       },
-    ];
-
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />,
-  },
-  {
-    path: '/login',
-    element: <Login />,
-    errorElement: <RouteErrorElement />,
-  },
-  {
-    path: '/invite',
-    element: <InvitePage />,
-    errorElement: <RouteErrorElement />,
-  },
-  {
-    path: '/dashboard',
-    element: <DashboardLayout />,
-    errorElement: <RouteErrorElement />,
-    children: dashboardRoutes,
+    ],
   },
   {
     path: '/admin',
     element: <AdminLayout />,
     errorElement: <RouteErrorElement />,
-    children: dashboardRoutes
+    children: [
+      {
+        path: '',
+        element: (
+          <RoleGuard menuKey="admin">
+            <AdminOverview />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'styles',
+        element: (
+          <RoleGuard menuKey="admin">
+            <AdminStyles />
+          </RoleGuard>
+        ),
+      }
+    ]
   },
   {
     path: '*',

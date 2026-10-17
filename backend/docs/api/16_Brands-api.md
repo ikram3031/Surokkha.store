@@ -5,7 +5,7 @@ This document describes all available endpoints for brand management.
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Endpoints

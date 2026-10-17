@@ -29,7 +29,7 @@ export const getHealthCheck = async (req, res, next) => {
     return res.status(isDbConnected ? 200 : 503).json({
       status: isDbConnected ? 'healthy' : 'degraded',
       clientKey: config.clientKey || 'demo',
-      brandName: config.brandName || 'Flexivia',
+      brandName: config.brandName || '',
       policies: config.policies || {},
       backendVersion,
       uptimeSeconds: Math.floor(process.uptime()),
@@ -47,7 +47,7 @@ export const getSystemInfo = async (req, res, next) => {
       status: 'success',
       data: {
         clientKey: config.clientKey || 'demo',
-        brandName: config.brandName || 'Flexivia',
+        brandName: config.brandName || '',
         policies: config.policies || {},
         backendVersion,
         nodeVersion: process.version,
@@ -67,7 +67,7 @@ export const getMetadata = async (req, res, next) => {
       status: 'success',
       data: {
         clientKey: config.clientKey || 'demo',
-        brandName: config.brandName || 'Flexivia',
+        brandName: config.brandName || '',
         orderStatuses: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'returned'],
         paymentMethods: ['Cash on Delivery (COD)', 'bKash', 'Nagad', 'Rocket', 'Bank Transfer', 'In-Store POS Cash'],
         paymentStatuses: ['pending', 'paid', 'partially_paid', 'failed', 'refunded'],
@@ -97,7 +97,7 @@ const resolveCloudflareToken = async () => {
   if (config.cloudflare?.apiToken) {
     return decryptText(config.cloudflare.apiToken.trim());
   }
-  const vpsEnv = '/engulfic/opt/configs/backend.env';
+  const vpsEnv = '/opt/configs/backend.env';
   if (fs.existsSync(vpsEnv)) {
     try {
       const content = fs.readFileSync(vpsEnv, 'utf8');
@@ -111,21 +111,10 @@ const resolveCloudflareToken = async () => {
 export const purgeSystemCache = async (req, res, next) => {
   try {
     const clientKey = config.clientKey || process.env.CLIENT_NAME || 'demo';
-    const domain = (config.domain || 'plexivia.online').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+    const domain = (config.domain || 'example.com').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
     const token = await resolveCloudflareToken();
 
-    const ZONE_MAP = {
-      'surokkha.store': 'bd131177db6d610b5d4e5beb0142108b',
-      'surokkha': 'bd131177db6d610b5d4e5beb0142108b',
-      'engulfic.com': 'b8baf3af57594678d588a9391b3a7023',
-      'engulfic': 'b8baf3af57594678d588a9391b3a7023',
-      'kawaiikutir.shop': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'kawaiikutir': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'decantre.com': '532fc0163ee268da83584fe3be20e3bc',
-      'decantre': '532fc0163ee268da83584fe3be20e3bc',
-      'toyoland.com': '6e159fb7a28e83161c565d3ecad4e565',
-      'toyoland': '6e159fb7a28e83161c565d3ecad4e565',
-    };
+    const ZONE_MAP = {};
 
     let dbZoneId = '';
     try {
@@ -182,24 +171,11 @@ const formatNumber = (num) => {
 export const getCloudflareAnalytics = async (req, res, next) => {
   try {
     const clientKey = config.clientKey || process.env.CLIENT_NAME || 'demo';
-    const domain = (config.domain || 'plexivia.online').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+    const domain = (config.domain || 'example.com').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
     const token = await resolveCloudflareToken();
     const range = req.query.range || '24h';
 
-    const ZONE_MAP = {
-      'surokkha.store': 'bd131177db6d610b5d4e5beb0142108b',
-      'surokkha': 'bd131177db6d610b5d4e5beb0142108b',
-      'engulfic.com': 'b8baf3af57594678d588a9391b3a7023',
-      'engulfic': 'b8baf3af57594678d588a9391b3a7023',
-      'kawaiikutir.shop': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'kawaiikutir': 'a9a753a58d952caf7b6f0e5027366ba3',
-      'decantre.com': '532fc0163ee268da83584fe3be20e3bc',
-      'decantre': '532fc0163ee268da83584fe3be20e3bc',
-      'plexihub.space': 'a921a4fedf2527415e2d92c4344143d0',
-      'plexivia.com': '60b3f5bace729c8b9e2a185ba7ab2d33',
-      'plexivia.online': 'd9fea54d2180f18bf9acdd8b77daffc3',
-      'southernhermainoverseas.site': '0ea0658d9d8852cb447d196a78f8a6b0',
-    };
+    const ZONE_MAP = {};
 
     let dbZoneId = '';
     try {

@@ -36,7 +36,7 @@ const HUB_BASE_URL =
   clientConfig?.hubApiUrl ||
   (typeof window !== "undefined" && window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://hub.plexivia.online");
+    : "https://hub.example.com");
 
 // Fetches live hosting alerts and status from Central Hub
 const fetchBillingAlerts = async (clientKey) => {

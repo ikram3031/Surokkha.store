@@ -760,7 +760,7 @@ const ReportsV2Page = () => {
                   <CardContent className="p-0">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/40 text-xs">
+                        <TableRow className="text-xs">
                           <TableHead className="font-semibold">Date</TableHead>
                           <TableHead className="font-semibold text-center">Orders Count</TableHead>
                           <TableHead className="font-semibold text-right">Gross Sales</TableHead>
@@ -770,7 +770,7 @@ const ReportsV2Page = () => {
                       </TableHeader>
                       <TableBody className="text-xs">
                         {timeline.data?.map((row) => (
-                          <TableRow key={row._id} className="hover:bg-muted/30 transition-colors">
+                          <TableRow key={row._id}>
                             <TableCell className="font-medium text-foreground">
                               {row._id}
                             </TableCell>
@@ -890,7 +890,7 @@ const ReportsV2Page = () => {
                   <CardContent className="p-0">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/40 text-xs">
+                        <TableRow className="text-xs">
                           <TableHead className="w-16 text-center font-semibold">Rank</TableHead>
                           <TableHead className="font-semibold">Product Name</TableHead>
                           <TableHead className="font-semibold">SKU</TableHead>
@@ -900,7 +900,7 @@ const ReportsV2Page = () => {
                       </TableHeader>
                       <TableBody className="text-xs">
                         {products.data?.map((product, i) => (
-                          <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                          <TableRow key={i}>
                             <TableCell className="text-center font-bold">
                               {i === 0 ? (
                                 <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] px-2 py-0.5">
@@ -1037,7 +1037,7 @@ const ReportsV2Page = () => {
                     <CardContent className="p-0">
                       <Table>
                         <TableHeader>
-                          <TableRow className="bg-muted/40 text-xs">
+                          <TableRow className="text-xs">
                             <TableHead className="font-semibold">Payment Method</TableHead>
                             <TableHead className="font-semibold text-center">Transactions</TableHead>
                             <TableHead className="text-right font-semibold">Total Volume</TableHead>
@@ -1046,7 +1046,7 @@ const ReportsV2Page = () => {
                         </TableHeader>
                         <TableBody className="text-xs">
                           {payments.data?.map((method, i) => (
-                            <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                            <TableRow key={i}>
                               <TableCell className="font-medium uppercase text-foreground">
                                 <div className="flex items-center gap-2">
                                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
@@ -1157,7 +1157,7 @@ const ReportsV2Page = () => {
                   <CardContent className="p-0">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-muted/40 text-xs">
+                        <TableRow className="text-xs">
                           <TableHead className="font-semibold">Product Name</TableHead>
                           <TableHead className="font-semibold">SKU</TableHead>
                           <TableHead className="font-semibold">Type</TableHead>
@@ -1167,7 +1167,7 @@ const ReportsV2Page = () => {
                       </TableHeader>
                       <TableBody className="text-xs">
                         {inventory.data?.alerts?.map((alert, i) => (
-                          <TableRow key={i} className="hover:bg-muted/30 transition-colors">
+                          <TableRow key={i}>
                             <TableCell className="font-medium text-foreground max-w-sm truncate">
                               {alert.name}
                             </TableCell>

@@ -51,7 +51,7 @@ export function EmailPreviewCard({
     paymentMethod: order.paymentMethod || 'Cash On Delivery',
     orderDate: order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '04 Oct, 2026',
     orderStatus: order.orderStatus || 'Processing',
-    brandName: tenant.brandName || 'Flexivia',
+    brandName: tenant.brandName || 'Your Brand',
     supportEmail: tenant.supportEmail || 'support@flexivia.online',
     supportPhone: tenant.phone || tenant.supportPhone || '+880 1800-000000',
     domain: tenant.domain || 'flexivia.online',
@@ -245,7 +245,7 @@ export function EmailPreviewCard({
               <div className="pt-4 border-t border-slate-100 text-center text-[11px] text-slate-500 leading-relaxed">
                 <p>{footerText}</p>
                 <p className="text-[10px] text-slate-400 mt-2">
-                  © {new Date().getFullYear()} {tenant.brandName || 'Flexivia'}. All rights reserved.
+                  © {new Date().getFullYear()} {tenant.brandName || 'Your Brand'}. All rights reserved.
                 </p>
               </div>
             </div>

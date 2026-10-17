@@ -194,7 +194,7 @@ export const ProductsTable = ({
   const isAllPageSelected = products.length > 0 && products.every(p => selectedIds.includes(p.id));
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <>
       <Table>
         <TableHeader>
           <TableRow>
@@ -508,6 +508,6 @@ export const ProductsTable = ({
         title={t('products.delete_product', 'Delete Product')}
         description={t('products.delete_confirm_desc', { name: deleteTarget?.name ?? '', defaultValue: `Are you sure you want to delete "${deleteTarget?.name ?? ''}"? This cannot be undone.` })}
       />
-    </div>
+    </>
   );
 };

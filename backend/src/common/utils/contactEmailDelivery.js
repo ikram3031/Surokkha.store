@@ -125,8 +125,29 @@ export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject
 
     const fromName = smtpConfig.fromName || config.brandName || "Customer Support";
     const fromAddress = smtpConfig.fromAddress;
-    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || config.supportEmail || config.contact?.supportEmail;
-    if (!adminEmail) return;
+    const recipientsSet = new Set();
+    const defaultNotifyEmail = process.env.ADMIN_NOTIFY_EMAIL || config.supportEmail || config.contact?.supportEmail;
+    if (defaultNotifyEmail) {
+      recipientsSet.add(defaultNotifyEmail.toLowerCase().trim());
+    }
+
+    try {
+      const staffUsers = await UserModel.find({
+        $or: [{ isActive: true }, { active: true }, { isActive: { $exists: false } }],
+        receiveEmailNotifications: { $ne: false },
+      }).select("email receiveEmailNotifications").lean();
+
+      for (const staffUser of staffUsers) {
+        if (staffUser.email && staffUser.receiveEmailNotifications !== false) {
+          recipientsSet.add(staffUser.email.toLowerCase().trim());
+        }
+      }
+    } catch (dbErr) {
+      console.error("[Contact Email] Database query for staff notification emails failed:", dbErr.message);
+    }
+
+    const recipients = Array.from(recipientsSet);
+    if (recipients.length === 0) return;
 
     const forwardSubject = `📩 [New Inquiry for ${config.brandName || "Store"}] ${subject || "Contact Form"}`;
     const forwardHtml = lightThemeHtml(
@@ -147,7 +168,7 @@ export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject
 
     await transport.sendMail({
       from: fromAddress,
-      to: adminEmail,
+      to: recipients,
       replyTo: email,
       subject: forwardSubject,
       html: forwardHtml,

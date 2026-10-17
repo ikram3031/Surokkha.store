@@ -441,7 +441,7 @@ const TrashPage = () => {
         <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/30">
+              <TableRow>
                 <TableHead className="w-12 text-center">
                   <input
                     type="checkbox"
@@ -595,7 +595,7 @@ const TrashPage = () => {
         <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/30">
+              <TableRow>
                 <TableHead className="w-12 text-center">
                   <input
                     type="checkbox"

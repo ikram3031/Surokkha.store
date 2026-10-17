@@ -18,6 +18,7 @@ import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
 import { SpamListModel } from '../../common/models/spamList.model.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
+import { decrementStockForOrder } from '../../common/services/stock.service.js';
 
 const { Types } = mongoose;
 
@@ -138,6 +139,7 @@ export const createOrder = async (req, res, next) => {
 
     const orderData = await buildOrderDocument(payload);
     const createdOrder = await OrderModel.create(orderData);
+    await decrementStockForOrder(createdOrder);
 
     // Sync / Upsert Customer collection record with automatic history diff tracking
     await upsertCustomerFromOrder({

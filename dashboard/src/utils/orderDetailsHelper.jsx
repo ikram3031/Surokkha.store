@@ -124,7 +124,7 @@ export const getInitialPaidAmount = (order, initMethod) => {
 export const extractPaymentPhone = (order) => {
   const phoneVal = order?.paymentDetails?.paymentPhone || order?.paymentPhone || "";
   if (phoneVal) {
-    return phoneVal.replace(/^\+880?/, "");
+    return phoneVal.replace(/^\+?880?/, "").replace(/^0/, "");
   }
   const match = String(order?.paymentMethod || "").match(/\+880?(\d+)/);
   return match ? match[1] : "";
@@ -179,7 +179,7 @@ export const getPaymentBadge = (status) => {
     case "paid":
       return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>Paid</Badge>;
     case "partial":
-      return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>Partial</Badge>;
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#f28c28] hover:bg-[#d97a1f] text-white font-medium`}>Partial</Badge>;
     case "failed":
     case "cancelled":
     case "canceled":
@@ -237,7 +237,7 @@ export const resolvePaymentOptions = (isInStore) => {
   ];
 };
 
-// Map raw order items into editable cart items while retaining productDid and concentration.
+// Map raw order items into editable cart items while retaining product/item references and line type.
 export const mapOrderItemsToCart = (items = []) =>
   (items || []).map((item, idx) => {
     const idKey = item.size ? `${idx}__${item.size}` : `${idx}`;
@@ -251,6 +251,9 @@ export const mapOrderItemsToCart = (items = []) =>
       size: item.size || "",
       concentration: item.concentration || "",
       productDid: item.productDid || "",
+      productId: item.productId || "",
+      itemId: item.itemId || "",
+      itemType: item.itemType || "product",
     };
   });
 
@@ -260,6 +263,7 @@ export const buildUpdatePayload = ({
   paymentMethod,
   paidAmount,
   paymentPhone,
+  paymentTransactionId,
   isDigitalPayment,
   billingInfo,
   shippingInfo,
@@ -330,8 +334,11 @@ export const buildUpdatePayload = ({
   return {
     status: getBackendStatus(orderStatus),
     paymentMethod: fullPaymentMethod,
-    paidAmount: isInStoreOrder ? Number(total || 0) : Number(paidAmount || 0),
+    paidAmount: Math.min(Number(total || 0), Math.max(0, Number(paidAmount || 0))),
     paymentPhone: formattedPaymentPhone,
+    ...(paymentTransactionId !== undefined
+      ? { paymentTransactionId: !isInStoreOrder && isDigitalPayment ? String(paymentTransactionId || "").trim() : "" }
+      : {}),
     billingInfo: normalizedBilling,
     shippingInfo: normalizedShipping,
     customer: {
@@ -345,6 +352,11 @@ export const buildUpdatePayload = ({
       size: item.size,
       concentration: item.concentration || "",
       productDid: item.productDid || "",
+      productId: item.productId || "",
+      itemId: item.itemId || "",
+      itemType: item.itemType || "product",
+      sku: item.sku || "",
+      image: item.image || "",
     })),
     totals: {
       subtotal,

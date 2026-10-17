@@ -31,7 +31,7 @@ export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
       },
     });
 
-    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "example.com"}`;
     const fromAddress = `"${brandName}" <${fromEmail}>`;
 
     const htmlContent = buildTwoFactorQrEmailHtml({

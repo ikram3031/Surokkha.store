@@ -2,11 +2,12 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }) {
+// Renders the data table container on the theme background, recessed below card surfaces in dark mode
+const Table = ({ className, ...props }) => {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className="relative w-full overflow-x-auto bg-background text-foreground"
     >
       <table
         data-slot="table"
@@ -17,27 +18,36 @@ function Table({ className, ...props }) {
   )
 }
 
-function TableHeader({ className, ...props }) {
+// Renders the table header with a subtle muted band
+const TableHeader = ({ className, ...props }) => {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
+      className={cn(
+        "bg-muted/50 [&_tr]:border-b [&_tr]:hover:bg-transparent",
+        className
+      )}
       {...props}
     />
   )
 }
 
-function TableBody({ className, ...props }) {
+// Renders the table body on the theme background
+const TableBody = ({ className, ...props }) => {
   return (
     <tbody
       data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
+      className={cn(
+        "[&_tr:last-child]:border-0",
+        className
+      )}
       {...props}
     />
   )
 }
 
-function TableFooter({ className, ...props }) {
+// Renders the table footer with muted background
+const TableFooter = ({ className, ...props }) => {
   return (
     <tfoot
       data-slot="table-footer"
@@ -50,12 +60,13 @@ function TableFooter({ className, ...props }) {
   )
 }
 
-function TableRow({ className, ...props }) {
+// Renders a table row; hover tints with the secondary color and switches cell text to primary
+const TableRow = ({ className, ...props }) => {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        "border-b border-border transition-colors hover:bg-secondary/20 hover:text-primary hover:[&_td]:text-primary has-aria-expanded:bg-muted/40 data-[state=selected]:bg-muted/60",
         className
       )}
       {...props}
@@ -63,12 +74,13 @@ function TableRow({ className, ...props }) {
   )
 }
 
-function TableHead({ className, ...props }) {
+// Renders a table header cell with small uppercase muted label
+const TableHead = ({ className, ...props }) => {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0",
+        "h-11 px-3 text-left align-middle text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -76,12 +88,13 @@ function TableHead({ className, ...props }) {
   )
 }
 
-function TableCell({ className, ...props }) {
+// Renders a table data cell
+const TableCell = ({ className, ...props }) => {
   return (
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        "px-3 py-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -89,10 +102,11 @@ function TableCell({ className, ...props }) {
   )
 }
 
-function TableCaption({
+// Renders the table caption with muted styling
+const TableCaption = ({
   className,
   ...props
-}) {
+}) => {
   return (
     <caption
       data-slot="table-caption"

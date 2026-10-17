@@ -40,7 +40,7 @@ export async function getSmtpConfig() {
     secure = String(env.SMTP_ENCRYPTION || "").toLowerCase() === "ssl";
   }
 
-  const fromName = (useDb && dbSmtp.senderName ? dbSmtp.senderName : env.SMTP_FROM_NAME || config?.brandName || "Flexivia Store").trim();
+  const fromName = (useDb && dbSmtp.senderName ? dbSmtp.senderName : env.SMTP_FROM_NAME || config?.brandName || "").trim();
   const fromEmail = (useDb && dbSmtp.senderEmail ? dbSmtp.senderEmail : env.SMTP_FROM || user || "").trim();
 
   const isConfigured = Boolean(host && user && password && password !== "none");

@@ -29,11 +29,11 @@ export const getClientInvoiceHtml = ({
     }
   }
 
-  const brandName = customBrandName || config.brandName || 'Flexivia';
+  const brandName = customBrandName || config.brandName || '';
   const displayLogo = logoUrl || config.logoUrl || '';
-  const storeAddress = customAddress || config.contact?.address || config.address || 'Dhaka, Bangladesh';
-  const storePhone = customPhone || config.contact?.phone || config.phone || '+8801700000000';
-  const storeEmail = customEmail || config.contact?.supportEmail || config.supportEmail || 'info@plexivia.online';
+  const storeAddress = customAddress || config.contact?.address || config.address || '';
+  const storePhone = customPhone || config.contact?.phone || config.phone || config.supportPhone || '';
+  const storeEmail = customEmail || config.contact?.supportEmail || config.supportEmail || '';
 
   const orderId = order.orderId || order.orderNumber || order.id || order._id || 'INV-0000';
   const orderDate = order.orderDate || (order.createdAt ? new Date(order.createdAt).toLocaleDateString() : new Date().toLocaleDateString());

@@ -34,8 +34,8 @@ export const sendOrderEmailsAsynchronously = (order) => {
       }
 
       const activeClientKey = (order.client || config.clientKey || process.env.CLIENT_NAME || env.CLIENT_NAME || "demo").toLowerCase().trim();
-      const brandDisplayName = smtpConfig.fromName || config.brandName || "Flexivia";
-      const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'plexivia.online'}`;
+      const brandDisplayName = smtpConfig.fromName || config.brandName || "";
+      const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'example.com'}`;
       const fromAddress = { name: brandDisplayName, address: fromEmail };
       console.log(`[Email Notification] Preparing order emails via Hostinger/SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
 
@@ -197,19 +197,18 @@ export const sendOrderEmailsAsynchronously = (order) => {
         }
 
         try {
-          const superAdmins = await UserModel.find({
-            role: { $in: ["Owner", "Admin", "Super Admin", "Manager"] },
+          const staffRecipients = await UserModel.find({
             $or: [{ isActive: true }, { active: true }, { isActive: { $exists: false } }],
             receiveEmailNotifications: { $ne: false },
           }).select("email receiveEmailNotifications").lean();
 
-          for (const adminUser of superAdmins) {
-            if (adminUser.email && adminUser.receiveEmailNotifications !== false) {
-              adminRecipientsSet.add(adminUser.email.toLowerCase().trim());
+          for (const staffUser of staffRecipients) {
+            if (staffUser.email && staffUser.receiveEmailNotifications !== false) {
+              adminRecipientsSet.add(staffUser.email.toLowerCase().trim());
             }
           }
         } catch (dbErr) {
-          console.error("[Email Notification] Database query for super admin emails failed, falling back to default admins:", dbErr.message);
+          console.error("[Email Notification] Database query for staff notification emails failed, falling back to default admins:", dbErr.message);
         }
 
         const adminRecipients = Array.from(adminRecipientsSet);
@@ -244,10 +243,10 @@ export const sendOrderEmailsAsynchronously = (order) => {
         if (!existingOrderEmail) {
           const customerSenderAddress = isValidCustomerEmail(customerEmail)
             ? customerEmail
-            : `orders@${config.domain || "plexivia.online"}`;
+            : `orders@${config.domain || "example.com"}`;
 
           await EmailMessageModel.create({
-            messageId: `order-${orderId}-${Date.now()}@${config.domain || "plexivia.online"}`,
+            messageId: `order-${orderId}-${Date.now()}@${config.domain || "example.com"}`,
             folder: "INBOX",
             from: {
               name: customerName || "Online Store Customer",

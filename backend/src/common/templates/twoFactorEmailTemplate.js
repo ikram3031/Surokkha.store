@@ -8,7 +8,7 @@ export const buildTwoFactorQrEmailHtml = ({
   secret,
   brandName: customBrandName,
 }) => {
-  const brandName = customBrandName || config.brandName || 'Flexivia';
+  const brandName = customBrandName || config.brandName || '';
 
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">

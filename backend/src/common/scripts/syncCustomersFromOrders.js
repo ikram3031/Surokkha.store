@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { OrderModel } from "../models/order.model.js";
 import { upsertCustomerFromOrder } from "../services/customer.service.js";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/surokkha";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/ecom_demo";
 
 async function syncAllCustomers() {
   try {

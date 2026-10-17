@@ -18,8 +18,8 @@ export const buildInvoiceEmailHtml = ({
   notes,
   logoUrl,
 }) => {
-  const finalSellerName = sellerName || "Flexivia";
-  const finalSellerAddress = sellerAddress || "Dhaka, Bangladesh";
+  const finalSellerName = sellerName || "";
+  const finalSellerAddress = sellerAddress || "";
   const finalBuyerName = buyerName || "Customer";
   const finalBuyerAddress = buyerAddress || "Customer Address";
   const finalBuyerEmail = buyerEmail || "";

@@ -75,7 +75,7 @@ const SEOSettingsPage = () => {
     saveMutation.mutate();
   };
 
-  const displayUrl = canonicalBaseUrl || clientConfig?.storefrontUrl || (clientConfig?.domain ? `https://${clientConfig.domain}` : 'https://plexivia.online');
+  const displayUrl = canonicalBaseUrl || clientConfig?.storefrontUrl || (clientConfig?.domain ? `https://${clientConfig.domain}` : 'https://example.com');
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 w-full max-w-5xl">
@@ -115,7 +115,7 @@ const SEOSettingsPage = () => {
                     <span className="text-[10px] text-muted-foreground">{metaTitle.length}/60 chars</span>
                   </div>
                   <Input
-                    placeholder="e.g. Flexivia | Premium Lifestyle & eCommerce Store"
+                    placeholder="e.g. Your Brand | Premium Lifestyle & eCommerce Store"
                     value={metaTitle}
                     onChange={(e) => setMetaTitle(e.target.value)}
                     disabled={isLoading}
@@ -162,7 +162,7 @@ const SEOSettingsPage = () => {
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">Site Name</label>
                     <Input
-                      placeholder="e.g. Flexivia"
+                      placeholder="e.g. Your Brand"
                       value={siteName}
                       onChange={(e) => setSiteName(e.target.value)}
                       disabled={isLoading}
@@ -182,7 +182,7 @@ const SEOSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">Canonical Base URL</label>
                   <Input
-                    placeholder="https://plexivia.online"
+                    placeholder="https://example.com"
                     value={canonicalBaseUrl}
                     onChange={(e) => setCanonicalBaseUrl(e.target.value)}
                     disabled={isLoading}
@@ -192,7 +192,7 @@ const SEOSettingsPage = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">OpenGraph Social Share Image URL</label>
                   <Input
-                    placeholder="https://api.plexivia.online/uploads/assets/og_banner.webp"
+                    placeholder="https://api.example.com/uploads/assets/og_banner.webp"
                     value={ogImage}
                     onChange={(e) => setOgImage(e.target.value)}
                     disabled={isLoading}

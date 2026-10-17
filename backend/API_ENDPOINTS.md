@@ -1,6 +1,6 @@
 # White-Label E-Commerce API Endpoints Reference
 
-Base API Address: `https://api.plexivia.online` (or active tenant domain)
+Base API Address: `https://api.example.com` (or active tenant domain)
 
 ---
 

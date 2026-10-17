@@ -1,7 +1,24 @@
+import path from "path";
+import fs from "fs";
 import { CategoryModel } from "../../common/models/category.model.js";
 import { ProductModel } from "../../common/models/product.model.js";
 import { logger } from "../../common/config/logger.js";
 import { PLACEHOLDER_IMAGE_URL } from "../../common/utils/productUtils.js";
+
+const renameCategoryImage = (file, slug) => {
+  if (!file || !slug) return null;
+  const ext = path.extname(file.originalname) || '.webp';
+  const newFilename = `${slug}${ext}`;
+  const newPath = path.join(path.dirname(file.path), newFilename);
+  try {
+    fs.renameSync(file.path, newPath);
+  } catch (e) {
+    logger.warn({ err: e }, "Failed to rename category image, using original");
+    return file.url;
+  }
+  const dir = path.dirname(file.url);
+  return `${dir}/${newFilename}`;
+};
 
 // Fetches and returns an array of all categories with live product counts
 export const getAllCategories = async (req, res) => {
@@ -81,10 +98,16 @@ export const createCategory = async (req, res) => {
       if (parentCat) parentId = parentCat._id;
     }
 
+    let imageUrl = "";
+    if (req.file) {
+      imageUrl = renameCategoryImage(req.file, slug) || req.file.url;
+    }
+
     const category = new CategoryModel({
       name,
       slug,
       description,
+      imageUrl,
       parent: parentId,
       createdBy: req.body.createdBy || req.user?._id || req.user?.id || null,
     });
@@ -115,6 +138,11 @@ export const updateCategory = async (req, res) => {
     if (name) category.name = name;
     if (slug) category.slug = slug;
     if (description !== undefined) category.description = description;
+
+    if (req.file) {
+      const finalSlug = slug || category.slug;
+      category.imageUrl = renameCategoryImage(req.file, finalSlug) || req.file.url;
+    }
 
     if (parent !== undefined) {
       let parentId = null;

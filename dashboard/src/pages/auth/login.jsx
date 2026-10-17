@@ -19,7 +19,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { handleGlobalError } from '@/lib/error-handler';
 import { toast } from 'sonner';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import plexiviaLogo from '@/assets/plexivia.png';
+import defaultLogoImg from '@/assets/default-logo.png';
 import { clientConfig } from '@/clientConfig';
 import { apiClient } from '@/lib/api-client';
 import { BrandLogo } from '@/components/BrandLogo';
@@ -233,7 +233,7 @@ const LoginPage = () => {
     );
   }
 
-  const brandName = clientConfig?.brandName || 'Flexivia';
+  const brandName = clientConfig?.brandName || '';
 
   return (
     <div className="min-h-screen w-screen max-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-primary/30 selection:text-primary-foreground">
@@ -278,7 +278,7 @@ const LoginPage = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-11 h-11 text-sm bg-muted/50 border-transparent text-foreground focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50 rounded-xl transition-all"
-                        placeholder="admin@plexivia.online"
+                        placeholder="admin@example.com"
                         required
                       />
                     </div>
@@ -450,7 +450,7 @@ const LoginPage = () => {
           Powered By
         </span>
         <img
-          src={plexiviaLogo}
+          src={defaultLogoImg}
           alt="Plexivia"
           className="h-6 sm:h-7 w-auto max-w-[130px] sm:max-w-[150px] object-contain opacity-90 hover:opacity-100 transition-opacity drop-shadow-md"
         />

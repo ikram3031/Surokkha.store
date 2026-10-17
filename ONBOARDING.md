@@ -47,7 +47,7 @@ To ensure maximum reliability and prevent resource contention between customer s
 
 ## ⚙️ 2. Tenant Configuration System
 
-Every tenant is configured through a structured JSON file located in `configs/<tenantKey>.json`. The platform falls back gracefully to the default demo brand (`Flexivia` / `plexivia.online`) when no client config is specified.
+Every tenant is configured through a structured JSON file located in `configs/<tenantKey>.json`. The platform falls back gracefully to the default demo brand (`Your Brand` / `example.com`) when no client config is specified.
 
 ### 📋 Configuration Structure (`configs/client.template.json`)
 
@@ -63,7 +63,7 @@ Every tenant is configured through a structured JSON file located in `configs/<t
   "apiBaseUrl": "https://api.yourbrand.com",
   "storefrontApiUrl": "https://api.yourbrand.com",
   "serviceApiBaseUrl": "https://service.yourbrand.com",
-  "hubApiUrl": "https://hub.plexivia.online",
+  "hubApiUrl": "https://hub.example.com",
   "logoUrl": "/uploads/assets/logo.webp",
   "siteIconUrl": "/uploads/assets/favicon.ico",
   "contact": {
@@ -193,6 +193,6 @@ Verify that all services are operational:
 ## 🔒 5. Security & Isolation Standard
 
 - **Zero Hardcoded Secrets**: Never commit real API keys, Meta Pixel tokens, Cloudflare Zone IDs, VPS IP addresses, or personal developer credentials into this repository.
-- **Generic Fallback Only**: The only permitted fallback brand identity is **`Flexivia`** (`plexivia.online`).
+- **Generic Fallback Only**: The only permitted fallback brand identity is **`Your Brand`** (`example.com`).
 - **Dynamic Pathing**: Never hardcode local absolute paths in production code. All paths must derive from environment variables or standard project roots.
 - **Tenant Isolation**: Each production tenant operates in isolated Docker networks with dedicated MongoDB databases.

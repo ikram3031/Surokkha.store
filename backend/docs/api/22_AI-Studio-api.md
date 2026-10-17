@@ -5,7 +5,7 @@ This document describes the Google Gemini generative AI image generation, multi-
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Base Path

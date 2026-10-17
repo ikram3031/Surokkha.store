@@ -416,6 +416,8 @@
     "user_email": "Email Address",
     "user_role": "Assigned Role",
     "user_status": "Account Status",
+    "get_mail": "Get Mail",
+    "get_mail_desc": "Receive order and site notification emails",
     "password": "Password",
     "confirm_password": "Confirm Password",
     "role_superadmin": "Super Admin",

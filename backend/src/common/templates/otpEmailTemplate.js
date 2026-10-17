@@ -9,7 +9,7 @@ export const buildOtpEmailHtml = ({
   type = 'registration',
   brandName: customBrandName,
 }) => {
-  const brandName = customBrandName || config.brandName || 'Flexivia';
+  const brandName = customBrandName || config.brandName || '';
   const isForgotPassword = type === 'forgot-password';
   const heading = isForgotPassword ? 'Password Reset Verification' : 'Verify Your Email';
   const description = isForgotPassword

@@ -26,6 +26,9 @@ import {
   Wrench,
   ImageDown,
   Share2,
+  Building2,
+  Megaphone,
+  Home,
   Settings,
   LogOut,
   User,
@@ -225,12 +228,14 @@ export const AppSidebar = ({ ...props }) => {
   const showAdmin = isAllowed("admin")
   const showSystem = isAllowed("tools") || isAllowed("logs") || isAllowed("tools.logs") || isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("cpanel") || showAdmin
   const showItems = isAllowed("items")
+  const showCms = showSettings
   const showAdminLayout = Boolean(features?.adminMenuLayout) && isAllowed("admin")
 
   const activeGroup =
     pathname.startsWith("/dashboard/orders") ? "orders"
     : pathname.startsWith("/dashboard/items") ? "items"
     : (pathname.startsWith("/dashboard/products") || pathname === "/dashboard/settings/products") ? "products"
+    : pathname.startsWith("/dashboard/cms") ? "cms"
     : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
     : (pathname.startsWith("/dashboard/accounts") || pathname.startsWith("/dashboard/billing")) ? "accounts"
     : (pathname.startsWith("/dashboard/settings") || pathname.startsWith("/dashboard/users") || pathname.startsWith("/dashboard/tools/meta-catalog")) ? "settings"
@@ -461,6 +466,21 @@ export const AppSidebar = ({ ...props }) => {
             </NavGroup>
           )}
 
+          {showCms && <NavLabel>{t("nav.group_store_content", "Store & Content")}</NavLabel>}
+          {showCms && (
+            <NavGroup id="cms" icon={ImageIcon} label={t("nav.cms_content", "CMS Content")} active={activeGroup === "cms"} open={openMenu === "cms"} onToggle={toggleMenu}>
+              <NavSub to="/dashboard/cms/business" active={pathname === "/dashboard/cms/business"} icon={Building2}>
+                {t("nav.cms_business", "Business")}
+              </NavSub>
+              <NavSub to="/dashboard/cms/offers" active={pathname === "/dashboard/cms/offers"} icon={Megaphone}>
+                {t("nav.cms_offers", "Offers")}
+              </NavSub>
+              <NavSub to="/dashboard/cms/homepage" active={pathname === "/dashboard/cms/homepage"} icon={Home}>
+                {t("nav.cms_homepage", "Homepage")}
+              </NavSub>
+            </NavGroup>
+          )}
+
           {(showAccounts || showReports) && <NavLabel>{t("nav.group_finance", "Finance")}</NavLabel>}
           {showAccounts && (
             <NavGroup id="accounts" icon={Landmark} label={t("nav.accounts", "Accounts")} active={activeGroup === "accounts"} open={openMenu === "accounts"} onToggle={toggleMenu}>
@@ -514,9 +534,6 @@ export const AppSidebar = ({ ...props }) => {
               {showSettings && (
                 <>
                   <SubLabel>{t("nav.store_content", "Store & Content")}</SubLabel>
-                        <NavSub to="/dashboard/settings/cms-content" active={pathname.startsWith("/dashboard/settings/cms")} icon={ImageIcon}>
-                          {t("nav.cms_content", "CMS Content")}
-                        </NavSub>
                         <NavSub to="/dashboard/settings/seo" active={pathname.startsWith("/dashboard/settings/seo")} icon={Search}>
                           {t("nav.general_seo", "General & SEO")}
                         </NavSub>

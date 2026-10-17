@@ -5,7 +5,7 @@ This document describes all available billing and transaction record endpoints.
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Endpoints

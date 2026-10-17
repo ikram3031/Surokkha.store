@@ -71,13 +71,13 @@ Every git commit must strictly adhere to the format:
 
 ---
 
-## 7. Infrastructure & Deployment Reference (Flexivia Template Model)
+## 7. Infrastructure & Deployment Reference (Your Brand Template Model)
 
 ### Standard White-Label Deployment Template
-- **Template Brand**: `Flexivia` (`plexivia.online`)
-- **Storefront Website**: `https://plexivia.online` (Port 8001 / Static Dist)
-- **Admin Dashboard**: `https://dashboard.plexivia.online` (Port 8005)
-- **Storefront API Instance**: `https://api.plexivia.online` (Port 4001, `src/server.storefront.js`)
-- **Dashboard API Instance**: `https://service.plexivia.online` (Port 4002, `src/server.dashboard.js`)
+- **Template Brand**: `Your Brand` (`example.com`)
+- **Storefront Website**: `https://example.com` (Port 8001 / Static Dist)
+- **Admin Dashboard**: `https://dashboard.example.com` (Port 8005)
+- **Storefront API Instance**: `https://api.example.com` (Port 4001, `src/server.storefront.js`)
+- **Dashboard API Instance**: `https://service.example.com` (Port 4002, `src/server.dashboard.js`)
 - **Database**: MongoDB 7.0 (Port 27017)
 

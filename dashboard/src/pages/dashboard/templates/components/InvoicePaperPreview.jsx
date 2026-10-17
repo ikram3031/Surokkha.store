@@ -78,7 +78,7 @@ export function InvoicePaperPreview({
     paymentMethod: order.paymentMethod || 'Cash On Delivery',
     orderDate: order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '04 Oct, 2026',
     orderStatus: order.orderStatus || 'Processing',
-    brandName: tenant.brandName || 'Flexivia',
+    brandName: tenant.brandName || 'Your Brand',
     supportEmail: tenant.supportEmail || 'support@flexivia.online',
     supportPhone: tenant.phone || tenant.supportPhone || '+880 1800-000000',
     domain: tenant.domain || 'flexivia.online',
@@ -177,7 +177,7 @@ export function InvoicePaperPreview({
               )}
 
               <div className="text-xs leading-relaxed max-w-xs" style={{ color: mutedTextColor }}>
-                <p className="font-bold" style={{ color: darkColor }}>{tenant.brandName || 'Flexivia Store'}</p>
+                <p className="font-bold" style={{ color: darkColor }}>{tenant.brandName || 'Your Brand'}</p>
                 {tenant.phone && <p>Hotline: {tenant.phone}</p>}
                 {tenant.supportEmail && <p>Email: {tenant.supportEmail}</p>}
                 {tenant.address && <p>{tenant.address}</p>}

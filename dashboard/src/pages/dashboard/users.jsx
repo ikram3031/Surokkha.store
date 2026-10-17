@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { SystemUsersTable } from '@/components/dashboard/system-users-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Search, UserPlus, Trash2, X } from 'lucide-react';
 import {
   Select,
@@ -58,6 +59,7 @@ const UsersPage = () => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState('Admin');
+  const [newUserGetMail, setNewUserGetMail] = useState(true);
 
   const queryClient = useQueryClient();
 
@@ -122,6 +124,7 @@ const UsersPage = () => {
         email: newUserEmail.trim(),
         password: newUserPassword.trim() || undefined,
         role: newUserRole,
+        receiveEmailNotifications: newUserGetMail,
         domain: window.location.origin,
       });
 
@@ -132,6 +135,7 @@ const UsersPage = () => {
       setNewUserEmail('');
       setNewUserPassword('');
       setNewUserRole('Marketing Expert');
+      setNewUserGetMail(true);
     } catch (err) {
       toast.error(getApiErrorMessage(err, t('common.error')));
     } finally {
@@ -220,6 +224,21 @@ const UsersPage = () => {
                     <SelectItem value="Investor">Investor (Read-Only)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                <div className="space-y-0.5">
+                  <label className="text-xs font-semibold cursor-pointer" htmlFor="new-user-mail">
+                    {t('admin.get_mail', 'Get Mail')}
+                  </label>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('admin.get_mail_desc', 'Receive order and site notification emails')}
+                  </p>
+                </div>
+                <Switch
+                  id="new-user-mail"
+                  checked={newUserGetMail}
+                  onCheckedChange={setNewUserGetMail}
+                />
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>

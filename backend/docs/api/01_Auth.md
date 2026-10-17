@@ -5,7 +5,7 @@ This document describes all authentication and session management endpoints avai
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Base Path
@@ -27,7 +27,7 @@ Authenticates user credentials. If Two-Factor Authentication is enabled for the 
 #### Request Body
 ```json
 {
-  "email": "user@decantrebd.com",
+  "email": "user@demobd.com",
   "password": "yourPassword123"
 }
 ```
@@ -41,7 +41,7 @@ Authenticates user credentials. If Two-Factor Authentication is enabled for the 
       "id": "64a8c9b3f8e3a5c1d2e7f0a1",
       "did": "US-123456",
       "name": "Admin User",
-      "email": "user@decantrebd.com",
+      "email": "user@demobd.com",
       "role": "Admin",
       "lastLogin": "2026-08-22T12:00:00.000Z"
     },
@@ -58,7 +58,7 @@ Authenticates user credentials. If Two-Factor Authentication is enabled for the 
 {
   "status": "success",
   "requires2fa": true,
-  "email": "user@decantrebd.com"
+  "email": "user@demobd.com"
 }
 ```
 
@@ -75,7 +75,7 @@ Generates a TOTP secret (if not already created) and emails a QR code to the use
 #### Request Body
 ```json
 {
-  "email": "user@decantrebd.com",
+  "email": "user@demobd.com",
   "password": "yourPassword123"
 }
 ```
@@ -101,7 +101,7 @@ Verifies the 6-digit TOTP code, enables 2FA for the account, and issues access &
 #### Request Body
 ```json
 {
-  "email": "user@decantrebd.com",
+  "email": "user@demobd.com",
   "password": "yourPassword123",
   "code": "123456"
 }
@@ -116,7 +116,7 @@ Verifies the 6-digit TOTP code, enables 2FA for the account, and issues access &
       "id": "64a8c9b3f8e3a5c1d2e7f0a1",
       "did": "US-123456",
       "name": "Admin User",
-      "email": "user@decantrebd.com",
+      "email": "user@demobd.com",
       "role": "Admin",
       "lastLogin": "2026-08-22T12:00:00.000Z"
     },
@@ -142,7 +142,7 @@ Authenticates an administrator via Google OAuth 2.0 authorization code exchange.
 ```json
 {
   "code": "4/0AeanS0...",
-  "redirectUri": "https://dashboard.decantrebd.com/auth/google/callback"
+  "redirectUri": "https://dashboard.demobd.com/auth/google/callback"
 }
 ```
 
@@ -155,7 +155,7 @@ Authenticates an administrator via Google OAuth 2.0 authorization code exchange.
       "id": "64a8c9b3f8e3a5c1d2e7f0a1",
       "did": "US-123456",
       "name": "Admin User",
-      "email": "user@decantrebd.com",
+      "email": "user@demobd.com",
       "role": "Admin",
       "lastLogin": "2026-08-22T12:00:00.000Z"
     },
@@ -232,7 +232,7 @@ Invalidates the active refresh token in the database.
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://server.decantrebd.com",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://server.demobd.com",
   headers: {
     "Content-Type": "application/json",
   },
@@ -260,7 +260,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error("No refresh token available");
 
         const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL || "https://server.decantrebd.com"}/api/v1/auth/refresh-token`,
+          `${import.meta.env.VITE_API_BASE_URL || "https://server.demobd.com"}/api/v1/auth/refresh-token`,
           { refreshToken }
         );
 

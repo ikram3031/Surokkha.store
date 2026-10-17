@@ -94,7 +94,7 @@ export const createApp = async (options = {}) => {
       : ["dashboard"];
     const frontendKeywords = env.FRONTEND_DOMAIN_KEYWORDS
       ? env.FRONTEND_DOMAIN_KEYWORDS.split(",").map((kw) => kw.trim().toLowerCase())
-      : ["localhost", config.domain || "plexivia.online"];
+      : ["localhost", config.domain || "example.com"];
 
     const isDashboard = dashboardKeywords.some((kw) => origin.includes(kw)) ||
       (req.originalUrl && req.originalUrl.includes("/dashboard/"));

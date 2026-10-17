@@ -888,9 +888,9 @@ export const testTemplateEmail = async (req, res, next) => {
     }
 
     const mailOptions = {
-      from: `"${clientConfig?.brandName || 'Flexivia'}" <${transport.options?.auth?.user || 'support@plexivia.online'}>`,
+      from: `"${clientConfig?.brandName || ''}" <${transport.options?.auth?.user || 'support@example.com'}>`,
       to: targetEmail,
-      subject: `[TEST PREVIEW] Order Confirmation #${MOCK_PREVIEW_ORDER.orderId} - ${clientConfig?.brandName || 'Flexivia'}`,
+      subject: `[TEST PREVIEW] Order Confirmation #${MOCK_PREVIEW_ORDER.orderId} - ${clientConfig?.brandName || ''}`,
       html: htmlContent,
     };
 

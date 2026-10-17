@@ -28,14 +28,14 @@ const run = async () => {
     const users = await UserModel.insertMany([
       {
         name: "Store Owner",
-        email: "owner@plexivia.online",
+        email: "owner@example.com",
         passwordHash,
         role: "Owner",
         phone: "01700000000"
       },
       {
         name: "Store Administrator",
-        email: "admin@plexivia.online",
+        email: "admin@example.com",
         passwordHash,
         role: "Admin",
         phone: "01700000000"

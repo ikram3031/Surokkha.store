@@ -82,6 +82,19 @@ services:
       args:
         - VITE_API_BASE_URL=${VITE_API_BASE_URL}
         - VITE_CLIENT=${VITE_CLIENT:-demo}
+        - VITE_CLIENT_ID=${VITE_CLIENT_ID:-}
+        - VITE_ORDER_PREFIX=${VITE_ORDER_PREFIX:-}
+        - VITE_BRAND_NAME=${VITE_BRAND_NAME:-}
+        - VITE_CLIENT_DOMAIN=${VITE_CLIENT_DOMAIN:-}
+        - VITE_SUPPORT_EMAIL=${VITE_SUPPORT_EMAIL:-}
+        - VITE_CLIENT_PHONE=${VITE_CLIENT_PHONE:-}
+        - VITE_SUPPORT_PHONE=${VITE_SUPPORT_PHONE:-}
+        - VITE_WHATSAPP_NUMBER=${VITE_WHATSAPP_NUMBER:-}
+        - VITE_CLIENT_ADDRESS=${VITE_CLIENT_ADDRESS:-}
+        - VITE_LOGO_URL=${VITE_LOGO_URL:-}
+        - VITE_DASHBOARD_URL=${VITE_DASHBOARD_URL:-}
+        - VITE_STOREFRONT_URL=${VITE_STOREFRONT_URL:-}
+        - VITE_CLIENT_CONFIG_JSON=${VITE_CLIENT_CONFIG_JSON:-}
     container_name: ${DASHBOARD_CONTAINER_NAME}
     restart: always
     # dashboard এর .env ও dynamically specified path বা default path থেকে mount

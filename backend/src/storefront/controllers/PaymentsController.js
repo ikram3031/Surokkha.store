@@ -29,24 +29,29 @@ export const createPayment = async (req, res, next) => {
     }
 
     const orderDoc = await OrderModel.findById(resolvedOrderId).lean();
-    let netAmount = Number(amount || 0);
-    if (orderDoc) {
-      const rawTotal = Number(amount !== undefined ? amount : (orderDoc.totals?.total || 0));
-      const shippingFee = Number(orderDoc.totals?.shippingFee ?? orderDoc.shippingTotalAmount ?? 0);
-      netAmount = Math.max(0, rawTotal - shippingFee);
-    }
+    // Full order total, same basis as syncPaymentDocument.
+    const totalAmount = Number(orderDoc?.totals?.total ?? amount ?? 0);
+    const paidAmount = status === "paid" ? totalAmount : 0;
 
-    const payment = await PaymentModel.create({
-      orderId: resolvedOrderId,
-      amount: netAmount,
-      totalAmount: netAmount,
-      paidAmount: status === "paid" ? netAmount : 0,
-      pendingAmount: status === "paid" ? 0 : netAmount,
-      paymentMethod: paymentMethod || "Cash on Delivery",
-      paymentPhone: paymentPhone || "",
-      transactionId: transactionId || "",
-      status: status || "pending",
-    });
+    // Upsert: order creation already made the payment record, so don't duplicate it.
+    const payment = await PaymentModel.findOneAndUpdate(
+      { orderId: resolvedOrderId },
+      {
+        orderId: resolvedOrderId,
+        amount: paidAmount,
+        totalAmount,
+        paidAmount,
+        pendingAmount: Math.max(0, totalAmount - paidAmount),
+        paymentMethod: paymentMethod || orderDoc?.paymentMethod || "Cash on Delivery",
+        paymentPhone: paymentPhone || "",
+        transactionId: transactionId || "",
+        status: status || "pending",
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    if (orderDoc) {
+      await OrderModel.findByIdAndUpdate(resolvedOrderId, { paidAmount, paymentStatus: status || "pending" });
+    }
 
     return res.status(201).json({ status: "success", data: payment });
   } catch (err) {

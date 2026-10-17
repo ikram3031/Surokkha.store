@@ -298,7 +298,7 @@ export const BillTypesPage = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableRow>
                 <TableHead className="w-[45px] px-4">
                   <input
                     type="checkbox"
@@ -337,7 +337,7 @@ export const BillTypesPage = () => {
                   const isActive = type.status === 'Active';
 
                   return (
-                    <TableRow key={type.id} className="hover:bg-muted/30">
+                    <TableRow key={type.id}>
                       <TableCell className="w-[45px] px-4">
                         <input
                           type="checkbox"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { clientConfig } from '@/clientConfig';
 import { resolveImageUrl } from '@/lib/api-client';
-import plexiviaLogo from '@/assets/plexivia.png';
+import defaultLogoImg from '@/assets/default-logo.png';
 
 // Renders the tenant branding logo with fixed proportional width and dynamic height
 export const BrandLogo = ({
@@ -12,7 +12,7 @@ export const BrandLogo = ({
   iconOnly = false,
   centered = false,
 }) => {
-  const { clientKey = 'demo', brandName = 'Flexivia', logoUrl } = clientConfig || {};
+  const { clientKey = 'demo', brandName = '', logoUrl } = clientConfig || {};
 
   const [logoVersion, setLogoVersion] = useState(() => {
     try {
@@ -22,7 +22,7 @@ export const BrandLogo = ({
     }
   });
 
-  const defaultLogo = logoUrl && !logoUrl.includes('demo_logo') ? logoUrl : plexiviaLogo;
+  const defaultLogo = logoUrl && !logoUrl.includes('demo_logo') ? logoUrl : defaultLogoImg;
   const rawUrl = src || defaultLogo;
 
   // Resolves image paths and appends version query string for real-time asset invalidation
@@ -39,7 +39,7 @@ export const BrandLogo = ({
   };
 
   const primaryUrl = resolveLogoUrl(rawUrl, logoVersion);
-  const [currentSrc, setCurrentSrc] = useState(primaryUrl || plexiviaLogo);
+  const [currentSrc, setCurrentSrc] = useState(primaryUrl || defaultLogoImg);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -58,14 +58,14 @@ export const BrandLogo = ({
   }, []);
 
   useEffect(() => {
-    setCurrentSrc(primaryUrl || plexiviaLogo);
+    setCurrentSrc(primaryUrl || defaultLogoImg);
     setImageError(false);
   }, [primaryUrl]);
 
   // Handles image load failures and falls back gracefully
   const handleImageError = () => {
-    if (currentSrc !== plexiviaLogo) {
-      setCurrentSrc(plexiviaLogo);
+    if (currentSrc !== defaultLogoImg) {
+      setCurrentSrc(defaultLogoImg);
     } else {
       setImageError(true);
     }

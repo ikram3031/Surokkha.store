@@ -109,7 +109,7 @@ const handleInvoiceRequest = async (req, res) => {
     invoiceNumber,
     createdDate: req.body.createdDate || req.query.createdDate || new Date().toLocaleDateString(),
     dueDate: req.body.dueDate || req.query.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-    sellerName: req.body.sellerName || req.query.sellerName || config.brandName || "Flexivia",
+    sellerName: req.body.sellerName || req.query.sellerName || config.brandName || "",
     sellerAddress: req.body.sellerAddress || req.query.sellerAddress || config.address || "Dhaka, Bangladesh",
     buyerName: req.body.buyerName || req.query.buyerName || "Customer",
     buyerAddress: req.body.buyerAddress || req.query.buyerAddress || "Customer Address",
@@ -132,7 +132,7 @@ const handleInvoiceRequest = async (req, res) => {
     discount: req.body.discount || req.query.discount || "0.00",
     total: req.body.total || req.query.total || "1000.00",
     invoiceUrl:
-      req.body.invoiceUrl || req.query.invoiceUrl || `https://${config.domain || "plexivia.online"}/invoice/${invoiceNumber}`,
+      req.body.invoiceUrl || req.query.invoiceUrl || `https://${config.domain || "example.com"}/invoice/${invoiceNumber}`,
     notes: req.body.notes || req.query.notes || "Thank you for your business.",
     logoUrl: req.body.logoUrl || req.query.logoUrl || config.logoUrl || "/uploads/assets/logo.webp",
   };

@@ -92,7 +92,7 @@ export default function CloudflareTrafficOverviewPage() {
 
   const cfConfig = clientConfig?.cloudFlareAnalytics;
   const isAccessAllowed = Boolean(cfConfig?.active || clientConfig?.features?.cloudflareAnalytics !== false);
-  const domain = cfConfig?.domain || clientConfig?.domain || 'plexivia.online';
+  const domain = cfConfig?.domain || clientConfig?.domain || 'example.com';
 
   const [range, setRange] = useState('24h');
   const [loading, setLoading] = useState(true);

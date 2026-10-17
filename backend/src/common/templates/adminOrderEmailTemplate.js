@@ -8,8 +8,8 @@ export const buildAdminOrderEmailHtml = ({
   brandName: customBrandName,
   adminDashboardUrl,
 }) => {
-  const brandName = customBrandName || config.brandName || 'Flexivia';
-  const dashboardUrl = adminDashboardUrl || config.dashboardUrl || 'https://dashboard.plexivia.online';
+  const brandName = customBrandName || config.brandName || '';
+  const dashboardUrl = adminDashboardUrl || config.dashboardUrl || 'https://dashboard.example.com';
   const orderId = order.orderNumber || order.orderId || order.id || order._id || 'N/A';
   const customerName = order.customerName || order.billing?.name || 'Customer';
   const customerPhone = order.customerPhone || order.billing?.phone || 'N/A';

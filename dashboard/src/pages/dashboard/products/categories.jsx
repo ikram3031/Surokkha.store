@@ -26,8 +26,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Search, Edit2, Trash2, FolderTree } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
+import { Plus, Search, Edit2, Trash2, FolderTree, ImagePlus, X } from 'lucide-react';
+import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
@@ -58,6 +58,8 @@ const CategoriesPage = () => {
   const [slugManual, setSlugManual] = useState(false);
   const [description, setDescription] = useState('');
   const [parentId, setParentId] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleNameChange = useCallback(
@@ -77,6 +79,8 @@ const CategoriesPage = () => {
     setSlugManual(false);
     setDescription('');
     setParentId('');
+    setImageFile(null);
+    setImagePreview('');
     setIsOpen(true);
   };
 
@@ -107,6 +111,8 @@ const CategoriesPage = () => {
       }
     }
     setParentId(matchedParentDid);
+    setImageFile(null);
+    setImagePreview(category.imageUrl ? resolveImageUrl(category.imageUrl) : '');
     setIsOpen(true);
   };
 
@@ -119,18 +125,22 @@ const CategoriesPage = () => {
 
     setIsSubmitting(true);
     try {
-      const body = {
-        name: name.trim(),
-        slug: slug.trim(),
-        description: description.trim(),
-        parent: parentId || null,
-      };
+      const formData = new FormData();
+      formData.append('name', name.trim());
+      formData.append('slug', slug.trim());
+      formData.append('description', description.trim());
+      formData.append('parent', parentId || '');
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      const headers = { 'Content-Type': 'multipart/form-data' };
 
       if (editingCategory) {
-        await apiClient.put(`/api/v1/categories/${editingCategory.did}`, body);
+        await apiClient.put(`/api/v1/categories/${editingCategory.did}`, formData, { headers });
         toast.success(t('common.saved'));
       } else {
-        await apiClient.post('/api/v1/categories', body);
+        await apiClient.post('/api/v1/categories', formData, { headers });
         toast.success(t('common.saved'));
       }
 
@@ -224,7 +234,11 @@ const CategoriesPage = () => {
                 return (
                   <TableRow key={cat.did}>
                     <TableCell className="font-medium flex items-center gap-2">
-                      <FolderTree className="h-4 w-4 text-muted-foreground" />
+                      {cat.imageUrl ? (
+                        <img src={resolveImageUrl(cat.imageUrl)} alt="" className="h-8 w-8 rounded object-cover shrink-0" />
+                      ) : (
+                        <FolderTree className="h-4 w-4 text-muted-foreground shrink-0" />
+                      )}
                       {cat.name}
                     </TableCell>
                     <TableCell className="font-mono text-xs">{cat.slug}</TableCell>
@@ -313,6 +327,40 @@ const CategoriesPage = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold">{t('common.image', 'Image')}</label>
+              {(imagePreview || imageFile) ? (
+                <div className="relative w-24 h-24 rounded-lg border border-border overflow-hidden group">
+                  <img
+                    src={imageFile ? URL.createObjectURL(imageFile) : imagePreview}
+                    alt="Category"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setImageFile(null); setImagePreview(''); }}
+                    className="absolute top-1 right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 px-3 py-2 rounded-md border border-dashed border-border cursor-pointer hover:bg-muted/50 transition-colors">
+                  <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">{t('common.upload_image', 'Upload image')}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setImageFile(file);
+                    }}
+                  />
+                </label>
+              )}
             </div>
 
             <div className="space-y-1.5">

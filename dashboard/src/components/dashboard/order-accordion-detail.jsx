@@ -127,7 +127,7 @@ export const OrderAccordionDetail = ({ order }) => {
 
   // Opens the printable invoice endpoint in a new browser tab
   const handleOpenInvoice = () => {
-    const apiBase = (baseURL || getApiBaseUrl() || 'https://admin.surokkha.store').replace(/\/$/, '');
+    const apiBase = (baseURL || getApiBaseUrl() || 'https://api.example.com').replace(/\/$/, '');
     const orderIdentifier = order._id || order.id || order.did || order.orderNumber;
     window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
   };

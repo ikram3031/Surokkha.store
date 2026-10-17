@@ -246,6 +246,7 @@ const OrdersPage = () => {
                   <SelectItem value="All">{t('orders.payment_status', 'Payment')}: {t('common.all', 'All')}</SelectItem>
                   <SelectItem value="Paid">{t('orders.status_paid', 'Paid')}</SelectItem>
                   <SelectItem value="Pending">{t('orders.status_pending', 'Pending')}</SelectItem>
+                  <SelectItem value="Partial">{t('orders.status_partial', 'Partial')}</SelectItem>
                   <SelectItem value="Failed">{t('common.error', 'Failed')}</SelectItem>
                 </SelectContent>
               </Select>

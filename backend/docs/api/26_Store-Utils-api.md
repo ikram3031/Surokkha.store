@@ -5,7 +5,7 @@ This document describes the store utilities management endpoints used by the fro
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Base Path
