@@ -100,6 +100,9 @@ export const isSingleQtyItem = (prod) => {
   return isItem && !hasVariants;
 };
 
+// Single-product slugs that 404ed on both products and items endpoints
+const missingSingleSlugs = new Set();
+
 export const useStore = create((set, get) => ({
   currentView: initialRoute.view,
   selectedProductSlug: initialRoute.slug,
@@ -324,6 +327,8 @@ export const useStore = create((set, get) => ({
 
   // Fetch Dynamic Products and Items directly from API simultaneously
   fetchProducts: async (singleSlug = null, itemType = null) => {
+    // A slug that matched neither products nor items is not retried, otherwise effects keyed on products loop forever
+    if (singleSlug && missingSingleSlugs.has(singleSlug)) return;
     set({ isLoadingProducts: true, productsError: null });
     try {
       const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
@@ -344,6 +349,7 @@ export const useStore = create((set, get) => ({
           } else {
             const iRes = await fetch(`${cleanBase}/api/v1/items/${singleSlug}`);
             if (iRes.ok) itemsResult = { status: 'fulfilled', value: await iRes.json().then(j => [j?.data || j]) };
+            else missingSingleSlugs.add(singleSlug);
           }
         }
       } else {

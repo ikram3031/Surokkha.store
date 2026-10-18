@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore, isSingleQtyItem } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from '../components/ProductArtwork';
@@ -130,10 +130,15 @@ export default function ProductDetailView() {
   const hasDistinctShortDesc = cleanShort.length > 0 && cleanShort !== cleanLong;
   const localizedFeatures = getLocalizedFeatures(product);
 
+  // Slug whose detail was already fetched; the effect re-runs when isLoadingProducts toggles, so this stops a refetch loop
+  const fetchedDetailSlugRef = useRef(null);
+
   useEffect(() => {
     const fetchSingle = async () => {
       if (!selectedSlug) return;
       if (isLoadingProducts) return; // Wait for the main list to resolve itemType first
+      if (fetchedDetailSlugRef.current === selectedSlug) return;
+      fetchedDetailSlugRef.current = selectedSlug;
 
       setIsFetchingDetail(true);
       let type = 'product';
@@ -147,6 +152,7 @@ export default function ProductDetailView() {
         if (!res.ok && type === 'product') {
           url = `${cleanBase}/api/v1/items/${selectedSlug}`;
           res = await fetch(url);
+          if (res.ok) type = 'item';
         }
         if (res.ok) {
           const json = await res.json();
@@ -154,7 +160,7 @@ export default function ProductDetailView() {
           if (fetchedObj && (fetchedObj.id || fetchedObj._id || fetchedObj.slug)) {
             setDetailedProduct(fetchedObj);
             if (!products[selectedSlug] || !products[selectedSlug].variants) {
-              fetchProducts(selectedSlug);
+              fetchProducts(selectedSlug, type);
             }
           }
         }
