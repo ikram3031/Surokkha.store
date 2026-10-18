@@ -441,6 +441,8 @@ export const updateOrder = async (req, res, next) => {
 
     if (allowedUpdates.status === 'fake') {
       allowedUpdates.active = false;
+    } else if (['pending', 'processing', 'hold', 'shipped', 'completed'].includes(allowedUpdates.status)) {
+      allowedUpdates.active = true;
     }
 
     if (allowedUpdates.status === 'return') {
@@ -471,6 +473,21 @@ export const updateOrder = async (req, res, next) => {
         }
       } catch (fakeErr) {
         console.error("Error archiving fake order:", fakeErr);
+      }
+    } else if (existingOrder.status === 'fake' && order.status !== 'fake') {
+      try {
+        await FakeOrderModel.deleteMany({ orderId: order._id });
+        const rawPhone = order.billingInfo?.phone || order.shippingInfo?.phone || '';
+        const phone = rawPhone.replace(/\D/g, '').slice(-11) || rawPhone;
+        const email = order.billingInfo?.email || order.shippingInfo?.email || '';
+        const spamDeleteQuery = [];
+        if (phone) spamDeleteQuery.push({ phone: new RegExp(phone.slice(-10)) });
+        if (email) spamDeleteQuery.push({ email: email.toLowerCase() });
+        if (spamDeleteQuery.length > 0) {
+          await SpamListModel.deleteMany({ $or: spamDeleteQuery });
+        }
+      } catch (cleanErr) {
+        console.error('Error un-archiving fake order:', cleanErr);
       }
     }
 
@@ -675,6 +692,8 @@ export const bulkUpdateOrders = async (req, res, next) => {
       }
       if (updateFields.status === 'fake') {
         updateFields.active = false;
+      } else if (['pending', 'processing', 'hold', 'shipped', 'completed'].includes(updateFields.status)) {
+        updateFields.active = true;
       }
     }
     if (paymentStatus) {
@@ -704,6 +723,21 @@ export const bulkUpdateOrders = async (req, res, next) => {
         const email = ord.billingInfo?.email || ord.shippingInfo?.email || "";
         if (ip || phone || email) {
           SpamListModel.create({ ip, phone, email }).catch(e => console.error("Error adding to spam list:", e));
+        }
+      }
+    } else {
+      for (const ord of orders) {
+        if (ord.status === 'fake') {
+          FakeOrderModel.deleteMany({ orderId: ord._id }).catch(e => console.error('Error removing fake order:', e));
+          const rawOrdPhone = ord.billingInfo?.phone || ord.shippingInfo?.phone || '';
+          const phone = rawOrdPhone.replace(/\D/g, '').slice(-11) || rawOrdPhone;
+          const email = ord.billingInfo?.email || ord.shippingInfo?.email || '';
+          const spamDeleteQuery = [];
+          if (phone) spamDeleteQuery.push({ phone: new RegExp(phone.slice(-10)) });
+          if (email) spamDeleteQuery.push({ email: email.toLowerCase() });
+          if (spamDeleteQuery.length > 0) {
+            SpamListModel.deleteMany({ $or: spamDeleteQuery }).catch(e => console.error('Error removing from spam list:', e));
+          }
         }
       }
     }
