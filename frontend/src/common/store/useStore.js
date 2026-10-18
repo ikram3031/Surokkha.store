@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { SITE_CONFIG } from '../config/siteConfig';
 import {
   trackPageView,
-  trackViewContent,
   trackAddToCart,
   trackAddComboToCart,
   trackPurchase,
@@ -798,10 +797,9 @@ export const useStore = create((set, get) => ({
 
   openProduct: (slug) => {
     get().navigateTo('product', slug);
-    const prod = get().products[slug];
-    if (prod) {
-      trackViewContent(prod);
-    }
+    // ViewContent is tracked by the product detail view on mount (using the
+    // fully fetched product), so we intentionally do NOT fire it here to avoid
+    // duplicate ViewContent events.
   },
 
   navigateToCombo: () => {

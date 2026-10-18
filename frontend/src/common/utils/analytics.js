@@ -314,6 +314,31 @@ export function generateEventId(prefix = 'evt') {
 }
 
 /**
+ * Short-window duplicate guard.
+ * Blocks accidental repeat fires of the same event (React re-renders, multiple
+ * call sites, back/forward navigation) while still allowing genuine repeated
+ * user actions that happen outside the window. Each distinct event signature
+ * (eventName + key params) may fire at most once per DEDUP_WINDOW_MS.
+ * Returns true when the caller should SKIP the event.
+ */
+const DEDUP_WINDOW_MS = 2000;
+const recentEventSignatures = new Map();
+export const isDuplicateEvent = (signature) => {
+  if (!signature) return false;
+  const now = Date.now();
+  // Opportunistic prune so the map can't grow unbounded
+  if (recentEventSignatures.size > 50) {
+    for (const [key, ts] of recentEventSignatures) {
+      if (now - ts > DEDUP_WINDOW_MS) recentEventSignatures.delete(key);
+    }
+  }
+  const last = recentEventSignatures.get(signature);
+  if (last && now - last < DEDUP_WINDOW_MS) return true;
+  recentEventSignatures.set(signature, now);
+  return false;
+};
+
+/**
  * Send Meta Conversions API (CAPI) Server Event (Managed securely via backend server)
  */
 export async function sendMetaCAPI() {
@@ -396,6 +421,7 @@ export const resolveCatalogId = (itemOrKey, fallbackObj = null) => {
  * 1. Track PageView (Pixel + CAPI + GA4)
  */
 export const trackPageView = (pageName = 'home', path = '/') => {
+  if (isDuplicateEvent(`PageView|${path}`)) return;
   const eventId = generateEventId('pv');
   fbqTrack('PageView', {}, eventId);
   sendMetaCAPI({ eventName: 'PageView', eventId });
@@ -417,6 +443,7 @@ export const trackViewContent = (product) => {
   const value = Number(product.price) || 400;
   const catalogId = resolveCatalogId(product);
   const contentName = product.name || 'MO Wellness Product';
+  if (isDuplicateEvent(`ViewContent|${catalogId}`)) return;
   const eventId = generateEventId(`vc_${catalogId}`);
   const customData = {
     content_name: contentName,
@@ -490,6 +517,7 @@ export const trackAddToCart = (product, quantity = 1) => {
   const totalPrice = unitPrice * quantity;
   const catalogId = resolveCatalogId(product);
   const contentName = product.name || 'MO Wellness Product';
+  if (isDuplicateEvent(`AddToCart|${catalogId}|${quantity}|${totalPrice}`)) return;
   const eventId = generateEventId(`atc_${catalogId}`);
   const customData = {
     content_name: contentName,
@@ -557,6 +585,7 @@ export const trackAddToCart = (product, quantity = 1) => {
  */
 export const trackAddComboToCart = (products = {}, productKeys = [], price = 800) => {
   const comboCatalogId = '3c9a5f2e8b1d704e'; // MO Ultimate 3-in-1 Combo
+  if (isDuplicateEvent(`AddToCart|${comboCatalogId}|1|${price}`)) return;
   const eventId = generateEventId('atc_combo');
 
   const customData = {
@@ -635,6 +664,7 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
 
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
   const itemCount = cartEntries.reduce((sum, [_, q]) => sum + q, 0);
+  if (isDuplicateEvent(`InitiateCheckout|${grandTotal}|${itemCount}`)) return;
   const eventId = generateEventId('ic');
 
   const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
@@ -690,6 +720,7 @@ export const trackAddPaymentInfo = (paymentType = 'Cash on Delivery', totals = {
   if (cartEntries.length === 0) return;
 
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
+  if (isDuplicateEvent(`AddPaymentInfo|${grandTotal}|${paymentType}`)) return;
   const eventId = generateEventId('api');
   const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
 
@@ -806,6 +837,7 @@ export const trackPurchase = (order, products = {}) => {
  * 8. Track Contact
  */
 export const trackContact = (channel = 'support') => {
+  if (isDuplicateEvent(`Contact|${channel}`)) return;
   const eventId = generateEventId('contact');
   const customData = { contact_channel: channel };
 
