@@ -792,11 +792,16 @@ export const trackPurchase = (order, products = {}) => {
     };
   });
 
+  // Meta requires Purchase value to be present and > 0. Fall back to the sum of
+  // line items if the order total is missing/zero so value is never absent.
+  const itemsTotal = contents.reduce((sum, c) => sum + (Number(c.item_price) || 0) * (Number(c.quantity) || 1), 0);
+  const purchaseValue = grandTotal > 0 ? grandTotal : itemsTotal;
+
   const customData = {
     content_ids: catalogIds,
     contents: contents,
     content_type: 'product',
-    value: grandTotal,
+    value: purchaseValue,
     currency: 'BDT',
     num_items: itemCount,
     order_id: orderId
@@ -818,7 +823,7 @@ export const trackPurchase = (order, products = {}) => {
   // Google Analytics 4 purchase event
   gtagEvent('purchase', {
     transaction_id: orderId,
-    value: grandTotal,
+    value: purchaseValue,
     currency: 'BDT',
     shipping: Number(order.totals.deliveryFee || 0),
     items: purchasedItems.map(([slug, qty]) => {
