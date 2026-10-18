@@ -32,8 +32,8 @@ const normalizePhone = (phone = "") => {
 
 // Resolves active Meta Pixel configuration from database, client config (multi-site aware), and environment fallbacks
 export const getMetaPixelConfig = async (reqOrDomain = null, secondaryReq = null) => {
+  let isShop = false;
   try {
-    let isShop = false;
     const primary = reqOrDomain;
     const req = secondaryReq || (primary?.headers ? primary : null);
 
@@ -92,32 +92,25 @@ export const getMetaPixelConfig = async (reqOrDomain = null, secondaryReq = null
       ? clientConfig?.sites?.shop?.metaPixel
       : clientConfig?.sites?.store?.metaPixel;
 
-    const pixelId =
-      (isShop
-        ? (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_SHOP || siteConfigMeta?.pixelId || dbMeta.pixelIdShop)
-        : (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_STORE || siteConfigMeta?.pixelId)) ||
-      dbMeta.pixelId ||
-      fallbackClientMeta.pixelId ||
-      env.FB_PIXEL_ID ||
-      "";
+    // Shop only uses its own credentials: falling back to the generic values would send shop events to the store pixel
+    const pixelId = isShop
+      ? (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_SHOP || siteConfigMeta?.pixelId || dbMeta.pixelIdShop || "")
+      : (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_STORE || siteConfigMeta?.pixelId ||
+        dbMeta.pixelId || fallbackClientMeta.pixelId || env.FB_PIXEL_ID || "");
 
-    const accessToken =
-      (isShop
-        ? (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_SHOP || siteConfigMeta?.accessToken || dbMeta.accessTokenShop)
-        : (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_STORE || siteConfigMeta?.accessToken)) ||
-      dbMeta.accessToken ||
-      fallbackClientMeta.accessToken ||
-      env.FB_ACCESS_TOKEN ||
-      "";
+    const accessToken = isShop
+      ? (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_SHOP || siteConfigMeta?.accessToken || dbMeta.accessTokenShop || "")
+      : (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_STORE || siteConfigMeta?.accessToken ||
+        dbMeta.accessToken || fallbackClientMeta.accessToken || env.FB_ACCESS_TOKEN || "");
 
-    const testEventCode =
-      (isShop
-        ? (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_SHOP || siteConfigMeta?.testEventCode)
-        : (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_STORE || siteConfigMeta?.testEventCode)) ||
-      dbMeta.testEventCode ||
-      fallbackClientMeta.testEventCode ||
-      env.FB_TEST_EVENT_CODE ||
-      "";
+    const testEventCode = isShop
+      ? (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_SHOP || siteConfigMeta?.testEventCode || "")
+      : (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_STORE || siteConfigMeta?.testEventCode ||
+        dbMeta.testEventCode || fallbackClientMeta.testEventCode || env.FB_TEST_EVENT_CODE || "");
+
+    if (isShop && (!pixelId || !accessToken)) {
+      console.warn("[Meta CAPI Config] Warning: Shop Meta Pixel / CAPI credentials not configured. Event skipped to prevent cross-site pixel pollution.");
+    }
 
     return {
       pixelId,
@@ -134,9 +127,9 @@ export const getMetaPixelConfig = async (reqOrDomain = null, secondaryReq = null
   } catch (error) {
     console.error("[Meta CAPI Config] Error resolving Meta Pixel config:", error.message);
     return {
-      pixelId: env.FB_PIXEL_ID || "",
-      accessToken: env.FB_ACCESS_TOKEN || "",
-      testEventCode: env.FB_TEST_EVENT_CODE || "",
+      pixelId: isShop ? (env.FB_PIXEL_ID_SHOP || "") : (env.FB_PIXEL_ID_STORE || env.FB_PIXEL_ID || ""),
+      accessToken: isShop ? (env.FB_ACCESS_TOKEN_SHOP || "") : (env.FB_ACCESS_TOKEN_STORE || env.FB_ACCESS_TOKEN || ""),
+      testEventCode: isShop ? (env.FB_TEST_EVENT_CODE_SHOP || "") : (env.FB_TEST_EVENT_CODE_STORE || env.FB_TEST_EVENT_CODE || ""),
       isEnabled: true,
       enableBrowserPixel: true,
       enableCapi: true,

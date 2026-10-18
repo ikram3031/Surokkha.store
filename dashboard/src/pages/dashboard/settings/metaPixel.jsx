@@ -68,8 +68,9 @@ const MetaPixelPage = () => {
       setStoreAdvancedMatching(store.advancedMatching !== false);
 
       // Shop site
-      setShopPixelId(shop.pixelId || store.pixelId || pixelData.pixelId || '');
-      setShopAccessToken(shop.accessToken || store.accessToken || pixelData.accessToken || '');
+      // Shop fields only show the shop's own values; pre-filling store values would save the store pixel into shop
+      setShopPixelId(shop.pixelId || '');
+      setShopAccessToken(shop.accessToken || '');
       setShopTestEventCode(shop.testEventCode || '');
       setShopIsEnabled(shop.isEnabled !== false);
       setShopEnableBrowserPixel(shop.enableBrowserPixel !== false);

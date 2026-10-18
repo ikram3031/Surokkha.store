@@ -44,6 +44,13 @@ const envSchema = z.object({
   FB_PIXEL_ID: z.string().optional().default(""),
   FB_ACCESS_TOKEN: z.string().optional().default(""),
   FB_TEST_EVENT_CODE: z.string().optional().default(""),
+  // Per-site Meta Pixel / CAPI credentials (surokkha.store and surokkha.shop)
+  FB_PIXEL_ID_STORE: z.string().optional().default(""),
+  FB_ACCESS_TOKEN_STORE: z.string().optional().default(""),
+  FB_TEST_EVENT_CODE_STORE: z.string().optional().default(""),
+  FB_PIXEL_ID_SHOP: z.string().optional().default(""),
+  FB_ACCESS_TOKEN_SHOP: z.string().optional().default(""),
+  FB_TEST_EVENT_CODE_SHOP: z.string().optional().default(""),
   TIKTOK_PIXEL_ID: z.string().optional().default(""),
   TIKTOK_ACCESS_TOKEN: z.string().optional().default(""),
   TIKTOK_TEST_EVENT_CODE: z.string().optional().default(""),

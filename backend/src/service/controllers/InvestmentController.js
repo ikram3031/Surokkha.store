@@ -208,6 +208,18 @@ export const createInvestment = async (req, res, next) => {
       .populate("investorId", "name email phone did status type")
       .lean();
 
+    // A tranche recorded with an amount already paid back also books that repayment as a bill
+    if (numReturnedAmount > 0) {
+      await createInvestmentReturnBill({
+        investor,
+        investmentId: investment._id,
+        amount: numReturnedAmount,
+        date: investment.returnedDate || new Date(),
+        paymentMethod: investment.paymentMethod,
+        userId: req.user?.userId,
+      });
+    }
+
     return res.status(201).json({
       status: "success",
       message: "Investment recorded successfully",
@@ -296,6 +308,10 @@ export const updateInvestment = async (req, res, next) => {
 
     allowedUpdates.updatedBy = (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null;
 
+    const before = allowedUpdates.returnedAmount !== undefined
+      ? await InvestmentModel.findOne(query, { returnedAmount: 1 }).lean()
+      : null;
+
     const updated = await InvestmentModel.findOneAndUpdate(query, allowedUpdates, {
       new: true,
       runValidators: true,
@@ -305,6 +321,19 @@ export const updateInvestment = async (req, res, next) => {
 
     if (!updated) {
       return res.status(404).json({ status: "error", message: "Investment not found" });
+    }
+
+    // Raising the returned amount from the edit form pays the difference out as a bill, like the Return modal does
+    const returnedIncrease = before ? Number(updated.returnedAmount || 0) - Number(before.returnedAmount || 0) : 0;
+    if (returnedIncrease > 0 && updated.investorId?._id) {
+      await createInvestmentReturnBill({
+        investor: updated.investorId,
+        investmentId: updated._id,
+        amount: returnedIncrease,
+        date: updated.returnedDate || new Date(),
+        paymentMethod: updated.paymentMethod,
+        userId: req.user?.userId,
+      });
     }
 
     return res.json({
@@ -404,6 +433,33 @@ const ensureInvestmentReturnBillType = async (userId = null) => {
     });
   }
   return billType;
+};
+
+// Records money paid back to an investor as a paid "Investment Return" bill, so it leaves the account balance
+const createInvestmentReturnBill = async ({ investor, investmentId, amount, date, paymentMethod, notes, userId }) => {
+  const billType = await ensureInvestmentReturnBillType(userId);
+  const billDate = date || new Date();
+  return BillingModel.create({
+    billTypeId: billType._id,
+    investorId: investor._id,
+    investmentId: investmentId || null,
+    title: `Investment Return - ${investor.name}`,
+    name: investor.name,
+    vendor: investor.name,
+    billingPhone: investor.phone || "",
+    billingEmail: investor.email || "",
+    baseAmount: amount,
+    totalAmount: amount,
+    paidAmount: amount,
+    pendingAmount: 0,
+    amount,
+    status: "paid",
+    billingDate: billDate,
+    dueDate: billDate,
+    billingMethod: paymentMethod ? String(paymentMethod).trim() : "Bank Transfer",
+    notes: notes ? `Investment repayment: ${notes}` : `Repayment to investor ${investor.name}`,
+    createdBy: (userId && Types.ObjectId.isValid(userId)) ? userId : null,
+  });
 };
 
 // Records an investment repayment/return to an investor and syncs with billing
@@ -515,29 +571,14 @@ export const recordInvestmentReturn = async (req, res, next) => {
 
     let createdBill = null;
     if (createBill !== false) {
-      const billType = await ensureInvestmentReturnBillType(req.user?.userId);
-      const billTitle = `Investment Return - ${investor.name}`;
-      const billNotes = notes ? `Investment repayment: ${notes}` : `Repayment to investor ${investor.name}`;
-
-      createdBill = await BillingModel.create({
-        billTypeId: billType._id,
-        investorId: investor._id,
+      createdBill = await createInvestmentReturnBill({
+        investor,
         investmentId: targetInvestment?._id || updatedInvestments[0]?._id || null,
-        title: billTitle,
-        name: investor.name,
-        vendor: investor.name,
-        billingPhone: investor.phone || "",
-        billingEmail: investor.email || "",
-        totalAmount: numAmount,
-        paidAmount: numAmount,
-        pendingAmount: 0,
         amount: numAmount,
-        status: "paid",
-        billingDate: validReturnDate,
-        dueDate: validReturnDate,
-        billingMethod: paymentMethod ? String(paymentMethod).trim() : "Bank Transfer",
-        notes: billNotes,
-        createdBy: (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null,
+        date: validReturnDate,
+        paymentMethod,
+        notes,
+        userId: req.user?.userId,
       });
     }
 
