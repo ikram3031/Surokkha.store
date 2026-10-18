@@ -52,7 +52,14 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
-export const authorizeRoles = (...allowedRoles) => (req, res, next) => {
+// Fills req.user when a valid Bearer token is sent, but lets requests without one (or with a bad one) through
+export const optionalAuthenticate = (req, res, next) => {
+  if (!req.headers.authorization && !req.query?.token) return next();
+  const fakeRes = { status: () => ({ json: () => next() }) };
+  return authenticateToken(req, fakeRes, next);
+};
+
+export const authorizeRoles =(...allowedRoles) => (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ status: "error", message: "Authentication required" });
   }

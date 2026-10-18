@@ -199,8 +199,9 @@ export const createOrder = async (req, res, next) => {
         description: descriptionStr,
         readStatus: false,
         active: true,
-        createdBy: actorDid,
-        updatedBy: actorDid,
+        // Store the creator's name so the activity log shows who added it
+        createdBy: req.user?.name || actorDid,
+        updatedBy: req.user?.name || actorDid,
       });
 
       broadcastLiveNotification(log).catch((err) => {

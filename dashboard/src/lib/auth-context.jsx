@@ -197,8 +197,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Merges profile changes into the signed-in user and keeps the stored copy in step
+  const updateUser = (updates) => {
+    setUser((prev) => {
+      const next = { ...(prev || {}), ...(updates || {}) };
+      try {
+        localStorage.setItem('user', JSON.stringify(next));
+      } catch {
+        // Storage can be unavailable (private mode); the in-memory user is still updated
+      }
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, loginWithGoogle, verify2fa }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, loginWithGoogle, verify2fa, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

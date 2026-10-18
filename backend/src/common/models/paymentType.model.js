@@ -19,6 +19,15 @@ const paymentTypeSchema = new Schema(
     routingNumber: { type: String, trim: true, default: "" },
     chargePercent: { type: Number, default: 0 },
     chargeFixed: { type: Number, default: 0 },
+    // Named charges for this method (e.g. Cash Out 1.85%, Send Money ৳5); each can be a percent, a fixed amount, or both
+    fees: [
+      {
+        _id: false,
+        name: { type: String, trim: true, required: true },
+        percent: { type: Number, default: 0, min: 0 },
+        fixed: { type: Number, default: 0, min: 0 },
+      },
+    ],
     instructions: { type: String, trim: true, default: "" },
     icon: { type: String, trim: true, default: "" },
     qrCode: { type: String, trim: true, default: "" },

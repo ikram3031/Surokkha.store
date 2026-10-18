@@ -44,6 +44,8 @@ const fetchOrders = async (params) => {
         fulfillment = 'Cancelled';
       } else if (o.status === 'fake') {
         fulfillment = 'Fake';
+      } else if (o.status === 'return' || o.status === 'returned') {
+        fulfillment = 'Return';
       }
 
       let paymentStatus = 'Pending';
@@ -53,6 +55,7 @@ const fetchOrders = async (params) => {
         else if (p === 'partial' || p === 'partially_paid') paymentStatus = 'Partial';
         else if (p === 'failed') paymentStatus = 'Failed';
         else if (p === 'cancelled' || p === 'canceled') paymentStatus = 'Canceled';
+        else if (p === 'returned') paymentStatus = 'Returned';
         else paymentStatus = 'Pending';
       } else {
         const isPaid = o.status === 'completed';

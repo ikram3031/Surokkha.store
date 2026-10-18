@@ -64,6 +64,7 @@ import { usePaymentTypes } from '@/hooks/use-payment-types';
 import { usePayments } from '@/hooks/use-payments';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { toast } from 'sonner';
+import { PaymentFeesEditor, cleanFees, formatFeeRate } from '@/components/dashboard/accounts/PaymentFeesEditor';
 
 const CATEGORY_OPTIONS = [
   { value: 'mfs', label: 'MFS / Mobile Wallet', icon: Smartphone, color: 'text-pink-500 bg-pink-500/10 border-pink-500/20' },
@@ -84,6 +85,8 @@ const INITIAL_FORM = {
   branchName: '',
   routingNumber: '',
   chargePercent: 0,
+  hasFees: false,
+  fees: [],
   instructions: '',
   description: '',
   status: 'Active',
@@ -231,6 +234,8 @@ export const PaymentTypesPage = () => {
       branchName: type.branchName || '',
       routingNumber: type.routingNumber || '',
       chargePercent: type.chargePercent ?? 0,
+      hasFees: (type.fees || []).length > 0,
+      fees: (type.fees || []).map((fee) => ({ ...fee })),
       instructions: type.instructions || '',
       description: type.description || '',
       status: type.status || 'Active',
@@ -251,11 +256,30 @@ export const PaymentTypesPage = () => {
       return;
     }
 
+    const fees = typeForm.hasFees ? cleanFees(typeForm.fees) : [];
+    if (typeForm.hasFees && fees.length === 0) {
+      toast.error('Enter a name for at least one fee, or untick "Add charge / fee"');
+      return;
+    }
+    if (typeForm.hasFees && !String(typeForm.fees?.[0]?.name || '').trim()) {
+      toast.error('The first fee row needs a name');
+      return;
+    }
+
+    // chargePercent/chargeFixed mirror the first fee for older screens that read a single charge
+    const { hasFees, ...formFields } = typeForm;
+    const payload = {
+      ...formFields,
+      fees,
+      chargePercent: fees[0]?.percent || 0,
+      chargeFixed: fees[0]?.fixed || 0,
+    };
+
     try {
       if (editingType) {
-        await updatePaymentType({ id: editingType.id, ...typeForm });
+        await updatePaymentType({ id: editingType.id, ...payload });
       } else {
-        await addPaymentType(typeForm);
+        await addPaymentType(payload);
       }
       setModalOpen(false);
     } catch {
@@ -627,12 +651,16 @@ export const PaymentTypesPage = () => {
 
                       {/* Charge Fee */}
                       <TableCell className="text-xs font-mono font-medium">
-                        {Number(type.chargePercent) > 0 ? (
-                          <Badge variant="outline" className="text-[11px] font-mono text-amber-600 border-amber-500/30 bg-amber-500/5">
-                            {type.chargePercent}%
-                          </Badge>
+                        {(type.fees || []).length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {type.fees.map((fee) => (
+                              <Badge key={fee.name} variant="outline" className="text-[11px] font-mono text-amber-600 border-amber-500/30 bg-amber-500/5">
+                                {fee.name}: {formatFeeRate(fee)}
+                              </Badge>
+                            ))}
+                          </div>
                         ) : (
-                          <span className="text-muted-foreground text-[11px]">0%</span>
+                          <span className="text-muted-foreground text-[11px]">No fees</span>
                         )}
                       </TableCell>
 
@@ -824,19 +852,21 @@ export const PaymentTypesPage = () => {
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-foreground">Cashout / Charge Fee (%)</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      value={typeForm.chargePercent}
-                      onChange={(e) => setTypeForm((prev) => ({ ...prev, chargePercent: e.target.value }))}
-                      className="text-xs font-mono"
-                    />
-                  </div>
                 </div>
+              </div>
+
+              {/* Charges / Fees */}
+              <div className="bg-muted/30 p-3 rounded-lg border space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Banknote className="w-3.5 h-3.5 text-amber-500" />
+                  Charges & Fees
+                </h4>
+                <PaymentFeesEditor
+                  enabled={typeForm.hasFees}
+                  onEnabledChange={(hasFees) => setTypeForm((prev) => ({ ...prev, hasFees }))}
+                  fees={typeForm.fees}
+                  onChange={(fees) => setTypeForm((prev) => ({ ...prev, fees }))}
+                />
               </div>
 
               {/* Account Details */}
@@ -1018,8 +1048,16 @@ export const PaymentTypesPage = () => {
                     <p className="font-semibold text-emerald-600 mt-0.5">{viewingMethod.status}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Cashout / Charge Fee:</span>
-                    <p className="font-semibold text-amber-600 mt-0.5">{viewingMethod.chargePercent || 0}%</p>
+                    <span className="text-muted-foreground">Charges & Fees:</span>
+                    {(viewingMethod.fees || []).length > 0 ? (
+                      viewingMethod.fees.map((fee) => (
+                        <p key={fee.name} className="font-semibold text-amber-600 mt-0.5">
+                          {fee.name}: {formatFeeRate(fee)}
+                        </p>
+                      ))
+                    ) : (
+                      <p className="font-semibold text-muted-foreground mt-0.5">No fees</p>
+                    )}
                   </div>
                 </div>
 

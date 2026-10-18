@@ -231,7 +231,7 @@ export const AppSidebar = ({ ...props }) => {
 
   const activeGroup =
     pathname.startsWith("/dashboard/orders") ? "orders"
-    : pathname.startsWith("/dashboard/items") ? "items"
+    : pathname.startsWith("/dashboard/items") ? "products"
     : (pathname.startsWith("/dashboard/products") || pathname === "/dashboard/settings/products") ? "products"
     : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
     : (pathname.startsWith("/dashboard/accounts") || pathname.startsWith("/dashboard/billing")) ? "accounts"
@@ -391,6 +391,11 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.product_list", "Product List")}
                 </NavSub>
               )}
+              {showItems && isAllowed("items.list") && (
+                <NavSub to="/dashboard/items" active={pathname.startsWith("/dashboard/items")} icon={ListOrdered}>
+                  {t("nav.item_list", "Item List")}
+                </NavSub>
+              )}
               {isAllowed("products.on-sale") && (
                 <NavSub to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag}>
                   {t("nav.on_sale", "On Sale")}
@@ -430,20 +435,6 @@ export const AppSidebar = ({ ...props }) => {
               {isAllowed("products.size-charts") && (
                 <NavSub to="/dashboard/products/size-charts" active={pathname === "/dashboard/products/size-charts"} icon={Ruler}>
                   {t("nav.size_charts", "Size Charts")}
-                </NavSub>
-              )}
-            </NavGroup>
-          )}
-          {showItems && (
-            <NavGroup id="items" icon={Package} label={t("nav.items", "Items")} active={activeGroup === "items"} open={openMenu === "items"} onToggle={toggleMenu}>
-              {isAllowed("items.new") && (
-                <NavSub to="/dashboard/items/new" active={pathname === "/dashboard/items/new"} icon={PlusCircle}>
-                  {t("nav.add_item", "Add Item")}
-                </NavSub>
-              )}
-              {isAllowed("items.list") && (
-                <NavSub to="/dashboard/items" active={pathname === "/dashboard/items" || pathname === "/dashboard/items/list"} icon={ListOrdered}>
-                  {t("nav.item_list", "Items List")}
                 </NavSub>
               )}
             </NavGroup>

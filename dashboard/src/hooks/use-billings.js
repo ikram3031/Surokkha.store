@@ -71,6 +71,8 @@ const mapBilling = (billing) => {
     vendor: billing.vendor || customerName,
     customerName,
     billingMethod: billing.billingMethod || 'Cash',
+    paymentFee: billing.paymentFee || null,
+    baseAmount: billing.baseAmount,
     investorId,
     investorName,
     investmentId,

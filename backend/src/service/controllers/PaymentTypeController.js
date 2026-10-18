@@ -76,6 +76,16 @@ export const getPaymentTypeById = async (req, res, next) => {
 };
 
 // Creates a new payment type / method record with details
+// Keeps only fee rows with a name, coercing percent/fixed to non-negative numbers
+const normalizeFees = (fees) =>
+  (Array.isArray(fees) ? fees : [])
+    .map((fee) => ({
+      name: String(fee?.name || "").trim(),
+      percent: Math.max(0, Number(fee?.percent) || 0),
+      fixed: Math.max(0, Number(fee?.fixed) || 0),
+    }))
+    .filter((fee) => fee.name);
+
 export const createPaymentType = async (req, res, next) => {
   try {
     const {
@@ -89,6 +99,7 @@ export const createPaymentType = async (req, res, next) => {
       routingNumber,
       chargePercent,
       chargeFixed,
+      fees,
       instructions,
       icon,
       qrCode,
@@ -116,6 +127,7 @@ export const createPaymentType = async (req, res, next) => {
       routingNumber: routingNumber?.trim() || "",
       chargePercent: Number(chargePercent) || 0,
       chargeFixed: Number(chargeFixed) || 0,
+      fees: normalizeFees(fees),
       instructions: instructions?.trim() || "",
       icon: icon?.trim() || "",
       qrCode: qrCode?.trim() || "",
@@ -183,6 +195,10 @@ export const updatePaymentType = async (req, res, next) => {
 
     if (payload.chargePercent !== undefined) {
       allowedUpdates.chargePercent = Number(payload.chargePercent) || 0;
+    }
+
+    if (payload.fees !== undefined) {
+      allowedUpdates.fees = normalizeFees(payload.fees);
     }
 
     if (payload.chargeFixed !== undefined) {

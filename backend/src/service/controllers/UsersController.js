@@ -1,4 +1,8 @@
 import crypto from "node:crypto";
+import path from "node:path";
+import fs from "node:fs";
+import multer from "multer";
+import sharp from "sharp";
 import mongoose from "mongoose";
 import { UserModel } from "../../common/models/user.model.js";
 import { AssetModel } from "../../common/models/asset.model.js";
@@ -342,6 +346,44 @@ export const getProfile = async (req, res, next) => {
   }
 };
 
+const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
+const PROFILE_WEEK_STARTS = ["saturday", "sunday", "monday"];
+const PROFILE_LANGUAGES = ["en", "bn"];
+const PROFILE_TIME_FORMATS = ["12h", "24h"];
+
+// Accepts a single "avatar" image up to 10MB, kept in memory for resizing
+export const avatarUploadMiddleware = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => cb(null, /^image\/(png|jpe?g|gif|webp)$/i.test(file.mimetype)),
+}).single("avatar");
+
+// Saves the current user's avatar as a 256px square webp and stores its URL on the profile
+export const uploadProfileAvatar = async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ status: "error", message: "Unauthorized" });
+    if (!req.file) return res.status(400).json({ status: "error", message: "Upload a PNG, JPEG, GIF or WebP image." });
+
+    const destinationDir = path.join(process.cwd(), "uploads", "avatars");
+    fs.mkdirSync(destinationDir, { recursive: true });
+    const filename = `${userId}-${Date.now()}.webp`;
+    await sharp(req.file.buffer)
+      .rotate()
+      .resize(256, 256, { fit: "cover" })
+      .webp({ quality: 88 })
+      .toFile(path.join(destinationDir, filename));
+
+    const avatarUrl = `/uploads/avatars/${filename}`;
+    const user = await UserModel.findByIdAndUpdate(userId, { avatar: avatarUrl }, { new: true });
+    if (!user) return res.status(404).json({ status: "error", message: "User not found" });
+
+    res.json({ status: "success", data: user.toJSON() });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Update current user's profile
 export const updateProfile = async (req, res, next) => {
   try {
@@ -358,10 +400,36 @@ export const updateProfile = async (req, res, next) => {
       user.name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
     }
     
-    if (payload.phone !== undefined) user.phone = payload.phone.trim();
-    if (payload.address !== undefined) user.address = payload.address.trim();
-    if (payload.avatar !== undefined) user.avatar = payload.avatar.trim();
+    if (payload.phone !== undefined) user.phone = String(payload.phone).trim();
+    if (payload.address !== undefined) user.address = String(payload.address).trim();
+    if (payload.avatar !== undefined) user.avatar = String(payload.avatar).trim();
+    if (payload.preferredName !== undefined) user.preferredName = String(payload.preferredName).trim();
+    if (payload.website !== undefined) user.website = String(payload.website).trim();
     if (payload.receiveEmailNotifications !== undefined) user.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
+
+    if (payload.username !== undefined) {
+      const username = String(payload.username).trim().toLowerCase();
+      if (username && !USERNAME_PATTERN.test(username)) {
+        return res.status(400).json({ status: "error", message: "Username can use 3-30 letters, numbers, dots, dashes or underscores." });
+      }
+      if (username) {
+        const taken = await UserModel.exists({ username, _id: { $ne: user._id } });
+        if (taken) return res.status(409).json({ status: "error", message: "That username is already taken." });
+      }
+      user.username = username || undefined;
+    }
+
+    if (payload.preferences && typeof payload.preferences === "object") {
+      const prefs = payload.preferences;
+      const current = user.preferences?.toObject?.() || user.preferences || {};
+      user.preferences = {
+        ...current,
+        ...(prefs.timezone !== undefined ? { timezone: String(prefs.timezone).trim() || "Asia/Dhaka" } : {}),
+        ...(PROFILE_WEEK_STARTS.includes(prefs.weekStart) ? { weekStart: prefs.weekStart } : {}),
+        ...(PROFILE_LANGUAGES.includes(prefs.language) ? { language: prefs.language } : {}),
+        ...(PROFILE_TIME_FORMATS.includes(prefs.timeFormat) ? { timeFormat: prefs.timeFormat } : {}),
+      };
+    }
 
     await user.save();
 

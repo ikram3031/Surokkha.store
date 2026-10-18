@@ -50,6 +50,10 @@ import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
 
+// Shared look for the order header actions: same height, radius and muted icon that turns primary on hover
+const ORDER_ACTION_BUTTON_CLASS =
+  "h-8 rounded-lg border-border/70 bg-transparent px-3 text-xs font-medium gap-1.5 cursor-pointer text-foreground hover:border-primary/50 hover:bg-primary/10 hover:text-primary [&_svg]:text-muted-foreground hover:[&_svg]:text-primary";
+
 // Renders an expanded accordion panel containing full order details and inline status management
 export const OrderAccordionDetail = ({ order }) => {
   const { t, i18n } = useTranslation();
@@ -167,48 +171,28 @@ export const OrderAccordionDetail = ({ order }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <PathaoCourierCard
             order={order}
             triggerOnly
             triggerButtonVariant="outline"
-            triggerButtonClassName="h-8 text-xs bg-background"
+            triggerButtonClassName={ORDER_ACTION_BUTTON_CLASS}
           />
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 cursor-pointer bg-background"
-            onClick={handleOpenInvoice}
-          >
-            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+          <Button variant="outline" size="sm" className={ORDER_ACTION_BUTTON_CLASS} onClick={handleOpenInvoice}>
+            <FileText className="h-3.5 w-3.5" />
             {t('orders.print_invoice', 'Print Invoice')}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 cursor-pointer bg-background"
-            onClick={() => setSendEmailModalOpen(true)}
-          >
-            {/* <Mail className="h-3.5 w-3.5 text-muted-foreground" /> */}
-            {t('orders.send_invoice_email', 'Email invoice')}
+          <Button variant="outline" size="sm" className={ORDER_ACTION_BUTTON_CLASS} onClick={() => setSendEmailModalOpen(true)}>
+            <Mail className="h-3.5 w-3.5" />
+            {t('orders.send_invoice_email', 'Email Invoice')}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 cursor-pointer bg-background"
-            onClick={handleEditOrder}
-          >
-            <Edit3 className="h-3.5 w-3.5 text-muted-foreground" />
-            {t('common.edit', 'Edit Order')}
+          <Button variant="outline" size="sm" className={ORDER_ACTION_BUTTON_CLASS} onClick={handleEditOrder}>
+            <Edit3 className="h-3.5 w-3.5" />
+            {t('common.edit', 'Edit')}
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="h-8 text-xs gap-1.5 cursor-pointer"
-            onClick={handleViewFullPage}
-          >
+          <Button size="sm" className="h-8 rounded-lg px-3 text-xs font-medium gap-1.5 cursor-pointer" onClick={handleViewFullPage}>
             <ExternalLink className="h-3.5 w-3.5" />
-            {t('common.details', 'Full Details')}
+            {t('common.details', 'Details')}
           </Button>
         </div>
       </div>

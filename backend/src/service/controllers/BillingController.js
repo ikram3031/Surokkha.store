@@ -18,6 +18,15 @@ const normalizeStatus = (status, amount, totalAmount) => {
 };
 
 // Creates a new billing entry with optional order or bill type associations
+// Coerces the bill's payment-method charge; an empty or missing fee is stored as zero
+const normalizePaymentFee = (fee) => ({
+  name: String(fee?.name || "").trim(),
+  percent: Math.max(0, Number(fee?.percent) || 0),
+  fixed: Math.max(0, Number(fee?.fixed) || 0),
+  amount: Math.max(0, Number(fee?.amount) || 0),
+  isCustom: Boolean(fee?.isCustom),
+});
+
 export const createBilling = async (req, res, next) => {
   try {
     const {
@@ -29,6 +38,8 @@ export const createBilling = async (req, res, next) => {
       title,
       name,
       billingMethod,
+      paymentFee,
+      baseAmount,
       billingPhone,
       billingEmail,
       amount,
@@ -78,6 +89,8 @@ export const createBilling = async (req, res, next) => {
       title: (title || name || "").toString().trim(),
       name: (name || title || "").toString().trim(),
       billingMethod: billingMethod?.trim() || "manual",
+      paymentFee: normalizePaymentFee(paymentFee),
+      baseAmount: Math.max(0, Number(baseAmount ?? totalAmount) || 0),
       billingPhone: billingPhone?.trim() || "",
       billingEmail: billingEmail?.trim().toLowerCase() || "",
       totalAmount,
@@ -285,6 +298,12 @@ export const updateBilling = async (req, res, next) => {
     }
     if (payload.billingMethod !== undefined) {
       allowedUpdates.billingMethod = payload.billingMethod.trim();
+    }
+    if (payload.paymentFee !== undefined) {
+      allowedUpdates.paymentFee = normalizePaymentFee(payload.paymentFee);
+    }
+    if (payload.baseAmount !== undefined) {
+      allowedUpdates.baseAmount = Math.max(0, Number(payload.baseAmount) || 0);
     }
     if (payload.billingPhone !== undefined) {
       allowedUpdates.billingPhone = payload.billingPhone.trim();

@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
+import { getApiErrorMessage } from '@/lib/error-handler';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
@@ -72,8 +73,8 @@ export function SystemUsersTable({
       await apiClient.put(`/api/v1/users/${id}`, { isActive: newActive });
       toast.success(`User status updated to ${newActive ? 'Active' : 'Inactive'}.`);
       queryClient.invalidateQueries({ queryKey: ['system-users'] });
-    } catch {
-      toast.error('Failed to update user status.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update user status.'));
     } finally {
       setToggling(null);
     }
@@ -86,8 +87,8 @@ export function SystemUsersTable({
       await apiClient.put(`/api/v1/users/${id}`, { receiveEmailNotifications: newVal });
       toast.success(`Email notification ${newVal ? 'activated' : 'deactivated'}.`);
       queryClient.invalidateQueries({ queryKey: ['system-users'] });
-    } catch {
-      toast.error('Failed to update email notification settings.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to update email notification settings.'));
     } finally {
       setTogglingMail(null);
     }

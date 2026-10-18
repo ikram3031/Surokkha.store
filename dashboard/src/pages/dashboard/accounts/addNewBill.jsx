@@ -40,10 +40,25 @@ import { useBillTypes } from '@/hooks/use-bill-types';
 import { usePaymentTypes } from '@/hooks/use-payment-types';
 import { useInvestors } from '@/hooks/use-investors';
 import { toast } from 'sonner';
+import { calculateFeeAmount, formatFeeRate } from '@/components/dashboard/accounts/PaymentFeesEditor';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
   return `৳${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+};
+
+// Turns a saved bill's paymentFee back into the form's fee fields
+const feeFieldsFromBill = (fee) => {
+  if (!fee?.name) return { feeChoice: 'none', customFeeName: '', customFeePercent: '', customFeeFixed: '' };
+  if (fee.isCustom) {
+    return {
+      feeChoice: 'custom',
+      customFeeName: fee.name,
+      customFeePercent: fee.percent ? String(fee.percent) : '',
+      customFeeFixed: fee.fixed ? String(fee.fixed) : '',
+    };
+  }
+  return { feeChoice: fee.name, customFeeName: '', customFeePercent: '', customFeeFixed: '' };
 };
 
 export const AddNewBillPage = () => {
@@ -79,6 +94,10 @@ export const AddNewBillPage = () => {
     billingDate: new Date().toISOString().slice(0, 10),
     dueDate: '',
     billingMethod: 'Bank Transfer',
+    feeChoice: 'none',
+    customFeeName: '',
+    customFeePercent: '',
+    customFeeFixed: '',
     status: 'Pending',
     notes: '',
   });
@@ -109,11 +128,15 @@ export const AddNewBillPage = () => {
           vendor: existing.vendor || existing.customerName || '',
           billingPhone: existing.billingPhone || '',
           billingEmail: existing.billingEmail || '',
-          totalAmount: existing.totalAmount !== undefined ? String(existing.totalAmount) : '',
+          // The form edits the amount before the charge; older bills without baseAmount subtract the stored fee
+          totalAmount: existing.totalAmount !== undefined
+            ? String(existing.baseAmount || Math.max(0, Number(existing.totalAmount) - Number(existing.paymentFee?.amount || 0)))
+            : '',
           paidAmount: existing.paidAmount !== undefined ? String(existing.paidAmount) : '',
           billingDate: existing.billingDate || existing.date || new Date().toISOString().slice(0, 10),
           dueDate: existing.dueDate || '',
           billingMethod: existing.billingMethod || 'Bank Transfer',
+          ...feeFieldsFromBill(existing.paymentFee),
           status: existing.status || 'Pending',
           notes: existing.notes || '',
         });
@@ -123,8 +146,23 @@ export const AddNewBillPage = () => {
 
   // Derived calculation
   const totalAmountNum = Number(formData.totalAmount) || 0;
+
+  // Charge for the chosen payment method: one of its configured fees, or a custom one
+  const selectedMethodFees =
+    allPaymentTypes.find((pt) => pt.name.trim() === formData.billingMethod)?.fees || [];
+  const selectedFee =
+    formData.feeChoice === 'custom'
+      ? {
+          name: formData.customFeeName.trim() || 'Custom charge',
+          percent: Number(formData.customFeePercent) || 0,
+          fixed: Number(formData.customFeeFixed) || 0,
+        }
+      : selectedMethodFees.find((fee) => fee.name === formData.feeChoice) || null;
+  const feeAmountNum = selectedFee ? calculateFeeAmount(selectedFee, totalAmountNum) : 0;
+  // The charge is added on top of the entered amount
+  const grandTotalNum = Math.round((totalAmountNum + feeAmountNum) * 100) / 100;
   const paidAmountNum = Number(formData.paidAmount) || 0;
-  const pendingAmountNum = Math.max(0, totalAmountNum - paidAmountNum);
+  const pendingAmountNum = Math.max(0, grandTotalNum - paidAmountNum);
 
   const handleInvestorSelect = (invId) => {
     if (invId === 'none' || !invId) {
@@ -194,13 +232,17 @@ export const AddNewBillPage = () => {
       customerName: formData.vendor.trim() || formData.title.trim(),
       billingPhone: formData.billingPhone.trim(),
       billingEmail: formData.billingEmail.trim(),
-      totalAmount: totalAmountNum,
-      amount: totalAmountNum,
+      baseAmount: totalAmountNum,
+      totalAmount: grandTotalNum,
+      amount: grandTotalNum,
       paidAmount: paidAmountNum,
       pendingAmount: pendingAmountNum,
       billingDate: formData.billingDate,
       dueDate: formData.dueDate || formData.billingDate,
       billingMethod: formData.billingMethod,
+      paymentFee: selectedFee
+        ? { ...selectedFee, amount: feeAmountNum, isCustom: formData.feeChoice === 'custom' }
+        : { name: '', percent: 0, fixed: 0, amount: 0, isCustom: false },
       status: formData.status.toLowerCase(),
       notes: formData.notes.trim(),
     };
@@ -457,7 +499,7 @@ export const AddNewBillPage = () => {
                   <label className="text-xs font-semibold text-foreground">Payment Method</label>
                   <Select
                     value={formData.billingMethod}
-                    onValueChange={(v) => handleInputChange('billingMethod', v)}
+                    onValueChange={(v) => setFormData((prev) => ({ ...prev, billingMethod: v, feeChoice: 'none' }))}
                   >
                     <SelectTrigger className="text-xs">
                       <SelectValue placeholder="Payment Method" />
@@ -471,6 +513,69 @@ export const AddNewBillPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+                <label className="text-xs font-semibold text-foreground">Charge / Fee</label>
+                <Select
+                  value={formData.feeChoice}
+                  onValueChange={(v) => handleInputChange('feeChoice', v)}
+                >
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="No charge" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No charge</SelectItem>
+                    {selectedMethodFees.map((fee) => (
+                      <SelectItem key={fee.name} value={fee.name}>
+                        {fee.name} ({formatFeeRate(fee)})
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Custom charge</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {formData.feeChoice === 'custom' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <Input
+                      placeholder="Charge name"
+                      value={formData.customFeeName}
+                      onChange={(e) => handleInputChange('customFeeName', e.target.value)}
+                      className="text-xs"
+                    />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Percent (%)"
+                      value={formData.customFeePercent}
+                      onChange={(e) => handleInputChange('customFeePercent', e.target.value)}
+                      className="text-xs font-mono"
+                    />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Amount (৳)"
+                      value={formData.customFeeFixed}
+                      onChange={(e) => handleInputChange('customFeeFixed', e.target.value)}
+                      className="text-xs font-mono"
+                    />
+                  </div>
+                )}
+
+                {selectedFee && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {selectedFee.name}: {formatFeeRate(selectedFee)} on ৳{totalAmountNum.toLocaleString()} ={' '}
+                    <span className="font-semibold text-amber-600">৳{feeAmountNum.toLocaleString()}</span>
+                    {' '}· Total ৳{grandTotalNum.toLocaleString()}
+                  </p>
+                )}
+                {selectedMethodFees.length === 0 && formData.feeChoice === 'none' && (
+                  <p className="text-[11px] text-muted-foreground">
+                    No fees set for {formData.billingMethod}. Add them in Payment Methods, or use a custom charge.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -526,9 +631,21 @@ export const AddNewBillPage = () => {
               </div>
 
               <div className="p-3.5 rounded-xl bg-card border space-y-2.5">
+                {feeAmountNum > 0 && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Bill Amount:</span>
+                      <span className="font-medium text-foreground font-mono">{formatCurrency(totalAmountNum)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">+ {selectedFee?.name}:</span>
+                      <span className="font-medium text-amber-600 font-mono">{formatCurrency(feeAmountNum)}</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Total Incurred:</span>
-                  <span className="font-bold text-foreground font-mono">{formatCurrency(totalAmountNum)}</span>
+                  <span className="font-bold text-foreground font-mono">{formatCurrency(grandTotalNum)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Paid Amount:</span>
@@ -553,6 +670,12 @@ export const AddNewBillPage = () => {
                   <span>Payment Method:</span>
                   <span className="font-medium text-foreground">{formData.billingMethod}</span>
                 </div>
+                {selectedFee && (
+                  <div className="flex justify-between">
+                    <span>{selectedFee.name}:</span>
+                    <span className="font-medium text-amber-600">৳{feeAmountNum.toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center pt-1">
                   <span>Status:</span>
                   <Badge variant="outline" className="text-[10px]">{formData.status}</Badge>

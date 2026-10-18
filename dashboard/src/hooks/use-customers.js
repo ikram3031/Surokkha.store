@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 
 /**
@@ -68,3 +69,45 @@ export function useCustomerSearch(query, enabled = true, debounceMs = 250) {
 
   return { customers, isLoading };
 }
+
+// Fetches the paginated Customer collection (customers saved from orders) for the customer list page
+const fetchCustomersList = async (params) => {
+  const limit = params?.limit ?? 15;
+  const page = params?.page ?? 1;
+
+  const response = await apiClient.get("/api/v1/customers", {
+    params: { page, limit, ...(params?.search ? { search: params.search } : {}) },
+  });
+
+  const rawList = response.data?.data ?? [];
+  const pagination = response.data?.pagination ?? {};
+
+  const customers = rawList.map((c) => ({
+    id: c.id || c._id,
+    name: c.fullName || [c.firstName, c.lastName].filter(Boolean).join(" ") || c.phone || "",
+    email: c.email || "",
+    phone: c.phone || "",
+    totalOrders: Number(c.totalOrders) || 0,
+    lifetimeSpent: Number(c.totalSpent) || 0,
+    joinedDate: c.createdAt || null,
+    did: c.did || "",
+    isActive: c.isActive ?? true,
+  }));
+
+  return {
+    data: customers,
+    meta: {
+      total: pagination.total ?? customers.length,
+      page: pagination.page ?? page,
+      limit: pagination.limit ?? limit,
+      totalPages: pagination.totalPages ?? (Math.ceil(customers.length / limit) || 1),
+    },
+  };
+};
+
+export const useCustomersList = (params) => {
+  return useQuery({
+    queryKey: ["customers", params],
+    queryFn: () => fetchCustomersList(params),
+  });
+};

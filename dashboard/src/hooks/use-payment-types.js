@@ -2,6 +2,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 
+// Named charges for a method; older records only have chargePercent/chargeFixed, shown as a single "Charge" row
+const mapFees = (item) => {
+  if (Array.isArray(item.fees) && item.fees.length > 0) {
+    return item.fees.map((fee) => ({
+      name: fee.name || '',
+      percent: Number(fee.percent) || 0,
+      fixed: Number(fee.fixed) || 0,
+    }));
+  }
+  if (Number(item.chargePercent) > 0 || Number(item.chargeFixed) > 0) {
+    return [{ name: 'Charge', percent: Number(item.chargePercent) || 0, fixed: Number(item.chargeFixed) || 0 }];
+  }
+  return [];
+};
+
 // Maps backend payment type document into standard UI entity
 const mapPaymentType = (item) => ({
   id: item._id || item.id || item.did,
@@ -16,6 +31,7 @@ const mapPaymentType = (item) => ({
   routingNumber: item.routingNumber || '',
   chargePercent: Number(item.chargePercent) || 0,
   chargeFixed: Number(item.chargeFixed) || 0,
+  fees: mapFees(item),
   instructions: item.instructions || '',
   icon: item.icon || '',
   qrCode: item.qrCode || '',

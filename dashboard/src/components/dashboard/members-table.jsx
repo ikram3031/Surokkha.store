@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMembers } from '@/hooks/use-members';
+import { useCustomersList } from '@/hooks/use-customers';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,14 +44,15 @@ export const MembersTable = ({
   onTotalPagesChange,
   selectedIds,
   onSelectedIdsChange,
+  onTotalChange,
 }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: responseData, isLoading, isError, error } = useMembers({
+  // Lists the Customer collection (every customer saved from an order), not website member accounts
+  const { data: responseData, isLoading, isError, error } = useCustomersList({
     search: searchQuery,
-    segment: segmentFilter !== 'All' ? segmentFilter : undefined,
     page,
     limit: 15,
   });
@@ -63,7 +64,10 @@ export const MembersTable = ({
     if (onTotalPagesChange && responseData?.meta) {
       onTotalPagesChange(totalPages);
     }
-  }, [totalPages, onTotalPagesChange, responseData]);
+    if (onTotalChange && responseData?.meta) {
+      onTotalChange(responseData.meta.total);
+    }
+  }, [totalPages, onTotalPagesChange, onTotalChange, responseData]);
 
   const handleSendMessage = (member) => {
     toast.info(`Preparing message for ${member.email}`);
@@ -83,13 +87,13 @@ export const MembersTable = ({
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      await apiClient.delete(`/api/v1/members/${deleteTarget.id}`);
-      toast.success(`Member ${deleteTarget.name} deleted.`);
-      queryClient.invalidateQueries({ queryKey: ['members'] });
+      await apiClient.delete(`/api/v1/customers/${deleteTarget.id}`);
+      toast.success(`Customer ${deleteTarget.name} deleted.`);
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
       onSelectedIdsChange(selectedIds.filter(id => id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch {
-      toast.error('Failed to delete member.');
+      toast.error('Failed to delete customer.');
     } finally {
       setIsDeleting(false);
     }
@@ -208,10 +212,8 @@ export const MembersTable = ({
                   />
                 </TableCell>
                 <TableCell className="max-w-[200px]">
-                  <Link
-                    to={`/dashboard/members/${member.id}`}
-                    className="flex items-center gap-3 min-w-0 group cursor-pointer"
-                  >
+                  {/* Member profile pages don't load Customer records, so the name isn't a link */}
+                  <div className="flex items-center gap-3 min-w-0 group">
                     <Avatar className="h-9 w-9 flex-shrink-0 border group-hover:border-primary transition-colors">
                       <AvatarImage src={member.avatar} alt={member.name} />
                       <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
@@ -219,7 +221,7 @@ export const MembersTable = ({
                     <span className="font-semibold text-foreground truncate group-hover:text-primary transition-colors" title={member.name}>
                       {member.name}
                     </span>
-                  </Link>
+                  </div>
                 </TableCell>
                 <TableCell className="max-w-[200px]">
                   <span className="truncate block text-muted-foreground" title={member.email}>{member.email}</span>
@@ -238,29 +240,15 @@ export const MembersTable = ({
                     } />
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => navigate(`/dashboard/members/${member.id}`)}>
-                        View Profile
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleSendMessage(member)}>
                         Send Message
                       </DropdownMenuItem>
-                      {canChangePassword && (
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setPasswordTarget({ id: member.id, name: member.name });
-                            setNewPassword('');
-                            setConfirmPassword('');
-                          }}
-                        >
-                          Change Password
-                        </DropdownMenuItem>
-                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive cursor-pointer"
                         onClick={() => setDeleteTarget({ id: member.id, name: member.name })}
                       >
-                        Delete Member
+                        Delete Customer
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -282,7 +270,7 @@ export const MembersTable = ({
         onConfirm={handleDeleteMember}
         isDeleting={isDeleting}
         title="Delete Member"
-        description={`Are you sure you want to delete member ${deleteTarget?.name ?? ''}?`}
+        description={`Are you sure you want to delete customer ${deleteTarget?.name ?? ''}?`}
       />
 
       <Dialog open={!!passwordTarget} onOpenChange={(open) => { if (!open) setPasswordTarget(null); }}>

@@ -8,6 +8,8 @@ import {
   updateUser,
   getProfile,
   updateProfile,
+  avatarUploadMiddleware,
+  uploadProfileAvatar,
   resendInvitation,
   resetUserPassword,
 } from "../controllers/UsersController.js";
@@ -21,6 +23,7 @@ usersRouter.use(authenticateToken);
 // User's own profile routes
 usersRouter.get("/me", getProfile);
 usersRouter.put("/me", updateProfile);
+usersRouter.post("/me/avatar", avatarUploadMiddleware, uploadProfileAvatar);
 
 // Only Owner and Admin may manage users
 usersRouter.get("/", authorizeRoles("Owner", "Admin"), listUsers);

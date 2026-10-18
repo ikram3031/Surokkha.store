@@ -23,6 +23,15 @@ const userSchema = new Schema(
     phone: { type: String, required: false, trim: true, index: true, default: "" },
     address: { type: String, trim: true, default: "" },
     avatar: { type: String, trim: true, default: "" },
+    preferredName: { type: String, trim: true, default: "" },
+    username: { type: String, trim: true, lowercase: true, unique: true, sparse: true },
+    website: { type: String, trim: true, default: "" },
+    preferences: {
+      timezone: { type: String, trim: true, default: "Asia/Dhaka" },
+      weekStart: { type: String, enum: ["saturday", "sunday", "monday"], default: "saturday" },
+      language: { type: String, enum: ["en", "bn"], default: "en" },
+      timeFormat: { type: String, enum: ["12h", "24h"], default: "12h" },
+    },
     refreshTokens: {
       type: [
         {

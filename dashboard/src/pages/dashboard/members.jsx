@@ -47,6 +47,7 @@ const MembersPage = () => {
   const [searchInput, setSearchInput] = useState(urlSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCustomers, setTotalCustomers] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
 
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -107,10 +108,10 @@ const MembersPage = () => {
     setIsBulkDeleting(true);
     try {
       await Promise.all(
-        selectedIds.map((id) => apiClient.delete(`/api/v1/members/${id}`))
+        selectedIds.map((id) => apiClient.delete(`/api/v1/customers/${id}`))
       );
       toast.success(t('common.saved'));
-      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
       setSelectedIds([]);
       setBulkDeleteOpen(false);
     } catch {
@@ -125,11 +126,12 @@ const MembersPage = () => {
     try {
       await Promise.all(
         selectedIds.map((id) =>
-          apiClient.put(`/api/v1/members/${id}`, { active: false })
+          // Customer DELETE is a soft delete (isActive: false)
+          apiClient.delete(`/api/v1/customers/${id}`)
         )
       );
       toast.success(t('common.saved'));
-      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
       setSelectedIds([]);
       setBulkInactiveOpen(false);
     } catch {
@@ -145,7 +147,7 @@ const MembersPage = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t('admin.customer_list')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {t('common.showing')} {t('common.entries')}
+            {t('common.showing')} {totalCustomers} {t('common.entries')}
           </p>
         </div>
       </div>
@@ -193,17 +195,6 @@ const MembersPage = () => {
               </Button>
             </div>
           )}
-          <Select value={segmentFilter} onValueChange={handleSegment}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t('common.filter')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">{t('common.all')}</SelectItem>
-              <SelectItem value="VIP">VIP</SelectItem>
-              <SelectItem value="New">New</SelectItem>
-              <SelectItem value="Returning">Returning</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
@@ -216,6 +207,7 @@ const MembersPage = () => {
             onTotalPagesChange={setTotalPages}
             selectedIds={selectedIds}
             onSelectedIdsChange={setSelectedIds}
+            onTotalChange={setTotalCustomers}
           />
 
           {totalPages > 1 && (

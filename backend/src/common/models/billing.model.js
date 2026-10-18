@@ -13,10 +13,20 @@ const billingSchema = new Schema(
     name: { type: String, trim: true, default: "" },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     billingMethod: { type: String, trim: true, default: "manual" },
+    // Charge applied for the chosen payment method: one of the method's fees, or a custom one
+    paymentFee: {
+      name: { type: String, trim: true, default: "" },
+      percent: { type: Number, default: 0, min: 0 },
+      fixed: { type: Number, default: 0, min: 0 },
+      amount: { type: Number, default: 0, min: 0 },
+      isCustom: { type: Boolean, default: false },
+    },
     billingPhone: { type: String, trim: true, default: "" },
     billingEmail: { type: String, trim: true, lowercase: true, default: "" },
     billingDate: { type: Date, default: () => new Date() },
     dueDate: { type: Date, default: null },
+    // Amount entered before the payment-method charge; totalAmount = baseAmount + paymentFee.amount
+    baseAmount: { type: Number, default: 0, min: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
     paidAmount: { type: Number, required: true, min: 0, default: 0 },
     pendingAmount: { type: Number, required: true, min: 0, default: 0 },

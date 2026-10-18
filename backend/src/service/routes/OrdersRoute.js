@@ -15,12 +15,13 @@ import {
 import {
   authenticateToken,
   authorizeRoles,
+  optionalAuthenticate,
 } from "../../common/middlewares/auth.middleware.js";
 
 const ordersRouter = Router();
 
 // Create order from checkout payload (Public endpoint for guest and logged-in customers)
-ordersRouter.post("/new-order", createOrder);
+ordersRouter.post("/new-order", optionalAuthenticate, createOrder);
 
 // Fetch the spam list (Dashboard/Admin only)
 ordersRouter.get(
