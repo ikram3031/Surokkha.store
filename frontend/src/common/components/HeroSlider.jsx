@@ -14,10 +14,18 @@ const HeroSlider = () => {
 
   const navigateTo = useStore((state) => state.navigateTo);
   const navigateToCombo = useStore((state) => state.navigateToCombo);
+  const openProduct = useStore((state) => state.openProduct);
   const products = useStore((state) => state.products);
   const { t, isBn, formatPrice } = useTranslation();
 
-  const combo30Prod = Object.values(products).find(p => {
+  // Hero combo offer is pinned to the Combo Special 30 pcs product (same product as the
+  // navbar marquee); falls back to auto-detection if it's inactive or out of stock.
+  const HERO_COMBO_PRODUCT_ID = '6ad3ceaa778c3e05ca22b2bd';
+  const pinnedCombo = products[HERO_COMBO_PRODUCT_ID];
+  const isPinnedComboAvailable = pinnedCombo && pinnedCombo.isActive !== false &&
+    !(pinnedCombo.isOutOfStock || pinnedCombo.stockStatus === 'outofstock' || pinnedCombo.stockStatus === 'out_of_stock' || pinnedCombo.stockAmount === 0);
+
+  const combo30Prod = (isPinnedComboAvailable ? pinnedCombo : null) || Object.values(products).find(p => {
     if (!p || p.isActive === false) return false;
     const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
     if (isOut) return false;
@@ -31,7 +39,17 @@ const HeroSlider = () => {
     return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
   });
 
+  const comboKey = combo30Prod?.slug || combo30Prod?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
   const comboPrice = combo30Prod ? (combo30Prod.offerPrice || combo30Prod.price) : null;
+
+  // Open the pinned combo product when available, otherwise fall back to the combo view.
+  const handleComboCta = () => {
+    if (combo30Prod) {
+      openProduct(comboKey);
+    } else {
+      navigateToCombo();
+    }
+  };
 
   const isStore = Boolean(SITE_CONFIG.isStore);
   const videoUrl = `${API_BASE_URL}/uploads/assets/promo-video.mp4`;
@@ -142,7 +160,7 @@ const HeroSlider = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 w-full sm:w-auto max-w-md sm:max-w-none mx-auto">
             <button
               type="button"
-              onClick={navigateToCombo}
+              onClick={handleComboCta}
               aria-label={isBn ? (comboPrice ? `🔥 ৩০ পিস কম্বো (${formatPrice(comboPrice)})` : '🔥 ৩০ পিস কম্বো') : (comboPrice ? `🔥 30pcs Combo (${formatPrice(comboPrice)})` : '🔥 30pcs Combo')}
               className="w-full sm:w-64 md:w-72 bg-gradient-to-r from-[#F43F5E] via-[#E11D48] to-[#BE123C] hover:from-[#FB7185] hover:to-[#9F1239] text-white font-bold text-sm sm:text-base px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl shadow-2xl hover:shadow-rose-600/50 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-rose-400/50 text-center animate-whatsapp-vibrate ring-2 ring-rose-500/40"
             >
