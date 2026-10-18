@@ -5,7 +5,7 @@ This document describes the administrative activity log tracking, order notifica
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Base Path
@@ -215,7 +215,7 @@ Provides a real-time bi-directional channel for instant order and activity notif
 ### Connection Details
 
 - **Protocol:** `ws://` / `wss://`
-- **URL:** `wss://server.decantrebd.com/ws/notifications?token=<accessToken>` (or `wss://server.decantrebd.com/api/v1/ws/notifications?token=<accessToken>`)
+- **URL:** `wss://server.demobd.com/ws/notifications?token=<accessToken>` (or `wss://server.demobd.com/api/v1/ws/notifications?token=<accessToken>`)
 - **Authentication:** Required (Valid Access Token in query parameter `?token=...` or `Sec-WebSocket-Protocol` header)
 
 ### Server Events Sent to Client

@@ -5,7 +5,7 @@ This document describes all available user management endpoints for the backend.
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Endpoints
@@ -37,7 +37,7 @@ Authorization: Bearer <accessToken>
       "id": "64a8c9b3f8e3a5c1d2e7f0a1",
       "did": "US-123456",
       "fullName": "Manager Account",
-      "email": "manager@decantrebd.com",
+      "email": "manager@demobd.com",
       "role": "Admin",
       "createdAt": "2026-07-19T10:00:00.000Z"
     }
@@ -70,7 +70,7 @@ Retrieves details of a specific user.
     "id": "64a8c9b3f8e3a5c1d2e7f0a1",
     "did": "US-123456",
     "fullName": "Manager Account",
-    "email": "manager@decantrebd.com",
+    "email": "manager@demobd.com",
     "role": "Admin",
     "createdAt": "2026-07-19T10:00:00.000Z"
   }
@@ -92,7 +92,7 @@ Creates a new administrative or staff account.
 ```json
 {
   "fullName": "Staff Member",
-  "email": "staff@decantrebd.com",
+  "email": "staff@demobd.com",
   "password": "SecurePassword123",
   "role": "Admin"
 }
@@ -107,7 +107,7 @@ Creates a new administrative or staff account.
     "id": "64a8c9b3f8e3a5c1d2e7f0b2",
     "did": "US-789012",
     "fullName": "Staff Member",
-    "email": "staff@decantrebd.com",
+    "email": "staff@demobd.com",
     "role": "Admin"
   }
 }

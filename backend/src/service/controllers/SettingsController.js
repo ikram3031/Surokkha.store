@@ -9,7 +9,6 @@ import {
   testTikTokEventsApiConnection,
 } from "../../common/services/tiktokEventsApi.service.js";
 import { config as clientConfig } from "../../common/config/index.js";
-import nodemailer from "nodemailer";
 import { encryptText, decryptText } from "../../common/utils/crypto.util.js";
 import {
   DEFAULT_TEMPLATE_PRESETS,

@@ -24,6 +24,7 @@ const fetchSystemUsers = async (params) => {
       email: u.email || '',
       role: u.role || 'Admin',
       status: u.isActive !== false ? 'Active' : 'Inactive',
+      receiveEmailNotifications: u.receiveEmailNotifications !== false,
       lastLogin: u.updatedAt || u.createdAt || new Date().toISOString(),
       avatar: u.avatar || undefined,
     }));

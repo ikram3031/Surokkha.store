@@ -6,6 +6,20 @@ import { LogModel } from "../../common/models/log.model.js";
 
 const { Types } = mongoose;
 
+// Mirror a payment record's amounts/status back onto its linked order.
+const syncOrderFromPayment = async (payment) => {
+  const orderId = payment?.orderId?._id || payment?.orderId;
+  if (!orderId) return;
+  const order = await OrderModel.findById(orderId).select("totals").lean();
+  if (!order) return;
+  const total = Number(order.totals?.total || 0);
+  const paidAmount = Math.min(total, Math.max(0, Number(payment.paidAmount || 0)));
+  await OrderModel.findByIdAndUpdate(orderId, {
+    paidAmount,
+    paymentStatus: payment.status,
+  });
+};
+
 // Creates a payment record for an order or as a standalone manual transaction
 export const createPayment = async (req, res, next) => {
   try {
@@ -296,6 +310,13 @@ export const updatePayment = async (req, res, next) => {
       return res.status(404).json({ status: "error", message: "Payment record not found" });
     }
 
+    // Keep pending in step with paid when only paidAmount was edited.
+    if (allowedUpdates.paidAmount !== undefined && allowedUpdates.pendingAmount === undefined) {
+      const pending = Math.max(0, Number(payment.totalAmount || 0) - Number(payment.paidAmount || 0));
+      await PaymentModel.findByIdAndUpdate(payment._id, { pendingAmount: pending, amount: payment.paidAmount });
+      payment.pendingAmount = pending;
+    }
+    await syncOrderFromPayment(payment);
     if (payment.orderId) {
       const targetOrderId = payment.orderId._id || payment.orderId;
       const orderSyncUpdates = {};
@@ -425,6 +446,7 @@ export const bulkUpdatePayments = async (req, res, next) => {
         amount: paidAmount,
         updatedBy: req.user?.userId || null,
       });
+      await syncOrderFromPayment({ orderId: payment.orderId, paidAmount, status: targetStatus });
 
       if (payment.orderId) {
         await OrderModel.findByIdAndUpdate(payment.orderId, {

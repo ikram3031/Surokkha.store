@@ -5,7 +5,7 @@ This document describes the public contact form submission, admin message manage
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ---

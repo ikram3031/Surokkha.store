@@ -22,6 +22,22 @@ const ordersRouter = Router();
 // Create order from checkout payload (Public endpoint for guest and logged-in customers)
 ordersRouter.post("/new-order", createOrder);
 
+// Fetch the spam list (Dashboard/Admin only)
+ordersRouter.get(
+  "/spam/list",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin", "Manager"),
+  getSpamList
+);
+
+// Delete entry from spam list (Dashboard/Admin only)
+ordersRouter.delete(
+  "/spam/:id",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  deleteSpamListEntry
+);
+
 // Public printable / download invoice PDF view endpoint for order emails
 ordersRouter.get("/:orderId/invoice", getOrderInvoiceView);
 

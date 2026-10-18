@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import { UserModel } from "../models/user.model.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { EmailMessageModel } from "../models/emailMessage.model.js";
@@ -188,6 +187,27 @@ export const sendOrderEmailsAsynchronously = (order) => {
         const adminRecipientsSet = new Set();
         adminRecipientsSet.add("ihkhan889@gmail.com");
         adminRecipientsSet.add("surokkha.support@gmail.com");
+        if (process.env.ADMIN_NOTIFY_EMAIL) {
+          adminRecipientsSet.add(process.env.ADMIN_NOTIFY_EMAIL.toLowerCase().trim());
+        }
+        if (config.supportEmail) {
+          adminRecipientsSet.add(config.supportEmail.toLowerCase().trim());
+        }
+
+        try {
+          const staffRecipients = await UserModel.find({
+            $or: [{ isActive: true }, { active: true }, { isActive: { $exists: false } }],
+            receiveEmailNotifications: { $ne: false },
+          }).select("email receiveEmailNotifications").lean();
+
+          for (const staffUser of staffRecipients) {
+            if (staffUser.email && staffUser.receiveEmailNotifications !== false) {
+              adminRecipientsSet.add(staffUser.email.toLowerCase().trim());
+            }
+          }
+        } catch (dbErr) {
+          console.error("[Email Notification] Database query for staff notification emails failed, falling back to default admins:", dbErr.message);
+        }
 
         const adminRecipients = Array.from(adminRecipientsSet);
         console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);

@@ -79,6 +79,7 @@ import {
   WhatsAppIcon,
   handleCopyText,
 } from "@/utils/orderDetailsHelper";
+import { CartPriceInput, CustomItemDialog } from "@/components/orders/CartLineEditors";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
@@ -309,6 +310,7 @@ const OrderDetailsPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paidAmount, setPaidAmount] = useState(0);
   const [paymentPhone, setPaymentPhone] = useState("");
+  const [paymentTransactionId, setPaymentTransactionId] = useState("");
 
   const [orderStatus, setOrderStatus] = useState("Pending");
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -320,6 +322,7 @@ const OrderDetailsPage = () => {
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [brandFilter, setBrandFilter] = useState("All");
   const [dialogProduct, setDialogProduct] = useState(null);
+  const [customItemOpen, setCustomItemOpen] = useState(false);
   const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
 
   const { data: categories = [] } = useCategories();
@@ -389,6 +392,7 @@ const OrderDetailsPage = () => {
       setShippingFee(order.totals?.shippingFee ?? order.shippingTotalAmount ?? 0);
       setPaidAmount(getInitialPaidAmount(order, initMethod));
       setPaymentPhone(extractPaymentPhone(order));
+      setPaymentTransactionId(order.paymentTransactionId || order.paymentDetails?.transactionId || "");
       setCart(mapOrderItemsToCart(order.items));
 
       if (startInEditMode) {
@@ -422,6 +426,10 @@ const OrderDetailsPage = () => {
 
   const removeFromCart = useCallback((id) => {
     setCart((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  const updatePrice = useCallback((id, price) => {
+    setCart((prev) => prev.map((c) => (c.id === id ? { ...c, price } : c)));
   }, []);
 
   const subtotal = useMemo(
@@ -527,6 +535,7 @@ const OrderDetailsPage = () => {
         paymentMethod,
         paidAmount,
         paymentPhone,
+        paymentTransactionId,
         isDigitalPayment,
         billingInfo: billingPayload,
         shippingInfo: shippingPayload,
@@ -1112,6 +1121,19 @@ const OrderDetailsPage = () => {
                     </span>
                   </div>
                 )}
+                {paymentTransactionId && (
+                  <div>
+                    <span className="text-xs text-muted-foreground block">Transaction ID</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(paymentTransactionId, "Transaction ID")}
+                      className="font-mono font-semibold text-foreground flex items-center gap-1.5 mt-0.5 cursor-pointer hover:text-primary"
+                    >
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                      {paymentTransactionId}
+                    </button>
+                  </div>
+                )}
                 {order.couponCode && (
                   <div>
                     <span className="text-xs text-muted-foreground block">Applied Coupon</span>
@@ -1583,7 +1605,18 @@ const OrderDetailsPage = () => {
                     {cart.reduce((s, c) => s + c.quantity, 0)} items
                   </Badge>
                 )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={`h-6 gap-1 text-[10px] cursor-pointer ${cart.length > 0 ? "" : "ml-auto"}`}
+                  onClick={() => setCustomItemOpen(true)}
+                >
+                  <Plus className="h-3 w-3" />
+                  Extra item
+                </Button>
               </h3>
+              <CustomItemDialog open={customItemOpen} onClose={() => setCustomItemOpen(false)} onAdd={addToCart} />
 
               {cart.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
@@ -1609,9 +1642,11 @@ const OrderDetailsPage = () => {
                             </Badge>
                           ) : null}
                         </div>
-                        <p className="text-[9px] text-muted-foreground mt-0.5">
-                          {formatBDT(item.price)} × {item.quantity} = <span className="font-semibold text-foreground">{formatBDT(item.price * item.quantity)}</span>
-                        </p>
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                          <CartPriceInput value={item.price} onChange={(price) => updatePrice(item.id, price)} />
+                          <span>× {item.quantity} =</span>
+                          <span className="font-semibold text-foreground">{formatBDT(item.price * item.quantity)}</span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-1">
                         <button onClick={() => updateQty(item.id, -1)} className="h-5 w-5 rounded border flex items-center justify-center hover:bg-muted transition-colors">
@@ -1642,16 +1677,17 @@ const OrderDetailsPage = () => {
                       <Input type="number" className="w-24 text-right h-7 px-2 text-xs" value={shippingFee} min={0} onChange={(e) => setShippingFee(Number(e.target.value || 0))} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 items-center gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-muted-foreground">Discount</span>
-                      {order?.couponCode && (
-                        <Badge variant="outline" className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-1.5 py-0">
-                          <Tag className="h-2.5 w-2.5 mr-0.5" />
-                          {order.couponCode}
-                        </Badge>
-                      )}
+                  {order?.couponCode && (
+                    <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium py-1.5 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold">
+                        <Tag className="h-3.5 w-3.5 text-emerald-500" />
+                        Coupon Applied (<span className="font-mono uppercase font-bold">{order.couponCode}</span>)
+                      </span>
+                      <span className="font-bold">-{formatBDT(discountAmount)}</span>
                     </div>
+                  )}
+                  <div className="grid grid-cols-2 items-center gap-2">
+                    <span className="text-muted-foreground">Discount</span>
                     <div className="flex justify-end">
                       <Input type="number" className="w-24 text-right h-7 px-2 text-xs" value={discountAmount} min={0} onChange={(e) => setDiscountAmount(Number(e.target.value || 0))} />
                     </div>
@@ -1720,6 +1756,19 @@ const OrderDetailsPage = () => {
                         }}
                       />
                     </div>
+                  </div>
+                )}
+
+                {isDigitalPayment && (
+                  <div className="col-span-2">
+                    <label className="text-muted-foreground mb-1 block">Transaction ID</label>
+                    <Input
+                      type="text"
+                      className="h-8 text-xs"
+                      placeholder="e.g. 9JX4K2L7QP"
+                      value={paymentTransactionId}
+                      onChange={(e) => setPaymentTransactionId(e.target.value.slice(0, 64))}
+                    />
                   </div>
                 )}
 

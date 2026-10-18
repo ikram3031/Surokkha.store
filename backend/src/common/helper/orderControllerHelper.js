@@ -15,6 +15,15 @@ const { Types } = mongoose;
 
 const normalizeText = (value) => (typeof value === 'string' ? value.trim() : '');
 
+// Extracts payer number and transaction reference from storefront checkout paymentDetails (bKash, Nagad, Bank)
+export const extractPaymentReference = (payload = {}) => {
+  const d = payload.paymentDetails && typeof payload.paymentDetails === 'object' ? payload.paymentDetails : {};
+  const payerNumber = normalizeText(d.bkashNumber || d.nagadNumber || d.rocketNumber || d.payerNumber || '');
+  const bankRef = [normalizeText(d.bankName || ''), normalizeText(d.bankAccountNumber || '')].filter(Boolean).join(' / ');
+  const transactionId = normalizeText(d.bkashTxnId || d.nagadTxnId || d.rocketTxnId || d.transactionId || '') || bankRef;
+  return { payerNumber, transactionId };
+};
+
 // Determine whether the payment method should be treated as a paid order path.
 export const isPaidPaymentMethod = (paymentMethod) => {
   const method = normalizeText(paymentMethod).toLowerCase();
@@ -178,11 +187,16 @@ export const buildOrderDocument = async (payload, req = null) => {
     const calculatedTotal = Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0)));
   const rawMethod = normalizeText(payload.paymentMethod).toLowerCase();
   const isCash = rawMethod === 'cash' || rawMethod === 'instore';
-  const initialPaidAmount = isInstore || isCash ? calculatedTotal : Number(payload.paidAmount || 0);
+  const hasExplicitPaid = payload.paidAmount !== undefined && payload.paidAmount !== null && payload.paidAmount !== '';
+  // An explicit paid amount from the dashboard always wins; in-store/cash default to fully paid.
+  const initialPaidAmount = hasExplicitPaid
+    ? Math.min(calculatedTotal, Math.max(0, Number(payload.paidAmount) || 0))
+    : (isInstore || isCash ? calculatedTotal : 0);
+  const paymentReference = extractPaymentReference(payload);
   let initialPaymentStatus = 'pending';
-  if (payload.paymentStatus) {
+  if (payload.paymentStatus && !hasExplicitPaid) {
     initialPaymentStatus = String(payload.paymentStatus).toLowerCase().trim();
-  } else if (isInstore || (initialPaidAmount >= calculatedTotal && calculatedTotal > 0)) {
+  } else if (initialPaidAmount >= calculatedTotal && calculatedTotal > 0) {
     initialPaymentStatus = 'paid';
   } else if (initialPaidAmount > 0) {
     initialPaymentStatus = 'partial';
@@ -200,7 +214,8 @@ export const buildOrderDocument = async (payload, req = null) => {
     paymentMethod: normalizeText(payload.paymentMethod),
     paymentStatus: initialPaymentStatus,
     paidAmount: initialPaidAmount,
-    paymentPhone: normalizeText(payload.paymentPhone || ''),
+    paymentPhone: normalizeText(payload.paymentPhone || paymentReference.payerNumber || ''),
+    paymentTransactionId: normalizeText(payload.paymentTransactionId || paymentReference.transactionId || ''),
     shippingTotalAmount: Number(payload.shippingTotalAmount || payload.shippingFee || 0),
     discountTotalAmount: Number(payload.discountTotalAmount || 0),
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
@@ -245,9 +260,13 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     (orderData.orderNumber && orderData.orderNumber.startsWith('IS')) ||
     (orderData.billingInfo?.email && orderData.billingInfo.email.includes('instore@'));
 
-  let paidAmount = 0;
+  const hasExplicitPaid = payload.paidAmount !== undefined && payload.paidAmount !== null && payload.paidAmount !== '';
   const hasExplicitPaymentStatus = payload.paymentStatus !== undefined && payload.paymentStatus !== null;
-  if (isInstore || (orderData.status === 'completed' && !hasExplicitPaymentStatus)) {
+  let paidAmount = 0;
+  if (hasExplicitPaid) {
+    // Dashboard-entered paid amount is the source of truth for the payment collection.
+    paidAmount = Number(payload.paidAmount) || 0;
+  } else if (isInstore || (orderData.status === 'completed' && !hasExplicitPaymentStatus)) {
     paidAmount = totalAmount;
   } else if (payload.paymentStatus !== undefined && payload.paymentStatus !== null) {
     const pStatus = String(payload.paymentStatus).toLowerCase();
@@ -295,9 +314,9 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     paymentStatus = 'cancelled';
   } else if (orderReturned) {
     paymentStatus = 'returned';
-  } else if (isInstore) {
+  } else if (isInstore && !hasExplicitPaid) {
     paymentStatus = 'paid';
-  } else if (payload?.paymentStatus !== undefined && payload?.paymentStatus !== null) {
+  } else if (!hasExplicitPaid && payload?.paymentStatus !== undefined && payload?.paymentStatus !== null) {
     const pStatus = String(payload.paymentStatus).toLowerCase();
     if (['paid', 'partial', 'pending', 'n-a', 'cancelled', 'returned'].includes(pStatus)) {
       paymentStatus = pStatus;
@@ -332,6 +351,7 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     {
       paymentMethod: orderData.paymentMethod,
       paymentPhone,
+      transactionId: orderData.paymentTransactionId || '',
       totalAmount,
       paidAmount,
       pendingAmount,
@@ -395,6 +415,9 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   }
   if (payload.paymentPhone !== undefined) {
     allowedUpdates.paymentPhone = normalizeText(payload.paymentPhone);
+  }
+  if (payload.paymentTransactionId !== undefined) {
+    allowedUpdates.paymentTransactionId = normalizeText(payload.paymentTransactionId);
   }
   if (allowedUpdates.status === 'return' || String(payload.status || '').toLowerCase().trim() === 'return') {
     allowedUpdates.paymentStatus = 'returned';

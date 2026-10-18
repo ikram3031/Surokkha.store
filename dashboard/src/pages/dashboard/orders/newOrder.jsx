@@ -50,6 +50,7 @@ import {
   CustomerSuggestionsDropdown,
   SelectedCustomerBanner,
 } from "@/components/orders/CustomerLookup";
+import { CartPriceInput, CustomItemDialog } from "@/components/orders/CartLineEditors";
 
 // Renders the modal dialog for selecting product variant and quantity before adding to cart
 const ProductAddDialog = ({
@@ -337,10 +338,12 @@ const NewInStoreOrderPage = () => {
 
   const [cart, setCart] = useState([]);
   const [dialogProduct, setDialogProduct] = useState(null);
+  const [customItemOpen, setCustomItemOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
   const [sendEmailModalOpen, setSendEmailModalOpen] = useState(false);
 
   const [discount, setDiscount] = useState("");
+  const [paidAmount, setPaidAmount] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -407,6 +410,10 @@ const NewInStoreOrderPage = () => {
     setCart((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
+  const updatePrice = useCallback((id, price) => {
+    setCart((prev) => prev.map((c) => (c.id === id ? { ...c, price } : c)));
+  }, []);
+
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cart],
@@ -422,6 +429,12 @@ const NewInStoreOrderPage = () => {
     () => Math.max(0, subtotal - discountAmount),
     [subtotal, discountAmount],
   );
+
+  // Empty input means fully paid (typical walk-in sale).
+  const paidValue = useMemo(() => {
+    if (paidAmount === "") return finalTotal;
+    return Math.min(finalTotal, Math.max(0, Number(paidAmount) || 0));
+  }, [paidAmount, finalTotal]);
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isEmailInvalid = Boolean(customerEmail.trim() && !isValidEmail(customerEmail.trim()));
@@ -482,8 +495,8 @@ const NewInStoreOrderPage = () => {
         shippingFee: 0,
         tax: 0,
         total: finalTotal,
-        paidAmount: finalTotal,
-        paymentStatus: "paid",
+        // Backend syncs the payment record from this amount; no separate payment POST needed.
+        paidAmount: paidValue,
         createdBy: user?.did || "staff",
       };
 
@@ -492,22 +505,9 @@ const NewInStoreOrderPage = () => {
         orderPayload,
       );
       const order = orderResponse.data.data;
-      const orderId = order.id || order._id;
       const orderNumber = order.orderNumber;
 
-      await apiClient.post("/api/v1/payments", {
-        orderId,
-        paymentMethod: fullPaymentMethod,
-        paymentPhone: "",
-        totalAmount: finalTotal,
-        paidAmount: finalTotal,
-        pendingAmount: 0,
-        amount: finalTotal,
-        paymentStatus: "paid",
-        status: "paid",
-      });
-
-      const invoiceUrl = `https://${clientConfig?.domain || 'plexivia.online'}/invoice/${orderNumber}`;
+      const invoiceUrl = `https://${clientConfig?.domain || 'example.com'}/invoice/${orderNumber}`;
       const invoiceItems = cart.map((item) => ({
         description: item.name,
         price: formatBDT(item.price),
@@ -565,6 +565,7 @@ const NewInStoreOrderPage = () => {
     setCustomerThana("");
     setSelectedCustomer(null);
     setDiscount("");
+    setPaidAmount("");
   };
 
   return (
@@ -1094,7 +1095,18 @@ const NewInStoreOrderPage = () => {
                   {cart.reduce((s, c) => s + c.quantity, 0)} {t("orders.items", "items")}
                 </Badge>
               )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={`h-7 gap-1 text-xs cursor-pointer ${cart.length > 0 ? "" : "ml-auto"}`}
+                onClick={() => setCustomItemOpen(true)}
+              >
+                <Plus className="h-3 w-3" />
+                {t("orders.extra_item", "Extra item")}
+              </Button>
             </h3>
+            <CustomItemDialog open={customItemOpen} onClose={() => setCustomItemOpen(false)} onAdd={addToCart} />
 
             {cart.length === 0 ? (
               <div className="py-10 text-center text-muted-foreground">
@@ -1132,13 +1144,19 @@ const NewInStoreOrderPage = () => {
                             Item
                           </Badge>
                         )}
+                        {item.itemType === "custom" && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 font-normal">
+                            Extra
+                          </Badge>
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {formatBDT(item.price)} × {item.quantity} ={" "}
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                        <CartPriceInput value={item.price} onChange={(price) => updatePrice(item.id, price)} />
+                        <span>× {item.quantity} =</span>
                         <span className="font-semibold text-foreground">
                           {formatBDT(item.price * item.quantity)}
                         </span>
-                      </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -1202,6 +1220,26 @@ const NewInStoreOrderPage = () => {
                 <div className="flex justify-between text-base font-bold mt-2 pt-2 border-t border-border">
                   <span>{t("common.total", "Total")}</span>
                   <span className="text-primary">{formatBDT(finalTotal)}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 py-1">
+                  <span className="text-xs text-muted-foreground font-medium">Paid Amount (৳)</span>
+                  <div className="w-28">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder={String(finalTotal)}
+                      value={paidAmount}
+                      onChange={(e) => setPaidAmount(e.target.value.replace(/\D/g, ""))}
+                      className="h-8 text-xs text-right font-semibold"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Remaining Pending</span>
+                  <span className={`font-bold ${finalTotal - paidValue > 0 ? "text-amber-600" : "text-emerald-600"}`}>
+                    {formatBDT(Math.max(0, finalTotal - paidValue))}
+                  </span>
                 </div>
               </div>
             )}

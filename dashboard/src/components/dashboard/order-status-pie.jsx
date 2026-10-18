@@ -37,7 +37,7 @@ export const OrderStatusPie = ({ range = '30days' }) => {
 
   const total = Object.values(statusCounts).reduce((sum, v) => sum + Number(v || 0), 0);
 
-  const chartData = Object.entries(statusCounts).map(([status, count]) => {
+  const chartData = Object.entries(statusCounts).filter(([status]) => status.toLowerCase() !== 'fake').map(([status, count]) => {
     const key = status.toLowerCase();
     const cfg = STATUS_CONFIG[key] || {
       key: `orders.status_${key}`,

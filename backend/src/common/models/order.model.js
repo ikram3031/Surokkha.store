@@ -106,6 +106,7 @@ const orderSchema = new Schema(
     },
     paidAmount: { type: Number, default: 0, min: 0 },
     paymentPhone: { type: String, trim: true, default: "" },
+    paymentTransactionId: { type: String, trim: true, default: "" },
     shippingTotalAmount: { type: Number, default: 0, min: 0 },
     discountTotalAmount: { type: Number, default: 0, min: 0 },
     couponCode: { type: String, default: null, trim: true, uppercase: true },

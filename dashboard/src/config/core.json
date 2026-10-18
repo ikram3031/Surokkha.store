@@ -1,7 +1,7 @@
 {
-  "brandName": "Flexivia",
-  "domain": "plexivia.online",
-  "supportEmail": "info@plexivia.online",
+  "brandName": "Your Brand",
+  "domain": "example.com",
+  "supportEmail": "info@example.com",
   "userRoles": {
     "Owner": {
       "name": "Store Owner",
@@ -88,7 +88,9 @@
         "settings.seo",
         "settings.meta-pixel",
         "settings.tiktok-pixel",
-        "settings.google-analytics"
+        "settings.google-analytics",
+        "settings.templates",
+        "templates"
       ]
     },
     "Investor": {

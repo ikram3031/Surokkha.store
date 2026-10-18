@@ -124,7 +124,7 @@ export const getInitialPaidAmount = (order, initMethod) => {
 export const extractPaymentPhone = (order) => {
   const phoneVal = order?.paymentDetails?.paymentPhone || order?.paymentPhone || "";
   if (phoneVal) {
-    return phoneVal.replace(/^\+880?/, "");
+    return phoneVal.replace(/^\+?880?/, "").replace(/^0/, "");
   }
   const match = String(order?.paymentMethod || "").match(/\+880?(\d+)/);
   return match ? match[1] : "";
@@ -183,7 +183,7 @@ export const getPaymentBadge = (status) => {
     case "paid":
       return <Badge className={`${BADGE_FIXED_CLS} bg-[#64a338] hover:bg-[#578e31] text-white`}>Paid</Badge>;
     case "partial":
-      return <Badge className={`${BADGE_FIXED_CLS} bg-[#ffcc00] hover:bg-[#e6b800] text-slate-950 font-medium`}>Partial</Badge>;
+      return <Badge className={`${BADGE_FIXED_CLS} bg-[#f28c28] hover:bg-[#d97a1f] text-white font-medium`}>Partial</Badge>;
     case "failed":
     case "cancelled":
     case "canceled":
@@ -269,6 +269,7 @@ export const buildUpdatePayload = ({
   paymentMethod,
   paidAmount,
   paymentPhone,
+  paymentTransactionId,
   isDigitalPayment,
   billingInfo,
   shippingInfo,
@@ -345,6 +346,9 @@ export const buildUpdatePayload = ({
     paymentStatus: resolvedPaymentStatus,
     paidAmount: effectivePaid,
     paymentPhone: formattedPaymentPhone,
+    ...(paymentTransactionId !== undefined
+      ? { paymentTransactionId: !isInStoreOrder && isDigitalPayment ? String(paymentTransactionId || "").trim() : "" }
+      : {}),
     billingInfo: normalizedBilling,
     shippingInfo: normalizedShipping,
     customer: {

@@ -28,7 +28,7 @@ Returns minimal product info useful for suggestions and search results preview.
       "name": "Aromatic Oud",
       "category": "Oud",
       "brand": "Azzaro",
-      "image": "https://server.decantrebd.com/uploads/2026/08/aromatic-oud.webp"
+      "image": "https://server.demobd.com/uploads/2026/08/aromatic-oud.webp"
     }
   ]
 }

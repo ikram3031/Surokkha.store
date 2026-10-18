@@ -14,7 +14,7 @@ const collectTelemetryData = () => {
 
   return {
     clientKey: config.clientKey || "demo",
-    brandName: config.brandName || "Flexivia",
+    brandName: config.brandName || "",
     domain: config.domain || "",
     vpsIp: env.VPS_IP || process.env.VPS_IP || "auto-detect",
     environment: env.NODE_ENV,

@@ -65,7 +65,7 @@ const resolveToken = (target) => {
   return "";
 };
 
-export async function purgeCacheForClient(clientOrDomain = "surokkha") {
+export async function purgeCacheForClient(clientOrDomain = "demo") {
   let target = clientOrDomain.toLowerCase().trim();
   let zoneId = "";
   let resolvedDomain = target;
@@ -138,7 +138,7 @@ export async function purgeCacheForClient(clientOrDomain = "surokkha") {
 
 const isDirectRun = process.argv[1] && (process.argv[1].endsWith("purge-cf.js") || process.argv[1].endsWith("purge-cf.mjs"));
 if (isDirectRun) {
-  const target = process.argv[2] || process.env.CLIENT || "surokkha";
+  const target = process.argv[2] || process.env.CLIENT || "demo";
   purgeCacheForClient(target).then((ok) => {
     process.exitCode = ok ? 0 : 1;
   });

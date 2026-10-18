@@ -118,7 +118,7 @@ const resolveCloudflareToken = async () => {
   if (config.cloudflare?.apiToken) {
     return decryptText(config.cloudflare.apiToken.trim());
   }
-  const vpsEnv = '/engulfic/opt/configs/backend.env';
+  const vpsEnv = '/opt/configs/backend.env';
   if (fs.existsSync(vpsEnv)) {
     try {
       const content = fs.readFileSync(vpsEnv, 'utf8');

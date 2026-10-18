@@ -187,6 +187,9 @@ export const OrdersTable = ({
     </Badge>
   );
 
+  // Formats a taka amount without decimals for compact table cells
+  const formatAmount = (value) => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+
   // Resolves the visual badge representation for payment status
   const getPaymentBadge = (status) => {
     switch (String(status).toLowerCase()) {
@@ -397,8 +400,17 @@ export const OrdersTable = ({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{getPaymentBadge(order.paymentStatus)}</TableCell>
-                    <TableCell>{getFulfillmentBadge(order.orderStatus)}</TableCell>
+                    <TableCell className="w-[120px]">
+                      {getPaymentBadge(order.paymentStatus)}
+                      {String(order.paymentStatus).toLowerCase() === 'partial' && Number(order.paidAmount || 0) > 0 && (
+                        <span className="block text-[10px] leading-tight mt-1 whitespace-nowrap">
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{t('orders.paid_short', 'Paid')} ৳{formatAmount(order.paidAmount)}</span>
+                          <span className="text-muted-foreground"> · </span>
+                          <span className="text-amber-600 dark:text-amber-400 font-semibold">{t('orders.due_short', 'Due')} ৳{formatAmount(order.paymentDetails?.pendingAmount ?? Math.max(0, Number(order.totalAmount || 0) - Number(order.paidAmount || 0)))}</span>
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="w-[120px]">{getFulfillmentBadge(order.orderStatus)}</TableCell>
                     <TableCell
                       className="text-right pr-3"
                       onClick={(e) => e.stopPropagation()}
@@ -461,7 +473,7 @@ export const OrdersTable = ({
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                 {t('overview.no_recent_orders', 'No orders found.')}
               </TableCell>
             </TableRow>

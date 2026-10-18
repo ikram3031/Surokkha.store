@@ -40,7 +40,7 @@ export const ClientThemeProvider = ({ children }) => {
     // Applies dynamic brand title, favicon link, and CSS theme variables
     const applyTheme = () => {
       if (typeof document !== 'undefined') {
-        const brandName = clientConfig?.brandName || 'Flexivia';
+        const brandName = clientConfig?.brandName || '';
         document.title = `Dashboard - ${brandName}`;
 
         const savedVersion = typeof window !== 'undefined' ? localStorage.getItem('brand_logo_version') || '' : '';

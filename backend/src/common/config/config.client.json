@@ -17,6 +17,10 @@
     "product": "/shop/:category/:slug"
   },
   "policies": {
+    "checkout": {
+      "requireArea": true,
+      "minAddressLength": 10
+    },
     "stock": {
       "mode": "product_wise",
       "trackQuantity": true,

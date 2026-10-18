@@ -362,6 +362,7 @@ const NewCustomOrderPage = () => {
   // Order Notes & Payment
   const [orderNotes, setOrderNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [paidAmount, setPaidAmount] = useState("");
 
   // Custom Discount State (Percentage vs Fixed Amount)
   const [discountType, setDiscountType] = useState("fixed"); // 'fixed' or 'percent'
@@ -463,6 +464,12 @@ const NewCustomOrderPage = () => {
     () => Math.max(0, subtotal + deliveryFee - discountAmount),
     [subtotal, deliveryFee, discountAmount],
   );
+
+  const paidValue = useMemo(
+    () => Math.min(finalTotal, Math.max(0, Number(paidAmount) || 0)),
+    [paidAmount, finalTotal],
+  );
+  const pendingAmount = Math.max(0, finalTotal - paidValue);
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isEmailInvalid = Boolean(customerEmail.trim() && !isValidEmail(customerEmail.trim()));
@@ -575,7 +582,7 @@ const NewCustomOrderPage = () => {
         shippingTotalAmount: deliveryFee,
         tax: 0,
         total: finalTotal,
-        paymentStatus: paymentMethod === "cod" ? "pending" : "pending",
+        paidAmount: paidValue,
         createdBy: user?.did || "staff",
       };
 
@@ -588,7 +595,7 @@ const NewCustomOrderPage = () => {
       const orderId = order.id || order._id;
       const orderNumber = order.orderNumber;
 
-      const invoiceUrl = `https://${clientConfig?.domain || 'plexivia.online'}/invoice/${orderNumber}`;
+      const invoiceUrl = `https://${clientConfig?.domain || 'example.com'}/invoice/${orderNumber}`;
       const invoiceItems = cart.map((item) => ({
         description: item.name,
         price: formatBDT(item.price),
@@ -650,6 +657,7 @@ const NewCustomOrderPage = () => {
     setShipThana("");
     setShipToDifferent(false);
     setDiscountValue("");
+    setPaidAmount("");
     setOrderNotes("");
   };
 
@@ -1541,6 +1549,25 @@ const NewCustomOrderPage = () => {
                   ))}
               </SelectContent>
             </Select>
+
+            <div className="grid grid-cols-2 items-center gap-2 pt-2">
+              <label className="text-xs font-semibold text-foreground">Paid Amount (৳)</label>
+              <Input
+                type="number"
+                className="h-8 text-right font-medium text-xs"
+                min={0}
+                max={finalTotal}
+                placeholder="0"
+                value={paidAmount}
+                onChange={(e) => setPaidAmount(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Remaining Pending:</span>
+              <span className={`font-bold ${pendingAmount > 0 ? "text-amber-600" : "text-emerald-600"}`}>
+                {formatBDT(pendingAmount)}
+              </span>
+            </div>
           </div>
 
           {/* Order Summary & Confirm Action */}

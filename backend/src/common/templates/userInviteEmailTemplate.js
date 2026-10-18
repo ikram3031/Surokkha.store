@@ -10,7 +10,7 @@ export const renderUserInviteEmail = ({
   brandName: customBrandName,
   logoUrl: customLogoUrl,
 }) => {
-  const brandName = customBrandName || config.brandName || 'Flexivia';
+  const brandName = customBrandName || config.brandName || '';
   const logoUrl = customLogoUrl || config.logoUrl || '';
 
   return `

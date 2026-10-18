@@ -254,11 +254,11 @@ export const compileA4InvoiceHtml = (
 
   const { branding, header, table, footer, customCss } = mergedConfig;
 
-  const brandName = clientConfig.brandName || 'Flexivia';
+  const brandName = clientConfig.brandName || '';
   const logoUrl = header.logoUrl || clientConfig.logoUrl || '';
-  const storeAddress = footer.supportAddress || clientConfig.contact?.address || clientConfig.address || 'Dhaka, Bangladesh';
-  const storePhone = footer.supportPhone || clientConfig.contact?.phone || clientConfig.phone || '+8801700000000';
-  const storeEmail = footer.supportEmail || clientConfig.contact?.supportEmail || clientConfig.supportEmail || 'info@plexivia.online';
+  const storeAddress = footer.supportAddress || clientConfig.contact?.address || clientConfig.address || '';
+  const storePhone = footer.supportPhone || clientConfig.contact?.phone || clientConfig.phone || clientConfig.supportPhone || '';
+  const storeEmail = footer.supportEmail || clientConfig.contact?.supportEmail || clientConfig.supportEmail || '';
   const currency = table.currencySymbol || '৳';
 
   const orderId = order.orderId || order.orderNumber || order.formattedOrderId || order.id || order._id || 'INV-0000';
@@ -728,10 +728,10 @@ export const compileTransactionalEmailHtml = (
 
   const { branding, header, table, footer, email } = mergedConfig;
 
-  const brandName = clientConfig.brandName || 'Flexivia';
+  const brandName = clientConfig.brandName || '';
   const logoUrl = header.logoUrl || clientConfig.logoUrl || '';
-  const storePhone = footer.supportPhone || clientConfig.contact?.phone || clientConfig.phone || '+8801700000000';
-  const storeEmail = footer.supportEmail || clientConfig.contact?.supportEmail || clientConfig.supportEmail || 'info@plexivia.online';
+  const storePhone = footer.supportPhone || clientConfig.contact?.phone || clientConfig.phone || clientConfig.supportPhone || '';
+  const storeEmail = footer.supportEmail || clientConfig.contact?.supportEmail || clientConfig.supportEmail || '';
   const currency = table.currencySymbol || '৳';
 
   const orderId = order.orderId || order.orderNumber || order.formattedOrderId || order.id || order._id || 'INV-0000';
@@ -766,7 +766,7 @@ export const compileTransactionalEmailHtml = (
 
   const greeting = interpolateTokens(email.customerGreeting || 'Hello {{customerName}}, thank you for shopping with us!', tokens);
   const footerText = interpolateTokens(email.emailFooterText || 'If you have any questions, reply to this email.', tokens);
-  const invoiceDownloadUrl = `${clientConfig.apiBaseUrl || 'https://api.plexivia.online'}/api/v1/orders/${orderId}/invoice`;
+  const invoiceDownloadUrl = `${clientConfig.apiBaseUrl || ''}/api/v1/orders/${orderId}/invoice`;
 
   const itemsRows = items
     .map((item) => {

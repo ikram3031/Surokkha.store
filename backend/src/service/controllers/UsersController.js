@@ -107,6 +107,7 @@ export const createUser = async (req, res, next) => {
       existing.inviteToken = inviteToken;
       existing.inviteTokenExpiresAt = inviteTokenExpiresAt;
       if (passwordHash) existing.passwordHash = passwordHash;
+      if (payload.receiveEmailNotifications !== undefined) existing.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
       await existing.save();
       user = existing;
     } else {
@@ -119,6 +120,7 @@ export const createUser = async (req, res, next) => {
         inviteToken,
         inviteTokenExpiresAt,
         isActive: Boolean(passwordHash),
+        receiveEmailNotifications: payload.receiveEmailNotifications !== undefined ? Boolean(payload.receiveEmailNotifications) : true,
         createdBy: mongoose.isValidObjectId(req.user?.userId) ? req.user.userId : null,
       });
     }
@@ -243,6 +245,7 @@ export const updateUser = async (req, res, next) => {
     if (payload.phone !== undefined) user.phone = payload.phone.trim();
     if (payload.role !== undefined) user.role = payload.role;
     if (payload.isActive !== undefined) user.isActive = Boolean(payload.isActive);
+    if (payload.receiveEmailNotifications !== undefined) user.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
 
     if (payload.password) {
       user.passwordHash = await hashPassword(payload.password);
@@ -358,6 +361,7 @@ export const updateProfile = async (req, res, next) => {
     if (payload.phone !== undefined) user.phone = payload.phone.trim();
     if (payload.address !== undefined) user.address = payload.address.trim();
     if (payload.avatar !== undefined) user.avatar = payload.avatar.trim();
+    if (payload.receiveEmailNotifications !== undefined) user.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
 
     await user.save();
 

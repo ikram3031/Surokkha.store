@@ -148,14 +148,14 @@ const getDynamicDefaults = () => {
     (clientConfig?.domain ? `https://${clientConfig.domain.replace(/^https?:\/\//, '')}` : null) ||
     (typeof window !== 'undefined'
       ? `${window.location.protocol}//${window.location.hostname.replace(/^admin\./, '')}`
-      : 'https://plexivia.online');
+      : 'https://example.com');
 
   const detectedApiBase = (
     clientConfig?.apiBaseUrl ||
     baseURL ||
     (typeof window !== 'undefined'
       ? `${window.location.protocol}//api.${window.location.hostname.replace(/^admin\./, '')}`
-      : 'https://api.plexivia.online')
+      : 'https://api.example.com')
   ).replace(/\/$/, '');
 
   const defaultProductPattern = clientConfig?.routes?.product || '/shop/:category/:slug';
@@ -1814,7 +1814,7 @@ const MetaCatalogGenerator = () => {
               <Input
                 value={siteUrl}
                 onChange={(e) => setSiteUrl(e.target.value)}
-                placeholder="https://plexivia.online"
+                placeholder="https://example.com"
                 className="h-8 text-xs font-mono"
               />
             </div>
@@ -1841,7 +1841,7 @@ const MetaCatalogGenerator = () => {
               <Input
                 value={imageBaseUrl}
                 onChange={(e) => setImageBaseUrl(e.target.value)}
-                placeholder="https://api.plexivia.online"
+                placeholder="https://api.example.com"
                 className="h-8 text-xs font-mono"
               />
             </div>

@@ -5,7 +5,7 @@ This document describes all image uploading, attribute icon/image processing, re
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Base Path
@@ -145,5 +145,5 @@ Content-Type: multipart/form-data
 Redirects to the specified image URL.
 
 - **Method:** `GET`
-- **URL:** `/api/v1/images/resize?url=https://server.decantrebd.com/uploads/...`
+- **URL:** `/api/v1/images/resize?url=https://server.demobd.com/uploads/...`
 - **Authentication:** Not required

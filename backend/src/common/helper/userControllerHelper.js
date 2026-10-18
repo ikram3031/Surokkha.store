@@ -16,6 +16,10 @@ export const validateCreateUserPayload = (payload) => {
     errors.push(`role must be one of: ${USER_ROLES.join(", ")}`);
   }
 
+  if (payload.receiveEmailNotifications !== undefined && typeof payload.receiveEmailNotifications !== "boolean") {
+    errors.push("receiveEmailNotifications must be a boolean");
+  }
+
   return errors;
 };
 
@@ -41,6 +45,10 @@ export const validateUpdateUserPayload = (payload) => {
 
   if (payload.password && (typeof payload.password !== "string" || payload.password.length < 6)) {
     errors.push("password must be at least 6 characters when provided");
+  }
+
+  if (payload.receiveEmailNotifications !== undefined && typeof payload.receiveEmailNotifications !== "boolean") {
+    errors.push("receiveEmailNotifications must be a boolean");
   }
 
   if (payload.role === "Employee") {

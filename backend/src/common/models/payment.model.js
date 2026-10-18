@@ -9,6 +9,7 @@ const paymentSchema = new Schema(
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     paymentMethod: { type: String, required: true, trim: true },
     paymentPhone: { type: String, trim: true, default: "" },
+    transactionId: { type: String, trim: true, default: "" },
     paymentEmail: { type: String, trim: true, lowercase: true, default: "" },
     paymentDate: { type: Date, default: () => new Date() },
     totalAmount: { type: Number, required: true, min: 0 },

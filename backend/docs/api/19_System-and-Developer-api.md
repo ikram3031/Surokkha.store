@@ -5,7 +5,7 @@ This document describes internal, health check, version inspection, Scalar inter
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ---

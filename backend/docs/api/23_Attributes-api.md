@@ -5,7 +5,7 @@ This document describes the product variation attribute group management endpoin
 ## Base URL
 
 ```text
-https://server.decantrebd.com/api/v1
+https://server.demobd.com/api/v1
 ```
 
 ## Base Path

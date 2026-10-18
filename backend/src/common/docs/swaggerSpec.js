@@ -15,8 +15,8 @@ Authorization: Bearer <your_jwt_access_token>
 Click the **Authorize** button at the top right to set your JWT token for interactive testing.`,
     contact: {
       name: "Developer Support",
-      email: "support@plexivia.online",
-      url: "https://plexivia.online"
+      email: "support@example.com",
+      url: "https://example.com"
     }
   },
   servers: [
@@ -25,7 +25,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
       description: "Current Host Relative Base URL (/api/v1)"
     },
     {
-      url: "https://api.plexivia.online/api/v1",
+      url: "https://api.example.com/api/v1",
       description: "Production Server"
     },
     {
@@ -63,7 +63,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
           _id: { type: "string", example: "64a8c9b3f8e3a5c1d2e7f0a1" },
           did: { type: "string", example: "US-123456" },
           name: { type: "string", example: "Admin User" },
-          email: { type: "string", example: "user@plexivia.online" },
+          email: { type: "string", example: "user@example.com" },
           role: { type: "string", enum: ["Owner", "Admin", "Manager", "Marketing Expert", "Customer Support"], example: "Admin" },
           lastLogin: { type: "string", format: "date-time" }
         }
@@ -195,7 +195,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 type: "object",
                 required: ["email", "password"],
                 properties: {
-                  email: { type: "string", example: "user@plexivia.online" },
+                  email: { type: "string", example: "user@example.com" },
                   password: { type: "string", example: "yourPassword123" }
                 }
               }
@@ -242,7 +242,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 type: "object",
                 required: ["email", "password"],
                 properties: {
-                  email: { type: "string", example: "user@plexivia.online" },
+                  email: { type: "string", example: "user@example.com" },
                   password: { type: "string", example: "yourPassword123" }
                 }
               }
@@ -267,7 +267,7 @@ Click the **Authorize** button at the top right to set your JWT token for intera
                 type: "object",
                 required: ["email", "token"],
                 properties: {
-                  email: { type: "string", example: "user@plexivia.online" },
+                  email: { type: "string", example: "user@example.com" },
                   token: { type: "string", example: "123456" }
                 }
               }

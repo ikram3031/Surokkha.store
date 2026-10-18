@@ -317,19 +317,12 @@ export const InvestmentsListPage = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
         <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/20">
-              <Landmark className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {t('accounts.investments_title', 'Investments Portfolio')}
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {t('accounts.investments_subtitle', 'Track all capital tranches taken, repayment terms, and return status.')}
-              </p>
-            </div>
-          </div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            {t('accounts.investments_title', 'Investments Portfolio')}
+          </h1>
+          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+            {t('accounts.investments_subtitle', 'Track all capital tranches taken, repayment terms, and return status.')}
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
@@ -505,7 +498,6 @@ export const InvestmentsListPage = () => {
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
                 </TableHead>
-                <TableHead className="text-xs">Tranche Ref</TableHead>
                 <TableHead className="text-xs">Investor</TableHead>
                 <TableHead className="text-xs">Taken Amount</TableHead>
                 <TableHead className="text-xs">Returned Amount</TableHead>
@@ -522,7 +514,6 @@ export const InvestmentsListPage = () => {
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell className="px-4"><span className="h-4 w-4 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
                     <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
@@ -629,7 +620,7 @@ export const InvestmentsListPage = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={11} className="h-28 text-center text-muted-foreground text-xs">
+                  <TableCell colSpan={10} className="h-28 text-center text-muted-foreground text-xs">
                     No investment records found matching your filters.
                   </TableCell>
                 </TableRow>
