@@ -118,7 +118,12 @@ export default function HomeView() {
         </div>
       </section>
 
-      {/* DEDICATED PRODUCT SECTION (The MO Lineup) */}
+      {/* COMBO PRODUCTS CAROUSEL (replaces the MO Lineup section) */}
+      <ProductCarousel mode="combo" maxItems={12} />
+
+      {/* DEDICATED PRODUCT SECTION (The MO Lineup) — disabled, replaced by the combo
+          carousel above. To restore it, change `false` to `true` below. */}
+      {false && (
       <section id="productsSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
           <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200/70">
@@ -145,6 +150,7 @@ export default function HomeView() {
           )}
         </div>
       </section>
+      )}
 
       {/* HIGH-CONVERSION SPOTLIGHT COMBO SHOWCASE */}
       {activeCombos.length > 0 && (
