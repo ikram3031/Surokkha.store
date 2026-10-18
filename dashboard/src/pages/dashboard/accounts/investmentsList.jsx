@@ -415,8 +415,10 @@ export const InvestmentsListPage = () => {
                     setSelectedIds([]);
                   }}
                 >
-                  <SelectTrigger className="h-9 text-xs w-[140px]">
-                    <SelectValue placeholder="Investor" />
+                  <SelectTrigger className="h-9 text-xs w-[170px]">
+                    <span className="truncate">
+                      Investor: {investorFilter === 'All' ? 'All' : (allInvestors.find((i) => i.id === investorFilter)?.name || '—')}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All Investors</SelectItem>
@@ -436,8 +438,8 @@ export const InvestmentsListPage = () => {
                     setSelectedIds([]);
                   }}
                 >
-                  <SelectTrigger className="h-9 text-xs w-[130px]">
-                    <SelectValue placeholder="Status" />
+                  <SelectTrigger className="h-9 text-xs w-[150px]">
+                    <span className="truncate">Status: {statusFilter === 'All' ? 'All' : statusFilter}</span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All Status</SelectItem>
@@ -555,7 +557,7 @@ export const InvestmentsListPage = () => {
                         />
                       </TableCell>
                       <TableCell className="font-mono text-xs font-semibold text-foreground">
-                        {inv.id}
+                        {String(inv.did || inv.id).toUpperCase()}
                       </TableCell>
                       <TableCell>
                         <div className="font-semibold text-xs text-foreground line-clamp-1">{inv.investorName}</div>

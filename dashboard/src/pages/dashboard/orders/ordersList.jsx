@@ -4,7 +4,7 @@ import { OrdersTable } from '@/components/dashboard/orders-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import PathaoSyncBar from '@/components/dashboard/orders/PathaoSyncBar';
-import { Search, Download, PlusCircle, Trash2, X, Filter } from 'lucide-react';
+import { Search, Download, PlusCircle, Trash2, X, Filter, RotateCcw } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import {
@@ -145,6 +145,15 @@ const OrdersPage = () => {
     setSelectedIds([]);
   };
 
+  const hasActiveFilters = selectedStatuses.length > 0 || paymentFilter !== 'All' || Boolean(urlSearch);
+
+  // Clears status, payment and search filters in one go
+  const resetFilters = () => {
+    setSearchInput('');
+    updateParams({ status: 'All', payment: 'All', q: '', page: 1 });
+    setSelectedIds([]);
+  };
+
   const handlePayment = (v) => {
     updateParams({ payment: v ?? 'All', page: 1 });
     setSelectedIds([]);
@@ -258,6 +267,18 @@ const OrdersPage = () => {
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-start sm:justify-end">
           {selectedIds.length === 0 && (
             <div className="flex gap-2 items-center w-full sm:w-auto">
+              {hasActiveFilters && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="h-9 gap-1.5 text-xs cursor-pointer"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {t('common.reset', 'Reset')}
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex h-9 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-xs shadow-xs ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 w-[200px] cursor-pointer">
                   <span className="truncate">

@@ -106,7 +106,9 @@ export const DateRangeFilter = ({
       <Select value={selectedPreset} onValueChange={handleSelectPreset}>
         <SelectTrigger className={`h-9 text-xs sm:w-44 bg-card ${size === 'sm' ? 'h-8 text-[11px]' : ''}`}>
           <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
-          <SelectValue placeholder="Select Date Range" />
+          <span className="truncate">
+            Date: {selectedPreset === 'custom' ? 'Custom' : getDateRangeBounds(selectedPreset).label}
+          </span>
         </SelectTrigger>
         <SelectContent align="end">
           <SelectItem value="all">All Time</SelectItem>

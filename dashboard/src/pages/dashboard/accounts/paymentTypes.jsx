@@ -395,8 +395,10 @@ export const PaymentTypesPage = () => {
                     setSelectedIds([]);
                   }}
                 >
-                  <SelectTrigger className="h-9 text-xs w-[140px]">
-                    <SelectValue placeholder="Category" />
+                  <SelectTrigger className="h-9 text-xs w-[150px]">
+                    <span className="truncate">
+                      Category: {categoryFilter === 'All' ? 'All' : (CATEGORY_OPTIONS.find((c) => c.value === categoryFilter)?.label || categoryFilter)}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All Categories</SelectItem>
@@ -417,8 +419,8 @@ export const PaymentTypesPage = () => {
                     setSelectedIds([]);
                   }}
                 >
-                  <SelectTrigger className="h-9 text-xs w-[120px]">
-                    <SelectValue placeholder="Status" />
+                  <SelectTrigger className="h-9 text-xs w-[130px]">
+                    <span className="truncate">Status: {statusFilter}</span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All Status</SelectItem>

@@ -318,8 +318,8 @@ export const AllPaymentsPage = () => {
             {selectedIds.length === 0 ? (
               <>
                 <Select value={methodFilter} onValueChange={handleMethodFilter}>
-                  <SelectTrigger className="h-9 text-xs w-[130px]">
-                    <SelectValue placeholder="Method" />
+                  <SelectTrigger className="h-9 text-xs w-[150px]">
+                    <span className="truncate">Method: {methodFilter === 'All' ? 'All' : methodFilter}</span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All Methods</SelectItem>
@@ -332,8 +332,8 @@ export const AllPaymentsPage = () => {
                 </Select>
 
                 <Select value={statusFilter} onValueChange={handleStatusFilter}>
-                  <SelectTrigger className="h-9 text-xs w-[130px]">
-                    <SelectValue placeholder="Status" />
+                  <SelectTrigger className="h-9 text-xs w-[150px]">
+                    <span className="truncate">Status: {statusFilter === 'All' ? 'All' : statusFilter}</span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="All">All Status</SelectItem>

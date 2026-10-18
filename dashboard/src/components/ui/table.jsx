@@ -19,7 +19,7 @@ const Table = ({ className, ...props }) => {
   )
 }
 
-// Renders the table header on a solid primary band with primary-foreground text
+// Renders the table header with a subtle muted band
 const TableHeader = ({ className, ...props }) => {
   return (
     <thead
@@ -61,7 +61,7 @@ const TableFooter = ({ className, ...props }) => {
   )
 }
 
-// Renders a table row; hover tints with the secondary color and switches cell text to primary
+// Renders a table row with subtle hover state
 const TableRow = ({ className, ...props }) => {
   return (
     <tr

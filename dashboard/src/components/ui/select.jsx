@@ -4,9 +4,28 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-// Renders the root Base UI Select component with non-modal default
-const Select = ({ modal = false, ...props }) => {
-  return <SelectPrimitive.Root modal={modal} {...props} />;
+// Collects { value: label } from the SelectItem elements nested in children
+const collectItemLabels = (children, labels = {}) => {
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return;
+    if (child.type === SelectItem && child.props.value != null) {
+      labels[child.props.value] = child.props.children;
+    } else if (child.props?.children) {
+      collectItemLabels(child.props.children, labels);
+    }
+  });
+  return labels;
+};
+
+// Renders the root Base UI Select component with non-modal default.
+// Without `items`, Base UI shows the raw value in the trigger (e.g. "All"), so labels are derived from SelectItem children.
+const Select = ({ modal = false, items, children, ...props }) => {
+  const resolvedItems = items ?? collectItemLabels(children);
+  return (
+    <SelectPrimitive.Root modal={modal} items={resolvedItems} {...props}>
+      {children}
+    </SelectPrimitive.Root>
+  );
 };
 
 // Groups select items within a semantic container
