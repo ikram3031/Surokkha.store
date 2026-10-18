@@ -282,13 +282,28 @@ export const listOrders = async (req, res, next) => {
     }
 
     if (req.query.paymentStatus) {
-      // order.paymentStatus is kept in step with the payment record by syncPaymentDocument
+      // Match the status shown in the list: the payment record wins, else order.paymentStatus,
+      // else completed orders count as paid and the rest as pending
       const pStatus = req.query.paymentStatus.toLowerCase();
+      const [matchingPaymentOrderIds, allPaymentOrderIds] = await Promise.all([
+        PaymentModel.distinct('orderId', { status: pStatus }),
+        PaymentModel.distinct('orderId'),
+      ]);
+      const noOrderPaymentStatus = [{ paymentStatus: null }, { paymentStatus: { $exists: false } }];
+      let orderFieldCondition;
       if (pStatus === 'pending') {
-        andConditions.push({ $or: [{ paymentStatus: 'pending' }, { paymentStatus: null }, { paymentStatus: { $exists: false } }] });
+        orderFieldCondition = { $or: [{ paymentStatus: 'pending' }, { $or: noOrderPaymentStatus, status: { $ne: 'completed' } }] };
+      } else if (pStatus === 'paid') {
+        orderFieldCondition = { $or: [{ paymentStatus: 'paid' }, { $or: noOrderPaymentStatus, status: 'completed' }] };
       } else {
-        andConditions.push({ paymentStatus: pStatus });
+        orderFieldCondition = { paymentStatus: pStatus };
       }
+      andConditions.push({
+        $or: [
+          { _id: { $in: matchingPaymentOrderIds } },
+          { $and: [{ _id: { $nin: allPaymentOrderIds } }, orderFieldCondition] },
+        ],
+      });
     }
 
     if (req.query.search) {

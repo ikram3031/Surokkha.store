@@ -386,6 +386,10 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   if (payload.paymentMethod) {
     allowedUpdates.paymentMethod = payload.paymentMethod;
   }
+  // Trash restore sends { active: true }; updateOrder still forces active=false for fake orders
+  if (typeof payload.active === 'boolean') {
+    allowedUpdates.active = payload.active;
+  }
   if (payload.paidAmount !== undefined) {
     allowedUpdates.paidAmount = Number(payload.paidAmount || 0);
   }

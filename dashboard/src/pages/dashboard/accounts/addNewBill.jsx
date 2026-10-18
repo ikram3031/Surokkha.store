@@ -57,7 +57,7 @@ export const AddNewBillPage = () => {
   const { allPaymentTypes = [] } = usePaymentTypes();
   const { allInvestors = [] } = useInvestors();
 
-  const defaultBillingMethods = ['Bank Transfer', 'Cash', 'Card', 'bKash', 'Nagad', 'Cheque', 'Other'];
+  const defaultBillingMethods = ['Bank Transfer', 'Cash', 'Card', 'bKash', 'Nagad', 'Rocket', 'Upay', 'Cheque', 'Other'];
   const availableBillingMethods = React.useMemo(() => {
     const customNames = allPaymentTypes
       .filter((t) => t.status === 'Active')
