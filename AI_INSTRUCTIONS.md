@@ -11,13 +11,7 @@
   `J:\My Drive\A.EcomWhiteLabel\`
 - **Tenant-Specific Folders**:
   Each tenant has their own dedicated folder for credentials, VPS access, and environment specs:
-  - `J:\My Drive\A.EcomWhiteLabel\Toyoland\`
-  - `J:\My Drive\A.EcomWhiteLabel\Decantre\`
-  - `J:\My Drive\A.EcomWhiteLabel\Engulfic\`
-  - `J:\My Drive\A.EcomWhiteLabel\KawaiiKutir\`
   - `J:\My Drive\A.EcomWhiteLabel\Surokkha\`
-  - `J:\My Drive\A.EcomWhiteLabel\Dev\`
-
 ---
 
 ## 2. Commit Message & Changelog Format

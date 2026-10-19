@@ -23,28 +23,6 @@ import { upsertCustomerFromOrder } from '../../common/services/customer.service.
 
 const { Types } = mongoose;
 
-// Map to track order requests for rate limiting (prevents spam/bots)
-const orderRateLimiter = new Map();
-
-// Helper to check rate limits to prevent spam from any user/bot
-const isRateLimited = (ip, email) => {
-  const limitWindow = 2 * 60 * 1000;
-  const now = Date.now();
-  
-  if (orderRateLimiter.has(ip) && now - orderRateLimiter.get(ip) < limitWindow) return true;
-  if (email && orderRateLimiter.has(email) && now - orderRateLimiter.get(email) < limitWindow) return true;
-  
-  orderRateLimiter.set(ip, now);
-  if (email) orderRateLimiter.set(email, now);
-  
-  setTimeout(() => {
-    orderRateLimiter.delete(ip);
-    if (email) orderRateLimiter.delete(email);
-  }, limitWindow);
-  
-  return false;
-};
-
 // Create a new order from checkout payload and sync related payment/member data
 export const createOrder = async (req, res, next) => {
   try {
@@ -53,10 +31,6 @@ export const createOrder = async (req, res, next) => {
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;
     const clientPhone = payload.billingInfo?.phone || payload.phone || payload.customerInfo?.phone || null;
-    
-    if (isRateLimited(clientIp, clientEmail)) {
-      return res.status(429).json({ success: false, message: 'অত্যধিক রিকোয়েস্ট বা সন্দেহজনক কার্যকলাপ শনাক্ত করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' });
-    }
 
     // Check if IP, email or phone is in the spam list
     const spamQuery = { $or: [{ ip: clientIp }] };

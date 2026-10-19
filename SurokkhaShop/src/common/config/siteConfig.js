@@ -12,7 +12,7 @@ export function getSiteConfig() {
 
   const brandName = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_BRAND_NAME) || 'Surokkha Shop';
 
-  const orderPrefix = 'SSH';
+  const orderPrefix = 'SH';
 
   const pixelId = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_META_PIXEL_ID) || '';
 

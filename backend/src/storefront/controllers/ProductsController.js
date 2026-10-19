@@ -106,8 +106,7 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     
     let csvData = headers.join(',') + '\n';
     
-    const reqSiteKey = String(req.query.site || req.query.siteKey || (req.headers.host?.includes('shop') ? 'shop' : 'store')).toLowerCase();
-    const siteConfig = config.sites?.[reqSiteKey];
+    const siteConfig = config.sites?.shop;
     const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'))).replace(/\/$/, '');
     const brandName = config.brandName || 'Surokkha';
 

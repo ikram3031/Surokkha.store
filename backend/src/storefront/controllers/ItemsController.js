@@ -109,8 +109,7 @@ export const getMetaCatalogCsv = async (req, res, next) => {
       const availability = p.stockStatus === 'outofstock' ? 'out of stock' : 'in stock';
       const condition = 'new';
       
-      const reqSiteKey = String(req.query.site || req.query.siteKey || (req.headers.host?.includes('shop') ? 'shop' : 'store')).toLowerCase();
-      const siteConfig = config.sites?.[reqSiteKey];
+      const siteConfig = config.sites?.shop;
       const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'))).replace(/\/$/, '');
       const catSlug = (p.category && typeof p.category === 'object' ? (p.category.slug || p.category.name) : (p.category || 'contraceptive'))
         .toLowerCase()

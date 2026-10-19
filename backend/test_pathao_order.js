@@ -9,7 +9,7 @@ async function run() {
   
   const payload = {
       store_id: 381917,
-      merchant_order_id: "SSH2610007",
+      merchant_order_id: "SH2610007",
       recipient_name: "Sumon",
       recipient_phone: "01601671653",
       recipient_address: "Barahipur",

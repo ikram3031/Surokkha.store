@@ -179,17 +179,9 @@ export const buildOrderDocument = async (payload, req = null) => {
   // Every new order (online, custom, in-store) starts as pending regardless of input
   const initialStatus = 'pending';
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
-  const headerOrigin = String(req?.headers?.origin || req?.headers?.referer || '').toLowerCase();
-  const isShopFromHeader = headerOrigin.includes('surokkha.shop') || (headerOrigin.includes('shop') && !headerOrigin.includes('store'));
-  const isStoreFromHeader = headerOrigin.includes('surokkha.store') || headerOrigin.includes('store');
-
-  const resolvedSiteKey = String(
-    (isShopFromHeader ? 'shop' : isStoreFromHeader ? 'store' : null) ||
-    payload.siteKey ||
-    (payload.clientDomain?.includes('shop') ? 'shop' : 'store')
-  ).toLowerCase().trim();
-  const resolvedDomain = payload.clientDomain || (resolvedSiteKey === 'shop' ? 'surokkha.shop' : 'surokkha.store');
-  const customPrefix = isCustom ? 'CO' : isInstore ? 'IS' : (payload.orderPrefix || (resolvedSiteKey === 'shop' ? 'SSH' : 'SST'));
+  const resolvedSiteKey = 'shop';
+  const resolvedDomain = payload.clientDomain || 'surokkha.shop';
+  const customPrefix = isCustom ? 'CO' : isInstore ? 'IS' : (payload.orderPrefix || 'SH');
 
     const calculatedTotal = Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0)));
   const rawMethod = normalizeText(payload.paymentMethod).toLowerCase();

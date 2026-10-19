@@ -100,19 +100,18 @@ const CloudflareTrafficOverviewPage = () => {
     if (clientConfig?.sites && typeof clientConfig.sites === 'object') {
       return Object.entries(clientConfig.sites).map(([key, site]) => ({
         key,
-        name: site.name || (key === 'shop' ? 'Surokkha Shop' : 'Surokkha Store'),
-        domain: site.domain || (key === 'shop' ? 'surokkha.shop' : 'surokkha.store'),
-        url: site.url || site.storefrontUrl || `https://${site.domain || 'surokkha.store'}`,
-        orderPrefix: site.orderPrefix || (key === 'shop' ? 'SSH' : 'SST'),
+        name: site.name || 'Surokkha Shop',
+        domain: site.domain || 'surokkha.shop',
+        url: site.url || site.storefrontUrl || `https://${site.domain || 'surokkha.shop'}`,
+        orderPrefix: site.orderPrefix || 'SH',
       }));
     }
     return [
-      { key: 'store', name: 'Surokkha Store', domain: 'surokkha.store', url: 'https://surokkha.store', orderPrefix: 'SST' },
-      { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SSH' },
+      { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SH' },
     ];
   }, []);
 
-  const [activeSiteKey, setActiveSiteKey] = useState('store');
+  const [activeSiteKey, setActiveSiteKey] = useState('shop');
   const [range, setRange] = useState('24h');
   const [loading, setLoading] = useState(true);
   const [isLiveActive, setIsLiveActive] = useState(true);
@@ -159,7 +158,7 @@ const CloudflareTrafficOverviewPage = () => {
     setIsPurging(true);
     try {
       const res = await apiClient.post('/api/v1/system/purge-cache', {
-        domain: currentSite?.domain || 'surokkha.store',
+        domain: currentSite?.domain || 'surokkha.shop',
         site: activeSiteKey,
       });
       if (res.data?.status === 'success') {

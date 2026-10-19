@@ -56,33 +56,11 @@ const storeSettingsSchema = new Schema(
       },
     },
     sites: {
-      store: {
-        siteKey: { type: String, default: "store" },
-        domain: { type: String, default: "surokkha.store" },
-        brandName: { type: String, default: "Surokkha Store" },
-        orderPrefix: { type: String, default: "SST" },
-        metaPixel: {
-          pixelId: { type: String, default: "", trim: true },
-          accessToken: { type: String, default: "", trim: true },
-          testEventCode: { type: String, default: "", trim: true },
-          isEnabled: { type: Boolean, default: true },
-          enableBrowserPixel: { type: Boolean, default: true },
-          enableCapi: { type: Boolean, default: true },
-          advancedMatching: { type: Boolean, default: true },
-          lastVerifiedAt: { type: Date, default: null },
-          lastTestStatus: {
-            type: String,
-            enum: ["connected", "failed", "untested"],
-            default: "untested",
-          },
-          lastTestMessage: { type: String, default: "" },
-        },
-      },
       shop: {
         siteKey: { type: String, default: "shop" },
         domain: { type: String, default: "surokkha.shop" },
         brandName: { type: String, default: "Surokkha Shop" },
-        orderPrefix: { type: String, default: "SSH" },
+        orderPrefix: { type: String, default: "SH" },
         metaPixel: {
           pixelId: { type: String, default: "", trim: true },
           accessToken: { type: String, default: "", trim: true },

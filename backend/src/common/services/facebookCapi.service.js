@@ -30,86 +30,24 @@ const normalizePhone = (phone = "") => {
   return digits;
 };
 
-// Resolves active Meta Pixel configuration from database, client config (multi-site aware), and environment fallbacks
-export const getMetaPixelConfig = async (reqOrDomain = null, secondaryReq = null) => {
-  let isShop = false;
+// Resolves active Meta Pixel configuration from database, client config, and environment fallbacks (shop-only)
+export const getMetaPixelConfig = async () => {
   try {
-    const primary = reqOrDomain;
-    const req = secondaryReq || (primary?.headers ? primary : null);
-
-    // 1. Explicit siteKey flag (e.g. from Order document or req.body or direct siteKey property)
-    const siteKey = (
-      primary?.siteKey ||
-      primary?.body?.siteKey ||
-      req?.body?.siteKey ||
-      (typeof primary === 'string' && (primary === 'shop' || primary === 'store') ? primary : null)
-    );
-
-    if (siteKey) {
-      isShop = String(siteKey).toLowerCase().trim() === 'shop';
-    } else {
-      // 2. Order number prefix check (SSH = Surokkha Shop, SST/SS = Surokkha Store)
-      const orderNum = String(primary?.orderNumber || primary?.orderId || req?.body?.orderNumber || '').toUpperCase().trim();
-      if (orderNum.startsWith('SSH')) {
-        isShop = true;
-      } else if (orderNum.startsWith('SST') || orderNum.startsWith('SS')) {
-        isShop = false;
-      } else {
-        // 3. Domain or origin check (origin / referer of customer storefront takes priority over backend API host)
-        const originStr = String(
-          req?.headers?.origin ||
-          req?.headers?.referer ||
-          req?.headers?.['x-site-key'] ||
-          req?.headers?.['x-client-domain'] ||
-          ''
-        ).toLowerCase();
-
-        const domainStr = String(
-          primary?.clientDomain ||
-          primary?.domain ||
-          req?.body?.clientDomain ||
-          (typeof primary === 'string' ? primary : '')
-        ).toLowerCase();
-
-        if (originStr.includes('shop') || domainStr.includes('shop')) {
-          isShop = true;
-        } else if (originStr.includes('store') || domainStr.includes('store')) {
-          isShop = false;
-        } else if (req?.headers?.host && String(req.headers.host).toLowerCase().includes('shop')) {
-          isShop = true;
-        }
-      }
-    }
-
     let doc = null;
     if (mongoose.connection?.readyState === 1) {
       doc = await StoreSettingsModel.findOne({ key: "default" }).lean().catch(() => null);
     }
     const dbMeta = doc?.metaPixel || {};
-    const dbSiteMeta = isShop ? doc?.sites?.shop?.metaPixel : doc?.sites?.store?.metaPixel;
+    const dbSiteMeta = doc?.sites?.shop?.metaPixel;
     const fallbackClientMeta = clientConfig?.metaPixel || {};
-    const siteConfigMeta = isShop
-      ? clientConfig?.sites?.shop?.metaPixel
-      : clientConfig?.sites?.store?.metaPixel;
+    const siteConfigMeta = clientConfig?.sites?.shop?.metaPixel;
 
-    // Shop only uses its own credentials: falling back to the generic values would send shop events to the store pixel
-    const pixelId = isShop
-      ? (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_SHOP || siteConfigMeta?.pixelId || dbMeta.pixelIdShop || "")
-      : (dbSiteMeta?.pixelId || env.FB_PIXEL_ID_STORE || siteConfigMeta?.pixelId ||
-        dbMeta.pixelId || fallbackClientMeta.pixelId || env.FB_PIXEL_ID || "");
+    const pixelId = dbSiteMeta?.pixelId || env.FB_PIXEL_ID_SHOP || siteConfigMeta?.pixelId || dbMeta.pixelIdShop || "";
+    const accessToken = dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_SHOP || siteConfigMeta?.accessToken || dbMeta.accessTokenShop || "";
+    const testEventCode = dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_SHOP || siteConfigMeta?.testEventCode || "";
 
-    const accessToken = isShop
-      ? (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_SHOP || siteConfigMeta?.accessToken || dbMeta.accessTokenShop || "")
-      : (dbSiteMeta?.accessToken || env.FB_ACCESS_TOKEN_STORE || siteConfigMeta?.accessToken ||
-        dbMeta.accessToken || fallbackClientMeta.accessToken || env.FB_ACCESS_TOKEN || "");
-
-    const testEventCode = isShop
-      ? (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_SHOP || siteConfigMeta?.testEventCode || "")
-      : (dbSiteMeta?.testEventCode || env.FB_TEST_EVENT_CODE_STORE || siteConfigMeta?.testEventCode ||
-        dbMeta.testEventCode || fallbackClientMeta.testEventCode || env.FB_TEST_EVENT_CODE || "");
-
-    if (isShop && (!pixelId || !accessToken)) {
-      console.warn("[Meta CAPI Config] Warning: Shop Meta Pixel / CAPI credentials not configured. Event skipped to prevent cross-site pixel pollution.");
+    if (!pixelId || !accessToken) {
+      console.warn("[Meta CAPI Config] Warning: Shop Meta Pixel / CAPI credentials not configured. Event skipped.");
     }
 
     return {
@@ -127,9 +65,9 @@ export const getMetaPixelConfig = async (reqOrDomain = null, secondaryReq = null
   } catch (error) {
     console.error("[Meta CAPI Config] Error resolving Meta Pixel config:", error.message);
     return {
-      pixelId: isShop ? (env.FB_PIXEL_ID_SHOP || "") : (env.FB_PIXEL_ID_STORE || env.FB_PIXEL_ID || ""),
-      accessToken: isShop ? (env.FB_ACCESS_TOKEN_SHOP || "") : (env.FB_ACCESS_TOKEN_STORE || env.FB_ACCESS_TOKEN || ""),
-      testEventCode: isShop ? (env.FB_TEST_EVENT_CODE_SHOP || "") : (env.FB_TEST_EVENT_CODE_STORE || env.FB_TEST_EVENT_CODE || ""),
+      pixelId: env.FB_PIXEL_ID_SHOP || "",
+      accessToken: env.FB_ACCESS_TOKEN_SHOP || "",
+      testEventCode: env.FB_TEST_EVENT_CODE_SHOP || "",
       isEnabled: true,
       enableBrowserPixel: true,
       enableCapi: true,

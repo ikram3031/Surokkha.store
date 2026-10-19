@@ -230,7 +230,7 @@ const formatNumber = (num) => {
 export const getCloudflareAnalytics = async (req, res, next) => {
   try {
     const clientKey = config.clientKey || process.env.CLIENT_NAME || 'surokkha';
-    const domain = (config.domain || 'surokkha.store').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+    const domain = (config.domain || 'surokkha.shop').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
     const token = await resolveCloudflareToken();
     const range = req.query.range || '24h';
 
@@ -239,47 +239,40 @@ export const getCloudflareAnalytics = async (req, res, next) => {
     const sitesList = config.sites && typeof config.sites === 'object'
       ? Object.entries(config.sites).map(([k, s]) => ({
           key: k,
-          name: s.name || (k === 'shop' ? 'Surokkha Shop' : 'Surokkha Store'),
-          domain: s.domain || (k === 'shop' ? 'surokkha.shop' : 'surokkha.store'),
-          url: s.url || s.storefrontUrl || `https://${s.domain || 'surokkha.store'}`,
-          orderPrefix: s.orderPrefix || (k === 'shop' ? 'SSH' : 'SST'),
+          name: s.name || 'Surokkha Shop',
+          domain: s.domain || 'surokkha.shop',
+          url: s.url || s.storefrontUrl || `https://${s.domain || 'surokkha.shop'}`,
+          orderPrefix: s.orderPrefix || 'SH',
           zoneId: s.cloudflare?.zoneId || ZONE_MAP[s.domain] || ZONE_MAP[k] || '',
         }))
       : [
-          { key: 'store', name: 'Surokkha Store', domain: 'surokkha.store', url: 'https://surokkha.store', orderPrefix: 'SST', zoneId: (ZONE_MAP['surokkha.store'] || '') },
-          { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SSH', zoneId: (ZONE_MAP['surokkha.shop'] || '') },
+          { key: 'shop', name: 'Surokkha Shop', domain: 'surokkha.shop', url: 'https://surokkha.shop', orderPrefix: 'SH', zoneId: (ZONE_MAP['surokkha.shop'] || '') },
         ];
 
     const requestedParam = (req.query.domain || req.query.site || '').trim().toLowerCase();
     let targetDomain = '';
     let zoneId = '';
-    let activeSiteKey = 'store';
+    let activeSiteKey = 'shop';
 
     if (requestedParam) {
-      if (requestedParam === 'shop' || requestedParam.includes('shop')) {
-        targetDomain = 'surokkha.shop';
-        activeSiteKey = 'shop';
-        zoneId = ZONE_MAP['surokkha.shop'] || '';
-      } else if (requestedParam === 'store' || requestedParam.includes('store')) {
-        targetDomain = 'surokkha.store';
-        activeSiteKey = 'store';
-        zoneId = ZONE_MAP['surokkha.store'] || '';
-      } else if (ZONE_MAP[requestedParam]) {
+      if (ZONE_MAP[requestedParam]) {
         targetDomain = requestedParam;
         zoneId = ZONE_MAP[requestedParam];
+      } else {
+        targetDomain = 'surokkha.shop';
+        zoneId = ZONE_MAP['surokkha.shop'] || '';
       }
     }
 
     if (!targetDomain) {
-      targetDomain = (config.domain || 'surokkha.store').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
-      activeSiteKey = targetDomain.includes('shop') ? 'shop' : 'store';
-      zoneId = config.cloudflare?.zoneId || ZONE_MAP[targetDomain] || ZONE_MAP[clientKey] || (ZONE_MAP['surokkha.store'] || '');
+      targetDomain = (config.domain || 'surokkha.shop').replace(/^https?:\/\//, '').split('/')[0].toLowerCase();
+      zoneId = config.cloudflare?.zoneId || ZONE_MAP[targetDomain] || ZONE_MAP[clientKey] || (ZONE_MAP['surokkha.shop'] || '');
     }
 
     let dbZoneId = '';
     try {
       const doc = await StoreSettingsModel.findOne({ key: 'default' }).lean();
-      if (doc?.cloudflare?.zoneId && (!requestedParam || requestedParam.includes('store'))) {
+      if (doc?.cloudflare?.zoneId && !requestedParam) {
         dbZoneId = doc.cloudflare.zoneId.trim();
       }
     } catch {}

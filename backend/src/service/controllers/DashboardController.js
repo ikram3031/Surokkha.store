@@ -1,5 +1,5 @@
 import { OrderModel } from '../../common/models/order.model.js';
-import { MemberModel } from '../../common/models/member.model.js';
+import { CustomerModel } from '../../common/models/customer.model.js';
 
 export const dailyOrders = async (req, res, next) => {
   try {
@@ -120,8 +120,8 @@ export const getKpiStats = async (req, res, next) => {
     const currentOrdersCount = currentOrdersAgg[0]?.count || 0;
     const currentAOV = currentOrdersCount > 0 ? currentSales / currentOrdersCount : 0;
 
-    // Current Stats (Members)
-    const currentMembersCount = await MemberModel.countDocuments({
+    // Current Stats (Customers)
+    const currentMembersCount = await CustomerModel.countDocuments({
       createdAt: { $gte: currentStart, $lte: currentEnd },
     });
 
@@ -141,8 +141,8 @@ export const getKpiStats = async (req, res, next) => {
     const previousOrdersCount = previousOrdersAgg[0]?.count || 0;
     const previousAOV = previousOrdersCount > 0 ? previousSales / previousOrdersCount : 0;
 
-    // Previous Stats (Members)
-    const previousMembersCount = await MemberModel.countDocuments({
+    // Previous Stats (Customers)
+    const previousMembersCount = await CustomerModel.countDocuments({
       createdAt: { $gte: prevStart, $lt: prevEnd },
     });
 

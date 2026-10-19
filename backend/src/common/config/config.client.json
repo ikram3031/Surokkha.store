@@ -1,16 +1,16 @@
 {
   "clientId": "05",
   "clientKey": "surokkha",
-  "orderPrefix": "SS",
-  "brandName": "Surokkha",
-  "domain": "surokkha.store",
-  "supportEmail": "support@surokkha.store",
+  "orderPrefix": "SH",
+  "brandName": "Surokkha Shop",
+  "domain": "surokkha.shop",
+  "supportEmail": "support@surokkha.shop",
   "phone": "01600905774",
   "supportPhone": "01600905774",
   "whatsappNumber": "01600905774",
   "apiBaseUrl": "https://api.surokkha.store",
   "dashboardUrl": "https://admin.surokkha.store",
-  "storefrontUrl": "https://surokkha.store",
+  "storefrontUrl": "https://surokkha.shop",
   "routes": {
     "shop": "/shop",
     "category": "/shop/:category",
@@ -85,7 +85,7 @@
   },
   "cloudFlareAnalytics": {
     "active": true,
-    "domain": "surokkha.store"
+    "domain": "surokkha.shop"
   },
   "metaPixel": {
     "isEnabled": true,
@@ -94,27 +94,13 @@
     "advancedMatching": true
   },
   "sites": {
-    "store": {
-      "key": "store",
-      "domain": "surokkha.store",
-      "url": "https://surokkha.store",
-      "storefrontUrl": "https://surokkha.store",
-      "name": "Surokkha Store",
-      "orderPrefix": "SST",
-      "metaPixel": {
-        "isEnabled": true,
-        "enableBrowserPixel": true,
-        "enableCapi": true,
-        "advancedMatching": true
-      }
-    },
     "shop": {
       "key": "shop",
       "domain": "surokkha.shop",
       "url": "https://surokkha.shop",
       "storefrontUrl": "https://surokkha.shop",
       "name": "Surokkha Shop",
-      "orderPrefix": "SSH",
+      "orderPrefix": "SH",
       "metaPixel": {
         "isEnabled": true,
         "enableBrowserPixel": true,
