@@ -143,18 +143,19 @@ export const buildOrderNumber = async (orderTypeParam = false, siteOrDomain = nu
   prefixType = prefixType.toUpperCase().trim();
   const prefix = `${prefixType}${shortYear}${month}`;
 
-  const lastOrder = await OrderModel.findOne({
-    orderNumber: { $regex: `^${prefix}` }
+  // Sorting orderNumber as a string breaks once the monthly sequence rolls past 3
+  // digits (e.g. "...999" sorts after "...1000"), which can hand two different
+  // orders the same number. Compare the numeric suffix instead of the raw string.
+  const matchingOrders = await OrderModel.find({
+    orderNumber: { $regex: `^${prefix}\\d+$` }
   })
-    .sort({ orderNumber: -1 })
     .select('orderNumber')
     .lean();
 
   let nextSequence = 1;
-  if (lastOrder?.orderNumber) {
-    const existingSuffix = lastOrder.orderNumber.slice(prefix.length);
-    const parsed = parseInt(existingSuffix, 10);
-    if (!Number.isNaN(parsed)) {
+  for (const { orderNumber } of matchingOrders) {
+    const parsed = parseInt(orderNumber.slice(prefix.length), 10);
+    if (!Number.isNaN(parsed) && parsed + 1 > nextSequence) {
       nextSequence = parsed + 1;
     }
   }

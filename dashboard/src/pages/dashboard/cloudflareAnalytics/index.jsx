@@ -420,7 +420,7 @@ const CloudflareTrafficOverviewPage = () => {
           </div>
           <div className="flex items-baseline gap-2 mt-1.5">
             <span className="text-xl font-bold tracking-tight text-foreground">{summary.totalRequests}</span>
-            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.requestsChange}</span>
+            {summary.requestsChange && <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.requestsChange}</span>}
           </div>
           <MiniSparkline data={sparkline1} color="#0051C3" />
         </div>
@@ -433,7 +433,7 @@ const CloudflareTrafficOverviewPage = () => {
           </div>
           <div className="flex items-baseline gap-2 mt-1.5">
             <span className="text-xl font-bold tracking-tight text-foreground">{summary.totalVisits}</span>
-            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.visitsChange}</span>
+            {summary.visitsChange && <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.visitsChange}</span>}
           </div>
           <MiniSparkline data={sparkline2} color="#0051C3" />
         </div>
@@ -446,7 +446,7 @@ const CloudflareTrafficOverviewPage = () => {
           </div>
           <div className="flex items-baseline gap-2 mt-1.5">
             <span className="text-xl font-bold tracking-tight text-foreground">{summary.cacheHitRate}</span>
-            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.cacheHitChange}</span>
+            {summary.cacheHitChange && <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.cacheHitChange}</span>}
           </div>
           <MiniSparkline data={sparkline3} color="#0051C3" />
         </div>
@@ -459,7 +459,7 @@ const CloudflareTrafficOverviewPage = () => {
           </div>
           <div className="flex items-baseline gap-2 mt-1.5">
             <span className="text-xl font-bold tracking-tight text-foreground">{summary.totalDataTransferMB}</span>
-            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.dataTransferChange}</span>
+            {summary.dataTransferChange && <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{summary.dataTransferChange}</span>}
           </div>
           <MiniSparkline data={sparkline4} color="#0051C3" />
         </div>
