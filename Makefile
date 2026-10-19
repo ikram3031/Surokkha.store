@@ -75,7 +75,7 @@ deploy:
 			mkdir -p /var/www/admin.surokkha.store/dist; \
 			cp -r dashboard/dist/* /var/www/admin.surokkha.store/dist/; \
 		fi; \
-		if [ -d "/opt/clients/surokkha/dashboard" ]; then \
+		if [ -d "/opt/clients/surokkha/dashboard" ] && [ "$$(pwd -P)" != "/opt/clients/surokkha" ] && ! [ "dashboard/dist" -ef "/opt/clients/surokkha/dashboard/dist" ]; then \
 			mkdir -p /opt/clients/surokkha/dashboard/dist; \
 			cp -r dashboard/dist/* /opt/clients/surokkha/dashboard/dist/; \
 		fi; \
@@ -88,8 +88,14 @@ deploy:
 		echo "📦 Building Catalog (catalog.surokkha.shop)..."; \
 		npm install --prefix catalog; \
 		npm run build --prefix catalog; \
-		mkdir -p /opt/clients/surokkha/catalog/dist; \
-		cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/; \
+		if [ -d "/var/www/catalog.surokkha.shop" ]; then \
+			mkdir -p /var/www/catalog.surokkha.shop/dist; \
+			cp -r catalog/dist/* /var/www/catalog.surokkha.shop/dist/; \
+		fi; \
+		if [ -d "/opt/clients/surokkha/catalog" ] && [ "$$(pwd -P)" != "/opt/clients/surokkha" ] && ! [ "catalog/dist" -ef "/opt/clients/surokkha/catalog/dist" ]; then \
+			mkdir -p /opt/clients/surokkha/catalog/dist; \
+			cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/; \
+		fi; \
 		echo "✓ Product Catalog (catalog.surokkha.shop) deployed to /opt/clients/surokkha/catalog/dist"; \
 	fi
 	@# 3. Update Backend dependencies and restart services
@@ -146,6 +152,14 @@ build-dashboard:
 	@$(MAKE) sync-config
 	npm install --prefix dashboard
 	npm run build --prefix dashboard
+	@if [ -d "/var/www/admin.surokkha.store" ]; then \
+		mkdir -p /var/www/admin.surokkha.store/dist; \
+		cp -r dashboard/dist/* /var/www/admin.surokkha.store/dist/; \
+	fi
+	@if [ -d "/opt/clients/surokkha/dashboard" ] && [ "$$(pwd -P)" != "/opt/clients/surokkha" ] && ! [ "dashboard/dist" -ef "/opt/clients/surokkha/dashboard/dist" ]; then \
+		mkdir -p /opt/clients/surokkha/dashboard/dist; \
+		cp -r dashboard/dist/* /opt/clients/surokkha/dashboard/dist/; \
+	fi
 	@systemctl reload nginx 2>/dev/null || true
 	@echo "✓ Admin Dashboard deployed to /opt/clients/surokkha/dashboard/dist!"
 
@@ -153,8 +167,14 @@ build-catalog:
 	@echo "📦 Building and deploying Surokkha Product Catalog (catalog.surokkha.shop)..."
 	npm install --prefix catalog
 	npm run build --prefix catalog
-	@mkdir -p /opt/clients/surokkha/catalog/dist
-	@cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/ 2>/dev/null || true
+	@if [ -d "/var/www/catalog.surokkha.shop" ]; then \
+		mkdir -p /var/www/catalog.surokkha.shop/dist; \
+		cp -r catalog/dist/* /var/www/catalog.surokkha.shop/dist/; \
+	fi
+	@if [ -d "/opt/clients/surokkha/catalog" ] && [ "$$(pwd -P)" != "/opt/clients/surokkha" ] && ! [ "catalog/dist" -ef "/opt/clients/surokkha/catalog/dist" ]; then \
+		mkdir -p /opt/clients/surokkha/catalog/dist; \
+		cp -r catalog/dist/* /opt/clients/surokkha/catalog/dist/; \
+	fi
 	@systemctl reload nginx 2>/dev/null || true
 	@echo "✓ Product Catalog deployed to /opt/clients/surokkha/catalog/dist!"
 
