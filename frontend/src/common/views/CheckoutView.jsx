@@ -364,14 +364,14 @@ export default function CheckoutView() {
               type="button"
               onClick={() => setContactModal(null)}
               aria-label="Close"
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100"
             >
               ✕
             </button>
-            <h3 className="mb-2 text-lg font-bold text-slate-900">
+            <h3 className="mb-2 text-lg font-bold text-zinc-900">
               {contactModal.reason === 'spam' ? 'Sorry!' : 'Contact Us'}
             </h3>
-            <p className="mb-5 text-sm text-slate-600">{contactModal.message}</p>
+            <p className="mb-5 text-sm text-zinc-600">{contactModal.message}</p>
             <a
               href={`https://wa.me/8801600905774?text=${encodeURIComponent('Hello Surokkha, I want to place an order.')}`}
               target="_blank"
@@ -385,18 +385,18 @@ export default function CheckoutView() {
       )}
       
       {/* Page Header */}
-      <div className="border-b border-slate-200 pb-5">
+      <div className="border-b border-zinc-200 pb-5">
         <div className="flex items-center gap-2 mb-3">
           <button 
             type="button" 
             onClick={openCartDrawer}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 bg-white hover:bg-rose-50 border border-slate-300 hover:border-brand-500 hover:text-brand-800 px-3.5 py-1.5 rounded-xl shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-800 bg-white hover:bg-rose-50 border border-zinc-300 hover:border-brand-500 hover:text-brand-800 px-3.5 py-1.5 rounded-xl shadow-xs transition-all cursor-pointer"
           >
             {t('checkout.back_to_cart')}
           </button>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 mt-1">{t('checkout.title')}</h1>
-        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1">
+        <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-zinc-900 mt-1">{t('checkout.title')}</h1>
+        <p className="text-xs sm:text-sm text-zinc-600 max-w-2xl mt-1">
           {t('checkout.subtitle')}
         </p>
       </div>
@@ -459,13 +459,13 @@ export default function CheckoutView() {
           <div className="lg:col-span-7 space-y-6">
             
             {/* Billing Address Card */}
-            <div className={`bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-5 relative transition-all ${isDistrictOpen || isThanaOpen ? 'z-30' : 'z-10'}`}>
-              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div className={`bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-5 relative transition-all ${isDistrictOpen || isThanaOpen ? 'z-30' : 'z-10'}`}>
+              <div className="border-b border-zinc-100 pb-3 flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-heading font-bold text-slate-900 uppercase tracking-wider">
+                  <h3 className="text-sm font-heading font-bold text-zinc-900 uppercase tracking-wider">
                     {t('checkout.billing_title')}
                   </h3>
-                  <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                  <p className="text-[11px] text-zinc-600 font-medium mt-0.5">
                     {t('checkout.fields_required_note')}
                   </p>
                 </div>
@@ -475,7 +475,7 @@ export default function CheckoutView() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Full Name */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-800 mb-1" htmlFor="billingFullName">
+                  <label className="block text-xs font-bold text-zinc-800 mb-1" htmlFor="billingFullName">
                     {t('checkout.full_name')} <span className="text-rose-500">*</span>
                   </label>
                   <input 
@@ -485,13 +485,13 @@ export default function CheckoutView() {
                     value={shippingInfo.fullName || ''}
                     onChange={(e) => setShippingInfo({ fullName: e.target.value })}
                     placeholder={t('checkout.full_name_placeholder')} 
-                    className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition" 
+                    className="w-full text-xs sm:text-sm bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition" 
                   />
                 </div>
 
                 {/* Email Address */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="billingEmail">
+                  <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingEmail">
                     {t('checkout.email_address')} <span className="text-rose-500">*</span>
                   </label>
                   <input 
@@ -505,14 +505,14 @@ export default function CheckoutView() {
                     }}
                     onBlur={(e) => setEmailError(validateEmail(e.target.value))}
                     placeholder={t('checkout.email_placeholder')} 
-                    className={`w-full text-xs sm:text-sm bg-slate-50 border ${emailError ? 'border-rose-500' : 'border-slate-300'} rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition`} 
+                    className={`w-full text-xs sm:text-sm bg-zinc-50 border ${emailError ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition`} 
                   />
                   {emailError && <p className="mt-1 text-[10px] text-rose-500 font-semibold">{emailError}</p>}
                 </div>
 
                 {/* Mobile Phone Number */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="billingPhone">
+                  <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingPhone">
                     {t('checkout.mobile_phone')} <span className="text-rose-500">*</span>
                   </label>
                   <input 
@@ -523,14 +523,14 @@ export default function CheckoutView() {
                     onChange={(e) => handleBillingPhoneChange(e.target.value)}
                     onBlur={(e) => setPhoneError(validatePhoneValue(e.target.value))}
                     placeholder={t('checkout.mobile_placeholder', '01XXXXXXXXX (যেমন: 01712345678)')} 
-                    className={`w-full text-xs sm:text-sm bg-slate-50 border ${phoneError ? 'border-rose-500' : 'border-slate-300'} rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition font-mono`} 
+                    className={`w-full text-xs sm:text-sm bg-zinc-50 border ${phoneError ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition font-mono`} 
                   />
                   {phoneError && <p className="mt-1 text-[10px] text-rose-500 font-semibold">{phoneError}</p>}
                 </div>
 
                 {/* Street Address */}
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="billingAddress">
+                  <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingAddress">
                     {t('checkout.street_address')} <span className="text-rose-500">*</span>
                   </label>
                   <textarea 
@@ -540,13 +540,13 @@ export default function CheckoutView() {
                     value={shippingInfo.address || ''}
                     onChange={(e) => setShippingInfo({ address: e.target.value })}
                     placeholder={t('checkout.street_placeholder')} 
-                    className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
+                    className="w-full text-xs sm:text-sm bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
                   />
                 </div>
 
                 {/* District Dropdown (must pick from list) */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="billingDistrict">
+                  <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingDistrict">
                     {t('checkout.district')} <span className="text-rose-500">*</span>
                   </label>
                   <LocationSelect
@@ -564,7 +564,7 @@ export default function CheckoutView() {
                 
                 {/* Thana Dropdown (must pick from list) */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="billingThana">
+                  <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingThana">
                     {t('checkout.thana')} <span className="text-rose-500">*</span>
                   </label>
                   <LocationSelect
@@ -583,13 +583,13 @@ export default function CheckoutView() {
               </div>
 
               {/* Ship to a different address toggle */}
-              <div className="pt-4 border-t border-slate-100">
-                <label className="flex items-center gap-3 text-xs text-slate-800 font-medium cursor-pointer select-none">
+              <div className="pt-4 border-t border-zinc-100">
+                <label className="flex items-center gap-3 text-xs text-zinc-800 font-medium cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={!sameAsBilling}
                     onChange={(e) => setSameAsBilling(!e.target.checked)}
-                    className="h-4.5 w-4.5 rounded border-slate-300 text-brand-700 focus:ring-brand-700 accent-brand-700 cursor-pointer"
+                    className="h-4.5 w-4.5 rounded border-zinc-300 text-brand-700 focus:ring-brand-700 accent-brand-700 cursor-pointer"
                   />
                   <span className="font-bold text-brand-900 uppercase tracking-wider text-xs">
                     {t('checkout.ship_to_different')}
@@ -607,7 +607,7 @@ export default function CheckoutView() {
                     <h3 className="text-sm font-heading font-bold text-brand-950 uppercase tracking-wider flex items-center gap-2">
                       <span>🚚</span> {t('checkout.recipient_title')}
                     </h3>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-zinc-500 mt-0.5">
                       {t('checkout.recipient_desc')}
                     </p>
                   </div>
@@ -617,7 +617,7 @@ export default function CheckoutView() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Recipient Full Name */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="shipFullName">
+                    <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="shipFullName">
                       {t('checkout.recipient_name')} <span className="text-rose-500">*</span>
                     </label>
                     <input 
@@ -627,13 +627,13 @@ export default function CheckoutView() {
                       value={shippingAddress.fullName || ''}
                       onChange={(e) => setShippingAddress({ fullName: e.target.value })}
                       placeholder={t('checkout.recipient_name_placeholder')} 
-                      className="w-full text-xs sm:text-sm bg-white border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition" 
+                      className="w-full text-xs sm:text-sm bg-white border border-zinc-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition" 
                     />
                   </div>
 
                   {/* Recipient Phone */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="shipPhone">
+                    <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="shipPhone">
                       {t('checkout.recipient_phone')} <span className="text-rose-500">*</span>
                     </label>
                     <input 
@@ -644,14 +644,14 @@ export default function CheckoutView() {
                       onChange={(e) => handleShippingPhoneChange(e.target.value)}
                       onBlur={(e) => setShipPhoneError(validatePhoneValue(e.target.value))}
                       placeholder={t('checkout.mobile_placeholder', '01XXXXXXXXX (যেমন: 01712345678)')} 
-                      className={`w-full text-xs sm:text-sm bg-white border ${shipPhoneError ? 'border-rose-500' : 'border-slate-300'} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition font-mono`} 
+                      className={`w-full text-xs sm:text-sm bg-white border ${shipPhoneError ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition font-mono`} 
                     />
                     {shipPhoneError && <p className="mt-1 text-[10px] text-rose-500 font-semibold">{shipPhoneError}</p>}
                   </div>
 
                   {/* Shipping Street Address */}
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="shipAddress">
+                    <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="shipAddress">
                       {t('checkout.shipping_street_address')} <span className="text-rose-500">*</span>
                     </label>
                     <textarea 
@@ -661,13 +661,13 @@ export default function CheckoutView() {
                       value={shippingAddress.address || ''}
                       onChange={(e) => setShippingAddress({ address: e.target.value })}
                       placeholder={t('checkout.shipping_street_placeholder')} 
-                      className="w-full text-xs sm:text-sm bg-white border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
+                      className="w-full text-xs sm:text-sm bg-white border border-zinc-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
                     />
                   </div>
 
                   {/* Shipping District (must pick from list) */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="shipDistrict">
+                    <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="shipDistrict">
                       {t('checkout.shipping_district')} <span className="text-rose-500">*</span>
                     </label>
                     <LocationSelect
@@ -686,7 +686,7 @@ export default function CheckoutView() {
                   
                   {/* Shipping Thana (must pick from list) */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="shipThana">
+                    <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="shipThana">
                       {t('checkout.shipping_thana')} <span className="text-rose-500">*</span>
                     </label>
                     <LocationSelect
@@ -708,12 +708,12 @@ export default function CheckoutView() {
             )}
 
             {/* Delivery Charge Tier Info (Auto calculated based on active location) */}
-            <div className="bg-slate-50/90 border border-slate-200 rounded-3xl p-6 space-y-3 relative z-0">
-              <div className="border-b border-slate-200 pb-2.5 flex items-center justify-between">
-                <h4 className="text-xs font-heading font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="bg-zinc-50/90 border border-zinc-200 rounded-3xl p-6 space-y-3 relative z-0">
+              <div className="border-b border-zinc-200 pb-2.5 flex items-center justify-between">
+                <h4 className="text-xs font-heading font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
                   <span>📦</span> {t('checkout.delivery_tier_title')}
                 </h4>
-                <span className="text-[11px] text-slate-500">{t('checkout.auto_calculated')}</span>
+                <span className="text-[11px] text-zinc-500">{t('checkout.auto_calculated')}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -721,15 +721,15 @@ export default function CheckoutView() {
                 <div className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
                   (totals.originalDeliveryFee ?? totals.deliveryFee) === 70
                     ? 'border-brand-700 bg-brand-50/70 text-brand-900 font-bold shadow-xs'
-                    : 'border-slate-200 bg-white text-slate-400 opacity-60'
+                    : 'border-zinc-200 bg-white text-zinc-400 opacity-60'
                 }`}>
                   <div>
                     <span className="text-xs font-bold block">{t('checkout.inside_dhaka')}</span>
-                    <span className="text-[10px] text-slate-500">{t('checkout.inside_dhaka_time')}</span>
+                    <span className="text-[10px] text-zinc-500">{t('checkout.inside_dhaka_time')}</span>
                   </div>
                   {totals.isFreeShippingCoupon && (totals.originalDeliveryFee ?? totals.deliveryFee) === 70 ? (
                     <span className="text-xs font-mono font-bold text-emerald-700">
-                      <span className="line-through text-slate-400 font-normal text-[10px] mr-1">৳70</span>
+                      <span className="line-through text-zinc-400 font-normal text-[10px] mr-1">৳70</span>
                       {isBn ? 'ফ্রি' : 'FREE'}
                     </span>
                   ) : (
@@ -741,15 +741,15 @@ export default function CheckoutView() {
                 <div className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
                   (totals.originalDeliveryFee ?? totals.deliveryFee) === 90
                     ? 'border-brand-700 bg-brand-50/70 text-brand-900 font-bold shadow-xs'
-                    : 'border-slate-200 bg-white text-slate-400 opacity-60'
+                    : 'border-zinc-200 bg-white text-zinc-400 opacity-60'
                 }`}>
                   <div>
                     <span className="text-xs font-bold block">{t('checkout.dhaka_suburbs')}</span>
-                    <span className="text-[10px] text-slate-500">{t('checkout.dhaka_suburbs_time')}</span>
+                    <span className="text-[10px] text-zinc-500">{t('checkout.dhaka_suburbs_time')}</span>
                   </div>
                   {totals.isFreeShippingCoupon && (totals.originalDeliveryFee ?? totals.deliveryFee) === 90 ? (
                     <span className="text-xs font-mono font-bold text-emerald-700">
-                      <span className="line-through text-slate-400 font-normal text-[10px] mr-1">৳90</span>
+                      <span className="line-through text-zinc-400 font-normal text-[10px] mr-1">৳90</span>
                       {isBn ? 'ফ্রি' : 'FREE'}
                     </span>
                   ) : (
@@ -761,15 +761,15 @@ export default function CheckoutView() {
                 <div className={`p-3 rounded-2xl border flex items-center justify-between transition-all ${
                   (totals.originalDeliveryFee ?? totals.deliveryFee) === 120
                     ? 'border-brand-700 bg-brand-50/70 text-brand-900 font-bold shadow-xs'
-                    : 'border-slate-200 bg-white text-slate-400 opacity-60'
+                    : 'border-zinc-200 bg-white text-zinc-400 opacity-60'
                 }`}>
                   <div>
                     <span className="text-xs font-bold block">{t('checkout.outside_dhaka')}</span>
-                    <span className="text-[10px] text-slate-500">{t('checkout.outside_dhaka_time')}</span>
+                    <span className="text-[10px] text-zinc-500">{t('checkout.outside_dhaka_time')}</span>
                   </div>
                   {totals.isFreeShippingCoupon && (totals.originalDeliveryFee ?? totals.deliveryFee) === 120 ? (
                     <span className="text-xs font-mono font-bold text-emerald-700">
-                      <span className="line-through text-slate-400 font-normal text-[10px] mr-1">৳120</span>
+                      <span className="line-through text-zinc-400 font-normal text-[10px] mr-1">৳120</span>
                       {isBn ? 'ফ্রি' : 'FREE'}
                     </span>
                   ) : (
@@ -780,12 +780,12 @@ export default function CheckoutView() {
             </div>
 
             {/* Order Notes Section */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-2">
-              <label className="block text-xs font-heading font-bold text-slate-900 uppercase tracking-wider flex items-center justify-between" htmlFor="orderNotes">
+            <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-2">
+              <label className="block text-xs font-heading font-bold text-zinc-900 uppercase tracking-wider flex items-center justify-between" htmlFor="orderNotes">
                 <span className="flex items-center gap-1.5">
                   <span>📝</span> {t('checkout.order_notes')}
                 </span>
-                <span className="text-slate-400 font-normal lowercase text-[10px]">{t('checkout.optional')}</span>
+                <span className="text-zinc-400 font-normal lowercase text-[10px]">{t('checkout.optional')}</span>
               </label>
               <textarea
                 id="orderNotes"
@@ -793,7 +793,7 @@ export default function CheckoutView() {
                 value={orderNotes || ''}
                 onChange={(e) => setOrderNotes(e.target.value)}
                 placeholder={t('checkout.notes_placeholder')}
-                className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
+                className="w-full text-xs sm:text-sm bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
               />
             </div>
 
@@ -803,9 +803,9 @@ export default function CheckoutView() {
           <div className="lg:col-span-5 space-y-6">
             
             {/* Payment Method Card - COD Only */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-                <h3 className="text-sm font-heading font-bold text-slate-900 uppercase tracking-wider">
+            <div className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="border-b border-zinc-100 pb-3 flex items-center justify-between">
+                <h3 className="text-sm font-heading font-bold text-zinc-900 uppercase tracking-wider">
                   {t('checkout.payment_method')}
                 </h3>
                 <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md">{t('checkout.verified')}</span>
@@ -816,8 +816,8 @@ export default function CheckoutView() {
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-brand-800 text-white flex items-center justify-center text-xs font-bold">✓</div>
                   <div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 block">{t('checkout.cod')}</span>
-                    <span className="text-[11px] text-slate-500">{t('checkout.cod_desc')}</span>
+                    <span className="text-xs sm:text-sm font-bold text-zinc-900 block">{t('checkout.cod')}</span>
+                    <span className="text-[11px] text-zinc-500">{t('checkout.cod_desc')}</span>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-brand-900 bg-brand-100 px-2 py-0.5 rounded">{t('checkout.primary')}</span>
@@ -825,13 +825,13 @@ export default function CheckoutView() {
             </div>
 
             {/* Order Summary Sidebar */}
-            <div className="bg-slate-50/90 border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                <h3 className="text-sm font-heading font-bold text-slate-900 uppercase tracking-wider">{t('checkout.order_items', { n: totals.itemCount })}</h3>
+            <div className="bg-zinc-50/90 border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+                <h3 className="text-sm font-heading font-bold text-zinc-900 uppercase tracking-wider">{t('checkout.order_items', { n: totals.itemCount })}</h3>
                 <button 
                   type="button"
                   onClick={openCartDrawer} 
-                  className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-800 bg-white hover:bg-rose-50 border border-slate-300 hover:border-brand-500 hover:text-brand-800 px-3 py-1 rounded-xl shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-zinc-800 bg-white hover:bg-rose-50 border border-zinc-300 hover:border-brand-500 hover:text-brand-800 px-3 py-1 rounded-xl shadow-2xs hover:shadow-xs transition-all cursor-pointer"
                 >
                   <svg className="w-3 h-3 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -866,13 +866,13 @@ export default function CheckoutView() {
                   return (
                     <div key={cartKey} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{itemName}</span>
-                        <span className="text-slate-600 font-bold">× {qty}</span>
+                        <span className="font-bold text-zinc-900">{itemName}</span>
+                        <span className="text-zinc-600 font-bold">× {qty}</span>
                       </div>
                       <div className="flex items-baseline gap-1.5 font-mono">
-                        <span className="font-bold text-slate-900">৳{itemPrice * qty}</span>
+                        <span className="font-bold text-zinc-900">৳{itemPrice * qty}</span>
                         {regularPrice > itemPrice && (
-                          <span className="text-[11px] text-slate-500 line-through">৳{regularPrice * qty}</span>
+                          <span className="text-[11px] text-zinc-500 line-through">৳{regularPrice * qty}</span>
                         )}
                       </div>
                     </div>
@@ -881,8 +881,8 @@ export default function CheckoutView() {
               </div>
 
               {/* Promo / Coupon Code Section */}
-              <div className="border-t border-slate-200/90 pt-3.5 space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+              <div className="border-t border-zinc-200/90 pt-3.5 space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-zinc-800">
                   <span className="flex items-center gap-1.5">
                     <span>🏷️</span>
                     <span>{t('checkout.coupon_label', 'কুপন কোড / Promo Code')}</span>
@@ -942,13 +942,13 @@ export default function CheckoutView() {
                           }
                         }}
                         placeholder={t('checkout.coupon_placeholder', 'কুপন কোড লিখুন')}
-                        className="flex-1 text-xs uppercase font-mono tracking-wider bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition"
+                        className="flex-1 text-xs uppercase font-mono tracking-wider bg-white border border-zinc-300 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition"
                       />
                       <button
                         type="button"
                         disabled={isApplyingCoupon || !couponCodeInput.trim()}
                         onClick={() => applyCoupon()}
-                        className="bg-slate-900 hover:bg-brand-800 disabled:opacity-50 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-xs cursor-pointer flex items-center justify-center shrink-0"
+                        className="bg-zinc-900 hover:bg-brand-800 disabled:opacity-50 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-xs cursor-pointer flex items-center justify-center shrink-0"
                       >
                         {isApplyingCoupon ? (
                           <span className="inline-block w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -966,10 +966,10 @@ export default function CheckoutView() {
                 )}
               </div>
 
-              <div className="border-t border-slate-200 pt-3 space-y-2 text-xs">
-                <div className="flex justify-between text-slate-700 font-medium">
+              <div className="border-t border-zinc-200 pt-3 space-y-2 text-xs">
+                <div className="flex justify-between text-zinc-700 font-medium">
                   <span>{t('checkout.subtotal')}</span>
-                  <span className="font-bold text-slate-900 font-mono">৳{totals.subtotal}</span>
+                  <span className="font-bold text-zinc-900 font-mono">৳{totals.subtotal}</span>
                 </div>
 
                 {totals.discountAmount > 0 && (
@@ -982,51 +982,51 @@ export default function CheckoutView() {
                   </div>
                 )}
 
-                <div className="flex justify-between text-slate-700 font-medium">
+                <div className="flex justify-between text-zinc-700 font-medium">
                   <span>{t('checkout.delivery_charge', { area: activeDistrict ? activeDistrict.toUpperCase() : 'STANDARD' })}</span>
                   {totals.isFreeShippingCoupon ? (
                     <span className="font-bold text-emerald-700 font-mono flex items-center gap-1">
-                      <span className="line-through text-slate-400 font-normal text-[11px]">৳{totals.originalDeliveryFee}</span>
+                      <span className="line-through text-zinc-400 font-normal text-[11px]">৳{totals.originalDeliveryFee}</span>
                       <span>{isBn ? 'ফ্রি' : 'FREE'}</span>
                     </span>
                   ) : (
-                    <span className="font-bold text-slate-900 font-mono">৳{totals.deliveryFee}</span>
+                    <span className="font-bold text-zinc-900 font-mono">৳{totals.deliveryFee}</span>
                   )}
                 </div>
-                <div className="border-t border-slate-200 pt-2 flex justify-between items-baseline">
-                  <span className="text-sm font-bold text-slate-900">{t('checkout.grand_total')}</span>
+                <div className="border-t border-zinc-200 pt-2 flex justify-between items-baseline">
+                  <span className="text-sm font-bold text-zinc-900">{t('checkout.grand_total')}</span>
                   <span className="text-xl font-extrabold text-brand-800 font-mono">৳{totals.grandTotal}</span>
                 </div>
               </div>
 
               {/* Delivery Timeline Notice (Replaces advance payment warning) */}
-              <div className="bg-amber-50/90 border border-amber-300/80 rounded-2xl p-4 text-xs text-slate-900 space-y-2 shadow-2xs">
+              <div className="bg-amber-50/90 border border-amber-300/80 rounded-2xl p-4 text-xs text-zinc-900 space-y-2 shadow-2xs">
                 <div className="flex items-center gap-2 font-bold text-amber-950 text-xs sm:text-sm">
                   <span className="text-base">🚚</span>
                   <span>{isBn ? 'ডেলিভারি সময়সীমা:' : 'Estimated Delivery Time:'}</span>
                 </div>
-                <div className="space-y-1.5 pl-6 text-slate-800 font-semibold text-xs leading-relaxed">
+                <div className="space-y-1.5 pl-6 text-zinc-800 font-semibold text-xs leading-relaxed">
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
-                    <strong className="font-bold text-slate-900">{isBn ? 'ঢাকার ভেতরে —' : 'Inside Dhaka —'}</strong>
+                    <strong className="font-bold text-zinc-900">{isBn ? 'ঢাকার ভেতরে —' : 'Inside Dhaka —'}</strong>
                     <span>{isBn ? '১-২ দিনের মধ্যে' : 'Within 1-2 days'}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0"></span>
-                    <strong className="font-bold text-slate-900">{isBn ? 'ঢাকার বাইরে —' : 'Outside Dhaka —'}</strong>
+                    <strong className="font-bold text-zinc-900">{isBn ? 'ঢাকার বাইরে —' : 'Outside Dhaka —'}</strong>
                     <span>{isBn ? '২-৩ দিনের মধ্যে ডেলিভারি পাবেন' : 'Within 2-3 days delivery'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Terms & Conditions Agreement */}
-              <div className="pt-2 border-t border-slate-200 space-y-3">
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
-                  <div className="flex items-center gap-2 font-bold text-slate-900 text-xs sm:text-sm">
+              <div className="pt-2 border-t border-zinc-200 space-y-3">
+                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3.5 space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-zinc-900 text-xs sm:text-sm">
                     <span className="text-base">📋</span>
                     <span>{isBn ? 'শর্তাবলী (Terms & Conditions)' : 'Terms & Conditions'}</span>
                   </div>
-                  <ol className="list-decimal pl-5 space-y-1.5 text-slate-800 font-medium text-xs leading-relaxed">
+                  <ol className="list-decimal pl-5 space-y-1.5 text-zinc-800 font-medium text-xs leading-relaxed">
                     <li>
                       {isBn
                         ? 'ডেলিভারিম্যানের কাছ থেকে পণ্য গ্রহণের সময় টাকা দেওয়ার আগে অবশ্যই পণ্য চেক করে নিন। পণ্য গ্রহণ করার পর তা আর ফেরত দেওয়া যাবে না।'
@@ -1045,13 +1045,13 @@ export default function CheckoutView() {
                   </ol>
                 </div>
 
-                <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-800 font-medium select-none">
+                <label className="flex items-start gap-2.5 cursor-pointer text-xs text-zinc-800 font-medium select-none">
                   <input
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
                     required
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-700 accent-brand-700 cursor-pointer shrink-0"
+                    className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-brand-700 focus:ring-brand-700 accent-brand-700 cursor-pointer shrink-0"
                   />
                   <span className="leading-snug">
                     {t('checkout.agree_terms')} <span className="text-rose-500 font-bold">*</span>
