@@ -33,8 +33,6 @@ export default function PromoComboBanner() {
   }
   const isOutOfStock = false;
 
-  const stockAmount = Number(comboProd.stockAmount != null ? comboProd.stockAmount : (comboProd.stock != null ? comboProd.stock : 50));
-  const isLowStock = stockAmount > 0 && stockAmount <= 10;
 
   const currentOfferPrice = Number(comboProd.offerPrice || comboProd.price || 0);
   const currentRegularPrice = Number(comboProd.regularPrice || currentOfferPrice);
@@ -140,11 +138,6 @@ export default function PromoComboBanner() {
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-700 text-white font-black text-xs uppercase tracking-wider shadow-md">
                 <span>🚫</span>
                 <span>{isBn ? 'বর্তমানে আউট অব স্টক' : 'Currently Out of Stock'}</span>
-              </div>
-            ) : isLowStock ? (
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-600 text-white font-black text-xs uppercase tracking-wider shadow-md animate-pulse">
-                <span>🔥</span>
-                <span>{isBn ? `স্টক সীমিত: মাত্র ${formatNumber(stockAmount)}টি বাকি আছে!` : `Only ${stockAmount} units remaining!`}</span>
               </div>
             ) : null}
 

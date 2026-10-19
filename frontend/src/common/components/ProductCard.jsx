@@ -205,16 +205,6 @@ export default function ProductCard({ productKey, className = '' }) {
             ) : null}
           </div>
 
-          {/* Low Stock Urgency Banner (< 10 items remaining) */}
-          {isLowStock && (
-            <div className="mb-2 flex items-center justify-between gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200/90 text-rose-800 text-[11px] font-bold">
-              <span className="flex items-center gap-1.5">
-                <span className="animate-pulse">🔥</span>
-                <span>{isBn ? `স্টক সীমিত: মাত্র ${formatNumber(stockAmount)}টি বাকি আছে!` : `Hurry! Only ${stockAmount} remaining!`}</span>
-              </span>
-            </div>
-          )}
-
           {/* Interactive Sales Buttons: 1-Click Buy Now & Cart Controls */}
           <div className="flex items-center gap-1.5">
             {/* Primary High-Conversion 1-Click Direct Buy Now Button */}

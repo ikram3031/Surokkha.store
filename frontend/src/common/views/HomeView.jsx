@@ -220,6 +220,7 @@ export default function HomeView() {
                 const c30Price = combo30Prod.offerPrice || combo30Prod.price || 0;
                 const c30Regular = combo30Prod.regularPrice || c30Price;
                 const c30Savings = c30Regular > c30Price ? c30Regular - c30Price : 0;
+                const c30PerUnit = c30Price > 0 ? Math.round(c30Price / 30) : 0;
 
                 return (
                   <div className="bg-slate-900/90 border-2 border-amber-400/80 rounded-3xl p-5 sm:p-6 text-left relative flex flex-col justify-between shadow-2xl hover:border-amber-300 transition-all duration-300 group">
@@ -272,7 +273,7 @@ export default function HomeView() {
                             {isBn ? `নগদ ৳${c30Savings} সাশ্রয়` : `Save ৳${c30Savings}`}
                           </span>
                           <div className="text-[10px] text-emerald-400 font-bold mt-1">
-                            {isBn ? 'মাত্র ৳৩০ / পিস' : 'Only ৳30 / unit'}
+                            {isBn ? `মাত্র ${formatPrice(c30PerUnit)} / পিস` : `Only ${formatPrice(c30PerUnit)} / unit`}
                           </div>
                         </div>
                       </div>
@@ -311,6 +312,7 @@ export default function HomeView() {
                 const cRibbedPrice = comboRibbedProd.offerPrice || comboRibbedProd.price || 0;
                 const cRibbedRegular = comboRibbedProd.regularPrice || cRibbedPrice;
                 const cRibbedSavings = cRibbedRegular > cRibbedPrice ? cRibbedRegular - cRibbedPrice : 0;
+                const cRibbedPerUnit = cRibbedPrice > 0 ? Math.round((cRibbedPrice / 20) * 10) / 10 : 0;
                 const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 0));
                 const rLow = rStock > 0 && rStock <= 10;
 
@@ -367,7 +369,7 @@ export default function HomeView() {
                             {isBn ? `সাশ্রয় ৳${cRibbedSavings}` : `Save ৳${cRibbedSavings}`}
                           </span>
                           <div className="text-[10px] text-amber-300 font-bold mt-1">
-                            {isBn ? '৳৩২.৫ / পিস' : '৳32.5 / unit'}
+                            {isBn ? `${formatPrice(cRibbedPerUnit)} / পিস` : `${formatPrice(cRibbedPerUnit)} / unit`}
                           </div>
                         </div>
                       </div>

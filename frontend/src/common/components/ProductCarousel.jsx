@@ -54,10 +54,12 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
       if (isOutOfStock) continue;
 
       const isCombo = isComboProduct(p, key);
+      // "items" (itemType/type/entityType === 'item') are not real products — exclude them
+      const isItem = p.itemType === 'item' || p.type === 'item' || p.entityType === 'item';
 
       if (isComboMode) {
-        // Combo carousel: keep ONLY combo packs
-        if (!isCombo) continue;
+        // Combo carousel: keep ONLY combo PRODUCTS (not items)
+        if (!isCombo || isItem) continue;
       } else {
         // Default carousel: exclude combos (they have their own showcase)
         if (isCombo) continue;
