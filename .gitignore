@@ -61,8 +61,6 @@ configs/*.json
 
 # Unignore examples and site env configs
 !**/.env.example
-!frontend/.env.store
-!frontend/.env.shop
 !frontend/src/data/
 # Local-only credential copies (never commit)
 configs/secrets/
