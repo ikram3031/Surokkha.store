@@ -1128,7 +1128,7 @@ export const useStore = create((set, get) => ({
       externalId: getExternalId() || undefined,
       siteKey: SITE_CONFIG.siteKey,
       clientDomain: SITE_CONFIG.domain,
-      orderPrefix: SITE_CONFIG.siteKey === 'shop' ? 'SSH' : 'SST',
+      orderPrefix: SITE_CONFIG.orderPrefix,
       giftWrap: false,
       orderNotes: (orderNotes || '').trim(),
       paymentMethod: 'cod',

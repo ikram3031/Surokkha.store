@@ -126,15 +126,15 @@ export const buildOrderNumber = async (orderTypeParam = false, siteOrDomain = nu
     prefixType = 'CO';
   } else if (orderTypeParam === true || orderTypeParam === 'instore' || orderTypeParam === 'is') {
     prefixType = 'IS';
-  } else if (customPrefix && typeof customPrefix === 'string' && customPrefix.trim()) {
-    prefixType = customPrefix.toUpperCase().trim();
   } else {
     // Resolve online order prefix based on originating storefront site/domain (SST vs SSH)
     const siteKey = String(siteOrDomain || '').toLowerCase().trim();
-    if (siteKey === 'shop' || siteKey.includes('surokkha.shop')) {
+    if (siteKey === 'shop' || siteKey.includes('surokkha.shop') || customPrefix === 'SSH') {
       prefixType = config.sites?.shop?.orderPrefix || 'SSH';
-    } else if (siteKey === 'store' || siteKey.includes('surokkha.store')) {
+    } else if (siteKey === 'store' || siteKey.includes('surokkha.store') || customPrefix === 'SST') {
       prefixType = config.sites?.store?.orderPrefix || 'SST';
+    } else if (customPrefix && typeof customPrefix === 'string' && customPrefix.trim()) {
+      prefixType = customPrefix.toUpperCase().trim();
     } else {
       prefixType = config.sites?.store?.orderPrefix || config.orderPrefix || 'SST';
     }
