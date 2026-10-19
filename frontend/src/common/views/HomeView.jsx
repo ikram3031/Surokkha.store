@@ -50,13 +50,26 @@ export default function HomeView() {
       (p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo')));
   });
   
-  const combo30Prod = activeCombos.find(c => (c.slug && (c.slug.includes('30') || c.slug.includes('3-in-1'))) || (c.name && c.name.includes('30'))) || activeCombos[0] || null;
-  // Right combo card is pinned to this product; falls back to the auto-picked combo if it's missing or inactive
-  const RIGHT_COMBO_PRODUCT_ID = '6ad3ceaa778c3e05ca22b2bd';
-  const pinnedRightProd = products[RIGHT_COMBO_PRODUCT_ID];
-  const isPinnedRightActive = pinnedRightProd && pinnedRightProd.isActive !== false && !pinnedRightProd.isOutOfStock &&
-    pinnedRightProd.stockStatus !== 'outofstock' && pinnedRightProd.stockStatus !== 'out_of_stock';
-  const comboRibbedProd = (isPinnedRightActive && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) || activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('ribbed') || c.slug.includes('20'))) || (c.name && c.name.includes('20')))) || activeCombos[1] || null;
+  const isComboActive = (p) => p && p.isActive !== false && !p.isOutOfStock &&
+    p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.stockAmount !== 0;
+
+  // LEFT combo card = the 3-variant mega combo (Ultra Thin + Dotted + Ribbed).
+  // Pinned to the Ultimate 3-in-1 product; falls back to any active 3-in-1 / 30-pcs combo.
+  const LEFT_COMBO_ID = '6ab8a664721c81cc89218856';
+  const LEFT_COMBO_SLUG = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const pinnedLeftProd = products[LEFT_COMBO_ID] || products[LEFT_COMBO_SLUG];
+  const combo30Prod = (isComboActive(pinnedLeftProd) ? pinnedLeftProd : null) ||
+    activeCombos.find(c => (c.slug && (c.slug.includes('3-in-1') || c.slug.includes('30'))) || (c.name && c.name.includes('30'))) ||
+    activeCombos[0] || null;
+
+  // RIGHT combo card = the Ribbed 20-pcs combo. Pinned to the micro-ribbed 20-pcs product;
+  // falls back to any other active ribbed / 20-pcs combo.
+  const RIGHT_COMBO_ID = '6ab81e97721c81cc89211371';
+  const RIGHT_COMBO_SLUG = 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
+  const pinnedRightProd = products[RIGHT_COMBO_ID] || products[RIGHT_COMBO_SLUG];
+  const comboRibbedProd = (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) ||
+    activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('ribbed') || c.slug.includes('20'))) || (c.name && c.name.includes('20')))) ||
+    activeCombos.find(c => c !== combo30Prod) || activeCombos[1] || null;
   const COMBO_30_KEY = combo30Prod?.slug || combo30Prod?.id || '';
   const COMBO_RIBBED_KEY = comboRibbedProd?.slug || comboRibbedProd?.id || '';
 
