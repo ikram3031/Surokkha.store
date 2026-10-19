@@ -77,7 +77,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./SurokkhaShop
       dockerfile: Dockerfile
     container_name: ${FRONTEND_CONTAINER_NAME:-ecommerce-frontend-dev}
     restart: always

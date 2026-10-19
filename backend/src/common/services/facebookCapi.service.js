@@ -99,6 +99,7 @@ export const testMetaCapiConnection = async ({ pixelId, accessToken, testEventCo
         action_source: "website",
         user_data: {
           client_user_agent: "Flexivia-WL-Ecom/Backend-CAPI-Tester",
+          external_id: [sha256(`capi-test-${pixelId}`)],
           ...(fbLoginId ? { fb_login_id: String(fbLoginId).trim() } : {}),
         },
         custom_data: {
