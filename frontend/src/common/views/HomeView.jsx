@@ -62,13 +62,13 @@ export default function HomeView() {
     activeCombos.find(c => (c.slug && (c.slug.includes('3-in-1') || c.slug.includes('30'))) || (c.name && c.name.includes('30'))) ||
     activeCombos[0] || null;
 
-  // RIGHT combo card = the Ribbed 20-pcs combo. Pinned to the micro-ribbed 20-pcs product;
-  // falls back to any other active ribbed / 20-pcs combo.
-  const RIGHT_COMBO_ID = '6ab81e97721c81cc89211371';
-  const RIGHT_COMBO_SLUG = 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo';
+  // RIGHT combo card = the Ultra Thin 30-pcs combo. Pinned to the Micro-Thin Combo Special;
+  // falls back to any other active combo different from the left card.
+  const RIGHT_COMBO_ID = '6ad3ceaa778c3e05ca22b2bd';
+  const RIGHT_COMBO_SLUG = 'combo-special-30-pieces-of-micro-thin-latex-contraceptive';
   const pinnedRightProd = products[RIGHT_COMBO_ID] || products[RIGHT_COMBO_SLUG];
   const comboRibbedProd = (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) ||
-    activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('ribbed') || c.slug.includes('20'))) || (c.name && c.name.includes('20')))) ||
+    activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('thin') || c.slug.includes('30'))) || (c.name && c.name.includes('30')))) ||
     activeCombos.find(c => c !== combo30Prod) || activeCombos[1] || null;
   const COMBO_30_KEY = combo30Prod?.slug || combo30Prod?.id || '';
   const COMBO_RIBBED_KEY = comboRibbedProd?.slug || comboRibbedProd?.id || '';
@@ -325,7 +325,7 @@ export default function HomeView() {
                 const cRibbedPrice = comboRibbedProd.offerPrice || comboRibbedProd.price || 0;
                 const cRibbedRegular = comboRibbedProd.regularPrice || cRibbedPrice;
                 const cRibbedSavings = cRibbedRegular > cRibbedPrice ? cRibbedRegular - cRibbedPrice : 0;
-                const cRibbedPerUnit = cRibbedPrice > 0 ? Math.round((cRibbedPrice / 20) * 10) / 10 : 0;
+                const cRibbedPerUnit = cRibbedPrice > 0 ? Math.round(cRibbedPrice / 30) : 0;
                 const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 0));
                 const rLow = rStock > 0 && rStock <= 10;
 
@@ -334,7 +334,7 @@ export default function HomeView() {
                     <div className="absolute -top-3.5 right-6 z-20 bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 text-white text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xl flex items-center gap-1 border border-purple-400/40">
                       <span>🔥</span>
                       <span>
-                        {rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'রিবড ২০ পিস স্পেশাল কম্বো' : 'Ribbed 20 Pcs Combo')}
+                        {rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'আল্ট্রা থিন ৩০ পিস স্পেশাল কম্বো' : 'Ultra Thin 30 Pcs Combo')}
                       </span>
                     </div>
 
@@ -355,7 +355,7 @@ export default function HomeView() {
                             {cRibbedName}
                           </h3>
                           <p className="text-[11px] text-slate-300 mt-1 line-clamp-2">
-                            {isBn ? '২টি সম্পূর্ণ রিটেইল বক্স (২০টি ল্যাটেক্স কন্ট্রাসেপ্টিভ)। নিখুঁত শারীরবৃত্তীয় গ্রিপ ও আরাম।' : '2 Sealed Retail Boxes (20 Pieces Contoured Latex). Ergonomic ridges for dependable protection.'}
+                            {isBn ? '৩টি সম্পূর্ণ রিটেইল বক্স (৩০টি আল্ট্রা থিন ল্যাটেক্স কন্ট্রাসেপ্টিভ)। অতি-পাতলা অনুভূতি ও নির্ভরযোগ্য সুরক্ষা।' : '3 Sealed Retail Boxes (30 Pieces Ultra Thin Latex). Ultra-thin sensation with dependable protection.'}
                           </p>
                         </div>
                       </div>
