@@ -6,6 +6,7 @@ import { errorHandler } from "../common/middlewares/errorHandler.js";
 import { authenticateToken, authorizeRoles } from "../common/middlewares/auth.middleware.js";
 import { logger } from "../common/config/logger.js";
 import serviceRouter from "./routes.js";
+import storeSettingsRouter from "./routes/StoreSettingsRoute.js";
 import swaggerRouter from "./routes/SwaggerRoute.js";
 import { env } from "../common/config/env.js";
 import { getDynamicCorsConfig } from "../common/config/index.js";
@@ -93,6 +94,9 @@ export const createServiceApp = async () => {
   app.get("/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
   app.get("/api/v2/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
   app.get("/api/v1/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
+
+  // Store (surokkha.store) settings live apart from the shop's /api/v2 ones
+  app.use("/store/v2/settings", storeSettingsRouter);
 
   // Primary Dashboard Service router mounted at /api/v2
   app.use("/api/v2", serviceRouter);
