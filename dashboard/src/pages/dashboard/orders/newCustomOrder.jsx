@@ -320,8 +320,10 @@ const NewCustomOrderPage = () => {
     category: categoryFilter !== "All" ? categoryFilter : undefined,
     brand: brandFilter !== "All" ? brandFilter : undefined,
   });
+  // Out of stock products can't be ordered, so they are left out of the catalogue
+  const isInStock = (p) => !(p.status === "Out of Stock" || p.stockStatus === "outofstock" || p.stockStatus === "out_of_stock");
   const products = Array.isArray(productsResponse?.data)
-    ? productsResponse.data
+    ? productsResponse.data.filter(isInStock)
     : [];
 
   const { data: itemsResponse, isLoading: itemsLoading } = useItems({
@@ -331,7 +333,7 @@ const NewCustomOrderPage = () => {
     limit: 50,
   });
   const items = Array.isArray(itemsResponse?.data)
-    ? itemsResponse.data
+    ? itemsResponse.data.filter(isInStock)
     : [];
 
   // Cart & Dialog state
@@ -410,6 +412,42 @@ const NewCustomOrderPage = () => {
     });
     toast.success(`${item.name} ${t("orders.add_to_cart", "added to cart")}`);
   }, [t]);
+
+  // Custom product: anything not in the catalogue, added straight to the cart
+  const [customName, setCustomName] = useState("");
+  const [customNote, setCustomNote] = useState("");
+  const [customPrice, setCustomPrice] = useState("");
+
+  const addCustomProduct = () => {
+    const name = customName.trim();
+    const price = Number(customPrice);
+    if (!name) {
+      toast.error("Please enter a product name");
+      return;
+    }
+    if (!customPrice || Number.isNaN(price) || price < 0) {
+      toast.error("Please enter a valid price");
+      return;
+    }
+    const note = customNote.trim();
+    addToCart({
+      id: `custom-${Date.now()}`,
+      name: note ? `${name} (${note})` : name,
+      price,
+      quantity: 1,
+      image: "",
+      sku: "",
+      size: "",
+      productId: "",
+      itemId: "",
+      itemType: "product",
+      productDid: "",
+      isCustom: true,
+    });
+    setCustomName("");
+    setCustomNote("");
+    setCustomPrice("");
+  };
 
   const updateQty = useCallback((id, delta) => {
     setCart((prev) =>
@@ -988,6 +1026,37 @@ const NewCustomOrderPage = () => {
               )
             )}
           </div>
+
+          {/* Custom product: add anything not listed in the catalogue */}
+          <div className="shrink-0 border-t pt-3 mt-3 space-y-2">
+            <p className="text-xs font-semibold text-foreground">Custom Product</p>
+            <div className="grid grid-cols-1 sm:grid-cols-[1.2fr_1.5fr_0.8fr_auto] gap-2">
+              <Input
+                placeholder="Product name"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                className="h-8 text-xs"
+              />
+              <Input
+                placeholder="Note / description (optional)"
+                value={customNote}
+                onChange={(e) => setCustomNote(e.target.value)}
+                className="h-8 text-xs"
+              />
+              <Input
+                type="number"
+                min="0"
+                placeholder="Price"
+                value={customPrice}
+                onChange={(e) => setCustomPrice(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCustomProduct()}
+                className="h-8 text-xs"
+              />
+              <Button type="button" size="sm" className="h-8" onClick={addCustomProduct}>
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Right Column: Cart Items List (Matched Fixed Height) */}
@@ -1038,6 +1107,11 @@ const NewCustomOrderPage = () => {
                       <p className="text-xs font-semibold truncate leading-tight">
                         {item.name}
                       </p>
+                      {item.isCustom && (
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 font-normal">
+                          Custom
+                        </Badge>
+                      )}
                       {item.itemType === "item" && (
                         <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-normal">
                           Item

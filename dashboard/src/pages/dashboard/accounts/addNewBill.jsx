@@ -72,15 +72,18 @@ export const AddNewBillPage = () => {
   const { allPaymentTypes = [] } = usePaymentTypes();
   const { allInvestors = [] } = useInvestors();
 
-  const defaultBillingMethods = ['Bank Transfer', 'Cash', 'Card', 'bKash', 'Nagad', 'Rocket', 'Upay', 'Cheque', 'Other'];
-  const availableBillingMethods = React.useMemo(() => {
-    const customNames = allPaymentTypes
-      .filter((t) => t.status === 'Active')
-      .map((t) => t.name.trim())
-      .filter(Boolean);
-    const combined = Array.from(new Set([...defaultBillingMethods, ...customNames]));
-    return combined;
-  }, [allPaymentTypes]);
+  const activeBillingMethods = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          allPaymentTypes
+            .filter((t) => t.status === 'Active')
+            .map((t) => t.name.trim())
+            .filter(Boolean)
+        )
+      ),
+    [allPaymentTypes]
+  );
 
   const [formData, setFormData] = useState({
     title: '',
@@ -93,7 +96,7 @@ export const AddNewBillPage = () => {
     paidAmount: '',
     billingDate: new Date().toISOString().slice(0, 10),
     dueDate: '',
-    billingMethod: 'Bank Transfer',
+    billingMethod: '',
     feeChoice: 'none',
     customFeeName: '',
     customFeePercent: '',
@@ -105,6 +108,22 @@ export const AddNewBillPage = () => {
   const [newTypeModalOpen, setNewTypeModalOpen] = useState(false);
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeDesc, setNewTypeDesc] = useState('');
+
+  // Keep an edited bill's saved method selectable even if it is no longer an active payment type
+  const availableBillingMethods = React.useMemo(
+    () =>
+      formData.billingMethod && !activeBillingMethods.includes(formData.billingMethod)
+        ? [formData.billingMethod, ...activeBillingMethods]
+        : activeBillingMethods,
+    [activeBillingMethods, formData.billingMethod]
+  );
+
+  // Set default payment method when payment types load
+  useEffect(() => {
+    if (!formData.billingMethod && activeBillingMethods.length > 0 && !editId) {
+      setFormData((prev) => ({ ...prev, billingMethod: activeBillingMethods[0] }));
+    }
+  }, [activeBillingMethods, editId, formData.billingMethod]);
 
   // Set default bill type when bill types load
   useEffect(() => {
@@ -135,7 +154,7 @@ export const AddNewBillPage = () => {
           paidAmount: existing.paidAmount !== undefined ? String(existing.paidAmount) : '',
           billingDate: existing.billingDate || existing.date || new Date().toISOString().slice(0, 10),
           dueDate: existing.dueDate || '',
-          billingMethod: existing.billingMethod || 'Bank Transfer',
+          billingMethod: existing.billingMethod || '',
           ...feeFieldsFromBill(existing.paymentFee),
           status: existing.status || 'Pending',
           notes: existing.notes || '',
@@ -213,6 +232,10 @@ export const AddNewBillPage = () => {
     e.preventDefault();
     if (!formData.title.trim()) {
       toast.error('Please enter a bill title / payee');
+      return;
+    }
+    if (!formData.billingMethod) {
+      toast.error('Please select a payment method (add one in Payment Methods first)');
       return;
     }
     if (!formData.totalAmount || Number(formData.totalAmount) <= 0) {

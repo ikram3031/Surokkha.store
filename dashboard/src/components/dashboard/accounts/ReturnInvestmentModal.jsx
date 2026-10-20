@@ -177,7 +177,7 @@ export const ReturnInvestmentModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
         <DialogHeader className="p-5 pb-4 border-b bg-gradient-to-r from-emerald-500/10 via-background to-purple-500/10">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
@@ -194,7 +194,7 @@ export const ReturnInvestmentModal = ({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs flex-1 min-h-0 overflow-y-auto">
           {/* 1. Investor Selector */}
           <div className="space-y-1.5">
             <label className="font-semibold text-foreground flex items-center justify-between">

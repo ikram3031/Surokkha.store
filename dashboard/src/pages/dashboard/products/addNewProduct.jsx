@@ -15,6 +15,9 @@ import {
   ProductDataCard,
   SEOOverviewCard,
   SidebarCards,
+  BanglaContentCard,
+  bnFormFromProduct,
+  bnPayloadFromForm,
 } from "@/components/dashboard/products";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB limit
@@ -62,6 +65,7 @@ const AddNewProduct = () => {
   const [sku, setSku] = useState("");
   const [description, setDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
+  const [bnContent, setBnContent] = useState(() => bnFormFromProduct({}));
 
   // 2. SEO details
   const [metaTitle, setMetaTitle] = useState("");
@@ -142,6 +146,7 @@ const AddNewProduct = () => {
     if (p.sku) setSku(p.sku);
     if (p.description) setDescription(p.description);
     if (p.longDescription) setLongDescription(p.longDescription);
+    if (p.bn) setBnContent(bnFormFromProduct(p.bn));
     if (p.type) setProductType(p.type);
     if (p.season) {
       setSeason(
@@ -636,6 +641,7 @@ const AddNewProduct = () => {
         sku: sku.trim(),
         description: description.trim(),
         longDescription: longDescription.trim(),
+        bn: bnPayloadFromForm(bnContent),
         type: productType,
         imageUrl: finalMainImageUrl || "",
         thumbnailUrl: finalThumbnailUrl || finalMainImageUrl || "",
@@ -827,6 +833,8 @@ const AddNewProduct = () => {
                 />
               </div>
             </div>
+
+            <BanglaContentCard bn={bnContent} setBn={setBnContent} />
           </div>
 
           {/* Right Column: Sidebar Cards & SEO */}

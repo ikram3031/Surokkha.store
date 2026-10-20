@@ -11,7 +11,7 @@ import { getDynamicCorsConfig } from "../common/config/index.js";
 export const createStoreWebApp = async () => {
   const app = express();
 
-  app.set("wpTablePrefix", process.env.WP_TABLE_PREFIX || "wp_");
+  // app.set("wpTablePrefix", process.env.WP_TABLE_PREFIX || "wp_");
   app.set("trust proxy", true);
 
   const { allowedOrigins, clientKeywords } = getDynamicCorsConfig(env.ALLOWED_ORIGINS);

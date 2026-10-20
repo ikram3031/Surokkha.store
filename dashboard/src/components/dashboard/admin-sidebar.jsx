@@ -499,13 +499,24 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/admin/settings/meta-pixel")}
-                      render={<Link to="/admin/settings/meta-pixel" />}
+                      isActive={pathname === "/admin/settings/meta-pixel"}
+                      render={<Link to="/admin/settings/meta-pixel/shop" />}
                     >
                       <Share2 className="h-3.5 w-3.5" />
                       <span>{t("nav.meta_pixel", "Meta Pixel")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+                  {["shop", "store"].map((site) => (
+                    <SidebarMenuSubItem key={site}>
+                      <SidebarMenuSubButton
+                        isActive={pathname.startsWith(`/admin/settings/meta-pixel/${site}`)}
+                        render={<Link to={`/admin/settings/meta-pixel/${site}`} />}
+                        className="pl-8"
+                      >
+                        <span>{site === "shop" ? t("nav.meta_pixel_shop", "Shop") : t("nav.meta_pixel_store", "Store")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton

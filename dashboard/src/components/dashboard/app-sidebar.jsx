@@ -522,8 +522,14 @@ export const AppSidebar = ({ ...props }) => {
                           {t("nav.admin_view_styles", "Admin View Styles")}
                         </NavSub>
                   <SubLabel>{t("nav.marketing", "Marketing")}</SubLabel>
-                        <NavSub to="/dashboard/settings/meta-pixel" active={pathname.startsWith("/dashboard/settings/meta-pixel")} icon={Share2}>
+                        <NavSub to="/dashboard/settings/meta-pixel/shop" active={pathname === "/dashboard/settings/meta-pixel"} icon={Share2}>
                           {t("nav.meta_pixel", "Meta Pixel")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/meta-pixel/shop" active={pathname.startsWith("/dashboard/settings/meta-pixel/shop")} className="pl-8">
+                          {t("nav.meta_pixel_shop", "Shop")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/meta-pixel/store" active={pathname.startsWith("/dashboard/settings/meta-pixel/store")} className="pl-8">
+                          {t("nav.meta_pixel_store", "Store")}
                         </NavSub>
                         <NavSub to="/dashboard/settings/tiktok-pixel" active={pathname.startsWith("/dashboard/settings/tiktok-pixel")} icon={TikTokIcon} iconClass="shrink-0">
                           {t("nav.tiktok_pixel", "TikTok Pixel")}

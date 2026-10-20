@@ -17,11 +17,19 @@ import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 
-// Manages Surokkha Shop's Meta Pixel and Conversions API configuration and verification
-const MetaPixelPage = () => {
-  const queryClient = useQueryClient();
+// Shop and store each keep their own pixel data behind their own API
+const SITES = {
+  shop: { domain: 'surokkha.shop', label: 'Shop', badge: 'SH', apiBase: '/api/v2/settings/meta-pixel' },
+  store: { domain: 'surokkha.store', label: 'Store', badge: 'ST', apiBase: '/store/v2/settings/meta-pixel' },
+};
 
-  // Shop Site State (surokkha.shop / SH)
+// Manages one site's Meta Pixel and Conversions API configuration and verification
+const MetaPixelPage = ({ site = 'shop' }) => {
+  const queryClient = useQueryClient();
+  const siteInfo = SITES[site] || SITES.shop;
+  const queryKey = ['meta-pixel-settings', site];
+
+  // Form state for the selected site
   const [shopPixelId, setShopPixelId] = useState('');
   const [shopAccessToken, setShopAccessToken] = useState('');
   const [shopTestEventCode, setShopTestEventCode] = useState('');
@@ -31,17 +39,16 @@ const MetaPixelPage = () => {
   const [shopAdvancedMatching, setShopAdvancedMatching] = useState(true);
 
   const { data: pixelData, isLoading } = useQuery({
-    queryKey: ['meta-pixel-settings'],
+    queryKey,
     queryFn: async () => {
-      const res = await apiClient.get('/api/v1/settings/meta-pixel');
+      const res = await apiClient.get(siteInfo.apiBase);
       return res.data?.data || {};
     },
   });
 
   useEffect(() => {
     if (pixelData) {
-      const sites = pixelData.sites || {};
-      const shop = sites.shop || {};
+      const shop = pixelData;
 
       setShopPixelId(shop.pixelId || '');
       setShopAccessToken(shop.accessToken || '');
@@ -56,29 +63,21 @@ const MetaPixelPage = () => {
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload = {
-        sites: {
-          shop: {
-            siteKey: 'shop',
-            domain: 'surokkha.shop',
-            brandName: 'Surokkha Shop',
-            orderPrefix: 'SH',
-            pixelId: shopPixelId.trim(),
-            accessToken: shopAccessToken.trim(),
-            testEventCode: shopTestEventCode.trim(),
-            isEnabled: shopIsEnabled,
-            enableBrowserPixel: shopEnableBrowserPixel,
-            enableCapi: shopEnableCapi,
-            advancedMatching: shopAdvancedMatching,
-          },
-        },
+        pixelId: shopPixelId.trim(),
+        accessToken: shopAccessToken.trim(),
+        testEventCode: shopTestEventCode.trim(),
+        isEnabled: shopIsEnabled,
+        enableBrowserPixel: shopEnableBrowserPixel,
+        enableCapi: shopEnableCapi,
+        advancedMatching: shopAdvancedMatching,
       };
 
-      const res = await apiClient.put('/api/v1/settings/meta-pixel', payload);
+      const res = await apiClient.put(siteInfo.apiBase, payload);
       return res.data;
     },
     onSuccess: () => {
       toast.success('Meta Pixel settings updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['meta-pixel-settings'] });
+      queryClient.invalidateQueries({ queryKey });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to save Meta Pixel settings');
@@ -88,17 +87,16 @@ const MetaPixelPage = () => {
   const testMutation = useMutation({
     mutationFn: async ({ pixelId, accessToken, testEventCode }) => {
       const payload = {
-        siteKey: 'shop',
         pixelId: pixelId.trim(),
         accessToken: accessToken.trim(),
         testEventCode: testEventCode.trim(),
       };
-      const res = await apiClient.post('/api/v1/settings/meta-pixel/test', payload);
+      const res = await apiClient.post(`${siteInfo.apiBase}/test`, payload);
       return res.data;
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Meta Conversions API connection verified!');
-      queryClient.invalidateQueries({ queryKey: ['meta-pixel-settings'] });
+      queryClient.invalidateQueries({ queryKey });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to verify Meta connection');
@@ -123,7 +121,7 @@ const MetaPixelPage = () => {
     });
   };
 
-  const shopStatus = pixelData?.sites?.shop?.lastTestStatus || 'untested';
+  const shopStatus = pixelData?.lastTestStatus || 'untested';
 
   const renderStatusBadge = (status) => {
     if (status === 'connected') {
@@ -159,7 +157,7 @@ const MetaPixelPage = () => {
             Meta Pixel & Conversions API (CAPI)
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage the Meta Pixel dataset and CAPI credentials for surokkha.shop.
+            Manage the Meta Pixel dataset and CAPI credentials for {siteInfo.domain}.
           </p>
         </div>
       </div>
@@ -168,17 +166,17 @@ const MetaPixelPage = () => {
         <div className="flex items-center justify-between p-4 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
-              SH
+              {siteInfo.badge}
             </div>
             <div>
               <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
-                surokkha.shop
+                {siteInfo.domain}
                 <Badge variant="outline" className="text-[11px] text-emerald-700 bg-emerald-100/60 dark:bg-emerald-900/40 border-emerald-200">
-                  Order Prefix: SH
+                  Order Prefix: {siteInfo.badge}
                 </Badge>
               </h4>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Storefront webroot at <code className="text-[11px]">/opt/clients/surokkha/shop</code>
+                Storefront webroot at <code className="text-[11px]">/opt/clients/surokkha/{site}</code>
               </p>
             </div>
           </div>
@@ -187,9 +185,9 @@ const MetaPixelPage = () => {
 
         <Card className="border-border/60 shadow-xs">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold">Shop Pixel Credentials</CardTitle>
+            <CardTitle className="text-base font-semibold">{siteInfo.label} Pixel Credentials</CardTitle>
             <CardDescription className="text-xs">
-              Enter the dedicated Meta Pixel ID and Conversions API token for surokkha.shop.
+              Enter the dedicated Meta Pixel ID and Conversions API token for {siteInfo.domain}.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -202,7 +200,7 @@ const MetaPixelPage = () => {
                 disabled={isLoading}
               />
               <p className="text-[11px] text-muted-foreground">
-                Dedicated dataset identifier for surokkha.shop.
+                Dedicated dataset identifier for {siteInfo.domain}.
               </p>
             </div>
 
@@ -216,7 +214,7 @@ const MetaPixelPage = () => {
                 disabled={isLoading}
               />
               <p className="text-[11px] text-muted-foreground">
-                Conversions API access token for surokkha.shop.
+                Conversions API access token for {siteInfo.domain}.
               </p>
             </div>
 
@@ -234,16 +232,16 @@ const MetaPixelPage = () => {
 
         <Card className="border-border/60 shadow-xs">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold">Shop Tracking Options</CardTitle>
+            <CardTitle className="text-base font-semibold">{siteInfo.label} Tracking Options</CardTitle>
             <CardDescription className="text-xs">
-              Configure browser and server-side tracking pipelines for surokkha.shop.
+              Configure browser and server-side tracking pipelines for {siteInfo.domain}.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20">
               <div className="space-y-0.5">
                 <p className="text-xs font-semibold text-foreground">Master Tracking Toggle</p>
-                <p className="text-[11px] text-muted-foreground">Enable all Meta tracking for surokkha.shop.</p>
+                <p className="text-[11px] text-muted-foreground">Enable all Meta tracking for {siteInfo.domain}.</p>
               </div>
               <Switch checked={shopIsEnabled} onCheckedChange={setShopIsEnabled} />
             </div>
@@ -283,14 +281,14 @@ const MetaPixelPage = () => {
             className="cursor-pointer flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${testMutation.isPending ? 'animate-spin' : ''}`} />
-            <span>Test Shop CAPI Connection</span>
+            <span>Test {siteInfo.label} CAPI Connection</span>
           </Button>
         </div>
 
         {/* Save Button */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-border/50">
           <p className="text-xs text-muted-foreground">
-            Changes saved here update MongoDB instantly for surokkha.shop.
+            Changes saved here update MongoDB instantly for {siteInfo.domain}.
           </p>
 
           <Button

@@ -8,6 +8,7 @@ import { logger } from "./common/config/logger.js";
 import coreRouter from "./routesIndex.js";
 import storefrontRouter from "./storefront/routes.js";
 import serviceRouter from "./service/routes.js";
+import storeSettingsRouter from "./service/routes/StoreSettingsRoute.js";
 import developerRouter, { broadcastLogToClients } from "./service/routes/DeveloperRoute.js";
 import swaggerRouter from "./service/routes/SwaggerRoute.js";
 import { env } from "./common/config/env.js";
@@ -241,6 +242,9 @@ export const createApp = async (options = {}) => {
     app.get("/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
     app.get("/api/v2/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
     app.get("/api/v1/swagger.json", (req, res) => res.redirect("/api-docs/swagger.json"));
+
+    // Store (surokkha.store) settings live apart from the shop's /api/v2 ones
+    app.use("/store/v2/settings", storeSettingsRouter);
 
     if (role === "dashboard" || role === "service") {
       app.use("/api/v2", serviceRouter);

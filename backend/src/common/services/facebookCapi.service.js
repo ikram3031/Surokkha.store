@@ -30,8 +30,47 @@ const normalizePhone = (phone = "") => {
   return digits;
 };
 
-// Resolves active Meta Pixel configuration from database, client config, and environment fallbacks (shop-only)
-export const getMetaPixelConfig = async () => {
+// The store (surokkha.store) keeps its Meta Pixel in its own settings document, separate from the shop's
+export const STORE_META_PIXEL_KEY = "store-meta-pixel";
+
+// Requests served by the storeWeb API (/store/...) belong to the store
+const isStoreRequest = (...sources) =>
+  sources.some((s) => s === "store" || String(s?.originalUrl || s?.baseUrl || "").startsWith("/store/"));
+
+// Resolves the store's Meta Pixel configuration from its own settings document
+export const getStoreMetaPixelConfig = async () => {
+  let meta = {};
+  if (mongoose.connection?.readyState === 1) {
+    const doc = await StoreSettingsModel.findOne({ key: STORE_META_PIXEL_KEY }).lean().catch(() => null);
+    meta = doc?.metaPixel || {};
+  }
+  const pixelId = meta.pixelId || env.FB_PIXEL_ID_STORE || "";
+  const accessToken = meta.accessToken || env.FB_ACCESS_TOKEN_STORE || "";
+  if (!pixelId || !accessToken) {
+    console.warn("[Meta CAPI Config] Warning: Store Meta Pixel / CAPI credentials not configured. Event skipped.");
+  }
+  return {
+    pixelId,
+    accessToken,
+    testEventCode: meta.testEventCode || env.FB_TEST_EVENT_CODE_STORE || "",
+    isEnabled: meta.isEnabled ?? true,
+    enableBrowserPixel: meta.enableBrowserPixel ?? true,
+    enableCapi: meta.enableCapi ?? true,
+    advancedMatching: meta.advancedMatching ?? true,
+    lastVerifiedAt: meta.lastVerifiedAt || null,
+    lastTestStatus: meta.lastTestStatus || "untested",
+    lastTestMessage: meta.lastTestMessage || "",
+  };
+};
+
+// Resolves active Meta Pixel configuration: store requests use the store's own settings, everything else the shop's
+export const getMetaPixelConfig = async (source = null, req = null) => {
+  if (isStoreRequest(source, req)) {
+    return getStoreMetaPixelConfig().catch((error) => {
+      console.error("[Meta CAPI Config] Error resolving store Meta Pixel config:", error.message);
+      return { pixelId: "", accessToken: "", testEventCode: "", isEnabled: false, enableCapi: false };
+    });
+  }
   try {
     let doc = null;
     if (mongoose.connection?.readyState === 1) {

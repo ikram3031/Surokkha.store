@@ -218,9 +218,21 @@ const dashboardRoutes = [
           },
           {
             path: 'meta-pixel',
+            element: <Navigate to="shop" replace />,
+          },
+          {
+            path: 'meta-pixel/shop',
             element: (
               <RoleGuard menuKey="settings">
-                <MetaPixelPage />
+                <MetaPixelPage key="shop" site="shop" />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'meta-pixel/store',
+            element: (
+              <RoleGuard menuKey="settings">
+                <MetaPixelPage key="store" site="store" />
               </RoleGuard>
             ),
           },
