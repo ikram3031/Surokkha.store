@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL
+// Falls back to the live StoreWeb API: .env files are gitignored, so a server build may not have one
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://web.surokkha.store/store/v1'
 
 const ACCESS_TOKEN_KEY = 'surokkha-access-token'
 
