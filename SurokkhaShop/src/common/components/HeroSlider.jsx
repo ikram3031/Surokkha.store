@@ -60,8 +60,6 @@ const HeroSlider = () => {
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
-  const posterUrl = `${API_BASE_URL}/uploads/assets/slider-2.webp`;
-
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.defaultMuted = true;
@@ -80,11 +78,10 @@ const HeroSlider = () => {
       <div className="relative w-full overflow-hidden flex-1 flex flex-col justify-center">
         
         <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-          {!videoError ? (
+          {!videoError && (
             <video
               ref={videoRef}
               src={useMobileVideo ? mobileVideoUrl : videoUrl}
-              poster={posterUrl}
               autoPlay
               loop
               muted
@@ -92,12 +89,6 @@ const HeroSlider = () => {
               preload="auto"
               onError={() => (useMobileVideo ? setMobileVideoFailed(true) : setVideoError(true))}
               className={`w-full h-full object-cover object-center scale-105 opacity-85 transition-opacity duration-1000`}
-            />
-          ) : (
-            <img
-              src={posterUrl}
-              alt="Surokkha Premium Collection"
-              className={`w-full h-full object-cover object-center scale-105 opacity-75`}
             />
           )}
 

@@ -172,15 +172,6 @@ export default function HomeView() {
           
           {/* Ambient Lighting & Background */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <img 
-              src="https://api.surokkha.store/uploads/assets/slider-2.webp" 
-              alt="MO Combo Background" 
-              className="w-full h-full object-cover object-center opacity-20 scale-105"
-              onError={(e) => { 
-                if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-                if (e && e.currentTarget) e.currentTarget.style.display = 'none'; 
-              }}
-            />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0b0a0e] via-[#0b0a0e]/95 to-[#0b0a0e]/85" />
             <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-72 h-72 bg-rose-600/15 rounded-full blur-3xl" />
