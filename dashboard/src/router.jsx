@@ -246,13 +246,25 @@ const dashboardRoutes = [
           },
           {
             path: 'cms-content',
+            element: <Navigate to="shop" replace />,
+          },
+          {
+            path: 'cms-content/shop',
             element: (
               <RoleGuard menuKey="settings">
-                <CMSContentPage />
+                <CMSContentPage key="shop" site="shop" />
               </RoleGuard>
             ),
           },
-          { path: 'cms', element: <Navigate to="cms-content" replace /> },
+          {
+            path: 'cms-content/store',
+            element: (
+              <RoleGuard menuKey="settings">
+                <CMSContentPage key="store" site="store" />
+              </RoleGuard>
+            ),
+          },
+          { path: 'cms', element: <Navigate to="cms-content/shop" replace /> },
           {
             path: 'google-analytics',
             element: (
@@ -263,9 +275,21 @@ const dashboardRoutes = [
           },
           {
             path: 'seo',
+            element: <Navigate to="shop" replace />,
+          },
+          {
+            path: 'seo/shop',
             element: (
               <RoleGuard menuKey="settings">
-                <SEOSettingsPage />
+                <SEOSettingsPage key="shop" site="shop" />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'seo/store',
+            element: (
+              <RoleGuard menuKey="settings">
+                <SEOSettingsPage key="store" site="store" />
               </RoleGuard>
             ),
           },
@@ -288,9 +312,21 @@ const dashboardRoutes = [
           },
           {
             path: 'smtp',
+            element: <Navigate to="shop" replace />,
+          },
+          {
+            path: 'smtp/shop',
             element: (
               <RoleGuard menuKey="settings">
-                <SmtpSettingsPage />
+                <SmtpSettingsPage key="shop" site="shop" />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'smtp/store',
+            element: (
+              <RoleGuard menuKey="settings">
+                <SmtpSettingsPage key="store" site="store" />
               </RoleGuard>
             ),
           },

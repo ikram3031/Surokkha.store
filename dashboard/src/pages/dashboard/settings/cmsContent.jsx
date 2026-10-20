@@ -78,9 +78,9 @@ const DEFAULT_ASSET_SECTIONS = [
   },
 ];
 
-// Resolves assets list from backend
-const fetchAssetsList = async () => {
-  const res = await apiClient.get('/api/v1/dash/assets');
+// Resolves assets list from backend for the given site
+const fetchAssetsList = async (site) => {
+  const res = await apiClient.get('/api/v1/dash/assets', { params: { site } });
   return res.data?.data || [];
 };
 
@@ -94,12 +94,13 @@ const formatBytes = (bytes) => {
 };
 
 // Manages storefront CMS assets, banners, sliders, and logos with automated WebP compression
-const CMSContentPage = () => {
+const CMSContentPage = ({ site = 'shop' }) => {
   const queryClient = useQueryClient();
   const [copiedKey, setCopiedKey] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeUploadingSlot, setActiveUploadingSlot] = useState(null);
   const fileInputRefs = useRef({});
+  const assetsBasePath = site === 'store' ? '/uploads/assets-store' : '/uploads/assets';
 
   const sections = useMemo(() => {
     return clientConfig?.assetsConfig?.sections || DEFAULT_ASSET_SECTIONS;
@@ -111,8 +112,8 @@ const CMSContentPage = () => {
     isFetching: isAssetsFetching,
     refetch: refetchAssets,
   } = useQuery({
-    queryKey: ['dash-assets'],
-    queryFn: fetchAssetsList,
+    queryKey: ['dash-assets', site],
+    queryFn: () => fetchAssetsList(site),
     staleTime: 1000 * 60 * 2,
   });
 
@@ -156,6 +157,7 @@ const CMSContentPage = () => {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('targetFilename', targetFilename);
+      formData.append('site', site);
       if (slotKey) {
         formData.append('slotKey', slotKey);
       }
@@ -180,7 +182,7 @@ const CMSContentPage = () => {
         } catch {}
         window.dispatchEvent(new CustomEvent('brand-logo-updated', { detail: { timestamp: newVer, slotKey: vars.slotKey } }));
       }
-      queryClient.invalidateQueries({ queryKey: ['dash-assets'] });
+      queryClient.invalidateQueries({ queryKey: ['dash-assets', site] });
     },
     onError: (err) => {
       setActiveUploadingSlot(null);
@@ -191,13 +193,15 @@ const CMSContentPage = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (filename) => {
-      const res = await apiClient.delete(`/api/v1/dash/assets/${encodeURIComponent(filename)}`);
+      const res = await apiClient.delete(`/api/v1/dash/assets/${encodeURIComponent(filename)}`, {
+        params: { site },
+      });
       return res.data;
     },
     onSuccess: (_, filename) => {
       toast.success(`Asset "${filename}" deleted from server`);
       setDeleteTarget(null);
-      queryClient.invalidateQueries({ queryKey: ['dash-assets'] });
+      queryClient.invalidateQueries({ queryKey: ['dash-assets', site] });
     },
     onError: (err) => {
       const msg = err.response?.data?.message || 'Failed to delete asset.';
@@ -249,7 +253,7 @@ const CMSContentPage = () => {
   };
 
   const handleDownload = (filename) => {
-    const downloadUrl = resolveImageUrl(`/uploads/assets/${filename}`);
+    const downloadUrl = resolveImageUrl(`${assetsBasePath}/${filename}`);
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.download = filename;
@@ -271,13 +275,13 @@ const CMSContentPage = () => {
               CMS Content & Assets
             </h1>
             <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
-              {clientConfig?.brandName || 'Store'} Assets
+              {site === 'store' ? 'surokkha.store' : (clientConfig?.brandName || 'Store')} Assets
             </Badge>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">
-            Manage storefront banners, hero slider carousel, and brand assets stored in{' '}
+            Manage {site === 'store' ? 'surokkha.store' : 'storefront'} banners, hero slider carousel, and brand assets stored in{' '}
             <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">
-              /uploads/assets
+              {assetsBasePath}
             </code>
             . Upload up to 5MB images with automatic lossless WebP compression to ~230KB keeping 100% full resolution.
           </p>

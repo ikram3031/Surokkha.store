@@ -479,23 +479,45 @@ export const AdminSidebar = ({ ...props }) => {
                 <SidebarMenuSub>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/admin/settings/cms")}
-                      render={<Link to="/admin/settings/cms-content" />}
+                      isActive={pathname === "/admin/settings/cms-content"}
+                      render={<Link to="/admin/settings/cms-content/shop" />}
                     >
                       <ImageIcon className="h-3.5 w-3.5" />
                       <span>{t("nav.cms_content", "CMS Content")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+                  {["shop", "store"].map((site) => (
+                    <SidebarMenuSubItem key={`cms-${site}`}>
+                      <SidebarMenuSubButton
+                        isActive={pathname.startsWith(`/admin/settings/cms-content/${site}`)}
+                        render={<Link to={`/admin/settings/cms-content/${site}`} />}
+                        className="pl-8"
+                      >
+                        <span>{site === "shop" ? t("nav.meta_pixel_shop", "Shop") : t("nav.meta_pixel_store", "Store")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/admin/settings/seo")}
-                      render={<Link to="/admin/settings/seo" />}
+                      isActive={pathname === "/admin/settings/seo"}
+                      render={<Link to="/admin/settings/seo/shop" />}
                     >
                       <Search className="h-3.5 w-3.5" />
                       <span>{t("nav.general_seo", "General & SEO")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+                  {["shop", "store"].map((site) => (
+                    <SidebarMenuSubItem key={`seo-${site}`}>
+                      <SidebarMenuSubButton
+                        isActive={pathname.startsWith(`/admin/settings/seo/${site}`)}
+                        render={<Link to={`/admin/settings/seo/${site}`} />}
+                        className="pl-8"
+                      >
+                        <span>{site === "shop" ? t("nav.meta_pixel_shop", "Shop") : t("nav.meta_pixel_store", "Store")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
@@ -541,13 +563,24 @@ export const AdminSidebar = ({ ...props }) => {
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname.startsWith("/admin/settings/smtp")}
-                      render={<Link to="/admin/settings/smtp" />}
+                      isActive={pathname === "/admin/settings/smtp"}
+                      render={<Link to="/admin/settings/smtp/shop" />}
                     >
                       <Mail className="h-3.5 w-3.5 text-indigo-500" />
                       <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+                  {["shop", "store"].map((site) => (
+                    <SidebarMenuSubItem key={`smtp-${site}`}>
+                      <SidebarMenuSubButton
+                        isActive={pathname.startsWith(`/admin/settings/smtp/${site}`)}
+                        render={<Link to={`/admin/settings/smtp/${site}`} />}
+                        className="pl-8"
+                      >
+                        <span>{site === "shop" ? t("nav.meta_pixel_shop", "Shop") : t("nav.meta_pixel_store", "Store")}</span>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
