@@ -54,6 +54,27 @@ services:
     networks:
       - ecommerce-network
 
+  backend-storeweb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${STOREWEB_BACKEND_CONTAINER_NAME:-ecommerce-backend-storeweb-dev}
+    restart: always
+    env_file:
+      - .env
+    environment:
+      APP_ROLE: storeweb
+      PORT: ${STOREWEB_BACKEND_PORT:-4003}
+    command: ["node", "src/server.storeWeb.js"]
+    ports:
+      - "127.0.0.1:${STOREWEB_BACKEND_PORT:-4003}:${STOREWEB_BACKEND_PORT:-4003}"
+    volumes:
+      - ${UPLOADS_PATH:-./uploads}:/app/uploads
+    depends_on:
+      - mongodb
+    networks:
+      - ecommerce-network
+
   backend-dashboard:
     build:
       context: ./backend

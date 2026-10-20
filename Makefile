@@ -14,7 +14,7 @@ help:
 	@echo "  make deploy             Pull latest, build shop + dashboard, restart backend"
 	@echo "  make build-shop         Build SurokkhaShop and deploy to /opt/clients/surokkha/shop"
 	@echo "  make build-dashboard    Build Admin Dashboard and deploy to /opt/clients/surokkha/dashboard"
-	@echo "  make restart-backend    Restart systemd services (surokkha-storefront & surokkha-dashboard)"
+	@echo "  make restart-backend    Restart systemd services (surokkha-storefront, surokkha-storeweb & surokkha-dashboard)"
 	@echo ""
 	@echo "Status & Health:"
 	@echo "  make status             Check systemd service and mongo status"
@@ -58,7 +58,7 @@ deploy:
 	@if [ -d "backend" ]; then \
 		echo "📦 Updating Backend dependencies..."; \
 		npm install --prefix backend; \
-		systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true; \
+		systemctl restart surokkha-storefront surokkha-storeweb surokkha-dashboard 2>/dev/null || true; \
 		echo "✓ Surokkha backend services restarted"; \
 	fi
 
@@ -90,15 +90,15 @@ build-dashboard:
 	@echo "✓ Admin Dashboard deployed to /var/www/admin.surokkha.store/dist!"
 
 restart-backend:
-	systemctl restart surokkha-storefront surokkha-dashboard 2>/dev/null || true
+	systemctl restart surokkha-storefront surokkha-storeweb surokkha-dashboard 2>/dev/null || true
 	@echo "✓ Backend restarted!"
 
 status:
-	@systemctl status surokkha-storefront surokkha-dashboard --no-pager 2>/dev/null || true
+	@systemctl status surokkha-storefront surokkha-storeweb surokkha-dashboard --no-pager 2>/dev/null || true
 	@docker ps --filter "name=surokkha-mongodb-live" 2>/dev/null || true
 
 logs:
-	journalctl -u surokkha-storefront -u surokkha-dashboard -f --no-tail
+	journalctl -u surokkha-storefront -u surokkha-storeweb -u surokkha-dashboard -f --no-tail
 
 down:
-	systemctl stop surokkha-storefront surokkha-dashboard 2>/dev/null || true
+	systemctl stop surokkha-storefront surokkha-storeweb surokkha-dashboard 2>/dev/null || true

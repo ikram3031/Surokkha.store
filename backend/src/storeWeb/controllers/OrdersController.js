@@ -210,6 +210,9 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
+    if (!payload.orderPrefix && payload.orderType !== 'instore' && payload.orderType !== 'custom') {
+      payload.orderPrefix = 'ST';
+    }
     const orderData = await buildOrderDocument(payload, req);
     // Keep the customer's IP so marking the order fake later blocks the customer, not the admin
     orderData.ipAddress = clientIp;

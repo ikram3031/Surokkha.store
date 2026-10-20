@@ -34,6 +34,26 @@ services:
     networks:
       - surokkha-network
 
+  backend-storeweb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${STOREWEB_BACKEND_CONTAINER_NAME:-surokkha-backend-storeweb}
+    restart: always
+    volumes:
+      - ${ENV_FILE:-./.env}:/app/.env:ro
+      - ${PUBLIC_UPLOADS_PATH:-/var/www/uploads}:/app/uploads
+    environment:
+      APP_ROLE: storeweb
+      PORT: ${STOREWEB_BACKEND_PORT:-5098}
+    command: ["node", "src/server.storeWeb.js"]
+    ports:
+      - "127.0.0.1:${STOREWEB_BACKEND_PORT:-5098}:${STOREWEB_BACKEND_PORT:-5098}"
+    depends_on:
+      - mongodb
+    networks:
+      - surokkha-network
+
   backend-dashboard:
     build:
       context: ./backend
