@@ -15,7 +15,7 @@ import {
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { config } from '../../common/config/index.js';
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
-import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
+import { sendServerPurchaseEvent, extractClientIp } from '../../common/services/facebookCapi.service.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
@@ -28,7 +28,7 @@ export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
     
-    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const clientIp = extractClientIp(req) || 'unknown';
     const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;
     const clientPhone = payload.billingInfo?.phone || payload.phone || payload.customerInfo?.phone || null;
 
