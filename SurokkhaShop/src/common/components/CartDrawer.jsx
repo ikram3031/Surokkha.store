@@ -284,7 +284,7 @@ export default function CartDrawer() {
                   <button
                     type="button"
                     onClick={() => {
-                      addComboToCart();
+                      addComboToCart(comboProd?.slug || comboProd?.id);
                     }}
                     className="w-full bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300/80 text-xs sm:text-sm font-bold py-3 px-4 rounded-2xl transition cursor-pointer flex items-center justify-center gap-1.5"
                   >
