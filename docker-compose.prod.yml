@@ -101,6 +101,19 @@ services:
     networks:
       - surokkha-network
 
+  frontend-store:
+    build:
+      context: ./SurokkhaStore
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_STORE_API_BASE_URL:-https://web.surokkha.store/store/v1}
+    container_name: ${STORE_FRONTEND_CONTAINER_NAME:-surokkha-frontend-store-live}
+    restart: always
+    ports:
+      - "127.0.0.1:${STORE_FRONTEND_PORT:-3001}:3001"
+    networks:
+      - surokkha-network
+
 networks:
   surokkha-network:
     driver: bridge
