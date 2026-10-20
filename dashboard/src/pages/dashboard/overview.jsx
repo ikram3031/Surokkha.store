@@ -37,9 +37,9 @@ const DashboardPage = () => {
 
   return (
     <div className="flex-1 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t('nav.overview', 'Dashboard')}</h2>
-        <span className="text-xs sm:text-sm text-muted-foreground font-medium">
+        <span className="text-xs sm:text-sm text-muted-foreground font-medium text-right">
           {t('overview.this_month', 'Last 30 Days')} ({dateRangeLabel})
         </span>
       </div>

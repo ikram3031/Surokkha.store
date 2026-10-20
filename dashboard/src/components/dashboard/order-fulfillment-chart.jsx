@@ -115,11 +115,11 @@ export function OrderFulfillmentChart() {
     <Card className="pt-0 shadow-sm">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b py-4 sm:py-5">
         <div className="grid flex-1 gap-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <CardTitle className="text-base sm:text-lg font-bold tracking-tight">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <CardTitle className="text-base sm:text-lg font-bold tracking-tight text-center sm:text-left">
               {t("overview.orders_placed_vs_delivered", "Orders: Placed vs Delivered")}
             </CardTitle>
-            <div className="flex items-center gap-1.5 ml-0 sm:ml-2">
+            <div className="hidden sm:flex items-center gap-1.5 sm:ml-2">
               <Badge variant="outline" className="text-[11px] font-medium border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
                 {t("overview.placed", "Placed")}: {summary.totalPlaced.toLocaleString()}
               </Badge>
@@ -128,14 +128,23 @@ export function OrderFulfillmentChart() {
               </Badge>
             </div>
           </div>
-          <CardDescription className="text-xs sm:text-sm text-muted-foreground">
+          <CardDescription className="hidden sm:block text-xs sm:text-sm text-muted-foreground">
             {rangeDescription}
           </CardDescription>
         </div>
-        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+        <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto shrink-0">
+          {/* Mobile: compact percentage chips beside the range picker */}
+          <div className="flex sm:hidden items-center gap-1.5">
+            <Badge variant="outline" className="text-[11px] font-medium border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
+              {t("overview.placed", "Placed")}: {summary.totalPlaced > 0 ? 100 : 0}%
+            </Badge>
+            <Badge variant="outline" className="text-[11px] font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+              {t("overview.delivered", "Delivered")}: {summary.deliveryRate}%
+            </Badge>
+          </div>
           <Select value={timeRange} onValueChange={(val) => val && setTimeRange(val)}>
             <SelectTrigger
-              className="w-[145px] sm:w-[160px] rounded-lg"
+              className="w-[125px] sm:w-[160px] rounded-lg"
               aria-label="Select a time range"
             >
               <SelectValue placeholder="Last 3 months" />
