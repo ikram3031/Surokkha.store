@@ -9,9 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 
-// Manages global storefront Search Engine Optimization, OpenGraph metadata, and crawler indexing
-const SEOSettingsPage = () => {
+const SEO_SITES = {
+  shop: { domain: 'surokkha.shop', label: 'Shop', apiBase: '/api/v1/settings/seo' },
+  store: { domain: 'surokkha.store', label: 'Store', apiBase: '/store/v2/settings/seo' },
+};
+
+// Manages Search Engine Optimization, OpenGraph metadata, and crawler indexing for one site
+const SEOSettingsPage = ({ site = 'shop' }) => {
   const queryClient = useQueryClient();
+  const siteInfo = SEO_SITES[site] || SEO_SITES.shop;
+  const queryKey = ['seo-settings', site];
 
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
@@ -24,9 +31,9 @@ const SEOSettingsPage = () => {
   const [gscVerificationCode, setGscVerificationCode] = useState('');
 
   const { data: seoData, isLoading } = useQuery({
-    queryKey: ['seo-settings'],
+    queryKey,
     queryFn: async () => {
-      const res = await apiClient.get('/api/v1/settings/seo');
+      const res = await apiClient.get(siteInfo.apiBase);
       return res.data?.data || {};
     },
   });
@@ -58,12 +65,12 @@ const SEOSettingsPage = () => {
         robotsTxt: robotsTxt.trim(),
         gscVerificationCode: gscVerificationCode.trim(),
       };
-      const res = await apiClient.put('/api/v1/settings/seo', payload);
+      const res = await apiClient.put(siteInfo.apiBase, payload);
       return res.data;
     },
     onSuccess: () => {
-      toast.success('SEO settings updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['seo-settings'] });
+      toast.success(`${siteInfo.label} SEO settings updated successfully`);
+      queryClient.invalidateQueries({ queryKey });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to save SEO settings');
@@ -75,7 +82,7 @@ const SEOSettingsPage = () => {
     saveMutation.mutate();
   };
 
-  const displayUrl = canonicalBaseUrl || clientConfig?.storefrontUrl || (clientConfig?.domain ? `https://${clientConfig.domain}` : 'https://example.com');
+  const displayUrl = canonicalBaseUrl || `https://${siteInfo.domain}`;
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 w-full max-w-5xl">
@@ -86,7 +93,7 @@ const SEOSettingsPage = () => {
             Search Engine Optimization (SEO)
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure default storefront meta tags, search snippets, social share previews, and crawler indexing.
+            Configure default meta tags, search snippets, social share previews, and crawler indexing for {siteInfo.domain}.
           </p>
         </div>
 

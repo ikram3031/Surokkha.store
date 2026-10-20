@@ -10,9 +10,17 @@ import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Manages SMTP and IMAP configurations for Webmail and system notifications
-const EmailServerSettingsPage = () => {
+const SMTP_SITES = {
+  shop: { domain: 'surokkha.shop', label: 'Shop', apiBase: '/api/v1/settings/smtp', testApiBase: '/api/v1/settings/smtp/test' },
+  store: { domain: 'surokkha.store', label: 'Store', apiBase: '/store/v2/settings/smtp', testApiBase: '/store/v2/settings/smtp/test' },
+};
+
+// Manages SMTP (and, for the shop, IMAP Webmail) configuration for one site
+const EmailServerSettingsPage = ({ site = 'shop' }) => {
   const queryClient = useQueryClient();
+  const siteInfo = SMTP_SITES[site] || SMTP_SITES.shop;
+  const smtpQueryKey = ['smtp-settings', site];
+  const isShop = site === 'shop';
 
   // SMTP State
   const [smtpHost, setSmtpHost] = useState('');
@@ -35,9 +43,9 @@ const EmailServerSettingsPage = () => {
   const [imapEnabled, setImapEnabled] = useState(false);
 
   const { data: smtpData, isLoading: smtpLoading } = useQuery({
-    queryKey: ['smtp-settings'],
+    queryKey: smtpQueryKey,
     queryFn: async () => {
-      const res = await apiClient.get('/api/v1/settings/smtp');
+      const res = await apiClient.get(siteInfo.apiBase);
       return res.data?.data || {};
     },
   });
@@ -48,6 +56,7 @@ const EmailServerSettingsPage = () => {
       const res = await apiClient.get('/api/v1/settings/imap');
       return res.data?.data || {};
     },
+    enabled: isShop,
   });
 
   useEffect(() => {
@@ -86,12 +95,12 @@ const EmailServerSettingsPage = () => {
         senderEmail: senderEmail.trim(),
         isEnabled: smtpEnabled,
       };
-      const res = await apiClient.put('/api/v1/settings/smtp', payload);
+      const res = await apiClient.put(siteInfo.apiBase, payload);
       return res.data;
     },
     onSuccess: () => {
-      toast.success('SMTP settings updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['smtp-settings'] });
+      toast.success(`${siteInfo.label} SMTP settings updated successfully`);
+      queryClient.invalidateQueries({ queryKey: smtpQueryKey });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to save SMTP settings');
@@ -132,7 +141,7 @@ const EmailServerSettingsPage = () => {
         senderEmail: senderEmail.trim(),
         recipientEmail: sendLiveEmail ? (testEmailRecipient.trim() || smtpUser.trim()) : undefined,
       };
-      const res = await apiClient.post('/api/v1/settings/smtp/test', payload);
+      const res = await apiClient.post(siteInfo.testApiBase, payload);
       return res.data;
     },
     onSuccess: (data) => {
@@ -187,22 +196,24 @@ const EmailServerSettingsPage = () => {
             SMTP Configuration
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Configure system notification emails and Webmail Inbox Synchronization.
+            Configure {isShop ? 'system notification emails and Webmail Inbox Synchronization' : 'outgoing order/notification emails'} for {siteInfo.domain}.
           </p>
         </div>
       </div>
 
       <Tabs defaultValue="smtp" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="smtp" className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            SMTP (Outgoing)
-          </TabsTrigger>
-          <TabsTrigger value="imap" className="flex items-center gap-2">
-            <Inbox className="h-4 w-4" />
-            IMAP (Incoming Webmail)
-          </TabsTrigger>
-        </TabsList>
+        {isShop && (
+          <TabsList className="mb-4">
+            <TabsTrigger value="smtp" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              SMTP (Outgoing)
+            </TabsTrigger>
+            <TabsTrigger value="imap" className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" />
+              IMAP (Incoming Webmail)
+            </TabsTrigger>
+          </TabsList>
+        )}
 
         <TabsContent value="smtp">
           <form onSubmit={handleSaveSmtp} className="space-y-6">

@@ -163,24 +163,24 @@ const MetaPixelPage = ({ site = 'shop' }) => {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        <div className="flex items-center justify-between p-4 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 shrink-0 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
               {siteInfo.badge}
             </div>
-            <div>
-              <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
-                {siteInfo.domain}
-                <Badge variant="outline" className="text-[11px] text-emerald-700 bg-emerald-100/60 dark:bg-emerald-900/40 border-emerald-200">
+            <div className="min-w-0">
+              <h4 className="font-semibold text-sm text-foreground flex flex-wrap items-center gap-2">
+                <span className="truncate">{siteInfo.domain}</span>
+                <Badge variant="outline" className="text-[11px] text-emerald-700 bg-emerald-100/60 dark:bg-emerald-900/40 border-emerald-200 shrink-0">
                   Order Prefix: {siteInfo.badge}
                 </Badge>
               </h4>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="hidden sm:block text-xs text-muted-foreground mt-0.5 truncate">
                 Storefront webroot at <code className="text-[11px]">/opt/clients/surokkha/{site}</code>
               </p>
             </div>
           </div>
-          <div>{renderStatusBadge(shopStatus)}</div>
+          <div className="shrink-0">{renderStatusBadge(shopStatus)}</div>
         </div>
 
         <Card className="border-border/60 shadow-xs">

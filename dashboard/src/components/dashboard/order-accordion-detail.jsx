@@ -15,8 +15,6 @@ import {
   User,
   Phone,
   Mail,
-  CreditCard,
-  Truck,
   Calendar,
   Tag,
   FileText,
@@ -24,7 +22,6 @@ import {
   Loader2,
   ExternalLink,
   Edit3,
-  Layers,
   PhoneCall,
   Copy,
 } from 'lucide-react';
@@ -50,9 +47,25 @@ import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
 
-// Shared look for the order header actions: same height, radius and muted icon that turns primary on hover
-const ORDER_ACTION_BUTTON_CLASS =
-  "h-8 rounded-lg border-border/70 bg-transparent px-3 text-xs font-medium gap-1.5 cursor-pointer text-foreground hover:border-primary/50 hover:bg-primary/10 hover:text-primary [&_svg]:text-muted-foreground hover:[&_svg]:text-primary";
+// Compact icon-only action button, each action gets its own color so they're easy to tell apart at a glance
+const actionButtonClass = (colorClasses) =>
+  `h-8 w-8 p-0 rounded-lg border cursor-pointer shrink-0 transition-colors ${colorClasses}`;
+
+const PATHAO_BTN_CLASS = actionButtonClass(
+  "border-red-500/30 bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:text-red-400"
+);
+const PRINT_BTN_CLASS = actionButtonClass(
+  "border-blue-500/30 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 dark:text-blue-400"
+);
+const EMAIL_BTN_CLASS = actionButtonClass(
+  "border-amber-500/30 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 dark:text-amber-400"
+);
+const EDIT_BTN_CLASS = actionButtonClass(
+  "border-violet-500/30 bg-violet-500/10 text-violet-600 hover:bg-violet-500/20 dark:text-violet-400"
+);
+const VIEW_BTN_CLASS = actionButtonClass(
+  "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400"
+);
 
 // Renders an expanded accordion panel containing full order details and inline status management
 export const OrderAccordionDetail = ({ order }) => {
@@ -175,24 +188,21 @@ export const OrderAccordionDetail = ({ order }) => {
           <PathaoCourierCard
             order={order}
             triggerOnly
+            triggerIconOnly
             triggerButtonVariant="outline"
-            triggerButtonClassName={ORDER_ACTION_BUTTON_CLASS}
+            triggerButtonClassName={PATHAO_BTN_CLASS}
           />
-          <Button variant="outline" size="sm" className={ORDER_ACTION_BUTTON_CLASS} onClick={handleOpenInvoice}>
+          <Button variant="outline" size="icon" className={PRINT_BTN_CLASS} onClick={handleOpenInvoice} title={t('orders.print_invoice', 'Print Invoice')}>
             <FileText className="h-3.5 w-3.5" />
-            {t('orders.print_invoice', 'Print Invoice')}
           </Button>
-          <Button variant="outline" size="sm" className={ORDER_ACTION_BUTTON_CLASS} onClick={() => setSendEmailModalOpen(true)}>
+          <Button variant="outline" size="icon" className={EMAIL_BTN_CLASS} onClick={() => setSendEmailModalOpen(true)} title={t('orders.send_invoice_email', 'Email Invoice')}>
             <Mail className="h-3.5 w-3.5" />
-            {t('orders.send_invoice_email', 'Email Invoice')}
           </Button>
-          <Button variant="outline" size="sm" className={ORDER_ACTION_BUTTON_CLASS} onClick={handleEditOrder}>
+          <Button variant="outline" size="icon" className={EDIT_BTN_CLASS} onClick={handleEditOrder} title={t('common.edit', 'Edit')}>
             <Edit3 className="h-3.5 w-3.5" />
-            {t('common.edit', 'Edit')}
           </Button>
-          <Button size="sm" className="h-8 rounded-lg px-3 text-xs font-medium gap-1.5 cursor-pointer" onClick={handleViewFullPage}>
+          <Button variant="outline" size="icon" className={VIEW_BTN_CLASS} onClick={handleViewFullPage} title={t('common.details', 'Details')}>
             <ExternalLink className="h-3.5 w-3.5" />
-            {t('common.details', 'Details')}
           </Button>
         </div>
       </div>
@@ -212,36 +222,18 @@ export const OrderAccordionDetail = ({ order }) => {
                 items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start justify-between gap-3 text-xs py-1.5 border-b border-border/40 last:border-0"
+                    className="flex items-center justify-between gap-2 text-xs py-1.5 border-b border-border/40 last:border-0"
                   >
-                    <div className="flex items-start gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded bg-muted/60 border border-border/60 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Package className="h-4 w-4 text-muted-foreground/40" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-foreground truncate max-w-[170px]" title={item.name}>
-                          {item.name}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          {item.size && (
-                            <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/30 text-primary">
-                              <Layers className="h-2.5 w-2.5 mr-0.5" />
-                              {item.size}
-                            </Badge>
-                          )}
-                          <span className="text-[10px] text-muted-foreground">
-                            {formatBDT(item.unitPrice ?? item.price ?? 0)} × {item.quantity}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right font-bold text-foreground shrink-0 pt-0.5">
+                    <span className="truncate text-foreground font-medium min-w-0" title={item.name}>
+                      {item.name}
+                      {item.size ? ` (${item.size})` : ''}
+                    </span>
+                    <span className="text-muted-foreground shrink-0 whitespace-nowrap">
+                      {formatBDT(item.unitPrice ?? item.price ?? 0)} × {item.quantity}
+                    </span>
+                    <span className="font-bold text-foreground shrink-0 whitespace-nowrap">
                       {formatBDT((item.unitPrice ?? item.price ?? 0) * (item.quantity || 1))}
-                    </div>
+                    </span>
                   </div>
                 ))
               ) : (
@@ -265,7 +257,7 @@ export const OrderAccordionDetail = ({ order }) => {
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <User className="h-4 w-4 text-primary" />
-                {isInStore ? t('orders.customer_info', 'Customer Info') : t('orders.shipping_address', 'Billing & Shipping')}
+                {isInStore ? t('orders.customer_info', 'Customer Info') : t('orders.shipping_address', 'Shipping Address')}
               </h4>
               {isInStore && (
                 <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
@@ -376,85 +368,9 @@ export const OrderAccordionDetail = ({ order }) => {
               </div>
             ) : (
               <div className="space-y-3 text-xs max-h-[220px] overflow-y-auto pr-1">
-                {/* Billing Details */}
-                <div className="space-y-1.5 border-b border-border/40 pb-2.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <FileText className="h-3 w-3 text-primary" /> {t('orders.customer_info', 'Billing Address')}
-                  </span>
-                  <div className="pl-4 space-y-1">
-                    <p className="font-semibold text-foreground">{billing.fullName || 'N/A'}</p>
-                    {phoneNum && (
-                      <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                        <span>{t('common.phone', 'Phone')}:</span>
-                        <a href={`tel:+880${cleanPhone}`} className="text-primary hover:underline font-medium">+880{cleanPhone}</a>
-                        <a
-                          href={`tel:+880${cleanPhone}`}
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
-                          title="Call Phone"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <PhoneCall className="h-2.5 w-2.5" />
-                        </a>
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
-                          title="Copy Phone Number"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyText(phoneNum, 'Phone number');
-                          }}
-                        >
-                          <Copy className="h-2.5 w-2.5" />
-                        </button>
-                        <a
-                          href={getWhatsAppLink(phoneNum)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
-                          title="Message on WhatsApp"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <WhatsAppIcon className="h-2.5 w-2.5" />
-                        </a>
-                      </div>
-                    )}
-                    {emailAddr && (
-                      <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                        <span>{t('common.email', 'Email')}:</span>
-                        <a href={`mailto:${emailAddr}`} className="text-foreground hover:underline font-medium truncate max-w-[150px]">{emailAddr}</a>
-                        <a
-                          href={`mailto:${emailAddr}`}
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0 ml-0.5"
-                          title="Send Email"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Mail className="h-2.5 w-2.5" />
-                        </a>
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center h-4.5 w-4.5 rounded bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
-                          title="Copy Email"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyText(emailAddr, 'Email');
-                          }}
-                        >
-                          <Copy className="h-2.5 w-2.5" />
-                        </button>
-                      </div>
-                    )}
-                    <p className="text-muted-foreground leading-tight">
-                      {t('common.address', 'Address')}: <span className="text-foreground">{billingAddressText || 'N/A'}</span>
-                    </p>
-                  </div>
-                </div>
-
                 {/* Shipping Details */}
                 <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                    <Truck className="h-3 w-3 text-primary" /> {t('orders.shipping_address', 'Shipping Address')}
-                  </span>
-                  <div className="pl-4 space-y-1">
+                  <div className="pl-0 space-y-1">
                     <p className="font-semibold text-foreground">{shipping.fullName || billing.fullName || 'N/A'}</p>
                     {(shipping.phone || phoneNum) && (
                       <div className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
@@ -501,15 +417,6 @@ export const OrderAccordionDetail = ({ order }) => {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground font-medium flex items-center gap-1">
-              <CreditCard className="h-3.5 w-3.5" /> {t('orders.payment_method', 'Payment Method')}:
-            </span>
-            <span className="font-bold text-foreground capitalize">
-              {order.paymentMethod || t('orders.cash_on_delivery', 'Cash on Delivery')}
-            </span>
           </div>
         </div>
 
