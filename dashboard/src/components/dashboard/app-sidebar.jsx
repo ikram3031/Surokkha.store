@@ -297,7 +297,7 @@ export const AppSidebar = ({ ...props }) => {
               <button
                 type="button"
                 onClick={handleCloseSidebar}
-                className="h-8 w-8 rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                className="h-8 w-8 rounded-lg border border-sidebar-border/80 dark:border-white/15 bg-sidebar-accent/50 dark:bg-white/5 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground dark:hover:bg-white/10 transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                 title="Close Sidebar"
               >
                 <X className="h-4 w-4" />
@@ -507,11 +507,23 @@ export const AppSidebar = ({ ...props }) => {
               {showSettings && (
                 <>
                   <SubLabel>{t("nav.store_content", "Store & Content")}</SubLabel>
-                        <NavSub to="/dashboard/settings/cms-content" active={pathname.startsWith("/dashboard/settings/cms")} icon={ImageIcon}>
+                        <NavSub to="/dashboard/settings/cms-content/shop" active={pathname === "/dashboard/settings/cms-content"} icon={ImageIcon}>
                           {t("nav.cms_content", "CMS Content")}
                         </NavSub>
-                        <NavSub to="/dashboard/settings/seo" active={pathname.startsWith("/dashboard/settings/seo")} icon={Search}>
+                        <NavSub to="/dashboard/settings/cms-content/shop" active={pathname.startsWith("/dashboard/settings/cms-content/shop")} className="pl-8">
+                          {t("nav.meta_pixel_shop", "Shop")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/cms-content/store" active={pathname.startsWith("/dashboard/settings/cms-content/store")} className="pl-8">
+                          {t("nav.meta_pixel_store", "Store")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/seo/shop" active={pathname === "/dashboard/settings/seo"} icon={Search}>
                           {t("nav.general_seo", "General & SEO")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/seo/shop" active={pathname.startsWith("/dashboard/settings/seo/shop")} className="pl-8">
+                          {t("nav.meta_pixel_shop", "Shop")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/seo/store" active={pathname.startsWith("/dashboard/settings/seo/store")} className="pl-8">
+                          {t("nav.meta_pixel_store", "Store")}
                         </NavSub>
                         {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
                           <NavSub to="/dashboard/settings/templates" active={pathname.startsWith("/dashboard/settings/templates") || pathname === "/dashboard/templates"} icon={Receipt} iconClass="text-blue-500">
@@ -543,8 +555,14 @@ export const AppSidebar = ({ ...props }) => {
                         <NavSub to="/dashboard/settings/pathao-courier" active={pathname.startsWith("/dashboard/settings/pathao")} icon={Truck} iconClass="text-red-500">
                           {t("nav.pathao_courier", "Pathao Courier")}
                         </NavSub>
-                        <NavSub to="/dashboard/settings/smtp" active={pathname.startsWith("/dashboard/settings/smtp")} icon={Mail} iconClass="text-indigo-500">
+                        <NavSub to="/dashboard/settings/smtp/shop" active={pathname === "/dashboard/settings/smtp"} icon={Mail} iconClass="text-indigo-500">
                           {t("nav.email_server_setup", "SMTP Configuration")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/smtp/shop" active={pathname.startsWith("/dashboard/settings/smtp/shop")} className="pl-8">
+                          {t("nav.meta_pixel_shop", "Shop")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/smtp/store" active={pathname.startsWith("/dashboard/settings/smtp/store")} className="pl-8">
+                          {t("nav.meta_pixel_store", "Store")}
                         </NavSub>
                         <NavSub to="/dashboard/settings/r2-storage" active={pathname.startsWith("/dashboard/settings/r2-storage")} icon={HardDrive} iconClass="text-orange-400">
                           {t("nav.r2_storage", "R2 Storage")}

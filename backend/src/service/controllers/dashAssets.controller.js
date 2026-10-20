@@ -175,20 +175,26 @@ const removeImageBackground = async (inputBuffer) => {
     .toBuffer();
 };
 
-// Helper: Resolves absolute filesystem path of uploads/assets directory
-const getAssetsDirectory = async () => {
-  const assetsDir = path.join(process.cwd(), "uploads", "assets");
+// Helper: Resolves which site's asset slots to operate on ("shop" keeps the original
+// /uploads/assets directory for backward compatibility; "store" gets its own folder)
+const resolveAssetsSubpath = (site) => (site === "store" ? "assets-store" : "assets");
+
+// Helper: Resolves absolute filesystem path of the site's uploads/assets directory
+const getAssetsDirectory = async (site) => {
+  const assetsDir = path.join(process.cwd(), "uploads", resolveAssetsSubpath(site));
   await fs.promises.mkdir(assetsDir, { recursive: true });
   return assetsDir;
 };
 
 /**
- * Controller: Lists all available asset files located in /uploads/assets directory.
- * Path: GET /api/v1/dash/assets
+ * Controller: Lists all available asset files located in /uploads/assets (or assets-store) directory.
+ * Path: GET /api/v1/dash/assets?site=shop|store
  */
 export const listAssets = async (req, res, next) => {
   try {
-    const assetsDir = await getAssetsDirectory();
+    const site = req.query.site === "store" ? "store" : "shop";
+    const assetsDir = await getAssetsDirectory(site);
+    const subpath = resolveAssetsSubpath(site);
     const entries = await fs.promises.readdir(assetsDir, { withFileTypes: true });
 
     const assets = [];
@@ -198,8 +204,8 @@ export const listAssets = async (req, res, next) => {
         const stats = await fs.promises.stat(filePath);
         assets.push({
           filename: entry.name,
-          relativePath: `/uploads/assets/${entry.name}`,
-          url: `/uploads/assets/${entry.name}?v=${stats.mtimeMs}`,
+          relativePath: `/uploads/${subpath}/${entry.name}`,
+          url: `/uploads/${subpath}/${entry.name}?v=${stats.mtimeMs}`,
           size: stats.size,
           sizeFormatted: formatBytes(stats.size),
           updatedAt: stats.mtime,
@@ -221,7 +227,7 @@ export const listAssets = async (req, res, next) => {
 
 /**
  * Controller: Uploads, converts to WebP, and saves/overwrites asset into fixed slot filename.
- * Path: POST /api/v1/dash/assets/upload-slot
+ * Path: POST /api/v1/dash/assets/upload-slot (body.site = "shop" | "store")
  */
 export const uploadSlotAsset = async (req, res, next) => {
   try {
@@ -232,6 +238,7 @@ export const uploadSlotAsset = async (req, res, next) => {
       });
     }
 
+    const site = req.body.site === "store" ? "store" : "shop";
     const rawTargetName = (req.body.targetFilename || req.body.slotKey || "").trim();
     if (!rawTargetName) {
       return res.status(400).json({
@@ -269,7 +276,8 @@ export const uploadSlotAsset = async (req, res, next) => {
       }
     }
 
-    const assetsDir = await getAssetsDirectory();
+    const assetsDir = await getAssetsDirectory(site);
+    const subpath = resolveAssetsSubpath(site);
     const destinationPath = path.join(assetsDir, targetFilename);
 
     if (isVideo) {
@@ -292,8 +300,8 @@ export const uploadSlotAsset = async (req, res, next) => {
       message: `Asset ${targetFilename} saved successfully!`,
       data: {
         filename: targetFilename,
-        relativePath: `/uploads/assets/${targetFilename}`,
-        url: `/uploads/assets/${targetFilename}?v=${stats.mtimeMs}`,
+        relativePath: `/uploads/${subpath}/${targetFilename}`,
+        url: `/uploads/${subpath}/${targetFilename}?v=${stats.mtimeMs}`,
         size: stats.size,
         sizeFormatted: formatBytes(stats.size),
         updatedAt: stats.mtime,
@@ -305,8 +313,8 @@ export const uploadSlotAsset = async (req, res, next) => {
 };
 
 /**
- * Controller: Deletes an asset file from /uploads/assets directory.
- * Path: DELETE /api/v1/dash/assets/:filename
+ * Controller: Deletes an asset file from /uploads/assets (or assets-store) directory.
+ * Path: DELETE /api/v1/dash/assets/:filename?site=shop|store
  */
 export const deleteAsset = async (req, res, next) => {
   try {
@@ -318,9 +326,10 @@ export const deleteAsset = async (req, res, next) => {
       });
     }
 
+    const site = req.query.site === "store" ? "store" : "shop";
     // Prevent directory traversal attacks
     const sanitizedFilename = path.basename(rawFilename);
-    const assetsDir = await getAssetsDirectory();
+    const assetsDir = await getAssetsDirectory(site);
     const targetFilePath = path.join(assetsDir, sanitizedFilename);
 
     if (fs.existsSync(targetFilePath)) {
@@ -338,13 +347,14 @@ export const deleteAsset = async (req, res, next) => {
 
 /**
  * Controller: Downloads an asset file as an attachment.
- * Path: GET /api/v1/dash/assets/download/:filename
+ * Path: GET /api/v1/dash/assets/download/:filename?site=shop|store
  */
 export const downloadAsset = async (req, res, next) => {
   try {
     const rawFilename = (req.params.filename || "").trim();
+    const site = req.query.site === "store" ? "store" : "shop";
     const sanitizedFilename = path.basename(rawFilename);
-    const assetsDir = await getAssetsDirectory();
+    const assetsDir = await getAssetsDirectory(site);
     const targetFilePath = path.join(assetsDir, sanitizedFilename);
 
     if (!fs.existsSync(targetFilePath)) {

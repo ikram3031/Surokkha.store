@@ -80,11 +80,11 @@ export const RecentTransactionsTable = () => {
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div>
           <CardTitle>{t('overview.recent_orders', 'Recent Orders')}</CardTitle>
-          <CardDescription>{t('orders.subtitle', 'Latest orders placed in the store.')}</CardDescription>
+          <CardDescription className="hidden sm:block">{t('orders.subtitle', 'Latest orders placed in the store.')}</CardDescription>
         </div>
         <Link
           to="/dashboard/orders"
-          className="text-xs text-primary hover:underline font-medium"
+          className="shrink-0 whitespace-nowrap rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
         >
           {t('common.view_all', 'View all')}
         </Link>

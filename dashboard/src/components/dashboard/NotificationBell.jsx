@@ -141,10 +141,10 @@ export const NotificationBell = () => {
           <Button
             variant="outline"
             size="icon"
-            className="relative cursor-pointer hover:bg-muted/60 transition-colors"
+            className="relative cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 transition-colors"
             title="Notifications"
           >
-            <Bell className="h-4 w-4 text-foreground" />
+            <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-xs animate-in zoom-in">
                 {unreadCount > 99 ? '99+' : unreadCount}

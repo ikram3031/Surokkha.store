@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, RotateCw } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { NotificationBell } from './NotificationBell';
 import { CacheCleanButton } from './CacheCleanButton';
-import { useDashboardStore } from '@/store/use-dashboard-store';
 import { clientConfig } from '@/clientConfig';
 import { BrandLogo } from '@/components/BrandLogo';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
-// Renders the top navigation header containing refresh button, search, cache clean, theme toggle, and language selector
+// Renders the top navigation header containing refresh button, cache clean, theme toggle, and language selector
 export const Header = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { searchQuery, setSearchQuery } = useDashboardStore();
   const { brandName } = clientConfig;
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -36,7 +33,7 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center justify-between gap-2 sm:gap-4 border-b bg-background/95 backdrop-blur-md px-3 sm:px-6">
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        <SidebarTrigger className="h-8.5 w-8.5 rounded-lg border border-[#C5A059]/40 bg-[#C5A059]/15 text-[#C5A059] hover:bg-[#C5A059]/25 hover:text-[#C5A059] shrink-0 cursor-pointer" />
+        <SidebarTrigger className="md:hidden h-8.5 w-8.5 rounded-lg border border-[#C5A059]/40 bg-[#C5A059]/15 text-[#C5A059] hover:bg-[#C5A059]/25 hover:text-[#C5A059] shrink-0 cursor-pointer" />
         <Button
           type="button"
           variant="outline"
@@ -55,23 +52,13 @@ export const Header = () => {
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-3 min-w-0">
-        <form className="flex-1 max-w-[140px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-[320px]" onSubmit={(e) => e.preventDefault()}>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={t('nav.search_products', 'Search...')}
-              className="pl-8 h-8 sm:h-9 text-xs sm:text-sm bg-muted/40 border-border/60 focus:bg-background rounded-lg"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </form>
-
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <CacheCleanButton />
-          <LanguageToggle />
-          <ThemeToggle />
+          {/* Kept off the mobile navbar to save space */}
+          <div className="hidden md:flex items-center gap-2">
+            <CacheCleanButton />
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
           <NotificationBell />
         </div>
       </div>
