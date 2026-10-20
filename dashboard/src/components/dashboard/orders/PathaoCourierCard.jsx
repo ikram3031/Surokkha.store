@@ -42,6 +42,7 @@ const PathaoCourierCard = ({
   triggerButtonVariant = "default",
   triggerButtonSize = "default",
   triggerButtonClassName = "",
+  triggerIconOnly = false,
 }) => {
   const queryClient = useQueryClient();
   const [isDispatchOpen, setIsDispatchOpen] = useState(false);
@@ -783,9 +784,10 @@ const PathaoCourierCard = ({
           size={triggerButtonSize}
           onClick={handleOpenDispatch}
           className={`gap-1.5 cursor-pointer font-medium ${triggerButtonClassName}`}
+          title={hasConsignment ? "Pathao Dispatched" : "Send with Pathao"}
         >
-          <Truck className="h-3.5 w-3.5 text-primary" />
-          {hasConsignment ? "Pathao Dispatched" : "Send with Pathao"}
+          <Truck className={triggerIconOnly ? "h-3.5 w-3.5" : "h-3.5 w-3.5 text-primary"} />
+          {!triggerIconOnly && (hasConsignment ? "Pathao Dispatched" : "Send with Pathao")}
         </Button>
         {renderDispatchDialog()}
       </>
