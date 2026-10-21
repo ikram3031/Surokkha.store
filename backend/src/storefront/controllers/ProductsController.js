@@ -90,7 +90,8 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     
     // Set headers for CSV download
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="meta_catalog_feed.csv"');
+    res.setHeader('Content-Disposition', 'inline; filename="meta_catalog_feed.csv"');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
     // Define CSV header matching Facebook/Meta requirements
     const headers = [
@@ -106,9 +107,18 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     
     let csvData = headers.join(',') + '\n';
     
-    const siteConfig = config.sites?.shop;
+    const pathLower = (req.path || '').toLowerCase();
+    const querySite = (req.query?.site || '').toLowerCase().trim();
+    let targetSite = 'shop';
+    if (querySite === 'store' || pathLower.includes('-store')) {
+      targetSite = 'store';
+    } else if (querySite === 'shop' || pathLower.includes('-shop')) {
+      targetSite = 'shop';
+    }
+
+    const siteConfig = config.sites?.[targetSite] || (targetSite === 'store' ? config.sites?.store : config.sites?.shop);
     const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'))).replace(/\/$/, '');
-    const brandName = config.brandName || 'Surokkha';
+    const brandName = siteConfig?.name || config.brandName || 'Surokkha';
 
     // Construct rows
     products.forEach((p) => {
