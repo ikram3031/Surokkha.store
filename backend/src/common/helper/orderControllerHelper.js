@@ -181,7 +181,11 @@ export const buildOrderDocument = async (payload, req = null) => {
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
   const resolvedSiteKey = 'shop';
   const resolvedDomain = payload.clientDomain || 'surokkha.shop';
-  const customPrefix = isCustom ? 'CO' : isInstore ? 'IS' : (payload.orderPrefix || 'SH');
+  // A custom order may carry its own prefix (e.g. SC from offer.surokkha.store); dashboard custom orders stay CO
+  const explicitCustomPrefix = isCustom && /^[A-Z]{2}$/.test(String(payload.orderPrefix || '').trim().toUpperCase())
+    ? String(payload.orderPrefix).trim().toUpperCase()
+    : null;
+  const customPrefix = explicitCustomPrefix || (isCustom ? 'CO' : isInstore ? 'IS' : (payload.orderPrefix || 'SH'));
 
     const calculatedTotal = Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0)));
   const rawMethod = normalizeText(payload.paymentMethod).toLowerCase();
@@ -202,7 +206,7 @@ export const buildOrderDocument = async (payload, req = null) => {
   }
 
   return {
-    orderNumber: await buildOrderNumber(resolvedOrderType, resolvedSiteKey, customPrefix),
+    orderNumber: await buildOrderNumber(explicitCustomPrefix ? false : resolvedOrderType, resolvedSiteKey, customPrefix),
     siteKey: resolvedSiteKey,
     clientDomain: resolvedDomain,
     status: initialStatus,
