@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
-import { ArrowRight, CheckCircle2, Loader2, Lock, Truck, Wallet } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Loader2, Lock, Mail, MessageCircle, Phone, Truck, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
@@ -38,6 +38,10 @@ const DISTRICTS = [
 
 // Selection key: product id, plus variant id on variable products
 const keyOf = (productId: string, variantId?: string) => (variantId ? `${productId}:${variantId}` : productId)
+
+// Same support contacts as SurokkhaShop
+const SUPPORT_PHONE = '01600905774'
+const SUPPORT_EMAIL = 'support@surokkha.shop'
 
 const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 
@@ -289,6 +293,24 @@ export default function OfferPage() {
             <p className="mt-2 text-center text-xs text-gray-600">ক্যাশ অন ডেলিভারি · পণ্য হাতে পেয়ে টাকা দিন</p>
           </form>
         </section>
+        <footer className="border-t border-gray-200 bg-white">
+          <div className="mx-auto max-w-xl px-4 py-8 text-center">
+            <p className="font-semibold text-primary">যেকোনো প্রয়োজনে যোগাযোগ করুন</p>
+            <div className="mt-4 flex flex-col items-center justify-center gap-2 text-sm sm:flex-row sm:gap-5">
+              <a href={`tel:${SUPPORT_PHONE}`} className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
+                <Phone className="size-4 text-primary" /> {bn(SUPPORT_PHONE)}
+              </a>
+              <a href={`https://wa.me/88${SUPPORT_PHONE}`} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
+                <MessageCircle className="size-4 text-emerald-600" /> WhatsApp
+              </a>
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
+                <Mail className="size-4 text-primary" /> {SUPPORT_EMAIL}
+              </a>
+            </div>
+            <p className="mt-5 text-xs text-gray-500">© {bn(new Date().getFullYear())} Surokkha · surokkha.store</p>
+          </div>
+        </footer>
       </main>
 
       {/* Fixed bottom bar: discount-tier progress + jump to checkout */}
