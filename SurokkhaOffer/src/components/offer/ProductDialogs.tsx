@@ -28,9 +28,12 @@ function VariantRows({ product, qtyOf, change }: Omit<CommonProps, 'onOpenChange
           >
             <div>
               <p className="text-base font-semibold leading-normal">{v.label}</p>
-              <p className="text-sm font-semibold text-rose-600">{taka(variantPrice(product, v))}</p>
+              <p className="text-sm font-semibold text-rose-600">
+                {taka(variantPrice(product, v))}
+                {!v.inStock && <span className="ml-2 text-xs font-normal text-gray-500">স্টক শেষ</span>}
+              </p>
             </div>
-            <div className="w-32">
+            <div className={`w-32 ${v.inStock ? '' : 'pointer-events-none opacity-40'}`}>
               <QtyStepper
                 value={q}
                 onInc={() => change(product.id, v.id, 1)}
@@ -45,7 +48,7 @@ function VariantRows({ product, qtyOf, change }: Omit<CommonProps, 'onOpenChange
   )
 }
 
-/** Opens from "+" on a variable product */
+/** Opens from "অপশন বেছে নিন" on a variable product */
 export function VariantDialog({ product, onOpenChange, qtyOf, change }: CommonProps) {
   return (
     <Dialog open={!!product} onOpenChange={onOpenChange}>
@@ -80,8 +83,8 @@ export function QuickViewDialog({ product, onOpenChange, qtyOf, change }: Common
               </div>
               <p className="text-2xl font-bold text-rose-600">
                 {taka(fromPrice(product))}
-                {product.unitLabel || product.variants?.length ? (
-                  <span className="ml-1 text-sm font-normal text-gray-600">{product.unitLabel ?? 'থেকে'}</span>
+                {product.variants?.length ? (
+                  <span className="ml-1 text-sm font-normal text-gray-600">থেকে</span>
                 ) : null}
               </p>
               <ul className="space-y-1.5 text-sm">

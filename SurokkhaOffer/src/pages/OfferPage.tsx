@@ -14,8 +14,6 @@ import {
   MAX_ORDER_AMOUNT,
   MAX_QTY_PER_LINE,
   MAX_QTY_PER_ORDER,
-  OFFER_PRODUCTS,
-  defaultSelection,
   SHIP_FEE,
   variantPrice,
   type OfferProduct,
@@ -23,6 +21,7 @@ import {
 } from '@/data/offerProducts'
 
 import { api, ApiError } from '@/lib/api/client'
+import { useOfferProducts } from '@/hooks/useOfferProducts'
 import { bn, taka } from '@/lib/bn'
 
 const DISTRICTS = [
@@ -46,7 +45,8 @@ const SUPPORT_EMAIL = 'support@surokkha.shop'
 const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 
 export default function OfferPage() {
-  const [qty, setQty] = useState<Record<string, number>>(defaultSelection)
+  const { products, loading, error, retry } = useOfferProducts()
+  const [qty, setQty] = useState<Record<string, number>>({})
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
   const [quickView, setQuickView] = useState<OfferProduct | null>(null)
   const [form, setForm] = useState({ name: '', phone: '', district: '', address: '', note: '' })
@@ -60,14 +60,14 @@ export default function OfferPage() {
 
   const lines = useMemo(
     () =>
-      OFFER_PRODUCTS.flatMap((p): { product: OfferProduct; variant?: OfferVariant; qty: number }[] =>
+      products.flatMap((p): { product: OfferProduct; variant?: OfferVariant; qty: number }[] =>
         p.variants?.length
           ? p.variants.map((v) => ({ product: p, variant: v, qty: qty[keyOf(p.id, v.id)] ?? 0 }))
           : [{ product: p, variant: undefined, qty: qty[p.id] ?? 0 }],
       )
         .filter((l) => l.qty > 0)
         .map((l) => ({ ...l, unitPrice: variantPrice(l.product, l.variant) })),
-    [qty],
+    [products, qty],
   )
 
   const count = lines.reduce((s, l) => s + l.qty, 0)
@@ -83,8 +83,10 @@ export default function OfferPage() {
     const k = keyOf(productId, variantId)
     const cur = qty[k] ?? 0
     if (delta > 0) {
-      const p = OFFER_PRODUCTS.find((x) => x.id === productId)!
-      const price = variantPrice(p, p.variants?.find((v) => v.id === variantId))
+      const p = products.find((x) => x.id === productId)!
+      const v = p.variants?.find((x) => x.id === variantId)
+      if (!(v ? v.inStock : p.inStock)) return toast.error('দুঃখিত, এটি এখন স্টকে নেই')
+      const price = variantPrice(p, v)
       if (cur >= MAX_QTY_PER_LINE) return toast.error(`একটি পণ্য সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি নেওয়া যাবে`)
       if (count >= MAX_QTY_PER_ORDER) return toast.error(`এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি পণ্য নেওয়া যাবে`)
       if (subtotal + price > MAX_ORDER_AMOUNT)
@@ -93,9 +95,6 @@ export default function OfferPage() {
     setQty((q) => ({ ...q, [k]: Math.max(0, cur + delta) }))
   }
 
-  // Variable products: "+" and "−" on the card both open the variant picker
-  const cardInc = (p: OfferProduct) => (p.variants?.length ? setVariantFor(p) : change(p.id, undefined, 1))
-  const cardDec = (p: OfferProduct) => (p.variants?.length ? setVariantFor(p) : change(p.id, undefined, -1))
 
   const goCheckout = () => {
     if (!count) return toast.error('আগে অন্তত একটি পণ্য বাছাই করুন')
@@ -122,20 +121,24 @@ export default function OfferPage() {
       const res = await api.post<{ data?: { orderNumber?: string } }>('/orders/new-order', {
         orderType: 'custom',
         orderPrefix: 'SC',
-        clientDomain: 'offer.surokkha.store',
+        clientDomain: 'offer.surokkha.shop',
         paymentMethod: 'Cash on Delivery',
         billingInfo: info,
         shippingInfo: info,
         shipToDifferentAddress: false,
         orderNotes: form.note.trim(),
+        // Real store products, so the backend checks stock and the dashboard links each line
         items: lines.map((l) => ({
           name: l.variant ? `${l.product.name} (${l.variant.label})` : l.product.name,
           quantity: l.qty,
           unitPrice: l.unitPrice,
           size: l.variant?.label ?? '',
-          sku: keyOf(l.product.id, l.variant?.id),
-          itemType: 'custom',
-          image: l.product.images?.[0] ?? '',
+          productId: l.product.entity === 'product' ? l.product.apiId : '',
+          itemId: l.product.entity === 'item' ? l.product.apiId : '',
+          productDid: l.product.did,
+          itemType: l.product.entity,
+          sku: l.variant?.sku || l.product.sku,
+          image: l.product.images[0] ?? '',
         })),
         subtotal,
         discountTotalAmount: discount,
@@ -207,18 +210,30 @@ export default function OfferPage() {
               })}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
-            {OFFER_PRODUCTS.map((p) => (
-              <OfferProductCard
-                key={p.id}
-                product={p}
-                qty={productQty(p)}
-                onInc={() => cardInc(p)}
-                onDec={() => cardDec(p)}
-                onQuickView={() => setQuickView(p)}
-              />
-            ))}
-          </div>
+          {error ? (
+            <div className="rounded-2xl border border-gray-200 p-6 text-center">
+              <p className="text-gray-600">পণ্য লোড করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।</p>
+              <Button variant="outline" className="mt-3 rounded-full" onClick={retry}>আবার চেষ্টা করুন</Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
+              {loading
+                ? Array.from({ length: 4 }, (_, i) => (
+                    <div key={i} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
+                  ))
+                : products.map((p) => (
+                    <OfferProductCard
+                      key={p.id}
+                      product={p}
+                      qty={productQty(p)}
+                      onInc={() => change(p.id, undefined, 1)}
+                      onDec={() => change(p.id, undefined, -1)}
+                      onChooseOptions={() => setVariantFor(p)}
+                      onQuickView={() => setQuickView(p)}
+                    />
+                  ))}
+            </div>
+          )}
         </section>
 
         <section>
@@ -308,7 +323,7 @@ export default function OfferPage() {
                 <Mail className="size-4 text-primary" /> {SUPPORT_EMAIL}
               </a>
             </div>
-            <p className="mt-5 text-xs text-gray-500">© {bn(new Date().getFullYear())} Surokkha · surokkha.store</p>
+            <p className="mt-5 text-xs text-gray-500">© {bn(new Date().getFullYear())} Surokkha · surokkha.shop</p>
           </div>
         </footer>
       </main>

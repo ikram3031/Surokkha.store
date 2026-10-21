@@ -1,143 +1,129 @@
 import type { ProductArt } from '@/components/icons/ArtIcons'
+import { resolveMediaUrl } from '@/lib/api/client'
 
-// Products for the /offer landing page. Hardcoded on purpose: they are not
-// dashboard/API products and go to the backend as custom order lines.
+// Which store products the offer page shows, in order. Name, price, images, variants and stock
+// all come from the StoreWeb API (/products and /items); only the pick and the badge live here.
+export const OFFER_PICKS: { slug: string; source: 'products' | 'items'; badge?: string; art: ProductArt }[] = [
+  { slug: 'mo-trial-pack', source: 'items', badge: 'ট্রায়াল প্যাক', art: 'box' },
+  { slug: 'mo-micro-thin-latex-contraceptive-10-pcs', source: 'products', art: 'box' },
+  { slug: 'mo-micro-ribbed-natural-latex-contraceptive-10-pcs', source: 'products', art: 'box' },
+  { slug: 'mo-multi-textured-latex-contraceptive-10-pcs', source: 'products', art: 'box' },
+  { slug: 'ky-jelly-personal-lubricant-gel-50g', source: 'items', art: 'bottle' },
+]
 
 export interface OfferVariant {
   id: string
   label: string
-  /** Overrides the product price for this variant */
-  price?: number
-  /** Quantity pre-selected when the page opens */
-  defaultQty?: number
-  c1?: string
-  c2?: string
+  price: number
+  sku: string
+  inStock: boolean
 }
 
 export interface OfferProduct {
+  /** Selection key: the product slug */
   id: string
+  apiId: string
+  did: string
+  entity: 'product' | 'item'
+  sku: string
   name: string
   desc: string
   details: string[]
   price: number
+  inStock: boolean
   art: ProductArt
   c1: string
   c2: string
   badge?: string
-  /** Real photos for the card and quick-view slider; the drawn art is used when empty */
-  images?: string[]
-  /** Present only on variable products: "+" opens the variant picker */
+  /** Card and Details slider photos; the drawn art is used when empty */
+  images: string[]
+  /** Present only on variable products: the card opens the variant picker */
   variants?: OfferVariant[]
   variantLabel?: string
-  /** Shown after the price instead of "থেকে", e.g. "প্রতি পিস" */
-  unitLabel?: string
-  /** Quantity pre-selected on simple products */
-  defaultQty?: number
 }
 
-// Pack sizes shared by the MO condoms
-const PACKS: OfferVariant[] = [
-  { id: '5pcs', label: '৫ পিস', price: 250 },
-  { id: '10pcs', label: '১০ পিস', price: 450 },
-]
+interface ApiVariant {
+  size?: string
+  price?: number | null
+  sku?: string
+  imageUrl?: string
+  stockStatus?: string
+}
 
-export const OFFER_PRODUCTS: OfferProduct[] = [
-  {
-    id: 'mo-trial-pack',
-    name: 'MO Trial Pack',
-    desc: 'Dotted, Ribbed, Ultra Thin — মিলিয়ে নিন',
-    details: ['পছন্দমতো ধরন মিলিয়ে নিন', 'প্রতি পিস মাত্র ৳৪৫', 'যত পিস খুশি, ১টি করে বাড়ান'],
-    price: 45,
-    unitLabel: 'প্রতি পিস',
-    art: 'box',
+export interface ApiOfferProduct {
+  id?: string
+  _id?: string
+  did?: string
+  slug: string
+  name?: string
+  sku?: string | null
+  price?: number | null
+  stockStatus?: string
+  description?: string
+  description_bn?: string
+  tagline_bn?: string | null
+  bn?: { tagline?: string; benefits?: { title?: string }[] }
+  benefits?: { title?: string }[]
+  thumbnailUrl?: string | null
+  imageUrl?: string | null
+  featuredImage?: string | null
+  gallery?: string[]
+  variants?: ApiVariant[] | null
+}
+
+const inStock = (s?: string) => String(s ?? '').toLowerCase().replace(/[\s_-]/g, '') !== 'outofstock'
+
+/** Plain text from the API's HTML descriptions, cut to one short line */
+const plain = (html?: string | null) =>
+  (html ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
+
+export function mapOfferProduct(raw: ApiOfferProduct, pick: (typeof OFFER_PICKS)[number]): OfferProduct {
+  const variants = (raw.variants ?? [])
+    .filter((v) => v.size && v.price != null)
+    .map((v, i) => ({
+      id: String(i),
+      label: v.size!,
+      price: Number(v.price),
+      sku: v.sku ?? '',
+      inStock: inStock(v.stockStatus),
+    }))
+  const images = [
+    raw.thumbnailUrl,
+    raw.featuredImage,
+    raw.imageUrl,
+    ...(raw.gallery ?? []),
+    ...(raw.variants ?? []).map((v) => v.imageUrl),
+  ]
+    .map((src) => resolveMediaUrl(src ?? undefined))
+    .filter((src, i, all): src is string => !!src && all.indexOf(src) === i)
+  const benefits = raw.bn?.benefits?.length ? raw.bn.benefits : raw.benefits ?? []
+  const price = variants.length ? Math.min(...variants.map((v) => v.price)) : Number(raw.price ?? 0)
+
+  return {
+    id: raw.slug,
+    apiId: raw.id ?? raw._id ?? '',
+    did: raw.did ?? '',
+    entity: pick.source === 'items' ? 'item' : 'product',
+    sku: raw.sku ?? '',
+    name: raw.name ?? raw.slug,
+    desc: raw.bn?.tagline || raw.tagline_bn || plain(raw.description_bn || raw.description).slice(0, 90),
+    details: benefits.map((b) => b.title ?? '').filter(Boolean).slice(0, 4),
+    price,
+    inStock: variants.length ? variants.some((v) => v.inStock) : inStock(raw.stockStatus),
+    art: pick.art,
     c1: '#F4919F',
     c2: '#C9475F',
-    badge: 'ট্রায়াল প্যাক',
-    variantLabel: 'ধরন',
-    variants: [
-      { id: 'dotted', label: 'Dotted', defaultQty: 1, c1: '#F4919F', c2: '#C9475F' },
-      { id: 'ribbed', label: 'Ribbed', defaultQty: 1, c1: '#C9475F', c2: '#3A322F' },
-      { id: 'ultra-thin', label: 'Ultra Thin', defaultQty: 1, c1: '#F5E6D3', c2: '#948B86' },
-    ],
-  },
-  {
-    id: 'mo-ultra-thin',
-    name: 'MO Ultra Thin Condoms',
-    desc: 'অতিপাতলা, প্রাকৃতিক অনুভূতি',
-    details: ['অতিপাতলা অনুভূতি', 'সিল্কি লুব্রিকেশন', 'ইলেকট্রনিক্যালি টেস্টেড'],
-    price: 250,
-    art: 'box',
-    c1: '#F5E6D3',
-    c2: '#948B86',
-    images: ['https://web.surokkha.store/uploads/2609/260927/ultra-thin-condoms-20pcs-combo_main_1790487720034.webp'],
-    variantLabel: 'প্যাক',
-    variants: PACKS,
-  },
-  {
-    id: 'mo-ultra-ribbed',
-    name: 'MO Ultra Ribbed Condom',
-    desc: 'রিবড টেক্সচার, বাড়তি অনুভূতি',
-    details: ['রিবড টেক্সচার', 'বাড়তি অনুভূতি', 'ইলেকট্রনিক্যালি টেস্টেড'],
-    price: 250,
-    art: 'box',
-    c1: '#C9475F',
-    c2: '#3A322F',
-    images: ['https://web.surokkha.store/uploads/2609/260927/ribbed-condoms-20pcs-combo_main_1790487642125.jpg'],
-    variantLabel: 'প্যাক',
-    variants: PACKS,
-  },
-  {
-    id: 'mo-premium-dotted',
-    name: 'MO Premium Dotted Condom',
-    desc: 'ডটেড টেক্সচার, প্রিমিয়াম ফিল',
-    details: ['ডটেড টেক্সচার', 'প্রিমিয়াম ফিল', 'ইলেকট্রনিক্যালি টেস্টেড'],
-    price: 250,
-    art: 'box',
-    c1: '#F7B3BE',
-    c2: '#F4919F',
-    images: ['https://web.surokkha.store/uploads/2609/260927/thumb_mo-dotted-condom_main_1790487322565.jpg'],
-    variantLabel: 'প্যাক',
-    variants: PACKS,
-  },
-  {
-    id: 'ry-lubricant-gel',
-    name: 'RY Lubricant Gel',
-    desc: '৫০ গ্রাম, পানিভিত্তিক জেল',
-    details: ['পানিভিত্তিক, চটচটে নয়', 'কনডমের সাথে নিরাপদ', 'সহজে ধুয়ে যায়'],
-    price: 350, // TODO: placeholder, set the current price
-    art: 'bottle',
-    c1: '#F5E6D3',
-    c2: '#948B86',
-    images: ['https://web.surokkha.store/uploads/2610/261003/ky-jelly-personal-lubricant-gel-50g_main_1791056700015.webp'],
-  },
-  {
-    id: 'eazy-lubricant-gel',
-    name: 'Eazy Lubricant Gel',
-    desc: '৫০ গ্রাম, পানিভিত্তিক জেল',
-    details: ['পানিভিত্তিক, চটচটে নয়', 'কনডমের সাথে নিরাপদ', 'সহজে ধুয়ে যায়'],
-    price: 350, // TODO: placeholder, set the current price
-    art: 'bottle',
-    c1: '#F4919F',
-    c2: '#C9475F',
-    images: ['https://web.surokkha.store/uploads/2610/261003/eazy-gelly-50gm_main_1790996174325.webp'],
-  },
-]
-
-/** Pre-selected quantities keyed like the page's selection ("product" or "product:variant") */
-export const defaultSelection = (): Record<string, number> =>
-  Object.fromEntries(
-    OFFER_PRODUCTS.flatMap((p) =>
-      p.variants?.length
-        ? p.variants.filter((v) => v.defaultQty).map((v) => [`${p.id}:${v.id}`, v.defaultQty!])
-        : p.defaultQty ? [[p.id, p.defaultQty]] : [],
-    ),
-  )
+    badge: pick.badge,
+    images,
+    variants: variants.length ? variants : undefined,
+    variantLabel: variants.length ? 'অপশন' : undefined,
+  }
+}
 
 export const variantPrice = (p: OfferProduct, v?: OfferVariant) => v?.price ?? p.price
 
 /** Lowest price, shown as "৳X থেকে" on variable products */
-export const fromPrice = (p: OfferProduct) =>
-  p.variants?.length ? Math.min(...p.variants.map((v) => variantPrice(p, v))) : p.price
+export const fromPrice = (p: OfferProduct) => p.price
 
 // Combo discount by subtotal (no free delivery here, delivery is always charged)
 export const DISCOUNT_TIERS = [

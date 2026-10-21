@@ -3,11 +3,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import type { OfferProduct } from '@/data/offerProducts'
 
-/** Slides for a product: its photos, or one drawn art per variant colour (or the product's own) */
-function slidesOf(p: OfferProduct) {
-  if (p.images?.length) return p.images.map((src) => ({ src }))
-  const colored = p.variants?.filter((v) => v.c1 && v.c2) ?? []
-  return colored.length ? colored.map((v) => ({ c1: v.c1!, c2: v.c2! })) : [{ c1: p.c1, c2: p.c2 }]
+/** Slides for a product: its photos, or the drawn art when the API has none */
+function slidesOf(p: OfferProduct): ({ src: string } | { c1: string; c2: string })[] {
+  return p.images.length ? p.images.map((src) => ({ src })) : [{ c1: p.c1, c2: p.c2 }]
 }
 
 /** Swipeable image slider (CSS scroll-snap) with arrows and dots */
@@ -32,7 +30,7 @@ export function ProductSlider({ product, compact = false }: { product: OfferProd
         {slides.map((s, i) => (
           <div key={i} className="flex w-full shrink-0 snap-center items-center justify-center">
             {'src' in s ? (
-              <img src={s.src} alt={`${product.name} ${i + 1}`} className="h-full w-full object-cover" />
+              <img src={s.src} alt={`${product.name} ${i + 1}`} className="h-full w-full object-contain" />
             ) : (
               <div className="h-3/5 w-3/5">
                 <ProductArtIcon art={product.art} c1={s.c1} c2={s.c2} />
