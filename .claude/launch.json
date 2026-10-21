@@ -2,11 +2,32 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "frontend-store",
+      "name": "surokkha-store",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev:store"],
-      "cwd": "frontend",
-      "port": 3000
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
+      "cwd": "SurokkhaStore",
+      "port": 5173
+    },
+    {
+      "name": "surokkha-offer",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5175",
+        "--strictPort"
+      ],
+      "cwd": "SurokkhaOffer",
+      "port": 5175
     }
   ]
 }

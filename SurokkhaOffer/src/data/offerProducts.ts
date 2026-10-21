@@ -1,15 +1,5 @@
 import type { ProductArt } from '@/components/icons/ArtIcons'
-import { resolveMediaUrl } from '@/lib/api/client'
-
-// Which store products the offer page shows, in order. Name, price, images, variants and stock
-// all come from the StoreWeb API (/products and /items); only the pick and the badge live here.
-export const OFFER_PICKS: { slug: string; source: 'products' | 'items'; badge?: string; art: ProductArt }[] = [
-  { slug: 'mo-trial-pack', source: 'items', badge: 'ট্রায়াল প্যাক', art: 'box' },
-  { slug: 'mo-micro-thin-latex-contraceptive-10-pcs', source: 'products', art: 'box' },
-  { slug: 'mo-micro-ribbed-natural-latex-contraceptive-10-pcs', source: 'products', art: 'box' },
-  { slug: 'mo-multi-textured-latex-contraceptive-10-pcs', source: 'products', art: 'box' },
-  { slug: 'ky-jelly-personal-lubricant-gel-50g', source: 'items', art: 'bottle' },
-]
+import offerContent from './offer-products.json'
 
 export interface OfferVariant {
   id: string
@@ -24,7 +14,7 @@ export interface OfferProduct {
   id: string
   apiId: string
   did: string
-  entity: 'product' | 'item'
+  entity: 'product' | 'item' | 'custom'
   sku: string
   name: string
   desc: string
@@ -42,83 +32,45 @@ export interface OfferProduct {
   variantLabel?: string
 }
 
-interface ApiVariant {
-  size?: string
-  price?: number | null
-  sku?: string
-  imageUrl?: string
-  stockStatus?: string
+// Page content lives in offer-products.json: the "build your own combo" products now,
+// ready-made combos later. Store ids are kept so orders still link to dashboard products.
+interface JsonProduct {
+  /** Offer product id, e.g. SC01P001; also used as the order line SKU */
+  id: string
+  type: 'custom'
+  sku: string
+  name: string
+  desc: string
+  details: string[]
+  inStock: boolean
+  images: string[]
+  badge?: string
+  options: { id: string; name: string; price: number; inStock?: boolean }[]
 }
 
-export interface ApiOfferProduct {
-  id?: string
-  _id?: string
-  did?: string
-  slug: string
-  name?: string
-  sku?: string | null
-  price?: number | null
-  stockStatus?: string
-  description?: string
-  description_bn?: string
-  tagline_bn?: string | null
-  bn?: { tagline?: string; benefits?: { title?: string }[] }
-  benefits?: { title?: string }[]
-  thumbnailUrl?: string | null
-  imageUrl?: string | null
-  featuredImage?: string | null
-  gallery?: string[]
-  variants?: ApiVariant[] | null
-}
+const fromJson = (p: JsonProduct): OfferProduct => ({
+  id: p.id,
+  apiId: '',
+  did: '',
+  entity: p.type,
+  sku: p.sku,
+  name: p.name,
+  desc: p.desc,
+  details: p.details,
+  price: Math.min(...p.options.map((o) => o.price)),
+  inStock: p.inStock,
+  art: 'box',
+  c1: '#F4919F',
+  c2: '#C9475F',
+  badge: p.badge,
+  images: p.images,
+  variants: p.options.map((o) => ({ id: o.id, label: o.name, price: o.price, sku: o.id, inStock: o.inStock ?? true })),
+  variantLabel: 'অপশন',
+})
 
-const inStock = (s?: string) => String(s ?? '').toLowerCase().replace(/[\s_-]/g, '') !== 'outofstock'
+const content = offerContent as { customCombo: { title: string; products: JsonProduct[] } }
 
-/** Plain text from the API's HTML descriptions, cut to one short line */
-const plain = (html?: string | null) =>
-  (html ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
-
-export function mapOfferProduct(raw: ApiOfferProduct, pick: (typeof OFFER_PICKS)[number]): OfferProduct {
-  const variants = (raw.variants ?? [])
-    .filter((v) => v.size && v.price != null)
-    .map((v, i) => ({
-      id: String(i),
-      label: v.size!,
-      price: Number(v.price),
-      sku: v.sku ?? '',
-      inStock: inStock(v.stockStatus),
-    }))
-  const images = [
-    raw.thumbnailUrl,
-    raw.featuredImage,
-    raw.imageUrl,
-    ...(raw.gallery ?? []),
-    ...(raw.variants ?? []).map((v) => v.imageUrl),
-  ]
-    .map((src) => resolveMediaUrl(src ?? undefined))
-    .filter((src, i, all): src is string => !!src && all.indexOf(src) === i)
-  const benefits = raw.bn?.benefits?.length ? raw.bn.benefits : raw.benefits ?? []
-  const price = variants.length ? Math.min(...variants.map((v) => v.price)) : Number(raw.price ?? 0)
-
-  return {
-    id: raw.slug,
-    apiId: raw.id ?? raw._id ?? '',
-    did: raw.did ?? '',
-    entity: pick.source === 'items' ? 'item' : 'product',
-    sku: raw.sku ?? '',
-    name: raw.name ?? raw.slug,
-    desc: raw.bn?.tagline || raw.tagline_bn || plain(raw.description_bn || raw.description).slice(0, 90),
-    details: benefits.map((b) => b.title ?? '').filter(Boolean).slice(0, 4),
-    price,
-    inStock: variants.length ? variants.some((v) => v.inStock) : inStock(raw.stockStatus),
-    art: pick.art,
-    c1: '#F4919F',
-    c2: '#C9475F',
-    badge: pick.badge,
-    images,
-    variants: variants.length ? variants : undefined,
-    variantLabel: variants.length ? 'অপশন' : undefined,
-  }
-}
+export const CUSTOM_COMBO_PRODUCTS: OfferProduct[] = content.customCombo.products.map(fromJson)
 
 export const variantPrice = (p: OfferProduct, v?: OfferVariant) => v?.price ?? p.price
 

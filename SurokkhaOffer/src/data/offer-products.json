@@ -1,0 +1,125 @@
+{
+  "customCombo": {
+    "title": "আপনার পছন্দের কম্বো নিজেই বানিয়ে নিন",
+    "products": [
+      {
+        "id": "SC01P001",
+        "type": "custom",
+        "sku": "SC01P001",
+        "name": "MO Micro-Thin Latex Contraceptive",
+        "desc": "০.০৩ মিমি আল্ট্রা-থিন স্তর ও স্বাভাবিক কমফোর্টে নির্ভরযোগ্য পরিবার পরিকল্পনা সুরক্ষা",
+        "details": [
+          "১০০% নির্ভরযোগ্য পরিবার পরিকল্পনা",
+          "ন্যাচারাল কমফোর্ট ও মসৃণতা",
+          "স্কিন-ফ্রেন্ডলি ফর্মুলেশন",
+          "১০০% গোপন ডেলিভারি"
+        ],
+        "inStock": true,
+        "images": [
+          "https://web.surokkha.store/uploads/2610/261007/product_mo-new-2_1791406668195.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-thin_main_1790169170756.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-thin_main_1790169171231.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-thin_main_1790169171656.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-thin_main_1790169172103.webp"
+        ],
+        "options": [
+          {
+            "id": "SC01P001-5",
+            "name": "5 pieces",
+            "price": 250
+          },
+          {
+            "id": "SC01P001-10",
+            "name": "10 pieces",
+            "price": 450
+          },
+          {
+            "id": "SC01P001-15",
+            "name": "15 Pieces",
+            "price": 650
+          }
+        ]
+      },
+      {
+        "id": "SC01P002",
+        "type": "custom",
+        "sku": "SC01P002",
+        "name": "MO Micro-Ribbed Natural Latex Contraceptive",
+        "desc": "ধারাবাহিক রিবড রিং টেক্সচারে আরামদায়ক ফিটিং ও পূর্ণ পরিবার পরিকল্পনা সুরক্ষা",
+        "details": [
+          "আরামদায়ক স্পাইরাল কনট্যুর",
+          "সর্বোচ্চ পরিবার পরিকল্পনা সুরক্ষা",
+          "দীর্ঘস্থায়ী মসৃণতা",
+          "১০০% গোপনীয় ডেলিভারি"
+        ],
+        "inStock": true,
+        "images": [
+          "https://web.surokkha.store/uploads/2610/261007/product_mo-new-3_1791406630057.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-ribbed_main_1790169221979.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-ribbed_main_1790169223233.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-ribbed_main_1790169224012.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-ultra-ribbed_main_1790169224944.webp"
+        ],
+        "options": [
+          {
+            "id": "SC01P002-5",
+            "name": "5 pieces",
+            "price": 250
+          },
+          {
+            "id": "SC01P002-10",
+            "name": "10 pieces",
+            "price": 450
+          },
+          {
+            "id": "SC01P002-15",
+            "name": "15 Pieces",
+            "price": 650
+          }
+        ]
+      },
+      {
+        "id": "SC01P003",
+        "type": "custom",
+        "sku": "SC01P003",
+        "name": "MO Multi-Textured Latex Contraceptive",
+        "desc": "নির্ভরযোগ্য পরিবার পরিকল্পনা সুরক্ষা ও কমফোর্টের জন্য বিশেষ উঁচু ডট ম্যাট্রিক্স টেক্সচার",
+        "details": [
+          "নিখুঁত টেক্সচার ও গ্রিপ",
+          "১০০% নির্ভরযোগ্য স্থায়িত্ব",
+          "সিল্কি মসৃণ লুব্রিকেশন",
+          "১০০% গোপনীয় ডেলিভারি"
+        ],
+        "inStock": true,
+        "images": [
+          "https://web.surokkha.store/uploads/2610/261007/product_mo-new-1_1791406650796.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-dotted_main_1790169125534.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-dotted_main_1790169125938.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-dotted_main_1790169126465.webp",
+          "https://web.surokkha.store/uploads/2609/260923/mo-dotted_main_1790169126965.webp"
+        ],
+        "options": [
+          {
+            "id": "SC01P003-5",
+            "name": "5 pieces",
+            "price": 250
+          },
+          {
+            "id": "SC01P003-10",
+            "name": "10 pieces",
+            "price": 450
+          },
+          {
+            "id": "SC01P003-15",
+            "name": "15 Pieces",
+            "price": 650
+          }
+        ]
+      }
+    ]
+  },
+  "readyCombos": {
+    "title": "অথবা আমাদের কম্বো থেকে বেছে নিন",
+    "products": []
+  }
+}

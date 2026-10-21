@@ -16,7 +16,9 @@ export function QtyStepper({ value, onDec, onInc, label }: Props) {
         onClick={onDec}
         disabled={value === 0}
         aria-label={`${label} কমান`}
-        className="flex size-9 items-center justify-center rounded-full bg-gray-100 text-primary transition hover:bg-primary hover:text-primary-foreground disabled:opacity-40 disabled:hover:bg-gray-100 disabled:hover:text-primary"
+        className={`flex size-9 items-center justify-center rounded-full transition disabled:opacity-40 ${
+          value > 0 ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-gray-100 text-primary'
+        }`}
       >
         <Minus className="size-4" />
       </button>

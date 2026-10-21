@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
-import { ArrowRight, CheckCircle2, Loader2, Lock, Mail, MessageCircle, Phone, Truck, Wallet } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Loader2, Lock, Mail, Phone, Truck, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { AgeGate } from '@/components/AgeGate'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
 import { QuickViewDialog, VariantDialog } from '@/components/offer/ProductDialogs'
 import {
+  CUSTOM_COMBO_PRODUCTS,
   DISCOUNT_TIERS,
   nextTier,
   tierFor,
@@ -21,7 +22,6 @@ import {
 } from '@/data/offerProducts'
 
 import { api, ApiError } from '@/lib/api/client'
-import { useOfferProducts } from '@/hooks/useOfferProducts'
 import { bn, taka } from '@/lib/bn'
 
 const DISTRICTS = [
@@ -41,11 +41,34 @@ const keyOf = (productId: string, variantId?: string) => (variantId ? `${product
 // Same support contacts as SurokkhaShop
 const SUPPORT_PHONE = '01600905774'
 const SUPPORT_EMAIL = 'support@surokkha.shop'
+const WHATSAPP_URL = 'https://wa.me/8801600905774'
+
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.3-.76.96-.93 1.16-.17.2-.34.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.34.45-.51.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.66-1.6-.91-2.19-.24-.58-.48-.5-.66-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.08c.15.2 2.09 3.2 5.07 4.48.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 0 1 6.99 2.9 9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.89 9.88zm8.41-18.3A11.81 11.81 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.17-3.48-8.4z" />
+    </svg>
+  )
+}
+
+// Meta Pixel (loaded in index.html); no-op if blocked by the browser
+type Fbq = (cmd: 'track', event: string, params?: Record<string, unknown>, opts?: { eventID?: string }) => void
+const track = (event: string, params?: Record<string, unknown>, eventID?: string) => {
+  try {
+    const fbq = (window as unknown as { fbq?: Fbq }).fbq
+    fbq?.('track', event, params, eventID ? { eventID } : undefined)
+  } catch {
+    /* ignore pixel errors */
+  }
+}
+
+// Pixel browser ids, passed to the backend so its Conversions API event matches this visitor
+const cookie = (name: string) => document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] ?? ''
 
 const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 
 export default function OfferPage() {
-  const { products, loading, error, retry } = useOfferProducts()
+  const products = CUSTOM_COMBO_PRODUCTS
   const [qty, setQty] = useState<Record<string, number>>({})
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
   const [quickView, setQuickView] = useState<OfferProduct | null>(null)
@@ -92,12 +115,24 @@ export default function OfferPage() {
       if (subtotal + price > MAX_ORDER_AMOUNT)
         return toast.error(`${taka(MAX_ORDER_AMOUNT)}-এর বেশি অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`)
     }
+    if (delta > 0) {
+      const p = products.find((x) => x.id === productId)!
+      const v = p.variants?.find((x) => x.id === variantId)
+      track('AddToCart', {
+        content_ids: [v?.sku || p.sku || p.id],
+        content_name: v ? `${p.name} (${v.label})` : p.name,
+        content_type: 'product',
+        value: variantPrice(p, v),
+        currency: 'BDT',
+      })
+    }
     setQty((q) => ({ ...q, [k]: Math.max(0, cur + delta) }))
   }
 
 
   const goCheckout = () => {
     if (!count) return toast.error('আগে অন্তত একটি পণ্য বাছাই করুন')
+    track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count })
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -123,6 +158,8 @@ export default function OfferPage() {
         orderPrefix: 'SC',
         clientDomain: 'offer.surokkha.shop',
         paymentMethod: 'Cash on Delivery',
+        fbp: cookie('_fbp'),
+        fbc: cookie('_fbc'),
         billingInfo: info,
         shippingInfo: info,
         shipToDifferentAddress: false,
@@ -147,7 +184,20 @@ export default function OfferPage() {
         tax: 0,
         total,
       })
-      setPlaced(res?.data?.orderNumber ?? '')
+      const orderNumber = res?.data?.orderNumber ?? ''
+      track(
+        'Purchase',
+        {
+          content_ids: lines.map((l) => l.variant?.sku || l.product.sku || l.product.id),
+          contents: lines.map((l) => ({ id: l.variant?.sku || l.product.sku || l.product.id, quantity: l.qty, item_price: l.unitPrice })),
+          content_type: 'product',
+          num_items: count,
+          value: total,
+          currency: 'BDT',
+        },
+        orderNumber || undefined,
+      )
+      setPlaced(orderNumber)
       setQty({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
@@ -179,8 +229,15 @@ export default function OfferPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <img src="/logo_2.png" alt="Surokkha" className="h-9 w-auto" />
           <div className="flex items-center gap-3 text-xs sm:text-sm">
-            <span className="flex items-center gap-1"><Lock className="size-3.5" /> গোপনীয় প্যাকেজিং</span>
-            <span className="hidden items-center gap-1 sm:flex"><Wallet className="size-3.5" /> ক্যাশ অন ডেলিভারি</span>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="WhatsApp-এ যোগাযোগ করুন"
+              className="flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 font-semibold text-white shadow transition hover:bg-[#1ebe5a]"
+            >
+              <WhatsAppIcon className="size-4" /> WhatsApp
+            </a>
           </div>
         </div>
       </header>
@@ -189,9 +246,9 @@ export default function OfferPage() {
         <section className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
           <div className="mx-auto mb-6 max-w-2xl text-center sm:mb-8">
             <h1 className="text-2xl font-bold leading-snug sm:text-3xl">
-              <span className="bg-gradient-to-r from-[#4d1224] via-rose-600 to-[#4d1224] bg-clip-text text-transparent">আপনার পছন্দের </span>
+              <span className="text-black">আপনার পছন্দের </span>
               <span className="offer-combo">কম্বো</span>
-              <span className="bg-gradient-to-r from-[#4d1224] via-rose-600 to-[#4d1224] bg-clip-text text-transparent"> নিজেই বানিয়ে নিন</span>
+              <span className="text-black"> নিজেই বানিয়ে নিন</span>
             </h1>
             <p className="mt-2 text-sm text-gray-600 sm:text-base">
               {taka(DISCOUNT_TIERS[0].min)}-এর অর্ডার থেকেই ছাড় শুরু — যত বেশি নেবেন, ছাড় তত বাড়বে, সর্বোচ্চ{' '}
@@ -210,34 +267,23 @@ export default function OfferPage() {
               })}
             </div>
           </div>
-          {error ? (
-            <div className="rounded-2xl border border-gray-200 p-6 text-center">
-              <p className="text-gray-600">পণ্য লোড করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।</p>
-              <Button variant="outline" className="mt-3 rounded-full" onClick={retry}>আবার চেষ্টা করুন</Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
-              {loading
-                ? Array.from({ length: 4 }, (_, i) => (
-                    <div key={i} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
-                  ))
-                : products.map((p) => (
-                    <OfferProductCard
-                      key={p.id}
-                      product={p}
-                      qty={productQty(p)}
-                      onInc={() => change(p.id, undefined, 1)}
-                      onDec={() => change(p.id, undefined, -1)}
-                      onChooseOptions={() => setVariantFor(p)}
-                      onQuickView={() => setQuickView(p)}
-                    />
-                  ))}
-            </div>
-          )}
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
+            {products.map((p) => (
+              <OfferProductCard
+                key={p.id}
+                product={p}
+                qty={productQty(p)}
+                onInc={() => change(p.id, undefined, 1)}
+                onDec={() => change(p.id, undefined, -1)}
+                onChooseOptions={() => setVariantFor(p)}
+                onQuickView={() => setQuickView(p)}
+              />
+            ))}
+          </div>
         </section>
 
-        <section>
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-3 px-4 py-6 sm:grid-cols-3">
+        <section className="bg-rose-50">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-3 px-4 py-8 sm:grid-cols-3">
             {[
               { icon: Lock, t: 'গোপনীয় প্যাকেজিং', d: 'বাইরে থেকে কেউ বুঝবে না ভেতরে কী আছে' },
               { icon: Truck, t: 'সারাদেশে ডেলিভারি', d: `ডেলিভারি চার্জ ${taka(SHIP_FEE)}` },
@@ -315,9 +361,9 @@ export default function OfferPage() {
               <a href={`tel:${SUPPORT_PHONE}`} className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
                 <Phone className="size-4 text-primary" /> {bn(SUPPORT_PHONE)}
               </a>
-              <a href={`https://wa.me/88${SUPPORT_PHONE}`} target="_blank" rel="noopener noreferrer"
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
-                <MessageCircle className="size-4 text-emerald-600" /> WhatsApp
+                <WhatsAppIcon className="size-4 text-[#25D366]" /> WhatsApp
               </a>
               <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
                 <Mail className="size-4 text-primary" /> {SUPPORT_EMAIL}

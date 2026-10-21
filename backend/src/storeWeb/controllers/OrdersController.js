@@ -15,7 +15,7 @@ import {
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { config } from '../../common/config/index.js';
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
-import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
+import { isOfferOrder, sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
@@ -242,6 +242,10 @@ export const createOrder = async (req, res, next) => {
     if (!isInstoreOrder && !isCustomOrder) {
       sendServerPurchaseEvent(createdOrder, req);
       sendTikTokServerPurchaseEvent(createdOrder, req);
+    }
+    // Offer landing page orders are custom orders but still real web purchases for its own pixel
+    if (isCustomOrder && isOfferOrder(createdOrder, req)) {
+      sendServerPurchaseEvent(createdOrder, req);
     }
 
     // Automatically record newOrder activity log and broadcast live notification

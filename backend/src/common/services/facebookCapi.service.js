@@ -37,6 +37,31 @@ export const STORE_META_PIXEL_KEY = "store-meta-pixel";
 const isStoreRequest = (...sources) =>
   sources.some((s) => s === "store" || String(s?.originalUrl || s?.baseUrl || "").startsWith("/store/"));
 
+// Orders from the offer landing page (offer.surokkha.shop) carry the SC prefix
+export const OFFER_ORDER_PREFIX = "SC";
+export const OFFER_SITE_URL = "https://offer.surokkha.shop/";
+export const isOfferOrder = (order, req = null) =>
+  String(order?.orderNumber || "").toUpperCase().startsWith(OFFER_ORDER_PREFIX) ||
+  String(req?.body?.orderPrefix || "").toUpperCase() === OFFER_ORDER_PREFIX;
+
+// Optional env override for the offer page pixel (FB_PIXEL_ID_OFFER / FB_ACCESS_TOKEN_OFFER)
+const getOfferMetaPixelConfig = () => {
+  const pixelId = env.FB_PIXEL_ID_OFFER || "";
+  const accessToken = env.FB_ACCESS_TOKEN_OFFER || "";
+  if (!pixelId || !accessToken) {
+    console.warn("[Meta CAPI Config] Warning: Offer Meta Pixel / CAPI credentials not configured. Event skipped.");
+  }
+  return {
+    pixelId,
+    accessToken,
+    testEventCode: env.FB_TEST_EVENT_CODE_OFFER || "",
+    isEnabled: !!(pixelId && accessToken),
+    enableCapi: !!(pixelId && accessToken),
+    enableBrowserPixel: true,
+    advancedMatching: true,
+  };
+};
+
 // Resolves the store's Meta Pixel configuration from its own settings document
 export const getStoreMetaPixelConfig = async () => {
   let meta = {};
@@ -65,6 +90,15 @@ export const getStoreMetaPixelConfig = async () => {
 
 // Resolves active Meta Pixel configuration: store requests use the store's own settings, everything else the shop's
 export const getMetaPixelConfig = async (source = null, req = null) => {
+  // Offer orders use the env override when set, otherwise the store pixel saved from the dashboard
+  // (the offer page and the store share pixel 1045350585208532)
+  if (isOfferOrder(source, req)) {
+    if (env.FB_ACCESS_TOKEN_OFFER) return getOfferMetaPixelConfig();
+    return getStoreMetaPixelConfig().catch((error) => {
+      console.error("[Meta CAPI Config] Error resolving store Meta Pixel config for offer order:", error.message);
+      return { pixelId: "", accessToken: "", testEventCode: "", isEnabled: false, enableCapi: false };
+    });
+  }
   if (isStoreRequest(source, req)) {
     return getStoreMetaPixelConfig().catch((error) => {
       console.error("[Meta CAPI Config] Error resolving store Meta Pixel config:", error.message);
@@ -511,6 +545,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       event_time: Math.floor(Date.now() / 1000),
       event_id: resolvedOrderNumber,
       action_source: "website",
+      ...(isOfferOrder(order, req) ? { event_source_url: OFFER_SITE_URL } : {}),
       user_data: userData,
       custom_data: customData,
     };
