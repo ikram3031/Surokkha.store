@@ -75,6 +75,7 @@ export const SidebarCards = ({
   setTags,
   clientConfig,
   getFullPreviewUrl,
+  productSlug,
 }) => {
   // Normalize Category & Brand Multi-select state
   const selectedCategorySlugs = useMemo(() => {
@@ -992,6 +993,7 @@ export const SidebarCards = ({
         multiple={false}
         initialSelected={imagePreview}
         title="Select Featured Product Image"
+        productSlug={productSlug}
       />
 
       {/* Media Picker Modal for Gallery Images */}
@@ -1007,6 +1009,7 @@ export const SidebarCards = ({
         maxSelect={Math.max(1, 5 - galleryImages.length)}
         initialSelected={galleryImages.map((img) => img.url || img.preview || img)}
         title="Select Gallery Images"
+        productSlug={productSlug}
       />
     </div>
   );

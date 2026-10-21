@@ -42,6 +42,7 @@ export const MediaPickerModal = ({
   maxSelect = 5,
   initialSelected = DEFAULT_INITIAL_SELECTED,
   title,
+  productSlug,
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("library");
@@ -206,6 +207,8 @@ export const MediaPickerModal = ({
         const formData = new FormData();
         formData.append("image", file);
         formData.append("type", "product");
+        // Name the file after the product so it can be found by product name later
+        if (productSlug?.trim()) formData.append("productSlug", productSlug.trim());
 
         const res = await apiClient.post("/api/v1/images/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },

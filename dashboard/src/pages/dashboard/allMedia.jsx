@@ -27,7 +27,12 @@ import {
   Calendar,
   HardDrive,
   FileText,
+  Trash2,
+  X,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import { useAuth } from '@/lib/auth-context';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
@@ -46,6 +51,51 @@ const AllMediaPage = () => {
 
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // Bulk selection (by url) for copying links and deleting
+  const { user } = useAuth();
+  const canDelete = ['owner', 'admin'].includes((user?.role || '').toLowerCase());
+  const [selectedUrls, setSelectedUrls] = useState([]);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const toggleSelect = (url) => {
+    setSelectedUrls((prev) => (prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url]));
+  };
+
+  const pageUrls = mediaList.map((item) => item.url);
+  const allPageSelected = pageUrls.length > 0 && pageUrls.every((u) => selectedUrls.includes(u));
+
+  const toggleSelectPage = () => {
+    setSelectedUrls((prev) =>
+      allPageSelected
+        ? prev.filter((u) => !pageUrls.includes(u))
+        : [...prev, ...pageUrls.filter((u) => !prev.includes(u))]
+    );
+  };
+
+  const handleCopySelected = () => {
+    if (selectedUrls.length === 0) return;
+    navigator.clipboard.writeText(selectedUrls.map((u) => resolveImageUrl(u)).join('\n'));
+    toast.success(`${selectedUrls.length} link(s) copied`);
+  };
+
+  const handleBulkDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await apiClient.post('/api/v1/images/bulk-delete', { urls: selectedUrls });
+      const deleted = res.data?.data?.deleted || [];
+      const failed = res.data?.data?.failed || [];
+      toast.success(`${deleted.length} file(s) deleted`);
+      if (failed.length > 0) toast.error(`${failed.length} file(s) could not be deleted`);
+      setSelectedUrls([]);
+      await fetchMedia(currentPage, activeSearch);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, t('common.error')));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const fetchMedia = async (page = 1, search = '') => {
     setIsLoading(true);
@@ -130,6 +180,36 @@ const AllMediaPage = () => {
         </form>
       </div>
 
+      {mediaList.length > 0 && (
+        <div className="flex items-center justify-between flex-wrap gap-2 rounded-xl border bg-card px-3 py-2">
+          <label className="flex items-center gap-2 text-xs font-medium text-foreground cursor-pointer">
+            <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectPage} />
+            Select all on this page
+            {selectedUrls.length > 0 && (
+              <span className="text-muted-foreground">({selectedUrls.length} selected)</span>
+            )}
+          </label>
+          {selectedUrls.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Button type="button" size="sm" variant="secondary" onClick={handleCopySelected} className="text-xs gap-1.5 cursor-pointer">
+                <Copy className="h-3.5 w-3.5" />
+                Copy links ({selectedUrls.length})
+              </Button>
+              {canDelete && (
+                <Button type="button" size="sm" variant="destructive" onClick={() => setIsDeleteOpen(true)} className="text-xs gap-1.5 cursor-pointer">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete ({selectedUrls.length})
+                </Button>
+              )}
+              <Button type="button" size="sm" variant="cancel" onClick={() => setSelectedUrls([])} className="text-xs gap-1 cursor-pointer">
+                <X className="h-3.5 w-3.5" />
+                Clear
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {Array.from({ length: 20 }).map((_, i) => (
@@ -145,11 +225,23 @@ const AllMediaPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {mediaList.map((item, idx) => (
             <Card
-              key={idx}
+              key={item.url || idx}
               onClick={() => setSelectedMedia(item)}
-              className="group overflow-hidden border border-border/80 hover:border-primary/50 hover:shadow-md transition-all cursor-pointer bg-card flex flex-col justify-between"
+              className={`group overflow-hidden border hover:shadow-md transition-all cursor-pointer bg-card flex flex-col justify-between ${
+                selectedUrls.includes(item.url) ? 'border-primary ring-2 ring-primary/30' : 'border-border/80 hover:border-primary/50'
+              }`}
             >
               <div className="relative aspect-square w-full bg-muted/20 flex items-center justify-center overflow-hidden border-b">
+                <div
+                  className="absolute top-2 left-2 z-10 rounded-md bg-background/90 p-1 shadow-sm"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Checkbox
+                    checked={selectedUrls.includes(item.url)}
+                    onCheckedChange={() => toggleSelect(item.url)}
+                    aria-label={`Select ${item.filename}`}
+                  />
+                </div>
                 {item.url.match(/\.(jpeg|jpg|png|webp|gif|svg|avif)$/i) ? (
                   <img
                     src={resolveImageUrl(item.url)}
@@ -322,6 +414,15 @@ const AllMediaPage = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onConfirm={handleBulkDelete}
+        isDeleting={isDeleting}
+        title={`Delete ${selectedUrls.length} file(s)?`}
+        description="These files will be permanently removed from the server. Products still using them will show broken images. This cannot be undone."
+      />
     </div>
   );
 };

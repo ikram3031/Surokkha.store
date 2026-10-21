@@ -845,6 +845,7 @@ const EditProductPage = () => {
           {/* Right Column: Sidebar Cards & SEO */}
           <div className="space-y-6">
             <SidebarCards
+              productSlug={slug}
               isActive={isActive}
               setIsActive={setIsActive}
               imagePreview={imagePreview}
