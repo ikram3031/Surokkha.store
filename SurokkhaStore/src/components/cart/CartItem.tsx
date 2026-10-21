@@ -10,9 +10,17 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
 
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-card p-3">
-      <div className={`h-16 w-16 shrink-0 rounded-xl p-2 ${catBg[product.cat]}`}>
-        <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
-      </div>
+      {product.image ? (
+        <img
+          src={product.image}
+          alt={product.name}
+          className="h-16 w-16 shrink-0 rounded-xl object-cover"
+        />
+      ) : (
+        <div className={`h-16 w-16 shrink-0 rounded-xl p-2 ${catBg[product.cat]}`}>
+          <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
+        </div>
+      )}
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold">{product.name}</p>
         <p className="text-sm text-muted-foreground">{taka(product.price)}</p>

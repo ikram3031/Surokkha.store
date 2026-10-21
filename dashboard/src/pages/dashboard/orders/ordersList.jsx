@@ -63,6 +63,8 @@ const OrdersPage = () => {
   const statusFilter = searchParams.get('status') || 'All';
   const paymentFilter = searchParams.get('payment') || 'All';
   const urlSearch = searchParams.get('q') || '';
+  const dateFrom = searchParams.get('from') || '';
+  const dateTo = searchParams.get('to') || '';
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
@@ -145,12 +147,18 @@ const OrdersPage = () => {
     setSelectedIds([]);
   };
 
-  const hasActiveFilters = selectedStatuses.length > 0 || paymentFilter !== 'All' || Boolean(urlSearch);
+  const hasActiveFilters =
+    selectedStatuses.length > 0 || paymentFilter !== 'All' || Boolean(urlSearch) || Boolean(dateFrom) || Boolean(dateTo);
 
-  // Clears status, payment and search filters in one go
+  // Clears status, payment, date and search filters in one go
   const resetFilters = () => {
     setSearchInput('');
-    updateParams({ status: 'All', payment: 'All', q: '', page: 1 });
+    updateParams({ status: 'All', payment: 'All', q: '', from: '', to: '', page: 1 });
+    setSelectedIds([]);
+  };
+
+  const handleDateChange = (key, value) => {
+    updateParams({ [key]: value, page: 1 });
     setSelectedIds([]);
   };
 
@@ -279,6 +287,35 @@ const OrdersPage = () => {
                   {t('common.reset', 'Reset')}
                 </Button>
               )}
+              <div className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-2 text-xs shadow-xs">
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(e) => handleDateChange('from', e.target.value)}
+                  className="h-7 w-[125px] border-0 bg-transparent px-1 text-xs shadow-none focus-visible:ring-0 cursor-pointer dark:[color-scheme:dark]"
+                  aria-label="From date"
+                />
+                <span className="text-muted-foreground">–</span>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(e) => handleDateChange('to', e.target.value)}
+                  className="h-7 w-[125px] border-0 bg-transparent px-1 text-xs shadow-none focus-visible:ring-0 cursor-pointer dark:[color-scheme:dark]"
+                  aria-label="To date"
+                />
+                {(dateFrom || dateTo) && (
+                  <button
+                    type="button"
+                    onClick={() => updateParams({ from: '', to: '', page: 1 })}
+                    className="text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="Clear dates"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex h-9 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-xs shadow-xs ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 w-[200px] cursor-pointer">
                   <span className="truncate">
@@ -387,6 +424,8 @@ const OrdersPage = () => {
             searchQuery={debouncedSearch}
             statusFilter={statusFilter}
             paymentFilter={paymentFilter}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
             page={currentPage}
             onTotalPagesChange={setTotalPages}
             selectedIds={selectedIds}

@@ -1,5 +1,6 @@
 import type { Product, ProductCategory } from '@/data/products'
 import type { ProductArt } from '@/components/icons/ArtIcons'
+import { resolveMediaUrl } from '@/lib/api/client'
 
 /**
  * The real shape of a StoreWeb API product isn't pinned down yet, so this is
@@ -23,6 +24,10 @@ export interface ApiProduct {
   isNew?: boolean
   isBestSeller?: boolean
   badge?: string
+  featuredImage?: string
+  thumbnailUrl?: string
+  imageUrl?: string
+  gallery?: string[]
   [key: string]: unknown
 }
 
@@ -74,6 +79,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
     c1: visual.c1,
     c2: visual.c2,
     badge: raw.badge ?? (raw.isNew ? 'নতুন' : raw.isBestSeller ? 'বেস্ট সেলার' : undefined),
+    image: resolveMediaUrl(raw.thumbnailUrl || raw.featuredImage || raw.imageUrl || raw.gallery?.[0]),
   }
 }
 

@@ -50,6 +50,8 @@ const CustomOrdersPage = () => {
   const statusFilter = searchParams.get('status') || 'All';
   const paymentFilter = searchParams.get('payment') || 'All';
   const urlSearch = searchParams.get('q') || '';
+  const dateFrom = searchParams.get('from') || '';
+  const dateTo = searchParams.get('to') || '';
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
@@ -83,6 +85,11 @@ const CustomOrdersPage = () => {
       });
       return next;
     });
+  };
+
+  const handleDateChange = (key, value) => {
+    updateParams({ [key]: value, page: 1 });
+    setSelectedIds([]);
   };
 
   useEffect(() => {
@@ -213,6 +220,35 @@ const CustomOrdersPage = () => {
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-start sm:justify-end">
           {selectedIds.length === 0 && (
             <div className="flex gap-2 items-center w-full sm:w-auto">
+              <div className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-2 text-xs shadow-xs">
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(e) => handleDateChange('from', e.target.value)}
+                  className="h-7 w-[125px] border-0 bg-transparent px-1 text-xs shadow-none focus-visible:ring-0 cursor-pointer dark:[color-scheme:dark]"
+                  aria-label="From date"
+                />
+                <span className="text-muted-foreground">–</span>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(e) => handleDateChange('to', e.target.value)}
+                  className="h-7 w-[125px] border-0 bg-transparent px-1 text-xs shadow-none focus-visible:ring-0 cursor-pointer dark:[color-scheme:dark]"
+                  aria-label="To date"
+                />
+                {(dateFrom || dateTo) && (
+                  <button
+                    type="button"
+                    onClick={() => updateParams({ from: '', to: '', page: 1 })}
+                    className="text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="Clear dates"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
               <Select value={statusFilter} onValueChange={handleStatus}>
                 <SelectTrigger className="w-[180px] h-9 cursor-pointer text-xs">
                   <span>
@@ -304,6 +340,8 @@ const CustomOrdersPage = () => {
             searchQuery={debouncedSearch}
             statusFilter={statusFilter}
             paymentFilter={paymentFilter}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
             page={currentPage}
             onTotalPagesChange={setTotalPages}
             selectedIds={selectedIds}

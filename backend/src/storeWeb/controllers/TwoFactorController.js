@@ -49,7 +49,7 @@ export const sendQrCodeEmail = async (req, res, next) => {
     const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
     const fromAddress = `"${fromName}" <${fromEmail}>`;
 
-    const htmlContent = buildTwoFactorQrEmailHtml({ name: user.name, secret });
+    const htmlContent = buildTwoFactorQrEmailHtml({ name: user.name, secret, siteKey: "store" });
 
     await transport.sendMail({
       from: fromAddress,

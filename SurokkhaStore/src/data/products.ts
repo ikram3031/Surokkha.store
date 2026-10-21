@@ -12,6 +12,7 @@ export interface Product {
   c1?: string
   c2?: string
   badge?: string
+  image?: string
 }
 
 export const products: Product[] = [

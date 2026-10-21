@@ -102,7 +102,21 @@
         "enableBrowserPixel": true,
         "enableCapi": true,
         "advancedMatching": true
-      }
+      },
+      "supportEmail": "support@surokkha.shop",
+      "apiBaseUrl": "https://api.surokkha.store",
+      "invoicePath": "/api/v1/orders"
+    },
+    "store": {
+      "key": "store",
+      "domain": "surokkha.store",
+      "url": "https://surokkha.store",
+      "storefrontUrl": "https://surokkha.store",
+      "name": "Surokkha Store",
+      "orderPrefix": "ST",
+      "supportEmail": "support@surokkha.store",
+      "apiBaseUrl": "https://web.surokkha.store",
+      "invoicePath": "/store/v1/orders"
     }
   },
   "cloudflare": {

@@ -17,6 +17,7 @@ import {
 } from "../../common/helper/userControllerHelper.js";
 import { LogModel } from "../../common/models/log.model.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
+import { sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 
 // Dispatches user invitation email via active SMTP configuration
 export const sendInvitationEmail = async ({ user, inviteUrl }) => {
@@ -476,6 +477,9 @@ export const resetUserPassword = async (req, res, next) => {
     user.inviteToken = null;
     user.inviteTokenExpiresAt = null;
     await user.save();
+
+    // Let the staff member know their password was reset (fire-and-forget)
+    sendPasswordChangedEmail({ toEmail: user.email, name: user.name, byAdmin: true });
 
     // Log the password reset activity
     try {

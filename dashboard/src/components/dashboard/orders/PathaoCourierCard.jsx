@@ -10,6 +10,7 @@ import {
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,10 +60,8 @@ const PathaoCourierCard = ({
   const [recipientAddress, setRecipientAddress] = useState("");
   const [cities, setCities] = useState([]);
   const [zones, setZones] = useState([]);
-  const [areas, setAreas] = useState([]);
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedZone, setSelectedZone] = useState("");
-  const [selectedArea, setSelectedArea] = useState("");
   const [itemWeight, setItemWeight] = useState(0.5);
   const [deliveryType, setDeliveryType] = useState(48);
   const [itemType, setItemType] = useState(2);
@@ -100,15 +99,6 @@ const PathaoCourierCard = ({
         label: z.zone_name || String(z.zone_id),
       })),
     [zones]
-  );
-
-  const areaItems = useMemo(
-    () =>
-      areas.map((a) => ({
-        value: String(a.area_id),
-        label: a.area_name || String(a.area_id),
-      })),
-    [areas]
   );
 
   const deliverySpeedItems = useMemo(
@@ -320,11 +310,6 @@ const PathaoCourierCard = ({
           if (matchedZoneId) {
             setSelectedZone(matchedZoneId);
 
-            apiClient
-              .get(`/api/v1/courier/pathao/areas/${matchedZoneId}`)
-              .then((res) => setAreas(res.data?.data || []))
-              .catch(() => {});
-
             if (effectiveStoreId) {
               calculateRateAutomatically(
                 effectiveStoreId,
@@ -346,9 +331,7 @@ const PathaoCourierCard = ({
   const handleCityChange = async (cityId) => {
     setSelectedCity(cityId);
     setSelectedZone("");
-    setSelectedArea("");
     setZones([]);
-    setAreas([]);
     setEstimatedPrice(null);
 
     if (!cityId) return;
@@ -384,21 +367,13 @@ const PathaoCourierCard = ({
 
   const handleZoneChange = async (zoneId, cityIdOverride) => {
     setSelectedZone(zoneId);
-    setSelectedArea("");
-    setAreas([]);
     setEstimatedPrice(null);
 
     if (!zoneId) return;
-    try {
-      const res = await apiClient.get(`/api/v1/courier/pathao/areas/${zoneId}`);
-      setAreas(res.data?.data || []);
-
-      const cityId = cityIdOverride || selectedCity;
-      if (selectedStoreId && cityId) {
-        calculateRateAutomatically(selectedStoreId, cityId, zoneId, itemWeight, deliveryType, itemType);
-      }
-    } catch (err) {
-      console.warn("Failed to load areas", err);
+    // Pathao accepts orders without an area, so the zone is the most specific level we send
+    const cityId = cityIdOverride || selectedCity;
+    if (selectedStoreId && cityId) {
+      calculateRateAutomatically(selectedStoreId, cityId, zoneId, itemWeight, deliveryType, itemType);
     }
   };
 
@@ -425,15 +400,11 @@ const PathaoCourierCard = ({
       return;
     }
     if (recipientAddress.trim().length < 10) {
-      toast.error("Pathao requires at least 10 characters in Delivery Address (please add Area, Thana or District).");
+      toast.error("Pathao requires at least 10 characters in Delivery Address (please add Thana or District).");
       return;
     }
     if (!selectedCity || !selectedZone) {
       toast.error("Please select Destination City and Zone.");
-      return;
-    }
-    if (areas.length > 0 && !selectedArea) {
-      toast.error("Please select a Destination Area, as it is required for this Zone.");
       return;
     }
     if (!selectedStoreId) {
@@ -452,7 +423,6 @@ const PathaoCourierCard = ({
         recipient_address: recipientAddress.trim(),
         recipient_city: Number(selectedCity),
         recipient_zone: Number(selectedZone),
-        recipient_area: selectedArea ? Number(selectedArea) : undefined,
         delivery_type: Number(deliveryType),
         item_type: Number(itemType),
         special_instruction: specialInstruction.trim(),
@@ -604,74 +574,35 @@ const PathaoCourierCard = ({
             )}
           </div>
 
-          {/* City / Zone / Area Selectors */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* City / Zone Selectors */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold">City <span className="text-destructive">*</span></label>
-              <Select value={selectedCity} onValueChange={handleCityChange} items={cityItems}>
-                <SelectTrigger className="h-10 text-sm">
-                  <SelectValue placeholder="Select City">
-                    {(val) => {
-                      if (!val) return null;
-                      const c = cities.find((item) => String(item.city_id) === String(val));
-                      return c ? c.city_name : `City #${val}`;
-                    }}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {cities.map((c) => (
-                    <SelectItem key={c.city_id} value={String(c.city_id)}>
-                      {c.city_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCombobox
+                value={selectedCity}
+                onChange={(v) => handleCityChange(v ? String(v) : "")}
+                options={cityItems}
+                placeholder="Select City"
+                searchPlaceholder="Search city..."
+                emptyMessage="No city found"
+                clearable={false}
+                ariaLabel="City"
+              />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold">Zone <span className="text-destructive">*</span></label>
-              <Select value={selectedZone} onValueChange={handleZoneChange} disabled={!selectedCity || zones.length === 0} items={zoneItems}>
-                <SelectTrigger className="h-10 text-sm">
-                  <SelectValue placeholder={!selectedCity ? "Select city first" : "Select Zone"}>
-                    {(val) => {
-                      if (!val) return null;
-                      const z = zones.find((item) => String(item.zone_id) === String(val));
-                      return z ? z.zone_name : `Zone #${val}`;
-                    }}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {zones.map((z) => (
-                    <SelectItem key={z.zone_id} value={String(z.zone_id)}>
-                      {z.zone_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">
-                Area / Thana {areas.length > 0 && <span className="text-destructive">*</span>}
-              </label>
-              <Select value={selectedArea} onValueChange={setSelectedArea} disabled={!selectedZone || areas.length === 0} items={areaItems}>
-                <SelectTrigger className="h-10 text-sm">
-                  <SelectValue placeholder={!selectedZone ? "Select zone first" : areas.length === 0 ? "No area needed" : "Select Area / Thana"}>
-                    {(val) => {
-                      if (!val) return null;
-                      const a = areas.find((item) => String(item.area_id) === String(val));
-                      return a ? a.area_name : `Area #${val}`;
-                    }}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {areas.map((a) => (
-                    <SelectItem key={a.area_id} value={String(a.area_id)}>
-                      {a.area_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCombobox
+                value={selectedZone}
+                onChange={(v) => handleZoneChange(v ? String(v) : "")}
+                options={zoneItems}
+                placeholder={!selectedCity ? "Select city first" : "Select Zone"}
+                searchPlaceholder="Search zone..."
+                emptyMessage="No zone found"
+                disabled={!selectedCity || zones.length === 0}
+                clearable={false}
+                ariaLabel="Zone"
+              />
             </div>
           </div>
 

@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
-import { sendOtpEmail } from "../../common/utils/otpDelivery.js";
+import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 import {
   sanitizeInfo,
   validateAddressPayload,
@@ -899,6 +899,9 @@ export const resetPassword = async (req, res, next) => {
     member.emailVerifiedAt = new Date();
 
     const tokenBundle = await issueMemberTokens(member);
+
+    // Fire-and-forget confirmation; the reset already succeeded
+    sendPasswordChangedEmail({ toEmail: member.email, name: member.name, log: req.log });
 
     return res.json({
       status: "success",

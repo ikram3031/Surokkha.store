@@ -25,7 +25,7 @@ const { Types } = mongoose;
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
 import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
 import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
-import { compileTransactionalEmailHtml } from '../../common/templates/invoices/templateEngine.js';
+import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
@@ -305,6 +305,15 @@ export const listOrders = async (req, res, next) => {
           { $and: [{ _id: { $nin: allPaymentOrderIds } }, orderFieldCondition] },
         ],
       });
+    }
+
+    // Date range filter (YYYY-MM-DD, Bangladesh time, both days inclusive)
+    const isDay = (v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+    if (isDay(req.query.dateFrom) || isDay(req.query.dateTo)) {
+      const range = {};
+      if (isDay(req.query.dateFrom)) range.$gte = new Date(`${req.query.dateFrom}T00:00:00.000+06:00`);
+      if (isDay(req.query.dateTo)) range.$lte = new Date(`${req.query.dateTo}T23:59:59.999+06:00`);
+      andConditions.push({ createdAt: range });
     }
 
     if (req.query.search) {
@@ -985,14 +994,6 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
       paidAmount: effectivePaid,
     };
 
-    let templateConfig = null;
-    try {
-      const storeSettings = await StoreSettingsModel.findOne({ key: "default" }).lean();
-      if (storeSettings?.templates?.isActive) {
-        templateConfig = storeSettings.templates;
-      }
-    } catch (_) {}
-
     const { transport, config: smtpConfig } = await getSmtpTransport();
     if (!smtpConfig.isConfigured || !transport) {
       return res.status(400).json({
@@ -1005,11 +1006,7 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
     const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
     const fromAddress = `"${brandDisplayName}" <${fromEmail}>`;
 
-    const htmlContent = compileTransactionalEmailHtml({
-      templateConfig: templateConfig || {},
-      order: formattedOrderData,
-      clientConfig: config,
-    });
+    const htmlContent = buildOrderInvoiceEmailHtml({ order: formattedOrderData });
 
     await transport.sendMail({
       from: fromAddress,
