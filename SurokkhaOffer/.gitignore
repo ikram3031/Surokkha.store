@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Generated from src/data/offer-products.json on every build
+public/catalog.csv

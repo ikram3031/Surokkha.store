@@ -170,6 +170,13 @@ export default function OfferPage() {
     if (key !== 'note') setErrors((e) => ({ ...e, [key]: undefined }))
   }
 
+  // Catalog ad links (?product=SC01P001) open that product's Details on arrival
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('product')
+    const p = id && products.find((x) => x.id === id)
+    if (p) setQuickView(p)
+  }, [products])
+
   // Thanas come from the store's Pathao-synced location API
   useEffect(() => {
     setThanas([])
@@ -450,7 +457,7 @@ export default function OfferPage() {
         )}
 
         {/* Checkout: always the last block on the page */}
-        <section ref={checkoutRef} id="checkout" className="scroll-mt-4 border-t border-gray-100 bg-white">
+        <section ref={checkoutRef} id="checkout" className="scroll-mt-4 border-t border-gray-200 bg-gray-50">
           <div className="mx-auto max-w-6xl px-4 py-8 lg:py-12">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">চেকআউট</h2>
