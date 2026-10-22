@@ -18,7 +18,9 @@ import {
   MAX_ORDER_AMOUNT,
   MAX_QTY_PER_LINE,
   MAX_QTY_PER_ORDER,
-  SHIP_FEE,
+  DELIVERY,
+  deliveryZone,
+  ZONE_LABEL,
   variantPrice,
   type OfferProduct,
   type OfferVariant,
@@ -141,6 +143,8 @@ const track = (event: string, params?: Record<string, unknown>, eventID?: string
   }
 }
 
+const trackedOrders = new Set<string>()
+
 // Pixel browser ids, passed to the backend so its Conversions API event matches this visitor
 const cookie = (name: string) => document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] ?? ''
 
@@ -197,6 +201,7 @@ export default function OfferPage() {
     return () => controller.abort()
   }, [form.district])
   const [submitting, setSubmitting] = useState(false)
+  const submitLock = useRef(false)
   const [placed, setPlaced] = useState<string | null>(null)
   const checkoutRef = useRef<HTMLElement>(null)
 
@@ -223,7 +228,8 @@ export default function OfferPage() {
   const tier = tierFor(comboSubtotal)
   const next = nextTier(comboSubtotal)
   const discount = tier ? Math.round((comboSubtotal * tier.off) / 100) : 0
-  const shipping = count === 0 ? 0 : SHIP_FEE
+  const zone = deliveryZone(form.district, form.thana)
+  const shipping = count === 0 ? 0 : DELIVERY[zone]
   const total = subtotal - discount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]
 
@@ -280,6 +286,9 @@ export default function OfferPage() {
       district: form.district,
       zip: '',
     }
+    // Ref guard: state-based `disabled` lags a render, so a double tap could place (and track) the order twice
+    if (submitLock.current) return
+    submitLock.current = true
     setSubmitting(true)
     try {
       const res = await api.post<{ data?: { orderNumber?: string } }>('/orders/new-order', {
@@ -315,7 +324,8 @@ export default function OfferPage() {
         total,
       })
       const orderNumber = res?.data?.orderNumber ?? ''
-      track(
+      // Fire Purchase once per order; the eventID matches the server CAPI event_id so Meta dedupes the pair
+      if (!orderNumber || !trackedOrders.has(orderNumber)) track(
         'Purchase',
         {
           content_ids: lines.map((l) => l.variant?.sku || l.product.sku || l.product.id),
@@ -327,6 +337,7 @@ export default function OfferPage() {
         },
         orderNumber || undefined,
       )
+      if (orderNumber) trackedOrders.add(orderNumber)
       setPlaced(orderNumber)
       setQty({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -335,6 +346,7 @@ export default function OfferPage() {
       // A Turnstile token is single-use, so ask for a fresh one before the next try
       captchaRef.current?.reset()
     } finally {
+      submitLock.current = false
       setSubmitting(false)
     }
   }
@@ -418,7 +430,7 @@ export default function OfferPage() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-3 px-4 py-8 sm:grid-cols-3">
             {[
               { icon: Lock, t: 'গোপনীয় প্যাকেজিং', d: 'বাইরে থেকে কেউ বুঝবে না ভেতরে কী আছে' },
-              { icon: Truck, t: 'সারাদেশে ডেলিভারি', d: `ডেলিভারি চার্জ ${taka(SHIP_FEE)}` },
+              { icon: Truck, t: 'সারাদেশে ডেলিভারি', d: `ঢাকায় ${taka(DELIVERY.dhakaCity)}, বাইরে ${taka(DELIVERY.outsideDhaka)}` },
               { icon: Wallet, t: 'ক্যাশ অন ডেলিভারি', d: 'পণ্য হাতে পেয়ে টাকা পরিশোধ করুন' },
             ].map(({ icon: Icon, t, d }) => (
               <div key={t} className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4">
@@ -565,7 +577,13 @@ export default function OfferPage() {
                         <dd className="text-emerald-600">−{taka(discount)}</dd>
                       </div>
                     )}
-                    <div className="flex justify-between"><dt className="text-gray-500">ডেলিভারি চার্জ</dt><dd>{count ? taka(shipping) : '—'}</dd></div>
+                    <div className="flex justify-between">
+                      <dt className="text-gray-500">
+                        ডেলিভারি চার্জ{' '}
+                        {form.district && <span className="text-xs text-gray-400">({ZONE_LABEL[zone]})</span>}
+                      </dt>
+                      <dd>{count ? taka(shipping) : '—'}</dd>
+                    </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold">
                       <dt>সর্বমোট</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
                     </div>

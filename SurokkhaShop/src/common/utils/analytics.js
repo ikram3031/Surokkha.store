@@ -194,6 +194,8 @@ export function getStoredUserData() {
   };
 }
 
+let metaPixelInitialised = false;
+
 // Sync user identity to Meta Pixel Advanced Matching
 export function syncMetaUserProperties(overrideData = null) {
   if (!isBrowser || typeof window.fbq !== 'function') return;
@@ -225,9 +227,16 @@ export function syncMetaUserProperties(overrideData = null) {
       userProps.ct = user.district.toLowerCase();
       userProps.st = user.district.toLowerCase();
     }
+    // The pixel is already initialised once in index.html. Re-running fbq('init') for the same ID
+    // registers a duplicate pixel instance and every event (incl. Purchase) is then sent twice.
+    // Advanced matching data is still delivered hashed through the server-side CAPI event.
     try {
-      window.fbq('set', 'autoConfig', false, META_PIXEL_ID);
-      window.fbq('init', META_PIXEL_ID, userProps);
+      const alreadyInit = !!window.fbq?.instance?.pixelsByID?.[META_PIXEL_ID];
+      if (!alreadyInit && !metaPixelInitialised) {
+        metaPixelInitialised = true;
+        window.fbq('set', 'autoConfig', false, META_PIXEL_ID);
+        window.fbq('init', META_PIXEL_ID, userProps);
+      }
     } catch (_) {}
   }
 }

@@ -718,7 +718,14 @@ const PathaoCourierCard = ({
           title={hasConsignment ? "Pathao Dispatched" : "Send with Pathao"}
         >
           <Truck className={triggerIconOnly ? "h-3.5 w-3.5" : "h-3.5 w-3.5 text-primary"} />
-          {!triggerIconOnly && (hasConsignment ? "Pathao Dispatched" : "Send with Pathao")}
+          {triggerIconOnly === "responsive" ? (
+            // Label only on desktop; mobile stays icon-only
+            <span className="hidden md:inline text-xs font-medium">
+              {hasConsignment ? "Pathao Dispatched" : "Send with Pathao"}
+            </span>
+          ) : (
+            !triggerIconOnly && (hasConsignment ? "Pathao Dispatched" : "Send with Pathao")
+          )}
         </Button>
         {renderDispatchDialog()}
       </>

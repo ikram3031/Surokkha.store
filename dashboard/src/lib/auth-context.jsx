@@ -92,13 +92,13 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, turnstileToken) => {
     try {
       if (!email || !password) {
         throw new Error('Please provide both email and password.');
       }
 
-      const response = await apiClient.post('/api/v1/auth/login', { email, password });
+      const response = await apiClient.post('/api/v1/auth/login', { email, password, turnstileToken });
       
       // If 2FA is required, return this to the component to handle the second step
       if (response.data?.requires2fa) {

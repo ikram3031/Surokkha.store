@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
 // Cloudflare Turnstile ("I'm human" checkbox). The site key is public and baked in at build time;
 // without one the widget is skipped and the backend only checks tokens when it has a secret key.
-export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
+export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | '0x4AAAAAAFgNwrn1AkNRO5';
 
 interface TurnstileApi {
   render: (el: HTMLElement, opts: Record<string, unknown>) => string
@@ -63,6 +63,7 @@ export const Turnstile = forwardRef<TurnstileHandle, Props>(function Turnstile({
         if (cancelled || !boxRef.current || !window.turnstile) return
         widgetId.current = window.turnstile.render(boxRef.current, {
           sitekey: TURNSTILE_SITE_KEY,
+          action: 'checkout',
           language: 'bn',
           theme: 'light',
           callback: (token: string) => onTokenRef.current(token),
@@ -70,7 +71,7 @@ export const Turnstile = forwardRef<TurnstileHandle, Props>(function Turnstile({
           'error-callback': () => onTokenRef.current(''),
         })
       })
-      .catch(() => {})
+      .catch(() => { })
     return () => {
       cancelled = true
       if (widgetId.current) window.turnstile?.remove(widgetId.current)

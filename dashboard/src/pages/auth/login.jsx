@@ -20,9 +20,12 @@ import { handleGlobalError } from '@/lib/error-handler';
 import { toast } from 'sonner';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import plexiviaLogo from '@/assets/plexivia.png';
-import { clientConfig } from '@/clientConfig';
+import { clientConfig } from '@/clieentConfig';
 import { apiClient } from '@/lib/api-client';
 import { BrandLogo } from '@/components/BrandLogo';
+import { TurnstileWidget } from '@/components/auth/TurnstileWidget';
+
+const TURNSTILE_SITE_KEY = '0x4AAAAAAFgNwrn1AkNRO5';
 
 // Renders the secure store administration authentication and MFA/OTP verification portal
 const LoginPage = () => {
@@ -35,6 +38,8 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captcha, setCaptcha] = useState('');
+  const captchaRef = useRef(null);
 
   // Step 1: Login Form, Step 2: Verify MFA Code
   const [step, setStep] = useState(1);
@@ -152,10 +157,14 @@ const LoginPage = () => {
       toast.error(t('auth.invalid_credentials', 'Please enter both email and password.'));
       return;
     }
+    if (TURNSTILE_SITE_KEY && !captcha) {
+      toast.error('Please complete the Cloudflare verification first.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      const res = await login(email, password);
+      const res = await login(email, password, captcha);
       if (res && res.requires2fa) {
         setStep(2);
         toast.info(res.message || 'Please enter the 6-digit code from your MFA device.');
@@ -164,6 +173,8 @@ const LoginPage = () => {
       }
     } catch (err) {
       handleGlobalError(err);
+      // A Turnstile token is single-use, so get a fresh one before the next attempt
+      captchaRef.current?.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -248,7 +259,7 @@ const LoginPage = () => {
         className="w-full max-w-[430px] relative z-10 my-auto"
       >
         <Card className="shadow-2xl border border-border bg-card text-card-foreground backdrop-blur-2xl overflow-hidden rounded-3xl">
-          
+
           {step === 1 ? (
             /* ========================================================================= */
             /* STEP 1: PASSWORD LOGIN SCREEN                                             */
@@ -316,10 +327,12 @@ const LoginPage = () => {
                     </div>
                   </div>
 
+                  <TurnstileWidget ref={captchaRef} siteKey={TURNSTILE_SITE_KEY} onToken={setCaptcha} />
+
                   <div className="pt-2">
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (!!TURNSTILE_SITE_KEY && !captcha)}
                       className="w-full h-11 flex items-center justify-center font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl transition-all cursor-pointer shadow-sm"
                     >
                       {isSubmitting ? (
@@ -350,7 +363,7 @@ const LoginPage = () => {
             /* STEP 2: VERIFY MFA CODE (MATCHING SCREENSHOT DESIGN)                       */
             /* ========================================================================= */
             <div className="p-7 sm:p-8 space-y-6">
-              
+
               {/* Top Shield Icon */}
               <div className="flex justify-center pt-2">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center">
@@ -396,7 +409,7 @@ const LoginPage = () => {
 
               {/* Action Buttons */}
               <div className="space-y-3 pt-1 max-w-[340px] mx-auto">
-                
+
                 {/* 1. Verify Button */}
                 <Button
                   type="button"

@@ -1059,6 +1059,55 @@ export const getSpamList = async (req, res, next) => {
   }
 };
 
+// Manually add a phone and/or email to the spam list (Dashboard/Admin only)
+export const addSpamListEntry = async (req, res, next) => {
+  try {
+    const rawPhone = String(req.body?.phone || '').trim();
+    const phone = rawPhone ? rawPhone.replace(/\D/g, '').slice(-11) : '';
+    const email = String(req.body?.email || '').trim().toLowerCase();
+
+    if (!phone && !email) {
+      return res.status(400).json({ status: 'error', message: 'Phone or email is required' });
+    }
+    if (rawPhone && phone.length !== 11) {
+      return res.status(400).json({ status: 'error', message: 'Enter a valid 11-digit phone number' });
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ status: 'error', message: 'Enter a valid email address' });
+    }
+
+    const existsQuery = [];
+    if (phone) existsQuery.push({ phone });
+    if (email) existsQuery.push({ email });
+    const existing = await SpamListModel.findOne({ $or: existsQuery }).lean();
+    if (existing) {
+      return res.status(409).json({ status: 'error', message: 'This phone or email is already in the spam list' });
+    }
+
+    const entry = await SpamListModel.create({ phone, email });
+
+    try {
+      const actorName = req.user?.name || req.user?.email || 'Admin';
+      const actorDid = req.user?.did || req.user?.userId || 'system';
+      await LogModel.create({
+        type: 'created',
+        typeDid: entry.id,
+        description: `${actorName} added ${[phone, email].filter(Boolean).join(' / ')} to the spam list.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.warn('Failed to create log for spam list add:', logErr);
+    }
+
+    return res.status(201).json({ status: 'success', message: 'Added to spam list', data: entry });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Delete an entry from the spam list (Dashboard/Admin only)
 export const deleteSpamListEntry = async (req, res, next) => {
   try {

@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
-import { ShieldAlert, Trash2 } from 'lucide-react';
+import { ShieldAlert, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { getApiErrorMessage } from '@/lib/error-handler';
 
 export default function SpamList() {
   const { t } = useTranslation();
@@ -43,6 +47,38 @@ export default function SpamList() {
     }
   });
 
+  // Manual add dialog
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [newPhone, setNewPhone] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+
+  const addMutation = useMutation({
+    mutationFn: async (payload) => {
+      await apiClient.post('/api/v1/orders/spam', payload);
+    },
+    onSuccess: () => {
+      toast.success(t('spam.added_success', 'Added to spam list'));
+      queryClient.invalidateQueries({ queryKey: ['spam-list'] });
+      setIsAddOpen(false);
+      setNewPhone('');
+      setNewEmail('');
+    },
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, t('spam.added_error', 'Failed to add to spam list')));
+    },
+  });
+
+  const handleAddSubmit = (e) => {
+    e.preventDefault();
+    const phone = newPhone.trim();
+    const email = newEmail.trim();
+    if (!phone && !email) {
+      toast.error(t('spam.phone_or_email_required', 'Enter a phone number or email'));
+      return;
+    }
+    addMutation.mutate({ phone, email });
+  };
+
   const handleDelete = (id) => {
     if (confirm(t('spam.confirm_delete', 'Are you sure you want to remove this from the spam list?'))) {
       deleteMutation.mutate(id);
@@ -61,7 +97,52 @@ export default function SpamList() {
             {t('spam.description', 'Manage and view blocked emails and phone numbers from fake orders.')}
           </p>
         </div>
+        <Button type="button" onClick={() => setIsAddOpen(true)} className="gap-1.5 cursor-pointer">
+          <Plus className="h-4 w-4" />
+          {t('spam.add_new', 'Add New')}
+        </Button>
       </div>
+
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handleAddSubmit} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle>{t('spam.add_title', 'Add to Spam List')}</DialogTitle>
+              <DialogDescription>
+                {t('spam.add_description', 'Orders from this phone number or email will be blocked. Fill in at least one.')}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-1.5">
+              <Label htmlFor="spam-phone">{t('spam.phone', 'Phone')}</Label>
+              <Input
+                id="spam-phone"
+                type="tel"
+                placeholder="01XXXXXXXXX"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="spam-email">{t('spam.email', 'Email')}</Label>
+              <Input
+                id="spam-email"
+                type="email"
+                placeholder="name@example.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="cancel" onClick={() => setIsAddOpen(false)} disabled={addMutation.isPending}>
+                {t('common.cancel', 'Cancel')}
+              </Button>
+              <Button type="submit" disabled={addMutation.isPending} className="cursor-pointer">
+                {addMutation.isPending ? t('common.saving', 'Saving...') : t('spam.add_new', 'Add New')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>

@@ -1,6 +1,6 @@
 import { Cron } from 'croner';
 import { executeR2Backup } from '../services/r2Backup.service.js';
-import { getR2Config, isR2Configured, DEFAULT_BACKUP_CRON, DEFAULT_BACKUP_TIMEZONE } from '../services/r2Config.service.js';
+import { getR2Config, isR2Configured, recordBackupStatus, DEFAULT_BACKUP_CRON, DEFAULT_BACKUP_TIMEZONE } from '../services/r2Config.service.js';
 import { StoreSettingsModel } from '../models/storeSettings.model.js';
 import { logger } from '../config/logger.js';
 
@@ -20,9 +20,20 @@ export const scheduleBackupJob = async () => {
     backupJob = null;
   }
 
-  const cfg = await getR2Config().catch(() => null);
+  let cfgError = null;
+  const cfg = await getR2Config().catch((err) => {
+    cfgError = err.message;
+    return null;
+  });
   if (!cfg || !cfg.backupEnabled || !isR2Configured(cfg)) {
-    logger.info('[BackupScheduler] R2 backup is disabled or not configured; no job scheduled');
+    // Say exactly why nothing is scheduled, and surface it on the R2 Storage page
+    const reason = cfgError
+      ? `Could not read R2 settings: ${cfgError}`
+      : !cfg?.backupEnabled
+        ? 'Automatic backup is turned off in R2 Storage settings'
+        : `R2 is not configured (source: ${cfg.source}); enable R2 and save Account ID, keys and bucket in R2 Storage settings`;
+    logger.warn({ source: cfg?.source, reason }, `[BackupScheduler] No backup job scheduled: ${reason}`);
+    await recordBackupStatus('failed', `Auto backup not scheduled: ${reason}`).catch(() => {});
     return null;
   }
 

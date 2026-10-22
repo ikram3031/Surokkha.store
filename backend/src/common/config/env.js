@@ -55,8 +55,12 @@ const envSchema = z.object({
   FB_PIXEL_ID_OFFER: z.string().optional().default("1840805450442709"),
   FB_ACCESS_TOKEN_OFFER: z.string().optional().default(""),
   FB_TEST_EVENT_CODE_OFFER: z.string().optional().default(""),
-  // Cloudflare Turnstile secret for offer.surokkha.shop orders; checks are skipped while unset
+  // Cloudflare Turnstile secret (offer checkout + dashboard login); checks are skipped while unset
   TURNSTILE_SECRET_KEY: z.string().optional().default(""),
+  // Emergency switch: "true" turns the Turnstile check off on dashboard login only
+  TURNSTILE_LOGIN_DISABLED: z.string().optional().default(""),
+  // Optional comma-separated hostnames accepted from siteverify; defaults are set per surface in code
+  TURNSTILE_HOSTNAMES: z.string().optional().default(""),
   TIKTOK_PIXEL_ID: z.string().optional().default(""),
   TIKTOK_ACCESS_TOKEN: z.string().optional().default(""),
   TIKTOK_TEST_EVENT_CODE: z.string().optional().default(""),

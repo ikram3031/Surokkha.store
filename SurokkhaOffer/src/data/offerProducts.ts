@@ -137,5 +137,24 @@ export const MAX_QTY_PER_LINE = 10
 export const MAX_QTY_PER_ORDER = 20
 export const MAX_ORDER_AMOUNT = 3000
 
-// Flat delivery charge (this page has no free-delivery threshold)
-export const SHIP_FEE = 60
+// Delivery charge, same tiers as SurokkhaShop's checkout (no free-delivery threshold on this page).
+// Thana names are Pathao zones like "Bank Colony, Savar", so suburbs are matched by name fragment.
+export const DELIVERY = { dhakaCity: 70, dhakaSuburbs: 90, outsideDhaka: 120 }
+const DHAKA_SUBURB_THANAS = ['savar', 'ashulia', 'dhamrai', 'keraniganj', 'nawabganj', 'dohar']
+const SUBURB_DISTRICTS = ['gazipur', 'narayanganj']
+
+export type DeliveryZone = 'dhakaCity' | 'dhakaSuburbs' | 'outsideDhaka'
+
+export function deliveryZone(district: string, thana: string): DeliveryZone {
+  const d = district.trim().toLowerCase()
+  const t = thana.trim().toLowerCase()
+  if (d === 'dhaka') return DHAKA_SUBURB_THANAS.some((s) => t.includes(s)) ? 'dhakaSuburbs' : 'dhakaCity'
+  if (SUBURB_DISTRICTS.includes(d)) return 'dhakaSuburbs'
+  return d ? 'outsideDhaka' : 'dhakaCity'
+}
+
+export const ZONE_LABEL: Record<DeliveryZone, string> = {
+  dhakaCity: 'ঢাকা সিটি',
+  dhakaSuburbs: 'ঢাকার আশেপাশে',
+  outsideDhaka: 'ঢাকার বাইরে',
+}
