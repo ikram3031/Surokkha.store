@@ -148,6 +148,13 @@ html {
   outline-offset: 2px;
 }
 
+/* Checkout fields draw their own red focus border/ring, so drop the global pink outline there */
+#checkout input:focus-visible,
+#checkout textarea:focus-visible,
+#checkout button[aria-haspopup='listbox']:focus-visible {
+  outline: none;
+}
+
 a,
 button:not(:disabled),
 [role='button']:not([aria-disabled='true']) {

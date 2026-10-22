@@ -49,6 +49,9 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         <p className="mb-2 mt-1 text-lg font-bold text-rose-600">
           {taka(fromPrice(product))}
           {isVariable && <span className="ml-1 text-xs font-normal text-gray-600">থেকে</span>}
+          {product.regularPrice && product.regularPrice > product.price && (
+            <s className="ml-1.5 text-sm font-normal text-gray-400">{taka(product.regularPrice)}</s>
+          )}
         </p>
         <div className="mt-auto">
           {isVariable ? (

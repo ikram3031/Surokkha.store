@@ -120,6 +120,7 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=${VITE_STORE_API_BASE_URL:-https://web.surokkha.store/store/v1}
+        - VITE_TURNSTILE_SITE_KEY=${OFFER_TURNSTILE_SITE_KEY:-0x4AAAAAAFgNwrn1AkNRO5-A}
     container_name: ${OFFER_FRONTEND_CONTAINER_NAME:-surokkha-frontend-offer-live}
     restart: always
     ports:

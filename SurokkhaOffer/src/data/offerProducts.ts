@@ -30,6 +30,10 @@ export interface OfferProduct {
   /** Present only on variable products: the card opens the variant picker */
   variants?: OfferVariant[]
   variantLabel?: string
+  /** Pre-discount price, shown struck through (ready combos) */
+  regularPrice?: number
+  /** Shown in the "অথবা আমাদের কম্বো" section */
+  readyCombo?: boolean
 }
 
 // Page content lives in offer-products.json: the "build your own combo" products now,
@@ -68,9 +72,49 @@ const fromJson = (p: JsonProduct): OfferProduct => ({
   variantLabel: 'অপশন',
 })
 
-const content = offerContent as { customCombo: { title: string; products: JsonProduct[] } }
+// Ready combos are custom products too (ids SC01C001…): fixed price, no options, not linked to dashboard products
+interface JsonReadyCombo {
+  id: string
+  type: 'custom'
+  sku: string
+  name: string
+  desc: string
+  details: string[]
+  price: number
+  regularPrice?: number
+  inStock: boolean
+  images: string[]
+  badge?: string
+}
+
+const fromReadyJson = (p: JsonReadyCombo): OfferProduct => ({
+  id: p.id,
+  apiId: '',
+  did: '',
+  entity: p.type,
+  sku: p.sku,
+  name: p.name,
+  desc: p.desc,
+  details: p.details,
+  price: p.price,
+  regularPrice: p.regularPrice,
+  inStock: p.inStock,
+  art: 'combo',
+  c1: '#F4919F',
+  c2: '#C9475F',
+  badge: p.badge,
+  images: p.images,
+  readyCombo: true,
+})
+
+const content = offerContent as {
+  customCombo: { title: string; products: JsonProduct[] }
+  readyCombos: { title: string; products: JsonReadyCombo[] }
+}
 
 export const CUSTOM_COMBO_PRODUCTS: OfferProduct[] = content.customCombo.products.map(fromJson)
+export const READY_COMBOS: OfferProduct[] = content.readyCombos.products.map(fromReadyJson)
+export const READY_COMBOS_TITLE = content.readyCombos.title
 
 export const variantPrice = (p: OfferProduct, v?: OfferVariant) => v?.price ?? p.price
 
@@ -80,9 +124,9 @@ export const fromPrice = (p: OfferProduct) => p.price
 // Combo discount by subtotal (no free delivery here, delivery is always charged)
 export const DISCOUNT_TIERS = [
   { min: 200, off: 10 },
-  { min: 400, off: 12 },
-  { min: 1000, off: 15 },
-  { min: 1500, off: 20 },
+  { min: 500, off: 15 },
+  { min: 1000, off: 20 },
+  { min: 1500, off: 25 },
 ]
 
 export const tierFor = (subtotal: number) => [...DISCOUNT_TIERS].reverse().find((t) => subtotal >= t.min)

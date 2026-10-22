@@ -1,3 +1,4 @@
+import { env } from '../../common/config/env.js';
 import mongoose from 'mongoose';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
@@ -23,6 +24,21 @@ import { upsertCustomerFromOrder } from '../../common/services/customer.service.
 
 const { Types } = mongoose;
 
+// Checks a Cloudflare Turnstile token with siteverify; any network/API failure counts as not verified
+const verifyTurnstile = async (token, ip) => {
+  if (!token || typeof token !== 'string') return false;
+  try {
+    const body = new URLSearchParams({ secret: env.TURNSTILE_SECRET_KEY, response: token });
+    if (ip && ip !== 'unknown') body.set('remoteip', String(ip).split(',')[0].trim());
+    const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body });
+    const data = await r.json();
+    return data?.success === true;
+  } catch (error) {
+    console.error('[Turnstile] siteverify failed:', error.message);
+    return false;
+  }
+};
+
 // Create a new order from checkout payload and sync related payment/member data
 export const createOrder = async (req, res, next) => {
   try {
@@ -47,6 +63,18 @@ export const createOrder = async (req, res, next) => {
         reason: 'spam',
         message: 'Sorry, you cannot place this order. Please contact us.',
       });
+    }
+
+    // Offer page orders must pass Cloudflare Turnstile once a secret key is configured
+    if (String(payload.orderPrefix || '').toUpperCase() === 'SC' && env.TURNSTILE_SECRET_KEY) {
+      const human = await verifyTurnstile(payload.turnstileToken, clientIp);
+      if (!human) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'CAPTCHA_FAILED',
+          message: 'নিরাপত্তা যাচাই সম্পন্ন হয়নি। "আমি রোবট নই" বক্সটি আবার চেক করে অর্ডার করুন।',
+        });
+      }
     }
 
     const validationErrors = validateOrderPayload(payload);

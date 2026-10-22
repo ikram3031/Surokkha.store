@@ -90,16 +90,13 @@ export const getStoreMetaPixelConfig = async () => {
 
 // Resolves active Meta Pixel configuration: store requests use the store's own settings, everything else the shop's
 export const getMetaPixelConfig = async (source = null, req = null) => {
-  // Offer orders use the env override when set, otherwise the store pixel saved from the dashboard
-  // (the offer page and the store share pixel 1045350585208532)
-  if (isOfferOrder(source, req)) {
-    if (env.FB_ACCESS_TOKEN_OFFER) return getOfferMetaPixelConfig();
-    return getStoreMetaPixelConfig().catch((error) => {
-      console.error("[Meta CAPI Config] Error resolving store Meta Pixel config for offer order:", error.message);
-      return { pixelId: "", accessToken: "", testEventCode: "", isEnabled: false, enableCapi: false };
-    });
+  // Offer orders use the env override when set, otherwise the shop's pixel (offer.surokkha.shop
+  // runs on the shop pixel even though its orders come through the store API)
+  const offer = isOfferOrder(source, req);
+  if (offer && env.FB_ACCESS_TOKEN_OFFER && env.FB_PIXEL_ID_OFFER) {
+    return getOfferMetaPixelConfig();
   }
-  if (isStoreRequest(source, req)) {
+  if (!offer && isStoreRequest(source, req)) {
     return getStoreMetaPixelConfig().catch((error) => {
       console.error("[Meta CAPI Config] Error resolving store Meta Pixel config:", error.message);
       return { pixelId: "", accessToken: "", testEventCode: "", isEnabled: false, enableCapi: false };
