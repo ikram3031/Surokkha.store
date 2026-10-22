@@ -45,20 +45,27 @@ export const isOfferOrder = (order, req = null) =>
   String(req?.body?.orderPrefix || "").toUpperCase() === OFFER_ORDER_PREFIX;
 
 // Optional env override for the offer page pixel (FB_PIXEL_ID_OFFER / FB_ACCESS_TOKEN_OFFER)
-const getOfferMetaPixelConfig = () => {
-  const pixelId = env.FB_PIXEL_ID_OFFER || "";
-  const accessToken = env.FB_ACCESS_TOKEN_OFFER || "";
+// Offer page pixel: env override (FB_PIXEL_ID_OFFER / FB_ACCESS_TOKEN_OFFER) first, otherwise the
+// top-level metaPixel of the default settings document (pixel 1840805450442709 and its saved token)
+const getOfferMetaPixelConfig = async () => {
+  let meta = {};
+  if (!env.FB_ACCESS_TOKEN_OFFER && mongoose.connection?.readyState === 1) {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean().catch(() => null);
+    meta = doc?.metaPixel || {};
+  }
+  const pixelId = env.FB_ACCESS_TOKEN_OFFER ? env.FB_PIXEL_ID_OFFER : meta.pixelId || env.FB_PIXEL_ID_OFFER || "";
+  const accessToken = env.FB_ACCESS_TOKEN_OFFER || meta.accessToken || "";
   if (!pixelId || !accessToken) {
     console.warn("[Meta CAPI Config] Warning: Offer Meta Pixel / CAPI credentials not configured. Event skipped.");
   }
   return {
     pixelId,
     accessToken,
-    testEventCode: env.FB_TEST_EVENT_CODE_OFFER || "",
-    isEnabled: !!(pixelId && accessToken),
-    enableCapi: !!(pixelId && accessToken),
+    testEventCode: env.FB_TEST_EVENT_CODE_OFFER || meta.testEventCode || "",
+    isEnabled: !!(pixelId && accessToken) && meta.isEnabled !== false,
+    enableCapi: !!(pixelId && accessToken) && meta.enableCapi !== false,
     enableBrowserPixel: true,
-    advancedMatching: true,
+    advancedMatching: meta.advancedMatching ?? true,
   };
 };
 
@@ -90,11 +97,13 @@ export const getStoreMetaPixelConfig = async () => {
 
 // Resolves active Meta Pixel configuration: store requests use the store's own settings, everything else the shop's
 export const getMetaPixelConfig = async (source = null, req = null) => {
-  // Offer orders use the env override when set, otherwise the shop's pixel (offer.surokkha.shop
-  // runs on the shop pixel even though its orders come through the store API)
+  // offer.surokkha.shop orders (SC) go to the offer pixel, not the store or shop one
   const offer = isOfferOrder(source, req);
-  if (offer && env.FB_ACCESS_TOKEN_OFFER && env.FB_PIXEL_ID_OFFER) {
-    return getOfferMetaPixelConfig();
+  if (offer) {
+    return getOfferMetaPixelConfig().catch((error) => {
+      console.error("[Meta CAPI Config] Error resolving offer Meta Pixel config:", error.message);
+      return { pixelId: "", accessToken: "", testEventCode: "", isEnabled: false, enableCapi: false };
+    });
   }
   if (!offer && isStoreRequest(source, req)) {
     return getStoreMetaPixelConfig().catch((error) => {
