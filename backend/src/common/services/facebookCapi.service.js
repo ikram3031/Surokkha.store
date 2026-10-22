@@ -515,7 +515,8 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     const contents = items.map((item) => {
       const matched = dbMap.get(item.productDid) || dbMap.get(item.name);
       return {
-        id: String(matched?.did || item.productDid || item.name || ""),
+        // Custom lines (offer page) have no product; their SKU (e.g. SC01P001-10) is the catalog id
+        id: String(matched?.did || item.productDid || (item.itemType === "custom" && item.sku) || item.name || ""),
         quantity: item.quantity || 1,
         item_price: Number(item.unitPrice || 0),
       };
