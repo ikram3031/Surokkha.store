@@ -20,7 +20,7 @@ import { handleGlobalError } from '@/lib/error-handler';
 import { toast } from 'sonner';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import plexiviaLogo from '@/assets/plexivia.png';
-import { clientConfig } from '@/clieentConfig';
+import { clientConfig } from '@/clientConfig';
 import { apiClient } from '@/lib/api-client';
 import { BrandLogo } from '@/components/BrandLogo';
 import { TurnstileWidget } from '@/components/auth/TurnstileWidget';
