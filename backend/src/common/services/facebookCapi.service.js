@@ -30,6 +30,15 @@ const normalizePhone = (phone = "") => {
   return digits;
 };
 
+// Meta rejects the whole event unless content_category is a string; storefront sends brand/category objects or arrays
+const toCategoryString = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value.trim();
+  if (Array.isArray(value)) return value.map(toCategoryString).filter(Boolean).join(", ");
+  if (typeof value === "object") return toCategoryString(value.name || value.title || value.label || value.slug || "");
+  return String(value);
+};
+
 // The store (surokkha.store) keeps its Meta Pixel in its own settings document, separate from the shop's
 export const STORE_META_PIXEL_KEY = "store-meta-pixel";
 
@@ -649,7 +658,7 @@ export const sendServerViewContentEvent = async ({
     const price = Number(product?.offerPrice || product?.price || 0);
     const productId = String(product?.did || product?._id || product?.id || "");
     const productName = product?.name || "";
-    const category = product?.category?.name || product?.category || "";
+    const category = toCategoryString(product?.category);
 
     const contentIds = [...new Set([
       product?.did,
@@ -778,7 +787,7 @@ export const sendServerAddToCartEvent = async ({
     const price = Number(product?.offerPrice || product?.price || 0);
     const productId = String(product?.did || product?._id || product?.id || "");
     const productName = product?.name || "";
-    const category = product?.category?.name || product?.category || "";
+    const category = toCategoryString(product?.category);
     const qty = Number(quantity || 1);
 
     const atcContentIds = [...new Set([
