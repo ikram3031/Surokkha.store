@@ -575,7 +575,9 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
         if (!res.ok) {
           const errData = await res.text();
           console.warn("[Meta CAPI Server] Response error:", errData);
+          return;
         }
+        console.log(`[Meta CAPI Server] Purchase sent: order=${resolvedOrderNumber} pixel=${pixelId} value=${orderTotalAmount}`);
       })
       .catch((err) => {
         console.warn("[Meta CAPI Server] Network error:", err.message);
