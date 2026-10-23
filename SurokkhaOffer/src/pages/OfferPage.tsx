@@ -10,7 +10,6 @@ import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useC
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from '@/components/offer/Turnstile'
 import { QuickViewDialog, VariantDialog } from '@/components/offer/ProductDialogs'
 import {
-  CUSTOM_COMBO_PRODUCTS,
   READY_COMBOS_TITLE,
   DISCOUNT_TIERS,
   nextTier,
@@ -163,7 +162,7 @@ export default function OfferPage() {
   const { products: catalogProducts, loading: catalogLoading } = useCatalogProducts()
   const { products: comboProducts, loading: combosLoading } = useComboProducts()
   const products = useMemo(
-    () => [...catalogProducts, ...CUSTOM_COMBO_PRODUCTS, ...comboProducts],
+    () => [...catalogProducts, ...comboProducts],
     [catalogProducts, comboProducts],
   )
   const [qty, setQty] = useState<Record<string, number>>({})
@@ -188,7 +187,7 @@ export default function OfferPage() {
     if (key !== 'note') setErrors((e) => ({ ...e, [key]: undefined }))
   }
 
-  // Catalog ad links (?product=SC01P001) open that product's Details on arrival
+  // Catalog ad links (?product=<did>) open that product's Details on arrival
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get('product')
     const p = id && products.find((x) => x.id === id)
@@ -442,7 +441,7 @@ export default function OfferPage() {
               TOP_PRODUCTS.map((t) => (
                 <div key={t.path} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
               ))}
-            {[...catalogProducts, ...CUSTOM_COMBO_PRODUCTS].map((p) => (
+            {catalogProducts.map((p) => (
               <OfferProductCard
                 key={p.id}
                 product={p}

@@ -5,7 +5,7 @@ import picks from '@/data/offer-picks.json'
 
 // Store products shown first on the page, loaded live from the StoreWeb API by their catalog id (did).
 // Using the did as the pixel content id keeps these products matched to the store's Meta catalog.
-// Products shown first on the page; the list lives in offer-picks.json so the catalog script reads the same one
+// Products shown first on the page; the list lives in offer-picks.json
 export const TOP_PRODUCTS = picks.top as { path: string; entity: 'product' | 'item' }[]
 
 interface ApiProduct {

@@ -1,5 +1,4 @@
 import type { ProductArt } from '@/components/icons/ArtIcons'
-import offerContent from './offer-products.json'
 
 export interface OfferVariant {
   id: string
@@ -14,7 +13,7 @@ export interface OfferProduct {
   id: string
   apiId: string
   did: string
-  entity: 'product' | 'item' | 'custom'
+  entity: 'product' | 'item'
   sku: string
   name: string
   desc: string
@@ -36,85 +35,7 @@ export interface OfferProduct {
   readyCombo?: boolean
 }
 
-// Page content lives in offer-products.json: the "build your own combo" products now,
-// ready-made combos later. Store ids are kept so orders still link to dashboard products.
-interface JsonProduct {
-  /** Offer product id, e.g. SC01P001; also used as the order line SKU */
-  id: string
-  type: 'custom'
-  sku: string
-  name: string
-  desc: string
-  details: string[]
-  inStock: boolean
-  images: string[]
-  badge?: string
-  options: { id: string; name: string; price: number; inStock?: boolean }[]
-}
-
-const fromJson = (p: JsonProduct): OfferProduct => ({
-  id: p.id,
-  apiId: '',
-  did: '',
-  entity: p.type,
-  sku: p.sku,
-  name: p.name,
-  desc: p.desc,
-  details: p.details,
-  price: Math.min(...p.options.map((o) => o.price)),
-  inStock: p.inStock,
-  art: 'box',
-  c1: '#F4919F',
-  c2: '#C9475F',
-  badge: p.badge,
-  images: p.images,
-  variants: p.options.map((o) => ({ id: o.id, label: o.name, price: o.price, sku: o.id, inStock: o.inStock ?? true })),
-  variantLabel: 'অপশন',
-})
-
-// Ready combos are custom products too (ids SC01C001…): fixed price, no options, not linked to dashboard products
-interface JsonReadyCombo {
-  id: string
-  type: 'custom'
-  sku: string
-  name: string
-  desc: string
-  details: string[]
-  price: number
-  regularPrice?: number
-  inStock: boolean
-  images: string[]
-  badge?: string
-}
-
-const fromReadyJson = (p: JsonReadyCombo): OfferProduct => ({
-  id: p.id,
-  apiId: '',
-  did: '',
-  entity: p.type,
-  sku: p.sku,
-  name: p.name,
-  desc: p.desc,
-  details: p.details,
-  price: p.price,
-  regularPrice: p.regularPrice,
-  inStock: p.inStock,
-  art: 'combo',
-  c1: '#F4919F',
-  c2: '#C9475F',
-  badge: p.badge,
-  images: p.images,
-  readyCombo: true,
-})
-
-const content = offerContent as {
-  customCombo: { title: string; products: JsonProduct[] }
-  readyCombos: { title: string; products: JsonReadyCombo[] }
-}
-
-export const CUSTOM_COMBO_PRODUCTS: OfferProduct[] = content.customCombo.products.map(fromJson)
-export const READY_COMBOS: OfferProduct[] = content.readyCombos.products.map(fromReadyJson)
-export const READY_COMBOS_TITLE = content.readyCombos.title
+export const READY_COMBOS_TITLE = 'অথবা আমাদের কম্বো থেকে বেছে নিন'
 
 export const variantPrice = (p: OfferProduct, v?: OfferVariant) => v?.price ?? p.price
 

@@ -234,16 +234,12 @@ export const getMetaCatalogCsv = async (req, res, next) => {
 // Live Meta catalog for offer.surokkha.shop: the real products that page shows, never items.
 // Top products come from client config offerPage.catalogProductDids; ready combos are every
 // in-stock product in the "combo" category. Ids are product dids, the same ids the page's pixel sends.
-const OFFER_DEFAULT_DIDS = ["788b855254ac89fa", "68c019a9c15c38dc", "b9de8b186df2b554"];
-
 export const getOfferCatalogCsv = async (req, res, next) => {
   try {
     const offerCfg = config.offerPage || {};
     const siteUrl = String(offerCfg.url || "https://offer.surokkha.shop").replace(/\/$/, "");
     const mediaOrigin = String(config.sites?.store?.apiBaseUrl || "https://web.surokkha.store").replace(/\/$/, "");
-    const topDids = Array.isArray(offerCfg.catalogProductDids) && offerCfg.catalogProductDids.length
-      ? offerCfg.catalogProductDids
-      : OFFER_DEFAULT_DIDS;
+    const topDids = Array.isArray(offerCfg.catalogProductDids) ? offerCfg.catalogProductDids : [];
 
     const visible = { isActive: { $ne: false }, excludeFromMetaCatalog: { $ne: true } };
     const comboCategory = await CategoryModel.findOne({ slug: "combo" }).select("_id").lean();
