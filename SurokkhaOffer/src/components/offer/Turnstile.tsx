@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
 // Cloudflare Turnstile ("I'm human" checkbox). The site key is public and baked in at build time;
 // without one the widget is skipped and the backend only checks tokens when it has a secret key.
-export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | '0x4AAAAAAFgNwrn1AkNRO5';
+export const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) || '0x4AAAAAAFgNwrn1AkNRO5-A'
 
 interface TurnstileApi {
   render: (el: HTMLElement, opts: Record<string, unknown>) => string

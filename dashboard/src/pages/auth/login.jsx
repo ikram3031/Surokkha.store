@@ -23,9 +23,7 @@ import plexiviaLogo from '@/assets/plexivia.png';
 import { clientConfig } from '@/clientConfig';
 import { apiClient } from '@/lib/api-client';
 import { BrandLogo } from '@/components/BrandLogo';
-import { TurnstileWidget } from '@/components/auth/TurnstileWidget';
 
-const TURNSTILE_SITE_KEY = '0x4AAAAAAFgNwrn1AkNRO5';
 
 // Renders the secure store administration authentication and MFA/OTP verification portal
 const LoginPage = () => {
@@ -38,8 +36,6 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [captcha, setCaptcha] = useState('');
-  const captchaRef = useRef(null);
 
   // Step 1: Login Form, Step 2: Verify MFA Code
   const [step, setStep] = useState(1);
@@ -157,14 +153,10 @@ const LoginPage = () => {
       toast.error(t('auth.invalid_credentials', 'Please enter both email and password.'));
       return;
     }
-    if (TURNSTILE_SITE_KEY && !captcha) {
-      toast.error('Please complete the Cloudflare verification first.');
-      return;
-    }
 
     setIsSubmitting(true);
     try {
-      const res = await login(email, password, captcha);
+      const res = await login(email, password);
       if (res && res.requires2fa) {
         setStep(2);
         toast.info(res.message || 'Please enter the 6-digit code from your MFA device.');
@@ -173,8 +165,6 @@ const LoginPage = () => {
       }
     } catch (err) {
       handleGlobalError(err);
-      // A Turnstile token is single-use, so get a fresh one before the next attempt
-      captchaRef.current?.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -327,12 +317,10 @@ const LoginPage = () => {
                     </div>
                   </div>
 
-                  <TurnstileWidget ref={captchaRef} siteKey={TURNSTILE_SITE_KEY} onToken={setCaptcha} />
-
                   <div className="pt-2">
                     <Button
                       type="submit"
-                      disabled={isSubmitting || (!!TURNSTILE_SITE_KEY && !captcha)}
+                      disabled={isSubmitting}
                       className="w-full h-11 flex items-center justify-center font-bold text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl transition-all cursor-pointer shadow-sm"
                     >
                       {isSubmitting ? (

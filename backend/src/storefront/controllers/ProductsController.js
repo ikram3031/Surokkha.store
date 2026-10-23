@@ -196,7 +196,7 @@ export const getMetaCatalogCsv = async (req, res, next) => {
             rowId: multi ? `${id}-${idx + 1}` : id,
             rowTitle: multi ? `${title} - ${vName}` : title,
             rowAvailability: vOut ? 'out of stock' : 'in stock',
-            rowImage: imageLink || resolveImage(v.imageUrl),
+            rowImage: resolveImage(v.imageUrl) || imageLink,
             numPrice,
             numOfferPrice: offerOf(numPrice, v.offerPrice),
             quantity: vQty,

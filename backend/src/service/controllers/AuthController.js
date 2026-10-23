@@ -5,9 +5,7 @@ import { UserModel } from "../../common/models/user.model.js";
 import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { comparePassword, hashPassword } from "../../common/utils/password.js";
-import { config as clientConfig } from "../../common/config/index.js";
 import { dispatchTwoFactorSetupEmail } from "./TwoFactorController.js";
-import { isTurnstileConfigured, verifyTurnstile } from "../../common/utils/turnstile.js";
 
 export const createAccessToken = (user) => {
   return jwt.sign(
@@ -87,22 +85,6 @@ export const login = async (req, res, next) => {
 
     if (!normalizedEmail || !password) {
       return res.status(400).json({ status: "error", message: "Email and password are required" });
-    }
-
-    // Cloudflare Turnstile on the dashboard login, once both the secret and the dashboard's site key are configured
-    if (isTurnstileConfigured() && clientConfig?.cloudflare?.turnstileSiteKey && env.TURNSTILE_LOGIN_DISABLED !== "true") {
-      const clientIp = req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown";
-      const human = await verifyTurnstile(req.body?.turnstileToken, clientIp, {
-        action: "login",
-        hostnames: ["admin.surokkha.store", "admin.surokkha.shop"],
-      });
-      if (!human) {
-        return res.status(400).json({
-          status: "error",
-          code: "CAPTCHA_FAILED",
-          message: "Security check failed. Please complete the Cloudflare verification and try again.",
-        });
-      }
     }
 
     const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret +refreshTokens");
