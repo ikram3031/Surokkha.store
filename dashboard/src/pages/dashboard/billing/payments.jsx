@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, CheckCircle2, XCircle, Clock, Trash2, MoreHorizontal } from 'lucide-react';
+import { EXPORT_BUTTON_CLASS } from '@/lib/export-button';
 import {
   Select,
   SelectContent,
@@ -182,14 +183,14 @@ const PaymentsPage = () => {
   const isAllPageSelected = payments.length > 0 && payments.every((p) => selectedIds.includes(p.id));
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
           <p className="text-sm text-muted-foreground mt-1">Track all payment transactions</p>
         </div>
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
+        <Button variant="outline" className={EXPORT_BUTTON_CLASS}>
+          <Download className="size-4" />
           Export
         </Button>
       </div>
@@ -270,11 +271,10 @@ const PaymentsPage = () => {
                 </span>
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={handleBulkExport}
-                  className="flex items-center gap-1.5 h-9"
+                  className={EXPORT_BUTTON_CLASS}
                 >
-                  <Download className="h-4 w-4" />
+                  <Download className="size-4" />
                   Export
                 </Button>
                 <Select value="placeholder" onValueChange={handleBulkStatusChange}>

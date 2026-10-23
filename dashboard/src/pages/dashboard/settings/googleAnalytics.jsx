@@ -135,7 +135,7 @@ const GoogleAnalyticsPage = () => {
   ];
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 w-full max-w-5xl">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* 1. Header with Live Status Indicator */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

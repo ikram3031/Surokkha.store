@@ -6,6 +6,7 @@ import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { comparePassword, hashPassword } from "../../common/utils/password.js";
 import { dispatchTwoFactorSetupEmail } from "./TwoFactorController.js";
+import { sendForgotPasswordAlertEmail } from "../../common/utils/otpDelivery.js";
 
 export const createAccessToken = (user) => {
   return jwt.sign(
@@ -78,6 +79,39 @@ export const clearAuthCookies = (res, req) => {
 };
 
 // POST /auth/login - Validates credentials and logs in directly or prompts 2FA if enabled
+// One alert per email every 10 minutes, so the button can't flood the admin inbox
+const FORGOT_ALERT_COOLDOWN_MS = 10 * 60 * 1000;
+const forgotAlertSentAt = new Map();
+
+// Dashboard "Forgot Password": emails the admin inbox so an Owner/Admin can reset it.
+// Always answers the same way, so it can't be used to check which emails have accounts.
+export const requestPasswordHelp = async (req, res, next) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ status: "error", message: "Enter a valid email address" });
+    }
+    const reply = { status: "success", message: "The admin has been notified. They will contact you with a new password." };
+
+    const lastSent = forgotAlertSentAt.get(email) || 0;
+    if (Date.now() - lastSent < FORGOT_ALERT_COOLDOWN_MS) return res.json(reply);
+
+    const user = await UserModel.findOne({ email }).select("name email role isActive").lean();
+    if (user && user.isActive !== false) {
+      forgotAlertSentAt.set(email, Date.now());
+      const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "").split(",")[0].trim();
+      const result = await sendForgotPasswordAlertEmail({ toEmail: env.FORGOT_PASSWORD_ALERT_EMAIL, user, ip, log: logger });
+      if (!result.delivered) {
+        forgotAlertSentAt.delete(email);
+        logger.warn({ email, reason: result.reason }, "Forgot password alert was not delivered");
+      }
+    }
+    return res.json(reply);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body ?? {};

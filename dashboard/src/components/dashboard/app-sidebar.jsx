@@ -1,4 +1,5 @@
 import * as React from "react"
+import { resolveImageUrl } from "@/lib/api-client"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
@@ -281,6 +282,10 @@ export const AppSidebar = ({ ...props }) => {
   }
 
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || "B"
+  // Uploaded profile photo; falls back to the initial when missing or broken
+  const avatarSrc = resolveImageUrl(user?.avatar)
+  const [avatarFailed, setAvatarFailed] = React.useState(false)
+  React.useEffect(() => setAvatarFailed(false), [avatarSrc])
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -626,7 +631,16 @@ export const AppSidebar = ({ ...props }) => {
                 title={user?.name || "User Account"}
               >
                 <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">
-                  {userInitial}
+                  {avatarSrc && !avatarFailed ? (
+                    <img
+                      src={avatarSrc}
+                      alt={user?.name || "Avatar"}
+                      onError={() => setAvatarFailed(true)}
+                      className="h-full w-full rounded-lg object-cover"
+                    />
+                  ) : (
+                    userInitial
+                  )}
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded border-2 border-sidebar bg-emerald-500" />
                 </span>
                 <span className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">

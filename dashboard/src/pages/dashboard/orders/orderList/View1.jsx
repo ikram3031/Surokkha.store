@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Search, Download, PlusCircle, Trash2, X, Filter, RotateCcw } from 'lucide-react';
+import { EXPORT_BUTTON_CLASS } from '@/lib/export-button';
 import { OrdersTable } from '@/components/dashboard/orders-table';
 import PathaoSyncBar from '@/components/dashboard/orders/PathaoSyncBar';
 import { Input } from '@/components/ui/input';
@@ -43,7 +44,7 @@ const View1 = ({ list }) => {
   const optionLabel = (opt) => (opt.labelKey ? t(opt.labelKey, opt.label) : opt.label);
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">{t('orders.title', 'Orders Management')}</h2>
@@ -58,13 +59,12 @@ const View1 = ({ list }) => {
           )}
           <Button
             variant="outline"
-            size="lg"
-            className="h-9 px-4"
+            className={EXPORT_BUTTON_CLASS}
             onClick={exporter.run}
             disabled={exporter.isExporting}
           >
-            <Download className="mr-2 h-4 w-4" />
-            {t('common.export', 'Export Orders')}
+            <Download className="size-4" />
+            {t('common.export', 'Export')}
           </Button>
         </div>
       </div>

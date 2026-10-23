@@ -384,7 +384,7 @@ export default function BulkImageResize() {
       : 0;
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>

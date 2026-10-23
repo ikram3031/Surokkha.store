@@ -141,7 +141,7 @@ const R2StorageSettingsPage = () => {
   const BackupIcon = backupBadge.icon;
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 w-full">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div>
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
           <HardDrive className="h-7 w-7 text-orange-400" />

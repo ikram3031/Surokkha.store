@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createSuperAdmin,
   login,
+  requestPasswordHelp,
   refreshToken,
   logout,
   googleAuth,
@@ -14,6 +15,7 @@ import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth
 const authRouter = Router();
 
 authRouter.post("/login", login);
+authRouter.post("/forgot-password", requestPasswordHelp);
 authRouter.post("/google", googleAuth);
 authRouter.post("/refresh-token", refreshToken);
 authRouter.post("/logout", logout);

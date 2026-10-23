@@ -222,6 +222,7 @@ export const buildOrderDocument = async (payload, req = null) => {
     shippingTotalAmount: Number(payload.shippingTotalAmount || payload.shippingFee || 0),
     discountTotalAmount: Number(payload.discountTotalAmount || 0),
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
+    orderNotes: normalizeText(payload.orderNotes || payload.notes || '').slice(0, 1000),
     orderType: resolvedOrderType,
     items: await normalizeOrderItems(payload.items),
     totals: {
@@ -421,6 +422,9 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   }
   if (payload.paymentTransactionId !== undefined) {
     allowedUpdates.paymentTransactionId = normalizeText(payload.paymentTransactionId);
+  }
+  if (payload.orderNotes !== undefined) {
+    allowedUpdates.orderNotes = normalizeText(payload.orderNotes).slice(0, 1000);
   }
   if (allowedUpdates.status === 'return' || String(payload.status || '').toLowerCase().trim() === 'return') {
     allowedUpdates.paymentStatus = 'returned';

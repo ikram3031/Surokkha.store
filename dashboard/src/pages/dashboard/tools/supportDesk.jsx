@@ -160,7 +160,7 @@ export const SupportDesk = () => {
   const resolvedCount = tickets.filter((t) => t.status === "resolved" || t.status === "closed").length;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-2 sm:p-4 animate-in fade-in duration-300">
+    <div className="page-container space-y-6 p-2 sm:p-4 animate-in fade-in duration-300">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border p-6 rounded-2xl shadow-sm">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">

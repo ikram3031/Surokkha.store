@@ -4,6 +4,7 @@ import { OrdersTable } from '@/components/dashboard/orders-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, PlusCircle, Trash2, X } from 'lucide-react';
+import { EXPORT_BUTTON_CLASS } from '@/lib/export-button';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import {
@@ -177,7 +178,7 @@ const InStoreOrdersPage = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{t('nav.in_store_orders', 'In-Store Orders')}</h2>
@@ -190,9 +191,9 @@ const InStoreOrdersPage = () => {
             <PlusCircle className="mr-2 h-4 w-4" />
             {t('orders.new_order', 'New In-Store Order')}
           </Button>
-          <Button variant="outline" size="lg" className="h-9 px-4">
-            <Download className="mr-2 h-4 w-4" />
-            {t('common.export', 'Export Orders')}
+          <Button variant="outline" className={EXPORT_BUTTON_CLASS}>
+            <Download className="size-4" />
+            {t('common.export', 'Export')}
           </Button>
         </div>
       </div>

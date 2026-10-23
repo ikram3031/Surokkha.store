@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Eye, Mail, MoreHorizontal, Pencil, Printer, RefreshCw, Trash2, Truck } from 'lucide-react';
+import { AlertCircle, Eye, Mail, MoreHorizontal, Pencil, Printer, RefreshCw, StickyNote, Trash2, Truck } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,12 +17,13 @@ import { formatDate } from '@/utils/dateHelper';
 import { getCustomerPhone, getItemCount } from '../useOrderList';
 import { StatusChip } from './StatusChip';
 
-// Fixed column widths. Customer takes the remaining space.
+// Fixed column widths. Order notes take the remaining space.
 const COLUMNS = [
   { key: 'select', className: 'w-12' },
   { key: 'id', className: 'w-[140px]' },
   { key: 'view', className: 'w-16' },
-  { key: 'customer', className: '' },
+  { key: 'customer', className: 'w-[220px]' },
+  { key: 'notes', className: '' },
   { key: 'amount', className: 'w-[130px]' },
   { key: 'date', className: 'w-[130px]' },
   { key: 'payment', className: 'w-[124px]' },
@@ -139,6 +140,7 @@ export function OrdersTableV2({ list }) {
           <TableHead>{t('orders.order_id', 'Order ID')}</TableHead>
           <TableHead className="text-center">{t('common.view', 'View')}</TableHead>
           <TableHead>{t('orders.customer', 'Customer')}</TableHead>
+          <TableHead>{t('orders.order_notes', 'Order Notes')}</TableHead>
           <TableHead className="text-right">{t('orders.amount', 'Amount')}</TableHead>
           <TableHead>{t('common.date', 'Date')}</TableHead>
           <TableHead>{t('orders.payment', 'Payment')}</TableHead>
@@ -155,6 +157,7 @@ export function OrdersTableV2({ list }) {
               <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="mx-auto size-6 rounded-md" /></TableCell>
               <TableCell><Skeleton className="h-4 w-36" /><Skeleton className="mt-1.5 h-3 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-3 w-40" /></TableCell>
               <TableCell><Skeleton className="ml-auto h-4 w-16" /></TableCell>
               <TableCell><Skeleton className="h-4 w-20" /></TableCell>
               <TableCell><Skeleton className="h-6 w-24 rounded-md" /></TableCell>
@@ -229,6 +232,20 @@ export function OrdersTableV2({ list }) {
                     {order.customerName}
                   </span>
                   {phone && <span className="mt-0.5 block truncate font-mono text-xs text-muted-foreground">{phone}</span>}
+                </TableCell>
+
+                <TableCell className="overflow-hidden">
+                  {order.orderNotes ? (
+                    <span
+                      className="flex min-w-0 items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400"
+                      title={order.orderNotes}
+                    >
+                      <StickyNote className="mt-0.5 size-3 shrink-0" />
+                      <span className="line-clamp-2 whitespace-normal">{order.orderNotes}</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/50">—</span>
+                  )}
                 </TableCell>
 
                 <TableCell className="text-right">

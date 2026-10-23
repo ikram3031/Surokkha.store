@@ -350,6 +350,7 @@ const NewInStoreOrderPage = () => {
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerDistrict, setCustomerDistrict] = useState("Dhaka");
   const [customerThana, setCustomerThana] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [activeLookupField, setActiveLookupField] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -474,6 +475,7 @@ const NewInStoreOrderPage = () => {
         orderType: "instore",
         status: "completed",
         paymentMethod: fullPaymentMethod,
+        orderNotes: orderNotes.trim(),
         billingInfo: billingInfo,
         shippingInfo: billingInfo,
         giftWrap: false,
@@ -563,13 +565,14 @@ const NewInStoreOrderPage = () => {
     setCustomerAddress("");
     setCustomerDistrict("Dhaka");
     setCustomerThana("");
+    setOrderNotes("");
     setSelectedCustomer(null);
     setDiscount("");
     setPaidAmount("");
   };
 
   return (
-    <div className="flex-1 space-y-0 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-0 p-4 md:p-8 pt-6">
       <div className="flex items-center gap-3 mb-6">
         <Button
           variant="outline"
@@ -1243,6 +1246,21 @@ const NewInStoreOrderPage = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="bg-card border rounded-xl p-5 shadow-sm space-y-2">
+            <label htmlFor="order-notes" className="font-semibold text-base block">
+              {t("orders.order_notes", "Order Notes")}
+            </label>
+            <textarea
+              id="order-notes"
+              rows={2}
+              maxLength={1000}
+              value={orderNotes}
+              onChange={(e) => setOrderNotes(e.target.value)}
+              placeholder="e.g. Call before delivery"
+              className="w-full text-sm bg-background border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition resize-y"
+            />
           </div>
 
           <div className="bg-card border rounded-xl p-5 shadow-sm">

@@ -52,12 +52,18 @@ const contactBtn =
 // Status select inside the quick view; trigger shows the colored chip
 function StatusSelect({ kind, label, value, options, onChange, disabled }) {
   const { t } = useTranslation();
+  const selected = options.find((opt) => String(opt.value).toLowerCase() === String(value || '').toLowerCase());
+  const selectedLabel = selected ? (selected.labelKey ? t(selected.labelKey, selected.label) : selected.label) : value;
   return (
     <div className="space-y-1.5">
       <p className="text-xs font-medium">{label}</p>
       <Select value={value} onValueChange={(v) => v && onChange(v)} disabled={disabled}>
-        <SelectTrigger className="h-9 w-full px-2 data-[size=default]:h-9" aria-label={label}>
-          <StatusChip kind={kind} status={value} />
+        {/* Same dot + colored text as the options, instead of a bordered chip inside the bordered trigger */}
+        <SelectTrigger className="h-9 w-full px-3 data-[size=default]:h-9" aria-label={label}>
+          <span className={cn('flex min-w-0 items-center gap-2 text-sm font-medium', getStatusOptionClass(value))}>
+            <span className="size-2 shrink-0 rounded-full bg-current" />
+            <span className="truncate">{selectedLabel}</span>
+          </span>
         </SelectTrigger>
         <SelectContent side="bottom">
           {options.map((opt) => (

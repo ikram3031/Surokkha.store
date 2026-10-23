@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }) => {
         email: apiUser.email || email,
         name: apiUser.name || email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         role: apiUser.role || "Employee",
-        avatar: apiUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        avatar: apiUser.avatar || '',
       };
 
       localStorage.setItem('accessToken', accessToken);
@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }) => {
         email: apiUser.email || email,
         name: apiUser.name || email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         role: apiUser.role || "Employee",
-        avatar: apiUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        avatar: apiUser.avatar || '',
       };
 
       localStorage.setItem('accessToken', accessToken);
@@ -165,7 +165,7 @@ export const AuthProvider = ({ children }) => {
         email: apiUser.email,
         name: apiUser.name,
         role: apiUser.role,
-        avatar: apiUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        avatar: apiUser.avatar || '',
       };
 
       localStorage.setItem('accessToken', accessToken);

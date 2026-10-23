@@ -4,10 +4,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const formatTaka = (value) => `৳${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
-// Four summary cards for the last 30 days. Hidden on mobile.
+// Four all-time summary cards. Hidden on mobile.
 export function StatCards({ stats }) {
   const { t } = useTranslation();
-  const last30 = t('orders.last_30_days', 'Last 30 days');
 
   const cards = [
     { label: t('nav.orders', 'Orders'), value: stats.totalOrders.toLocaleString(), icon: ShoppingCart },
@@ -29,7 +28,6 @@ export function StatCards({ stats }) {
           ) : (
             <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">{value}</p>
           )}
-          <p className="mt-1 text-xs text-muted-foreground">{last30}</p>
         </div>
       ))}
     </div>

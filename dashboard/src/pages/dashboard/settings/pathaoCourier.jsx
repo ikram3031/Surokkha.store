@@ -271,7 +271,7 @@ export default function PathaoCourierSettingsPage() {
   const isConnected = configData?.lastTestStatus === 'connected';
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-6xl mx-auto">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/80 pb-6">
         <div>

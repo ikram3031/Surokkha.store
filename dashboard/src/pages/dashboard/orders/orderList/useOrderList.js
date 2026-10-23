@@ -18,8 +18,8 @@ import { DEFAULT_PAGE_SIZE, EXPORT_MAX_PAGES, PAGE_SIZE_OPTIONS, STATUS_ALL } fr
 // Shared by the shared PathaoSyncBar too, so both read one cached result
 const PATHAO_STATUS_KEY = ['pathao-sync-status'];
 // Same keys as the overview page hooks, so the cache is shared
-const STATUS_COUNTS_KEY = ['dashboard', 'orderStatusDistribution', '30days'];
-const KPI_KEY = ['dashboard', 'kpi', '30days'];
+const STATUS_COUNTS_KEY = ['dashboard', 'orderStatusDistribution', 'all'];
+const KPI_KEY = ['dashboard', 'kpi', 'all'];
 
 // URL values that mean "no filter" are removed from the query string
 const isDefaultParam = (key, val) =>
@@ -424,11 +424,11 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
     }
   };
 
-  // ---------------------------------------------------------------- stats (last 30 days, View2 only)
+  // ---------------------------------------------------------------- stats (all time, View2 only)
   const statusCountsQuery = useQuery({
     queryKey: STATUS_COUNTS_KEY,
     queryFn: async () => {
-      const res = await apiClient.get('/api/v1/dashboard/orders/status-distribution', { params: { range: '30days' } });
+      const res = await apiClient.get('/api/v1/dashboard/orders/status-distribution', { params: { range: 'all' } });
       return res.data?.data?.statusCounts || {};
     },
     staleTime: 30 * 1000,
@@ -436,7 +436,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
   });
   const kpiQuery = useQuery({
     queryKey: KPI_KEY,
-    queryFn: async () => (await apiClient.get('/api/v1/dashboard/kpi', { params: { range: '30days' } })).data?.data || {},
+    queryFn: async () => (await apiClient.get('/api/v1/dashboard/kpi', { params: { range: 'all' } })).data?.data || {},
     staleTime: 30 * 1000,
     enabled: fetchData,
   });
