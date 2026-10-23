@@ -1,7 +1,23 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Eye, Mail, MoreHorizontal, Pencil, Printer, RefreshCw, StickyNote, Trash2, Truck } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  Eye,
+  Loader2,
+  Mail,
+  MoreHorizontal,
+  Pencil,
+  Printer,
+  RefreshCw,
+  StickyNote,
+  Trash2,
+  Truck,
+  X,
+} from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -92,6 +108,101 @@ function RowActions({ order, list }) {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+const noteIconBtn =
+  'inline-flex size-7 shrink-0 items-center justify-center rounded-md transition-colors disabled:opacity-50';
+
+// Order notes with an inline editor; the input is one line so the row height stays the same
+function NotesCell({ order, list }) {
+  const { t } = useTranslation();
+  const { orderActions, isReadOnly } = list;
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const startEdit = () => {
+    setDraft(order.orderNotes || '');
+    setIsEditing(true);
+  };
+
+  const save = async () => {
+    if (draft.trim() === (order.orderNotes || '').trim()) {
+      setIsEditing(false);
+      return;
+    }
+    setIsSaving(true);
+    const ok = await orderActions.updateNotes(order, draft);
+    setIsSaving(false);
+    if (ok) setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          autoFocus
+          value={draft}
+          maxLength={1000}
+          disabled={isSaving}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') save();
+            if (e.key === 'Escape') setIsEditing(false);
+          }}
+          placeholder={t('orders.add_note', 'Add a note')}
+          className="h-7 min-w-0 flex-1 px-2 text-xs"
+        />
+        <button
+          type="button"
+          onClick={save}
+          disabled={isSaving}
+          className={cn(noteIconBtn, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+          title={t('common.save', 'Save')}
+          aria-label={t('common.save', 'Save')}
+        >
+          {isSaving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsEditing(false)}
+          disabled={isSaving}
+          className={cn(noteIconBtn, 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+          title={t('common.cancel', 'Cancel')}
+          aria-label={t('common.cancel', 'Cancel')}
+        >
+          <X className="size-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 items-start gap-1">
+      {order.orderNotes ? (
+        <span
+          className="flex min-w-0 flex-1 items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400"
+          title={order.orderNotes}
+        >
+          <StickyNote className="mt-0.5 size-3 shrink-0" />
+          <span className="line-clamp-2 whitespace-normal">{order.orderNotes}</span>
+        </span>
+      ) : (
+        <span className="flex-1 text-xs text-muted-foreground/50">—</span>
+      )}
+      {!isReadOnly && (
+        <button
+          type="button"
+          onClick={startEdit}
+          className={cn(noteIconBtn, '-my-1 text-muted-foreground hover:bg-primary/10 hover:text-primary')}
+          title={t('orders.edit_notes', 'Edit notes')}
+          aria-label={t('orders.edit_notes', 'Edit notes')}
+        >
+          <Pencil className="size-3.5" />
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -234,18 +345,8 @@ export function OrdersTableV2({ list }) {
                   {phone && <span className="mt-0.5 block truncate font-mono text-xs text-muted-foreground">{phone}</span>}
                 </TableCell>
 
-                <TableCell className="overflow-hidden">
-                  {order.orderNotes ? (
-                    <span
-                      className="flex min-w-0 items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400"
-                      title={order.orderNotes}
-                    >
-                      <StickyNote className="mt-0.5 size-3 shrink-0" />
-                      <span className="line-clamp-2 whitespace-normal">{order.orderNotes}</span>
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground/50">—</span>
-                  )}
+                <TableCell className="overflow-hidden" onClick={stop}>
+                  <NotesCell order={order} list={list} />
                 </TableCell>
 
                 <TableCell className="text-right">

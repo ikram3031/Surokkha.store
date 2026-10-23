@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Copy, ExternalLink, Loader2, Mail, MapPin, Package, Pencil, Phone, Printer, Tag } from 'lucide-react';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
+import { SendOrderInvoiceModal } from '@/components/dashboard/orders/SendOrderInvoiceModal';
 import { cn } from '@/lib/utils';
-import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
 import {
   formatFullAddress,
@@ -44,6 +45,9 @@ function Line({ label, value, className }) {
     </div>
   );
 }
+
+// Equal-width action tiles under the header: icon on top, label below
+const actionTile = 'h-auto min-w-0 flex-col gap-1 whitespace-normal px-1 py-2 text-[11px] leading-tight';
 
 // Small round icon link/button next to the phone number
 const contactBtn =
@@ -93,6 +97,7 @@ export function OrderQuickView({ list }) {
   const [returnFee, setReturnFee] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
 
   // Reset the form whenever another order is opened or the order changes on the server
   useEffect(() => {
@@ -144,14 +149,29 @@ export function OrderQuickView({ list }) {
       <SheetContent side="right" className="w-full gap-0 p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-md">
         {order && (
           <>
-            <SheetHeader className="border-b p-5 pr-12">
-              <div className="flex flex-wrap items-center gap-2">
-                <SheetTitle className="text-lg font-semibold">#{order.orderNumber}</SheetTitle>
-                <StatusChip kind="order" status={order.orderStatus} />
+            <SheetHeader className="gap-4 border-b p-5">
+              <SheetTitle className="pr-8 text-lg font-semibold">#{order.orderNumber}</SheetTitle>
+              <div className={cn('grid gap-2', isReadOnly ? 'grid-cols-2' : 'grid-cols-4')}>
+                {!isReadOnly && (
+                  <PathaoCourierCard
+                    order={order}
+                    triggerOnly
+                    triggerButtonVariant="outline"
+                    triggerButtonClassName={cn(actionTile, LIGHT_BUTTON_CLASS)}
+                  />
+                )}
+                <Button variant="outline" onClick={() => orderActions.openInvoice(order)} className={cn(actionTile, LIGHT_BUTTON_CLASS)}>
+                  <Printer className="size-3.5" /> {t('orders.print_invoice', 'Print Invoice')}
+                </Button>
+                <Button variant="outline" onClick={() => setEmailOpen(true)} className={cn(actionTile, LIGHT_BUTTON_CLASS)}>
+                  <Mail className="size-3.5" /> {t('orders.send_mail', 'Send Mail')}
+                </Button>
+                {!isReadOnly && (
+                  <Button onClick={() => orderActions.edit(order)} className={cn(actionTile, PRIMARY_BUTTON_CLASS)}>
+                    <Pencil className="size-3.5" /> {t('common.edit', 'Edit')}
+                  </Button>
+                )}
               </div>
-              <SheetDescription>
-                {t('orders.placed_on', 'Placed on')} {formatDateTime(order.createdAt || order.date)}
-              </SheetDescription>
             </SheetHeader>
 
             <div className="flex-1 space-y-6 overflow-y-auto p-5">
@@ -316,14 +336,6 @@ export function OrderQuickView({ list }) {
                       className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
-                  <Button
-                    onClick={save}
-                    disabled={isSaving || !hasChanges}
-                    className={cn('mt-3 h-9 w-full gap-2 text-sm', PRIMARY_BUTTON_CLASS)}
-                  >
-                    {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-                    {isSaving ? t('common.saving', 'Saving...') : t('common.save_changes', 'Save Changes')}
-                  </Button>
                 </Section>
               )}
 
@@ -336,20 +348,20 @@ export function OrderQuickView({ list }) {
               </button>
             </div>
 
-            <div className="flex gap-2 border-t p-4">
-              <Button
-                variant="outline"
-                onClick={() => orderActions.openInvoice(order)}
-                className={cn('h-9 flex-1 gap-2 text-sm', LIGHT_BUTTON_CLASS)}
-              >
-                <Printer className="size-4" /> {t('orders.print_invoice', 'Print Invoice')}
-              </Button>
-              {!isReadOnly && (
-                <Button onClick={() => orderActions.edit(order)} className={cn('h-9 flex-1 gap-2 text-sm', PRIMARY_BUTTON_CLASS)}>
-                  <Pencil className="size-4" /> {t('common.edit', 'Edit order')}
+            {!isReadOnly && (
+              <div className="border-t p-4">
+                <Button
+                  onClick={save}
+                  disabled={isSaving || !hasChanges}
+                  className={cn('h-9 w-full gap-2 text-sm', PRIMARY_BUTTON_CLASS)}
+                >
+                  {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+                  {isSaving ? t('common.saving', 'Saving...') : t('common.save_changes', 'Save Changes')}
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
+
+            <SendOrderInvoiceModal open={emailOpen} onOpenChange={setEmailOpen} order={order} />
           </>
         )}
       </SheetContent>

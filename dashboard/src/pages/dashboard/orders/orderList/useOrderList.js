@@ -252,6 +252,21 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
     }
   };
 
+  // Saves only the order notes (inline edit in the table). Returns true on success.
+  const updateOrderNotes = async (order, orderNotes) => {
+    try {
+      await apiClient.put(`/api/v1/orders/${order.id}`, { orderNotes: orderNotes.trim() });
+      logActivity({ type: 'updated', description: `Order #${order.orderNumber} notes updated by "${actorName}"` });
+      toast.success(t('orders.notes_updated', 'Order notes updated.'));
+      invalidateOrders(order.id);
+      return true;
+    } catch (err) {
+      console.error(err);
+      toast.error(getApiErrorMessage(err, 'Failed to update order notes.'));
+      return false;
+    }
+  };
+
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -516,6 +531,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       openQuickView: (order) => setQuickView(order),
       closeQuickView: () => setQuickView(null),
       updateStatus: updateOrderStatus,
+      updateNotes: updateOrderNotes,
       viewDetails,
       edit: editOrder,
       openInvoice,
