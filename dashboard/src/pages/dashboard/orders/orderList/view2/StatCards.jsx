@@ -1,18 +1,16 @@
 import { useTranslation } from 'react-i18next';
-import { Clock, PackageCheck, ShoppingCart, Wallet } from 'lucide-react';
+import { Clock, Loader, ShoppingCart, Truck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const formatTaka = (value) => `৳${Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-
-// Four all-time summary cards. Hidden on mobile.
+// Four all-time order count cards. Hidden on mobile.
 export function StatCards({ stats }) {
   const { t } = useTranslation();
 
   const cards = [
-    { label: t('nav.orders', 'Orders'), value: stats.totalOrders.toLocaleString(), icon: ShoppingCart },
-    { label: t('orders.status_pending', 'Pending'), value: stats.pending.toLocaleString(), icon: Clock },
-    { label: t('overview.total_revenue', 'Total Revenue'), value: formatTaka(stats.sales), icon: Wallet },
-    { label: t('overview.delivered_orders', 'Delivered Orders'), value: stats.completed.toLocaleString(), icon: PackageCheck },
+    { label: t('overview.total_orders', 'Total Orders'), value: stats.totalOrders, icon: ShoppingCart },
+    { label: t('orders.status_pending', 'Pending'), value: stats.pending, icon: Clock },
+    { label: t('orders.status_processing', 'Processing'), value: stats.processing, icon: Loader },
+    { label: t('orders.status_shipped', 'Shipped'), value: stats.shipped, icon: Truck },
   ];
 
   return (
@@ -26,7 +24,7 @@ export function StatCards({ stats }) {
           {stats.isLoading ? (
             <Skeleton className="mt-2 h-8 w-24" />
           ) : (
-            <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">{value}</p>
+            <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">{value.toLocaleString()}</p>
           )}
         </div>
       ))}

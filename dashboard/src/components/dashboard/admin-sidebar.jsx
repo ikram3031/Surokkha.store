@@ -1,4 +1,5 @@
 import * as React from "react"
+import { resolveImageUrl } from "@/lib/api-client"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
@@ -101,6 +102,12 @@ export const AdminSidebar = ({ ...props }) => {
   const pathname = location.pathname
   const { user, logout } = useAuth()
   const { state, setOpen, isMobile, setOpenMobile, toggleSidebar } = useSidebar()
+
+  // Profile photo and preferred name, matching the main sidebar's user card
+  const displayName = user?.preferredName || user?.name || ""
+  const avatarSrc = resolveImageUrl(user?.avatar)
+  const [avatarFailed, setAvatarFailed] = React.useState(false)
+  React.useEffect(() => setAvatarFailed(false), [avatarSrc])
   const { brandName, features } = clientConfig
 
   const [openMenu, setOpenMenu] = React.useState(null)
@@ -969,17 +976,26 @@ export const AdminSidebar = ({ ...props }) => {
                 <button
                   type="button"
                   className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer outline-none group/user"
-                  title={user?.name || "User Account"}
+                  title={displayName || "User Account"}
                 >
                   <div className="relative shrink-0">
-                    <div className="h-9 w-9 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-sm">
-                      {user?.name?.charAt(0)?.toUpperCase() || "B"}
+                    <div className="h-9 w-9 overflow-hidden rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-sm">
+                      {avatarSrc && !avatarFailed ? (
+                        <img
+                          src={avatarSrc}
+                          alt={displayName || "Avatar"}
+                          onError={() => setAvatarFailed(true)}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        displayName.charAt(0).toUpperCase() || "B"
+                      )}
                     </div>
                     <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-sidebar" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-sidebar-foreground truncate leading-tight group-hover/user:text-primary transition-colors">
-                      {user?.name || "Bithy Akther"}
+                      {displayName || "User"}
                     </p>
                     <p className="text-xs text-muted-foreground truncate leading-tight mt-0.5 capitalize">
                       {user?.role || "Frontdesk"}

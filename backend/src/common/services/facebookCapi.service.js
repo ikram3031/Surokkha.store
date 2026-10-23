@@ -502,8 +502,9 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     }
 
     let items = Array.isArray(order.items) ? order.items : [];
-    items = items.filter(i => i.itemType !== 'item');
-    
+    // Offer page sells some Items as real offer products, so only drop generic Items for other orders
+    if (!isOfferOrder(order, req)) items = items.filter(i => i.itemType !== 'item');
+
     if (items.length === 0) return;
     const productDids = items.map((i) => i.productDid).filter(Boolean);
     const productNames = items.map((i) => i.name).filter(Boolean);

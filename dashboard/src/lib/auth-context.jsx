@@ -92,6 +92,21 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
+  // The stored user is a login-time snapshot; pull the saved profile (avatar, names) once per session
+  const userId = user?.id || user?._id;
+  useEffect(() => {
+    if (!userId) return;
+    apiClient
+      .get('/api/v1/users/me')
+      .then((res) => {
+        const profile = res.data?.data;
+        if (profile) updateUser(profile);
+      })
+      .catch(() => {});
+    // updateUser only wraps setUser, so it doesn't need to be a dependency
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   const login = async (email, password) => {
     try {
       if (!email || !password) {

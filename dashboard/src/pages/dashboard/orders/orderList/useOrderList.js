@@ -19,7 +19,6 @@ import { DEFAULT_PAGE_SIZE, EXPORT_MAX_PAGES, PAGE_SIZE_OPTIONS, STATUS_ALL } fr
 const PATHAO_STATUS_KEY = ['pathao-sync-status'];
 // Same keys as the overview page hooks, so the cache is shared
 const STATUS_COUNTS_KEY = ['dashboard', 'orderStatusDistribution', 'all'];
-const KPI_KEY = ['dashboard', 'kpi', 'all'];
 
 // URL values that mean "no filter" are removed from the query string
 const isDefaultParam = (key, val) =>
@@ -450,24 +449,16 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
     staleTime: 30 * 1000,
     enabled: fetchData,
   });
-  const kpiQuery = useQuery({
-    queryKey: KPI_KEY,
-    queryFn: async () => (await apiClient.get('/api/v1/dashboard/kpi', { params: { range: 'all' } })).data?.data || {},
-    staleTime: 30 * 1000,
-    enabled: fetchData,
-  });
-
   const stats = useMemo(() => {
     const counts = statusCountsQuery.data || {};
-    const kpi = kpiQuery.data || {};
     return {
-      isLoading: statusCountsQuery.isLoading || kpiQuery.isLoading,
+      isLoading: statusCountsQuery.isLoading,
       totalOrders: Object.values(counts).reduce((sum, v) => sum + Number(v || 0), 0),
       pending: Number(counts.pending || 0),
-      sales: Number(kpi.sales || 0),
-      completed: Number(kpi.completedOrders || 0),
+      processing: Number(counts.processing || 0),
+      shipped: Number(counts.shipped || 0),
     };
-  }, [statusCountsQuery.data, statusCountsQuery.isLoading, kpiQuery.data, kpiQuery.isLoading]);
+  }, [statusCountsQuery.data, statusCountsQuery.isLoading]);
 
   // ---------------------------------------------------------------- page actions
   const newOrderAction = isReadOnly
