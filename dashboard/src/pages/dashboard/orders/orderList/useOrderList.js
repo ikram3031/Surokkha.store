@@ -219,7 +219,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
   );
 
   // Updates order status (and payment status) of one order. Returns true on success.
-  const updateOrderStatus = async (order, { orderStatus, paymentStatus, returnFee }) => {
+  const updateOrderStatus = async (order, { orderStatus, paymentStatus, returnFee, orderNotes }) => {
     if (!order || !orderStatus) return false;
     const isReturn = orderStatus === 'Return';
     if (isReturn && (returnFee === '' || returnFee === null || returnFee === undefined)) {
@@ -234,6 +234,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
     } else if (paymentStatus && paymentStatus !== 'Not found' && paymentStatus !== 'N/A') {
       payload.paymentStatus = paymentStatus.toLowerCase();
     }
+    if (orderNotes !== undefined) payload.orderNotes = orderNotes.trim();
 
     try {
       await apiClient.put(`/api/v1/orders/${order.id}`, payload);

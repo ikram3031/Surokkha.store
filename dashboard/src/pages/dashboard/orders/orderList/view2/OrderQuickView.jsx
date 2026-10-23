@@ -91,6 +91,7 @@ export function OrderQuickView({ list }) {
   const [orderStatus, setOrderStatus] = useState('Pending');
   const [paymentStatus, setPaymentStatus] = useState('Pending');
   const [returnFee, setReturnFee] = useState('');
+  const [orderNotes, setOrderNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   // Reset the form whenever another order is opened or the order changes on the server
@@ -99,7 +100,8 @@ export function OrderQuickView({ list }) {
     setOrderStatus(order.orderStatus || 'Pending');
     setPaymentStatus(order.paymentStatus || 'Pending');
     setReturnFee('');
-  }, [order?.id, order?.orderStatus, order?.paymentStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+    setOrderNotes(order.orderNotes || '');
+  }, [order?.id, order?.orderStatus, order?.paymentStatus, order?.orderNotes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const open = Boolean(current);
 
@@ -127,11 +129,13 @@ export function OrderQuickView({ list }) {
   const isReturn = orderStatus === 'Return';
   const hasChanges =
     order &&
-    (orderStatus !== (order.orderStatus || 'Pending') || (!isReturn && paymentStatus !== (order.paymentStatus || 'Pending')));
+    (orderStatus !== (order.orderStatus || 'Pending') ||
+      (!isReturn && paymentStatus !== (order.paymentStatus || 'Pending')) ||
+      orderNotes.trim() !== (order.orderNotes || '').trim());
 
   const save = async () => {
     setIsSaving(true);
-    await orderActions.updateStatus(order, { orderStatus, paymentStatus, returnFee });
+    await orderActions.updateStatus(order, { orderStatus, paymentStatus, returnFee, orderNotes });
     setIsSaving(false);
   };
 
@@ -256,6 +260,12 @@ export function OrderQuickView({ list }) {
                 </div>
               </Section>
 
+              {isReadOnly && order.orderNotes && (
+                <Section title={t('orders.order_notes', 'Order Notes')}>
+                  <p className="whitespace-pre-wrap text-sm text-amber-600 dark:text-amber-400">{order.orderNotes}</p>
+                </Section>
+              )}
+
               {!isReadOnly && (
                 <Section title={t('orders.update_status', 'Update status')}>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -290,6 +300,21 @@ export function OrderQuickView({ list }) {
                         disabled={isSaving}
                       />
                     )}
+                  </div>
+                  <div className="mt-3 space-y-1.5">
+                    <label htmlFor="quick-order-notes" className="text-xs font-medium">
+                      {t('orders.order_notes', 'Order Notes')}
+                    </label>
+                    <textarea
+                      id="quick-order-notes"
+                      rows={2}
+                      maxLength={1000}
+                      value={orderNotes}
+                      onChange={(e) => setOrderNotes(e.target.value)}
+                      disabled={isSaving}
+                      placeholder="e.g. Call before delivery"
+                      className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    />
                   </div>
                   <Button
                     onClick={save}
