@@ -123,8 +123,7 @@ export const fromPrice = (p: OfferProduct) => p.price
 
 // Combo discount by subtotal (no free delivery here, delivery is always charged)
 export const DISCOUNT_TIERS = [
-  { min: 200, off: 10 },
-  { min: 500, off: 15 },
+  { min: 400, off: 15 },
   { min: 1000, off: 20 },
   { min: 1500, off: 25 },
 ]

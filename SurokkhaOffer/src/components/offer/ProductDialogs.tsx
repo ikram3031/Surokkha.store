@@ -53,7 +53,7 @@ export function VariantDialog({ product, onOpenChange, qtyOf, change }: CommonPr
   return (
     <Dialog open={!!product} onOpenChange={onOpenChange}>
       {product && (
-        <DialogContent className="[&_[data-slot=dialog-close]]:text-rose-600 [&_[data-slot=dialog-close]]:opacity-100 [&_[data-slot=dialog-close]_svg]:size-5 offer-font max-h-[90dvh] overflow-y-auto rounded-3xl bg-white p-5 sm:max-w-md">
+        <DialogContent className="[&_[data-slot=dialog-close]]:text-rose-600 [&_[data-slot=dialog-close]]:opacity-100 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:border-2 [&_[data-slot=dialog-close]]:border-rose-500 [&_[data-slot=dialog-close]]:!bg-white [&_[data-slot=dialog-close]]:!opacity-100 [&_[data-slot=dialog-close]]:!ring-0 [&_[data-slot=dialog-close]]:!ring-offset-0 [&_[data-slot=dialog-close]]:!outline-none [&_[data-slot=dialog-close]]:hover:!bg-rose-50 [&_[data-slot=dialog-close]]:top-3 [&_[data-slot=dialog-close]]:right-3 [&_[data-slot=dialog-close]]:z-10 [&_[data-slot=dialog-close]_svg]:size-4 offer-font max-h-[90dvh] overflow-y-auto rounded-3xl bg-white p-5 sm:max-w-md">
           <DialogTitle className="text-xl leading-snug">{product.name}</DialogTitle>
           <DialogDescription>
             আপনার পছন্দের {product.variantLabel ?? 'ভ্যারিয়েশন'} ও পরিমাণ বাছাই করুন
@@ -73,7 +73,7 @@ export function QuickViewDialog({ product, onOpenChange, qtyOf, change }: Common
   return (
     <Dialog open={!!product} onOpenChange={onOpenChange}>
       {product && (
-        <DialogContent className="[&_[data-slot=dialog-close]]:text-rose-600 [&_[data-slot=dialog-close]]:opacity-100 [&_[data-slot=dialog-close]_svg]:size-5 offer-font max-h-[92dvh] overflow-y-auto rounded-3xl bg-white p-4 sm:max-w-3xl sm:p-6">
+        <DialogContent className="[&_[data-slot=dialog-close]]:text-rose-600 [&_[data-slot=dialog-close]]:opacity-100 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:border-2 [&_[data-slot=dialog-close]]:border-rose-500 [&_[data-slot=dialog-close]]:!bg-white [&_[data-slot=dialog-close]]:!opacity-100 [&_[data-slot=dialog-close]]:!ring-0 [&_[data-slot=dialog-close]]:!ring-offset-0 [&_[data-slot=dialog-close]]:!outline-none [&_[data-slot=dialog-close]]:hover:!bg-rose-50 [&_[data-slot=dialog-close]]:top-3 [&_[data-slot=dialog-close]]:right-3 [&_[data-slot=dialog-close]]:z-10 [&_[data-slot=dialog-close]_svg]:size-4 offer-font max-h-[92dvh] overflow-y-auto rounded-3xl bg-white p-4 sm:max-w-3xl sm:p-6">
           <div className="grid gap-5 sm:grid-cols-2">
             <ProductSlider product={product} />
             <div className="flex flex-col gap-3">

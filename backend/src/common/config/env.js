@@ -12,6 +12,8 @@ const envSchema = z.object({
   ACCESS_TOKEN_EXPIRES_IN: z.string().default("15m"),
   REFRESH_TOKEN_EXPIRES_MS: z.coerce.number().int().positive().default(30 * 24 * 60 * 60 * 1000),
   ALLOW_SUPER_ADMIN_CREATION: z.coerce.boolean().default(false),
+  // Inbox that gets "user forgot their password" alerts from the dashboard login
+  FORGOT_PASSWORD_ALERT_EMAIL: z.string().optional().default("flexibility@gmail.com"),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   ALLOWED_ORIGINS: z.string().default("http://localhost:8001,http://localhost:8005,http://localhost:3000,http://localhost:4001,http://localhost:4002,http://localhost:5173"),

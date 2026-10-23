@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build-catalog.mjs && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview",
-    "catalog": "node scripts/build-catalog.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.5.0",

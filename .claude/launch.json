@@ -2,6 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "dashboard",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5180", "--strictPort"],
+      "cwd": "dashboard",
+      "port": 5180
+    },
+    {
       "name": "surokkha-store",
       "runtimeExecutable": "npm",
       "runtimeArgs": [

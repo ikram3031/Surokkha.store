@@ -51,7 +51,7 @@ export const createOrder = async (req, res, next) => {
     }
 
     // Offer page orders must pass Cloudflare Turnstile once a secret key is configured
-    if (String(payload.orderPrefix || '').toUpperCase() === 'SC' && isTurnstileConfigured()) {
+    if (String(payload.orderPrefix || '').toUpperCase() === 'OS' && isTurnstileConfigured()) {
       const human = await verifyTurnstile(payload.turnstileToken, clientIp, {
         action: 'checkout',
         hostnames: ['offer.surokkha.shop'],

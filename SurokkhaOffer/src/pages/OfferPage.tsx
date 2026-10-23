@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { ArrowRight, CheckCircle2, Loader2, Lock, Mail, Phone, Truck, Wallet } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Loader2, Lock, Truck, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
 import { AgeGate } from '@/components/AgeGate'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
+import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from '@/components/offer/Turnstile'
 import { QuickViewDialog, VariantDialog } from '@/components/offer/ProductDialogs'
 import {
   CUSTOM_COMBO_PRODUCTS,
-  READY_COMBOS,
   READY_COMBOS_TITLE,
   DISCOUNT_TIERS,
   nextTier,
@@ -119,10 +119,19 @@ const inputCls = (bad: boolean) =>
 // Selection key: product id, plus variant id on variable products
 const keyOf = (productId: string, variantId?: string) => (variantId ? `${productId}:${variantId}` : productId)
 
-// Same support contacts as SurokkhaShop
-const SUPPORT_PHONE = '01600905774'
-const SUPPORT_EMAIL = 'support@surokkha.shop'
+// Support links in the header
 const WHATSAPP_URL = 'https://wa.me/8801600905774'
+const INSTAGRAM_URL = 'https://www.instagram.com/surokkha.shop/'
+
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -151,7 +160,12 @@ const cookie = (name: string) => document.cookie.match(new RegExp(`(?:^|; )${nam
 const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 
 export default function OfferPage() {
-  const products = useMemo(() => [...CUSTOM_COMBO_PRODUCTS, ...READY_COMBOS], [])
+  const { products: catalogProducts, loading: catalogLoading } = useCatalogProducts()
+  const { products: comboProducts, loading: combosLoading } = useComboProducts()
+  const products = useMemo(
+    () => [...catalogProducts, ...CUSTOM_COMBO_PRODUCTS, ...comboProducts],
+    [catalogProducts, comboProducts],
+  )
   const [qty, setQty] = useState<Record<string, number>>({})
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
   const [quickView, setQuickView] = useState<OfferProduct | null>(null)
@@ -292,8 +306,9 @@ export default function OfferPage() {
     setSubmitting(true)
     try {
       const res = await api.post<{ data?: { orderNumber?: string } }>('/orders/new-order', {
-        orderType: 'custom',
-        orderPrefix: 'SC',
+        // A normal online order (main Orders list) with its own OS prefix
+        orderType: 'online',
+        orderPrefix: 'OS',
         clientDomain: 'offer.surokkha.shop',
         paymentMethod: 'Cash on Delivery',
         fbp: cookie('_fbp'),
@@ -372,15 +387,26 @@ export default function OfferPage() {
       <header className="offer-font bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <img src="/logo_2.png" alt="Surokkha" className="h-9 w-auto" />
-          <div className="flex items-center gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-2">
             <a
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp-এ যোগাযোগ করুন"
-              className="flex items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-1.5 font-semibold text-white shadow transition hover:bg-[#1ebe5a]"
+              title="WhatsApp"
+              className="flex size-9 items-center justify-center rounded-full bg-[#25D366] text-white shadow transition hover:bg-[#1ebe5a]"
             >
-              <WhatsAppIcon className="size-4" /> WhatsApp
+              <WhatsAppIcon className="size-5" />
+            </a>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram-এ দেখুন"
+              title="Instagram"
+              className="flex size-9 items-center justify-center rounded-full bg-gradient-to-tr from-[#feda75] via-[#d62976] to-[#4f5bd5] text-white shadow transition hover:opacity-90"
+            >
+              <InstagramIcon className="size-5" />
             </a>
           </div>
         </div>
@@ -398,7 +424,7 @@ export default function OfferPage() {
               {taka(DISCOUNT_TIERS[0].min)}-এর অর্ডার থেকেই ছাড় শুরু — যত বেশি নেবেন, ছাড় তত বাড়বে, সর্বোচ্চ{' '}
               <b className="text-emerald-600">{bn(topTier.off)}%</b> পর্যন্ত!
             </p>
-            <div className="mx-auto mt-4 grid max-w-xl grid-cols-4 gap-2 sm:gap-3">
+            <div className="mx-auto mt-4 grid max-w-md grid-cols-3 gap-2 sm:gap-3">
               {DISCOUNT_TIERS.map((t) => {
                 const on = tier && t.min <= tier.min
                 return (
@@ -412,7 +438,11 @@ export default function OfferPage() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
-            {CUSTOM_COMBO_PRODUCTS.map((p) => (
+            {catalogLoading &&
+              TOP_PRODUCTS.map((t) => (
+                <div key={t.path} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
+              ))}
+            {[...catalogProducts, ...CUSTOM_COMBO_PRODUCTS].map((p) => (
               <OfferProductCard
                 key={p.id}
                 product={p}
@@ -444,7 +474,7 @@ export default function OfferPage() {
           </div>
         </section>
 
-        {READY_COMBOS.length > 0 && (
+        {(combosLoading || comboProducts.length > 0) && (
           <section className="bg-white">
             <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
               <div className="mx-auto mb-6 max-w-2xl text-center">
@@ -452,7 +482,11 @@ export default function OfferPage() {
                 <p className="mt-2 text-sm text-gray-600 sm:text-base">আমাদের বাছাই করা সাশ্রয়ী কম্বো প্যাক — এক ক্লিকেই যোগ করুন।</p>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
-                {READY_COMBOS.map((p) => (
+                {combosLoading &&
+                  [0, 1, 2].map((i) => (
+                    <div key={i} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
+                  ))}
+                {comboProducts.map((p) => (
                   <OfferProductCard
                     key={p.id}
                     product={p}
@@ -470,16 +504,16 @@ export default function OfferPage() {
 
         {/* Checkout: always the last block on the page */}
         <section ref={checkoutRef} id="checkout" className="scroll-mt-4 border-t border-gray-200 bg-gray-50">
-          <div className="mx-auto max-w-6xl px-4 py-8 lg:py-12">
-            <div className="mb-6">
+          <div className="mx-auto max-w-6xl px-3 py-6 sm:px-4 sm:py-8 lg:py-12">
+            <div className="mb-4 sm:mb-6">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">চেকআউট</h2>
               <p className="mt-1 text-sm text-gray-500">ডেলিভারির তথ্য দিন, তারপর অর্ডার কনফার্ম করুন।</p>
             </div>
 
-            <form onSubmit={submit} noValidate className="grid gap-6 lg:grid-cols-[1fr_380px] lg:gap-8">
-              <div className="space-y-6">
+            <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
+              <div className="min-w-0 space-y-4 sm:space-y-6">
                 <CheckoutCard step={1} title="যোগাযোগের তথ্য">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
                     <Field label="পুরো নাম" required error={errors.name} className="sm:col-span-2">
                       <input value={form.name} autoComplete="name" placeholder="যেমন: আব্দুর রহমান"
                         onChange={(e) => setField('name', e.target.value)} onBlur={() => validate('name')}
@@ -492,7 +526,7 @@ export default function OfferPage() {
                         <input type="tel" inputMode="numeric" maxLength={11} autoComplete="tel-national" placeholder="01XXXXXXXXX"
                           value={form.phone} onChange={(e) => setField('phone', e.target.value.replace(/\D/g, '').slice(0, 11))}
                           onBlur={() => validate('phone')}
-                          className="w-full bg-transparent px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400" />
+                          className="w-full min-w-0 bg-transparent px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400" />
                       </div>
                     </Field>
                     <Field label="ইমেইল" optional error={errors.email}>
@@ -504,7 +538,7 @@ export default function OfferPage() {
                 </CheckoutCard>
 
                 <CheckoutCard step={2} title="ডেলিভারি ঠিকানা">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
                     <Field label="জেলা" required error={errors.district}>
                       <SearchableSelect value={form.district} options={DISTRICTS} placeholder="জেলা বাছাই করুন"
                         invalid={!!errors.district}
@@ -545,8 +579,8 @@ export default function OfferPage() {
                 </CheckoutCard>
               </div>
 
-              <aside className="lg:sticky lg:top-6 lg:self-start">
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+              <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                   <h3 className="mb-2 text-base font-semibold text-gray-900">অর্ডার সামারি</h3>
                   {lines.length ? (
                     <ul className="divide-y divide-gray-200">
@@ -602,24 +636,6 @@ export default function OfferPage() {
             </form>
           </div>
         </section>
-        <footer className="border-t border-gray-200 bg-white">
-          <div className="mx-auto max-w-xl px-4 py-8 text-center">
-            <p className="font-semibold text-primary">যেকোনো প্রয়োজনে যোগাযোগ করুন</p>
-            <div className="mt-4 flex flex-col items-center justify-center gap-2 text-sm sm:flex-row sm:gap-5">
-              <a href={`tel:${SUPPORT_PHONE}`} className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
-                <Phone className="size-4 text-primary" /> {bn(SUPPORT_PHONE)}
-              </a>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
-                <WhatsAppIcon className="size-4 text-[#25D366]" /> WhatsApp
-              </a>
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-1.5 text-gray-700 hover:text-primary">
-                <Mail className="size-4 text-primary" /> {SUPPORT_EMAIL}
-              </a>
-            </div>
-            <p className="mt-5 text-xs text-gray-500">© {bn(new Date().getFullYear())} Surokkha · surokkha.shop</p>
-          </div>
-        </footer>
       </main>
 
       {/* Fixed bottom bar: discount-tier progress + jump to checkout */}
@@ -672,7 +688,7 @@ export default function OfferPage() {
 
 function CheckoutCard({ step, title, children }: { step: number; title: string; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
       <h3 className="mb-5 flex items-center gap-2 text-base font-semibold text-gray-900">
         <span className="grid size-6 place-items-center rounded-full bg-[#dc143c]/15 text-xs text-[#b80f31]">{bn(step)}</span>
         {title}

@@ -1,9 +1,8 @@
-import { Eye, SlidersHorizontal } from 'lucide-react'
+import { Eye, Minus, Plus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { fromPrice, type OfferProduct } from '@/data/offerProducts'
 import { bn, taka } from '@/lib/bn'
 import { ProductSlider } from './ProductMedia'
-import { QtyStepper } from './QtyStepper'
 
 interface Props {
   product: OfferProduct
@@ -29,7 +28,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
           type="button"
           onClick={onQuickView}
           aria-label={`${product.name} বিস্তারিত দেখুন`}
-          className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-primary shadow"
+          className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow transition hover:bg-emerald-700"
         >
           <Eye className="size-3.5" /> Details
         </button>
@@ -46,26 +45,37 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         )}
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug sm:text-base">{product.name}</h3>
         {product.desc && <p className="line-clamp-1 text-xs text-gray-600 sm:text-sm">{product.desc}</p>}
-        <p className="mb-2 mt-1 text-lg font-bold text-rose-600">
-          {taka(fromPrice(product))}
-          {isVariable && <span className="ml-1 text-xs font-normal text-gray-600">থেকে</span>}
-          {product.regularPrice && product.regularPrice > product.price && (
-            <s className="ml-1.5 text-sm font-normal text-gray-400">{taka(product.regularPrice)}</s>
-          )}
-        </p>
-        <div className="mt-auto">
-          {isVariable ? (
+        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+          <p className="leading-tight">
+            <span className="text-base font-bold text-rose-600 sm:text-lg">{taka(fromPrice(product))}</span>
+            {isVariable && <span className="ml-1 text-[11px] font-normal text-gray-600">থেকে</span>}
+            {product.regularPrice && product.regularPrice > product.price && (
+              <s className="ml-1 text-xs font-normal text-gray-400">{taka(product.regularPrice)}</s>
+            )}
+          </p>
+          {qty > 0 && !isVariable ? (
+            // Already in the order: a compact stepper in the same spot as "Add"
+            <div className="flex shrink-0 items-center gap-1 rounded-full bg-primary p-0.5 text-primary-foreground">
+              <button type="button" onClick={onDec} aria-label={`${product.name} কমান`}
+                className="flex size-7 items-center justify-center rounded-full hover:bg-white/15">
+                <Minus className="size-3.5" />
+              </button>
+              <span className="min-w-4 text-center text-sm font-semibold tabular-nums">{bn(qty)}</span>
+              <button type="button" onClick={onInc} aria-label={`${product.name} বাড়ান`}
+                className="flex size-7 items-center justify-center rounded-full hover:bg-white/15">
+                <Plus className="size-3.5" />
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={onChooseOptions}
+              onClick={isVariable ? onChooseOptions : onInc}
               disabled={!product.inStock}
-              className="flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-primary text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
+              aria-label={`${product.name} বাড়ান`}
+              className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
             >
-              <SlidersHorizontal className="size-4" />
-              {qty ? `${bn(qty)}টি বাছাই করা · বদলান` : 'অপশন বেছে নিন'}
+              {isVariable && qty > 0 ? bn(qty) : 'Add'} <Plus className="size-4" />
             </button>
-          ) : (
-            <QtyStepper value={qty} onInc={onInc} onDec={onDec} label={product.name} />
           )}
         </div>
       </div>

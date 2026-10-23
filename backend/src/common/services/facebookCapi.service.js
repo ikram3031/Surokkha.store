@@ -37,8 +37,8 @@ export const STORE_META_PIXEL_KEY = "store-meta-pixel";
 const isStoreRequest = (...sources) =>
   sources.some((s) => s === "store" || String(s?.originalUrl || s?.baseUrl || "").startsWith("/store/"));
 
-// Orders from the offer landing page (offer.surokkha.shop) carry the SC prefix
-export const OFFER_ORDER_PREFIX = "SC";
+// Orders from the offer landing page (offer.surokkha.shop) carry the OS prefix
+export const OFFER_ORDER_PREFIX = "OS";
 export const OFFER_SITE_URL = "https://offer.surokkha.shop/";
 export const isOfferOrder = (order, req = null) =>
   String(order?.orderNumber || "").toUpperCase().startsWith(OFFER_ORDER_PREFIX) ||
