@@ -1,4 +1,5 @@
 import * as React from "react"
+import { resolveImageUrl } from "@/lib/api-client"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
@@ -280,7 +281,13 @@ export const AppSidebar = ({ ...props }) => {
     }
   }
 
-  const userInitial = user?.name?.charAt(0)?.toUpperCase() || "B"
+  // Preferred name from the profile wins over the account name
+  const displayName = user?.preferredName || user?.name || ""
+  const userInitial = displayName.charAt(0).toUpperCase() || "B"
+  // Uploaded profile photo; falls back to the initial when missing or broken
+  const avatarSrc = resolveImageUrl(user?.avatar)
+  const [avatarFailed, setAvatarFailed] = React.useState(false)
+  React.useEffect(() => setAvatarFailed(false), [avatarSrc])
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -623,14 +630,23 @@ export const AppSidebar = ({ ...props }) => {
               <button
                 type="button"
                 className="flex w-full items-center gap-2.5 rounded-lg p-2 text-left cursor-pointer outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0"
-                title={user?.name || "User Account"}
+                title={displayName || "User Account"}
               >
                 <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">
-                  {userInitial}
+                  {avatarSrc && !avatarFailed ? (
+                    <img
+                      src={avatarSrc}
+                      alt={user?.name || "Avatar"}
+                      onError={() => setAvatarFailed(true)}
+                      className="h-full w-full rounded-lg object-cover"
+                    />
+                  ) : (
+                    userInitial
+                  )}
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded border-2 border-sidebar bg-emerald-500" />
                 </span>
                 <span className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate text-sm font-semibold text-foreground">{user?.name || "Bithy Akther"}</span>
+                  <span className="truncate text-sm font-semibold text-foreground">{displayName || "User"}</span>
                   <span className="truncate text-xs capitalize text-muted-foreground">{user?.role || "Frontdesk"}</span>
                 </span>
                 <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60 group-data-[collapsible=icon]:hidden" />

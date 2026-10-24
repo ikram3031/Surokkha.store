@@ -65,3 +65,6 @@ configs/*.json
 # Local-only credential copies (never commit)
 configs/secrets/
 *.secrets.json
+
+# Claude Code local settings
+.claude/

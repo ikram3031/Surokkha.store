@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 
 // Fetches a paginated and filtered list of orders from the backend API
-const fetchOrders = async (params) => {
+export const fetchOrders = async (params) => {
   const limit = params?.limit ?? 15;
   const page = params?.page ?? 1;
 
@@ -15,6 +15,8 @@ const fetchOrders = async (params) => {
     if (params?.paymentStatus) queryParams.paymentStatus = params.paymentStatus.toLowerCase();
     if (params?.search) queryParams.search = params.search;
     if (params?.orderType) queryParams.orderType = params.orderType;
+    if (params?.dateFrom) queryParams.dateFrom = params.dateFrom;
+    if (params?.dateTo) queryParams.dateTo = params.dateTo;
 
     const response = await apiClient.get('/api/v1/orders', { params: queryParams });
     const responseData = response.data;
@@ -100,7 +102,8 @@ const fetchOrders = async (params) => {
 };
 
 // React Query hook to fetch paginated and filtered orders
-export const useOrders = (params) => {
+// `options` is passed to useQuery as-is (e.g. { enabled: false }); existing callers need no change
+export const useOrders = (params, options = {}) => {
   return useQuery({
     queryKey: ['orders', params],
     queryFn: () => fetchOrders(params),
@@ -108,6 +111,7 @@ export const useOrders = (params) => {
     refetchOnMount: true,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
+    ...options,
   });
 };
 

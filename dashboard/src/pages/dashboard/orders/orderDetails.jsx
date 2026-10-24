@@ -79,7 +79,7 @@ import {
   WhatsAppIcon,
   handleCopyText,
 } from "@/utils/orderDetailsHelper";
-import { CartPriceInput, CustomItemDialog } from "@/components/orders/CartLineEditors";
+import { CartPriceInput, CustomItemDialog, CustomItemCard } from "@/components/orders/CartLineEditors";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
@@ -310,6 +310,7 @@ const OrderDetailsPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paidAmount, setPaidAmount] = useState(0);
   const [paymentPhone, setPaymentPhone] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
   const [paymentTransactionId, setPaymentTransactionId] = useState("");
 
   const [orderStatus, setOrderStatus] = useState("Pending");
@@ -332,7 +333,10 @@ const OrderDetailsPage = () => {
     category: categoryFilter !== "All" ? categoryFilter : undefined,
     brand: brandFilter !== "All" ? brandFilter : undefined,
   });
-  const products = Array.isArray(productsResponse?.data) ? productsResponse.data : [];
+  // Out-of-stock entries are hidden from the catalogue so they can't be added to an order
+  const products = (Array.isArray(productsResponse?.data) ? productsResponse.data : []).filter(
+    (p) => p.status !== "Out of Stock" && p.stockStatus !== "outofstock",
+  );
 
   const { data: itemsResponse, isLoading: itemsLoading } = useItems({
     search: searchQuery || undefined,
@@ -340,7 +344,9 @@ const OrderDetailsPage = () => {
     brand: brandFilter !== "All" ? brandFilter : undefined,
     limit: 50,
   });
-  const items = Array.isArray(itemsResponse?.data) ? itemsResponse.data : [];
+  const items = (Array.isArray(itemsResponse?.data) ? itemsResponse.data : []).filter(
+    (i) => i.status !== "Out of Stock" && i.stockStatus !== "outofstock",
+  );
 
   const isInStoreOrder = useMemo(() => checkIsInStoreOrder(order), [order]);
 
@@ -392,6 +398,7 @@ const OrderDetailsPage = () => {
       setShippingFee(order.totals?.shippingFee ?? order.shippingTotalAmount ?? 0);
       setPaidAmount(getInitialPaidAmount(order, initMethod));
       setPaymentPhone(extractPaymentPhone(order));
+      setOrderNotes(order.orderNotes || "");
       setPaymentTransactionId(order.paymentTransactionId || order.paymentDetails?.transactionId || "");
       setCart(mapOrderItemsToCart(order.items));
 
@@ -549,7 +556,7 @@ const OrderDetailsPage = () => {
         user,
       });
 
-      await apiClient.put(`/api/v1/orders/${id}`, orderPayload);
+      await apiClient.put(`/api/v1/orders/${id}`, { ...orderPayload, orderNotes: orderNotes.trim() });
       logActivity({
         type: 'updated',
         description: `Order #${order.orderNumber || id} updated (status: "${orderStatus}") by "${user?.name || 'Admin'}"`,
@@ -596,7 +603,7 @@ const OrderDetailsPage = () => {
   const effectivePending = calculatePendingAmount(effectiveTotal, effectivePaid);
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b pb-6">
         <div className="flex items-center gap-3">
           <Button
@@ -1405,6 +1412,8 @@ const OrderDetailsPage = () => {
                 )
               )}
             </div>
+
+            <CustomItemCard onAdd={addToCart} />
           </div>
 
           <div className="lg:col-span-2 space-y-4 animate-in fade-in duration-300">
@@ -1490,7 +1499,7 @@ const OrderDetailsPage = () => {
                       <label className="text-xs text-muted-foreground mb-0.5 block">Street Address *</label>
                       <Input placeholder="Street address details" value={billingAddress} onChange={(e) => setBillingAddress(e.target.value)} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="text-xs text-muted-foreground mb-0.5 block">District / City *</label>
                       <DistrictCombobox
                         value={billingDistrict}
@@ -1501,7 +1510,7 @@ const OrderDetailsPage = () => {
                         placeholder="Select district..."
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="text-xs text-muted-foreground mb-0.5 block">Thana</label>
                       <ThanaCombobox
                         district={billingDistrict}
@@ -1562,7 +1571,7 @@ const OrderDetailsPage = () => {
                         <label className="text-xs text-muted-foreground mb-0.5 block">Shipping Address *</label>
                         <Input placeholder="Street address details" value={shippingAddress} onChange={(e) => setShippingAddress(e.target.value)} />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <label className="text-xs text-muted-foreground mb-0.5 block">District / City *</label>
                         <DistrictCombobox
                           value={shippingDistrict}
@@ -1573,7 +1582,7 @@ const OrderDetailsPage = () => {
                           placeholder="Select district..."
                         />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <label className="text-xs text-muted-foreground mb-0.5 block">Thana</label>
                         <ThanaCombobox
                           district={shippingDistrict}
@@ -1698,6 +1707,21 @@ const OrderDetailsPage = () => {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="bg-card border border-border/80 rounded-xl p-5 shadow-sm space-y-3">
+              <label htmlFor="order-notes" className="font-semibold text-base flex items-center gap-2 border-b pb-2">
+                Order Notes
+              </label>
+              <textarea
+                id="order-notes"
+                rows={3}
+                maxLength={1000}
+                value={orderNotes}
+                onChange={(e) => setOrderNotes(e.target.value)}
+                placeholder="e.g. Call before delivery"
+                className="w-full text-sm bg-background border border-input rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition resize-y"
+              />
             </div>
 
             <div className="bg-card border border-border/80 rounded-xl p-5 shadow-sm space-y-4">

@@ -25,7 +25,7 @@ const { Types } = mongoose;
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
 import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
 import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
-import { compileTransactionalEmailHtml } from '../../common/templates/invoices/templateEngine.js';
+import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
@@ -305,6 +305,15 @@ export const listOrders = async (req, res, next) => {
           { $and: [{ _id: { $nin: allPaymentOrderIds } }, orderFieldCondition] },
         ],
       });
+    }
+
+    // Date range filter (YYYY-MM-DD, Bangladesh time, both days inclusive)
+    const isDay = (v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+    if (isDay(req.query.dateFrom) || isDay(req.query.dateTo)) {
+      const range = {};
+      if (isDay(req.query.dateFrom)) range.$gte = new Date(`${req.query.dateFrom}T00:00:00.000+06:00`);
+      if (isDay(req.query.dateTo)) range.$lte = new Date(`${req.query.dateTo}T23:59:59.999+06:00`);
+      andConditions.push({ createdAt: range });
     }
 
     if (req.query.search) {
@@ -985,14 +994,6 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
       paidAmount: effectivePaid,
     };
 
-    let templateConfig = null;
-    try {
-      const storeSettings = await StoreSettingsModel.findOne({ key: "default" }).lean();
-      if (storeSettings?.templates?.isActive) {
-        templateConfig = storeSettings.templates;
-      }
-    } catch (_) {}
-
     const { transport, config: smtpConfig } = await getSmtpTransport();
     if (!smtpConfig.isConfigured || !transport) {
       return res.status(400).json({
@@ -1005,11 +1006,7 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
     const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
     const fromAddress = `"${brandDisplayName}" <${fromEmail}>`;
 
-    const htmlContent = compileTransactionalEmailHtml({
-      templateConfig: templateConfig || {},
-      order: formattedOrderData,
-      clientConfig: config,
-    });
+    const htmlContent = buildOrderInvoiceEmailHtml({ order: formattedOrderData });
 
     await transport.sendMail({
       from: fromAddress,
@@ -1057,6 +1054,55 @@ export const getSpamList = async (req, res, next) => {
         totalPages: Math.ceil(total / limit),
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Manually add a phone and/or email to the spam list (Dashboard/Admin only)
+export const addSpamListEntry = async (req, res, next) => {
+  try {
+    const rawPhone = String(req.body?.phone || '').trim();
+    const phone = rawPhone ? rawPhone.replace(/\D/g, '').slice(-11) : '';
+    const email = String(req.body?.email || '').trim().toLowerCase();
+
+    if (!phone && !email) {
+      return res.status(400).json({ status: 'error', message: 'Phone or email is required' });
+    }
+    if (rawPhone && phone.length !== 11) {
+      return res.status(400).json({ status: 'error', message: 'Enter a valid 11-digit phone number' });
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ status: 'error', message: 'Enter a valid email address' });
+    }
+
+    const existsQuery = [];
+    if (phone) existsQuery.push({ phone });
+    if (email) existsQuery.push({ email });
+    const existing = await SpamListModel.findOne({ $or: existsQuery }).lean();
+    if (existing) {
+      return res.status(409).json({ status: 'error', message: 'This phone or email is already in the spam list' });
+    }
+
+    const entry = await SpamListModel.create({ phone, email });
+
+    try {
+      const actorName = req.user?.name || req.user?.email || 'Admin';
+      const actorDid = req.user?.did || req.user?.userId || 'system';
+      await LogModel.create({
+        type: 'created',
+        typeDid: entry.id,
+        description: `${actorName} added ${[phone, email].filter(Boolean).join(' / ')} to the spam list.`,
+        readStatus: false,
+        active: true,
+        createdBy: actorDid,
+        updatedBy: actorDid,
+      });
+    } catch (logErr) {
+      console.warn('Failed to create log for spam list add:', logErr);
+    }
+
+    return res.status(201).json({ status: 'success', message: 'Added to spam list', data: entry });
   } catch (error) {
     next(error);
   }

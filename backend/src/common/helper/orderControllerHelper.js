@@ -181,7 +181,11 @@ export const buildOrderDocument = async (payload, req = null) => {
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
   const resolvedSiteKey = 'shop';
   const resolvedDomain = payload.clientDomain || 'surokkha.shop';
-  const customPrefix = isCustom ? 'CO' : isInstore ? 'IS' : (payload.orderPrefix || 'SH');
+  // A custom order may carry its own prefix (e.g. SC from offer.surokkha.store); dashboard custom orders stay CO
+  const explicitCustomPrefix = isCustom && /^[A-Z]{2}$/.test(String(payload.orderPrefix || '').trim().toUpperCase())
+    ? String(payload.orderPrefix).trim().toUpperCase()
+    : null;
+  const customPrefix = explicitCustomPrefix || (isCustom ? 'CO' : isInstore ? 'IS' : (payload.orderPrefix || 'SH'));
 
     const calculatedTotal = Number(payload.total || payload.totalAmount || (Number(payload.subtotal || 0) + Number(payload.shippingFee || payload.shippingTotalAmount || 0) - Number(payload.discountTotalAmount || 0)));
   const rawMethod = normalizeText(payload.paymentMethod).toLowerCase();
@@ -202,7 +206,7 @@ export const buildOrderDocument = async (payload, req = null) => {
   }
 
   return {
-    orderNumber: await buildOrderNumber(resolvedOrderType, resolvedSiteKey, customPrefix),
+    orderNumber: await buildOrderNumber(explicitCustomPrefix ? false : resolvedOrderType, resolvedSiteKey, customPrefix),
     siteKey: resolvedSiteKey,
     clientDomain: resolvedDomain,
     status: initialStatus,
@@ -218,6 +222,7 @@ export const buildOrderDocument = async (payload, req = null) => {
     shippingTotalAmount: Number(payload.shippingTotalAmount || payload.shippingFee || 0),
     discountTotalAmount: Number(payload.discountTotalAmount || 0),
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
+    orderNotes: normalizeText(payload.orderNotes || payload.notes || '').slice(0, 1000),
     orderType: resolvedOrderType,
     items: await normalizeOrderItems(payload.items),
     totals: {
@@ -417,6 +422,9 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   }
   if (payload.paymentTransactionId !== undefined) {
     allowedUpdates.paymentTransactionId = normalizeText(payload.paymentTransactionId);
+  }
+  if (payload.orderNotes !== undefined) {
+    allowedUpdates.orderNotes = normalizeText(payload.orderNotes).slice(0, 1000);
   }
   if (allowedUpdates.status === 'return' || String(payload.status || '').toLowerCase().trim() === 'return') {
     allowedUpdates.paymentStatus = 'returned';

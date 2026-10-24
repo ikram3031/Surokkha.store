@@ -1,32 +1,28 @@
-/**
- * Surokkha common order invoice template (A4) shared by the dashboard and the storefront.
- * Used as the default when no active DB template (StoreSettings.templates) is configured.
- *
- * Design: maroon/rose ramp sampled from the logo, blush header band, blush table header,
- * single deep-maroon grand total block, discreet footer with support contacts.
- *
- * @param {Object} params
- * @param {Object} params.order - Formatted order data
- * @param {boolean} [params.isPrintView=false] - When true, triggers auto-print for PDF saving
- * @param {string} [params.logoUrl] - Public Surokkha logo URL
- * @returns {string} Standalone HTML string
- */
-export const buildSurokkhaOrderInvoiceHtml = ({
-  order = {},
-  isPrintView = false,
-  logoUrl = "https://admin.surokkha.store/invoice_logo.png",
-}) => {
-  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
-    ? "https://admin.surokkha.store/invoice_logo.png"
-    : logoUrl;
+import { BRAND, esc, tk, fmtPhone, waLink, addressLines, variantChips, isPaidStatus, resolveSite, resolveLogo } from "../surokkhaBrand.js";
 
+const SOURCE_LABELS = { online: "Online order", custom: "Custom order", instore: "In-store order" };
+
+// Accepts "October 20, 2026", an ISO string or a Date and prints "20 Oct 2026"
+const fmtDate = (value) => {
+  const d = value ? new Date(value) : new Date();
+  return Number.isNaN(d.getTime())
+    ? String(value)
+    : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
+
+/**
+ * Surokkha A4 invoice page shared by the dashboard, the storefront and the order emails' "view invoice" link.
+ * Rendered server-side from formatted order data; only the WhatsApp QR code uses a script.
+ */
+export const buildSurokkhaOrderInvoiceHtml = ({ order = {}, logoUrl }) => {
+  const site = resolveSite({ orderId: order.orderId, clientDomain: order.clientDomain });
+  const cleanLogoUrl = resolveLogo(logoUrl, site);
   const {
     orderId = "N/A",
-    status = "processing",
     orderType = "online",
-    createdAt = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+    createdAt,
     customerName = "Valued Customer",
-    customerPhone = "N/A",
+    customerPhone = "",
     billingAddress = {},
     shippingAddress = null,
     items = [],
@@ -35,191 +31,202 @@ export const buildSurokkhaOrderInvoiceHtml = ({
     discountAmount = 0,
     couponCode = null,
     totalAmount = 0,
-    paymentMethod = "Cash on Delivery (COD)",
+    paymentMethod = "Cash on Delivery",
+    paymentStatus,
   } = order;
 
-  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const taka = (n) => "৳" + Number(n || 0).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const deliverTo = shippingAddress && Object.keys(shippingAddress).length ? shippingAddress : billingAddress;
+  const name = deliverTo?.fullName || deliverTo?.name || customerName;
+  const phone = deliverTo?.phone || customerPhone;
+  const address = addressLines(deliverTo);
+  const itemCount = items.reduce((s, i) => s + Number(i.quantity || 1), 0);
+  const paid = isPaidStatus(paymentStatus);
+  const method = /^cod$/i.test(paymentMethod) ? "Cash on Delivery" : paymentMethod;
 
-  const formatAddress = (addr) => {
-    if (!addr) return "N/A";
-    if (typeof addr === "string") return addr;
-    if (addr.fullAddress && addr.fullAddress.trim()) return addr.fullAddress;
-    const parts = [
-      addr.street || addr.address,
-      addr.thana,
-      addr.district || addr.city || addr.state,
-      addr.zipCode || addr.zip ? `Zip: ${addr.zipCode || addr.zip}` : "",
-    ].filter(Boolean);
-    return parts.length > 0 ? parts.join(", ") : "N/A";
-  };
-
-  const deliveryAddress = formatAddress(shippingAddress || billingAddress);
-
-  const methodLower = String(paymentMethod).toLowerCase();
-  const rawPaymentStatus = String(order.paymentStatus || "").toLowerCase();
-  const paidAmount = Number(order.paidAmount || 0);
-  const total = Number(totalAmount || 0);
-  const isCustom = orderType === "custom" || String(orderId).startsWith("CO");
-  const isInstore = !isCustom && (orderType === "instore" || String(orderId).startsWith("IS") || methodLower.includes("instore") || methodLower.includes("office"));
-  const isPaid = status === "completed" || methodLower.includes("paid") || rawPaymentStatus === "paid";
-  const isPartial = !isPaid && (rawPaymentStatus === "partial" || rawPaymentStatus === "partially_paid" || (paidAmount > 0 && paidAmount < total));
-  const due = Math.max(0, total - paidAmount);
-
-  const typeTag = isCustom ? "Custom Order" : isInstore ? "In-store Order" : "Online Order";
-  const payPill = isPaid || isInstore
-    ? { cls: "paid", text: "Paid" }
-    : isPartial
-      ? { cls: "partial", text: "Partial Payment" }
-      : { cls: "pending", text: "Pending (COD)" };
-
-  const itemRows = items.map((item) => {
-    const name = item.productName || item.name || "Product";
-    const variantParts = [item.size, item.variant, item.variantName, item.packType].filter(Boolean);
-    const variant = [...new Set(variantParts)].join(" • ");
-    const qty = Number(item.quantity || 1);
-    const unitPrice = Number(item.unitPrice || item.price || 0);
-    const lineTotal = Number(item.subtotal || unitPrice * qty || 0);
-    return `
-      <tr>
-        <td class="item">${esc(name)}${variant ? `<span class="variant">${esc(variant)}</span>` : ""}</td>
-        <td>${qty}</td>
-        <td>${taka(unitPrice)}</td>
-        <td><b>${taka(lineTotal)}</b></td>
+  const itemRows = items
+    .map((i) => {
+      const qty = Number(i.quantity || 1);
+      const unit = Number(i.price ?? i.unitPrice ?? 0);
+      const chips = variantChips(i.variantName);
+      return `<tr>
+        <td>
+          <div class="item-name">${esc(i.productName || i.name || "Product")}</div>
+          ${chips.length ? `<div class="variants">${chips.map((v) => `<span class="chip">${esc(v)}</span>`).join("")}</div>` : ""}
+        </td>
+        <td class="qty">${qty}</td>
+        <td class="num">${tk(unit)}</td>
+        <td class="num"><b>${tk(i.subtotal || unit * qty)}</b></td>
       </tr>`;
-  }).join("");
+    })
+    .join("");
 
-  return `<!DOCTYPE html>
+  return `<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Invoice ${esc(orderId)} · Surokkha</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --maroon-900: #3a0d1a; --maroon-700: #4c1222; --maroon-500: #7a2a41; --maroon-300: #b9808f;
-      --rose-600: #a82141; --rose-300: #dba0ae; --blush-100: #f6e8ec; --blush-50: #fbf4f6;
-      --ink: #2a171e; --muted: #7d6a72; --line: #eddde2; --paper: #ffffff; --desk: #f1ecee;
-      --paid: #1b7f45; --partial: #b45309;
-      --font-display: "Fraunces", Georgia, serif;
-      --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; padding: 32px 16px; background: var(--desk); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .sheet { max-width: 794px; margin: 0 auto; background: var(--paper); overflow: hidden; box-shadow: 0 1px 2px rgba(58,13,26,.06), 0 14px 34px rgba(58,13,26,.10); }
-    .bar { height: 8px; background: linear-gradient(90deg, var(--maroon-700) 0%, var(--maroon-700) 62%, var(--rose-600) 100%); }
-    header { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 36px 48px 30px; background: linear-gradient(180deg, var(--blush-50), var(--paper)); }
-    .logo { display: block; width: 300px; max-width: 80%; height: auto; }
-    h1 { margin: 6px 0 0; font-size: 20px; font-weight: 700; letter-spacing: .02em; color: var(--maroon-700); }
-    .tag { display: inline-block; padding: 3px 14px; border-radius: 999px; background: var(--blush-100); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--rose-600); }
-    .body { padding: 0 48px 36px; }
-    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; padding-block: 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-    .meta > div { min-width: 0; }
-    .label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--maroon-300); margin: 0 0 8px; }
-    .meta p { margin: 0 0 4px; overflow-wrap: anywhere; }
-    .meta b { font-weight: 600; color: var(--maroon-700); }
-    .name { font-size: 15px; font-weight: 700; color: var(--ink); }
-    .pill { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-    .pill.pending { background: var(--blush-100); color: var(--rose-600); }
-    .pill.paid { background: #e3f4ea; color: var(--paid); }
-    .pill.partial { background: #fef3c7; color: var(--partial); }
-    .table-wrap { overflow-x: auto; padding-block: 24px 8px; }
-    table { width: 100%; border-collapse: collapse; min-width: 480px; font-variant-numeric: tabular-nums; }
-    thead th { text-align: right; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--maroon-500); background: var(--blush-100); padding: 10px 12px; }
-    thead th:first-child { text-align: left; border-radius: 8px 0 0 8px; }
-    thead th:last-child { border-radius: 0 8px 8px 0; }
-    td { text-align: right; padding: 14px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    td:first-child { text-align: left; }
-    td.item { font-weight: 600; color: var(--maroon-700); }
-    .variant { display: block; margin-top: 2px; font-size: 12px; font-weight: 500; color: var(--muted); }
-    .totals { margin-left: auto; width: min(100%, 340px); padding-top: 12px; font-variant-numeric: tabular-nums; }
-    .row { display: flex; justify-content: space-between; gap: 16px; padding: 6px 12px; color: var(--muted); }
-    .row.discount { color: var(--rose-600); font-weight: 600; }
-    .row.paidrow { color: var(--paid); font-weight: 600; }
-    .code { display: inline-block; padding: 0 8px; border: 1px dashed var(--rose-300); border-radius: 6px; background: var(--blush-50); font-size: 12px; font-weight: 700; letter-spacing: .06em; color: var(--rose-600); }
-    .grand { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 10px; padding: 14px 16px; border-radius: 10px; color: #fff; background: linear-gradient(100deg, var(--maroon-900), var(--maroon-700) 60%, var(--maroon-500)); }
-    .grand .k { font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--rose-300); }
-    .grand .v { font-family: var(--font-display); font-size: 28px; font-weight: 700; }
-    .cod { margin: 10px 0 0; text-align: right; font-size: 12px; color: var(--rose-600); font-weight: 600; }
-    footer { margin-top: 36px; padding: 18px 48px 22px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; font-size: 12px; color: var(--muted); background: var(--blush-50); border-top: 1px solid var(--line); }
-    footer .thanks { font-family: var(--font-display); font-size: 16px; color: var(--maroon-700); }
-    footer .heart { color: var(--rose-600); }
-    footer .slogan { font-size: 10.5px; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--maroon-500); }
-    footer a { color: var(--maroon-700); }
-    .actions-bar { max-width: 794px; margin: 16px auto 0; text-align: center; }
-    .btn-print { padding: 10px 20px; border: 0; border-radius: 8px; background: var(--maroon-700); color: #fff; font: 600 13px var(--font-body); cursor: pointer; }
-    @media (max-width: 560px) {
-      header { padding: 28px 20px 24px; }
-      .body { padding: 0 20px 28px; }
-      footer { padding-inline: 20px; }
-      .meta { grid-template-columns: 1fr; }
-    }
-    @page { size: A4; margin: 8mm; }
-    @media print {
-      body { background: #fff; padding: 0; }
-      .sheet { box-shadow: none; max-width: none; }
-      .actions-bar { display: none; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice #${esc(orderId)} · ${esc(site.name)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:${BRAND.ink};--maroon:${BRAND.maroon};--maroon-2:${BRAND.maroon2};--crimson:${BRAND.crimson};
+    --blush:${BRAND.blush};--line:${BRAND.line};--muted:${BRAND.muted};--ok:${BRAND.ok};
+    --page-w:210mm;--page-h:297mm;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#e9e4e6}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);font-size:12.5px;line-height:1.5;
+       -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{width:var(--page-w);min-height:var(--page-h);margin:24px auto;background:#fff;display:flex;flex-direction:column;
+        box-shadow:0 8px 30px rgba(74,13,34,.12);position:relative;overflow:hidden}
+  .page::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:linear-gradient(90deg,var(--maroon),var(--crimson))}
+  .wrap{padding:16mm 16mm 0}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+  .logo{display:block;height:46px;width:auto;max-width:220px}
+  .inv-meta{text-align:right}
+  .inv-meta .label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--crimson);font-weight:700}
+  .inv-meta .no{font-size:20px;font-weight:700;color:var(--maroon);margin:2px 0 6px}
+  .inv-meta .row{color:var(--muted);font-size:11.5px}
+  .inv-meta .row b{color:var(--ink);font-weight:600}
+  .info{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-top:22px}
+  .card{background:var(--blush);border-radius:10px;padding:14px 16px}
+  .card h4{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--crimson);margin-bottom:8px}
+  .card .name{font-size:14px;font-weight:700}
+  .card .muted{color:var(--muted)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+  .kv dt{color:var(--muted)}
+  .kv dd{font-weight:600;text-align:right}
+  table{width:100%;border-collapse:collapse;margin-top:22px}
+  thead th{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600;
+           text-align:left;padding:0 0 8px;border-bottom:1.5px solid var(--maroon)}
+  th.num,td.num{text-align:right;white-space:nowrap;padding-left:14px}
+  th.qty,td.qty{text-align:center;width:48px}
+  tbody td{padding:12px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .item-name{font-weight:600;font-size:13px}
+  .variants{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .chip{font-size:10.5px;background:var(--blush);color:var(--maroon-2);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px;align-items:start}
+  .totals .r{display:flex;justify-content:space-between;padding:5px 0;color:var(--muted)}
+  .totals .r span:last-child{color:var(--ink);font-weight:500}
+  .totals .r.discount span:last-child{color:var(--ok)}
+  .totals .grand{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px;padding-top:10px;border-top:1.5px solid var(--maroon)}
+  .totals .grand span:first-child{font-weight:700;color:var(--maroon)}
+  .totals .grand span:last-child{font-size:20px;font-weight:700;color:var(--maroon)}
+  .pay{border-radius:12px;padding:16px 18px;color:#fff;background:linear-gradient(135deg,var(--maroon),var(--maroon-2))}
+  .pay .t{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.75}
+  .pay .amt{font-size:28px;font-weight:700;margin:4px 0 2px;letter-spacing:-.5px}
+  .pay .sub{font-size:11px;opacity:.85}
+  .pay.paid{background:linear-gradient(135deg,#145a39,var(--ok))}
+  .note{margin-top:18px;display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--line);border-radius:10px;
+        padding:10px 14px;color:var(--muted);font-size:11.5px}
+  .note b{color:var(--ink)}
+  .spacer{flex:1}
+  .foot{margin-top:24px;background:var(--blush);padding:14px 16mm;display:flex;justify-content:space-between;align-items:center;gap:20px;border-top:1px solid var(--line)}
+  .foot .thanks{font-family:Fraunces,serif;font-size:15px;font-weight:600;color:var(--maroon)}
+  .foot .contact{font-size:11px;color:var(--muted);margin-top:2px}
+  .foot .contact b{color:var(--ink);font-weight:600}
+  #qr{width:64px;height:64px;flex:none}
+  #qr img,#qr canvas{width:64px!important;height:64px!important}
+  .qr-cap{font-size:9px;color:var(--muted);text-align:center;margin-top:2px}
+  .print-btn{position:fixed;right:20px;bottom:20px;background:var(--maroon);color:#fff;border:0;border-radius:999px;
+             padding:10px 18px;font:600 13px Inter,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(74,13,34,.3)}
+  @page{size:A4;margin:0}
+  @media print{
+    html,body{background:#fff}
+    .page{margin:0;box-shadow:none}
+    .print-btn{display:none}
+  }
+  @media screen and (max-width:820px){
+    .page{width:100%;min-height:auto;margin:0}
+    .wrap{padding:24px 16px 0}
+    .info,.bottom{grid-template-columns:1fr}
+    .foot{padding:14px 16px}
+  }
+</style>
 </head>
-<body ${isPrintView ? 'onload="setTimeout(function(){ window.print(); }, 400)"' : ""}>
-  <main class="sheet">
-    <div class="bar"></div>
-    <header>
-      <img class="logo" src="${esc(cleanLogoUrl)}" alt="Surokkha — Safe today, tomorrow">
-      <h1>INVOICE #${esc(orderId)}</h1>
-      <span class="tag">${esc(typeTag)}</span>
+<body>
+<div class="page">
+  <div class="wrap">
+    <header class="head">
+      <img class="logo" src="${esc(cleanLogoUrl)}" alt="${esc(site.name)}">
+      <div class="inv-meta">
+        <div class="label">Invoice</div>
+        <div class="no">#${esc(orderId)}</div>
+        <div class="row">Issued <b>${fmtDate()}</b></div>
+        <div class="row">Ordered <b>${esc(fmtDate(createdAt))}</b></div>
+      </div>
     </header>
 
-    <div class="body">
-      <section class="meta">
-        <div>
-          <p class="label">Customer &amp; Delivery</p>
-          <p class="name">${esc(customerName)}</p>
-          <p>${esc(customerPhone)}</p>
-          <p style="margin-top:10px"><b>Shipping address</b><br>${esc(deliveryAddress)}</p>
-        </div>
-        <div>
-          <p class="label">Order &amp; Payment</p>
-          <p><b>Order date:</b> ${esc(createdAt)}</p>
-          <p><b>Payment method:</b> ${esc(paymentMethod)}</p>
-          <p><b>Payment status:</b> <span class="pill ${payPill.cls}">${payPill.text}</span></p>
-          <p style="margin-top:10px"><b>Helpline:</b> 01600905774 (WhatsApp)</p>
-        </div>
-      </section>
-
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Product</th><th>Qty</th><th>Unit price</th><th>Total</th></tr></thead>
-          <tbody>${itemRows}</tbody>
-        </table>
+    <section class="info">
+      <div class="card">
+        <h4>Deliver to</h4>
+        <div class="name">${esc(name)}</div>
+        ${phone ? `<div class="muted">${esc(fmtPhone(phone))}</div>` : ""}
+        ${address.length ? `<div style="margin-top:6px">${address.map(esc).join("<br>")}</div>` : ""}
       </div>
+      <div class="card">
+        <h4>Order details</h4>
+        <dl class="kv">
+          <dt>Payment</dt><dd>${esc(method)}</dd>
+          <dt>Items</dt><dd>${itemCount} ${itemCount === 1 ? "item" : "items"}</dd>
+          <dt>Source</dt><dd>${esc(SOURCE_LABELS[orderType] || "Online order")}</dd>
+        </dl>
+      </div>
+    </section>
 
+    <table>
+      <thead><tr><th>Product</th><th class="qty">Qty</th><th class="num">Unit price</th><th class="num">Total</th></tr></thead>
+      <tbody>${itemRows}</tbody>
+    </table>
+
+    <section class="bottom">
+      <div class="pay${paid ? " paid" : ""}">
+        <div class="t">${paid ? "Payment received" : "Collect on delivery"}</div>
+        <div class="amt">${paid ? "Paid" : tk(totalAmount)}</div>
+        <div class="sub">${paid ? `${esc(method)} · nothing to collect` : "Courier: collect this exact amount in cash"}</div>
+      </div>
       <div class="totals">
-        <div class="row"><span>Subtotal</span><span>${taka(subtotal)}</span></div>
-        ${Number(discountAmount) > 0 ? `<div class="row discount"><span>Discount${couponCode ? ` <span class="code">${esc(couponCode)}</span>` : ""}</span><span>−${taka(discountAmount)}</span></div>` : ""}
-        <div class="row"><span>Delivery fee</span><span>${Number(shippingFee) > 0 ? taka(shippingFee) : "Free"}</span></div>
-        <div class="grand"><span class="k">Grand total (BDT)</span><span class="v">${taka(total)}</span></div>
-        ${isPartial && paidAmount > 0 ? `
-        <div class="row paidrow" style="margin-top:8px"><span>Paid / Advance</span><span>${taka(paidAmount)}</span></div>
-        <p class="cod">Collect on delivery: ${taka(due)}</p>` : isPaid || isInstore ? "" : `<p class="cod">Collect on delivery: ${taka(total)}</p>`}
+        <div class="r"><span>Subtotal</span><span>${tk(subtotal)}</span></div>
+        <div class="r"><span>Delivery fee</span><span>${tk(shippingFee)}</span></div>
+        ${Number(discountAmount) > 0 ? `<div class="r discount"><span>Discount${couponCode ? ` (${esc(couponCode)})` : ""}</span><span>−${tk(discountAmount)}</span></div>` : ""}
+        <div class="grand"><span>Grand total</span><span>${tk(totalAmount)}</span></div>
       </div>
+    </section>
+
+    <div class="note">
+      <span>📦</span>
+      <div><b>Discreetly packed.</b> Plain outer packaging, no product names on the parcel.</div>
     </div>
-
-    <footer>
-      <span class="thanks">Thank you for choosing Surokkha <span class="heart">♥</span></span>
-      <span class="slogan">Safe today • Tomorrow</span>
-      <span style="flex-basis:100%">Questions? WhatsApp <a href="https://wa.me/8801600905774">01600905774</a> or <a href="mailto:support@surokkha.store">support@surokkha.store</a></span>
-    </footer>
-  </main>
-
-  <div class="actions-bar">
-    <button onclick="window.print()" class="btn-print">🖨️ Print / Save as PDF</button>
   </div>
+
+  <div class="spacer"></div>
+
+  <footer class="foot">
+    <div>
+      <div class="thanks">Thank you for choosing ${esc(site.name)}</div>
+      <div class="contact">${site.helpline ? `WhatsApp <b>${esc(fmtPhone(site.helpline))}</b> · ` : ""}<b>${esc(site.email)}</b> · <b>${esc(site.domain)}</b></div>
+    </div>
+    <div>
+      <div id="qr"></div>
+      <div class="qr-cap">Chat with us</div>
+    </div>
+  </footer>
+</div>
+
+<button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  try {
+    new QRCode(document.getElementById("qr"), { text: "${waLink(site.helpline)}", width: 128, height: 128, colorDark: "${BRAND.maroon}", colorLight: "${BRAND.blush}" });
+  } catch (e) {
+    document.getElementById("qr").parentElement.style.display = "none";
+  }
+</script>
 </body>
-</html>
-`;
+</html>`;
 };
+
+export default { buildSurokkhaOrderInvoiceHtml };

@@ -11,6 +11,7 @@ import {
   bulkUpdateOrders,
   getSpamList,
   deleteSpamListEntry,
+  addSpamListEntry,
 } from "../controllers/OrdersController.js";
 import {
   authenticateToken,
@@ -29,6 +30,14 @@ ordersRouter.get(
   authenticateToken,
   authorizeRoles("Owner", "Admin", "Manager"),
   getSpamList
+);
+
+// Manually add a phone/email to the spam list (Dashboard/Admin only)
+ordersRouter.post(
+  "/spam",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  addSpamListEntry
 );
 
 // Delete entry from spam list (Dashboard/Admin only)

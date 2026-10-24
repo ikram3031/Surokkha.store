@@ -10,6 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 // Keeps only digits and a single decimal point from a typed price string
 const sanitizePrice = (raw) => {
@@ -55,6 +56,83 @@ export const CartPriceInput = ({ value, onChange, className = "" }) => {
 };
 
 // Renders a dialog to add a custom (non-catalogue) line item with name, unit price and quantity
+// Validates the custom item fields and builds a cart line; shows a toast and returns null when invalid
+const buildCustomLine = (name, price, quantity) => {
+  const trimmedName = name.trim();
+  const unitPrice = Number(price);
+  const qty = parseInt(quantity, 10);
+  if (!trimmedName) {
+    toast.error("Item name is required.");
+    return null;
+  }
+  if (price === "" || Number.isNaN(unitPrice) || unitPrice < 0) {
+    toast.error("Enter a valid price.");
+    return null;
+  }
+  if (!Number.isInteger(qty) || qty < 1) {
+    toast.error("Quantity must be at least 1.");
+    return null;
+  }
+  return {
+    id: `custom__${Date.now()}`,
+    name: trimmedName,
+    price: unitPrice,
+    quantity: qty,
+    image: "",
+    sku: "",
+    size: "",
+    productId: "",
+    itemId: "",
+    itemType: "custom",
+    productDid: "",
+  };
+};
+
+// Inline card for adding a product that is not in the catalogue
+export const CustomItemCard = ({ onAdd }) => {
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("1");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const line = buildCustomLine(name, price, quantity);
+    if (!line) return;
+    onAdd(line);
+    toast.success(`"${line.name}" added to the order.`);
+    setName("");
+    setPrice("");
+    setQuantity("1");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-card border border-border/80 rounded-xl p-5 shadow-sm">
+      <h3 className="font-semibold text-lg mb-1">Custom Product</h3>
+      <p className="text-xs text-muted-foreground mb-4 pb-2 border-b">
+        Add a product that is not in the catalogue, with its own name and price.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_100px_auto] gap-3 items-end">
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Product Name</label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Special combo pack" className="h-9 text-sm" />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Unit Price (৳)</label>
+          <Input value={price} inputMode="decimal" onChange={(e) => setPrice(sanitizePrice(e.target.value))} placeholder="0" className="h-9 text-sm text-right" />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Quantity</label>
+          <Input value={quantity} inputMode="numeric" onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ""))} className="h-9 text-sm text-right" />
+        </div>
+        <Button type="submit" className="h-9 gap-1.5 cursor-pointer">
+          <Plus className="h-4 w-4" />
+          Add
+        </Button>
+      </div>
+    </form>
+  );
+};
+
 export const CustomItemDialog = ({ open, onClose, onAdd }) => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -67,34 +145,9 @@ export const CustomItemDialog = ({ open, onClose, onAdd }) => {
   };
 
   const handleAdd = () => {
-    const trimmedName = name.trim();
-    const unitPrice = Number(price);
-    const qty = parseInt(quantity, 10);
-    if (!trimmedName) {
-      toast.error("Item name is required.");
-      return;
-    }
-    if (price === "" || Number.isNaN(unitPrice) || unitPrice < 0) {
-      toast.error("Enter a valid price.");
-      return;
-    }
-    if (!Number.isInteger(qty) || qty < 1) {
-      toast.error("Quantity must be at least 1.");
-      return;
-    }
-    onAdd({
-      id: `custom__${Date.now()}`,
-      name: trimmedName,
-      price: unitPrice,
-      quantity: qty,
-      image: "",
-      sku: "",
-      size: "",
-      productId: "",
-      itemId: "",
-      itemType: "custom",
-      productDid: "",
-    });
+    const line = buildCustomLine(name, price, quantity);
+    if (!line) return;
+    onAdd(line);
     reset();
     onClose();
   };

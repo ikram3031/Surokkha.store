@@ -47,9 +47,9 @@ import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
 
-// Compact icon-only action button, each action gets its own color so they're easy to tell apart at a glance
+// Action button: icon-only on mobile, icon + label on desktop; each action gets its own color
 const actionButtonClass = (colorClasses) =>
-  `h-8 w-8 p-0 rounded-lg border cursor-pointer shrink-0 transition-colors ${colorClasses}`;
+  `h-8 w-8 p-0 md:w-auto md:px-2.5 gap-1.5 rounded-lg border cursor-pointer shrink-0 transition-colors ${colorClasses}`;
 
 const PATHAO_BTN_CLASS = actionButtonClass(
   "border-red-500/30 bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:text-red-400"
@@ -188,21 +188,25 @@ export const OrderAccordionDetail = ({ order }) => {
           <PathaoCourierCard
             order={order}
             triggerOnly
-            triggerIconOnly
+            triggerIconOnly="responsive"
             triggerButtonVariant="outline"
             triggerButtonClassName={PATHAO_BTN_CLASS}
           />
           <Button variant="outline" size="icon" className={PRINT_BTN_CLASS} onClick={handleOpenInvoice} title={t('orders.print_invoice', 'Print Invoice')}>
             <FileText className="h-3.5 w-3.5" />
+            <span className="hidden md:inline text-xs font-medium">{t('orders.print_invoice', 'Print Invoice')}</span>
           </Button>
           <Button variant="outline" size="icon" className={EMAIL_BTN_CLASS} onClick={() => setSendEmailModalOpen(true)} title={t('orders.send_invoice_email', 'Email Invoice')}>
             <Mail className="h-3.5 w-3.5" />
+            <span className="hidden md:inline text-xs font-medium">{t('orders.send_invoice_email', 'Email Invoice')}</span>
           </Button>
           <Button variant="outline" size="icon" className={EDIT_BTN_CLASS} onClick={handleEditOrder} title={t('common.edit', 'Edit')}>
             <Edit3 className="h-3.5 w-3.5" />
+            <span className="hidden md:inline text-xs font-medium">{t('common.edit', 'Edit')}</span>
           </Button>
           <Button variant="outline" size="icon" className={VIEW_BTN_CLASS} onClick={handleViewFullPage} title={t('common.details', 'Details')}>
             <ExternalLink className="h-3.5 w-3.5" />
+            <span className="hidden md:inline text-xs font-medium">{t('common.details', 'Details')}</span>
           </Button>
         </div>
       </div>

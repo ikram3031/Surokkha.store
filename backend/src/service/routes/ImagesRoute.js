@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { uploadMiddleware, uploadProductImage, listAllMedia } from "../controllers/ImagesController.js";
+import { uploadMiddleware, uploadProductImage, listAllMedia, bulkDeleteMedia } from "../controllers/ImagesController.js";
 import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
 
 const imagesRouter = Router();
@@ -28,6 +28,13 @@ imagesRouter.post(
   authorizeRoles("Owner", "Admin", "Manager", "Marketing-Expert", "Marketing Expert"),
   uploadMiddleware,
   uploadProductImage
+);
+
+imagesRouter.post(
+  "/bulk-delete",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  bulkDeleteMedia
 );
 
 export default imagesRouter;

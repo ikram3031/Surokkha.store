@@ -699,7 +699,7 @@ const AddNewItem = () => {
   };
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-6xl mx-auto">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header Actions */}
         <div className="flex items-center justify-between border-b pb-4">
@@ -832,6 +832,7 @@ const AddNewItem = () => {
           {/* Right Column: Sidebar Cards & SEO */}
           <div className="space-y-6">
             <SidebarCards
+              productSlug={slug}
               isActive={isActive}
               setIsActive={setIsActive}
               imagePreview={imagePreview}

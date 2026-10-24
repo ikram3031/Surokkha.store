@@ -4,6 +4,7 @@ const { models } = mongoose;
 
 const spamListSchema = new Schema(
   {
+    name: { type: String, trim: true, default: "" },
     ip: { type: String, trim: true, default: "" },
     phone: { type: String, trim: true, default: "" },
     email: { type: String, trim: true, lowercase: true, default: "" },

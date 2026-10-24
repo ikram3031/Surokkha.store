@@ -189,7 +189,7 @@ const CategoriesPage = () => {
   );
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-5xl mx-auto">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between border-b pb-4">
         <div className="space-y-1">
           <h2 className="text-3xl font-bold tracking-tight">{t('categories_brands.category_title')}</h2>

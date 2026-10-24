@@ -8,6 +8,7 @@ import { createShutdownHandler } from "./common/helper/sutdownHelper.js";
 import { initWebSocketServer } from "./common/websocket.js";
 import { initMediaSchedulers, stopMediaSchedulers } from "./common/schedulers/mediaScheduler.js";
 import { initHeartbeatScheduler, stopHeartbeatScheduler } from "./common/schedulers/heartbeat.scheduler.js";
+import { initBackupScheduler, stopBackupScheduler } from "./common/schedulers/backupScheduler.js";
 
 // Bootstraps backend server instances (Storefront on 4001, Service on 4002, or both in dual mode)
 const bootstrap = async () => {
@@ -41,6 +42,7 @@ const bootstrap = async () => {
     initWebSocketServer(server);
     initMediaSchedulers();
     initHeartbeatScheduler();
+    initBackupScheduler();
 
     if (env.IMAP_SYNC_ENABLED) {
       import("./common/services/imapSync.service.js")
@@ -72,6 +74,7 @@ const bootstrap = async () => {
     initWebSocketServer(serviceServer);
     initMediaSchedulers();
     initHeartbeatScheduler();
+    initBackupScheduler();
 
     if (env.IMAP_SYNC_ENABLED) {
       import("./common/services/imapSync.service.js")
@@ -89,6 +92,7 @@ const bootstrap = async () => {
   const shutdown = (signal) => {
     stopHeartbeatScheduler();
     stopMediaSchedulers();
+    stopBackupScheduler();
     servers.forEach((srv) => {
       const handler = createShutdownHandler(srv);
       handler(signal);

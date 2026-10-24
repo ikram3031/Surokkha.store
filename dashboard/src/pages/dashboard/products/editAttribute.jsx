@@ -247,7 +247,7 @@ export default function EditAttributePage() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-4 md:p-8 pt-6 w-full space-y-6">
+      <div className="page-container flex-1 p-4 md:p-8 pt-6 space-y-6">
         <div className="h-8 w-48 bg-muted animate-pulse rounded" />
         <div className="h-96 bg-muted/40 animate-pulse rounded-xl border" />
       </div>
@@ -255,7 +255,7 @@ export default function EditAttributePage() {
   }
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 w-full max-w-7xl mx-auto">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header with Back Button */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">

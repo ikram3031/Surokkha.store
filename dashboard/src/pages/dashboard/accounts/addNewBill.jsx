@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -94,6 +95,7 @@ export const AddNewBillPage = () => {
     billingEmail: '',
     totalAmount: '',
     paidAmount: '',
+    isPaid: false,
     billingDate: new Date().toISOString().slice(0, 10),
     dueDate: '',
     billingMethod: '',
@@ -152,6 +154,7 @@ export const AddNewBillPage = () => {
             ? String(existing.baseAmount || Math.max(0, Number(existing.totalAmount) - Number(existing.paymentFee?.amount || 0)))
             : '',
           paidAmount: existing.paidAmount !== undefined ? String(existing.paidAmount) : '',
+          isPaid: String(existing.status || '').toLowerCase() === 'paid',
           billingDate: existing.billingDate || existing.date || new Date().toISOString().slice(0, 10),
           dueDate: existing.dueDate || '',
           billingMethod: existing.billingMethod || '',
@@ -180,8 +183,19 @@ export const AddNewBillPage = () => {
   const feeAmountNum = selectedFee ? calculateFeeAmount(selectedFee, totalAmountNum) : 0;
   // The charge is added on top of the entered amount
   const grandTotalNum = Math.round((totalAmountNum + feeAmountNum) * 100) / 100;
-  const paidAmountNum = Number(formData.paidAmount) || 0;
-  const pendingAmountNum = Math.max(0, grandTotalNum - paidAmountNum);
+  // Fully paid: the paid amount is the amount plus the method's charge; otherwise it is whatever was entered
+  const paidAmountNum = formData.isPaid ? grandTotalNum : Number(formData.paidAmount) || 0;
+  const pendingAmountNum = Math.max(0, Math.round((grandTotalNum - paidAmountNum) * 100) / 100);
+
+  // Keep status in step with the payment, except for manually chosen Returned / Failed
+  useEffect(() => {
+    setFormData((prev) => {
+      if (prev.status === 'Returned' || prev.status === 'Failed') return prev;
+      const next =
+        grandTotalNum > 0 && paidAmountNum >= grandTotalNum ? 'Paid' : paidAmountNum > 0 ? 'Partial' : 'Pending';
+      return prev.status === next ? prev : { ...prev, status: next };
+    });
+  }, [grandTotalNum, paidAmountNum]);
 
   const handleInvestorSelect = (invId) => {
     if (invId === 'none' || !invId) {
@@ -202,17 +216,7 @@ export const AddNewBillPage = () => {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => {
-      const updated = { ...prev, [field]: value };
-      if (field === 'totalAmount' || field === 'paidAmount') {
-        const t = field === 'totalAmount' ? Number(value) || 0 : Number(prev.totalAmount) || 0;
-        const p = field === 'paidAmount' ? Number(value) || 0 : Number(prev.paidAmount) || 0;
-        if (p >= t && t > 0) updated.status = 'Paid';
-        else if (p > 0) updated.status = 'Partial';
-        else updated.status = 'Pending';
-      }
-      return updated;
-    });
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCreateNewType = async () => {
@@ -283,7 +287,7 @@ export const AddNewBillPage = () => {
   };
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-5xl mx-auto">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
       <div className="flex items-center justify-between border-b pb-4">
         <div className="flex items-center gap-3">
@@ -452,10 +456,10 @@ export const AddNewBillPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground">
-                    Total Amount (৳) <span className="text-red-500">*</span>
+                    Amount (৳) <span className="text-red-500">*</span>
                   </label>
                   <Input
                     type="number"
@@ -466,55 +470,6 @@ export const AddNewBillPage = () => {
                     onChange={(e) => handleInputChange('totalAmount', e.target.value)}
                     className="text-xs font-semibold font-mono"
                     required
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Paid Amount (৳)
-                  </label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="any"
-                    placeholder="0.00"
-                    value={formData.paidAmount}
-                    onChange={(e) => handleInputChange('paidAmount', e.target.value)}
-                    className="text-xs font-semibold font-mono text-emerald-600"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Calculated Pending (৳)
-                  </label>
-                  <Input
-                    type="text"
-                    value={formatCurrency(pendingAmountNum)}
-                    readOnly
-                    className="text-xs font-semibold font-mono bg-muted text-muted-foreground"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Billing Date</label>
-                  <Input
-                    type="date"
-                    value={formData.billingDate}
-                    onChange={(e) => handleInputChange('billingDate', e.target.value)}
-                    className="text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Due Date</label>
-                  <Input
-                    type="date"
-                    value={formData.dueDate}
-                    onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                    className="text-xs"
                   />
                 </div>
 
@@ -600,6 +555,69 @@ export const AddNewBillPage = () => {
                   </p>
                 )}
               </div>
+
+              <div className="flex items-center justify-between rounded-lg border bg-muted/20 p-3">
+                <div>
+                  <label className="text-xs font-semibold text-foreground">Paid</label>
+                  <p className="text-[11px] text-muted-foreground">
+                    {formData.isPaid
+                      ? `Fully paid: ${formatCurrency(grandTotalNum)} (amount + charge)`
+                      : 'Turn on if the full amount including charge is already paid'}
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.isPaid}
+                  onCheckedChange={(v) => setFormData((prev) => ({ ...prev, isPaid: v }))}
+                />
+              </div>
+
+              {!formData.isPaid && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-foreground">Paid Amount (৳)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="any"
+                      placeholder="0.00"
+                      value={formData.paidAmount}
+                      onChange={(e) => handleInputChange('paidAmount', e.target.value)}
+                      className="text-xs font-semibold font-mono text-emerald-600"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-foreground">Pending (৳)</label>
+                    <Input
+                      type="text"
+                      value={formatCurrency(pendingAmountNum)}
+                      readOnly
+                      className="text-xs font-semibold font-mono bg-muted text-muted-foreground"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">Billing Date</label>
+                  <Input
+                    type="date"
+                    value={formData.billingDate}
+                    onChange={(e) => handleInputChange('billingDate', e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">Due Date</label>
+                  <Input
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">Status</label>

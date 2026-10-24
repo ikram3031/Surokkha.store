@@ -22,9 +22,15 @@ const getMimeType = (ext) => {
     ".svg": "image/svg+xml",
     ".avif": "image/avif",
     ".pdf": "application/pdf",
+    ".ico": "image/x-icon",
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
   };
   return map[ext.toLowerCase()] || "application/octet-stream";
 };
+
+// Everything the upload endpoints can write (dashboard assets also take favicons and videos)
+const SYNCED_EXTENSIONS = [".webp", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".avif", ".pdf", ".ico", ".mp4", ".webm"];
 
 // Recursively walks the uploads directory and collects all local files
 const getAllLocalUploadFiles = async (dirPath, baseDir) => {
@@ -39,8 +45,7 @@ const getAllLocalUploadFiles = async (dirPath, baseDir) => {
       fileList = fileList.concat(sub);
     } else {
       const ext = path.extname(entry.name).toLowerCase();
-      const validExtensions = [".webp", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".avif", ".pdf"];
-      if (validExtensions.includes(ext)) {
+      if (SYNCED_EXTENSIONS.includes(ext)) {
         try {
           const stats = await fs.promises.stat(fullPath);
           const relativeKey = path.relative(baseDir, fullPath).replace(/\\/g, "/");

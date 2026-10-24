@@ -92,6 +92,21 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
+  // The stored user is a login-time snapshot; pull the saved profile (avatar, names) once per session
+  const userId = user?.id || user?._id;
+  useEffect(() => {
+    if (!userId) return;
+    apiClient
+      .get('/api/v1/users/me')
+      .then((res) => {
+        const profile = res.data?.data;
+        if (profile) updateUser(profile);
+      })
+      .catch(() => {});
+    // updateUser only wraps setUser, so it doesn't need to be a dependency
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   const login = async (email, password) => {
     try {
       if (!email || !password) {
@@ -113,7 +128,7 @@ export const AuthProvider = ({ children }) => {
         email: apiUser.email || email,
         name: apiUser.name || email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         role: apiUser.role || "Employee",
-        avatar: apiUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        avatar: apiUser.avatar || '',
       };
 
       localStorage.setItem('accessToken', accessToken);
@@ -139,7 +154,7 @@ export const AuthProvider = ({ children }) => {
         email: apiUser.email || email,
         name: apiUser.name || email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
         role: apiUser.role || "Employee",
-        avatar: apiUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        avatar: apiUser.avatar || '',
       };
 
       localStorage.setItem('accessToken', accessToken);
@@ -165,7 +180,7 @@ export const AuthProvider = ({ children }) => {
         email: apiUser.email,
         name: apiUser.name,
         role: apiUser.role,
-        avatar: apiUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+        avatar: apiUser.avatar || '',
       };
 
       localStorage.setItem('accessToken', accessToken);

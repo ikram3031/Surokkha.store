@@ -1,4 +1,4 @@
-import { UserModel } from "../models/user.model.js";
+import { getNotificationRecipientEmails } from "./notificationRecipients.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { EmailMessageModel } from "../models/emailMessage.model.js";
 import { getClientInvoiceHtml } from "../templates/invoices/index.js";
@@ -195,18 +195,12 @@ export const sendOrderEmailsAsynchronously = (order) => {
         }
 
         try {
-          const staffRecipients = await UserModel.find({
-            $or: [{ isActive: true }, { active: true }, { isActive: { $exists: false } }],
-            receiveEmailNotifications: { $ne: false },
-          }).select("email receiveEmailNotifications").lean();
-
-          for (const staffUser of staffRecipients) {
-            if (staffUser.email && staffUser.receiveEmailNotifications !== false) {
-              adminRecipientsSet.add(staffUser.email.toLowerCase().trim());
-            }
+          const recipientEmails = await getNotificationRecipientEmails();
+          for (const email of recipientEmails) {
+            adminRecipientsSet.add(email.toLowerCase().trim());
           }
         } catch (dbErr) {
-          console.error("[Email Notification] Database query for staff notification emails failed, falling back to default admins:", dbErr.message);
+          console.error("[Email Notification] Loading alert email recipients failed, falling back to default admins:", dbErr.message);
         }
 
         const adminRecipients = Array.from(adminRecipientsSet);

@@ -16,7 +16,7 @@ const BillingPage = () => {
   const totalPaymentsCount = paymentsSummary?.count ?? 0;
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Billing & Payments</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage your bills, invoices, and payment transactions</p>

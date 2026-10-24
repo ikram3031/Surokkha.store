@@ -182,6 +182,8 @@ async function getAllUploadFiles(dirPath, baseDir) {
       const nested = await getAllUploadFiles(fullPath, baseDir);
       results = results.concat(nested);
     } else {
+      // Skip 200px thumbnails: they duplicate every product image
+      if (entry.name.startsWith("thumb_")) continue;
       const ext = path.extname(entry.name).toLowerCase();
       const validExtensions = [".webp", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".avif", ".pdf"];
       if (validExtensions.includes(ext)) {

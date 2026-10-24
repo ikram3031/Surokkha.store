@@ -18,9 +18,18 @@ export function ProductCard({ product }: { product: Product }) {
             {product.badge}
           </Badge>
         )}
-        <div className="h-3/5 w-3/5">
-          <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
-        </div>
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="h-3/5 w-3/5">
+            <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
+          </div>
+        )}
       </div>
       <CardContent className="flex flex-1 flex-col p-3 sm:p-4">
         <p className="hidden text-xs text-muted-foreground sm:block">{catLabel[product.cat]}</p>

@@ -96,7 +96,7 @@ const AnalyticsPage = () => {
   ];
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 w-full">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Top Header & Quick Actions Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

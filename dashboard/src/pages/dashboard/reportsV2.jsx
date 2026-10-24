@@ -18,6 +18,7 @@ import {
   BarChart3,
   Layers
 } from 'lucide-react';
+import { EXPORT_BUTTON_CLASS } from '@/lib/export-button';
 import { useTheme } from 'next-themes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -369,7 +370,7 @@ const ReportsV2Page = () => {
   const showExport = reportsConfig.enableExport;
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
@@ -442,12 +443,12 @@ const ReportsV2Page = () => {
 
           {showExport && (
             <Button
-              size="sm"
-              className="h-9 text-xs gap-1.5 shadow-sm"
+              variant="outline"
+              className={EXPORT_BUTTON_CLASS}
               onClick={handleExport}
               disabled={isLoading}
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="size-4" />
               <span className="hidden sm:inline">Export CSV</span>
             </Button>
           )}

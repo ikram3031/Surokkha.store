@@ -1,6 +1,16 @@
 // Falls back to the live StoreWeb API: .env files are gitignored, so a server build may not have one
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://web.surokkha.store/store/v1'
 
+/** Origin of the API host — uploaded media (`/uploads/...`) is served from here. */
+export const API_ORIGIN = new URL(BASE_URL).origin
+
+/** Turns an API media path into an absolute URL; absolute/data URLs pass through. */
+export function resolveMediaUrl(path?: string): string | undefined {
+  if (!path) return undefined
+  if (/^(https?:|data:|blob:)/i.test(path) || path.startsWith('//')) return path
+  return `${API_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`
+}
+
 const ACCESS_TOKEN_KEY = 'surokkha-access-token'
 
 export function getAccessToken(): string | null {

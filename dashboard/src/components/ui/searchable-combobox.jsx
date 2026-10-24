@@ -170,7 +170,7 @@ export function SearchableCombobox({
                   {selectedOption?.label || value}
                 </span>
                 {selectedOption?.sublabel && (
-                  <span className="shrink-0 text-[10px] text-muted-foreground">
+                  <span className="min-w-0 truncate text-[10px] text-muted-foreground">
                     ({selectedOption.sublabel})
                   </span>
                 )}

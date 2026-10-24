@@ -12,6 +12,8 @@ const envSchema = z.object({
   ACCESS_TOKEN_EXPIRES_IN: z.string().default("15m"),
   REFRESH_TOKEN_EXPIRES_MS: z.coerce.number().int().positive().default(30 * 24 * 60 * 60 * 1000),
   ALLOW_SUPER_ADMIN_CREATION: z.coerce.boolean().default(false),
+  // Inbox that gets "user forgot their password" alerts from the dashboard login
+  FORGOT_PASSWORD_ALERT_EMAIL: z.string().optional().default("flexibility@gmail.com"),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   ALLOWED_ORIGINS: z.string().default("http://localhost:8001,http://localhost:8005,http://localhost:3000,http://localhost:4001,http://localhost:4002,http://localhost:5173"),
@@ -51,6 +53,16 @@ const envSchema = z.object({
   FB_PIXEL_ID_SHOP: z.string().optional().default(""),
   FB_ACCESS_TOKEN_SHOP: z.string().optional().default(""),
   FB_TEST_EVENT_CODE_SHOP: z.string().optional().default(""),
+  // Optional own pixel for offer.surokkha.shop (SC orders); by default they use the shop pixel
+  FB_PIXEL_ID_OFFER: z.string().optional().default("1840805450442709"),
+  FB_ACCESS_TOKEN_OFFER: z.string().optional().default(""),
+  FB_TEST_EVENT_CODE_OFFER: z.string().optional().default(""),
+  // Cloudflare Turnstile secret (offer checkout + dashboard login); checks are skipped while unset
+  TURNSTILE_SECRET_KEY: z.string().optional().default(""),
+  // Emergency switch: "true" turns the Turnstile check off on dashboard login only
+  TURNSTILE_LOGIN_DISABLED: z.string().optional().default(""),
+  // Optional comma-separated hostnames accepted from siteverify; defaults are set per surface in code
+  TURNSTILE_HOSTNAMES: z.string().optional().default(""),
   TIKTOK_PIXEL_ID: z.string().optional().default(""),
   TIKTOK_ACCESS_TOKEN: z.string().optional().default(""),
   TIKTOK_TEST_EVENT_CODE: z.string().optional().default(""),

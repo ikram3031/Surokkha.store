@@ -60,7 +60,7 @@ const UsersPage = () => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState('Admin');
-  const [newUserGetMail, setNewUserGetMail] = useState(true);
+  const [newUserGetMail, setNewUserGetMail] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -140,7 +140,7 @@ const UsersPage = () => {
       setNewUserEmail('');
       setNewUserPassword('');
       setNewUserRole('Marketing Expert');
-      setNewUserGetMail(true);
+      setNewUserGetMail(false);
     } catch (err) {
       toast.error(getApiErrorMessage(err, t('common.error')));
     } finally {
@@ -166,7 +166,7 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">{t('admin.system_users')}</h2>
         <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>

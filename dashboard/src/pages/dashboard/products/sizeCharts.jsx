@@ -409,7 +409,7 @@ const SizeChartsPage = () => {
   }, [parentCategories, sizeChartMap]);
 
   return (
-    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-7xl mx-auto w-full">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between flex-wrap gap-4 border-b pb-5">
         <div className="flex items-center gap-3.5">
           <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-xs">

@@ -107,15 +107,17 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     const pathLower = (req.path || '').toLowerCase();
     const querySite = (req.query?.site || '').toLowerCase().trim();
     let targetSite = 'shop';
-    if (querySite === 'store' || pathLower.includes('-store')) {
+    if (querySite === 'store' || pathLower.includes('-store') || pathLower.includes('store')) {
       targetSite = 'store';
     } else if (querySite === 'shop' || pathLower.includes('-shop')) {
       targetSite = 'shop';
     }
 
     const siteConfig = config.sites?.[targetSite] || (targetSite === 'store' ? config.sites?.store : config.sites?.shop);
-    const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'))).replace(/\/$/, '');
-    const brandName = siteConfig?.name || config.brandName || 'Surokkha';
+    const defaultSiteUrl = targetSite === 'store' ? 'https://surokkha.store' : 'https://surokkha.shop';
+    const defaultBrandName = targetSite === 'store' ? 'Surokkha Store' : 'Surokkha Shop';
+    const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : defaultSiteUrl)).replace(/\/$/, '');
+    const brandName = siteConfig?.name || defaultBrandName;
 
     // Construct rows
     items.forEach((p) => {
@@ -143,7 +145,9 @@ export const getMetaCatalogCsv = async (req, res, next) => {
         .replace(/[^\w\s-]/g, '')
         .replace(/[\s_-]+/g, '-');
 
-      const link = `${baseSiteUrl}/shop/${catSlug || 'combo'}/${p.slug}`;
+      const link = targetSite === 'store'
+        ? `${baseSiteUrl}/product/${p.slug}`
+        : `${baseSiteUrl}/shop/${catSlug || 'combo'}/${p.slug}`;
       const rawImg = p.imageUrl || p.featuredImage || (Array.isArray(p.gallery) && p.gallery.length > 0 ? p.gallery[0] : '');
       const apiBase = (config.apiBaseUrl || 'https://api.' + (config.domain || 'surokkha.store')).replace(/\/$/, '');
       const imageLink = rawImg ? (rawImg.startsWith('http') ? rawImg : `${apiBase}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`) : '';

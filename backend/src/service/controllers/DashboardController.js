@@ -96,8 +96,10 @@ export const getKpiStats = async (req, res, next) => {
       days = 90;
     }
 
-    // Current period start (local midnight translated back to UTC)
-    const currentStart = new Date(todayLocalMidnight.getTime() - (days - 1) * 24 * 60 * 60 * 1000 - OFFSET_MS);
+    // Current period start (local midnight translated back to UTC); 'all' counts from the beginning
+    const currentStart = range === 'all'
+      ? new Date(0)
+      : new Date(todayLocalMidnight.getTime() - (days - 1) * 24 * 60 * 60 * 1000 - OFFSET_MS);
     const currentEnd = nowUtc;
 
     // Previous period
@@ -194,7 +196,10 @@ export const getOrderStatusDistribution = async (req, res, next) => {
       days = 90;
     }
 
-    const currentStart = new Date(todayLocalMidnight.getTime() - (days - 1) * 24 * 60 * 60 * 1000 - OFFSET_MS);
+    // 'all' counts every order since the beginning
+    const currentStart = range === 'all'
+      ? new Date(0)
+      : new Date(todayLocalMidnight.getTime() - (days - 1) * 24 * 60 * 60 * 1000 - OFFSET_MS);
 
     // Fake orders are stored inactive (active: false), so include them by status; other inactive orders are deleted
     const agg = await OrderModel.aggregate([

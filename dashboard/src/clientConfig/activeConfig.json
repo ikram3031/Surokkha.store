@@ -105,8 +105,13 @@
       }
     }
   },
+  "offerPage": {
+    "url": "https://offer.surokkha.shop",
+    "catalogProductDids": ["788b855254ac89fa", "68c019a9c15c38dc", "b9de8b186df2b554"]
+  },
   "cloudflare": {
-    "isEnabled": true
+    "isEnabled": true,
+    "turnstileSiteKey": "0x4AAAAAAFgNwrn1AkNRO5-A"
   },
   "logoUrl": "/uploads/assets/logo.png?v=4",
   "siteIconUrl": "/uploads/assets/favicon.ico",

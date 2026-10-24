@@ -110,6 +110,8 @@ const orderSchema = new Schema(
     shippingTotalAmount: { type: Number, default: 0, min: 0 },
     discountTotalAmount: { type: Number, default: 0, min: 0 },
     couponCode: { type: String, default: null, trim: true, uppercase: true },
+    // Customer's note from checkout (e.g. preferred delivery time)
+    orderNotes: { type: String, trim: true, default: "", maxlength: 1000 },
     orderType: { type: String, enum: ["online", "instore", "custom"], default: "online", index: true },
     siteKey: { type: String, trim: true, default: "store", index: true },
     clientDomain: { type: String, trim: true, default: "surokkha.store" },

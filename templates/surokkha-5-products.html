@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>সুরক্ষা — বিশেষ অফার</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1f0d14;--maroon:#4a0d22;--maroon2:#6b1530;--crimson:#c0264b;
+    --blush:#fbf1f4;--line:#ecdde2;--muted:#7a6670;--ok:#1f7a4d;--page:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Hind Siliguri',Inter,system-ui,sans-serif;color:var(--ink);background:var(--page);line-height:1.6;padding-bottom:120px}
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;font:inherit;font-weight:600;border-radius:999px;padding:12px 26px;transition:.2s}
+  .btn-primary{background:var(--crimson);color:#fff}
+  .btn-primary:hover{background:var(--maroon2)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+
+  header{background:var(--maroon);color:#fff}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;flex-wrap:wrap}
+  .logo{font-family:Fraunces,serif;font-size:24px;font-weight:600}
+  .logo span{color:#f7b3be}
+  header small{color:#fbd6db;font-size:14px}
+
+  section{padding:40px 0}
+  .head{text-align:center;max-width:640px;margin:0 auto 24px}
+  .head h2{font-size:clamp(22px,3.5vw,32px);color:var(--maroon);margin-bottom:6px}
+  .head p{color:var(--muted)}
+
+  /* offer tiers */
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+  .tier{border:1.5px dashed var(--line);border-radius:16px;padding:14px;text-align:center;background:var(--blush);transition:.2s}
+  .tier b{display:block;color:var(--maroon);font-size:18px}
+  .tier span{font-size:14px;color:var(--muted)}
+  .tier.on{border-style:solid;border-color:var(--crimson);background:#fff;box-shadow:0 8px 20px -12px rgba(192,38,75,.6)}
+  .tier.on b::before{content:"✔ ";color:var(--ok)}
+
+  /* products */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+  .card{background:#fff;border:1.5px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;transition:.2s;position:relative}
+  .card.picked{border-color:var(--crimson)}
+  .card .badge{position:absolute;top:12px;left:12px;background:var(--crimson);color:#fff;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;z-index:1}
+  .card .art{aspect-ratio:1;background:var(--blush);display:grid;place-items:center}
+  .card .art img{width:100%;height:100%;object-fit:cover}
+  .box{width:46%;aspect-ratio:3/4;border-radius:10px;background:linear-gradient(160deg,var(--c1),var(--c2));box-shadow:0 10px 20px -8px rgba(0,0,0,.3);display:grid;place-items:center;color:#fff;font-family:Fraunces,serif;font-size:22px}
+  .bottle{width:32%;aspect-ratio:1/2;border-radius:16px 16px 12px 12px;background:linear-gradient(160deg,var(--c1),var(--c2));position:relative;box-shadow:0 10px 20px -8px rgba(0,0,0,.3)}
+  .bottle::before{content:"";position:absolute;top:-14%;left:30%;width:40%;height:16%;background:var(--maroon);border-radius:6px 6px 0 0}
+  .card .body{padding:14px;display:flex;flex-direction:column;gap:2px;flex:1}
+  .card h3{font-size:16px}
+  .card .desc{color:var(--muted);font-size:14px}
+  .price{display:flex;align-items:baseline;gap:8px;margin:6px 0 12px}
+  .price b{font-size:19px;color:var(--crimson)}
+  .price s{color:var(--muted);font-size:14px}
+  .qty{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:999px;padding:4px;margin-top:auto}
+  .qty button{width:34px;height:34px;border-radius:50%;border:0;background:var(--blush);color:var(--maroon);font-size:18px;cursor:pointer}
+  .qty button:hover{background:var(--crimson);color:#fff}
+  .qty span{font-weight:600}
+
+  .features{background:var(--blush)}
+  .feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .feat div{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--line)}
+  .feat i{font-style:normal;font-size:24px;display:block;margin-bottom:6px}
+  .feat h4{color:var(--maroon)}
+  .feat p{color:var(--muted);font-size:14px}
+
+  details{border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:10px;background:#fff}
+  summary{cursor:pointer;font-weight:600;color:var(--maroon)}
+  details p{color:var(--muted);margin-top:8px;font-size:15px}
+
+  /* checkout (last block on the page) */
+  .checkout{background:var(--blush);border-top:1px solid var(--line)}
+  .checkout form{max-width:640px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px}
+  .checkout h3{color:var(--maroon);margin:4px 0 8px}
+  label{display:block;font-size:14px;font-weight:500;margin:12px 0 6px}
+  input,textarea,select{width:100%;font:inherit;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--crimson);border-color:transparent}
+  .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
+  .row.disc{color:var(--ok)}
+  .row.total{border:0;font-weight:700;font-size:18px;color:var(--maroon)}
+  .empty{color:var(--muted);font-size:14px;padding:6px 0}
+  .checkout .btn-primary{width:100%;margin-top:18px;padding:14px}
+  .copy{text-align:center;color:var(--muted);font-size:13px;padding:20px 0 0}
+
+  /* fixed progress bar */
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--ink);color:#fff;box-shadow:0 -10px 30px rgba(0,0,0,.2)}
+  .bar .wrap{display:flex;align-items:center;gap:16px;padding-top:12px;padding-bottom:12px}
+  .bar .info{flex:1;min-width:0}
+  .bar .msg{font-size:14px;color:#fbd6db;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .msg b{color:#fff}
+  .track{position:relative;height:10px;border-radius:99px;background:rgba(255,255,255,.15);margin:8px 0 4px}
+  .fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:99px;background:linear-gradient(90deg,#f7b3be,var(--crimson));transition:width .35s}
+  .dot{position:absolute;top:50%;width:18px;height:18px;margin-left:-9px;transform:translateY(-50%);border-radius:50%;background:var(--ink);border:2px solid rgba(255,255,255,.35);font-size:10px;display:grid;place-items:center}
+  .dot.on{background:var(--crimson);border-color:#fff}
+  .bar .sum{text-align:right;line-height:1.2}
+  .bar .sum b{font-size:20px;display:block}
+  .bar .sum s{font-size:13px;color:#bba}
+  .bar .btn-primary{white-space:nowrap}
+
+  @media (max-width:700px){
+    .tiers{grid-template-columns:1fr}
+    .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    .card h3{font-size:15px}
+    .bar .wrap{flex-wrap:wrap;gap:10px}
+    .bar .info{flex-basis:100%}
+    .bar .sum{text-align:left;flex:1}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="logo">Suro<span>kkha</span></span>
+    <small>🔒 গোপনীয় প্যাকেজিং · 💵 ক্যাশ অন ডেলিভারি</small>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="head">
+      <h2>নিজের পছন্দে বানান আপনার প্যাক</h2>
+      <p>যেকোনো প্রোডাক্ট মিলিয়ে নিন — যত বেশি নেবেন, তত বড় অফার।</p>
+    </div>
+    <div class="tiers" id="tiers"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="wrap">
+    <div class="feat">
+      <div><i>🔒</i><h4>গোপনীয় প্যাকেজিং</h4><p>বাইরে থেকে কেউ বুঝবে না ভেতরে কী আছে।</p></div>
+      <div><i>✅</i><h4>মান নিশ্চিত</h4><p>আন্তর্জাতিক মানদণ্ডে পরীক্ষিত প্রোডাক্ট।</p></div>
+      <div><i>🚚</i><h4>দ্রুত ডেলিভারি</h4><p>ঢাকায় ২৪–৪৮ ঘণ্টা, বাইরে ২–৪ দিন।</p></div>
+      <div><i>💵</i><h4>ক্যাশ অন ডেলিভারি</h4><p>হাতে পেয়ে টাকা পরিশোধ করুন।</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap" style="max-width:760px">
+    <div class="head"><h2>সাধারণ জিজ্ঞাসা</h2></div>
+    <details><summary>প্যাকেজিং কি সত্যিই গোপনীয়?</summary><p>হ্যাঁ, সাধারণ বক্সে কোনো লেবেল ছাড়া পাঠানো হয়।</p></details>
+    <details><summary>অফার কীভাবে কাজ করে?</summary><p>যেকোনো প্রোডাক্ট মিলিয়ে মোট পিস সংখ্যা অনুযায়ী ডিসকাউন্ট নিজে থেকেই যোগ হয়।</p></details>
+    <details><summary>পেমেন্ট কীভাবে করব?</summary><p>প্রোডাক্ট হাতে পেয়ে ডেলিভারি ম্যানকে ক্যাশ পেমেন্ট করবেন।</p></details>
+  </div>
+</section>
+
+<section id="checkout" class="checkout">
+  <div class="wrap">
+    <form id="orderForm">
+      <h3>অর্ডার কনফার্ম করুন</h3>
+      <div id="lines"></div>
+      <div class="row"><span>সাবটোটাল</span><span id="sub">৳০</span></div>
+      <div class="row disc" id="discRow" hidden><span id="discLabel"></span><span id="disc"></span></div>
+      <div class="row"><span>ডেলিভারি চার্জ</span><span id="ship">৳০</span></div>
+      <div class="row total"><span>সর্বমোট</span><span id="total">৳০</span></div>
+
+      <label for="name">আপনার নাম *</label>
+      <input id="name" required placeholder="পূর্ণ নাম">
+      <label for="phone">মোবাইল নম্বর *</label>
+      <input id="phone" required type="tel" pattern="01[3-9][0-9]{8}" placeholder="01XXXXXXXXX">
+      <label for="area">ডেলিভারি এলাকা</label>
+      <select id="area">
+        <option value="60">ঢাকার ভিতরে (৳৬০)</option>
+        <option value="120">ঢাকার বাইরে (৳১২০)</option>
+      </select>
+      <label for="address">সম্পূর্ণ ঠিকানা *</label>
+      <textarea id="address" rows="3" required placeholder="বাসা, রোড, এলাকা, থানা, জেলা"></textarea>
+      <button class="btn btn-primary" type="submit">অর্ডার করুন — <span id="btnTotal">৳০</span></button>
+    </form>
+    <p class="copy">Safe today · Tomorrow — surokkha.store</p>
+  </div>
+</section>
+
+<!-- fixed offer progress bar -->
+<div class="bar">
+  <div class="wrap">
+    <div class="info">
+      <div class="msg" id="barMsg"></div>
+      <div class="track" id="track"><div class="fill" id="fill"></div></div>
+    </div>
+    <div class="sum"><s id="barOld"></s><b id="barTotal">৳০</b></div>
+    <a href="#checkout" class="btn btn-primary" id="barBtn">চেকআউট →</a>
+  </div>
+</div>
+
+<script>
+  // ---- Edit products here (set image: "url" to use a real photo) ----
+  const PRODUCTS = [
+    { id: 1, name: 'সুরক্ষা ক্লাসিক', desc: '৩ পিস, মসৃণ ল্যাটেক্স', price: 90, art: 'box', c1: '#F4919F', c2: '#C9475F', badge: 'বেস্ট সেলার' },
+    { id: 2, name: 'আল্ট্রা থিন', desc: '১০ পিস, অতিপাতলা', price: 320, art: 'box', c1: '#E8CDB5', c2: '#948B86' },
+    { id: 3, name: 'ডটেড ও রিবড', desc: '১২ পিস, টেক্সচারড', price: 420, art: 'box', c1: '#C9475F', c2: '#3A322F' },
+    { id: 4, name: 'ফ্রুটি ফ্লেভার', desc: '৩ পিস, স্ট্রবেরি ফ্লেভার', price: 120, art: 'box', c1: '#F7B3BE', c2: '#F4919F', badge: 'নতুন' },
+    { id: 5, name: 'ওয়াটার-বেসড লুব', desc: '১০০ মি.লি., সহজে ধুয়ে যায়', price: 350, art: 'bottle', c1: '#F4919F', c2: '#6b1530', badge: 'বেস্ট সেলার' },
+  ];
+  // ---- Offer tiers by total item count (any mix) ----
+  const TIERS = [
+    { qty: 2, off: 5,  freeShip: false },
+    { qty: 3, off: 10, freeShip: true },
+    { qty: 5, off: 15, freeShip: true },
+  ];
+  const WHATSAPP = '8801XXXXXXXXX';
+
+  const $ = id => document.getElementById(id);
+  const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+  const tk = n => '৳' + bn(Math.round(n).toLocaleString('en-IN'));
+  const qty = Object.fromEntries(PRODUCTS.map(p => [p.id, 0]));
+  const maxQty = TIERS[TIERS.length - 1].qty;
+
+  $('tiers').innerHTML = TIERS.map((t, i) =>
+    `<div class="tier" id="t${i}"><b>${bn(t.qty)}টি নিলে ${bn(t.off)}% ছাড়</b><span>${t.freeShip ? 'সাথে ফ্রি ডেলিভারি' : 'যেকোনো প্রোডাক্ট মিলিয়ে'}</span></div>`).join('');
+
+  $('track').insertAdjacentHTML('beforeend', TIERS.map((t, i) =>
+    `<span class="dot" id="d${i}" style="left:${t.qty / maxQty * 100}%">${bn(t.off)}</span>`).join(''));
+
+  $('grid').innerHTML = PRODUCTS.map(p => `
+    <article class="card" id="c${p.id}">
+      ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
+      <div class="art" style="--c1:${p.c1};--c2:${p.c2}">
+        ${p.image ? `<img src="${p.image}" alt="${p.name}">` : p.art === 'bottle' ? '<div class="bottle"></div>' : '<div class="box">S</div>'}
+      </div>
+      <div class="body">
+        <h3>${p.name}</h3>
+        <p class="desc">${p.desc}</p>
+        <div class="price"><b>${tk(p.price)}</b></div>
+        <div class="qty">
+          <button type="button" data-id="${p.id}" data-d="-1" aria-label="কমান">−</button>
+          <span id="q${p.id}">০</span>
+          <button type="button" data-id="${p.id}" data-d="1" aria-label="বাড়ান">+</button>
+        </div>
+      </div>
+    </article>`).join('');
+
+  $('grid').addEventListener('click', e => {
+    const b = e.target.closest('button[data-id]');
+    if (!b) return;
+    const id = +b.dataset.id;
+    qty[id] = Math.max(0, qty[id] + +b.dataset.d);
+    $('q' + id).textContent = bn(qty[id]);
+    $('c' + id).classList.toggle('picked', qty[id] > 0);
+    render();
+  });
+  $('area').addEventListener('change', render);
+  $('barBtn').addEventListener('click', e => {
+    if (!count()) { e.preventDefault(); alert('আগে অন্তত একটি প্রোডাক্ট বাছাই করুন।'); }
+  });
+
+  const count = () => Object.values(qty).reduce((a, b) => a + b, 0);
+
+  function render() {
+    const n = count();
+    const items = PRODUCTS.filter(p => qty[p.id] > 0);
+    const sub = items.reduce((s, p) => s + p.price * qty[p.id], 0);
+    const tier = [...TIERS].reverse().find(t => n >= t.qty);
+    const next = TIERS.find(t => n < t.qty);
+    const disc = tier ? sub * tier.off / 100 : 0;
+    const ship = !n || tier?.freeShip ? 0 : +$('area').value;
+    const total = sub - disc + ship;
+
+    TIERS.forEach((t, i) => { $('t' + i).classList.toggle('on', n >= t.qty); $('d' + i).classList.toggle('on', n >= t.qty); });
+    $('fill').style.width = Math.min(n / maxQty, 1) * 100 + '%';
+    $('barMsg').innerHTML = !n ? 'প্রোডাক্ট বাছাই শুরু করুন — <b>২টি নিলেই ছাড়!</b>'
+      : next ? `${bn(n)}টি নেওয়া হয়েছে · আর <b>${bn(next.qty - n)}টি</b> নিলে <b>${bn(next.off)}% ছাড়${next.freeShip ? ' + ফ্রি ডেলিভারি' : ''}</b>`
+      : `🎉 সর্বোচ্চ অফার আনলক! <b>${bn(tier.off)}% ছাড় + ফ্রি ডেলিভারি</b>`;
+    $('barTotal').textContent = tk(sub - disc);
+    $('barOld').textContent = disc ? tk(sub) : '';
+
+    $('lines').innerHTML = items.length
+      ? items.map(p => `<div class="row"><span>${p.name} × ${bn(qty[p.id])}</span><span>${tk(p.price * qty[p.id])}</span></div>`).join('')
+      : '<p class="empty">এখনো কোনো প্রোডাক্ট বাছাই করা হয়নি।</p>';
+    $('sub').textContent = tk(sub);
+    $('discRow').hidden = !disc;
+    $('discLabel').textContent = tier ? `অফার ছাড় (${bn(tier.off)}%)` : '';
+    $('disc').textContent = '−' + tk(disc);
+    $('ship').textContent = ship ? tk(ship) : (n ? 'ফ্রি' : '৳০');
+    $('total').textContent = $('btnTotal').textContent = tk(total);
+    return { items, sub, disc, ship, total, tier };
+  }
+
+  // Default: sends the order to WhatsApp. Replace with a fetch() to your order API if needed.
+  $('orderForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const { items, disc, ship, total, tier } = render();
+    if (!items.length) { alert('অনুগ্রহ করে অন্তত একটি প্রোডাক্ট বাছাই করুন।'); scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    const v = id => $(id).value.trim();
+    const msg = [
+      'নতুন অর্ডার — Surokkha',
+      ...items.map(p => `• ${p.name} × ${qty[p.id]} = ৳${p.price * qty[p.id]}`),
+      tier ? `অফার ছাড় ${tier.off}%: -৳${Math.round(disc)}` : '',
+      `ডেলিভারি: ৳${ship}`, `মোট: ৳${Math.round(total)}`, '',
+      `নাম: ${v('name')}`, `ফোন: ${v('phone')}`, `ঠিকানা: ${v('address')}`,
+    ].filter(Boolean).join('\n');
+    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+  });
+
+  document.documentElement.style.scrollBehavior = 'smooth';
+  render();
+</script>
+</body>
+</html>

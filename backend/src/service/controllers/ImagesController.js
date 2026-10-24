@@ -2,6 +2,7 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
+import { LogModel } from "../../common/models/log.model.js";
 
 const storage = multer.memoryStorage();
 export const uploadMiddleware = multer({
@@ -92,8 +93,11 @@ export const uploadProductImage = async (req, res, next) => {
       let mainFilename;
       let thumbFilename;
 
-      if (productSlug) {
-        const cleanSlug = String(productSlug).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const cleanSlug = productSlug
+        ? String(productSlug).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+        : "";
+
+      if (cleanSlug) {
         if (variantName) {
           const cleanVariant = String(variantName).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
           mainFilename = `${cleanSlug}_${cleanVariant}_${timestamp}.webp`;
@@ -182,6 +186,8 @@ async function getAllUploadFiles(dirPath, baseDir) {
       const nested = await getAllUploadFiles(fullPath, baseDir);
       results = results.concat(nested);
     } else {
+      // Skip 200px thumbnails: they duplicate every product image and look blurry in the picker
+      if (entry.name.startsWith("thumb_")) continue;
       const ext = path.extname(entry.name).toLowerCase();
       const validExtensions = [".webp", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".avif", ".pdf"];
       if (validExtensions.includes(ext)) {
@@ -235,6 +241,87 @@ export const listAllMedia = async (req, res, next) => {
         limit,
         totalPages,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Bulk delete media files from /uploads (Owner/Admin only) and record an activity log
+export const bulkDeleteMedia = async (req, res, next) => {
+  try {
+    const urls = Array.isArray(req.body?.urls) ? req.body.urls.filter((u) => typeof u === "string") : [];
+    if (urls.length === 0) {
+      return res.status(400).json({ status: "error", message: "No files selected" });
+    }
+
+    const uploadsDir = path.join(process.cwd(), "uploads");
+    const deleted = [];
+    const failed = [];
+    let deletedBytes = 0;
+
+    const unlinkIfExists = async (fullPath) => {
+      if (!fs.existsSync(fullPath)) return 0;
+      const stats = await fs.promises.stat(fullPath);
+      await fs.promises.unlink(fullPath);
+      return stats.size;
+    };
+
+    for (const url of urls) {
+      const relative = url.replace(/^\/+/, "");
+      const fullPath = path.resolve(process.cwd(), relative);
+      // Only allow files inside /uploads (blocks ../ path traversal)
+      if (!fullPath.startsWith(uploadsDir + path.sep)) {
+        failed.push(url);
+        continue;
+      }
+      try {
+        const size = await unlinkIfExists(fullPath);
+        if (!size) {
+          failed.push(url);
+          continue;
+        }
+        deletedBytes += size;
+        deleted.push(url);
+
+        // Remove the hidden thumbnail that was generated alongside a product image
+        const dir = path.dirname(fullPath);
+        const name = path.basename(fullPath);
+        const thumbNames = [`thumb_${name}`];
+        if (name.startsWith("product_")) thumbNames.push(`thumb_${name.slice("product_".length)}`);
+        for (const thumb of thumbNames) {
+          deletedBytes += await unlinkIfExists(path.join(dir, thumb)).catch(() => 0);
+        }
+      } catch {
+        failed.push(url);
+      }
+    }
+
+    if (deleted.length > 0) {
+      try {
+        const actorName = req.user?.name || req.user?.email || "Admin";
+        const actorDid = req.user?.did || req.user?.userId || "system";
+        const sizeMb = (deletedBytes / (1024 * 1024)).toFixed(2);
+        const names = deleted.map((u) => path.basename(u));
+        const preview = names.slice(0, 10).join(", ") + (names.length > 10 ? ` and ${names.length - 10} more` : "");
+        await LogModel.create({
+          type: "deleted",
+          typeDid: "media",
+          description: `${actorName} deleted ${deleted.length} media file(s) (${sizeMb} MB) from Media Library: ${preview}`,
+          readStatus: false,
+          active: true,
+          createdBy: actorDid,
+          updatedBy: actorDid,
+        });
+      } catch (logErr) {
+        console.warn("Failed to create log for media delete:", logErr);
+      }
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: `${deleted.length} file(s) deleted`,
+      data: { deleted, failed },
     });
   } catch (error) {
     next(error);

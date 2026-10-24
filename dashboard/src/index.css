@@ -176,6 +176,13 @@
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 }
 
+/* Shared page wrapper: every dashboard page is centred and capped at the same width */
+@utility page-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1440px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -4,6 +4,7 @@ import { OrdersTable } from '@/components/dashboard/orders-table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, PlusCircle, Trash2, X } from 'lucide-react';
+import { EXPORT_BUTTON_CLASS } from '@/lib/export-button';
 import { Link, useSearchParams } from 'react-router-dom';
 
 import {
@@ -50,6 +51,8 @@ const InStoreOrdersPage = () => {
   const statusFilter = searchParams.get('status') || 'All';
   const paymentFilter = searchParams.get('payment') || 'All';
   const urlSearch = searchParams.get('q') || '';
+  const dateFrom = searchParams.get('from') || '';
+  const dateTo = searchParams.get('to') || '';
 
   const [searchInput, setSearchInput] = useState(urlSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
@@ -83,6 +86,11 @@ const InStoreOrdersPage = () => {
       });
       return next;
     });
+  };
+
+  const handleDateChange = (key, value) => {
+    updateParams({ [key]: value, page: 1 });
+    setSelectedIds([]);
   };
 
   useEffect(() => {
@@ -170,7 +178,7 @@ const InStoreOrdersPage = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{t('nav.in_store_orders', 'In-Store Orders')}</h2>
@@ -183,9 +191,9 @@ const InStoreOrdersPage = () => {
             <PlusCircle className="mr-2 h-4 w-4" />
             {t('orders.new_order', 'New In-Store Order')}
           </Button>
-          <Button variant="outline" size="lg" className="h-9 px-4">
-            <Download className="mr-2 h-4 w-4" />
-            {t('common.export', 'Export Orders')}
+          <Button variant="outline" className={EXPORT_BUTTON_CLASS}>
+            <Download className="size-4" />
+            {t('common.export', 'Export')}
           </Button>
         </div>
       </div>
@@ -213,6 +221,35 @@ const InStoreOrdersPage = () => {
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-start sm:justify-end">
           {selectedIds.length === 0 && (
             <div className="flex gap-2 items-center w-full sm:w-auto">
+              <div className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-2 text-xs shadow-xs">
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onChange={(e) => handleDateChange('from', e.target.value)}
+                  className="h-7 w-[125px] border-0 bg-transparent px-1 text-xs shadow-none focus-visible:ring-0 cursor-pointer dark:[color-scheme:dark]"
+                  aria-label="From date"
+                />
+                <span className="text-muted-foreground">–</span>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onChange={(e) => handleDateChange('to', e.target.value)}
+                  className="h-7 w-[125px] border-0 bg-transparent px-1 text-xs shadow-none focus-visible:ring-0 cursor-pointer dark:[color-scheme:dark]"
+                  aria-label="To date"
+                />
+                {(dateFrom || dateTo) && (
+                  <button
+                    type="button"
+                    onClick={() => updateParams({ from: '', to: '', page: 1 })}
+                    className="text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="Clear dates"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
               <Select value={statusFilter} onValueChange={handleStatus}>
                 <SelectTrigger className="w-[180px] h-9 cursor-pointer text-xs">
                   <span>
@@ -304,6 +341,8 @@ const InStoreOrdersPage = () => {
             searchQuery={debouncedSearch}
             statusFilter={statusFilter}
             paymentFilter={paymentFilter}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
             page={currentPage}
             onTotalPagesChange={setTotalPages}
             selectedIds={selectedIds}

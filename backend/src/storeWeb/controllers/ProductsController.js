@@ -1,5 +1,6 @@
 import { config } from "../../common/config/index.js";
 import { ProductModel } from "../../common/models/product.model.js";
+import { CategoryModel } from "../../common/models/category.model.js";
 import {
   serializeProduct,
   attachBrandNames,
@@ -110,15 +111,17 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     const pathLower = (req.path || '').toLowerCase();
     const querySite = (req.query?.site || '').toLowerCase().trim();
     let targetSite = 'shop';
-    if (querySite === 'store' || pathLower.includes('-store')) {
+    if (querySite === 'store' || pathLower.includes('-store') || pathLower.includes('store')) {
       targetSite = 'store';
     } else if (querySite === 'shop' || pathLower.includes('-shop')) {
       targetSite = 'shop';
     }
 
     const siteConfig = config.sites?.[targetSite] || (targetSite === 'store' ? config.sites?.store : config.sites?.shop);
-    const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : config.storefrontUrl || 'https://' + (config.domain || 'localhost'))).replace(/\/$/, '');
-    const brandName = siteConfig?.name || config.brandName || 'Surokkha';
+    const defaultSiteUrl = targetSite === 'store' ? 'https://surokkha.store' : 'https://surokkha.shop';
+    const defaultBrandName = targetSite === 'store' ? 'Surokkha Store' : 'Surokkha Shop';
+    const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : defaultSiteUrl)).replace(/\/$/, '');
+    const brandName = siteConfig?.name || defaultBrandName;
 
     // Construct rows
     products.forEach((p) => {
@@ -146,62 +149,152 @@ export const getMetaCatalogCsv = async (req, res, next) => {
         .replace(/[^\w\s-]/g, '')
         .replace(/[\s_-]+/g, '-');
 
-      const link = `${baseSiteUrl}/shop/${catSlug || 'contraceptive'}/${p.slug}`;
-      const imageLink = p.imageUrl ? (p.imageUrl.startsWith('http') ? p.imageUrl : `${config.apiBaseUrl || 'https://api.' + (config.domain || 'localhost')}${p.imageUrl}`) : '';
-      
-      // Price calculation: Simple product or Variant lowest/first variant price
-      let numPrice = 0;
-      let numOfferPrice = null;
-
-      if (p.type === 'variant' && Array.isArray(p.variants) && p.variants.length > 0) {
-        const firstVariant = p.variants[0];
-        numPrice = Number(firstVariant.price || 0);
-        if (firstVariant.offerPrice != null && Number(firstVariant.offerPrice) > 0 && Number(firstVariant.offerPrice) < numPrice) {
-          numOfferPrice = Number(firstVariant.offerPrice);
-        }
-      } else {
-        numPrice = Number(p.price || p.regularPrice || 0);
-        if (p.offerPrice != null && Number(p.offerPrice) > 0 && Number(p.offerPrice) < numPrice) {
-          numOfferPrice = Number(p.offerPrice);
-        }
-      }
-
-      const price = `${numPrice.toFixed(2)} BDT`;
-      const salePrice = numOfferPrice ? `${numOfferPrice.toFixed(2)} BDT` : '';
-      const quantity = p.stockAmount && p.stockAmount > 0 ? p.stockAmount : 150;
+      const link = targetSite === 'store'
+        ? `${baseSiteUrl}/product/${p.slug}`
+        : `${baseSiteUrl}/shop/${catSlug || 'contraceptive'}/${p.slug}`;
+      const resolveImage = (url) => (url ? (url.startsWith('http') ? url : `${config.apiBaseUrl || 'https://api.' + (config.domain || 'localhost')}${url}`) : '');
+      const imageLink = resolveImage(p.imageUrl);
       const productType = 'Product';
       const gender = 'unisex';
       const ageGroup = 'adult';
-      
-      const row = [
-        id,
-        `"${title}"`,
+
+      const buildRow = ({ rowId, rowTitle, rowAvailability, rowImage, numPrice, numOfferPrice, quantity, groupId, size }) => [
+        rowId,
+        `"${rowTitle}"`,
         description,
-        availability,
+        rowAvailability,
         condition,
         link,
-        imageLink,
+        rowImage,
         brandName,
-        price,
+        `${numPrice.toFixed(2)} BDT`,
         '', // google_product_category
         '', // fb_product_category
         productType,
         quantity,
-        salePrice,
+        numOfferPrice ? `${numOfferPrice.toFixed(2)} BDT` : '',
         '', // sale_price_effective_date
-        '', // item_group_id
+        groupId, // item_group_id
         gender,
         '', // color
-        '', // size
+        size ? `"${size}"` : '', // size
         ageGroup,
         '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
       ];
-      
+
+      const offerOf = (price, offer) => (offer != null && Number(offer) > 0 && Number(offer) < price ? Number(offer) : null);
+      const defaultQty = p.stockAmount && p.stockAmount > 0 ? p.stockAmount : 150;
+
+      if (p.type === 'variant' && Array.isArray(p.variants) && p.variants.length > 0) {
+        // One row per variant, grouped by item_group_id so Meta shows them as variations
+        const multi = p.variants.length > 1;
+        p.variants.forEach((v, idx) => {
+          const numPrice = Number(v.price || 0);
+          const vName = String(v.size || v.name || v.label || `Option ${idx + 1}`).replace(/"/g, '""');
+          const vOut = isOut || v.stockStatus === 'outofstock' || v.stockStatus === 'out_of_stock';
+          const vQty = Number(v.stockAmount) > 0 ? Number(v.stockAmount) : defaultQty;
+          const vRow = buildRow({
+            rowId: multi ? `${id}-${idx + 1}` : id,
+            rowTitle: multi ? `${title} - ${vName}` : title,
+            rowAvailability: vOut ? 'out of stock' : 'in stock',
+            rowImage: resolveImage(v.imageUrl) || imageLink,
+            numPrice,
+            numOfferPrice: offerOf(numPrice, v.offerPrice),
+            quantity: vQty,
+            groupId: multi ? id : '',
+            size: multi ? vName : '',
+          });
+          csvData += vRow.join(',') + '\n';
+        });
+        return;
+      }
+
+      const numPrice = Number(p.price || p.regularPrice || 0);
+      const row = buildRow({
+        rowId: id,
+        rowTitle: title,
+        rowAvailability: availability,
+        rowImage: imageLink,
+        numPrice,
+        numOfferPrice: offerOf(numPrice, p.offerPrice),
+        quantity: defaultQty,
+        groupId: '',
+        size: '',
+      });
+
       csvData += row.join(',') + '\n';
     });
     
     res.send(csvData);
   } catch (err) {
     next(err);
+  }
+};
+
+// Live Meta catalog for offer.surokkha.shop: the real products that page shows, never items.
+// Top products come from client config offerPage.catalogProductDids; ready combos are every
+// in-stock product in the "combo" category. Ids are product dids, the same ids the page's pixel sends.
+export const getOfferCatalogCsv = async (req, res, next) => {
+  try {
+    const offerCfg = config.offerPage || {};
+    const siteUrl = String(offerCfg.url || "https://offer.surokkha.shop").replace(/\/$/, "");
+    const mediaOrigin = String(config.sites?.store?.apiBaseUrl || "https://web.surokkha.store").replace(/\/$/, "");
+    const topDids = Array.isArray(offerCfg.catalogProductDids) ? offerCfg.catalogProductDids : [];
+
+    const visible = { isActive: { $ne: false }, excludeFromMetaCatalog: { $ne: true } };
+    const comboCategory = await CategoryModel.findOne({ slug: "combo" }).select("_id").lean();
+    const [topProducts, combos] = await Promise.all([
+      ProductModel.find({ ...visible, did: { $in: topDids } }).lean(),
+      comboCategory
+        ? ProductModel.find({ ...visible, categories: comboCategory._id, stockStatus: { $ne: "outofstock" } }).lean()
+        : [],
+    ]);
+
+    // Keep the page's order: top products first (in config order), then combos
+    const byDid = new Map(topProducts.map((p) => [p.did, p]));
+    const ordered = [...topDids.map((d) => byDid.get(d)).filter(Boolean), ...combos];
+
+    const media = (u) => (!u ? "" : /^(https?:|data:)/i.test(u) ? u : `${mediaOrigin}${u.startsWith("/") ? "" : "/"}${u}`);
+    const plain = (html) => String(html ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+    const inStock = (s) => String(s ?? "").toLowerCase().replace(/[\s_-]/g, "") !== "outofstock";
+    const cell = (v) => {
+      const str = String(v ?? "").replace(/\r?\n/g, " ").trim();
+      return /[",]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    const seen = new Set();
+    const rows = [];
+    for (const p of ordered) {
+      if (!p.did || seen.has(p.did)) continue;
+      seen.add(p.did);
+      // Same price rule as the page: regular price, or the lowest variant price
+      const variants = (p.variants || []).filter((v) => v?.size && v.price != null);
+      const price = variants.length ? Math.min(...variants.map((v) => Number(v.price))) : Number(p.price || 0);
+      if (!(price > 0)) continue;
+      const available = variants.length ? variants.some((v) => inStock(v.stockStatus)) : inStock(p.stockStatus);
+      const images = [p.thumbnailUrl, p.featuredImage, p.imageUrl, ...(p.gallery || [])]
+        .map(media)
+        .filter((u, i, all) => u && all.indexOf(u) === i);
+      rows.push([
+        p.did,
+        p.name,
+        plain(p.description) || plain(p.description_bn) || p.name,
+        available ? "in stock" : "out of stock",
+        "new",
+        `${price.toFixed(2)} BDT`,
+        `${siteUrl}/?product=${encodeURIComponent(p.did)}`,
+        images[0] || "",
+        images.slice(1, 10).join(","),
+        "Surokkha",
+      ]);
+    }
+
+    const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "additional_image_link", "brand"];
+    const csv = [header.join(","), ...rows.map((r) => r.map(cell).join(","))].join("\n") + "\n";
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    return res.send(csv);
+  } catch (error) {
+    next(error);
   }
 };

@@ -1,52 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    <meta name="facebook-domain-verification" content="%VITE_FACEBOOK_DOMAIN_VERIFICATION%" />
-    <link rel="icon" type="image/png" href="/fav.png" />
-    <title>%VITE_BRAND_NAME%</title>
-    <meta name="description" content="Premium MO personal wellness products storefront." />
-    <meta property="og:title" content="%VITE_BRAND_NAME%" />
-    <meta property="og:description" content="Premium MO personal wellness products storefront." />
-    
-    <!-- Google Fonts: Noto Serif Bengali, Hind Siliguri, Inter & Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="facebook-domain-verification" content="jgrq59bzvnhourn0jucw6iyntf2vt5" />
+  <link rel="icon" type="image/png" href="/fav.png" />
+  <title>%VITE_BRAND_NAME%</title>
+  <meta name="description" content="Premium personal wellness products storefront." />
+  <meta property="og:title" content="%VITE_BRAND_NAME%" />
+  <meta property="og:description" content="Premium MO personal wellness products storefront." />
 
-      gtag('config', '%VITE_GA_MEASUREMENT_ID%');
-    </script>
+  <!-- Google Fonts: Noto Serif Bengali, Hind Siliguri, Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet" />
 
-    <!-- Meta Pixel Code -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', '%VITE_GA_MEASUREMENT_ID%');
+  </script>
+
+  <!-- Meta's Conversions API Gateway (*.on.aws) mirrors every pixel event to Meta server-side. Our backend
+       already sends Purchase via CAPI (same event_id, full customer data), so the gateway copy made Meta
+       count each order twice. Drop only the gateway's Purchase; every other event still goes through. -->
+  <script>
+    (function () {
+      var isGatewayPurchase = function (url, body) {
+        return /\.on\.aws\/events/.test(String(url)) && typeof body === 'string' && /"event_name"\s*:\s*"Purchase"/.test(body);
+      };
+      var origFetch = window.fetch;
+      if (origFetch) {
+        window.fetch = function (input, init) {
+          try {
+            if (isGatewayPurchase((input && input.url) || input, init && init.body)) {
+              return Promise.resolve(new Response(null, { status: 204 }));
+            }
+          } catch (_) {}
+          return origFetch.apply(this, arguments);
+        };
+      }
+      if (navigator.sendBeacon) {
+        var origBeacon = navigator.sendBeacon.bind(navigator);
+        navigator.sendBeacon = function (url, data) {
+          try {
+            if (isGatewayPurchase(url, data)) return true;
+          } catch (_) {}
+          return origBeacon(url, data);
+        };
+      }
+    })();
+  </script>
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
       'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('set', 'autoConfig', false, '%VITE_META_PIXEL_ID%');
-      fbq('init', '%VITE_META_PIXEL_ID%');
-      fbq('track', 'PageView');
-    </script>
-    <!-- End Meta Pixel Code -->
-  </head>
-  <body class="min-h-screen flex flex-col bg-white antialiased text-slate-800">
-    <!-- Meta Pixel noscript Fallback -->
-    <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=%VITE_META_PIXEL_ID%&ev=PageView&noscript=1"
-    /></noscript>
-    <div id="root"></div>
-    <script type="module" src="./main.jsx"></script>
-  </body>
+    fbq('set', 'autoConfig', false, '1565104865301894');
+    fbq('init', '1565104865301894');
+    fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+</head>
+
+<body class="min-h-screen flex flex-col bg-white antialiased text-slate-800">
+  <!-- Meta Pixel noscript Fallback -->
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1565104865301894&ev=PageView&noscript=1" /></noscript>
+  <div id="root"></div>
+  <script type="module" src="./main.jsx"></script>
+</body>
+
 </html>

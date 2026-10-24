@@ -1,46 +1,37 @@
-import { config } from '../config/index.js';
+import { config } from "../config/index.js";
+import { BRAND, SANS, SERIF, esc, emailLayout, resolveSite } from "./surokkhaBrand.js";
 
-/**
- * Builds HTML email body for Two-Factor Authentication (2FA) setup with embedded QR Code
- */
-export const buildTwoFactorQrEmailHtml = ({
-  name,
-  secret,
-  brandName: customBrandName,
-}) => {
-  const brandName = customBrandName || config.brandName || '';
+// Two-factor authentication setup email; the QR image is attached by the caller as cid:qrcode
+export const buildTwoFactorQrEmailHtml = ({ name, secret, brandName: customBrandName, logoUrl, siteKey } = {}) => {
+  const site = resolveSite({ site: siteKey });
+  const brandName = customBrandName || site.name || config.brandName;
 
-  return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 540px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-      <div style="background: #0f172a; padding: 24px; text-align: center; color: #ffffff;">
-        <h2 style="margin: 0; font-size: 20px; font-weight: 700;">${brandName} Dashboard</h2>
-        <p style="margin: 4px 0 0; font-size: 13px; color: #94a3b8;">Two-Factor Authentication Setup</p>
-      </div>
-      <div style="padding: 32px 24px; text-align: center; color: #334155;">
-        <h3 style="margin: 0 0 12px; font-size: 18px; color: #0f172a;">Secure Your Account</h3>
-        <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #64748b;">
-          Hello <strong>${name || 'Staff Member'}</strong>,<br/>
-          Scan the QR code below using <strong>Google Authenticator</strong>, <strong>Authy</strong>, or your preferred authenticator app to enable Two-Factor Authentication.
-        </p>
-        
-        <div style="margin: 0 auto 20px; display: inline-block; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-          <img src="cid:qrcode" alt="2FA Setup QR Code" style="display: block; width: 200px; height: 200px;" />
-        </div>
+  const body = `
+    <div style="font-family:${SERIF};font-size:22px;font-weight:600;color:${BRAND.maroon};line-height:1.25">Secure your account</div>
+    <div style="font-family:${SANS};font-size:13.5px;color:${BRAND.muted};margin-top:6px">Hello ${esc(name || "team member")}, scan this QR code with Google Authenticator, Authy or another authenticator app to turn on two-factor sign-in for the ${esc(brandName)} dashboard.</div>
 
-        <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 24px; text-align: left;">
-          <p style="margin: 0 0 6px; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase;">Can't scan the QR code? Enter manual key:</p>
-          <code style="font-family: monospace; font-size: 16px; font-weight: 700; color: #0f172a; letter-spacing: 2px; word-break: break-all;">${secret}</code>
-        </div>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:24px auto 18px;border-collapse:separate">
+      <tr><td bgcolor="#ffffff" style="background:#ffffff;border:1px solid ${BRAND.line};border-radius:12px;padding:12px">
+        <img src="cid:qrcode" alt="Two-factor setup QR code" width="200" height="200" style="display:block;width:200px;height:200px;border:0">
+      </td></tr>
+    </table>
 
-        <p style="margin: 0; font-size: 12px; color: #ef4444; font-weight: 500;">
-          ⚠️ If you did not request this setup, please contact your administrator or change your account password immediately.
-        </p>
-      </div>
-      <div style="background: #f8fafc; padding: 16px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-        © ${new Date().getFullYear()} ${brandName}. Secure Store Administration.
-      </div>
-    </div>
-  `;
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate">
+      <tr><td bgcolor="${BRAND.blush}" style="background:${BRAND.blush};border-radius:10px;padding:14px 16px">
+        <div style="font-family:${SANS};font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${BRAND.crimson};font-weight:700">Can't scan? Enter this key</div>
+        <div style="font-family:'SFMono-Regular',Consolas,monospace;font-size:15px;font-weight:700;letter-spacing:2px;color:${BRAND.maroon};margin-top:6px;word-break:break-all">${esc(secret)}</div>
+      </td></tr>
+    </table>
+
+    <div style="font-family:${SANS};font-size:12px;color:${BRAND.crimson};margin-top:16px">If you didn't request this, contact your administrator and change your password right away.</div>`;
+
+  return emailLayout({
+    title: `Two-factor setup · ${brandName}`,
+    preheader: "Scan the QR code to turn on two-factor sign-in.",
+    logoUrl,
+    site,
+    body,
+  });
 };
 
 export const buildTwoFactorEmailHtml = buildTwoFactorQrEmailHtml;

@@ -69,6 +69,26 @@ export const BANGLADESH_64_DISTRICTS = [
   { name: "Pirojpur", bnName: "পিরোজপুর", defaultCityId: 65 },
 ];
 
+// District English-to-Bangla translation dictionary (supporting official names & courier spelling variations)
+export const DISTRICT_BN_MAP = {
+  ...Object.fromEntries(BANGLADESH_64_DISTRICTS.map((d) => [d.name, d.bnName])),
+  "B. Baria": "ব্রাহ্মণবাড়িয়া",
+  "Barishal": "বরিশাল",
+  "Bogura": "বগুড়া",
+  "Chattogram": "চট্টগ্রাম",
+  "Comilla": "কুমিল্লা",
+  "Gopalgonj": "গোপালগঞ্জ",
+  "Jashore": "যশোর",
+  "Jhalokathi": "ঝালকাঠি",
+  "Jhenidah": "ঝিনাইদহ",
+  "Khagrachari": "খাগড়াছড়ি",
+  "Laxmipur": "লক্ষ্মীপুর",
+  "Maulvibazar": "মৌলভীবাজার",
+  "Munsiganj": "মুন্সীগঞ্জ",
+  "Narshingdi": "নরসিংদী",
+  "Netrokona": "নেত্রকোণা",
+};
+
 // Common Upazilas/Thanas for all 64 districts of Bangladesh
 export const COMMON_THANAS = {
   Dhaka: [
@@ -250,6 +270,7 @@ export async function syncLocationsFromPathaoAPI(options = {}) {
         $set: {
           cityId: cityId,
           name: cityName,
+          bnName: DISTRICT_BN_MAP[cityName] || "",
           totalZones: thanasFormatted.length,
           thanas: thanasFormatted,
           isActive: true,

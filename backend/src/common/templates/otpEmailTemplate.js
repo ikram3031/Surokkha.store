@@ -1,177 +1,32 @@
-// Builds a professional HTML email template for OTP verification with center-aligned text hierarchy
-export const buildOtpEmailHtml = ({
-  name,
-  otp,
-  logoUrl = "https://admin.surokkha.store/surokkha_logo.png"
-}) => {
-  const cleanLogoUrl = (!logoUrl || !logoUrl.startsWith("http"))
-    ? "https://admin.surokkha.store/surokkha_logo.png"
-    : logoUrl;
-  const finalName = name || "Valued Customer";
+import { BRAND, SANS, SERIF, esc, emailLayout, resolveSite } from "./surokkhaBrand.js";
 
-  return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Verification Code - Surokkha</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-      background-color: #F8FAFC;
-      color: #334155;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrapper {
-      width: 100%;
-      table-layout: fixed;
-      background-color: #F8FAFC;
-      padding-top: 40px;
-      padding-bottom: 40px;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #FFFFFF;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-      border: 1px solid #E2E8F0;
-    }
-    .header {
-      background-color: #FFFFFF;
-      padding: 32px 20px;
-      text-align: center;
-      border-bottom: 3px solid #E2E8F0;
-    }
-    .logo {
-      vertical-align: middle;
-    }
-    .content {
-      padding: 40px 30px;
-      text-align: center;
-      line-height: 1.6;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .title {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 24px;
-      color: #0F172A;
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      text-align: center;
-    }
-    .greeting {
-      font-size: 15px;
-      color: #334155;
-      margin-bottom: 15px;
-      text-align: center;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .message-text {
-      font-size: 14px;
-      color: #475569;
-      margin-bottom: 25px;
-      text-align: center;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .otp-container {
-      margin: 25px 0;
-      padding: 22px 30px;
-      background-color: #F8FAFC;
-      border: 1px dashed #CBD5E1;
-      border-radius: 6px;
-      display: inline-block;
-    }
-    .otp-code {
-      font-size: 34px;
-      font-weight: 700;
-      color: #0F172A;
-      letter-spacing: 10px;
-      margin: 0;
-      padding-left: 10px;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .expiry-text {
-      font-size: 13px;
-      color: #64748B;
-      margin-top: 15px;
-      font-style: italic;
-      text-align: center;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .security-notice {
-      font-size: 12px;
-      color: #94A3B8;
-      border-top: 1px solid #E2E8F0;
-      margin-top: 40px;
-      padding-top: 20px;
-      text-align: center;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .footer {
-      background-color: #FFFFFF;
-      padding: 30px 20px;
-      text-align: center;
-      font-size: 12px;
-      color: #64748B;
-      border-top: 1px solid #E2E8F0;
-      font-family: 'Geist Mono', -apple-system, sans-serif;
-    }
-    .footer a {
-      color: #0F172A;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .footer p {
-      margin: 8px 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="container">
-      
-      <div class="header">
-        <img class="logo" src="${cleanLogoUrl}" alt="Surokkha" height="36" style="max-height: 36px; height: 36px; width: auto; max-width: 180px; object-fit: contain; display: block; margin: 0 auto; border: 0;" />
-      </div>
+// One-time password email (registration / password reset), styled like the Surokkha invoice
+export const buildOtpEmailHtml = ({ name, otp, type = "registration", logoUrl, siteKey } = {}) => {
+  const site = resolveSite({ site: siteKey });
+  const isReset = type === "forgot-password";
+  const heading = isReset ? "Reset your password" : "Verify your email";
 
-      <div class="content">
-        <h1 class="title">Verification Required</h1>
-        <p class="greeting">Hello ${finalName},</p>
-        <p class="message-text">
-          Thank you for choosing Surokkha. To complete your verification, please use the One-Time Password (OTP) provided below:
-        </p>
-        
-        <div class="otp-container">
-          <div class="otp-code">${otp}</div>
-        </div>
-        
-        <p class="expiry-text">This code will expire in 10 minutes.</p>
-        
-        <p class="security-notice">
-          If you did not request this verification code, please ignore this email or contact support if you suspect unauthorized activity.
-        </p>
-      </div>
+  const body = `
+    <div style="font-family:${SERIF};font-size:22px;font-weight:600;color:${BRAND.maroon};line-height:1.25">${heading}</div>
+    <div style="font-family:${SANS};font-size:13.5px;color:${BRAND.muted};margin-top:6px">Hello ${esc(name || "there")}, use this one-time code to ${isReset ? "reset your password" : "finish verifying your account"}.</div>
 
-      <div class="footer">
-        <p>&copy; ${new Date().getFullYear()} <a href="https://surokkha.store">Surokkha.store</a>. All rights reserved.</p>
-      </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px;border-collapse:separate">
+      <tr><td align="center" bgcolor="${BRAND.blush}" style="background:${BRAND.blush};border:1px solid ${BRAND.line};border-radius:12px;padding:22px 16px">
+        <div style="font-family:${SANS};font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:${BRAND.crimson};font-weight:700">Your code</div>
+        <div style="font-family:${SANS};font-size:34px;font-weight:700;letter-spacing:10px;color:${BRAND.maroon};margin-top:6px">${esc(otp)}</div>
+        <div style="font-family:${SANS};font-size:11.5px;color:${BRAND.muted};margin-top:6px">Expires in 10 minutes</div>
+      </td></tr>
+    </table>
 
-    </div>
-  </div>
-</body>
-</html>
-  `;
+    <div style="font-family:${SANS};font-size:12px;color:${BRAND.muted};margin-top:14px">If you didn't request this code, you can ignore this email. Never share it with anyone, including our team.</div>`;
+
+  return emailLayout({
+    title: `${heading} · ${site.name}`,
+    preheader: `Your ${site.name} code is ${otp}`,
+    logoUrl,
+    site,
+    body,
+  });
 };
 
 export default { buildOtpEmailHtml };

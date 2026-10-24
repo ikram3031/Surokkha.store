@@ -5,6 +5,7 @@ import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import HeroSlider from '../components/HeroSlider';
+import TrialPackHero from '../components/TrialPackHero';
 import PromoComboBanner from '../components/PromoComboBanner';
 import ProductCarousel from '../components/ProductCarousel';
 import TestimonialCarousel from '../components/TestimonialCarousel';
@@ -76,8 +77,12 @@ export default function HomeView() {
   return (
     <div className="space-y-6 sm:space-y-8 bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 pb-4">
       
-      {/* PURE HERO BANNER SLIDER (Dashboard CMS Uploaded) */}
-      <HeroSlider />
+      {/* PURE HERO BANNER SLIDER (Dashboard CMS Uploaded) — hidden for now.
+          To restore it, change `false` to `true` below. */}
+      {false && <HeroSlider />}
+
+      {/* TRIAL PACK PROMO HERO */}
+      <TrialPackHero />
 
       {/* 3 DEDICATED FEATURE CARDS (Directly Under Hero Slider, White Theme) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -131,12 +136,7 @@ export default function HomeView() {
         </div>
       </section>
 
-      {/* COMBO PRODUCTS CAROUSEL (replaces the MO Lineup section) */}
-      <ProductCarousel mode="combo" maxItems={12} />
-
-      {/* DEDICATED PRODUCT SECTION (The MO Lineup) — disabled, replaced by the combo
-          carousel above. To restore it, change `false` to `true` below. */}
-      {false && (
+      {/* DEDICATED PRODUCT SECTION (The MO Lineup) */}
       <section id="productsSection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
           <span className="text-xs font-bold tracking-widest text-brand-800 uppercase bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200/70">
@@ -163,7 +163,6 @@ export default function HomeView() {
           )}
         </div>
       </section>
-      )}
 
       {/* HIGH-CONVERSION SPOTLIGHT COMBO SHOWCASE */}
       {activeCombos.length > 0 && (

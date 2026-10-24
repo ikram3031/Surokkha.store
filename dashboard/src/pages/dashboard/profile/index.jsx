@@ -219,7 +219,7 @@ export default function UserProfile() {
   const initials = (displayName || user?.email || '?').charAt(0).toUpperCase();
 
   return (
-    <div className="flex-1 space-y-5 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-5 p-4 md:p-8 pt-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('profile.title', 'Profile')}</h1>
         <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
