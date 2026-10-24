@@ -18,6 +18,12 @@ import {
 import { LogModel } from "../../common/models/log.model.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 import { sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
+import {
+  getNotificationRecipientUserIds,
+  setUserEmailNotification,
+  syncUserNotificationRecipient,
+  removeUserNotificationRecipient,
+} from "../../common/utils/notificationRecipients.js";
 
 // Dispatches user invitation email via active SMTP configuration
 export const sendInvitationEmail = async ({ user, inviteUrl }) => {
@@ -56,8 +62,9 @@ export const sendInvitationEmail = async ({ user, inviteUrl }) => {
 // List all users in the system
 export const listUsers = async (req, res, next) => {
   try {
-    const users = await UserModel.find().lean();
-    res.json({ data: users });
+    const [users, recipientIds] = await Promise.all([UserModel.find().lean(), getNotificationRecipientUserIds()]);
+    const data = users.map((u) => ({ ...u, receiveEmailNotifications: recipientIds.has(String(u._id)) }));
+    res.json({ data });
   } catch (error) {
     next(error);
   }
@@ -112,7 +119,6 @@ export const createUser = async (req, res, next) => {
       existing.inviteToken = inviteToken;
       existing.inviteTokenExpiresAt = inviteTokenExpiresAt;
       if (passwordHash) existing.passwordHash = passwordHash;
-      if (payload.receiveEmailNotifications !== undefined) existing.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
       await existing.save();
       user = existing;
     } else {
@@ -125,9 +131,13 @@ export const createUser = async (req, res, next) => {
         inviteToken,
         inviteTokenExpiresAt,
         isActive: Boolean(passwordHash),
-        receiveEmailNotifications: payload.receiveEmailNotifications !== undefined ? Boolean(payload.receiveEmailNotifications) : true,
         createdBy: mongoose.isValidObjectId(req.user?.userId) ? req.user.userId : null,
       });
+    }
+
+    // New users stay off the alert email list unless explicitly opted in
+    if (payload.receiveEmailNotifications === true) {
+      await setUserEmailNotification(user, true);
     }
 
     const origin = req.headers.origin || req.headers.referer || "";
@@ -245,15 +255,15 @@ export const updateUser = async (req, res, next) => {
       if (emailExists) return res.status(409).json({ status: "error", message: "A user with this email already exists" });
     }
 
-    if (payload.name !== undefined) user.name = payload.name.trim();
-    if (payload.email !== undefined) user.email = payload.email.toLowerCase().trim();
-    if (payload.phone !== undefined) user.phone = payload.phone.trim();
-    if (payload.role !== undefined) user.role = payload.role;
-    if (payload.isActive !== undefined) user.isActive = Boolean(payload.isActive);
-    if (payload.receiveEmailNotifications !== undefined) user.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
+    const updates = {};
+    if (payload.name !== undefined) updates.name = payload.name.trim();
+    if (payload.email !== undefined) updates.email = payload.email.toLowerCase().trim();
+    if (payload.phone !== undefined) updates.phone = payload.phone.trim();
+    if (payload.role !== undefined) updates.role = payload.role;
+    if (payload.isActive !== undefined) updates.isActive = Boolean(payload.isActive);
 
     if (payload.password) {
-      user.passwordHash = await hashPassword(payload.password);
+      updates.passwordHash = await hashPassword(payload.password);
     }
 
     if (payload.role === "Employee" && payload.assets) {
@@ -265,10 +275,21 @@ export const updateUser = async (req, res, next) => {
       if (found.length !== assignedAssets.length) {
         return res.status(400).json({ status: "error", message: "One or more assigned assets not found" });
       }
-      user.assets = assignedAssets;
+      updates.assets = assignedAssets;
     }
 
-    await user.save();
+    // Atomic $set so only the changed fields are validated; legacy values elsewhere on the document no longer block the update
+    const updatedUser = Object.keys(updates).length > 0
+      ? await UserModel.findByIdAndUpdate(userId, { $set: updates }, { new: true, runValidators: true })
+      : user;
+    if (!updatedUser) return res.status(404).json({ status: "error", message: "User not found" });
+
+    if (payload.receiveEmailNotifications !== undefined) {
+      await setUserEmailNotification(updatedUser, payload.receiveEmailNotifications);
+    } else if (updates.email !== undefined || updates.name !== undefined) {
+      await syncUserNotificationRecipient(updatedUser);
+    }
+    const recipientIds = await getNotificationRecipientUserIds();
 
     try {
       const actorDid = req.user?.did || "staff";
@@ -276,7 +297,7 @@ export const updateUser = async (req, res, next) => {
       await LogModel.create({
         type: "updated",
         typeDid: "121",
-        description: `${actorName} updated system user ${user.name} (${user.email}).`,
+        description: `${actorName} updated system user ${updatedUser.name} (${updatedUser.email}).`,
         readStatus: false,
         active: true,
         createdBy: actorDid,
@@ -286,7 +307,7 @@ export const updateUser = async (req, res, next) => {
       console.error("Failed to create log for user update:", logErr);
     }
 
-    res.json({ status: "success", data: user.toJSON() });
+    res.json({ status: "success", data: { ...updatedUser.toJSON(), receiveEmailNotifications: recipientIds.has(String(updatedUser._id)) } });
   } catch (error) {
     next(error);
   }
@@ -311,6 +332,7 @@ export const deleteUser = async (req, res, next) => {
     }
 
     await UserModel.findByIdAndDelete(userId);
+    await removeUserNotificationRecipient(user._id);
 
     try {
       const actorDid = req.user?.did || "staff";
@@ -406,7 +428,6 @@ export const updateProfile = async (req, res, next) => {
     if (payload.avatar !== undefined) user.avatar = String(payload.avatar).trim();
     if (payload.preferredName !== undefined) user.preferredName = String(payload.preferredName).trim();
     if (payload.website !== undefined) user.website = String(payload.website).trim();
-    if (payload.receiveEmailNotifications !== undefined) user.receiveEmailNotifications = Boolean(payload.receiveEmailNotifications);
 
     if (payload.username !== undefined) {
       const username = String(payload.username).trim().toLowerCase();

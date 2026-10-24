@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
 import { config } from "../config/index.js";
-import { UserModel } from "../models/user.model.js";
+import { getNotificationRecipientEmails } from "./notificationRecipients.js";
 import { getSmtpTransport } from "../services/smtpConfig.service.js";
 
 const lightThemeHtml = (title, body) => `
@@ -132,18 +132,12 @@ export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject
     }
 
     try {
-      const staffUsers = await UserModel.find({
-        $or: [{ isActive: true }, { active: true }, { isActive: { $exists: false } }],
-        receiveEmailNotifications: { $ne: false },
-      }).select("email receiveEmailNotifications").lean();
-
-      for (const staffUser of staffUsers) {
-        if (staffUser.email && staffUser.receiveEmailNotifications !== false) {
-          recipientsSet.add(staffUser.email.toLowerCase().trim());
-        }
+      const recipientEmails = await getNotificationRecipientEmails();
+      for (const email of recipientEmails) {
+        recipientsSet.add(email.toLowerCase().trim());
       }
     } catch (dbErr) {
-      console.error("[Contact Email] Database query for staff notification emails failed:", dbErr.message);
+      console.error("[Contact Email] Loading alert email recipients failed:", dbErr.message);
     }
 
     const recipients = Array.from(recipientsSet);
