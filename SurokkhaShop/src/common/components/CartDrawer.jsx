@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, getVariantLabel, getTrialPackQty, trialPackMinMessage, TRIAL_PACK_MIN_QTY } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
@@ -9,6 +9,7 @@ export default function CartDrawer() {
   const cart = useStore((state) => state.cart);
   const products = useStore((state) => state.products);
   const setProductQty = useStore((state) => state.setProductQty);
+  const showToast = useStore((state) => state.showToast);
   const getCartTotals = useStore((state) => state.getCartTotals);
   const navigateTo = useStore((state) => state.navigateTo);
   const openProduct = useStore((state) => state.openProduct);
@@ -124,6 +125,11 @@ export default function CartDrawer() {
   }, [isCartDrawerOpen, closeCartDrawer]);
 
   const handleCheckout = () => {
+    const trialPackQty = getTrialPackQty(cart);
+    if (trialPackQty > 0 && trialPackQty < TRIAL_PACK_MIN_QTY) {
+      showToast(trialPackMinMessage(isBn, trialPackQty));
+      return;
+    }
     closeCartDrawer();
     navigateTo('checkout');
   };
@@ -307,8 +313,8 @@ export default function CartDrawer() {
                   const variant = variantName && baseItem.variants ? baseItem.variants.find(v => v.size === variantName) : null;
                   const item = variant ? { 
                     ...baseItem, 
-                    name: baseItem.name + ' (' + variantName + ')', 
-                    name_bn: (baseItem.name_bn || baseItem.name) + ' (' + variantName + ')', 
+                    name: baseItem.name + ' (' + getVariantLabel(baseItem, variantName) + ')',
+                    name_bn: (baseItem.name_bn || baseItem.name) + ' (' + getVariantLabel(baseItem, variantName) + ')',
                     price: Number(variant.offerPrice > 0 ? variant.offerPrice : (variant.price || variant.regularPrice || baseItem.price || 0)), 
                     regularPrice: Number(variant.regularPrice > 0 ? variant.regularPrice : (variant.price || baseItem.regularPrice || 0)),
                     imageUrl: variant.imageUrl || baseItem.imageUrl 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, isTrialPack, getTrialPackVariants } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
@@ -35,7 +35,8 @@ export default function ProductCard({ productKey, className = '' }) {
   let minPrice = currentOfferPrice;
   let maxPrice = currentOfferPrice;
   if (hasVariants && prod.variants) {
-    const prices = prod.variants.map(v => Number(v.price || v.regularPrice || 0)).filter(p => p > 0);
+    const priceVariants = isTrialPack(prod) ? getTrialPackVariants(prod) : prod.variants;
+    const prices = priceVariants.map(v => Number(v.price || v.regularPrice || 0)).filter(p => p > 0);
     if (prices.length > 0) {
       minPrice = Math.min(...prices);
       maxPrice = Math.max(...prices);
