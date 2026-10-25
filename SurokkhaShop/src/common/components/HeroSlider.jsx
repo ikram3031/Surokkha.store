@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, getFeaturedCombo } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha.store';
@@ -17,26 +17,8 @@ const HeroSlider = () => {
   const products = useStore((state) => state.products);
   const { t, isBn, formatPrice } = useTranslation();
 
-  // Hero combo offer is pinned to the Combo Special 30 pcs product (same product as the
-  // navbar marquee); falls back to auto-detection if it's inactive or out of stock.
-  const HERO_COMBO_PRODUCT_ID = '6ad3ceaa778c3e05ca22b2bd';
-  const pinnedCombo = products[HERO_COMBO_PRODUCT_ID];
-  const isPinnedComboAvailable = pinnedCombo && pinnedCombo.isActive !== false &&
-    !(pinnedCombo.isOutOfStock || pinnedCombo.stockStatus === 'outofstock' || pinnedCombo.stockStatus === 'out_of_stock' || pinnedCombo.stockAmount === 0);
-
-  const combo30Prod = (isPinnedComboAvailable ? pinnedCombo : null) || Object.values(products).find(p => {
-    if (!p || p.isActive === false) return false;
-    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-    if (isOut) return false;
-    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-    const is30 = (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'));
-    return isCombo && is30;
-  }) || Object.values(products).find(p => {
-    if (!p || p.isActive === false) return false;
-    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-    if (isOut) return false;
-    return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-  });
+  // Hero combo offer shows the site-wide featured combo (Ultimate 3-in-1 30 pcs)
+  const combo30Prod = getFeaturedCombo(products);
 
   const comboKey = combo30Prod?.slug || combo30Prod?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
   const comboPrice = combo30Prod ? (combo30Prod.offerPrice || combo30Prod.price) : null;

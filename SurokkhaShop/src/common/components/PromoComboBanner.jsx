@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, getFeaturedCombo } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
@@ -10,20 +10,8 @@ export default function PromoComboBanner() {
   const products = useStore((state) => state.products);
   const { isBn, formatPrice, formatNumber, getLocalizedName } = useTranslation();
 
-  // Dynamically detect active 30-pcs or primary combo product
-  const activeCombo = Object.values(products).find(p => {
-    if (!p || p.isActive === false) return false;
-    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-    if (isOut) return false;
-    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-    const is30 = (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'));
-    return isCombo && is30;
-  }) || Object.values(products).find(p => {
-    if (!p || p.isActive === false) return false;
-    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-    if (isOut) return false;
-    return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-  });
+  // Site-wide featured combo (Ultimate 3-in-1 30 pcs)
+  const activeCombo = getFeaturedCombo(products);
 
   const comboKey = activeCombo?.slug || activeCombo?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
   const comboProd = activeCombo || products[comboKey] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
@@ -145,11 +133,11 @@ export default function PromoComboBanner() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold text-white leading-tight">
               {isBn ? (
                 <>
-                  ৩ প্যাকেট একসাথে মাত্র <span className="text-amber-400 underline decoration-amber-400/80 underline-offset-6">৳{currentOfferPrice}</span> টাকায়!
+                  ৩ প্যাকেট একসাথে মাত্র <span className="text-amber-400 underline decoration-amber-400/80 underline-offset-6">৳{formatNumber(currentOfferPrice)}</span> টাকায়!
                 </>
               ) : (
                 <>
-                  Get All 3 Packs for Just <span className="text-amber-400 underline decoration-amber-400/80 underline-offset-6">৳{currentOfferPrice}</span>!
+                  Get All 3 Packs for Just <span className="text-amber-400 underline decoration-amber-400/80 underline-offset-6">৳{formatNumber(currentOfferPrice)}</span>!
                 </>
               )}
             </h2>

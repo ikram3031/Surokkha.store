@@ -67,7 +67,8 @@ export const resizedUploadsHandler = async (req, res) => {
       await pendingJobs.get(cachePath);
     }
   } catch {
-    return res.status(500).end();
+    // Never leave a card without a picture: fall back to the original upload
+    return res.sendFile(sourcePath, { dotfiles: "allow" });
   }
 
   const isCmsAsset = safeRelPath.startsWith("assets");

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, getFeaturedCombo } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
@@ -67,19 +67,7 @@ export default function CartDrawer() {
     (k) => k.includes('combo') || k === 'variety-condoms-30pcs-combo' || k === 'combo-26'
   );
   
-  const comboProd = Object.values(products).find(p => {
-    if (!p || p.isActive === false) return false;
-    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-    if (isOut) return false;
-    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-    const is30 = (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'));
-    return isCombo && is30;
-  }) || Object.values(products).find(p => {
-    if (!p || p.isActive === false) return false;
-    const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-    if (isOut) return false;
-    return p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-  }) || products['variety-condoms-30pcs-combo'] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['combo-26'];
+  const comboProd = getFeaturedCombo(products) || products['variety-condoms-30pcs-combo'] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['combo-26'];
 
   const isComboInStock = Boolean(comboProd && !comboProd.isOutOfStock && comboProd.stockStatus !== 'outofstock' && comboProd.stockStatus !== 'out_of_stock' && comboProd.stockAmount !== 0);
   const comboOfferPrice = Number(comboProd?.offerPrice || comboProd?.price || 0);

@@ -101,6 +101,22 @@ export const isSingleQtyItem = (prod) => {
   return isItem && !hasVariants;
 };
 
+// Site-wide featured combo (announcement bar, promo banner, cart upsell): the Ultimate 3-in-1 30 pcs combo.
+// Falls back to any in-stock 30-pcs combo, then any in-stock combo, while it's unavailable.
+export const FEATURED_COMBO_SLUG = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+
+const isAvailableForSale = (p) => Boolean(p) && p.isActive !== false &&
+  !(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
+
+const isComboProduct = (p) => p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+
+export const getFeaturedCombo = (products) => {
+  const featured = products[FEATURED_COMBO_SLUG];
+  if (isAvailableForSale(featured)) return featured;
+  const available = Object.values(products).filter((p) => isAvailableForSale(p) && isComboProduct(p));
+  return available.find((p) => (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'))) || available[0] || null;
+};
+
 // Single-product slugs that 404ed on both products and items endpoints
 const missingSingleSlugs = new Set();
 
@@ -912,14 +928,8 @@ export const useStore = create((set, get) => ({
     // Resolve dynamic combo product
     let targetComboKey = preferredKey;
     if (!targetComboKey || !products[targetComboKey]) {
-      const activeCombo = Object.values(products).find(p => {
-        if (!p || p.isActive === false) return false;
-        const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
-        if (isOut) return false;
-        const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-        return isCombo;
-      });
-      targetComboKey = activeCombo?.slug || activeCombo?.id || preferredKey || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+      const activeCombo = getFeaturedCombo(products);
+      targetComboKey = activeCombo?.slug || activeCombo?.id || preferredKey || FEATURED_COMBO_SLUG;
     }
 
     const comboProd = products[targetComboKey] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
