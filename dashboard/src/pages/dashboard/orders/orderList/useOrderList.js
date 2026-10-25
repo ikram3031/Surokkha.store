@@ -13,7 +13,8 @@ import { clientConfig } from '@/clientConfig';
 import { exportToCsv } from '@/utils/exportCsv';
 import { formatDateTime } from '@/utils/dateHelper';
 import { getPaymentMethodLabel } from '@/utils/orderDetailsHelper';
-import { DEFAULT_PAGE_SIZE, EXPORT_MAX_PAGES, PAGE_SIZE_OPTIONS, STATUS_ALL } from './constants';
+import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_MOBILE, EXPORT_MAX_PAGES, PAGE_SIZE_OPTIONS, STATUS_ALL } from './constants';
+import { useIsWide } from './view2/useMediaQuery';
 
 // Shared by the shared PathaoSyncBar too, so both read one cached result
 const PATHAO_STATUS_KEY = ['pathao-sync-status'];
@@ -21,14 +22,14 @@ const PATHAO_STATUS_KEY = ['pathao-sync-status'];
 const STATUS_COUNTS_KEY = ['dashboard', 'orderStatusDistribution', 'all'];
 
 // URL values that mean "no filter" are removed from the query string
-const isDefaultParam = (key, val) =>
+const isDefaultParam = (key, val, defaultPageSize) =>
   val === undefined ||
   val === null ||
   val === '' ||
   val === STATUS_ALL ||
   val === 'all' ||
   (key === 'page' && Number(val) === 1) ||
-  (key === 'limit' && Number(val) === DEFAULT_PAGE_SIZE);
+  (key === 'limit' && Number(val) === defaultPageSize);
 
 export const getCustomerPhone = (order) =>
   order?.billingInfo?.phone || order?.shippingInfo?.phone || order?.customer?.phone || '';
@@ -71,8 +72,9 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
   // ---------------------------------------------------------------- URL state
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
   const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+  const defaultPageSize = useIsWide() ? DEFAULT_PAGE_SIZE : DEFAULT_PAGE_SIZE_MOBILE;
   const limitParam = parseInt(searchParams.get('limit') || '', 10);
-  const pageSize = PAGE_SIZE_OPTIONS.includes(limitParam) ? limitParam : DEFAULT_PAGE_SIZE;
+  const pageSize = PAGE_SIZE_OPTIONS.includes(limitParam) ? limitParam : defaultPageSize;
   const statusFilter = searchParams.get('status') || STATUS_ALL;
   const paymentFilter = searchParams.get('payment') || STATUS_ALL;
   const urlSearch = searchParams.get('q') || '';
@@ -84,13 +86,13 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         Object.entries(updates).forEach(([key, val]) => {
-          if (isDefaultParam(key, val)) next.delete(key);
+          if (isDefaultParam(key, val, defaultPageSize)) next.delete(key);
           else next.set(key, String(val));
         });
         return next;
       });
     },
-    [setSearchParams]
+    [setSearchParams, defaultPageSize]
   );
 
   // ---------------------------------------------------------------- selection

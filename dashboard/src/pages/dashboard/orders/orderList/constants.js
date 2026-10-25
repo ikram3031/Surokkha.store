@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils';
 export const STATUS_ALL = 'All';
 
 // Rows per page offered by View2 (View1's OrdersTable uses its own fixed size)
-export const PAGE_SIZE_OPTIONS = [10, 20, 50];
-export const DEFAULT_PAGE_SIZE = 10;
+export const PAGE_SIZE_OPTIONS = [10, 15, 20, 50];
+// Default rows per page: desktop vs mobile (below Tailwind `sm`)
+export const DEFAULT_PAGE_SIZE = 20;
+export const DEFAULT_PAGE_SIZE_MOBILE = 10;
 
 // Orders older than this many pages are not pulled by Export (100 rows per request)
 export const EXPORT_MAX_PAGES = 50;
