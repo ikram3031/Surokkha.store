@@ -179,7 +179,22 @@
     "revenue": "Revenue",
     "orders": "Orders",
     "growth": "vs last period",
-    "no_recent_orders": "No recent orders found."
+    "no_recent_orders": "No recent orders found.",
+    "this_month_range": "This Month",
+    "last_7_days": "Last 7 Days",
+    "last_30_days": "Last 30 Days",
+    "custom_range": "Custom Range",
+    "recent_mails": "Recent Mails",
+    "recent_mails_desc": "Latest emails in your inbox.",
+    "no_recent_mails": "No emails found.",
+    "order_insight": "Order Insight",
+    "summary": "Summary",
+    "order_created": "Order created:",
+    "total_orders": "Total Orders",
+    "total_amount": "Total Amount",
+    "delivery_rate": "Delivery Rate",
+    "return_rate": "Return Rate",
+    "cancel_rate": "Cancel Rate"
   },
   "orders": {
     "title": "Orders Management",

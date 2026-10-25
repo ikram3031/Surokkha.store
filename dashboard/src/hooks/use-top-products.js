@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { toRangeParams } from '@/lib/dashboard-range';
 
 // Best-selling products for the overview (units sold and sales amount)
-export function useTopProducts(range = '30days', limit = 8) {
+export function useTopProducts(filter = '30days', limit = 8) {
+  const params = { ...toRangeParams(filter), limit };
   return useQuery({
-    queryKey: ['dashboard', 'topProducts', range, limit],
+    queryKey: ['dashboard', 'topProducts', params],
     queryFn: async () => {
-      const res = await apiClient.get('/api/v1/dashboard/products/top', { params: { range, limit } });
+      const res = await apiClient.get('/api/v1/dashboard/products/top', { params });
       return res.data?.data?.products || [];
     },
     staleTime: 60 * 1000,

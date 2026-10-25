@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore, getVariantLabel, getTrialPackQty, trialPackMinMessage, TRIAL_PACK_MIN_QTY } from '../store/useStore';
+import { useStore } from '../store/useStore';
 import { DISTRICTS } from '../data/districts';
 import LocationSelect, { useThanas } from '../components/LocationSelect';
 import { trackInitiateCheckout, trackAddPaymentInfo, saveCheckoutLead } from '../utils/analytics';
@@ -284,12 +284,6 @@ export default function CheckoutView() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmittingRef.current || isProcessing) return;
-
-    const trialPackQty = getTrialPackQty(cart);
-    if (trialPackQty > 0 && trialPackQty < TRIAL_PACK_MIN_QTY) {
-      showToast(trialPackMinMessage(isBn, trialPackQty));
-      return;
-    }
 
     let billingPh = shippingInfo.phone || '';
     let shipPh = shippingAddress.phone || '';
@@ -898,7 +892,7 @@ export default function CheckoutView() {
                     regularPrice = Number(variant.regularPrice > 0 ? variant.regularPrice : (variant.price || 0));
                   }
 
-                  const itemName = variant ? `${baseItem.name} (${getVariantLabel(baseItem, variantName)})` : baseItem.name;
+                  const itemName = variant ? `${baseItem.name} (${variantName})` : baseItem.name;
                   const qty = cart[cartKey];
                   
                   return (

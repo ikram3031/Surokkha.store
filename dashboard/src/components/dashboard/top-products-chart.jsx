@@ -21,10 +21,10 @@ const chartConfig = {
 };
 
 // Horizontal bar chart of the best-selling products, switchable between units sold and sales amount
-export const TopProductsChart = ({ range = '30days' }) => {
+export const TopProductsChart = ({ filter }) => {
   const { t } = useTranslation();
   const [metric, setMetric] = useState('unitsSold');
-  const { data: products = [], isLoading } = useTopProducts(range, 8);
+  const { data: products = [], isLoading } = useTopProducts(filter, 8);
 
   const chartData = [...products]
     .sort((a, b) => Number(b[metric] || 0) - Number(a[metric] || 0))
@@ -36,7 +36,7 @@ export const TopProductsChart = ({ range = '30days' }) => {
       <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
         <div className="space-y-1">
           <CardTitle>{t('overview.top_products', 'Trending Products')}</CardTitle>
-          <CardDescription>{t('overview.top_products_desc', 'Best sellers in the last 30 days')}</CardDescription>
+          <CardDescription>{t('overview.top_products_desc', 'Best sellers in the selected period')}</CardDescription>
         </div>
         <div className="inline-flex shrink-0 rounded-md border border-border p-0.5 text-xs">
           {Object.entries(METRICS).map(([key, m]) => (

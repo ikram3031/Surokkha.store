@@ -101,31 +101,6 @@ export const isSingleQtyItem = (prod) => {
   return isItem && !hasVariants;
 };
 
-// Trial Pack needs at least 5 pieces per order, counted across all of its variants combined (no max)
-export const TRIAL_PACK_SLUG = 'mo-trial-pack';
-export const TRIAL_PACK_MIN_QTY = 5;
-
-export const isTrialPack = (prod) => Boolean(prod && prod.slug === TRIAL_PACK_SLUG);
-
-// Trial Pack is sold only in the 3 MO variants (Dotted, Ribbed, Ultra Thin); other variants are hidden
-export const getTrialPackVariants = (prod) => (prod?.variants || [])
-  .filter((v) => /dotted|ribbed|ultra\s*thin/i.test(v.size || ''));
-
-// Trial Pack is picked piece by piece, so drop the "3 pieces" prefix saved in its variant names
-export const getVariantLabel = (prod, size) => (isTrialPack(prod)
-  ? String(size || '').replace(/^\s*\d+\s*pieces?\s+/i, '')
-  : size);
-
-// Cart keys are `${slug}` or `${slug}:::${variantSize}`
-export const getTrialPackQty = (cart) => Object.entries(cart || {}).reduce(
-  (sum, [cartKey, qty]) => (cartKey.split(':::')[0] === TRIAL_PACK_SLUG && qty > 0 ? sum + qty : sum),
-  0
-);
-
-export const trialPackMinMessage = (isBn, currentQty = 0) => (isBn
-  ? `ট্রায়াল প্যাক মিনিমাম ${TRIAL_PACK_MIN_QTY} পিস অর্ডার করতে হবে (যেকোনো ভেরিয়েন্ট মিলিয়ে)। এখন আছে ${currentQty} পিস।`
-  : `Trial Pack needs a minimum of ${TRIAL_PACK_MIN_QTY} pieces (any variants combined). You have ${currentQty}.`);
-
 // Single-product slugs that 404ed on both products and items endpoints
 const missingSingleSlugs = new Set();
 

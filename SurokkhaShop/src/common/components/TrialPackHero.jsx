@@ -1,28 +1,31 @@
 import React from 'react';
-import { useStore, TRIAL_PACK_SLUG, TRIAL_PACK_MIN_QTY } from '../store/useStore';
+import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 
 // Home hero banner promoting the MO Trial Pack (mirrors the Trial Pack social creative).
 // Mobile stacks like the poster (copy → packets → CTA); desktop puts the packets on the right.
+// Fixed 6-piece pack: 2x Ultra Thin + 2x Ribbed + 2x Dotted
+const TRIAL_PACK_SLUG = 'mo-trial-pack-6-pcs';
+
 export default function TrialPackHero() {
   const openProduct = useStore((state) => state.openProduct);
-  const { isBn, formatNumber } = useTranslation();
+  const { isBn } = useTranslation();
 
   const variantChips = [
-    { label: isBn ? 'আল্ট্রা থিন' : 'Ultra Thin', dot: 'bg-sky-500' },
-    { label: isBn ? 'ডটেড' : 'Dotted', dot: 'bg-pink-500' },
-    { label: isBn ? 'রিবড' : 'Ribbed', dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
+    { label: isBn ? '২ পিস আল্ট্রা থিন' : '2x Ultra Thin', dot: 'bg-sky-500' },
+    { label: isBn ? '২ পিস ডটেড' : '2x Dotted', dot: 'bg-pink-500' },
+    { label: isBn ? '২ পিস রিবড' : '2x Ribbed', dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
   ];
 
   return (
-    <section className="w-full relative overflow-hidden bg-gradient-to-br from-[#fdf8f6] via-[#faf0ea] to-[#f6dfe3] border-b border-rose-100 select-none">
+    <section className="w-full flex flex-col justify-center relative overflow-hidden bg-gradient-to-br from-[#fdf8f6] via-[#faf0ea] to-[#f6dfe3] border-b border-rose-100 select-none">
       {/* Soft ambient glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-24 right-[-6rem] w-[28rem] h-[28rem] rounded-full bg-rose-200/40 blur-3xl" />
         <div className="absolute -bottom-32 left-[-8rem] w-[30rem] h-[30rem] rounded-full bg-pink-200/40 blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-14 grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_auto] gap-y-5 md:gap-y-8 md:gap-x-10 lg:gap-x-12">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 md:py-10 lg:py-14 grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_auto] gap-y-5 md:gap-y-8 md:gap-x-10 lg:gap-x-12">
 
         {/* Copy */}
         <div className="text-center md:text-left md:col-start-1 md:row-start-1 md:self-end">
@@ -92,8 +95,8 @@ export default function TrialPackHero() {
 
             <div className="text-sm font-semibold text-[#5a2a35] leading-snug">
               {isBn
-                ? `মিনিমাম ${formatNumber(TRIAL_PACK_MIN_QTY)} পিস — যেকোনো ভেরিয়েন্ট মিলিয়ে`
-                : `Min. ${TRIAL_PACK_MIN_QTY} pieces — mix any variants`}
+                ? 'মোট ৬ পিস — ৩ ধরনের, প্রতিটা ২ পিস করে'
+                : '6 pieces in total — 3 types, 2 of each'}
             </div>
           </div>
 

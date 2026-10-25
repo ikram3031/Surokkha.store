@@ -34,6 +34,8 @@ const CATEGORY_EXPR = {
   $switch: {
     branches: [
       { case: { $in: ["$status", ["cancelled", "canceled", "fake"]] }, then: "others" },
+      // A delivered order can't still be on hold / in transit; ignore a stale stored bucket
+      { case: { $and: [{ $eq: ["$status", "completed"] }, { $in: ["$courier.category", ["on_hold", "active"]] }] }, then: "delivered" },
       { case: { $in: ["$courier.category", PARCEL_CATEGORIES] }, then: "$courier.category" },
       { case: { $regexMatch: { input: slugField, regex: /paid_return/ } }, then: "paid_return" },
       { case: { $regexMatch: { input: slugField, regex: /partial/ } }, then: "partial_return" },

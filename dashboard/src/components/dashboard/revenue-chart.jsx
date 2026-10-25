@@ -11,14 +11,14 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
-import { useOrderCounts } from '@/hooks/use-order-counts';
+import { useOrderCountsByRange } from '@/hooks/use-order-counts';
 
 // Renders the 30-day order trends line chart with responsive grid
-export const RevenueChart = () => {
+export const RevenueChart = ({ filter }) => {
   const { t, i18n } = useTranslation();
   const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const { data: counts = [] } = useOrderCounts(30);
+  const { data: counts = [] } = useOrderCountsByRange(filter);
 
   useEffect(() => {
     setMounted(true);
@@ -37,8 +37,8 @@ export const RevenueChart = () => {
     return (
       <Card className="col-span-1 lg:col-span-4 h-[400px]">
         <CardHeader>
-          <CardTitle>{t('overview.sales_analytics', 'Orders (last 30 days)')}</CardTitle>
-          <CardDescription>{t('overview.sales_overview', 'Daily order counts for the last 30 days.')}</CardDescription>
+          <CardTitle>{t('overview.sales_analytics', 'Orders')}</CardTitle>
+          <CardDescription>{t('overview.sales_overview', 'Daily order counts for the selected period.')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] w-full flex items-center justify-center text-muted-foreground">
@@ -52,8 +52,8 @@ export const RevenueChart = () => {
   return (
     <Card className="col-span-1 lg:col-span-4">
       <CardHeader>
-        <CardTitle>{t('overview.sales_analytics', 'Orders (last 30 days)')}</CardTitle>
-        <CardDescription>{t('overview.sales_overview', 'Daily order counts for the last 30 days.')}</CardDescription>
+        <CardTitle>{t('overview.sales_analytics', 'Orders')}</CardTitle>
+        <CardDescription>{t('overview.sales_overview', 'Daily order counts for the selected period.')}</CardDescription>
       </CardHeader>
       <CardContent className="px-2 sm:p-6 sm:pt-0">
         <div className="h-[300px] w-full">

@@ -179,7 +179,22 @@
     "revenue": "আয়",
     "orders": "অর্ডার",
     "growth": "পূর্ববর্তী সময়ের তুলনায়",
-    "no_recent_orders": "কোন সাম্প্রতিক অর্ডার পাওয়া যায়নি।"
+    "no_recent_orders": "কোন সাম্প্রতিক অর্ডার পাওয়া যায়নি।",
+    "this_month_range": "এই মাস",
+    "last_7_days": "গত ৭ দিন",
+    "last_30_days": "গত ৩০ দিন",
+    "custom_range": "কাস্টম রেঞ্জ",
+    "recent_mails": "সাম্প্রতিক মেইল",
+    "recent_mails_desc": "ইনবক্সের সর্বশেষ মেইল।",
+    "no_recent_mails": "কোন মেইল পাওয়া যায়নি।",
+    "order_insight": "অর্ডার ইনসাইট",
+    "summary": "সারাংশ",
+    "order_created": "অর্ডারের সময়:",
+    "total_orders": "মোট অর্ডার",
+    "total_amount": "মোট পরিমাণ",
+    "delivery_rate": "ডেলিভারি রেট",
+    "return_rate": "রিটার্ন রেট",
+    "cancel_rate": "ক্যানসেল রেট"
   },
   "orders": {
     "title": "অর্ডার ব্যবস্থাপনা",

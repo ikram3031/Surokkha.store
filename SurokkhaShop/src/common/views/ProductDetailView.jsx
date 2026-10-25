@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore, isSingleQtyItem, isTrialPack, getTrialPackVariants, getVariantLabel, getTrialPackQty, trialPackMinMessage, TRIAL_PACK_MIN_QTY } from '../store/useStore';
+import { useStore, isSingleQtyItem } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
@@ -22,7 +22,6 @@ export default function ProductDetailView() {
 
   const products = useStore((state) => state.products);
   const productKeys = useStore((state) => state.productKeys);
-  const cart = useStore((state) => state.cart);
 
   const {
     t,
@@ -54,8 +53,6 @@ export default function ProductDetailView() {
   const product = detailedProduct ? { ...baseProduct, ...detailedProduct } : baseProduct;
 
   const hasVariants = Boolean(product?.type === 'variant' || product?.type === 'variable' || (Array.isArray(product?.variants) && product.variants.length > 0));
-  const isTrialPackProduct = isTrialPack(product);
-  const variantOptions = isTrialPackProduct ? getTrialPackVariants(product) : (product?.variants || []);
 
   const isOutOfStock = Boolean(
     product?.isOutOfStock ||
@@ -109,7 +106,7 @@ export default function ProductDetailView() {
       displayHasDiscount = displayRegularPrice > displayOfferPrice;
       isRange = false;
     } else {
-      const prices = variantOptions.map(v => Number(v.offerPrice > 0 ? v.offerPrice : (v.price || v.regularPrice || 0))).filter(p => p > 0);
+      const prices = product?.variants?.map(v => Number(v.offerPrice > 0 ? v.offerPrice : (v.price || v.regularPrice || 0))).filter(p => p > 0) || [];
       if (prices.length > 0) {
         minPrice = Math.min(...prices);
         maxPrice = Math.max(...prices);
@@ -122,10 +119,6 @@ export default function ProductDetailView() {
     displayRegularPrice = currentRegularPrice * quantity;
     displayHasDiscount = displayRegularPrice > displayOfferPrice;
   }
-
-  // Trial Pack minimum counts packs already in the cart plus the ones selected here
-  const trialPackTotalQty = isTrialPackProduct ? getTrialPackQty(cart) + totalSelectedQuantity : 0;
-  const isBelowTrialPackMin = isTrialPackProduct && trialPackTotalQty < TRIAL_PACK_MIN_QTY;
 
   const localizedName = getLocalizedName(product);
   const localizedTagline = getLocalizedTagline(product);
@@ -221,7 +214,7 @@ export default function ProductDetailView() {
   const primaryCandidate = product?.featuredImage || product?.featured_image || product?.imageUrl || product?.image_url || product?.product_image || product?.image || (Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null) || (Array.isArray(product?.gallery) && product.gallery.length > 0 ? product.gallery[0] : null);
 
   const baseRawImages = (Array.isArray(product?.images) && product.images.length > 0) ? product.images : ((Array.isArray(product?.gallery) && product.gallery.length > 0) ? product.gallery : (primaryCandidate ? [primaryCandidate] : []));
-  const variantImages = hasVariants ? variantOptions.map(v => v.imageUrl).filter(Boolean) : [];
+  const variantImages = hasVariants ? (product?.variants?.map(v => v.imageUrl).filter(Boolean) || []) : [];
   // Featured image (imageUrl) is shown first; gallery and variant images follow as thumbnails
   const rawImages = Array.from(new Set([primaryCandidate, ...baseRawImages, ...variantImages].filter(Boolean)));
   
@@ -247,10 +240,6 @@ export default function ProductDetailView() {
         alert(isBn ? 'অনুগ্রহ করে অন্তত একটি ভেরিয়েশনের পরিমাণ নির্বাচন করুন' : 'Please select quantity for at least one variation');
         return;
       }
-      if (isBelowTrialPackMin) {
-        alert(trialPackMinMessage(isBn, trialPackTotalQty));
-        return;
-      }
       const variantsData = selectedVariants.map(([size, q]) => {
         const v = product.variants.find(va => va.size === size);
         return { variant: v, quantity: q };
@@ -269,10 +258,6 @@ export default function ProductDetailView() {
       const selectedVariants = Object.entries(variantQuantities).filter(([_, q]) => q > 0);
       if (selectedVariants.length === 0) {
         alert(isBn ? 'অনুগ্রহ করে অন্তত একটি ভেরিয়েশনের পরিমাণ নির্বাচন করুন' : 'Please select quantity for at least one variation');
-        return;
-      }
-      if (isBelowTrialPackMin) {
-        alert(trialPackMinMessage(isBn, trialPackTotalQty));
         return;
       }
       const variantsData = selectedVariants.map(([size, q]) => {
@@ -546,78 +531,7 @@ export default function ProductDetailView() {
           </div>
 
           {/* Variations Selection & Quantity */}
-          {hasVariants && isTrialPackProduct ? (
-            /* Trial Pack: simple piece-by-piece picker for the 3 MO variants */
-            <div className="pt-3 pb-1 border-t border-slate-100 space-y-3">
-              <div className="flex items-end justify-between gap-3">
-                <h3 className="text-sm sm:text-base font-bold text-slate-800">
-                  {isBn ? 'কোনটা কয় পিস নেবেন?' : 'How many of each?'}
-                </h3>
-                <span className={`text-sm font-extrabold ${isBelowTrialPackMin ? 'text-amber-700' : 'text-emerald-600'}`}>
-                  {formatNumber(trialPackTotalQty)}/{formatNumber(TRIAL_PACK_MIN_QTY)} {isBn ? 'পিস' : 'pcs'}
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${isBelowTrialPackMin ? 'bg-amber-400' : 'bg-emerald-500'}`}
-                  style={{ width: `${Math.min(100, (trialPackTotalQty / TRIAL_PACK_MIN_QTY) * 100)}%` }}
-                />
-              </div>
-
-              <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl bg-white">
-                {variantOptions.map((v) => {
-                  const qty = variantQuantities[v.size] || 0;
-                  const price = Number(v.offerPrice > 0 ? v.offerPrice : (v.price || v.regularPrice || 0));
-                  const setQty = (next) => {
-                    if (isOutOfStock) return;
-                    setVariantQuantities(prev => ({ ...prev, [v.size]: Math.max(0, next) }));
-                    const resolved = v.imageUrl ? resolveImgUrl(v.imageUrl) : null;
-                    if (resolved) setSelectedImage(resolved);
-                  };
-                  return (
-                    <div key={v.size} className={`flex items-center gap-3 p-3 ${qty > 0 ? 'bg-brand-50/60' : ''}`}>
-                      <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-100 bg-white flex-shrink-0">
-                        {v.imageUrl && (
-                          <img src={resolveImgUrl(v.imageUrl)} alt={getVariantLabel(product, v.size)} className="w-full h-full object-cover" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-slate-900 text-sm sm:text-base">{getVariantLabel(product, v.size)}</div>
-                        {price > 0 && <div className="text-xs text-slate-500">{formatPrice(price)}</div>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          disabled={isOutOfStock || qty === 0}
-                          onClick={() => setQty(qty - 1)}
-                          aria-label="Decrease quantity"
-                          className="w-9 h-9 rounded-full border border-slate-300 text-lg font-bold text-slate-700 flex items-center justify-center hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                        >
-                          −
-                        </button>
-                        <span className="w-7 text-center font-extrabold text-slate-900">{formatNumber(qty)}</span>
-                        <button
-                          type="button"
-                          disabled={isOutOfStock}
-                          onClick={() => setQty(qty + 1)}
-                          aria-label="Increase quantity"
-                          className="w-9 h-9 rounded-full bg-brand-600 text-white text-lg font-bold flex items-center justify-center hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <p className="text-xs text-slate-500">
-                {isBn
-                  ? `মিনিমাম ${formatNumber(TRIAL_PACK_MIN_QTY)} পিস — যেকোনো ভেরিয়েন্ট মিলিয়ে নিতে পারবেন`
-                  : `Minimum ${TRIAL_PACK_MIN_QTY} pieces — mix any variants`}
-              </p>
-            </div>
-          ) : hasVariants ? (
+          {hasVariants ? (
             <div className="pt-2 pb-1 border-t border-slate-100 space-y-3">
               <h3 className="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-800 mb-2">
                 {isBn ? 'ভেরিয়েশন ও পরিমাণ নির্বাচন করুন' : 'Select Variations & Quantity'}
@@ -643,7 +557,7 @@ export default function ProductDetailView() {
                     >
                       <div className="w-full aspect-square bg-white rounded-lg overflow-hidden border border-slate-100 flex items-center justify-center p-1 mb-1">
                         {v.imageUrl ? (
-                          <img src={resolveImgUrl(v.imageUrl)} alt={getVariantLabel(product, v.size)} className="w-full h-full object-contain" />
+                          <img src={resolveImgUrl(v.imageUrl)} alt={v.size} className="w-full h-full object-contain" />
                         ) : (
                           <div className="text-slate-300 text-3xl">📦</div>
                         )}
@@ -651,7 +565,7 @@ export default function ProductDetailView() {
                       
                       <div className="w-full flex-1 flex flex-col justify-center min-h-[2.5rem]">
                         <span className="font-bold text-slate-800 text-xs sm:text-sm leading-tight line-clamp-2">
-                          {getVariantLabel(product, v.size)}
+                          {v.size}
                         </span>
                       </div>
 

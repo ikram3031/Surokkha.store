@@ -5,7 +5,7 @@ import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import HeroSlider from '../components/HeroSlider';
-import TrialPackHero from '../components/TrialPackHero';
+import HeroBannerSlider from '../components/HeroBannerSlider';
 import PromoComboBanner from '../components/PromoComboBanner';
 import ProductCarousel from '../components/ProductCarousel';
 import TestimonialCarousel from '../components/TestimonialCarousel';
@@ -63,10 +63,10 @@ export default function HomeView() {
     activeCombos.find(c => (c.slug && (c.slug.includes('3-in-1') || c.slug.includes('30'))) || (c.name && c.name.includes('30'))) ||
     activeCombos[0] || null;
 
-  // RIGHT combo card = the Ultra Thin 30-pcs combo. Pinned to the Micro-Thin Combo Special;
+  // RIGHT combo card = the Protection Combo (20 pcs + 50gm Gel);
   // falls back to any other active combo different from the left card.
-  const RIGHT_COMBO_ID = '6ad3ceaa778c3e05ca22b2bd';
-  const RIGHT_COMBO_SLUG = 'combo-special-30-pieces-of-micro-thin-latex-contraceptive';
+  const RIGHT_COMBO_ID = '6ad3db40d7265af12af6aa8d';
+  const RIGHT_COMBO_SLUG = 'protection-combo-20-pcs-50gm-gel';
   const pinnedRightProd = products[RIGHT_COMBO_ID] || products[RIGHT_COMBO_SLUG];
   const comboRibbedProd = (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) ||
     activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('thin') || c.slug.includes('30'))) || (c.name && c.name.includes('30')))) ||
@@ -81,8 +81,8 @@ export default function HomeView() {
           To restore it, change `false` to `true` below. */}
       {false && <HeroSlider />}
 
-      {/* TRIAL PACK PROMO HERO */}
-      <TrialPackHero />
+      {/* HERO SLIDER: coded banners (Trial Pack first) */}
+      <HeroBannerSlider />
 
       {/* 3 DEDICATED FEATURE CARDS (Directly Under Hero Slider, White Theme) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -308,14 +308,13 @@ export default function HomeView() {
                 );
               })()}
 
-              {/* COMBO 2: 20-Pcs Micro-Ribbed Combo (৳650) - Limited Stock Spotlight ("রিফ্ট কম্বো") */}
+              {/* COMBO 2: Protection Combo (20 Pcs + 50gm Gel) - Limited Stock Spotlight */}
               {(() => {
                 if (!comboRibbedProd) return null;
                 const cRibbedName = isBn ? (comboRibbedProd.name_bn || comboRibbedProd.name) : (comboRibbedProd.name || comboRibbedProd.name_bn);
                 const cRibbedPrice = comboRibbedProd.offerPrice || comboRibbedProd.price || 0;
                 const cRibbedRegular = comboRibbedProd.regularPrice || cRibbedPrice;
                 const cRibbedSavings = cRibbedRegular > cRibbedPrice ? cRibbedRegular - cRibbedPrice : 0;
-                const cRibbedPerUnit = cRibbedPrice > 0 ? Math.round(cRibbedPrice / 30) : 0;
                 const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 0));
                 const rLow = rStock > 0 && rStock <= 10;
 
@@ -324,7 +323,7 @@ export default function HomeView() {
                     <div className="absolute -top-3.5 right-6 z-20 bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 text-white text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xl flex items-center gap-1 border border-purple-400/40">
                       <span>🔥</span>
                       <span>
-                        {rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'আল্ট্রা থিন ৩০ পিস স্পেশাল কম্বো' : 'Ultra Thin 30 Pcs Combo')}
+                        {rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'প্রোটেকশন কম্বো • ২০ পিস + জেল' : 'Protection Combo • 20 Pcs + Gel')}
                       </span>
                     </div>
 
@@ -345,7 +344,7 @@ export default function HomeView() {
                             {cRibbedName}
                           </h3>
                           <p className="text-[11px] text-slate-300 mt-1 line-clamp-2">
-                            {isBn ? '৩টি সম্পূর্ণ রিটেইল বক্স (৩০টি আল্ট্রা থিন ল্যাটেক্স কন্ট্রাসেপ্টিভ)। অতি-পাতলা অনুভূতি ও নির্ভরযোগ্য সুরক্ষা।' : '3 Sealed Retail Boxes (30 Pieces Ultra Thin Latex). Ultra-thin sensation with dependable protection.'}
+                            {isBn ? '১টি মাইক্রো-থিন (১০ পিস) + ১টি মাল্টি-টেক্সচার্ড (১০ পিস) + ১টি KY জেল (৫০ গ্রাম)।' : '1x MO Micro-Thin (10 Pcs) + 1x MO Multi-Textured (10 Pcs) + 1x KY Gel (50g).'}
                           </p>
                         </div>
                       </div>
@@ -372,7 +371,7 @@ export default function HomeView() {
                             {isBn ? `সাশ্রয় ৳${cRibbedSavings}` : `Save ৳${cRibbedSavings}`}
                           </span>
                           <div className="text-[10px] text-amber-300 font-bold mt-1">
-                            {isBn ? `${formatPrice(cRibbedPerUnit)} / পিস` : `${formatPrice(cRibbedPerUnit)} / unit`}
+                            {isBn ? '২০ পিস + ৫০ গ্রাম জেল' : '20 Pcs + 50g Gel'}
                           </div>
                         </div>
                       </div>

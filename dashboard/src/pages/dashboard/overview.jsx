@@ -1,30 +1,28 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DashboardRangePicker } from '@/components/dashboard/dashboard-range-picker';
+import { DEFAULT_RANGE_FILTER } from '@/lib/dashboard-range';
+import { OrdersInsight } from '@/components/dashboard/orders-insight';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { RevenueChart } from '@/components/dashboard/revenue-chart';
-import { OrderStatusPie } from '@/components/dashboard/order-status-pie';
+import { RecentOrdersCard } from '@/components/dashboard/recent-orders-card';
 import { OrderFulfillmentChart } from '@/components/dashboard/order-fulfillment-chart';
-import { RecentTransactionsTable } from '@/components/dashboard/recent-transactions-table';
+import { RecentMailsCard } from '@/components/dashboard/recent-mails-card';
 import { TopProductsChart } from '@/components/dashboard/top-products-chart';
 import { DollarSign, Users, CreditCard, Activity } from 'lucide-react';
 import { useDashboardKpi } from '@/hooks/use-dashboard-kpi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/lib/auth-context';
+import { hasMenuAccess } from '@/lib/rbac';
+import { clientConfig } from '@/clientConfig';
 
 // Renders the main store metrics overview page with sales charts and KPI indicators
 const DashboardPage = () => {
-  const { t, i18n } = useTranslation();
-  const { data: stats, isLoading } = useDashboardKpi('30days');
-
-  // Calculates formatted 30-day date range label based on current locale
-  const dateRangeLabel = useMemo(() => {
-    const now = new Date();
-    const from = new Date(now);
-    from.setDate(from.getDate() - 29);
-
-    const locale = i18n.language?.startsWith('bn') ? 'bn-BD' : 'en-US';
-    const fmt = (d) => d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-    return `${fmt(from)} – ${fmt(now)}`;
-  }, [i18n.language]);
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const showMails = clientConfig.features?.webmail !== false && (hasMenuAccess(user?.role || 'Marketing Expert', 'webmail') || hasMenuAccess(user?.role || 'Marketing Expert', 'tools.messages'));
+  const [filter, setFilter] = useState(DEFAULT_RANGE_FILTER);
+  const { data: stats, isLoading } = useDashboardKpi(filter);
 
   // Formats trend indicator direction for KPI tiles
   const getTrendDirection = (val) => {
@@ -39,11 +37,11 @@ const DashboardPage = () => {
     <div className="flex-1 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t('nav.overview', 'Dashboard')}</h2>
-        <span className="text-xs sm:text-sm text-muted-foreground font-medium text-right">
-          {t('overview.this_month', 'Last 30 Days')} ({dateRangeLabel})
-        </span>
+        <DashboardRangePicker value={filter} onChange={setFilter} />
       </div>
       
+      <OrdersInsight filter={filter} />
+
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title={t('overview.total_revenue', 'Total Sales')}
@@ -80,8 +78,8 @@ const DashboardPage = () => {
       </div>
       
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
-        <RevenueChart />
-        <OrderStatusPie range="30days" />
+        <RevenueChart filter={filter} />
+        <RecentOrdersCard />
       </div>
 
       <div className="grid gap-4 grid-cols-1">
@@ -89,8 +87,8 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <RecentTransactionsTable />
-        <TopProductsChart range="30days" />
+        {showMails ? <RecentMailsCard /> : null}
+        <TopProductsChart filter={filter} />
       </div>
     </div>
   );

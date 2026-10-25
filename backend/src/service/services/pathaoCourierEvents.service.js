@@ -45,7 +45,7 @@ export const categoryFor = (kind, slug, current, orderStatus) => {
   if (kind === "delivered") return "delivered";
   if (kind === "partial") return "partial_return";
   if (kind === "returned") return slug === "paid_return" || current === "paid_return" ? "paid_return" : "regular_return";
-  if (kind === "invoiced") return current && current !== "active" ? current : orderStatus === "return" ? "regular_return" : "delivered";
+  if (kind === "invoiced") return current && !["active", "on_hold"].includes(current) ? current : orderStatus === "return" ? "regular_return" : "delivered";
   if (slug === "on_hold") return "on_hold";
   if (slug === "exchange") return "exchange";
   if (/pickup_cancel/.test(slug)) return "others";
