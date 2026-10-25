@@ -17,6 +17,7 @@ import { config } from '../../common/config/index.js';
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
 import { sendServerPurchaseEvent, extractClientIp } from '../../common/services/facebookCapi.service.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
+import { markCheckoutLeadConverted } from './CheckoutLeadController.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
@@ -220,6 +221,12 @@ export const createOrder = async (req, res, next) => {
       order: createdOrder,
       payload,
       updatedBy: "storefront_checkout",
+    });
+
+    markCheckoutLeadConverted({
+      sessionId: payload.checkoutSessionId,
+      phone: rawBillingPhone,
+      orderNumber: createdOrder.orderNumber,
     });
 
     // Non-blocking email notifications for Customer and Admin

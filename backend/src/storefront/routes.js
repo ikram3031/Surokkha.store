@@ -17,6 +17,7 @@ import storeUtilsRouter from "./routes/StoreUtilsRoute.js";
 import sizeChartRouter from "./routes/SizeChartRoute.js";
 import pixelEventsRouter from "./routes/PixelEventsRoute.js";
 import locationsRouter from "./routes/LocationsRoute.js";
+import checkoutLeadRouter from "./routes/CheckoutLeadRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
 const storefrontRouter = Router();
@@ -39,6 +40,7 @@ storefrontRouter.use("/store-utils", storeUtilsRouter);
 storefrontRouter.use("/search", searchRouter);
 storefrontRouter.use("/events", pixelEventsRouter);
 storefrontRouter.use("/locations", locationsRouter);
+storefrontRouter.use("/checkout-leads", checkoutLeadRouter);
 storefrontRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket

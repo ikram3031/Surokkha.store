@@ -59,6 +59,7 @@ import NewOrder from './pages/dashboard/orders/newOrder';
 import InStoreOrders from './pages/dashboard/orders/inStoreOrders';
 import CustomOrders from './pages/dashboard/orders/customOrders';
 import NewCustomOrder from './pages/dashboard/orders/newCustomOrder';
+import AbandonedCheckouts from './pages/dashboard/orders/abandonedCheckouts';
 import SpamList from './pages/dashboard/orders/SpamList';
 import PathaoPage from './pages/dashboard/orders/pathao/PathaoPage';
 
@@ -638,6 +639,14 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="orders.new">
                 <NewOrder />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'abandoned',
+            element: (
+              <RoleGuard menuKey="orders.list">
+                <AbandonedCheckouts />
               </RoleGuard>
             ),
           },

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useStore, getVariantLabel, getTrialPackQty, trialPackMinMessage, TRIAL_PACK_MIN_QTY } from '../store/useStore';
 import { DISTRICTS } from '../data/districts';
 import LocationSelect, { useThanas } from '../components/LocationSelect';
-import { trackInitiateCheckout, trackAddPaymentInfo } from '../utils/analytics';
+import { trackInitiateCheckout, trackAddPaymentInfo, saveCheckoutLead } from '../utils/analytics';
 import { useTranslation } from '../i18n/useTranslation';
 import { SITE_CONFIG } from '../config/siteConfig';
 
@@ -81,6 +81,38 @@ export default function CheckoutView() {
       trackInitiateCheckout(cart, products, totals);
       trackAddPaymentInfo('Cash on Delivery', totals, cartKeys);
     }
+  }, []);
+
+  // Keep what the customer has typed so far (abandoned checkout capture); debounced, and flushed when they leave
+  const leadRef = useRef(null);
+  const buildLead = () => ({
+    fullName: shippingInfo.fullName,
+    phone: shippingInfo.phone,
+    email: shippingInfo.email,
+    address: shippingInfo.address,
+    district: shippingInfo.district,
+    thana: shippingInfo.thana,
+    cartTotal: totals.grandTotal || totals.subtotal || 0,
+    items: cartKeys.map((cartKey) => {
+      const prod = products[cartKey.split(':::')[0]];
+      return { slug: cartKey, name: prod?.name || cartKey, quantity: cart[cartKey], unitPrice: Number(prod?.price) || 0 };
+    })
+  });
+  leadRef.current = buildLead;
+  const leadSig = JSON.stringify([shippingInfo.fullName, shippingInfo.phone, shippingInfo.email, shippingInfo.address, shippingInfo.district, shippingInfo.thana, totals.grandTotal, cartKeys.join(',')]);
+  useEffect(() => {
+    if (!shippingInfo.phone && !shippingInfo.fullName && !shippingInfo.email) return;
+    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 1200);
+    return () => clearTimeout(timer);
+  }, [leadSig]);
+  useEffect(() => {
+    const flush = () => {
+      if (isSubmittingRef.current) return;
+      const lead = leadRef.current();
+      if (lead.phone || lead.fullName || lead.email) saveCheckoutLead(lead, true);
+    };
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
   }, []);
 
   // Make absolutely sure all cart items are loaded from the backend

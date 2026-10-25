@@ -5,6 +5,8 @@ import {
   trackAddToCart,
   trackAddComboToCart,
   trackPurchase,
+  getCheckoutSessionId,
+  resetCheckoutSession,
   getFbp,
   getFbc,
   getExternalId,
@@ -1123,6 +1125,7 @@ export const useStore = create((set, get) => ({
     const nowIso = new Date().toISOString();
 
     const orderPayload = customPayload || {
+      checkoutSessionId: getCheckoutSessionId(),
       billingInfo: {
         fullName: (shippingInfo.fullName || '').trim(),
         phone: (shippingInfo.phone || '').trim(),
@@ -1264,6 +1267,7 @@ export const useStore = create((set, get) => ({
     };
 
     trackPurchase(newOrder, get().products);
+    resetCheckoutSession();
 
     set({
       lastOrder: newOrder,

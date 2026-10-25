@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
   LayoutDashboard,
+  ShoppingCart,
   ShoppingBag,
   Users,
   CreditCard,
@@ -374,6 +375,11 @@ export const AppSidebar = ({ ...props }) => {
               {isAllowed("orders.instore") && (
                 <NavSub to="/dashboard/orders/in-store" active={pathname === "/dashboard/orders/in-store" || pathname === "/dashboard/orders/instore"} icon={Store}>
                   {t("nav.in_store_orders", "In-Store Orders")}
+                </NavSub>
+              )}
+              {isAllowed("orders.list") && (
+                <NavSub to="/dashboard/orders/abandoned" active={pathname === "/dashboard/orders/abandoned"} icon={ShoppingCart}>
+                  {t("nav.abandoned_checkouts", "Abandoned Checkouts")}
                 </NavSub>
               )}
               {isAllowed("orders.spamlist") && (

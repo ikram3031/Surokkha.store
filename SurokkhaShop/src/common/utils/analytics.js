@@ -660,6 +660,22 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
 /**
  * 5. Track InitiateCheckout (Pixel + CAPI + GA4)
  */
+// One id per checkout visit: shared by the browser InitiateCheckout event, the saved checkout lead and the order
+export function getCheckoutSessionId() {
+  let id = safeStorageGet('_sk_checkout_sid');
+  if (!id) {
+    id = generateEventId('co').replace(/[^\w-]/g, '');
+    safeStorageSet('_sk_checkout_sid', id);
+  }
+  return id;
+}
+
+// Called after an order is placed so the next checkout starts a fresh session
+export const resetCheckoutSession = () => safeStorageSet('_sk_checkout_sid', '');
+
+let lastInitiateCheckoutData = null;
+export const getLastInitiateCheckoutData = () => lastInitiateCheckoutData;
+
 export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => {
   const cartEntries = Object.entries(cart).filter(([slug, qty]) => {
     if (qty <= 0) return false;
@@ -674,7 +690,8 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
   const itemCount = cartEntries.reduce((sum, [_, q]) => sum + q, 0);
   if (isDuplicateEvent(`InitiateCheckout|${grandTotal}|${itemCount}`)) return;
-  const eventId = generateEventId('ic');
+  // Same id on the server InitiateCheckout (sent with the saved checkout lead) so Meta merges the pair
+  const eventId = `ic_${getCheckoutSessionId()}`;
 
   const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
   const contents = cartEntries.map(([slug, qty]) => {
@@ -695,6 +712,7 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
     currency: 'BDT',
     num_items: itemCount
   };
+  lastInitiateCheckoutData = customData;
 
   fbqTrack('InitiateCheckout', customData, eventId);
   sendMetaCAPI({ eventName: 'InitiateCheckout', eventId, customData });
@@ -861,4 +879,29 @@ export const trackContact = (channel = 'support') => {
   gtagEvent('contact', {
     method: channel
   });
+};
+
+
+/**
+ * Save what the customer has typed at checkout so an abandoned checkout is kept in the database and
+ * (once a phone number is known) Meta gets one InitiateCheckout carrying the customer data.
+ */
+export const saveCheckoutLead = (details = {}, keepalive = false) => {
+  if (!isBrowser) return;
+  try {
+    const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
+    fetch(`${base}/api/v1/checkout-leads`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive,
+      body: JSON.stringify({
+        sessionId: getCheckoutSessionId(),
+        ...details,
+        customData: getLastInitiateCheckoutData(),
+        fbp: getFbp(),
+        fbc: getFbc(),
+        sourceUrl: window.location.href
+      })
+    }).catch(() => {});
+  } catch (_) {}
 };
