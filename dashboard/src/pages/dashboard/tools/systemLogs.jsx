@@ -45,6 +45,7 @@ export default function SystemLogs() {
     fetchLogs();
 
     let eventSource = null;
+    let lastSseMessageAt = 0;
     try {
       const baseUrl = apiClient.defaults.baseURL || window.location.origin;
       const token = localStorage.getItem("accessToken") || localStorage.getItem("auth_token") || localStorage.getItem("token");
@@ -53,6 +54,7 @@ export default function SystemLogs() {
       eventSource = new EventSource(sseUrl, { withCredentials: true });
 
       eventSource.onmessage = (event) => {
+        lastSseMessageAt = Date.now();
         if (isPaused) return;
         try {
           const parsed = JSON.parse(event.data);
@@ -77,9 +79,10 @@ export default function SystemLogs() {
       // SSE not available
     }
 
-    // Polling interval fallback
+    // Polling fallback: also covers a stream that stays "open" but delivers nothing (proxy buffering)
     const interval = setInterval(() => {
-      if (!isPaused && (!eventSource || eventSource.readyState === EventSource.CLOSED)) {
+      const sseHealthy = eventSource && eventSource.readyState === EventSource.OPEN && Date.now() - lastSseMessageAt < 10000;
+      if (!isPaused && !sseHealthy) {
         fetchLogs();
       }
     }, 3000);

@@ -54,6 +54,8 @@ developerRouter.get(
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    // Stop nginx/Cloudflare from buffering the stream, which stalls events until the buffer fills
+    res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders();
 
     // Send initial buffer
@@ -61,7 +63,11 @@ developerRouter.get(
 
     logClients.add(res);
 
+    // Keep-alive comment so idle proxies don't drop the connection
+    const heartbeat = setInterval(() => res.write(": ping\n\n"), 20000);
+
     req.on("close", () => {
+      clearInterval(heartbeat);
       logClients.delete(res);
     });
   }
