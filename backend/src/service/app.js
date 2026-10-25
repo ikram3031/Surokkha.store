@@ -9,6 +9,7 @@ import serviceRouter from "./routes.js";
 import storeSettingsRouter from "./routes/StoreSettingsRoute.js";
 import swaggerRouter from "./routes/SwaggerRoute.js";
 import { env } from "../common/config/env.js";
+import { createRequestLogger } from "../common/middlewares/requestLogger.js";
 import { getDynamicCorsConfig } from "../common/config/index.js";
 
 // Creates and configures Express application specifically for Dashboard & Admin Business Service
@@ -59,6 +60,9 @@ export const createServiceApp = async () => {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+
+  // Feeds the dashboard's live System Logs page
+  app.use(createRequestLogger());
 
   const staticAssetOptions = {
     setHeaders: (res, filePath) => {
