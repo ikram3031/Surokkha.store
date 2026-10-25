@@ -59,6 +59,29 @@ const orderTotalsSchema = new Schema(
   { _id: false },
 );
 
+// Courier settlement: what the courier charged and what it owes back to the store (separate from customer payment)
+const courierSettlementSchema = new Schema(
+  {
+    status: {
+      type: String,
+      enum: ["none", "pending", "invoiced", "settled", "disputed"],
+      default: "none",
+      index: true,
+    },
+    collectedAmount: { type: Number, default: 0 },
+    deliveryCharge: { type: Number, default: 0 },
+    codFee: { type: Number, default: 0 },
+    totalCharge: { type: Number, default: 0 },
+    netPayout: { type: Number, default: 0 },
+    isEstimated: { type: Boolean, default: true },
+    invoiceId: { type: String, default: null, trim: true },
+    invoicedAt: { type: Date, default: null },
+    settledAt: { type: Date, default: null },
+    source: { type: String, default: null, trim: true },
+  },
+  { _id: false },
+);
+
 // Schema defining courier shipment and live tracking details
 const courierInfoSchema = new Schema(
   {
@@ -67,6 +90,11 @@ const courierInfoSchema = new Schema(
     merchantOrderId: { type: String, default: null, trim: true },
     trackingCode: { type: String, default: null, trim: true },
     deliveryFee: { type: Number, default: 0 },
+    // Actual fee reported by the courier (webhook/invoice); deliveryFee stays the dispatch-time estimate
+    actualDeliveryFee: { type: Number, default: null },
+    amountToCollect: { type: Number, default: null },
+    lastEventAt: { type: Date, default: null },
+    settlement: { type: courierSettlementSchema, default: () => ({}) },
     orderStatus: { type: String, default: null, trim: true },
     orderStatusSlug: { type: String, default: null, trim: true },
     storeId: { type: Number, default: null },

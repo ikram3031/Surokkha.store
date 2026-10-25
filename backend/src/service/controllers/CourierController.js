@@ -1,4 +1,4 @@
-import { syncPathaoOrders } from "../../common/services/pathaoOrderSync.service.js";
+import { syncPathaoOrders } from "../services/pathaoOrderSync.service.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { ensurePaymentOnShip } from "../../common/helper/orderControllerHelper.js";
@@ -444,6 +444,7 @@ export const createOrderConsignmentController = async (req, res, next) => {
         merchantOrderId: payload.merchant_order_id,
         trackingCode: consignmentId,
         deliveryFee: deliveryFee,
+        amountToCollect: payload.amount_to_collect,
         orderStatus: orderStatus,
         orderStatusSlug: orderStatusSlug,
         storeId: payload.store_id,

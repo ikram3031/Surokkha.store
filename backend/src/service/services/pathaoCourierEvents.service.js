@@ -1,4 +1,4 @@
-import { ensurePaymentOnShip, syncPaymentDocument } from "../helper/orderControllerHelper.js";
+import { ensurePaymentOnShip, syncPaymentDocument } from "../../common/helper/orderControllerHelper.js";
 
 // Pathao's COD charge, used only while the real fee is unknown
 const ESTIMATED_COD_RATE = 0.01;
