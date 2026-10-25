@@ -1,4 +1,4 @@
-import { initPathaoSyncScheduler, stopPathaoSyncScheduler } from "../common/schedulers/pathaoSync.scheduler.js";
+import { initPathaoSyncScheduler, stopPathaoSyncScheduler } from "./schedulers/pathaoSync.scheduler.js";
 import { createServiceApp } from "./app.js";
 import { connectDatabase } from "../common/database/index.js";
 import { env } from "../common/config/env.js";

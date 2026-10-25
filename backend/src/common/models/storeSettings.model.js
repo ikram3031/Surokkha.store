@@ -368,6 +368,12 @@ const storeSettingsSchema = new Schema(
       },
       lastOrderSyncAt: { type: Date, default: null },
       lastOrderSyncSummary: { type: String, default: "" },
+      // Webhook: "log" only stores events, "process" also updates orders
+      webhookEnabled: { type: Boolean, default: false },
+      webhookMode: { type: String, enum: ["log", "process"], default: "log" },
+      webhookSecret: { type: String, default: "" },
+      webhookIntegrationSecret: { type: String, default: "", trim: true },
+      lastWebhookAt: { type: Date, default: null },
     },
     // Cloudflare R2 object storage used for automated backups (secret stored encrypted)
     r2Storage: {

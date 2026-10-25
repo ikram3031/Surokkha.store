@@ -22,6 +22,7 @@
         "orders.instore",
         "orders.custom",
         "orders.custom-new",
+        "orders.pathao",
         "products",
         "products.new",
         "products.list",

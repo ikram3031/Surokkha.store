@@ -1,5 +1,5 @@
 import { syncPathaoOrders } from "../services/pathaoOrderSync.service.js";
-import { logger } from "../config/logger.js";
+import { logger } from "../../common/config/logger.js";
 
 const SYNC_INTERVAL_MS = 30 * 60 * 1000; // every 30 minutes
 let startTimeout = null;

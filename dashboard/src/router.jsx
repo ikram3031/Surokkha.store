@@ -60,6 +60,7 @@ import InStoreOrders from './pages/dashboard/orders/inStoreOrders';
 import CustomOrders from './pages/dashboard/orders/customOrders';
 import NewCustomOrder from './pages/dashboard/orders/newCustomOrder';
 import SpamList from './pages/dashboard/orders/SpamList';
+import PathaoPage from './pages/dashboard/orders/pathao/PathaoPage';
 
 // Accounts
 import BalanceOverview from './pages/dashboard/accounts/balanceOverview';
@@ -645,6 +646,14 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="orders.spamlist">
                 <SpamList />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'pathao',
+            element: (
+              <RoleGuard menuKey="orders.pathao">
+                <PathaoPage />
               </RoleGuard>
             ),
           },

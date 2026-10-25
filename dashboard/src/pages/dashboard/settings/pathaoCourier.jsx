@@ -28,6 +28,7 @@ import {
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { formatDateTime } from '@/utils/dateHelper';
+import PathaoWebhookCard from './PathaoWebhookCard';
 
 export default function PathaoCourierSettingsPage() {
   const queryClient = useQueryClient();
@@ -609,6 +610,8 @@ export default function PathaoCourierSettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          <PathaoWebhookCard />
         </div>
 
         {/* Right 1 Column: Live Location Lookup & Rate Calculator */}

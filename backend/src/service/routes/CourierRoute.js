@@ -1,4 +1,15 @@
-import { Router } from "express";
+import express, { Router } from "express";
+import {
+  pathaoWebhookController,
+  getPathaoWebhookConfigController,
+  updatePathaoWebhookConfigController,
+  listPathaoWebhookEventsController,
+  replayPathaoWebhookEventsController,
+  listPathaoParcelsController,
+  getPathaoParcelSummaryController,
+  updatePathaoSettlementController,
+  importPathaoInvoiceController,
+} from "../controllers/PathaoController.js";
 import {
   getPathaoSettings,
   updatePathaoSettings,
@@ -24,6 +35,67 @@ import {
 
 
 const courierRouter = Router();
+
+// Pathao webhook (public; verified by X-PATHAO-Signature inside the controller)
+courierRouter.post("/pathao/webhook", pathaoWebhookController);
+
+courierRouter.get(
+  "/pathao/webhook/config",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  getPathaoWebhookConfigController
+);
+
+courierRouter.put(
+  "/pathao/webhook/config",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  updatePathaoWebhookConfigController
+);
+
+courierRouter.get(
+  "/pathao/webhook/events",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  listPathaoWebhookEventsController
+);
+
+courierRouter.post(
+  "/pathao/webhook/events/replay",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin"),
+  replayPathaoWebhookEventsController
+);
+
+// Pathao parcels & settlement (money fields are returned to the Owner only)
+courierRouter.get(
+  "/pathao/parcels",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin", "Manager"),
+  listPathaoParcelsController
+);
+
+courierRouter.get(
+  "/pathao/parcels/summary",
+  authenticateToken,
+  authorizeRoles("Owner", "Admin", "Manager"),
+  getPathaoParcelSummaryController
+);
+
+courierRouter.patch(
+  "/pathao/parcels/:id/settlement",
+  authenticateToken,
+  authorizeRoles("Owner"),
+  updatePathaoSettlementController
+);
+
+courierRouter.post(
+  "/pathao/invoices/import",
+  authenticateToken,
+  authorizeRoles("Owner"),
+  express.text({ type: ["text/csv", "text/plain"], limit: "5mb" }),
+  importPathaoInvoiceController
+);
 
 // Pathao Courier Configuration & Testing (Protected)
 courierRouter.get(

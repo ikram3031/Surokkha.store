@@ -381,6 +381,11 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.spam_list", "Spam List")}
                 </NavSub>
               )}
+              {isAllowed("orders.pathao") && (
+                <NavSub to="/dashboard/orders/pathao" active={pathname.startsWith("/dashboard/orders/pathao")} icon={Truck} iconClass="text-red-500">
+                  {t("nav.pathao", "Pathao")}
+                </NavSub>
+              )}
             </NavGroup>
           )}
           {showCustomers && (
