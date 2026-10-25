@@ -28,6 +28,7 @@ import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
 import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
+import { syncCourierBill } from '../services/pathaoBill.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
 
@@ -540,6 +541,10 @@ export const updateOrder = async (req, res, next) => {
     }
 
     await syncPaymentDocument(order, payload);
+    // Status changes by staff (cancel, return, ...) keep the auto Pathao charge bill in step
+    if (order.courier?.consignmentId) {
+      await syncCourierBill(order).catch((err) => console.error('Failed to sync Pathao charge bill:', err));
+    }
 
     const payment = await PaymentModel.findOne({ orderId: order._id }).lean();
     const isCancelledOrder = ['fake', 'cancelled', 'canceled'].includes(order.status);
@@ -797,6 +802,9 @@ export const bulkUpdateOrders = async (req, res, next) => {
         } catch (billingErr) {
           console.error("Error creating return billing:", billingErr);
         }
+      }
+      if (updatedOrder.courier?.consignmentId) {
+        await syncCourierBill(updatedOrder).catch((err) => console.error('Failed to sync Pathao charge bill:', err));
       }
     }
 

@@ -9,10 +9,10 @@ export const money = (value) => {
 };
 
 export const SETTLEMENT_META = {
-  none: { label: 'Not due', className: 'bg-muted text-muted-foreground' },
-  pending: { label: 'Pathao owes', className: 'bg-amber-500/15 text-amber-700 dark:text-amber-400' },
-  invoiced: { label: 'Invoiced', className: 'bg-blue-500/15 text-blue-700 dark:text-blue-400' },
-  settled: { label: 'Settled', className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' },
+  none: { label: 'In transit', className: 'bg-muted text-muted-foreground' },
+  pending: { label: 'Awaiting payout', className: 'bg-amber-500/15 text-amber-700 dark:text-amber-400' },
+  invoiced: { label: 'Paid by Pathao', className: 'bg-blue-500/15 text-blue-700 dark:text-blue-400' },
+  settled: { label: 'Paid, invoice matched', className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' },
   disputed: { label: 'Disputed', className: 'bg-red-500/15 text-red-700 dark:text-red-400' },
 };
 

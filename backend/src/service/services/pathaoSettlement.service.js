@@ -1,4 +1,19 @@
 import { OrderModel } from "../../common/models/order.model.js";
+import { syncPaymentDocument } from "../../common/helper/orderControllerHelper.js";
+import { PAID_OUT_STATUSES, paidAmountOnPayout } from "./pathaoCourierEvents.service.js";
+import { syncCourierBill } from "./pathaoBill.service.js";
+
+// After a settlement change: a first payout marks the customer payment received, and the charge bill follows
+const syncAccountsAfterSettlement = async (orderId, wasPaidOut) => {
+  const order = await OrderModel.findById(orderId).lean();
+  if (!order) return null;
+  const isPaidOut = PAID_OUT_STATUSES.includes(order.courier?.settlement?.status);
+  if (isPaidOut && !wasPaidOut && order.status === "completed") {
+    await syncPaymentDocument(order, { paidAmount: paidAmountOnPayout(order) });
+  }
+  await syncCourierBill(order);
+  return order;
+};
 
 // Pathao statuses that need someone to look at the parcel
 const ATTENTION_SLUG_PATTERN = /pickup_failed|pickup_cancel|delivery_failed|on_hold|exchange/i;
@@ -146,12 +161,13 @@ export const updateSettlementStatus = async (orderId, status) => {
   if (!SETTLEMENT_STATUSES.includes(status)) throw Object.assign(new Error("Invalid settlement status"), { statusCode: 400 });
   const $set = { "courier.settlement.status": status };
   if (status === "settled") $set["courier.settlement.settledAt"] = new Date();
-  const order = await OrderModel.findOneAndUpdate(
+  const before = await OrderModel.findOneAndUpdate(
     { _id: orderId, "courier.consignmentId": { $nin: [null, ""] } },
     { $set },
-    { new: true }
+    { new: false }
   ).lean();
-  if (!order) throw Object.assign(new Error("Pathao parcel not found"), { statusCode: 404 });
+  if (!before) throw Object.assign(new Error("Pathao parcel not found"), { statusCode: 404 });
+  const order = await syncAccountsAfterSettlement(orderId, PAID_OUT_STATUSES.includes(before.courier?.settlement?.status));
   return toParcel(order, true);
 };
 
@@ -321,6 +337,10 @@ export const importInvoiceCsv = async (csvText, { apply = false, invoiceId: fall
         },
       }))
     );
+    // Invoice figures are exact, so the customer payment is always re-synced from them
+    for (const r of applicable) {
+      await syncAccountsAfterSettlement(r.orderId, false);
+    }
   }
 
   const detectedColumns = Object.fromEntries(Object.entries(columns).map(([key, index]) => [key, headers[index]]));

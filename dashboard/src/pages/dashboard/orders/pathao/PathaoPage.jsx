@@ -102,21 +102,21 @@ export default function PathaoPage() {
           <StatCard
             icon={Wallet}
             iconClass="bg-amber-500/10 text-amber-600"
-            label="Pathao owes (not invoiced)"
+            label="Pathao owes (delivered, not paid)"
             value={money(settlement.pending.netPayout)}
             hint={`${settlement.pending.count} parcel(s), estimated`}
           />
           <StatCard
             icon={Receipt}
             iconClass="bg-blue-500/10 text-blue-600"
-            label="Invoiced, awaiting payout"
+            label="Paid by Pathao"
             value={money(settlement.invoiced.netPayout)}
-            hint={`${settlement.invoiced.count} parcel(s)`}
+            hint={`${settlement.invoiced.count} parcel(s), import invoice for exact`}
           />
           <StatCard
             icon={BadgeCheck}
             iconClass="bg-emerald-500/10 text-emerald-600"
-            label="Settled (paid out)"
+            label="Paid, invoice matched"
             value={money(settlement.settled.netPayout)}
             hint={`${settlement.settled.count} parcel(s)`}
           />

@@ -127,22 +127,25 @@ export default function PathaoWebhookCard() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="flex items-center justify-between rounded-md border p-3">
+          <div className="flex items-center justify-between gap-3 rounded-md border border-primary p-3">
             <div>
               <p className="text-sm font-medium">Accept events</p>
               <p className="text-xs text-muted-foreground">Off = Pathao requests are ignored</p>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
           </div>
-          <div className="space-y-1.5">
-            <Label>Mode</Label>
+          <div className="flex items-center justify-between gap-3 rounded-md border border-primary p-3">
+            <div>
+              <p className="text-sm font-medium">Mode</p>
+              <p className="text-xs text-muted-foreground">{mode === 'process' ? 'Updates orders and settlement' : "Stores events, doesn't touch orders"}</p>
+            </div>
             <Select value={mode} onValueChange={setMode}>
-              <SelectTrigger>
+              <SelectTrigger className="w-32 shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="log">Log only (store events, don't touch orders)</SelectItem>
-                <SelectItem value="process">Process (update orders and settlement)</SelectItem>
+                <SelectItem value="log">Log only</SelectItem>
+                <SelectItem value="process">Process</SelectItem>
               </SelectContent>
             </Select>
           </div>

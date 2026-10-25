@@ -1,10 +1,14 @@
 import { ensurePaymentOnShip, syncPaymentDocument } from "../../common/helper/orderControllerHelper.js";
+import { syncCourierBill } from "./pathaoBill.service.js";
 
 // Pathao's COD charge, used only while the real fee is unknown
 const ESTIMATED_COD_RATE = 0.01;
 
 // Order statuses Pathao updates may move; cancelled/hold/fake etc. are manual decisions and stay untouched
 const COURIER_MANAGED_STATUSES = ["pending", "processing", "shipped", "completed", "return"];
+
+// Settlement states meaning Pathao has paid the parcel out (invoice paid)
+export const PAID_OUT_STATUSES = ["invoiced", "settled"];
 
 // Pathao slugs/events (status slugs and webhook events normalise to the same keys) grouped by outcome
 const KIND_BY_SLUG = {
@@ -50,8 +54,31 @@ export const parsePathaoTime = (value) => {
 const round2 = (n) => Math.round(n * 100) / 100;
 const toNumber = (value) => (value === null || value === undefined || value === "" ? NaN : Number(value));
 
-// Recomputes the estimated courier settlement; invoice-imported (exact) figures are never overwritten
-export const recomputeSettlement = (order, { collectedAmount } = {}) => {
+// What the customer paid before dispatch (order total minus what Pathao was told to collect)
+const advanceAmount = (order) => {
+  const total = Number(order.totals?.total || 0);
+  const toCollect = toNumber(order.courier?.amountToCollect);
+  return Number.isFinite(toCollect) ? Math.max(0, round2(total - toCollect)) : 0;
+};
+
+// Customer payment once Pathao has paid out: advance + what Pathao collected (never above the order total)
+export const paidAmountOnPayout = (order) => {
+  const total = Number(order.totals?.total || 0);
+  return Math.min(total, round2(advanceAmount(order) + Number(order.courier?.settlement?.collectedAmount || 0)));
+};
+
+// Pathao's charge for a parcel: the fee it reported (already includes its charges), else the dispatch estimate + COD
+export const estimateCourierCharge = (courier, collected) => {
+  const actualFee = toNumber(courier.actualDeliveryFee);
+  if (Number.isFinite(actualFee) && actualFee > 0) return { deliveryCharge: actualFee, codFee: 0 };
+  return { deliveryCharge: Number(courier.deliveryFee || 0), codFee: round2(collected * ESTIMATED_COD_RATE) };
+};
+
+/**
+ * Recomputes the estimated courier settlement; invoice-imported (exact) figures are never overwritten.
+ * paidOut: Pathao reported the parcel as paid (Payment Invoice) even without an invoice id.
+ */
+export const recomputeSettlement = (order, { collectedAmount, paidOut = false } = {}) => {
   const courier = order.courier;
   if (!courier.settlement) courier.settlement = {};
   const s = courier.settlement;
@@ -61,17 +88,14 @@ export const recomputeSettlement = (order, { collectedAmount } = {}) => {
   const isReturn = order.status === "return";
   const reported = toNumber(collectedAmount);
   const amountToCollect = toNumber(courier.amountToCollect);
+  const isPartial = /partial/.test(courier.orderStatusSlug || "");
   let collected;
   if (Number.isFinite(reported)) collected = reported;
   else if (isReturn) collected = 0;
-  else if (order.paymentStatus === "partial" && s.collectedAmount > 0) collected = s.collectedAmount;
+  else if (isPartial && s.collectedAmount > 0) collected = s.collectedAmount;
   else collected = Number.isFinite(amountToCollect) ? amountToCollect : Number(order.totals?.total || 0);
 
-  // Pathao's reported fee already carries its charges; the dispatch estimate does not include COD
-  const actualFee = toNumber(courier.actualDeliveryFee);
-  const hasActualFee = Number.isFinite(actualFee) && actualFee > 0;
-  const deliveryCharge = hasActualFee ? actualFee : Number(courier.deliveryFee || 0);
-  const codFee = hasActualFee ? 0 : round2(collected * ESTIMATED_COD_RATE);
+  const { deliveryCharge, codFee } = estimateCourierCharge(courier, collected);
 
   s.collectedAmount = round2(collected);
   s.deliveryCharge = round2(deliveryCharge);
@@ -79,16 +103,19 @@ export const recomputeSettlement = (order, { collectedAmount } = {}) => {
   s.totalCharge = round2(deliveryCharge + codFee);
   s.netPayout = round2(collected - deliveryCharge - codFee);
   s.isEstimated = true;
-  if (s.invoiceId) {
-    if (!["settled", "disputed"].includes(s.status)) s.status = "invoiced";
+  if (["settled", "disputed"].includes(s.status)) return;
+  if (s.invoiceId || paidOut || s.status === "invoiced") {
+    s.status = "invoiced";
     if (!s.invoicedAt) s.invoicedAt = new Date();
-  } else if (!["settled", "disputed"].includes(s.status)) {
+  } else {
     s.status = "pending";
   }
 };
 
 /**
  * Applies one Pathao update (webhook event or polled /info) to an order document and saves it.
+ * Pathao only drives the order status and the courier charge; product prices, discounts and the
+ * customer's delivery fee are never touched. Delivered stays unpaid until Pathao pays the invoice.
  * update: { slug, statusLabel, deliveryFee, invoiceId, collectedAmount, eventAt, source }
  */
 export const applyPathaoUpdate = async (order, update) => {
@@ -113,6 +140,7 @@ export const applyPathaoUpdate = async (order, update) => {
   }
 
   const previousStatus = order.status;
+  const wasPaidOut = PAID_OUT_STATUSES.includes(courier.settlement?.status);
   let paymentUpdate = null;
 
   if (kind !== "info" && !isStale) {
@@ -126,16 +154,11 @@ export const applyPathaoUpdate = async (order, update) => {
     courier.lastEventAt = eventAt;
 
     if (COURIER_MANAGED_STATUSES.includes(order.status)) {
-      if (kind === "delivered" || (kind === "invoiced" && order.status !== "return")) {
+      if (kind === "delivered" || kind === "partial" || (kind === "invoiced" && order.status !== "return")) {
         if (order.status !== "completed") {
           order.status = "completed";
-          paymentUpdate = { paymentStatus: "paid" };
-        }
-      } else if (kind === "partial") {
-        if (order.status !== "completed") {
-          order.status = "completed";
-          const collected = toNumber(update.collectedAmount);
-          paymentUpdate = { paymentStatus: "partial", ...(Number.isFinite(collected) ? { paidAmount: collected } : {}) };
+          // Delivered, but the money is still with Pathao: keep only what the customer paid in advance
+          paymentUpdate = { paidAmount: advanceAmount(order) };
         }
       } else if (kind === "returned") {
         if (order.status !== "return") {
@@ -149,7 +172,17 @@ export const applyPathaoUpdate = async (order, update) => {
   }
 
   if (order.status !== previousStatus) notes.push(`order ${previousStatus} -> ${order.status}`);
-  recomputeSettlement(order, { collectedAmount: kind === "partial" || kind === "returned" ? update.collectedAmount : undefined });
+  recomputeSettlement(order, {
+    collectedAmount: kind === "partial" || kind === "returned" ? update.collectedAmount : undefined,
+    paidOut: kind === "invoiced",
+  });
+
+  // Pathao paid the invoice: the customer's payment is now received in full (Pathao's charge is a separate bill)
+  const isPaidOut = PAID_OUT_STATUSES.includes(courier.settlement?.status);
+  if (isPaidOut && !wasPaidOut && order.status === "completed") {
+    paymentUpdate = { paidAmount: paidAmountOnPayout(order) };
+    notes.push("paid out");
+  }
 
   if (order.isModified()) await order.save();
 
@@ -158,6 +191,7 @@ export const applyPathaoUpdate = async (order, update) => {
   } else if (order.status === "shipped") {
     await ensurePaymentOnShip(order.toObject());
   }
+  await syncCourierBill(order);
 
   return notes.length ? notes.join(", ") : isStale ? "stale event, status skipped" : "no change";
 };

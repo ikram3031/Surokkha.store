@@ -1,4 +1,5 @@
 import { syncPathaoOrders } from "../services/pathaoOrderSync.service.js";
+import { syncCourierBill } from "../services/pathaoBill.service.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { ensurePaymentOnShip } from "../../common/helper/orderControllerHelper.js";
@@ -466,8 +467,11 @@ export const createOrderConsignmentController = async (req, res, next) => {
       };
 
       updatedOrder = await OrderModel.findOneAndUpdate(filter, updateQuery, { new: true });
-      // First ship opens payment collection for the order
-      if (updatedOrder) await ensurePaymentOnShip(updatedOrder);
+      // First ship opens payment collection for the order and books Pathao's estimated charge as a pending bill
+      if (updatedOrder) {
+        await ensurePaymentOnShip(updatedOrder);
+        await syncCourierBill(updatedOrder).catch((err) => console.error("Failed to sync Pathao charge bill:", err));
+      }
     }
 
     try {
