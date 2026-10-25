@@ -10,6 +10,8 @@ const syncAccountsAfterSettlement = async (orderId, wasPaidOut) => {
   const isPaidOut = PAID_OUT_STATUSES.includes(order.courier?.settlement?.status);
   if (isPaidOut && !wasPaidOut && order.status === "completed") {
     await syncPaymentDocument(order, { paidAmount: paidAmountOnPayout(order) });
+  } else if (isPaidOut && !wasPaidOut && order.status === "return" && order.courier?.category === "paid_return") {
+    await syncPaymentDocument(order, {});
   }
   await syncCourierBill(order);
   return order;
@@ -18,11 +20,48 @@ const syncAccountsAfterSettlement = async (orderId, wasPaidOut) => {
 // Pathao statuses that need someone to look at the parcel
 const ATTENTION_SLUG_PATTERN = /pickup_failed|pickup_cancel|delivery_failed|on_hold|exchange/i;
 const SETTLEMENT_STATUSES = ["pending", "invoiced", "settled", "disputed"];
+// Same buckets and order as the Pathao merchant panel
+export const PARCEL_CATEGORIES = ["delivered", "active", "on_hold", "regular_return", "paid_return", "partial_return", "exchange", "others"];
 // Exact vs estimated payout differences below this are rounding noise
 const MISMATCH_TOLERANCE = 1;
 
 const escapeRegex = (str) => String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const round2 = (n) => Math.round(n * 100) / 100;
+
+// Stored category, or (orders synced before categories existed) one derived from status + Pathao slug
+const slugField = { $ifNull: ["$courier.orderStatusSlug", ""] };
+const CATEGORY_EXPR = {
+  $switch: {
+    branches: [
+      { case: { $in: ["$status", ["cancelled", "canceled", "fake"]] }, then: "others" },
+      { case: { $in: ["$courier.category", PARCEL_CATEGORIES] }, then: "$courier.category" },
+      { case: { $regexMatch: { input: slugField, regex: /paid_return/ } }, then: "paid_return" },
+      { case: { $regexMatch: { input: slugField, regex: /partial/ } }, then: "partial_return" },
+      { case: { $regexMatch: { input: slugField, regex: /on_hold/ } }, then: "on_hold" },
+      { case: { $regexMatch: { input: slugField, regex: /exchange/ } }, then: "exchange" },
+      { case: { $eq: ["$status", "return"] }, then: "regular_return" },
+      { case: { $eq: ["$status", "completed"] }, then: "delivered" },
+      { case: { $regexMatch: { input: slugField, regex: /pickup_cancel/ } }, then: "others" },
+      { case: { $in: ["$status", ["pending", "processing", "shipped"]] }, then: "active" },
+    ],
+    default: "others",
+  },
+};
+
+// Pathao panel amounts: the collectable for every bucket, except paid returns (what the customer actually paid)
+const AMOUNT_EXPR = {
+  $cond: [
+    { $eq: ["$category", "paid_return"] },
+    {
+      $cond: [
+        { $gt: [{ $ifNull: ["$courier.settlement.collectedAmount", 0] }, 0] },
+        "$courier.settlement.collectedAmount",
+        { $ifNull: ["$totals.shippingFee", 0] },
+      ],
+    },
+    { $ifNull: ["$courier.amountToCollect", { $ifNull: ["$totals.total", 0] }] },
+  ],
+};
 
 const dispatchedRange = ({ from, to }) => {
   const range = {};
@@ -35,12 +74,8 @@ const dispatchedRange = ({ from, to }) => {
   return Object.keys(range).length ? range : null;
 };
 
-const buildParcelFilter = ({ group, settlement, search, from, to }) => {
+const buildParcelFilter = ({ settlement, search, from, to }) => {
   const filter = { "courier.consignmentId": { $nin: [null, ""] } };
-  if (group === "in_transit") filter.status = { $in: ["pending", "processing", "shipped"] };
-  if (group === "delivered") filter.status = "completed";
-  if (group === "returned") filter.status = "return";
-  if (group === "attention") filter["courier.orderStatusSlug"] = { $regex: ATTENTION_SLUG_PATTERN };
   if (settlement && SETTLEMENT_STATUSES.includes(settlement)) filter["courier.settlement.status"] = settlement;
   const range = dispatchedRange({ from, to });
   if (range) filter["courier.dispatchedAt"] = range;
@@ -69,6 +104,7 @@ const toParcel = (order, canSeeMoney) => {
     consignmentId: courier.consignmentId,
     courierStatus: courier.orderStatus,
     courierStatusSlug: courier.orderStatusSlug,
+    category: order.category || courier.category || null,
     needsAttention: ATTENTION_SLUG_PATTERN.test(courier.orderStatusSlug || ""),
     dispatchedAt: courier.dispatchedAt,
     lastEventAt: courier.lastEventAt || null,
@@ -86,16 +122,25 @@ export const listParcels = async (query = {}, canSeeMoney = false) => {
   const filter = buildParcelFilter({ ...query, settlement: canSeeMoney ? query.settlement : null });
   const limit = Math.min(Math.max(Number(query.limit) || 25, 1), 100);
   const page = Math.max(Number(query.page) || 1, 1);
-  const [orders, total] = await Promise.all([
-    OrderModel.find(filter)
-      .select("orderNumber status paymentStatus shippingInfo totals courier")
-      .sort({ "courier.dispatchedAt": -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-    OrderModel.countDocuments(filter),
+  const category = PARCEL_CATEGORIES.includes(query.category) ? query.category : null;
+
+  const [result] = await OrderModel.aggregate([
+    { $match: filter },
+    { $addFields: { category: CATEGORY_EXPR } },
+    ...(category ? [{ $match: { category } }] : []),
+    { $sort: { "courier.dispatchedAt": -1 } },
+    {
+      $facet: {
+        items: [
+          { $skip: (page - 1) * limit },
+          { $limit: limit },
+          { $project: { orderNumber: 1, status: 1, paymentStatus: 1, shippingInfo: 1, totals: 1, courier: 1, category: 1 } },
+        ],
+        total: [{ $count: "count" }],
+      },
+    },
   ]);
-  return { items: orders.map((o) => toParcel(o, canSeeMoney)), total, page, limit };
+  return { items: (result.items || []).map((o) => toParcel(o, canSeeMoney)), total: result.total?.[0]?.count || 0, page, limit };
 };
 
 export const getParcelSummary = async (query = {}, canSeeMoney = false) => {
@@ -104,8 +149,7 @@ export const getParcelSummary = async (query = {}, canSeeMoney = false) => {
   if (range) match["courier.dispatchedAt"] = range;
 
   const facets = {
-    byStatus: [{ $group: { _id: "$status", count: { $sum: 1 } } }],
-    attention: [{ $match: { "courier.orderStatusSlug": { $regex: ATTENTION_SLUG_PATTERN } } }, { $count: "count" }],
+    byCategory: [{ $group: { _id: "$category", count: { $sum: 1 }, amount: { $sum: AMOUNT_EXPR } } }],
   };
   if (canSeeMoney) {
     facets.bySettlement = [
@@ -127,17 +171,21 @@ export const getParcelSummary = async (query = {}, canSeeMoney = false) => {
     ];
   }
 
-  const [result] = await OrderModel.aggregate([{ $match: match }, { $facet: facets }]);
-  const statusCount = Object.fromEntries((result.byStatus || []).map((s) => [s._id, s.count]));
+  const [result] = await OrderModel.aggregate([{ $match: match }, { $addFields: { category: CATEGORY_EXPR } }, { $facet: facets }]);
+  const byKey = Object.fromEntries((result.byCategory || []).map((c) => [c._id, c]));
+  const total = (result.byCategory || []).reduce((sum, c) => sum + c.count, 0);
   const summary = {
-    total: Object.values(statusCount).reduce((sum, n) => sum + n, 0),
-    inTransit: (statusCount.pending || 0) + (statusCount.processing || 0) + (statusCount.shipped || 0),
-    delivered: statusCount.completed || 0,
-    returned: statusCount.return || 0,
-    attention: result.attention?.[0]?.count || 0,
+    total,
+    categories: PARCEL_CATEGORIES.map((key) => ({
+      key,
+      count: byKey[key]?.count || 0,
+      percent: total ? round2(((byKey[key]?.count || 0) / total) * 100) : 0,
+      ...(canSeeMoney ? { amount: round2(byKey[key]?.amount || 0) } : {}),
+    })),
   };
 
   if (canSeeMoney) {
+    summary.totalAmount = round2((result.byCategory || []).reduce((sum, c) => sum + c.amount, 0));
     const empty = { count: 0, netPayout: 0, collected: 0, charges: 0, estimated: 0 };
     const settlement = Object.fromEntries(SETTLEMENT_STATUSES.map((s) => [s, { ...empty }]));
     for (const row of result.bySettlement || []) {

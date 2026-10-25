@@ -40,6 +40,18 @@ export const normalizePathaoSlug = (raw) =>
 
 export const classifyPathaoSlug = (raw) => KIND_BY_SLUG[normalizePathaoSlug(raw)] || "transit";
 
+// Pathao merchant panel buckets; a paid return stays a paid return even if later return events arrive
+export const categoryFor = (kind, slug, current, orderStatus) => {
+  if (kind === "delivered") return "delivered";
+  if (kind === "partial") return "partial_return";
+  if (kind === "returned") return slug === "paid_return" || current === "paid_return" ? "paid_return" : "regular_return";
+  if (kind === "invoiced") return current && current !== "active" ? current : orderStatus === "return" ? "regular_return" : "delivered";
+  if (slug === "on_hold") return "on_hold";
+  if (slug === "exchange") return "exchange";
+  if (/pickup_cancel/.test(slug)) return "others";
+  return "active";
+};
+
 // "pickup_requested" -> "Pickup Requested"
 const humanizeSlug = (slug) => slug.split("_").filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 
@@ -91,7 +103,10 @@ export const recomputeSettlement = (order, { collectedAmount, paidOut = false } 
   const isPartial = /partial/.test(courier.orderStatusSlug || "");
   let collected;
   if (Number.isFinite(reported)) collected = reported;
-  else if (isReturn) collected = 0;
+  // Paid return: the customer paid the delivery charge; until Pathao reports the amount, assume ours
+  else if (isReturn && courier.category === "paid_return") {
+    collected = s.collectedAmount > 0 ? s.collectedAmount : Number(order.totals?.shippingFee || 0);
+  } else if (isReturn) collected = 0;
   else if (isPartial && s.collectedAmount > 0) collected = s.collectedAmount;
   else collected = Number.isFinite(amountToCollect) ? amountToCollect : Number(order.totals?.total || 0);
 
@@ -152,6 +167,7 @@ export const applyPathaoUpdate = async (order, update) => {
       notes.push(`status ${label}`);
     }
     courier.lastEventAt = eventAt;
+    courier.category = categoryFor(kind, slug, courier.category, order.status);
 
     if (COURIER_MANAGED_STATUSES.includes(order.status)) {
       if (kind === "delivered" || kind === "partial" || (kind === "invoiced" && order.status !== "return")) {
@@ -182,6 +198,10 @@ export const applyPathaoUpdate = async (order, update) => {
   if (isPaidOut && !wasPaidOut && order.status === "completed") {
     paymentUpdate = { paidAmount: paidAmountOnPayout(order) };
     notes.push("paid out");
+  } else if (isPaidOut && !wasPaidOut && order.status === "return" && courier.category === "paid_return") {
+    // The payment helper books the collected delivery charge for paid returns
+    paymentUpdate = {};
+    notes.push("paid return paid out");
   }
 
   if (order.isModified()) await order.save();

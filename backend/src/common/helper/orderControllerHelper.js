@@ -302,9 +302,15 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
 
   const orderCanceled = orderData.status === 'canceled' || orderData.status === 'cancelled' || orderData.status === 'fake';
   const orderReturned = orderData.status === 'return';
-  // Cancelled, fake and returned orders collect nothing and owe nothing
+  // Cancelled, fake and returned orders collect nothing and owe nothing, except a courier "paid return":
+  // the customer paid the delivery charge, and it counts once the courier has paid it out
+  const courierSettlement = orderData.courier?.settlement || {};
+  const paidReturnAmount =
+    orderReturned && orderData.courier?.category === 'paid_return' && ['invoiced', 'settled'].includes(courierSettlement.status)
+      ? Math.max(0, Number(courierSettlement.collectedAmount) || 0)
+      : 0;
   if (orderCanceled || orderReturned) {
-    paidAmount = 0;
+    paidAmount = paidReturnAmount;
   }
 
   paidAmount = Math.min(totalAmount, Math.max(0, paidAmount));

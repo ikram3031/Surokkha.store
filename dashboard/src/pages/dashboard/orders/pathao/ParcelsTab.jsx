@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, FileUp, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,22 +13,24 @@ import { apiClient } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { formatDateTime } from '@/utils/dateHelper';
 import InvoiceImportDialog from './InvoiceImportDialog';
-import { ACTION_BTN, money, SETTLEMENT_META, ORDER_STATUS_META } from './pathaoUtils';
+import { ACTION_BTN, money, SETTLEMENT_META, ORDER_STATUS_META, CATEGORY_META } from './pathaoUtils';
 
-const GROUPS = [
-  { value: 'all', label: 'All' },
-  { value: 'in_transit', label: 'In transit' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'returned', label: 'Returned' },
-  { value: 'attention', label: 'Needs attention' },
-];
+const GROUPS = [{ value: 'all', label: 'All' }, ...Object.entries(CATEGORY_META).map(([value, meta]) => ({ value, label: meta.label }))];
 
 const LIMIT = 25;
 
 export default function ParcelsTab({ range }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [group, setGroup] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const group = CATEGORY_META[searchParams.get('category')] ? searchParams.get('category') : 'all';
+  const setGroup = (value) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value === 'all') next.delete('category');
+      else next.set('category', value);
+      return next;
+    });
   const [settlement, setSettlement] = useState('all');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -39,7 +41,7 @@ export default function ParcelsTab({ range }) {
     queryKey: ['pathao-parcels', { group, settlement, search, page, range }],
     queryFn: async () => {
       const params = { page, limit: LIMIT, ...range };
-      if (group !== 'all') params.group = group;
+      if (group !== 'all') params.category = group;
       if (settlement !== 'all') params.settlement = settlement;
       if (search) params.search = search;
       return (await apiClient.get('/api/v1/courier/pathao/parcels', { params })).data?.data;

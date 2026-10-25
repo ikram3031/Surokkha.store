@@ -94,7 +94,9 @@ const courierInfoSchema = new Schema(
     actualDeliveryFee: { type: Number, default: null },
     amountToCollect: { type: Number, default: null },
     lastEventAt: { type: Date, default: null },
-    settlement: { type: courierSettlementSchema, default: () => ({}) },
+    // Pathao panel bucket: delivered, active, on_hold, regular_return, paid_return, partial_return, exchange, others
+    category: { type: String, default: null, trim: true },
+    settlement:{ type: courierSettlementSchema, default: () => ({}) },
     orderStatus: { type: String, default: null, trim: true },
     orderStatusSlug: { type: String, default: null, trim: true },
     storeId: { type: Number, default: null },

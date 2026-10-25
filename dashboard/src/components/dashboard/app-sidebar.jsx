@@ -42,6 +42,7 @@ import {
   Store,
   Search,
   Truck,
+  Webhook,
   Landmark,
   Wallet,
   TrendingUp,
@@ -231,8 +232,12 @@ export const AppSidebar = ({ ...props }) => {
   const showItems = isAllowed("items")
   const showAdminLayout = Boolean(features?.adminMenuLayout) && isAllowed("admin")
 
+  // Pathao webhook log is Owner/Admin only, matching its API
+  const canManagePathaoWebhook = ["owner", "admin"].includes(String(userRole).toLowerCase())
+
   const activeGroup =
-    pathname.startsWith("/dashboard/orders") ? "orders"
+    pathname.startsWith("/dashboard/pathao") ? "pathao"
+    : pathname.startsWith("/dashboard/orders") ? "orders"
     : pathname.startsWith("/dashboard/items") ? "products"
     : (pathname.startsWith("/dashboard/products") || pathname === "/dashboard/settings/products") ? "products"
     : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
@@ -387,9 +392,19 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.spam_list", "Spam List")}
                 </NavSub>
               )}
-              {isAllowed("orders.pathao") && (
-                <NavSub to="/dashboard/orders/pathao" active={pathname.startsWith("/dashboard/orders/pathao")} icon={Truck} iconClass="text-red-500">
-                  {t("nav.pathao", "Pathao")}
+            </NavGroup>
+          )}
+          {isAllowed("orders.pathao") && (
+            <NavGroup id="pathao" icon={Truck} label={t("nav.pathao", "Pathao")} active={activeGroup === "pathao"} open={openMenu === "pathao"} onToggle={toggleMenu}>
+              <NavSub to="/dashboard/pathao" active={pathname === "/dashboard/pathao"} icon={LayoutDashboard} iconClass="text-red-500">
+                {t("nav.pathao_overview", "Overview")}
+              </NavSub>
+              <NavSub to="/dashboard/pathao/parcels" active={pathname === "/dashboard/pathao/parcels"} icon={Package} iconClass="text-red-500">
+                {t("nav.pathao_parcels", "Parcels")}
+              </NavSub>
+              {canManagePathaoWebhook && (
+                <NavSub to="/dashboard/pathao/webhook" active={pathname === "/dashboard/pathao/webhook"} icon={Webhook} iconClass="text-red-500">
+                  {t("nav.pathao_webhook", "Webhook Activity")}
                 </NavSub>
               )}
             </NavGroup>

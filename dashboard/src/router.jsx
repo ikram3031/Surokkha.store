@@ -61,7 +61,9 @@ import CustomOrders from './pages/dashboard/orders/customOrders';
 import NewCustomOrder from './pages/dashboard/orders/newCustomOrder';
 import AbandonedCheckouts from './pages/dashboard/orders/abandonedCheckouts';
 import SpamList from './pages/dashboard/orders/SpamList';
-import PathaoPage from './pages/dashboard/orders/pathao/PathaoPage';
+import PathaoOverviewPage from './pages/dashboard/orders/pathao/PathaoOverviewPage';
+import PathaoParcelsPage from './pages/dashboard/orders/pathao/PathaoParcelsPage';
+import PathaoWebhookPage from './pages/dashboard/orders/pathao/PathaoWebhookPage';
 
 // Accounts
 import BalanceOverview from './pages/dashboard/accounts/balanceOverview';
@@ -132,6 +134,35 @@ const dashboardRoutes = [
             <Reports />
           </RoleGuard>
         ),
+      },
+      {
+        path: 'pathao',
+        children: [
+          {
+            path: '',
+            element: (
+              <RoleGuard menuKey="orders.pathao">
+                <PathaoOverviewPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'parcels',
+            element: (
+              <RoleGuard menuKey="orders.pathao">
+                <PathaoParcelsPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'webhook',
+            element: (
+              <RoleGuard menuKey="orders.pathao">
+                <PathaoWebhookPage />
+              </RoleGuard>
+            ),
+          },
+        ],
       },
       {
         path: 'analytics',
@@ -658,14 +689,7 @@ const dashboardRoutes = [
               </RoleGuard>
             ),
           },
-          {
-            path: 'pathao',
-            element: (
-              <RoleGuard menuKey="orders.pathao">
-                <PathaoPage />
-              </RoleGuard>
-            ),
-          },
+          { path: 'pathao', element: <Navigate to="/dashboard/pathao" replace /> },
           {
             path: ':id',
             element: (
