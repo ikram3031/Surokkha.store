@@ -1,5 +1,6 @@
 import { env } from "../config/env.js";
-import { broadcastLogToClients } from "../../service/routes/DeveloperRoute.js";
+import { getClientIp } from "../utils/clientIp.js";
+import { RequestLogModel } from "../models/requestLog.model.js";
 
 // Formats transfer byte size
 const formatBytes = (bytes) => {
@@ -29,8 +30,9 @@ const getRequestSource = (req, config = {}) => {
   return "EXTERNAL";
 };
 
-// Logs every API request to the console and pushes it to the live System Logs stream
-export const createRequestLogger = (config = {}) => (req, res, next) => {
+// Logs every API request to the console and stores it for the live System Logs stream.
+// layer: which backend process handled it ("storefront" | "storeweb" | "dashboard")
+export const createRequestLogger = (layer, config = {}) => (req, res, next) => {
   // Ignore the log endpoints themselves to prevent feedback loops
   if (req.originalUrl && req.originalUrl.startsWith("/api/v1/developer/logs")) {
     return next();
@@ -38,10 +40,7 @@ export const createRequestLogger = (config = {}) => (req, res, next) => {
 
   const startTime = process.hrtime();
 
-  const cfConnectingIp = req.headers["cf-connecting-ip"];
-  const xRealIp = req.headers["x-real-ip"];
-  const xForwardedFor = req.headers["x-forwarded-for"];
-  const clientIp = cfConnectingIp || xRealIp || (xForwardedFor ? xForwardedFor.split(",")[0].trim() : null) || req.ip || req.socket?.remoteAddress || "Unknown IP";
+  const clientIp = getClientIp(req);
 
   const source = getRequestSource(req, config);
   const requestDate = new Date();
@@ -109,22 +108,21 @@ export const createRequestLogger = (config = {}) => (req, res, next) => {
       `${methodStr} ${colors.boldWhite}${displayUrl}${colors.reset}`
     );
 
-    try {
-      broadcastLogToClients({
-        timestamp: isoTimestamp,
-        status,
-        source,
-        duration: timeMs,
-        responseTime: timeMs,
-        size: sizeStr,
-        ip: clientIp,
-        method: req.method,
-        url: req.originalUrl,
-        path: req.originalUrl,
-      });
-    } catch {
-      // log streaming must never break a request
-    }
+    // Fire-and-forget: log storage must never slow down or break a request
+    RequestLogModel.create({
+      layer,
+      timestamp: isoTimestamp,
+      status,
+      source,
+      duration: timeMs,
+      responseTime: timeMs,
+      size: sizeStr,
+      ip: clientIp,
+      userAgent: (req.headers["user-agent"] || "").slice(0, 200),
+      method: req.method,
+      url: req.originalUrl,
+      path: req.originalUrl,
+    }).catch(() => {});
   });
 
   next();

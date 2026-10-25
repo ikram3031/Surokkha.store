@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { getClientIp } from "../../common/utils/clientIp.js";
 
 const developerRouter = Router();
 
@@ -31,6 +32,14 @@ export function broadcastLogToClients(logEntry) {
     clientRes.write(`data: ${JSON.stringify(logEntry)}\n\n`);
   }
 }
+
+// GET /api/v1/developer/my-ip (the caller's own IP, so the logs page can tag it)
+developerRouter.get(
+  "/my-ip",
+  authenticateToken,
+  verifyDeveloperAccess,
+  (req, res) => res.json({ status: "success", data: { ip: getClientIp(req) } })
+);
 
 // GET /api/v1/developer/logs (Polling JSON fallback)
 developerRouter.get(

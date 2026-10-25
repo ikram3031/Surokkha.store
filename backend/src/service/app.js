@@ -11,6 +11,7 @@ import storeSettingsRouter from "./routes/StoreSettingsRoute.js";
 import swaggerRouter from "./routes/SwaggerRoute.js";
 import { env } from "../common/config/env.js";
 import { createRequestLogger } from "../common/middlewares/requestLogger.js";
+import { startRequestLogTail } from "../common/services/requestLogTail.service.js";
 import { getDynamicCorsConfig } from "../common/config/index.js";
 
 // Creates and configures Express application specifically for Dashboard & Admin Business Service
@@ -63,7 +64,9 @@ export const createServiceApp = async () => {
   app.use(express.urlencoded({ extended: false }));
 
   // Feeds the dashboard's live System Logs page
-  app.use(createRequestLogger());
+  app.use(createRequestLogger("dashboard"));
+  // Pulls in request logs from the storefront / storeWeb processes too
+  startRequestLogTail();
 
   const staticAssetOptions = {
     setHeaders: (res, filePath) => {

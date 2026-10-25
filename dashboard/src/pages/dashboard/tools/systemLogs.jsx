@@ -27,7 +27,16 @@ export default function SystemLogs() {
   const [isPaused, setIsPaused] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [myIp, setMyIp] = useState("");
   const logEndRef = useRef(null);
+
+  // Own IP (as the server sees it) so this device's requests can be tagged [me]
+  useEffect(() => {
+    apiClient
+      .get("/api/v1/developer/my-ip")
+      .then((res) => setMyIp(res.data?.data?.ip || ""))
+      .catch(() => {});
+  }, []);
 
   // Fetch initial logs
   const fetchLogs = async () => {
@@ -337,6 +346,12 @@ export default function SystemLogs() {
                 >
                   <span className="text-zinc-500 text-[11px] shrink-0">{time}</span>
                   
+                  {log.layer && (
+                    <span className="shrink-0 rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-zinc-400">
+                      {log.layer}
+                    </span>
+                  )}
+
                   {log.method && getMethodBadge(log.method)}
 
                   <span className="text-zinc-300 font-medium break-all flex-1">
@@ -359,6 +374,7 @@ export default function SystemLogs() {
                       title={`Client IP: ${log.ip || log.clientIp}`}
                     >
                       {log.ip || log.clientIp}
+                      {myIp && (log.ip || log.clientIp) === myIp && <span className="ml-1.5 font-semibold text-emerald-400">[me]</span>}
                     </span>
                   )}
                 </div>

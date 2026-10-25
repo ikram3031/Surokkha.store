@@ -6,6 +6,7 @@ import { errorHandler } from "../common/middlewares/errorHandler.js";
 import { logger } from "../common/config/logger.js";
 import storefrontRouter from "./routes.js";
 import { env } from "../common/config/env.js";
+import { createRequestLogger } from "../common/middlewares/requestLogger.js";
 import { getDynamicCorsConfig } from "../common/config/index.js";
 
 // Creates and configures Express application specifically for high-throughput StoreWeb customer traffic
@@ -56,6 +57,8 @@ export const createStoreWebApp = async () => {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+
+  app.use(createRequestLogger("storeweb"));
 
   const staticAssetOptions = {
     setHeaders: (res, filePath) => {
