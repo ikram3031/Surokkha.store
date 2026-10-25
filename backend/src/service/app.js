@@ -1,4 +1,5 @@
 import express from "express";
+import { resizedUploadsRoute, resizedUploadsHandler } from "../common/middlewares/resizedUploads.middleware.js";
 import path from "path";
 import cors from "cors";
 import fs from "fs";
@@ -74,6 +75,7 @@ export const createServiceApp = async () => {
 
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads"), staticAssetOptions));
   app.use("/src/uploads", express.static(path.join(process.cwd(), "uploads"), staticAssetOptions));
+  app.get(resizedUploadsRoute, resizedUploadsHandler);
 
   // Health check endpoint for Dashboard Service API
   app.get("/", (req, res) => {

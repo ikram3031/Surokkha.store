@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import TrialPackHero from './TrialPackHero';
 import UltimateComboHero from './UltimateComboHero';
+import ProtectionComboHero from './ProtectionComboHero';
 
 const AUTOPLAY_MS = 5000;
 
@@ -10,6 +11,7 @@ const AUTOPLAY_MS = 5000;
 const SLIDES = [
   { key: 'trial-pack', Component: TrialPackHero },
   { key: 'ultimate-combo', Component: UltimateComboHero },
+  { key: 'protection-combo', Component: ProtectionComboHero },
 ];
 
 const SWIPE_THRESHOLD_PX = 50;

@@ -77,6 +77,7 @@ export default function ProductCard({ productKey, className = '' }) {
           customImageUrl={prod?.featuredImage || prod?.featured_image || prod?.imageUrl || prod?.image_url || prod?.product_image || (Array.isArray(prod?.images) && prod.images.length > 0 ? prod.images[0] : null) || (Array.isArray(prod?.gallery) && prod.gallery.length > 0 ? prod.gallery[0] : null)}
           sizeClass="w-full h-full aspect-square"
           imgClassName="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+          sizes="(max-width: 767px) 50vw, 400px"
         />
 
         {/* Discount Ribbon Badge (SS Design with Folded 3D Corner & Downward Chevron Point) */}

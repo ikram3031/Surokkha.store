@@ -68,3 +68,6 @@ configs/secrets/
 
 # Claude Code local settings
 .claude/
+
+# Resized upload copies generated at runtime
+.cache/

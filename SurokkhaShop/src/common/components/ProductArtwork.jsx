@@ -5,11 +5,32 @@ import { SITE_CONFIG } from '../config/siteConfig';
 
 const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
+// Shrinking a 1200px upload ~4x into a card renders jagged edges, so cards use the backend's
+// Lanczos-resized 600px copy (/uploads-resized/600/...). A failed srcset candidate doesn't
+// reliably fire `error`, so one HEAD request per page load checks the route answers first.
+const RESIZED_PROBE_TIMEOUT_MS = 3000;
+let resizedRouteOk = null;
+let resizedRouteProbe = null;
+
+const probeResizedRoute = (url) => {
+  if (!resizedRouteProbe) {
+    const timeout = new Promise((resolve) => setTimeout(() => resolve(false), RESIZED_PROBE_TIMEOUT_MS));
+    const request = fetch(url, { method: 'HEAD' }).then((res) => res.ok).catch(() => false);
+    resizedRouteProbe = Promise.race([request, timeout]).then((ok) => {
+      resizedRouteOk = ok;
+      return ok;
+    });
+  }
+  return resizedRouteProbe;
+};
+
 export default function ProductArtwork({
   productKey,
   customImageUrl = null,
   sizeClass = "w-full aspect-square",
-  imgClassName = "w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105 rounded-2xl"
+  imgClassName = "w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105 rounded-2xl",
+  // Pass `sizes` where the image shows small (cards) so the browser can pick the 600px copy
+  sizes = null
 }) {
   const storeProducts = useStore((state) => state.products);
   const p = (typeof productKey === 'object' && productKey !== null)
@@ -22,6 +43,7 @@ export default function ProductArtwork({
 
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [resizedOk, setResizedOk] = useState(resizedRouteOk);
 
   // Un-thumb helper to always request high-res featured asset
   const toHighRes = (url) => {
@@ -74,14 +96,34 @@ export default function ProductArtwork({
     setImgLoaded(false);
   }, [rawImg, customImageUrl, productKey]);
 
+  const uploadsPrefix = `${(API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '')}/uploads/`;
+  const resizedUrl = sizes && resolvedImgUrl && resolvedImgUrl.startsWith(uploadsPrefix)
+    ? resolvedImgUrl.replace('/uploads/', '/uploads-resized/600/')
+    : null;
+
+  React.useEffect(() => {
+    if (!resizedUrl || resizedOk !== null) return;
+    let cancelled = false;
+    probeResizedRoute(resizedUrl).then((ok) => {
+      if (!cancelled) setResizedOk(ok);
+    });
+    return () => { cancelled = true; };
+  }, [resizedUrl, resizedOk]);
+
+  // Hold the <img> until the probe answers so a card doesn't download both sizes
+  const awaitingProbe = Boolean(resizedUrl) && resizedOk === null;
+  const cardSrcSet = resizedUrl && resizedOk ? `${resizedUrl} 600w, ${resolvedImgUrl} 1200w` : undefined;
+
   if (resolvedImgUrl && !imgError) {
     return (
       <div className={`${sizeClass} relative flex items-center justify-center overflow-hidden rounded-2xl bg-slate-50`}>
         {/* {!imgLoaded && (
           <Skeleton className="absolute inset-0 w-full h-full rounded-2xl" />
         )} */}
-        <img
+        {!awaitingProbe && <img
           src={resolvedImgUrl}
+          srcSet={cardSrcSet}
+          sizes={cardSrcSet ? sizes : undefined}
           alt={p?.name || 'Product Packaging'}
           className={`${imgClassName || "w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105 rounded-2xl"}`}
           onLoad={() => setImgLoaded(true)}
@@ -90,7 +132,7 @@ export default function ProductArtwork({
             setImgLoaded(true);
           }}
           loading="lazy"
-        />
+        />}
       </div>
     );
   }

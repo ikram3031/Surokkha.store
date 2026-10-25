@@ -1,4 +1,5 @@
 import express from "express";
+import { resizedUploadsRoute, resizedUploadsHandler } from "./common/middlewares/resizedUploads.middleware.js";
 import path from "path";
 import cors from "cors";
 import fs from "fs";
@@ -76,6 +77,7 @@ export const createApp = async (options = {}) => {
 
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads"), staticAssetOptions));
   app.use("/src/uploads", express.static(path.join(process.cwd(), "uploads"), staticAssetOptions));
+  app.get(resizedUploadsRoute, resizedUploadsHandler);
 
   // Helper to format transfer byte size
   const formatBytes = (bytes) => {
