@@ -33,15 +33,30 @@
        count each order twice. Drop only the gateway's Purchase; every other event still goes through. -->
   <script>
     (function () {
-      var isGatewayPurchase = function (url, body) {
-        return /\.on\.aws\/events/.test(String(url)) && typeof body === 'string' && /"event_name"\s*:\s*"Purchase"/.test(body);
+      var PURCHASE_RE = /(?:"(?:event_name|event|ev)"\s*:\s*"Purchase")|(?:(?:^|[&?])(?:event_name|event|ev)=Purchase(?:&|$))/;
+      var isGatewayUrl = function (url) { return /\.on\.aws\/events/.test(String(url)); };
+      var textOf = function (body) {
+        if (typeof body === 'string') return body;
+        if (body && typeof body.toString === 'function' && body instanceof URLSearchParams) return body.toString();
+        return null;
       };
       var origFetch = window.fetch;
       if (origFetch) {
         window.fetch = function (input, init) {
           try {
-            if (isGatewayPurchase((input && input.url) || input, init && init.body)) {
-              return Promise.resolve(new Response(null, { status: 204 }));
+            var url = (input && input.url) || input;
+            var body = init && init.body;
+            if (isGatewayUrl(url) && body != null) {
+              var sync = textOf(body);
+              if (sync !== null) {
+                if (PURCHASE_RE.test(sync) || PURCHASE_RE.test(decodeURIComponent(sync))) return Promise.resolve(new Response(null, { status: 204 }));
+              } else if (typeof Blob !== 'undefined' && (body instanceof Blob || body instanceof ArrayBuffer)) {
+                var self = this, args = arguments;
+                return new Response(body).text().then(function (txt) {
+                  if (PURCHASE_RE.test(txt)) return new Response(null, { status: 204 });
+                  return origFetch.apply(self, args);
+                });
+              }
             }
           } catch (_) {}
           return origFetch.apply(this, arguments);
@@ -51,7 +66,16 @@
         var origBeacon = navigator.sendBeacon.bind(navigator);
         navigator.sendBeacon = function (url, data) {
           try {
-            if (isGatewayPurchase(url, data)) return true;
+            if (isGatewayUrl(url)) {
+              var txt = textOf(data);
+              if (txt === null && data && typeof FormData !== 'undefined' && data instanceof FormData) {
+                var parts = [];
+                data.forEach(function (v, k) { if (typeof v === 'string') parts.push(k + '=' + v); });
+                txt = parts.join('&');
+              }
+              // Blob bodies can't be read synchronously; those are re-checked via the fetch path only.
+              if (txt !== null && (PURCHASE_RE.test(txt) || PURCHASE_RE.test(decodeURIComponent(txt)))) return true;
+            }
           } catch (_) {}
           return origBeacon(url, data);
         };

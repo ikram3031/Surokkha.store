@@ -13,6 +13,61 @@
     href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;700;800&display=swap"
     rel="stylesheet" />
   <title>সুরক্ষা | নিজের কম্বো বানিয়ে নিন</title>
+  <!-- Meta's Conversions API Gateway (*.on.aws) mirrors every pixel event to Meta server-side. Our backend
+       already sends Purchase via CAPI (same event_id, full customer data), so the gateway copy made Meta
+       count each order twice. Drop only the gateway's Purchase; every other event still goes through. -->
+  <script>
+    (function () {
+      var PURCHASE_RE = /(?:"(?:event_name|event|ev)"\s*:\s*"Purchase")|(?:(?:^|[&?])(?:event_name|event|ev)=Purchase(?:&|$))/;
+      var isGatewayUrl = function (url) { return /\.on\.aws\/events/.test(String(url)); };
+      var textOf = function (body) {
+        if (typeof body === 'string') return body;
+        if (body && typeof body.toString === 'function' && body instanceof URLSearchParams) return body.toString();
+        return null;
+      };
+      var origFetch = window.fetch;
+      if (origFetch) {
+        window.fetch = function (input, init) {
+          try {
+            var url = (input && input.url) || input;
+            var body = init && init.body;
+            if (isGatewayUrl(url) && body != null) {
+              var sync = textOf(body);
+              if (sync !== null) {
+                if (PURCHASE_RE.test(sync) || PURCHASE_RE.test(decodeURIComponent(sync))) return Promise.resolve(new Response(null, { status: 204 }));
+              } else if (typeof Blob !== 'undefined' && (body instanceof Blob || body instanceof ArrayBuffer)) {
+                var self = this, args = arguments;
+                return new Response(body).text().then(function (txt) {
+                  if (PURCHASE_RE.test(txt)) return new Response(null, { status: 204 });
+                  return origFetch.apply(self, args);
+                });
+              }
+            }
+          } catch (_) {}
+          return origFetch.apply(this, arguments);
+        };
+      }
+      if (navigator.sendBeacon) {
+        var origBeacon = navigator.sendBeacon.bind(navigator);
+        navigator.sendBeacon = function (url, data) {
+          try {
+            if (isGatewayUrl(url)) {
+              var txt = textOf(data);
+              if (txt === null && data && typeof FormData !== 'undefined' && data instanceof FormData) {
+                var parts = [];
+                data.forEach(function (v, k) { if (typeof v === 'string') parts.push(k + '=' + v); });
+                txt = parts.join('&');
+              }
+              // Blob bodies can't be read synchronously; those are re-checked via the fetch path only.
+              if (txt !== null && (PURCHASE_RE.test(txt) || PURCHASE_RE.test(decodeURIComponent(txt)))) return true;
+            }
+          } catch (_) {}
+          return origBeacon(url, data);
+        };
+      }
+    })();
+  </script>
+
   <!-- Meta Pixel Code -->
   <script>
     !function (f, b, e, v, n, t, s) {
