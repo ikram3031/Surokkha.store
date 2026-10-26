@@ -2,32 +2,74 @@ import React, { useEffect, useRef, useState } from 'react';
 import TrialPackHero from './TrialPackHero';
 import UltimateComboHero from './UltimateComboHero';
 import ProtectionComboHero from './ProtectionComboHero';
+import CmsHeroSlide from './CmsHeroSlide';
+import { SITE_CONFIG } from '../config/siteConfig';
 
-const AUTOPLAY_MS = 5000;
+const API_BASE_URL = SITE_CONFIG.apiBaseUrl.replace(/\/$/, '');
+const CACHE_KEY = 'cms_hero_slider_v1';
+const DEFAULT_SETTINGS = { autoplay: true, speedMs: 5000, transitionMs: 700, pauseOnHover: true, showArrows: true, showDots: true };
 
-// Hero banner slides. Each one is a coded banner (image as the visual, text/button/link in code),
-// so links, button effects and text can be changed without re-making an image.
-// Slides sit side by side in a flex row, so every slide takes the height of the tallest one.
-const SLIDES = [
+// Built-in coded banners, shown only when the dashboard has no slider saved (or the API is unreachable).
+const FALLBACK_SLIDES = [
   { key: 'trial-pack', Component: TrialPackHero },
   { key: 'ultimate-combo', Component: UltimateComboHero },
   { key: 'protection-combo', Component: ProtectionComboHero },
 ];
 
+// Reads the last CMS slider from localStorage so repeat visits render instantly
+const readCache = () => {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+  } catch {
+    return null;
+  }
+};
+
+const writeCache = (value) => {
+  try {
+    if (value) localStorage.setItem(CACHE_KEY, JSON.stringify(value));
+    else localStorage.removeItem(CACHE_KEY);
+  } catch {}
+};
+
 const SWIPE_THRESHOLD_PX = 50;
 
+// Home hero slider. Slides, speed and display options come from the dashboard (CMSContent type "slider").
 export default function HeroBannerSlider() {
   const [active, setActive] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [cms, setCms] = useState(() => readCache());
+  const [loaded, setLoaded] = useState(() => readCache() !== null);
 
-  const slideCount = SLIDES.length;
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${API_BASE_URL}/api/v1/cms-content?type=slider&page=home&site=shop`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('cms fetch failed'))))
+      .then((json) => {
+        const doc = json?.data?.items?.length ? json.data : null;
+        writeCache(doc);
+        setCms(doc);
+        setLoaded(true);
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') setLoaded(true);
+      });
+    return () => controller.abort();
+  }, []);
+
+  const settings = { ...DEFAULT_SETTINGS, ...(cms?.settings || {}) };
+  const slides = cms
+    ? cms.items.map((item, i) => ({ key: item._id || `cms-${i}`, render: () => <CmsHeroSlide slide={item} /> }))
+    : FALLBACK_SLIDES.map(({ key, Component }) => ({ key, render: () => <Component /> }));
+
+  const slideCount = slides.length;
   const current = active % slideCount;
 
   useEffect(() => {
-    if (slideCount <= 1 || isPaused) return;
-    const id = setInterval(() => setActive((a) => (a + 1) % slideCount), AUTOPLAY_MS);
+    if (slideCount <= 1 || !settings.autoplay || (settings.pauseOnHover && isPaused)) return;
+    const id = setInterval(() => setActive((a) => (a + 1) % slideCount), settings.speedMs);
     return () => clearInterval(id);
-  }, [slideCount, isPaused]);
+  }, [slideCount, isPaused, settings.autoplay, settings.pauseOnHover, settings.speedMs]);
 
   const goTo = (index) => setActive((index + slideCount) % slideCount);
 
@@ -47,6 +89,8 @@ export default function HeroBannerSlider() {
     goTo(deltaX < 0 ? current + 1 : current - 1);
   };
 
+  if (!loaded) return <section className="w-full min-h-[28rem]" aria-hidden="true" />;
+
   return (
     <section
       className="relative w-full overflow-hidden"
@@ -56,18 +100,20 @@ export default function HeroBannerSlider() {
       onTouchEnd={handleTouchEnd}
     >
       <div
-        className="flex transition-transform duration-700 ease-out"
-        style={{ transform: `translateX(-${current * 100}%)` }}
+        className="flex ease-out"
+        style={{ transform: `translateX(-${current * 100}%)`, transitionProperty: 'transform', transitionDuration: `${settings.transitionMs}ms` }}
       >
-        {SLIDES.map(({ key, Component }, i) => (
+        {slides.map(({ key, render }, i) => (
           <div key={key} className="w-full flex-shrink-0 flex" inert={current !== i}>
-            <Component />
+            {render()}
           </div>
         ))}
       </div>
 
       {slideCount > 1 && (
         <>
+          {settings.showArrows && (
+          <>
           <button
             type="button"
             onClick={() => goTo(current - 1)}
@@ -84,8 +130,11 @@ export default function HeroBannerSlider() {
           >
             ›
           </button>
+          </>
+          )}
+          {settings.showDots && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-            {SLIDES.map(({ key }, i) => (
+            {slides.map(({ key }, i) => (
               <button
                 key={key}
                 type="button"
@@ -95,6 +144,7 @@ export default function HeroBannerSlider() {
               />
             ))}
           </div>
+          )}
         </>
       )}
     </section>

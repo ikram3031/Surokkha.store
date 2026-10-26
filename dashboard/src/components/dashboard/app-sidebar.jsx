@@ -48,6 +48,7 @@ import {
   TrendingUp,
   Scale,
   HardDrive,
+  GalleryHorizontal,
 } from "lucide-react"
 
 import {
@@ -548,6 +549,9 @@ export const AppSidebar = ({ ...props }) => {
                         </NavSub>
                         <NavSub to="/dashboard/settings/cms-content/store" active={pathname.startsWith("/dashboard/settings/cms-content/store")} className="pl-8">
                           {t("nav.meta_pixel_store", "Store")}
+                        </NavSub>
+                        <NavSub to="/dashboard/settings/cms-content/slider/shop" active={pathname.startsWith("/dashboard/settings/cms-content/slider")} icon={GalleryHorizontal}>
+                          {t("nav.hero_slider", "Hero Slider")}
                         </NavSub>
                         <NavSub to="/dashboard/settings/seo/shop" active={pathname === "/dashboard/settings/seo"} icon={Search}>
                           {t("nav.general_seo", "General & SEO")}

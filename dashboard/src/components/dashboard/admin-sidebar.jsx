@@ -33,6 +33,7 @@ import {
   ChevronRight,
   Mail,
   Image as ImageIcon,
+  GalleryHorizontal,
   Images,
   LineChart,
   LifeBuoy,
@@ -504,6 +505,16 @@ export const AdminSidebar = ({ ...props }) => {
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   ))}
+
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      isActive={pathname.startsWith("/admin/settings/cms-content/slider")}
+                      render={<Link to="/admin/settings/cms-content/slider/shop" />}
+                    >
+                      <GalleryHorizontal className="h-3.5 w-3.5" />
+                      <span>{t("nav.hero_slider", "Hero Slider")}</span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
