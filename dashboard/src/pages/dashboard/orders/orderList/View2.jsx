@@ -20,13 +20,13 @@ import { Toolbar } from './view2/Toolbar';
 // All state and actions come from useOrderList via `list`.
 const View2 = ({ list }) => {
   const { t } = useTranslation();
-  const { newOrderAction, exporter, pathao, stats, data, pagination, orderActions } = list;
+  const { title, showStats, newOrderAction, exporter, pathao, stats, data, pagination, orderActions } = list;
 
   return (
     <div className="page-container flex-1 space-y-5 p-4 pt-6 md:p-8">
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{t('nav.orders', 'Orders')}</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{t(title.key, title.label)}</h2>
           <div className="flex gap-2">
             {newOrderAction && (
               <Button
@@ -52,7 +52,7 @@ const View2 = ({ list }) => {
         <PathaoSyncPill pathao={pathao} className="hidden sm:inline-flex" />
       </div>
 
-      <StatCards stats={stats} />
+      {showStats && <StatCards stats={stats} />}
 
       <Toolbar list={list} />
 

@@ -21,6 +21,13 @@ const PATHAO_STATUS_KEY = ['pathao-sync-status'];
 // Same keys as the overview page hooks, so the cache is shared
 const STATUS_COUNTS_KEY = ['dashboard', 'orderStatusDistribution', 'all'];
 
+// Page heading per order type (the same list serves online, custom and in-store orders)
+const PAGE_TITLES = {
+  online: { key: 'nav.orders', label: 'Orders' },
+  custom: { key: 'nav.custom_orders', label: 'Custom Orders' },
+  instore: { key: 'nav.in_store_orders', label: 'In-Store Orders' },
+};
+
 // URL values that mean "no filter" are removed from the query string
 const isDefaultParam = (key, val, defaultPageSize) =>
   val === undefined ||
@@ -463,17 +470,26 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
   }, [statusCountsQuery.data, statusCountsQuery.isLoading]);
 
   // ---------------------------------------------------------------- page actions
+  const customOrderAction = { to: '/dashboard/orders/custom/new', labelKey: 'orders.new_custom_order', label: 'New Custom Order' };
+  const inStoreOrderAction = { to: '/dashboard/orders/new', labelKey: 'orders.new_order', label: 'New In-Store Order' };
   const newOrderAction = isReadOnly
     ? null
-    : clientConfig?.features?.customOrders
-      ? { to: '/dashboard/orders/custom/new', labelKey: 'orders.new_custom_order', label: 'New Custom Order' }
-      : clientConfig?.features?.inStoreOrder !== false
-        ? { to: '/dashboard/orders/new', labelKey: 'orders.new_order', label: 'New In-Store Order' }
-        : null;
+    : orderType === 'custom'
+      ? customOrderAction
+      : orderType === 'instore'
+        ? inStoreOrderAction
+        : clientConfig?.features?.customOrders
+          ? customOrderAction
+          : clientConfig?.features?.inStoreOrder !== false
+            ? inStoreOrderAction
+            : null;
 
   return {
     isReadOnly,
     orderType,
+    title: PAGE_TITLES[orderType] || PAGE_TITLES.online,
+    // Status counts cover every order type, so they are only shown on the main orders list
+    showStats: orderType === 'online',
     newOrderAction,
 
     search: { input: searchInput, setInput: setSearchInput, query: urlSearch },

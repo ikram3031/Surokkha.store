@@ -693,16 +693,21 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
   // Same id on the server InitiateCheckout (sent with the saved checkout lead) so Meta merges the pair
   const eventId = `ic_${getCheckoutSessionId()}`;
 
-  const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
-  const contents = cartEntries.map(([slug, qty]) => {
-    const p = products[slug];
-    const catId = resolveCatalogId(slug, products);
-    return {
-      id: catId,
-      quantity: qty || 1,
-      item_price: Number(p?.price || 400)
-    };
+  // Variant cart keys ("slug:::size") must resolve through the base product to match the catalog
+  const byCatalogId = new Map();
+  cartEntries.forEach(([key, qty]) => {
+    const baseSlug = key.split(':::')[0];
+    const p = products[baseSlug];
+    const catId = resolveCatalogId(p || baseSlug, products);
+    const line = byCatalogId.get(catId);
+    if (line) {
+      line.quantity += qty || 1;
+    } else {
+      byCatalogId.set(catId, { id: catId, quantity: qty || 1, item_price: Number(p?.price || 400) });
+    }
   });
+  const contents = [...byCatalogId.values()];
+  const catalogIds = contents.map((c) => c.id);
 
   const customData = {
     content_ids: catalogIds,
@@ -720,10 +725,11 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
   gtagEvent('begin_checkout', {
     currency: 'BDT',
     value: grandTotal,
-    items: cartEntries.map(([slug, qty]) => {
+    items: cartEntries.map(([key, qty]) => {
+      const slug = key.split(':::')[0];
       const p = products[slug];
       return {
-        item_id: resolveCatalogId(slug, products),
+        item_id: resolveCatalogId(p || slug, products),
         item_name: p?.name || slug,
         price: Number(p?.price || 400),
         quantity: qty || 1
@@ -736,7 +742,9 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
  * 6. Track AddPaymentInfo (Pixel + CAPI + GA4)
  */
 export const trackAddPaymentInfo = (paymentType = 'Cash on Delivery', totals = {}, cart = {}, products = {}) => {
-  const cartEntries = typeof cart === 'object' && cart !== null ? Object.entries(cart).filter(([slug, qty]) => {
+  // Callers pass either a cart object ({ key: qty }) or just the list of cart keys
+  const cartObj = Array.isArray(cart) ? Object.fromEntries(cart.map((key) => [key, 1])) : cart;
+  const cartEntries = typeof cartObj === 'object' && cartObj !== null ? Object.entries(cartObj).filter(([slug, qty]) => {
     if (qty <= 0) return false;
     const baseSlug = slug.split(':::')[0];
     const p = products[baseSlug];
@@ -749,7 +757,10 @@ export const trackAddPaymentInfo = (paymentType = 'Cash on Delivery', totals = {
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
   if (isDuplicateEvent(`AddPaymentInfo|${grandTotal}|${paymentType}`)) return;
   const eventId = generateEventId('api');
-  const catalogIds = [...new Set(cartEntries.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
+  const catalogIds = [...new Set(cartEntries.map(([key]) => {
+    const baseSlug = key.split(':::')[0];
+    return resolveCatalogId(products[baseSlug] || baseSlug, products);
+  }).filter(Boolean))];
 
   const customData = {
     content_ids: catalogIds,
@@ -808,16 +819,22 @@ export const trackPurchase = (order, products = {}) => {
   const grandTotal = Number(order.totals.grandTotal || order.totals.subtotal || 0);
   const itemCount = purchasedItems.reduce((sum, [_, q]) => sum + q, 0);
   
-  const catalogIds = [...new Set(purchasedItems.map(([slug]) => resolveCatalogId(slug, products)).filter(Boolean))];
-  const contents = purchasedItems.map(([slug, qty]) => {
-    const p = products[slug];
-    const catId = resolveCatalogId(slug, products);
-    return {
-      id: catId,
-      quantity: qty || 1,
-      item_price: Number(p?.price || 400)
-    };
+  // Cart keys of variant lines look like "slug:::size"; the catalog id must come from the base product,
+  // otherwise those lines never match a catalog item. Variants of one product merge into one line.
+  const byCatalogId = new Map();
+  purchasedItems.forEach(([key, qty]) => {
+    const baseSlug = key.split(':::')[0];
+    const p = products[baseSlug];
+    const catId = resolveCatalogId(p || baseSlug, products);
+    const line = byCatalogId.get(catId);
+    if (line) {
+      line.quantity += qty || 1;
+    } else {
+      byCatalogId.set(catId, { id: catId, quantity: qty || 1, item_price: Number(p?.price || 400) });
+    }
   });
+  const contents = [...byCatalogId.values()];
+  const catalogIds = contents.map((c) => c.id);
 
   // Meta requires Purchase value to be present and > 0. Fall back to the sum of
   // line items if the order total is missing/zero so value is never absent.
@@ -853,10 +870,11 @@ export const trackPurchase = (order, products = {}) => {
     value: purchaseValue,
     currency: 'BDT',
     shipping: Number(order.totals.deliveryFee || 0),
-    items: purchasedItems.map(([slug, qty]) => {
+    items: purchasedItems.map(([key, qty]) => {
+      const slug = key.split(':::')[0];
       const p = products[slug];
       return {
-        item_id: resolveCatalogId(slug, products),
+        item_id: resolveCatalogId(p || slug, products),
         item_name: p?.name || slug,
         price: Number(p?.price || 400),
         quantity: qty || 1

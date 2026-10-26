@@ -79,7 +79,7 @@ export default function CheckoutView() {
   useEffect(() => {
     if (totals.itemCount > 0) {
       trackInitiateCheckout(cart, products, totals);
-      trackAddPaymentInfo('Cash on Delivery', totals, cartKeys);
+      trackAddPaymentInfo('Cash on Delivery', totals, cartKeys, products);
     }
   }, []);
 

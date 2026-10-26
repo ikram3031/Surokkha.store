@@ -263,7 +263,8 @@ export const sendOrderEmailsAsynchronously = (order) => {
             bodyText: `New order #${orderId} placed by ${customerName}.\nTotal: ৳${totalAmount}\nPhone: ${customerPhone}\nAddress: ${billingAddress?.fullAddress || ""}\nPayment: ${paymentMethod}`,
             date: new Date(),
             isRead: false,
-            isStarred: true,
+            // Order notifications land unstarred; starring is left to the user
+            isStarred: false,
             active: true,
           });
           console.log(`[Email Notification] Successfully ingested order #${orderId} into Dashboard Webmail INBOX.`);

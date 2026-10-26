@@ -30,8 +30,19 @@ const getRequestSource = (req, config = {}) => {
   return "EXTERNAL";
 };
 
+// Which frontend a request came from (SHOP, STORE, OFFER, DASH), by Origin/Referer; falls back to the handling backend
+const FALLBACK_BY_LAYER = { storefront: "SHOP", storeweb: "STORE", dashboard: "DASH" };
+const getFrontendLabel = (req, layer) => {
+  const from = String(req.headers["origin"] || req.headers["referer"] || "").toLowerCase();
+  if (from.includes("offer.")) return "OFFER";
+  if (from.includes("admin.") || from.includes("dashboard")) return "DASH";
+  if (from.includes("surokkha.shop")) return "SHOP";
+  if (from.includes("surokkha.store")) return "STORE";
+  return FALLBACK_BY_LAYER[layer] || String(layer).toUpperCase();
+};
+
 // Logs every API request to the console and stores it for the live System Logs stream.
-// layer: which backend process handled it ("storefront" | "storeweb" | "dashboard")
+// layer: which backend process handled it ("storefront" | "storeweb" | "dashboard"); stored as the frontend label
 export const createRequestLogger = (layer, config = {}) => (req, res, next) => {
   // Ignore the log endpoints themselves to prevent feedback loops
   if (req.originalUrl && req.originalUrl.startsWith("/api/v1/developer/logs")) {
@@ -110,7 +121,7 @@ export const createRequestLogger = (layer, config = {}) => (req, res, next) => {
 
     // Fire-and-forget: log storage must never slow down or break a request
     RequestLogModel.create({
-      layer,
+      layer: getFrontendLabel(req, layer),
       timestamp: isoTimestamp,
       status,
       source,
