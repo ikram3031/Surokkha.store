@@ -110,7 +110,7 @@ export default function TestimonialCarousel({ theme = 'light' }) {
           {t('testimonials.title', 'আমাদের সম্মানিত গ্রাহকদের মতামত')}
         </h2>
         <p className={`text-xs sm:text-sm mt-1 max-w-lg mx-auto leading-relaxed ${
-          isDark ? 'text-slate-300' : 'text-slate-600'
+          isDark ? 'text-slate-300' : 'text-slate-800'
         }`}>
           {t('testimonials.subtitle', 'সারা বাংলাদেশ থেকে সংগৃহীত প্রকৃত ক্রেতাদের বিশ্বস্ত ও গোপনীয় অভিজ্ঞতার গল্প।')}
         </p>
@@ -133,7 +133,7 @@ export default function TestimonialCarousel({ theme = 'light' }) {
           }`}>
             {isBn ? '৪.৯ / ৫.০' : '4.9 / 5.0'}
           </span>
-          <span className="text-xs text-slate-600 font-semibold">
+          <span className="text-xs text-slate-800 font-semibold">
             ({isBn ? '১২৫০+ রিভিউ' : '1,250+ Reviews'})
           </span>
         </div>
@@ -267,7 +267,7 @@ export default function TestimonialCarousel({ theme = 'light' }) {
                           {t('testimonials.verified_buyer', 'ভেরিফায়েড')}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600 font-medium truncate">
+                      <p className="text-[11px] text-slate-800 font-medium truncate">
                         {reviewerLocation}
                       </p>
                     </div>

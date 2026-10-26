@@ -60,15 +60,6 @@ export const createOrder = async (req, res, next) => {
         validationErrors.push('Only one coupon can be applied to an order');
       } else {
         let coupon = await CouponModel.findOne({ code });
-        if (!coupon && code === 'FREEOCT') {
-          coupon = {
-            code: 'FREEOCT',
-            discountType: 'free_shipping',
-            discountValue: 0,
-            minOrderAmount: 1000,
-            active: true,
-          };
-        }
         if (!coupon) {
           validationErrors.push('Coupon code is invalid or has expired');
         } else if (!coupon.active) {

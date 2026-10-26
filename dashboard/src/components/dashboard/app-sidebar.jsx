@@ -222,7 +222,6 @@ export const AppSidebar = ({ ...props }) => {
   const showCustomers = isAllowed("customers") || isAllowed("members") || isAllowed("admin")
   const showReviews = isAllowed("products.reviews") || isAllowed("reviews")
   const showProducts = isAllowed("products")
-  const showOrganize = isAllowed("products.categories") || isAllowed("products.brands") || isAllowed("products.attributes") || isAllowed("products.size-charts")
   const showMedia = isAllowed("tools.assets") || isAllowed("tools.media") || isAllowed("tools") || isAllowed("tools.bulk-image-resize")
   const showSettings = isAllowed("settings")
   const showSettingsGroup = showSettings || isAllowed("users")
@@ -240,10 +239,10 @@ export const AppSidebar = ({ ...props }) => {
     pathname.startsWith("/dashboard/pathao") ? "pathao"
     : pathname.startsWith("/dashboard/orders") ? "orders"
     : pathname.startsWith("/dashboard/items") ? "products"
-    : (pathname.startsWith("/dashboard/products") || pathname === "/dashboard/settings/products") ? "products"
+    : (pathname === "/dashboard/products" || pathname === "/dashboard/products/list") ? "products"
     : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
     : (pathname.startsWith("/dashboard/accounts") || pathname.startsWith("/dashboard/billing")) ? "accounts"
-    : (pathname.startsWith("/dashboard/settings") || pathname.startsWith("/dashboard/users") || pathname.startsWith("/dashboard/tools/meta-catalog")) ? "settings"
+    : (pathname.startsWith("/dashboard/settings") || pathname.startsWith("/dashboard/users")) ? "settings"
     : (pathname.startsWith("/dashboard/cloudflare") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/analytics") || pathname.startsWith("/dashboard/tools/analytics") || pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs") || pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs") || pathname.startsWith("/dashboard/cpanel") || pathname.startsWith("/dashboard/trash")) ? "system"
     : null
 
@@ -417,7 +416,7 @@ export const AppSidebar = ({ ...props }) => {
             <NavLink to="/dashboard/reviews" active={pathname.startsWith("/dashboard/reviews")} icon={Star} label={t("nav.reviews", "Reviews")} />
           )}
 
-          {(showProducts || showItems || showMedia) && <NavLabel>{t("nav.group_catalog", "Catalog")}</NavLabel>}
+          {(showProducts || showItems || showMedia || isAllowed("tools.meta-catalog")) && <NavLabel>{t("nav.group_catalog", "Catalog")}</NavLabel>}
           {showProducts && (
             <NavGroup id="products" icon={Package} label={t("nav.products", "Products")} active={activeGroup === "products"} open={openMenu === "products"} onToggle={toggleMenu}>
               {isAllowed("products.list") && (
@@ -430,48 +429,31 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.item_list", "Item List")}
                 </NavSub>
               )}
-              {isAllowed("products.on-sale") && (
-                <NavSub to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag}>
-                  {t("nav.on_sale", "On Sale")}
-                </NavSub>
-              )}
-              {isAllowed("products.miniature") && (
-                <NavSub to="/dashboard/products/miniature" active={pathname === "/dashboard/products/miniature"} icon={Sparkles}>
-                  {t("nav.miniature", "Miniature")}
-                </NavSub>
-              )}
-              {(isAllowed("products.showcases") || isAllowed("settings")) && (
-                <NavSub to="/dashboard/settings/products" active={settingsProductsActive} icon={Sparkles}>
-                  {t("nav.showcases", "Showcases")}
-                </NavSub>
-              )}
-              {isAllowed("products.coupons") && (
-                <NavSub to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket}>
-                  {t("nav.coupons", "Coupons")}
-                </NavSub>
-              )}
-              {showOrganize && <SubLabel>{t("nav.organize", "Organize")}</SubLabel>}
-              {isAllowed("products.categories") && (
-                <NavSub to="/dashboard/products/categories" active={pathname === "/dashboard/products/categories"} icon={Receipt}>
-                  {t("nav.categories", "Categories")}
-                </NavSub>
-              )}
-              {isAllowed("products.brands") && (
-                <NavSub to="/dashboard/products/brands" active={pathname === "/dashboard/products/brands"} icon={CreditCard}>
-                  {t("nav.brands", "Brands")}
-                </NavSub>
-              )}
-              {isAllowed("products.attributes") && (
-                <NavSub to="/dashboard/products/attributes" active={pathname.startsWith("/dashboard/products/attributes")} icon={Sliders}>
-                  {t("nav.attributes", "Attributes")}
-                </NavSub>
-              )}
-              {isAllowed("products.size-charts") && (
-                <NavSub to="/dashboard/products/size-charts" active={pathname === "/dashboard/products/size-charts"} icon={Ruler}>
-                  {t("nav.size_charts", "Size Charts")}
-                </NavSub>
-              )}
             </NavGroup>
+          )}
+          {showProducts && isAllowed("products.on-sale") && (
+            <NavLink to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag} label={t("nav.on_sale", "On Sale")} />
+          )}
+          {showProducts && (isAllowed("products.showcases") || isAllowed("settings")) && (
+            <NavLink to="/dashboard/settings/products" active={settingsProductsActive} icon={Sparkles} label={t("nav.showcases", "Showcases")} />
+          )}
+          {showProducts && isAllowed("products.coupons") && (
+            <NavLink to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket} label={t("nav.coupons", "Coupons")} />
+          )}
+          {showProducts && isAllowed("products.categories") && (
+            <NavLink to="/dashboard/products/categories" active={pathname === "/dashboard/products/categories"} icon={Receipt} label={t("nav.categories", "Categories")} />
+          )}
+          {showProducts && isAllowed("products.brands") && (
+            <NavLink to="/dashboard/products/brands" active={pathname === "/dashboard/products/brands"} icon={CreditCard} label={t("nav.brands", "Brands")} />
+          )}
+          {showProducts && isAllowed("products.attributes") && (
+            <NavLink to="/dashboard/products/attributes" active={pathname.startsWith("/dashboard/products/attributes")} icon={Sliders} label={t("nav.attributes", "Attributes")} />
+          )}
+          {showProducts && isAllowed("products.size-charts") && (
+            <NavLink to="/dashboard/products/size-charts" active={pathname === "/dashboard/products/size-charts"} icon={Ruler} label={t("nav.size_charts", "Size Charts")} />
+          )}
+          {isAllowed("tools.meta-catalog") && (
+            <NavLink to="/dashboard/tools/meta-catalog" active={pathname === "/dashboard/tools/meta-catalog"} icon={Share2} label={t("nav.meta_catalog", "Meta Catalog")} />
           )}
           {showMedia && (
             <NavGroup id="media" icon={Images} label={t("nav.media", "Media")} active={activeGroup === "media"} open={openMenu === "media"} onToggle={toggleMenu}>
@@ -583,11 +565,6 @@ export const AppSidebar = ({ ...props }) => {
                         <NavSub to="/dashboard/settings/tiktok-pixel" active={pathname.startsWith("/dashboard/settings/tiktok-pixel")} icon={TikTokIcon} iconClass="shrink-0">
                           {t("nav.tiktok_pixel", "TikTok Pixel")}
                         </NavSub>
-                        {isAllowed("tools.meta-catalog") && (
-                          <NavSub to="/dashboard/tools/meta-catalog" active={pathname === "/dashboard/tools/meta-catalog"} icon={Share2}>
-                            {t("nav.meta_catalog", "Meta Catalog")}
-                          </NavSub>
-                        )}
                   <SubLabel>{t("nav.integrations", "Integrations")}</SubLabel>
                         <NavSub to="/dashboard/settings/pathao-courier" active={pathname.startsWith("/dashboard/settings/pathao")} icon={Truck} iconClass="text-red-500">
                           {t("nav.pathao_courier", "Pathao Courier")}

@@ -80,19 +80,6 @@ const Navbar = () => {
               </span>
               <span className={`text-rose-400/50 ml-6 text-xs font-bold`}>•</span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-2.5 px-6 sm:px-10">
-              <span className={`inline-flex items-center gap-1 font-bold text-[11px] sm:text-xs text-emerald-300`}>
-                <span>🚚</span>
-                <span>{isBn ? 'ফ্রি ডেলিভারি!' : 'Free Delivery!'}</span>
-              </span>
-              <span className={`font-semibold text-[11px] sm:text-xs text-rose-100/90`}>
-                {isBn ? '১০০০ টাকার উপরে সকল অর্ডারে ফ্রি ডেলিভারি, কুপন কোড ব্যবহার করুন:' : 'Free delivery on all orders above ৳1000, use coupon code:'}
-              </span>
-              <span className={`font-mono font-black text-[11px] sm:text-xs px-1.5 py-0.5 rounded border border-dashed text-emerald-200 border-emerald-400/70 bg-emerald-950/40`}>
-                FREEOCT
-              </span>
-              <span className={`text-rose-400/50 ml-6 text-xs font-bold`}>•</span>
-            </div>
           </div>
 
           <div className="flex items-center shrink-0" aria-hidden="true">
@@ -136,19 +123,6 @@ const Navbar = () => {
                 'text-amber-300 group-hover:text-amber-200 decoration-amber-300/80'
               }`}>
                 <span>{t('navbar.monthly_banner_action', 'শপ দেখুন →')}</span>
-              </span>
-              <span className={`text-rose-400/50 ml-6 text-xs font-bold`}>•</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-2.5 px-6 sm:px-10">
-              <span className={`inline-flex items-center gap-1 font-bold text-[11px] sm:text-xs text-emerald-300`}>
-                <span>🚚</span>
-                <span>{isBn ? 'ফ্রি ডেলিভারি!' : 'Free Delivery!'}</span>
-              </span>
-              <span className={`font-semibold text-[11px] sm:text-xs text-rose-100/90`}>
-                {isBn ? '১০০০ টাকার উপরে সকল অর্ডারে ফ্রি ডেলিভারি, কুপন কোড ব্যবহার করুন:' : 'Free delivery on all orders above ৳1000, use coupon code:'}
-              </span>
-              <span className={`font-mono font-black text-[11px] sm:text-xs px-1.5 py-0.5 rounded border border-dashed text-emerald-200 border-emerald-400/70 bg-emerald-950/40`}>
-                FREEOCT
               </span>
               <span className={`text-rose-400/50 ml-6 text-xs font-bold`}>•</span>
             </div>

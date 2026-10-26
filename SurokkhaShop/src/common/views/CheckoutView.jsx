@@ -62,10 +62,6 @@ export default function CheckoutView() {
   const appliedCoupon = totals.appliedCoupon || storeAppliedCoupon;
   const cartKeys = Object.keys(cart).filter((k) => cart[k] > 0);
 
-  const freeDeliveryThreshold = 1000;
-  const progressPercent = Math.min(100, Math.round((totals.subtotal / freeDeliveryThreshold) * 100));
-  const remainingForFreeDelivery = Math.max(0, freeDeliveryThreshold - totals.subtotal);
-  const isFreeDeliveryUnlocked = totals.subtotal >= freeDeliveryThreshold || totals.isFreeShippingCoupon;
 
   const formatPrice = (val) => {
     const num = Number(val) || 0;
@@ -431,57 +427,6 @@ export default function CheckoutView() {
         <p className="text-xs sm:text-sm text-zinc-600 max-w-2xl mt-1">
           {t('checkout.subtitle')}
         </p>
-      </div>
-
-      {/* Free Delivery Threshold Progress Banner (Matching Cart Drawer & Image) */}
-      <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-2.5">
-        <div className="flex items-center justify-between gap-3 text-xs sm:text-sm">
-          <div className="flex items-center gap-2 font-bold text-emerald-950">
-            <span className="text-base sm:text-lg">🚚</span>
-            {isFreeDeliveryUnlocked ? (
-              <span className="text-emerald-900 font-black">
-                {isBn 
-                  ? '🎉 অভিনন্দন! আপনি ফ্রি হোম ডেলিভারি পাচ্ছেন! (FREEOCT স্বয়ংক্রিয়ভাবে প্রয়োগ করা হয়েছে)' 
-                  : '🎉 Congratulations! You unlocked Free Home Delivery! (FREEOCT auto-applied)'}
-              </span>
-            ) : (
-              <span>
-                {isBn ? (
-                  <>
-                    আর মাত্র <strong className="text-emerald-950 underline font-black">{formatPrice(remainingForFreeDelivery)}</strong> টাকার পণ্য যোগ করলেই <strong className="text-emerald-950">ফ্রি ডেলিভারি!</strong>
-                  </>
-                ) : (
-                  <>
-                    Add <strong className="text-emerald-950 font-black">{formatPrice(remainingForFreeDelivery)}</strong> more to get <strong className="text-emerald-950">Free Delivery!</strong>
-                  </>
-                )}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="font-bold text-emerald-800 text-xs sm:text-sm font-mono bg-white px-2.5 py-0.5 rounded-lg border border-emerald-200 shadow-2xs">
-              {progressPercent}%
-            </span>
-            {!isFreeDeliveryUnlocked && (
-              <button
-                type="button"
-                onClick={openCartDrawer}
-                className="hidden sm:inline-flex text-[11px] font-bold text-emerald-800 hover:text-emerald-950 bg-white hover:bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-lg transition cursor-pointer shadow-2xs active:scale-95"
-              >
-                + {isBn ? 'পণ্য যোগ করুন' : 'Add Items'}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Progress Bar Track */}
-        <div className="w-full bg-emerald-200/80 rounded-full h-2.5 overflow-hidden">
-          <div 
-            className="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 h-full rounded-full transition-all duration-500"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
       </div>
 
       <form onSubmit={handleSubmit}>

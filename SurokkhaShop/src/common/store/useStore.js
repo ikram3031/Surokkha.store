@@ -209,38 +209,6 @@ export const useStore = create((set, get) => ({
 
     set({ isApplyingCoupon: true, couponError: '' });
     try {
-      // Special client-side handling for FREEOCT if API doesn't have it in DB yet
-      if (cleanCode === 'FREEOCT') {
-        const totals = get().getCartTotals();
-        if (totals.subtotal < 1000) {
-          const errMsg = isBn
-            ? 'এই কুপনের জন্য সর্বনিম্ন ৳১,০০০ টাকার অর্ডার প্রয়োজন।'
-            : 'Minimum purchase of ৳1,000 required for FREEOCT.';
-          set({ couponError: errMsg, isApplyingCoupon: false });
-          return { success: false, message: errMsg };
-        }
-
-        const freeOctCoupon = {
-          code: 'FREEOCT',
-          discountType: 'free_shipping',
-          discountValue: 0,
-          minOrderAmount: 1000,
-          active: true,
-          description: 'Free Shipping on orders ৳1,000+'
-        };
-
-        set({
-          appliedCoupon: freeOctCoupon,
-          couponCodeInput: cleanCode,
-          couponError: '',
-          isApplyingCoupon: false
-        });
-
-        const successMsg = isBn ? '🎉 কুপন "FREEOCT" প্রয়োগ করা হয়েছে! আপনি পাচ্ছেন ফ্রি ডেলিভারি!' : '🎉 Coupon "FREEOCT" applied! Free Delivery unlocked!';
-        get().showToast(successMsg);
-        return { success: true, message: successMsg };
-      }
-
       const cleanBase = API_BASE_URL.replace(/\/$/, '');
       const res = await fetch(`${cleanBase}/api/v1/coupons/${encodeURIComponent(cleanCode)}`);
       const json = await res.json();
@@ -1043,28 +1011,12 @@ export const useStore = create((set, get) => ({
       }
     }
 
-    // Dynamic Coupon Discount Calculation & Automatic FREEOCT application (1,000+ Tk orders)
+    // Dynamic Coupon Discount Calculation
     let discountAmount = 0;
     let isFreeShippingCoupon = false;
     let originalDeliveryFee = deliveryFee;
 
     let effectiveCoupon = appliedCoupon;
-
-    if (subtotal >= 1000) {
-      if (!appliedCoupon || appliedCoupon.code === 'FREEOCT' || appliedCoupon.isAutoApplied) {
-        effectiveCoupon = {
-          code: 'FREEOCT',
-          discountType: 'free_shipping',
-          discountValue: 0,
-          minOrderAmount: 1000,
-          active: true,
-          isAutoApplied: true,
-          description: 'Free Shipping on orders ৳1,000+'
-        };
-      }
-    } else if (appliedCoupon && (appliedCoupon.isAutoApplied || appliedCoupon.code === 'FREEOCT')) {
-      effectiveCoupon = null;
-    }
 
     if (effectiveCoupon && subtotal > 0) {
       const minOrder = Number(effectiveCoupon.minOrderAmount || 0);

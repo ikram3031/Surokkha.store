@@ -102,6 +102,7 @@ const toParcel = (order, canSeeMoney) => {
     paymentStatus: order.paymentStatus,
     customerName: order.shippingInfo?.fullName || "",
     customerPhone: order.shippingInfo?.phone || "",
+    customerEmail: order.billingInfo?.email || "",
     district: order.shippingInfo?.district || "",
     consignmentId: courier.consignmentId,
     courierStatus: courier.orderStatus,
@@ -136,7 +137,7 @@ export const listParcels = async (query = {}, canSeeMoney = false) => {
         items: [
           { $skip: (page - 1) * limit },
           { $limit: limit },
-          { $project: { orderNumber: 1, status: 1, paymentStatus: 1, shippingInfo: 1, totals: 1, courier: 1, category: 1 } },
+          { $project: { orderNumber: 1, status: 1, paymentStatus: 1, shippingInfo: 1, billingInfo: 1, totals: 1, courier: 1, category: 1 } },
         ],
         total: [{ $count: "count" }],
       },

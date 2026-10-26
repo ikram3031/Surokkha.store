@@ -74,9 +74,6 @@ export default function CartDrawer() {
   const comboRegularPrice = Number(comboProd?.regularPrice || comboOfferPrice);
   const comboSavings = comboRegularPrice > comboOfferPrice ? comboRegularPrice - comboOfferPrice : 0;
 
-  const freeDeliveryThreshold = 1000;
-  const progressPercent = Math.min(100, Math.round((totals.subtotal / freeDeliveryThreshold) * 100));
-  const remainingForFreeDelivery = Math.max(0, freeDeliveryThreshold - totals.subtotal);
 
   // Format price helper
   const formatPrice = (val) => {
@@ -199,45 +196,6 @@ export default function CartDrawer() {
               </svg>
             </button>
           </div>
-
-          {/* 2. FREE DELIVERY THRESHOLD BAR */}
-          {cartKeys.length > 0 && (
-            <div className="bg-emerald-50/90 border-b border-emerald-200/80 px-5 py-3 flex-shrink-0">
-              <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="font-bold text-emerald-950 flex items-center gap-1.5">
-                  <span>🚚</span>
-                  {totals.subtotal >= freeDeliveryThreshold ? (
-                    <span className="text-emerald-800 font-black">
-                      {isBn ? '🎉 অভিনন্দন! আপনি ফ্রি হোম ডেলিভারি পাচ্ছেন!' : '🎉 Congratulations! You unlocked Free Home Delivery!'}
-                    </span>
-                  ) : (
-                    <span>
-                      {isBn ? (
-                        <>
-                          আর মাত্র <strong className="text-emerald-900 underline font-black">{formatPrice(remainingForFreeDelivery)}</strong> টাকার পণ্য যোগ করলেই <strong className="text-emerald-900">ফ্রি ডেলিভারি!</strong>
-                        </>
-                      ) : (
-                        <>
-                          Add <strong className="text-emerald-900 font-black">{formatPrice(remainingForFreeDelivery)}</strong> more for <strong className="text-emerald-900">Free Delivery!</strong>
-                        </>
-                      )}
-                    </span>
-                  )}
-                </span>
-                <span className="font-bold text-emerald-800 text-[11px] font-mono">
-                  {progressPercent}%
-                </span>
-              </div>
-
-              {/* Progress Bar Track */}
-              <div className="w-full bg-emerald-200/80 rounded-full h-2 overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-          )}
 
           {/* 3. DRAWER BODY (Scrollable Items) */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
@@ -513,7 +471,7 @@ export default function CartDrawer() {
                 <div className="flex justify-between text-slate-700 font-medium">
                   <span>{isBn ? 'ডেলিভারি চার্জ' : 'Delivery Charge'}</span>
                   <span>
-                    {totals.isFreeShippingCoupon || totals.subtotal >= freeDeliveryThreshold ? (
+                    {totals.isFreeShippingCoupon ? (
                       <strong className="text-emerald-700 font-bold uppercase">{isBn ? 'ফ্রি' : 'FREE'}</strong>
                     ) : (
                       <span className="text-[11px] text-slate-600 font-medium">

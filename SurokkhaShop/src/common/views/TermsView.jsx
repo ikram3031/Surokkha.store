@@ -88,7 +88,6 @@ export default function TermsView() {
               <li><strong>Inside Dhaka:</strong> Delivery within 24 to 48 hours (৳70).</li>
               <li><strong>Dhaka Suburbs (Savar, Gazipur, Narayanganj):</strong> Delivery within 24 to 72 hours (৳90).</li>
               <li><strong>Outside Dhaka (Nationwide):</strong> Delivery within 48 to 72 hours (৳120).</li>
-              <li><strong>Free Delivery Offer:</strong> Orders of ৳1,000 or above automatically qualify for free delivery.</li>
             </ul>
           </section>
 

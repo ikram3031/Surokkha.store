@@ -24,7 +24,7 @@ export default function FaqView() {
     {
       category: 'delivery',
       question: 'What are the delivery charges?',
-      answer: 'Delivery charges are calculated based on your location:\n• Inside Dhaka: ৳70\n• Dhaka Suburbs: ৳90\n• Outside Dhaka: ৳120\n🎉 Orders with subtotal ৳1,000 or above automatically receive 100% FREE delivery!'
+      answer: 'Delivery charges are calculated based on your location:\n• Inside Dhaka: ৳70\n• Dhaka Suburbs: ৳90\n• Outside Dhaka: ৳120'
     },
     {
       category: 'payment',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, FileUp, MoreHorizontal } from 'lucide-react';
+import { Search, FileUp, MoreHorizontal, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -57,6 +57,15 @@ export default function ParcelsTab({ range }) {
       queryClient.invalidateQueries({ queryKey: ['pathao-summary'] });
     },
     onError: (err) => toast.error(getApiErrorMessage(err, 'Failed to update settlement')),
+  });
+
+  const spamMutation = useMutation({
+    mutationFn: async ({ phone, email }) => (await apiClient.post('/api/v1/orders/spam', { phone, email })).data,
+    onSuccess: () => {
+      toast.success('Added to spam list');
+      queryClient.invalidateQueries({ queryKey: ['spam-list'] });
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, 'Failed to add to spam list')),
   });
 
   const items = data?.items || [];
@@ -198,6 +207,21 @@ export default function ParcelsTab({ range }) {
                                     Mark as {SETTLEMENT_META[status].label.toLowerCase()}
                                   </DropdownMenuItem>
                                 ))}
+                              <DropdownMenuItem
+                                className="cursor-pointer text-red-600 focus:text-red-600"
+                                onClick={() => {
+                                  if (!p.customerPhone && !p.customerEmail) {
+                                    toast.error('No phone or email on this order to block');
+                                    return;
+                                  }
+                                  if (confirm(`Block ${p.customerName || 'this customer'} (${p.customerPhone || p.customerEmail}) from placing future orders?`)) {
+                                    spamMutation.mutate({ phone: p.customerPhone, email: p.customerEmail });
+                                  }
+                                }}
+                              >
+                                <ShieldAlert className="h-3.5 w-3.5 mr-1.5" />
+                                Mark as spam
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

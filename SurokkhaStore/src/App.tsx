@@ -3,7 +3,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { AgeGate } from '@/components/AgeGate'
 import { AnnouncementBar } from '@/components/AnnouncementBar'
 import { Header } from '@/components/header/Header'
-import { Hero } from '@/components/Hero'
+import { HeroSlider } from '@/components/HeroSlider'
 import { TrustStrip } from '@/components/TrustStrip'
 import { Categories } from '@/components/Categories'
 import { Shop } from '@/components/Shop'
@@ -31,7 +31,7 @@ function AppShell() {
       <AnnouncementBar />
       <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} />
       <main>
-        <Hero />
+        <HeroSlider />
         <TrustStrip />
         <Categories onSelect={selectCategory} />
         <Shop ref={shopRef} query={query} filter={filter} onFilterChange={setFilter} />

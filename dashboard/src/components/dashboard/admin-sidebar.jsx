@@ -371,17 +371,6 @@ export const AdminSidebar = ({ ...props }) => {
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
-                  {isAllowed("products.miniature") && (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        isActive={pathname === "/admin/products/miniature"}
-                        render={<Link to="/admin/products/miniature" />}
-                      >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span>{t("nav.miniature", "Miniature")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  )}
                   {(isAllowed("products.showcases") || isAllowed("settings")) && (
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton

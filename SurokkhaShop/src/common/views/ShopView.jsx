@@ -314,7 +314,7 @@ export default function ShopView() {
         {/* Clean Toolbar: Dynamic Product Count from API, Search Input & Sort Dropdown */}
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-5 border-b border-rose-200/70 gap-4">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs sm:text-sm text-slate-600 font-semibold whitespace-nowrap">
+            <span className="text-xs sm:text-sm text-slate-800 font-semibold whitespace-nowrap">
               {isBn ? 'প্রদর্শিত হচ্ছে' : 'Showing'}{' '}
               <strong className="text-slate-900 font-bold">{formatNumber(displayedKeys.length)}</strong>{' '}
               {isBn ? 'টি প্রোডাক্ট' : 'products'}
@@ -362,7 +362,7 @@ export default function ShopView() {
 
             {/* Sort Dropdown (Default: Old to New) */}
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-slate-500 font-semibold hidden sm:inline whitespace-nowrap">
+              <span className="text-xs text-slate-800 font-semibold hidden sm:inline whitespace-nowrap">
                 {isBn ? 'সাজান:' : 'Sort:'}
               </span>
               <select
@@ -426,7 +426,7 @@ export default function ShopView() {
                   onClick={() => setCategory('all')}
                   className={`flex w-full items-center justify-between py-2 px-2.5 rounded-lg transition-colors text-left cursor-pointer ${category === 'all'
                       ? 'bg-rose-50 font-semibold text-brand-900 border border-rose-200'
-                      : 'text-slate-600 hover:bg-slate-50'
+                      : 'text-slate-800 hover:bg-slate-50'
                     }`}
                 >
                   <span>{isBn ? 'সকল প্রোডাক্ট' : 'All Products'}</span>
@@ -441,7 +441,7 @@ export default function ShopView() {
                     onClick={() => setCategory(cat.slug)}
                     className={`flex w-full items-center justify-between py-2 px-2.5 rounded-lg transition-colors text-left cursor-pointer ${category === cat.slug
                         ? 'bg-rose-50 font-semibold text-brand-900 border border-rose-200'
-                        : 'text-slate-600 hover:bg-slate-50'
+                        : 'text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <span>{isBn ? cat.name_bn : cat.name}</span>
@@ -493,7 +493,7 @@ export default function ShopView() {
                     onClick={() => setPriceRange(tier.id)}
                     className={`flex w-full items-center justify-between py-2 px-2.5 rounded-lg transition-colors text-left cursor-pointer ${priceRange === tier.id
                         ? 'bg-rose-50 font-semibold text-brand-900 border border-rose-200'
-                        : 'text-slate-600 hover:bg-slate-50'
+                        : 'text-slate-800 hover:bg-slate-50'
                       }`}
                   >
                     <span>{tier.label}</span>
@@ -531,7 +531,7 @@ export default function ShopView() {
                 <h3 className="text-lg font-bold text-slate-900 font-heading">
                   {isBn ? 'কোনো প্রোডাক্ট পাওয়া যায়নি' : 'No products found'}
                 </h3>
-                <p className="mt-1 text-xs text-slate-500 max-w-sm">
+                <p className="mt-1 text-xs text-slate-800 max-w-sm">
                   {isBn
                     ? 'আপনার নির্বাচিত ফিল্টারে কোনো আইটেম পাওয়া যায়নি। ফিল্টার রিসেট করে আবার দেখুন।'
                     : "We couldn't find items matching your current filters. Try resetting your price or category options."}
@@ -557,7 +557,7 @@ export default function ShopView() {
                 {/* Load More Button Module */}
                 {hasMore && (
                   <div className="flex flex-col items-center justify-center pt-4">
-                    <p className="text-xs text-slate-500 mb-3 font-medium">
+                    <p className="text-xs text-slate-800 mb-3 font-medium">
                       {isBn
                         ? `প্রদর্শিত হচ্ছে ${formatNumber(paginatedKeys.length)} / মোট ${formatNumber(displayedKeys.length)} টি প্রোডাক্ট`
                         : `Showing ${paginatedKeys.length} of ${displayedKeys.length} products`}

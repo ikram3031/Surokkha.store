@@ -188,7 +188,7 @@ export default function ProductCard({ productKey, className = '' }) {
                   {hasVariants ? (minPrice !== maxPrice ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` : formatPrice(minPrice)) : formatPrice(currentOfferPrice)}
                 </span>
                 {hasDiscount && (
-                  <span className="text-xs text-slate-400 line-through font-normal">
+                  <span className="text-xs text-slate-700 line-through font-normal">
                     {formatPrice(currentRegularPrice)}
                   </span>
                 )}
