@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
-import { ShoppingCart, Trash2, Phone, Search } from 'lucide-react';
+import { ShoppingCart, Trash2, Phone, Search, MessageCircle, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,7 +140,7 @@ export default function AbandonedCheckouts() {
                   <TableHead>{t('abandoned.total', 'Total')}</TableHead>
                   <TableHead>{t('abandoned.last_activity', 'Last activity')}</TableHead>
                   <TableHead>{t('abandoned.status', 'Status')}</TableHead>
-                  <TableHead className="w-[70px] text-right">{t('common.actions', 'Actions')}</TableHead>
+                  <TableHead className="w-[130px] text-right">{t('common.actions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -202,15 +202,47 @@ export default function AbandonedCheckouts() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="border-none"
-                          onClick={() => handleDelete(lead._id)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500 transition-colors" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          {lead.phone && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="border-none"
+                                title="WhatsApp"
+                                onClick={() => {
+                                  const phone = lead.phone.replace(/\D/g, '').replace(/^0/, '88').replace(/^(?!880)/, '880');
+                                  const items = (lead.items || []).map(i => `${i.quantity}x ${i.name || i.slug}`).join(', ');
+                                  const msg = `আসসালামু আলাইকুম ${lead.fullName || ''},\nআপনি আমাদের সাইটে অর্ডার করতে গিয়েছিলেন (${items}, মোট: ৳${lead.cartTotal || 0})। অর্ডারটি সম্পূর্ণ করতে চাইলে আমাদের জানান।`;
+                                  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                                }}
+                              >
+                                <MessageCircle className="h-4 w-4 text-green-500" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="border-none"
+                                title="Copy number"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(lead.phone);
+                                  toast.success('Phone number copied');
+                                }}
+                              >
+                                <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                              </Button>
+                            </>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="border-none"
+                            onClick={() => handleDelete(lead._id)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500 transition-colors" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
