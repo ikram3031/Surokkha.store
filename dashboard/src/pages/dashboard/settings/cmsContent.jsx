@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,8 @@ import {
   Loader2,
   HardDrive,
   Video,
+  GalleryHorizontal,
+  ArrowRight,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
@@ -96,6 +99,8 @@ const formatBytes = (bytes) => {
 // Manages storefront CMS assets, banners, sliders, and logos with automated WebP compression
 const CMSContentPage = ({ site = 'shop' }) => {
   const queryClient = useQueryClient();
+  const { pathname } = useLocation();
+  const sliderPath = `${pathname.split('/cms-content')[0]}/cms-content/slider/${site}`;
   const [copiedKey, setCopiedKey] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeUploadingSlot, setActiveUploadingSlot] = useState(null);
@@ -103,7 +108,8 @@ const CMSContentPage = ({ site = 'shop' }) => {
   const assetsBasePath = site === 'store' ? '/uploads/assets-store' : '/uploads/assets';
 
   const sections = useMemo(() => {
-    return clientConfig?.assetsConfig?.sections || DEFAULT_ASSET_SECTIONS;
+    const all = clientConfig?.assetsConfig?.sections || DEFAULT_ASSET_SECTIONS;
+    return all.filter((sec) => sec.id !== 'hero-sliders');
   }, []);
 
   const {
@@ -310,6 +316,29 @@ const CMSContentPage = ({ site = 'shop' }) => {
           </p>
         </div>
       </div>
+
+      <Card className="border border-primary/30 shadow-xs bg-primary/5">
+        <CardContent className="flex items-center justify-between gap-4 flex-wrap py-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <GalleryHorizontal className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">Hero Slider</h3>
+              <p className="text-xs text-muted-foreground">
+                Add, edit and reorder homepage slides and set the slider speed.
+              </p>
+            </div>
+          </div>
+          <Link
+            to={sliderPath}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-4 text-sm font-medium cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-primary dark:text-primary-foreground"
+          >
+            <span>Manage Hero Slider</span>
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </CardContent>
+      </Card>
 
       {sections.map((section) => (
         <Card key={section.id} className="border shadow-xs">
