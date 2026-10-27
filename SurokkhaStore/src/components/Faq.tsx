@@ -7,27 +7,27 @@ import {
 
 const faqs = [
   {
-    q: 'প্যাকেজিং কি সত্যিই গোপন থাকবে?',
-    a: 'হ্যাঁ। পণ্য সাদামাটা প্যাকেটে পাঠানো হয়, বাইরে কোনো পণ্যের নাম বা ছবি থাকে না। ইনভয়েসে শুধু "সুরক্ষা" নাম থাকে।',
+    q: 'Will the packaging really be discreet?',
+    a: 'Yes. Products ship in plain packaging with no product name or image on the outside. The invoice only shows "Surokkha".',
   },
   {
-    q: 'ক্যাশ অন ডেলিভারি আছে কি?',
-    a: 'আছে। চাইলে বিকাশ বা নগদে আগেই পেমেন্ট করতে পারেন।',
+    q: 'Is cash on delivery available?',
+    a: 'Yes. You can also pay in advance with bKash or Nagad if you prefer.',
   },
   {
-    q: 'আমার ফোন নম্বর ও ঠিকানা কি নিরাপদ থাকবে?',
-    a: 'আপনার তথ্য শুধু ডেলিভারির কাজে ব্যবহার করা হয় এবং কারো সাথে শেয়ার করা হয় না।',
+    q: 'Will my phone number and address stay private?',
+    a: 'Your details are used only for delivery and are never shared with anyone.',
   },
   {
-    q: 'পণ্যে সমস্যা থাকলে কী করব?',
-    a: 'প্যাকেট খোলা না হয়ে থাকলে এবং ডেলিভারির ২৪ ঘণ্টার মধ্যে জানালে আমরা বদলে দেব। হোয়াটসঅ্যাপে আমাদের জানান।',
+    q: 'What if there is a problem with my order?',
+    a: 'If the pack is unopened and you tell us within 24 hours of delivery, we will replace it. Message us on WhatsApp.',
   },
 ]
 
 export function Faq() {
   return (
     <section id="faq" className="mx-auto max-w-3xl px-4 py-16">
-      <h2 className="font-display text-3xl font-bold">সচরাচর জিজ্ঞাসা</h2>
+      <h2 className="font-display text-3xl font-bold">Frequently asked questions</h2>
       <Accordion type="single" collapsible className="mt-8 rounded-3xl border border-border bg-card px-5">
         {faqs.map((item, i) => (
           <AccordionItem key={item.q} value={`item-${i}`}>

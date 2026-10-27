@@ -31,19 +31,19 @@ export const Shop = forwardRef<HTMLDivElement, ShopProps>(function Shop(
   return (
     <section id="shop" ref={ref} className="mx-auto max-w-7xl px-4 pb-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h2 className="font-display text-3xl font-bold">সব পণ্য</h2>
+        <h2 className="font-display text-3xl font-bold">All Products</h2>
         <FilterBar value={filter} onChange={onFilterChange} />
       </div>
 
       {loading && (
-        <p className="mt-10 text-center text-muted-foreground">পণ্য লোড হচ্ছে...</p>
+        <p className="mt-10 text-center text-muted-foreground">Loading products...</p>
       )}
 
       {!loading && error && (
         <div className="mt-10 text-center">
-          <p className="text-muted-foreground">পণ্য লোড করা যায়নি। {error}</p>
+          <p className="text-muted-foreground">Could not load products. {error}</p>
           <Button variant="outline" className="mt-4 rounded-full" onClick={() => location.reload()}>
-            আবার চেষ্টা করুন
+            Try again
           </Button>
         </div>
       )}

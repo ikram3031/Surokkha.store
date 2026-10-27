@@ -31,15 +31,15 @@ export interface OfferProduct {
   variantLabel?: string
   /** Pre-discount price, shown struck through (ready combos) */
   regularPrice?: number
-  /** Shown in the "অথবা আমাদের কম্বো" section */
+  /** Shown in the "Or choose our combos" section */
   readyCombo?: boolean
 }
 
-export const READY_COMBOS_TITLE = 'অথবা আমাদের কম্বো থেকে বেছে নিন'
+export const READY_COMBOS_TITLE = 'Or choose from our combos'
 
 export const variantPrice = (p: OfferProduct, v?: OfferVariant) => v?.price ?? p.price
 
-/** Lowest price, shown as "৳X থেকে" on variable products */
+/** Lowest price, shown as "from ৳X" on variable products */
 export const fromPrice = (p: OfferProduct) => p.price
 
 // Combo discount by subtotal (no free delivery here, delivery is always charged)
@@ -74,7 +74,7 @@ export function deliveryZone(district: string, thana: string): DeliveryZone {
 }
 
 export const ZONE_LABEL: Record<DeliveryZone, string> = {
-  dhakaCity: 'ঢাকা সিটি',
-  dhakaSuburbs: 'ঢাকার আশেপাশে',
-  outsideDhaka: 'ঢাকার বাইরে',
+  dhakaCity: 'Dhaka City',
+  dhakaSuburbs: 'Dhaka suburbs',
+  outsideDhaka: 'Outside Dhaka',
 }

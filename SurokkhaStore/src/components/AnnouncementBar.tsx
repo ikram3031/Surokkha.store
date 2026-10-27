@@ -1,4 +1,4 @@
-const MESSAGE = 'ক্যাশ অন ডেলিভারি পাওয়া যাচ্ছে। ১০০০ টাকার বেশি কিনলে ডেলিভারি ফ্রি।'
+const MESSAGE = 'Cash on delivery available. Free delivery on orders above ৳1,000.'
 
 export function AnnouncementBar() {
   return (

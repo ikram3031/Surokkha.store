@@ -22,12 +22,12 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-40 border-b border-background/10 bg-foreground text-background">
-      {/* বামে মেনু আইকন + সার্চ, মাঝে লোগো, ডানে অ্যাকাউন্ট ও কার্ট */}
+      {/* Left: menu icon + search, centre: logo, right: account and cart */}
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0 rounded-full hover:bg-background/10 hover:text-background" aria-label="মেনু খুলুন">
+              <Button variant="ghost" size="icon" className="shrink-0 rounded-full hover:bg-background/10 hover:text-background" aria-label="Open menu">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
@@ -35,12 +35,12 @@ export function Header({
               side="left"
               className="max-w-xs border-none bg-foreground text-background [&_svg]:text-background"
             >
-              <SheetTitle className="sr-only">মেনু</SheetTitle>
+              <SheetTitle className="sr-only">Menu</SheetTitle>
               <MobileNav query={query} onQueryChange={onQueryChange} onNavigate={() => setMenuOpen(false)} onCategory={onCategory} />
             </SheetContent>
           </Sheet>
 
-          {/* ছোট মোবাইলে জায়গা কম, সার্চ তখন মেনুর ভেতরে */}
+          {/* Not enough room on small phones, where search lives inside the menu */}
           <SearchInput
             value={query}
             onChange={onQueryChange}
@@ -49,12 +49,12 @@ export function Header({
           />
         </div>
 
-        <a href="/" className="flex items-center justify-center" aria-label="সুরক্ষা হোমপেজ">
-          <img src="/logo_2.png" alt="সুরক্ষা" className="h-10 w-auto" />
+        <a href="/" className="flex items-center justify-center" aria-label="Surokkha home">
+          <img src="/logo_2.png" alt="Surokkha" className="h-10 w-auto" />
         </a>
 
         <div className="flex items-center justify-end gap-2">
-          <Button size="icon" className="hidden rounded-full bg-background text-foreground hover:bg-background/90 sm:inline-flex" aria-label="আমার অ্যাকাউন্ট" onClick={() => navigate('/account')}>
+          <Button size="icon" className="hidden rounded-full bg-background text-foreground hover:bg-background/90 sm:inline-flex" aria-label="My account" onClick={() => navigate('/account')}>
             <User className="h-5 w-5" />
           </Button>
           <CartButton onClick={onCartOpen} />

@@ -103,7 +103,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
                 ref={searchRef}
                 value={query}
                 autoComplete="off"
-                placeholder="খুঁজুন…"
+                placeholder="Search…"
                 onChange={(e) => {
                   setQuery(e.target.value)
                   setActive(0)
@@ -154,7 +154,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
                 )
               })
             ) : (
-              <li className="px-3.5 py-3 text-center text-sm text-gray-400">{emptyText ?? 'কোনো ফলাফল পাওয়া যায়নি'}</li>
+              <li className="px-3.5 py-3 text-center text-sm text-gray-400">{emptyText ?? 'No results found'}</li>
             )}
           </ul>
         </div>

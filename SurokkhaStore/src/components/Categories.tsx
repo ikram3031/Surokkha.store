@@ -14,29 +14,29 @@ const tiles: {
 }[] = [
   {
     cat: 'condoms',
-    title: 'কনডম',
-    desc: 'ক্লাসিক, আল্ট্রা থিন ও ফ্লেভারড',
+    title: 'Condoms',
+    desc: 'Classic, ultra thin and flavoured',
     bg: 'bg-secondary hover:bg-muted',
     icon: <BoxIcon c1="#F4919F" c2="#C9475F" />,
   },
   {
     cat: 'lubricants',
-    title: 'লুব্রিকেন্ট',
-    desc: 'ওয়াটার ও সিলিকন বেসড',
+    title: 'Lubricants',
+    desc: 'Water and silicone based',
     bg: 'bg-accent hover:bg-accent/80',
     icon: <BottleIcon c1="#F5E6D3" c2="#948B86" />,
   },
   {
     cat: 'combo',
-    title: 'কম্বো প্যাক',
-    desc: 'দুটো একসাথে, কম দামে',
+    title: 'Combo Packs',
+    desc: 'Better together, for less',
     bg: 'bg-muted hover:bg-muted/70',
     icon: <ComboIcon />,
   },
   {
     cat: 'feminine-care',
-    title: 'ফেমিনিন কেয়ার',
-    desc: 'ব্যক্তিগত যত্ন ও হাইজিন',
+    title: 'Feminine Care',
+    desc: 'Personal care & hygiene',
     bg: 'bg-secondary hover:bg-muted',
     icon: <Flower2 className="h-full w-full text-primary" strokeWidth={1.5} />,
   },
@@ -47,7 +47,7 @@ export function Categories({ onSelect }: { onSelect: (cat: ShopFilter) => void }
     <section id="categories" className="relative overflow-hidden">
       <SectionBackground name="categories" />
       <div className="relative mx-auto max-w-7xl px-4 py-14">
-      <h2 className="text-center font-display text-3xl font-bold">কী খুঁজছেন?</h2>
+      <h2 className="text-center font-display text-3xl font-bold">What are you looking for?</h2>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((tile) => (
           <Card

@@ -45,7 +45,7 @@ export function ProductSlider({ product, compact = false }: { product: OfferProd
           <button
             type="button"
             onClick={() => go(Math.max(0, index - 1))}
-            aria-label="আগের ছবি"
+            aria-label="Previous image"
             className={`absolute left-2 top-1/2 hidden ${compact ? 'size-7' : 'size-9'} -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow sm:flex`}
           >
             <ChevronLeft className="size-5" />
@@ -53,7 +53,7 @@ export function ProductSlider({ product, compact = false }: { product: OfferProd
           <button
             type="button"
             onClick={() => go(Math.min(slides.length - 1, index + 1))}
-            aria-label="পরের ছবি"
+            aria-label="Next image"
             className={`absolute right-2 top-1/2 hidden ${compact ? 'size-7' : 'size-9'} -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow sm:flex`}
           >
             <ChevronRight className="size-5" />
@@ -64,7 +64,7 @@ export function ProductSlider({ product, compact = false }: { product: OfferProd
                 key={i}
                 type="button"
                 onClick={() => go(i)}
-                aria-label={`ছবি ${i + 1}`}
+                aria-label={`Image ${i + 1}`}
                 className={`h-2 rounded-full transition-all ${i === index ? 'w-5 bg-primary' : 'w-2 bg-primary/30'}`}
               />
             ))}

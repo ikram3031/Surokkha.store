@@ -37,7 +37,7 @@ export function FeaturedCarousel() {
     <section
       id="featured"
       className="mx-auto max-w-7xl px-4 pt-14"
-      aria-label="ফিচারড পণ্য"
+      aria-label="Featured products"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -46,12 +46,12 @@ export function FeaturedCarousel() {
       onTouchEnd={() => setPaused(false)}
     >
       <div className="flex items-end justify-between gap-4">
-        <h2 className="font-display text-3xl font-bold">ফিচারড পণ্য</h2>
+        <h2 className="font-display text-3xl font-bold">Featured Products</h2>
         <div className="hidden gap-2 sm:flex">
-          <Button variant="outline" size="icon" className="rounded-full" aria-label="আগেরটি" onClick={() => step(-1)}>
+          <Button variant="outline" size="icon" className="rounded-full" aria-label="Previous" onClick={() => step(-1)}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon" className="rounded-full" aria-label="পরেরটি" onClick={() => step(1)}>
+          <Button variant="outline" size="icon" className="rounded-full" aria-label="Next" onClick={() => step(1)}>
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>

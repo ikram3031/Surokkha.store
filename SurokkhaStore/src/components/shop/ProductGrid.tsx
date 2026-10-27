@@ -5,7 +5,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
   if (products.length === 0) {
     return (
       <p className="mt-10 text-center text-muted-foreground">
-        এই নামে কোনো পণ্য পাওয়া যায়নি। অন্য শব্দ দিয়ে খুঁজুন।
+        No products match that name. Try a different search.
       </p>
     )
   }

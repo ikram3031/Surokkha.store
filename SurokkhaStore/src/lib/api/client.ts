@@ -83,7 +83,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const data = text ? safeJsonParse(text) : null
 
   if (!res.ok) {
-    throw new ApiError(extractErrorMessage(data) ?? res.statusText ?? 'অনুরোধ ব্যর্থ হয়েছে', res.status, data)
+    throw new ApiError(extractErrorMessage(data) ?? res.statusText ?? 'Request failed', res.status, data)
   }
 
   return data as T

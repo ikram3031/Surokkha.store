@@ -23,7 +23,7 @@ import { navigate, useRoute } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
 import type { ShopFilter } from '@/components/shop/FilterBar'
 
-// "সব পণ্য" grid is hidden on the home page for now; flip to true to bring it back
+// "All Products" grid is hidden on the home page for now; flip to true to bring it back
 const SHOW_ALL_PRODUCTS = false
 
 function AppShell() {

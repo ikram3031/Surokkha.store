@@ -24,7 +24,7 @@ function load(): Promise<StoreCategory[]> {
     .then((res) => {
       cache = unwrapList<ApiCategory>(res)
         .filter((c) => c.slug && !c.parent && (c.productCount ?? 1) > 0)
-        .map((c) => ({ slug: c.slug!, label: c.name_bn || c.name || c.slug! }))
+        .map((c) => ({ slug: c.slug!, label: c.name || c.name_bn || c.slug! }))
       return cache
     })
     .catch(() => {

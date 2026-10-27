@@ -48,7 +48,7 @@ export function useProducts() {
       .catch((err) => {
         if (cancelled) return
         setProducts([])
-        setError(err instanceof Error ? err.message : 'পণ্য লোড করা যায়নি।')
+        setError(err instanceof Error ? err.message : 'Could not load products.')
       })
       .finally(() => !cancelled && setLoading(false))
     return () => {

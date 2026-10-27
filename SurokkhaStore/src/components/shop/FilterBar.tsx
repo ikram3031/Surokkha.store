@@ -12,14 +12,14 @@ export function FilterBar({
   onChange: (value: ShopFilter) => void
 }) {
   const categories = useCategories()
-  const filters = [{ slug: 'all', label: 'সব' }, ...categories]
+  const filters = [{ slug: 'all', label: 'All' }, ...categories]
 
   return (
     <ToggleGroup
       type="single"
       value={value}
       onValueChange={(v) => v && onChange(v)}
-      aria-label="পণ্য ফিল্টার"
+      aria-label="Product filter"
       className="flex-wrap gap-2"
     >
       {filters.map((f) => (

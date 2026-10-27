@@ -36,7 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev[product.id]
       return { ...prev, [product.id]: { product, qty: (existing?.qty ?? 0) + qty } }
     })
-    toast('কার্টে যোগ হয়েছে')
+    toast('Added to cart')
     trackAddToCart({ productId: product.apiId ?? product.id, qty, price: product.price })
     pixelTrack('AddToCart', {
       content_ids: [product.did ?? product.slug ?? String(product.id)],
@@ -79,8 +79,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal === 0
         ? ''
         : subtotal >= FREE_SHIP_AT
-          ? 'আপনার অর্ডারে ডেলিভারি ফ্রি।'
-          : `আরও ${taka(FREE_SHIP_AT - subtotal)} কিনলে ডেলিভারি ফ্রি।`
+          ? 'Delivery is free on your order.'
+          : `Add ${taka(FREE_SHIP_AT - subtotal)} more for free delivery.`
     return { count, subtotal, shipping, total: subtotal + shipping, freeShipNote }
   }, [cart])
 

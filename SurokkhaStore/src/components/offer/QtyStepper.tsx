@@ -15,7 +15,7 @@ export function QtyStepper({ value, onDec, onInc, label }: Props) {
         type="button"
         onClick={onDec}
         disabled={value === 0}
-        aria-label={`${label} কমান`}
+        aria-label={`${label} decrease quantity`}
         className={`flex size-9 items-center justify-center rounded-full transition disabled:opacity-40 ${
           value > 0 ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-gray-100 text-primary'
         }`}
@@ -26,7 +26,7 @@ export function QtyStepper({ value, onDec, onInc, label }: Props) {
       <button
         type="button"
         onClick={onInc}
-        aria-label={`${label} বাড়ান`}
+        aria-label={`${label} increase quantity`}
         className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90"
       >
         <Plus className="size-4" />

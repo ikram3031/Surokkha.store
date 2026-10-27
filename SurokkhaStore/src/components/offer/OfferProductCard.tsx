@@ -27,14 +27,14 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         <button
           type="button"
           onClick={onQuickView}
-          aria-label={`${product.name} বিস্তারিত দেখুন`}
+          aria-label={`${product.name} view details`}
           className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow transition hover:bg-emerald-700"
         >
           <Eye className="size-3.5" /> Details
         </button>
         {!product.inStock && (
           <span className="absolute inset-x-0 bottom-0 bg-gray-900/70 py-1 text-center text-xs font-semibold text-white">
-            স্টক শেষ
+            Out of stock
           </span>
         )}
       </div>
@@ -48,7 +48,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
           <p className="leading-tight">
             <span className="text-base font-bold text-rose-600 sm:text-lg">{taka(fromPrice(product))}</span>
-            {isVariable && <span className="ml-1 text-[11px] font-normal text-gray-600">থেকে</span>}
+            {isVariable && <span className="ml-1 text-[11px] font-normal text-gray-600">from</span>}
             {product.regularPrice && product.regularPrice > product.price && (
               <s className="ml-1 text-xs font-normal text-gray-400">{taka(product.regularPrice)}</s>
             )}
@@ -56,12 +56,12 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
           {qty > 0 && !isVariable ? (
             // Already in the order: a compact stepper in the same spot as "Add"
             <div className="flex shrink-0 items-center gap-1 rounded-full bg-primary p-0.5 text-primary-foreground">
-              <button type="button" onClick={onDec} aria-label={`${product.name} কমান`}
+              <button type="button" onClick={onDec} aria-label={`${product.name} decrease quantity`}
                 className="flex size-7 items-center justify-center rounded-full hover:bg-white/15">
                 <Minus className="size-3.5" />
               </button>
               <span className="min-w-4 text-center text-sm font-semibold tabular-nums">{bn(qty)}</span>
-              <button type="button" onClick={onInc} aria-label={`${product.name} বাড়ান`}
+              <button type="button" onClick={onInc} aria-label={`${product.name} increase quantity`}
                 className="flex size-7 items-center justify-center rounded-full hover:bg-white/15">
                 <Plus className="size-3.5" />
               </button>
@@ -71,7 +71,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
               type="button"
               onClick={isVariable ? onChooseOptions : onInc}
               disabled={!product.inStock}
-              aria-label={`${product.name} বাড়ান`}
+              aria-label={`${product.name} increase quantity`}
               className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
             >
               {isVariable && qty > 0 ? bn(qty) : 'Add'} <Plus className="size-4" />

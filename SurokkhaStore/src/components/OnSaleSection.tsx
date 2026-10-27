@@ -10,8 +10,8 @@ export function OnSaleSection() {
   if (loading || products.length === 0) return null
 
   return (
-    <section id="on-sale" className="mx-auto max-w-7xl px-4 pb-10 pt-4" aria-label="অন সেল পণ্য">
-      <h2 className="font-display text-3xl font-bold">অন সেল পণ্য</h2>
+    <section id="on-sale" className="mx-auto max-w-7xl px-4 pb-10 pt-4" aria-label="On sale products">
+      <h2 className="font-display text-3xl font-bold">On Sale</h2>
       <ProductGrid products={products.slice(0, MAX_PRODUCTS)} />
     </section>
   )

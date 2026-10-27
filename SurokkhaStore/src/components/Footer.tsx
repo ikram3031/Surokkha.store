@@ -5,39 +5,39 @@ export function Footer() {
     <footer className="bg-foreground text-background">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-3">
         <div>
-          <img src="/logo_2.png" alt="সুরক্ষা" className="h-10 w-auto" />
-          <p className="mt-3 text-sm text-background/70">আজ নিরাপদ, আগামীকালও।</p>
+          <img src="/logo_2.png" alt="Surokkha" className="h-10 w-auto" />
+          <p className="mt-3 text-sm text-background/70">Safe today, tomorrow too.</p>
         </div>
         <div id="contact" className="scroll-mt-24 text-sm">
-          <h3 className="font-semibold text-background">যোগাযোগ</h3>
+          <h3 className="font-semibold text-background">Contact</h3>
           <ul className="mt-3 space-y-2 text-background/70">
             <li>
-              হোয়াটসঅ্যাপ:{' '}
+              WhatsApp:{' '}
               <a href="https://wa.me/8801600905774" target="_blank" rel="noopener noreferrer" className="hover:text-background">
-                +৮৮০ ১৬০০-৯০৫৭৭৪
+                +880 1600-905774
               </a>
             </li>
             <li>
-              ইমেইল:{' '}
+              Email:{' '}
               <a href="mailto:surokkha.store@gmail.com" className="hover:text-background">
                 surokkha.store@gmail.com
               </a>
             </li>
-            <li>সকাল ১০টা থেকে রাত ১০টা, প্রতিদিন</li>
+            <li>Every day, 10 AM to 10 PM</li>
           </ul>
         </div>
         <div className="text-sm">
-          <h3 className="font-semibold text-background">পেমেন্ট</h3>
+          <h3 className="font-semibold text-background">Payment</h3>
           <ul className="mt-3 space-y-2 text-background/70">
-            <li>বিকাশ</li>
-            <li>নগদ</li>
-            <li>ক্যাশ অন ডেলিভারি</li>
+            <li>bKash</li>
+            <li>Nagad</li>
+            <li>Cash on delivery</li>
           </ul>
         </div>
       </div>
       <Separator className="bg-background/15" />
       <div className="space-y-1 px-4 py-5 text-center text-xs text-background/60">
-        <p>এই সাইটের পণ্য শুধুমাত্র ১৮ বছর বা তার বেশি বয়সীদের জন্য। &copy; সুরক্ষা। সর্বস্বত্ব সংরক্ষিত।</p>
+        <p>Products on this site are for adults aged 18 and over only. &copy; Surokkha. All rights reserved.</p>
         <p>
           &copy; 2026 Surokkha Store. Developed by{' '}
           <a

@@ -30,16 +30,16 @@ const SLIDES: HeroSlide[] = [
       { text: 'Pack', color: 'text-[#e05578]' },
     ],
     tagline: ['Try', 'Compare', 'Choose Yours'],
-    subtitle: 'একসাথে ট্রাই করুন, নিজের জন্য সঠিকটা বেছে নিন',
+    subtitle: 'Try them together and pick what suits you',
     chips: [
-      { label: '২ পিস আল্ট্রা থিন', dot: 'bg-sky-500' },
-      { label: '২ পিস ডটেড', dot: 'bg-pink-500' },
-      { label: '২ পিস রিবড', dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
+      { label: '2 pcs Ultra Thin', dot: 'bg-sky-500' },
+      { label: '2 pcs Dotted', dot: 'bg-pink-500' },
+      { label: '2 pcs Ribbed', dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
     ],
     image: '/banners/trial-pack-packets.webp',
     imageAlt: 'MO Trial Pack — Ultra Thin, Dotted and Ribbed',
     framed: false,
-    ctaNote: 'মোট ৬ পিস — ৩ ধরনের, প্রতিটা ২ পিস করে',
+    ctaNote: '6 pcs in total — 3 types, 2 of each',
   },
   {
     key: 'ultimate-combo',
@@ -50,16 +50,16 @@ const SLIDES: HeroSlide[] = [
       { text: '3-in-1', color: 'text-[#b0213f] whitespace-nowrap' },
     ],
     tagline: ['Ultra Thin', 'Dotted', 'Ribbed'],
-    subtitle: 'তিন ধরনের ৩টি পূর্ণ বক্স — সব একসাথে এক প্যাকেজে',
+    subtitle: 'Three full boxes of three types — all in one package',
     chips: [
-      { label: '১০ পিস আল্ট্রা থিন', dot: 'bg-sky-400' },
-      { label: '১০ পিস ডটেড', dot: 'bg-pink-400' },
-      { label: '১০ পিস রিবড', dot: 'bg-slate-400' },
+      { label: '10 pcs Ultra Thin', dot: 'bg-sky-400' },
+      { label: '10 pcs Dotted', dot: 'bg-pink-400' },
+      { label: '10 pcs Ribbed', dot: 'bg-slate-400' },
     ],
     image: resolveMediaUrl('/uploads/2610/261025/mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo_main_1792933776798.webp')!,
     imageAlt: 'MO Ultimate 3-in-1 Combo — Ultra Thin, Dotted and Ribbed',
     framed: true,
-    ctaNote: 'মোট ৩০ পিস — ৩ ধরনের, প্রতিটা ১০ পিস করে',
+    ctaNote: '30 pcs in total — 3 types, 10 of each',
   },
   {
     key: 'protection-combo',
@@ -70,15 +70,15 @@ const SLIDES: HeroSlide[] = [
       { text: 'Combo', color: 'text-[#b0213f]' },
     ],
     tagline: ['20 Pcs', '50gm Gel', 'One Pack'],
-    subtitle: '২০ পিস কনডম আর ৫০ গ্রাম জেল — সব একসাথে এক প্যাকেজে',
+    subtitle: '20 pcs condoms and 50 g gel — all in one package',
     chips: [
-      { label: '২০ পিস কনডম', dot: 'bg-sky-400' },
-      { label: '৫০ গ্রাম জেল', dot: 'bg-pink-400' },
+      { label: '20 pcs condoms', dot: 'bg-sky-400' },
+      { label: '50 g gel', dot: 'bg-pink-400' },
     ],
     image: resolveMediaUrl('/uploads/2610/261018/product_protection_combo_20pcs_50g.webp')!,
     imageAlt: 'Protection Combo — 20 pcs condoms and 50gm gel',
     framed: true,
-    ctaNote: '২০ পিস কনডম + ৫০ গ্রাম জেল, একসাথে এক প্যাকেজে',
+    ctaNote: '20 pcs condoms + 50 g gel, together in one package',
   },
 ]
 
@@ -164,11 +164,11 @@ function Slide({ slide }: { slide: HeroSlide }) {
                   <path d="M2.5 3.5h2.7l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1" />
                 </svg>
               </span>
-              <span className="text-lg font-extrabold lg:text-xl">অর্ডার করুন</span>
+              <span className="text-lg font-extrabold lg:text-xl">Order now</span>
             </button>
             <div className="text-sm font-semibold leading-snug text-[#5a2a35]">{slide.ctaNote}</div>
           </div>
-          <p className="mt-4 text-xs text-slate-500 md:mt-6">শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)</p>
+          <p className="mt-4 text-xs text-slate-500 md:mt-6">For adults only (18+)</p>
         </div>
       </div>
     </div>
@@ -226,7 +226,7 @@ export function HeroSlider() {
       <button
         type="button"
         onClick={() => goTo(active - 1)}
-        aria-label="আগের স্লাইড"
+        aria-label="Previous slide"
         className="absolute left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/80 text-2xl text-[#5a1426] shadow-md transition hover:bg-white 2xl:flex"
       >
         ‹
@@ -234,7 +234,7 @@ export function HeroSlider() {
       <button
         type="button"
         onClick={() => goTo(active + 1)}
-        aria-label="পরের স্লাইড"
+        aria-label="Next slide"
         className="absolute right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/80 text-2xl text-[#5a1426] shadow-md transition hover:bg-white 2xl:flex"
       >
         ›
@@ -246,7 +246,7 @@ export function HeroSlider() {
             key={slide.key}
             type="button"
             onClick={() => goTo(i)}
-            aria-label={`স্লাইড ${i + 1}`}
+            aria-label={`Slide ${i + 1}`}
             className={`h-2.5 cursor-pointer rounded-full transition-all ${i === active ? 'w-7 bg-[#e05578]' : 'w-2.5 bg-slate-400/60 hover:bg-slate-400'}`}
           />
         ))}

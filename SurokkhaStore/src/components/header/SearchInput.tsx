@@ -19,11 +19,11 @@ export function SearchInput({
 
   return (
     <label className={`relative block ${className}`}>
-      <span className="sr-only">পণ্য খুঁজুন</span>
+      <span className="sr-only">Search products</span>
       <Input
         id={id}
         type="search"
-        placeholder="পণ্য খুঁজুন"
+        placeholder="Search products"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={
@@ -41,7 +41,7 @@ export function SearchInput({
         <button
           type="button"
           onClick={() => onChange('')}
-          aria-label="খোঁজ মুছুন"
+          aria-label="Clear search"
           className={`absolute right-3 top-1/2 -translate-y-1/2 ${
             inverted
               ? 'text-background/60 hover:text-background'

@@ -29,83 +29,83 @@ import { bn, taka } from '@/lib/bn'
 
 // value: Pathao spelling the thana API and orders use; label: Bangla name from the store DB
 const DISTRICTS: SelectOption[] = [
-  { value: "Cox's Bazar", label: 'কক্সবাজার' },
-  { value: 'Kishoreganj', label: 'কিশোরগঞ্জ' },
-  { value: 'Kurigram', label: 'কুড়িগ্রাম' },
-  { value: 'Cumilla', label: 'কুমিল্লা' },
-  { value: 'Kushtia', label: 'কুষ্টিয়া' },
-  { value: 'Khagrachari', label: 'খাগড়াছড়ি' },
-  { value: 'Khulna', label: 'খুলনা' },
-  { value: 'Gaibandha', label: 'গাইবান্ধা' },
-  { value: 'Gazipur', label: 'গাজীপুর' },
-  { value: 'Gopalgonj', label: 'গোপালগঞ্জ' },
-  { value: 'Chittagong', label: 'চট্টগ্রাম' },
-  { value: 'Chandpur', label: 'চাঁদপুর' },
-  { value: 'Chapainawabganj', label: 'চাঁপাইনবাবগঞ্জ' },
-  { value: 'Chuadanga', label: 'চুয়াডাঙ্গা' },
-  { value: 'Joypurhat', label: 'জয়পুরহাট' },
-  { value: 'Jamalpur', label: 'জামালপুর' },
-  { value: 'Jhalokathi', label: 'ঝালকাঠি' },
-  { value: 'Jhenidah', label: 'ঝিনাইদহ' },
-  { value: 'Tangail', label: 'টাঙ্গাইল' },
-  { value: 'Thakurgaon', label: 'ঠাকুরগাঁও' },
-  { value: 'Dhaka', label: 'ঢাকা' },
-  { value: 'Dinajpur', label: 'দিনাজপুর' },
-  { value: 'Naogaon', label: 'নওগাঁ' },
-  { value: 'Narail', label: 'নড়াইল' },
-  { value: 'Narshingdi', label: 'নরসিংদী' },
-  { value: 'Natore', label: 'নাটোর' },
-  { value: 'Narayanganj', label: 'নারায়ণগঞ্জ' },
-  { value: 'Nilphamari', label: 'নীলফামারী' },
-  { value: 'Netrakona', label: 'নেত্রকোণা' },
-  { value: 'Noakhali', label: 'নোয়াখালী' },
-  { value: 'Panchagarh', label: 'পঞ্চগড়' },
-  { value: 'Patuakhali', label: 'পটুয়াখালী' },
-  { value: 'Pabna', label: 'পাবনা' },
-  { value: 'Pirojpur', label: 'পিরোজপুর' },
-  { value: 'Faridpur', label: 'ফরিদপুর' },
-  { value: 'Feni', label: 'ফেনী' },
-  { value: 'Bogra', label: 'বগুড়া' },
-  { value: 'Barguna', label: 'বরগুনা' },
-  { value: 'Barisal', label: 'বরিশাল' },
-  { value: 'Bagerhat', label: 'বাগেরহাট' },
-  { value: 'Bandarban', label: 'বান্দরবান' },
-  { value: 'B. Baria', label: 'ব্রাহ্মণবাড়িয়া' },
-  { value: 'Bhola', label: 'ভোলা' },
-  { value: 'Mymensingh', label: 'ময়মনসিংহ' },
-  { value: 'Magura', label: 'মাগুরা' },
-  { value: 'Madaripur', label: 'মাদারীপুর' },
-  { value: 'Manikganj', label: 'মানিকগঞ্জ' },
-  { value: 'Munsiganj', label: 'মুন্সীগঞ্জ' },
-  { value: 'Meherpur', label: 'মেহেরপুর' },
-  { value: 'Moulvibazar', label: 'মৌলভীবাজার' },
-  { value: 'Jashore', label: 'যশোর' },
-  { value: 'Rangpur', label: 'রংপুর' },
-  { value: 'Rangamati', label: 'রাঙ্গামাটি' },
-  { value: 'Rajbari', label: 'রাজবাড়ী' },
-  { value: 'Rajshahi', label: 'রাজশাহী' },
-  { value: 'Lakshmipur', label: 'লক্ষ্মীপুর' },
-  { value: 'Lalmonirhat', label: 'লালমনিরহাট' },
-  { value: 'Shariatpur', label: 'শরীয়তপুর' },
-  { value: 'Sherpur', label: 'শেরপুর' },
-  { value: 'Satkhira', label: 'সাতক্ষীরা' },
-  { value: 'Sirajganj', label: 'সিরাজগঞ্জ' },
-  { value: 'Sylhet', label: 'সিলেট' },
-  { value: 'Sunamganj', label: 'সুনামগঞ্জ' },
-  { value: 'Habiganj', label: 'হবিগঞ্জ' },
+  { value: "Cox's Bazar", label: "Cox's Bazar" },
+  { value: 'Kishoreganj', label: 'Kishoreganj' },
+  { value: 'Kurigram', label: 'Kurigram' },
+  { value: 'Cumilla', label: 'Cumilla' },
+  { value: 'Kushtia', label: 'Kushtia' },
+  { value: 'Khagrachari', label: 'Khagrachari' },
+  { value: 'Khulna', label: 'Khulna' },
+  { value: 'Gaibandha', label: 'Gaibandha' },
+  { value: 'Gazipur', label: 'Gazipur' },
+  { value: 'Gopalgonj', label: 'Gopalgonj' },
+  { value: 'Chittagong', label: 'Chittagong' },
+  { value: 'Chandpur', label: 'Chandpur' },
+  { value: 'Chapainawabganj', label: 'Chapainawabganj' },
+  { value: 'Chuadanga', label: 'Chuadanga' },
+  { value: 'Joypurhat', label: 'Joypurhat' },
+  { value: 'Jamalpur', label: 'Jamalpur' },
+  { value: 'Jhalokathi', label: 'Jhalokathi' },
+  { value: 'Jhenidah', label: 'Jhenidah' },
+  { value: 'Tangail', label: 'Tangail' },
+  { value: 'Thakurgaon', label: 'Thakurgaon' },
+  { value: 'Dhaka', label: 'Dhaka' },
+  { value: 'Dinajpur', label: 'Dinajpur' },
+  { value: 'Naogaon', label: 'Naogaon' },
+  { value: 'Narail', label: 'Narail' },
+  { value: 'Narshingdi', label: 'Narshingdi' },
+  { value: 'Natore', label: 'Natore' },
+  { value: 'Narayanganj', label: 'Narayanganj' },
+  { value: 'Nilphamari', label: 'Nilphamari' },
+  { value: 'Netrakona', label: 'Netrakona' },
+  { value: 'Noakhali', label: 'Noakhali' },
+  { value: 'Panchagarh', label: 'Panchagarh' },
+  { value: 'Patuakhali', label: 'Patuakhali' },
+  { value: 'Pabna', label: 'Pabna' },
+  { value: 'Pirojpur', label: 'Pirojpur' },
+  { value: 'Faridpur', label: 'Faridpur' },
+  { value: 'Feni', label: 'Feni' },
+  { value: 'Bogra', label: 'Bogra' },
+  { value: 'Barguna', label: 'Barguna' },
+  { value: 'Barisal', label: 'Barisal' },
+  { value: 'Bagerhat', label: 'Bagerhat' },
+  { value: 'Bandarban', label: 'Bandarban' },
+  { value: 'B. Baria', label: 'Brahmanbaria' },
+  { value: 'Bhola', label: 'Bhola' },
+  { value: 'Mymensingh', label: 'Mymensingh' },
+  { value: 'Magura', label: 'Magura' },
+  { value: 'Madaripur', label: 'Madaripur' },
+  { value: 'Manikganj', label: 'Manikganj' },
+  { value: 'Munsiganj', label: 'Munsiganj' },
+  { value: 'Meherpur', label: 'Meherpur' },
+  { value: 'Moulvibazar', label: 'Moulvibazar' },
+  { value: 'Jashore', label: 'Jashore' },
+  { value: 'Rangpur', label: 'Rangpur' },
+  { value: 'Rangamati', label: 'Rangamati' },
+  { value: 'Rajbari', label: 'Rajbari' },
+  { value: 'Rajshahi', label: 'Rajshahi' },
+  { value: 'Lakshmipur', label: 'Lakshmipur' },
+  { value: 'Lalmonirhat', label: 'Lalmonirhat' },
+  { value: 'Shariatpur', label: 'Shariatpur' },
+  { value: 'Sherpur', label: 'Sherpur' },
+  { value: 'Satkhira', label: 'Satkhira' },
+  { value: 'Sirajganj', label: 'Sirajganj' },
+  { value: 'Sylhet', label: 'Sylhet' },
+  { value: 'Sunamganj', label: 'Sunamganj' },
+  { value: 'Habiganj', label: 'Habiganj' },
 ]
 
 type FieldKey = 'name' | 'phone' | 'email' | 'district' | 'thana' | 'area' | 'address'
 type CheckoutForm = Record<FieldKey | 'note', string>
 
 const RULES: Record<FieldKey, (v: string) => string | true> = {
-  name: (v) => v.trim().length >= 3 || 'নাম কমপক্ষে ৩ অক্ষরের হতে হবে',
-  phone: (v) => /^01[3-9]\d{8}$/.test(v) || 'সঠিক মোবাইল নম্বর দিন (01XXXXXXXXX, ১১ সংখ্যা)',
-  email: (v) => !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'সঠিক ইমেইল দিন, না থাকলে খালি রাখুন',
-  district: (v) => !!v || 'জেলা বাছাই করুন',
-  thana: (v) => !!v || 'থানা বাছাই করুন',
-  area: (v) => v.trim().length >= 2 || 'এলাকার নাম লিখুন',
-  address: (v) => v.trim().length >= 10 || 'পূর্ণ ঠিকানা দিন (বাসা, রোড, ল্যান্ডমার্ক)',
+  name: (v) => v.trim().length >= 3 || 'Name must be at least 3 characters',
+  phone: (v) => /^01[3-9]\d{8}$/.test(v) || 'Enter a valid mobile number (01XXXXXXXXX, 11 digits)',
+  email: (v) => !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Enter a valid email, or leave it empty',
+  district: (v) => !!v || 'Select a district',
+  thana: (v) => !!v || 'Select a thana',
+  area: (v) => v.trim().length >= 2 || 'Enter your area name',
+  address: (v) => v.trim().length >= 10 || 'Enter your full address (house, road, landmark)',
 }
 
 const inputCls = (bad: boolean) =>
@@ -218,12 +218,12 @@ export function OfferHome() {
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
       const v = p.variants?.find((x) => x.id === variantId)
-      if (!(v ? v.inStock : p.inStock)) return toast.error('দুঃখিত, এটি এখন স্টকে নেই')
+      if (!(v ? v.inStock : p.inStock)) return toast.error('Sorry, this is out of stock right now')
       const price = variantPrice(p, v)
-      if (cur >= MAX_QTY_PER_LINE) return toast.error(`একটি পণ্য সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি নেওয়া যাবে`)
-      if (count >= MAX_QTY_PER_ORDER) return toast.error(`এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি পণ্য নেওয়া যাবে`)
+      if (cur >= MAX_QTY_PER_LINE) return toast.error(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
+      if (count >= MAX_QTY_PER_ORDER) return toast.error(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
       if (subtotal + price > MAX_ORDER_AMOUNT)
-        return toast.error(`${taka(MAX_ORDER_AMOUNT)}-এর বেশি অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`)
+        return toast.error(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
     }
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
@@ -241,20 +241,20 @@ export function OfferHome() {
 
 
   const goCheckout = () => {
-    if (!count) return toast.error('আগে অন্তত একটি পণ্য বাছাই করুন')
+    if (!count) return toast.error('Please select at least one product first')
     track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count })
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!count) return toast.error('আগে অন্তত একটি পণ্য বাছাই করুন')
+    if (!count) return toast.error('Please select at least one product first')
     const ok = (Object.keys(RULES) as FieldKey[]).map((k) => validate(k)).every(Boolean)
     if (!ok) {
       setTimeout(() => document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
       return
     }
-    if (TURNSTILE_SITE_KEY && !captcha) return toast.error('অর্ডার করার আগে "আমি রোবট নই" যাচাই সম্পন্ন করুন')
+    if (TURNSTILE_SITE_KEY && !captcha) return toast.error('Please complete the "I am not a robot" check before ordering')
 
     const info = {
       fullName: form.name.trim(),
@@ -322,7 +322,7 @@ export function OfferHome() {
       setQty({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'অর্ডার করা যায়নি, আবার চেষ্টা করুন')
+      toast.error(err instanceof ApiError ? err.message : 'Could not place the order, please try again')
       // A Turnstile token is single-use, so ask for a fresh one before the next try
       captchaRef.current?.reset()
     } finally {
@@ -336,10 +336,10 @@ export function OfferHome() {
       <main className="offer-font flex min-h-[60dvh] items-center justify-center bg-white px-4 py-12">
         <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-lg">
           <CheckCircle2 className="mx-auto size-14 text-primary" />
-          <h1 className="mt-4 text-2xl font-bold">অর্ডার সম্পন্ন হয়েছে!</h1>
-          {placed && <p className="mt-2 text-gray-600">অর্ডার নম্বর: <b className="text-foreground">{placed}</b></p>}
-          <p className="mt-2 text-sm text-gray-600">শীঘ্রই আমাদের প্রতিনিধি আপনাকে কল করে অর্ডার নিশ্চিত করবেন।</p>
-          <Button className="mt-6 rounded-full" onClick={() => setPlaced(null)}>আবার অর্ডার করুন</Button>
+          <h1 className="mt-4 text-2xl font-bold">Order placed!</h1>
+          {placed && <p className="mt-2 text-gray-600">Order number: <b className="text-foreground">{placed}</b></p>}
+          <p className="mt-2 text-sm text-gray-600">Our team will call you shortly to confirm your order.</p>
+          <Button className="mt-6 rounded-full" onClick={() => setPlaced(null)}>Order again</Button>
         </div>
       </main>
     )
@@ -351,13 +351,13 @@ export function OfferHome() {
         <section className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
           <div className="mx-auto mb-6 max-w-2xl text-center sm:mb-8">
             <h1 className="text-2xl font-bold leading-snug sm:text-3xl">
-              <span className="text-black">আপনার পছন্দের </span>
-              <span className="offer-combo">কম্বো</span>
-              <span className="text-black"> নিজেই বানিয়ে নিন</span>
+              <span className="text-black">Build your own </span>
+              <span className="offer-combo">combo</span>
+              <span className="text-black"> your way</span>
             </h1>
             <p className="mt-2 text-sm text-gray-600 sm:text-base">
-              {taka(DISCOUNT_TIERS[0].min)}-এর অর্ডার থেকেই ছাড় শুরু — যত বেশি নেবেন, ছাড় তত বাড়বে, সর্বোচ্চ{' '}
-              <b className="text-emerald-600">{bn(topTier.off)}%</b> পর্যন্ত!
+              Discounts start at {taka(DISCOUNT_TIERS[0].min)} — the more you buy, the more you save, up to{' '}
+              <b className="text-emerald-600">{bn(topTier.off)}%</b>!
             </p>
             <div className="mx-auto mt-4 grid max-w-md grid-cols-3 gap-2 sm:gap-3">
               {DISCOUNT_TIERS.map((t) => {
@@ -365,8 +365,8 @@ export function OfferHome() {
                 return (
                   <div key={t.min}
                     className={`rounded-xl border-2 px-1 py-2 transition ${on ? 'border-emerald-500 bg-emerald-50' : 'border-dashed border-gray-200'}`}>
-                    <p className={`text-base font-bold sm:text-lg ${on ? 'text-emerald-600' : 'text-rose-600'}`}>{bn(t.off)}% ছাড়</p>
-                    <p className="text-[11px] text-gray-600 sm:text-xs">{taka(t.min)}+ অর্ডারে</p>
+                    <p className={`text-base font-bold sm:text-lg ${on ? 'text-emerald-600' : 'text-rose-600'}`}>{bn(t.off)}% off</p>
+                    <p className="text-[11px] text-gray-600 sm:text-xs">on orders of {taka(t.min)}+</p>
                   </div>
                 )
               })}
@@ -394,9 +394,9 @@ export function OfferHome() {
         <section className="bg-rose-50">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 py-8 sm:grid-cols-3">
             {[
-              { icon: Lock, t: 'গোপনীয় প্যাকেজিং', d: 'বাইরে থেকে কেউ বুঝবে না ভেতরে কী আছে' },
-              { icon: Truck, t: 'সারাদেশে ডেলিভারি', d: `ঢাকায় ${taka(DELIVERY.dhakaCity)}, বাইরে ${taka(DELIVERY.outsideDhaka)}` },
-              { icon: Wallet, t: 'ক্যাশ অন ডেলিভারি', d: 'পণ্য হাতে পেয়ে টাকা পরিশোধ করুন' },
+              { icon: Lock, t: 'Discreet packaging', d: 'Nobody can tell what is inside' },
+              { icon: Truck, t: 'Nationwide delivery', d: `${taka(DELIVERY.dhakaCity)} in Dhaka, ${taka(DELIVERY.outsideDhaka)} elsewhere` },
+              { icon: Wallet, t: 'Cash on delivery', d: 'Pay when you receive the product' },
             ].map(({ icon: Icon, t, d }) => (
               <div key={t} className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4">
                 <Icon className="size-6 shrink-0 text-primary" />
@@ -414,7 +414,7 @@ export function OfferHome() {
             <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
               <div className="mx-auto mb-6 max-w-2xl text-center">
                 <h2 className="text-2xl font-bold text-black sm:text-3xl">{READY_COMBOS_TITLE}</h2>
-                <p className="mt-2 text-sm text-gray-600 sm:text-base">আমাদের বাছাই করা সাশ্রয়ী কম্বো প্যাক — এক ক্লিকেই যোগ করুন।</p>
+                <p className="mt-2 text-sm text-gray-600 sm:text-base">Our hand-picked value combo packs — add in one click.</p>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
                 {combosLoading &&
@@ -441,20 +441,20 @@ export function OfferHome() {
         <section ref={checkoutRef} id="checkout" className="scroll-mt-4 border-t border-gray-200 bg-gray-50">
           <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8 lg:py-12">
             <div className="mb-4 sm:mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">চেকআউট</h2>
-              <p className="mt-1 text-sm text-gray-500">ডেলিভারির তথ্য দিন, তারপর অর্ডার কনফার্ম করুন।</p>
+              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Checkout</h2>
+              <p className="mt-1 text-sm text-gray-500">Enter your delivery details, then confirm your order.</p>
             </div>
 
             <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
               <div className="min-w-0 space-y-4 sm:space-y-6">
-                <CheckoutCard step={1} title="যোগাযোগের তথ্য">
+                <CheckoutCard step={1} title="Contact details">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-                    <Field label="পুরো নাম" required error={errors.name} className="sm:col-span-2">
-                      <input value={form.name} autoComplete="name" placeholder="যেমন: আব্দুর রহমান"
+                    <Field label="Full name" required error={errors.name} className="sm:col-span-2">
+                      <input value={form.name} autoComplete="name" placeholder="e.g. Abdur Rahman"
                         onChange={(e) => setField('name', e.target.value)} onBlur={() => validate('name')}
                         className={inputCls(!!errors.name)} />
                     </Field>
-                    <Field label="মোবাইল নম্বর" required error={errors.phone}>
+                    <Field label="Mobile number" required error={errors.phone}>
                       <div className={`flex rounded-lg border bg-white transition focus-within:border-[#dc143c] focus-within:ring-2 focus-within:ring-[#dc143c]/30 ${
                         errors.phone ? 'border-[#dc143c]' : 'border-gray-300'}`}>
                         <span className="flex items-center border-r border-gray-300 px-3 text-sm text-gray-500">+88</span>
@@ -464,7 +464,7 @@ export function OfferHome() {
                           className="w-full min-w-0 bg-transparent px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400" />
                       </div>
                     </Field>
-                    <Field label="ইমেইল" optional error={errors.email}>
+                    <Field label="Email" optional error={errors.email}>
                       <input type="email" autoComplete="email" placeholder="you@example.com" value={form.email}
                         onChange={(e) => setField('email', e.target.value)} onBlur={() => validate('email')}
                         className={inputCls(!!errors.email)} />
@@ -472,51 +472,51 @@ export function OfferHome() {
                   </div>
                 </CheckoutCard>
 
-                <CheckoutCard step={2} title="ডেলিভারি ঠিকানা">
+                <CheckoutCard step={2} title="Delivery address">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-                    <Field label="জেলা" required error={errors.district}>
-                      <SearchableSelect value={form.district} options={DISTRICTS} placeholder="জেলা বাছাই করুন"
+                    <Field label="District" required error={errors.district}>
+                      <SearchableSelect value={form.district} options={DISTRICTS} placeholder="Select district"
                         invalid={!!errors.district}
                         onChange={(v) => {
                           setForm((f) => ({ ...f, district: v, thana: '' }))
                           setErrors((e) => ({ ...e, district: undefined, thana: undefined }))
                         }} />
                     </Field>
-                    <Field label="থানা / উপজেলা" required error={errors.thana}>
+                    <Field label="Thana / Upazila" required error={errors.thana}>
                       <SearchableSelect value={form.thana} options={thanas} invalid={!!errors.thana}
                         disabled={!form.district || thanasLoading}
-                        placeholder={!form.district ? 'আগে জেলা বাছাই করুন' : thanasLoading ? 'লোড হচ্ছে…' : 'থানা বাছাই করুন'}
-                        emptyText={thanas.length ? undefined : 'এই জেলার থানা পাওয়া যায়নি'}
+                        placeholder={!form.district ? 'Select a district first' : thanasLoading ? 'Loading…' : 'Select a thana'}
+                        emptyText={thanas.length ? undefined : 'No thanas found for this district'}
                         onChange={(v) => setField('thana', v)} />
                     </Field>
-                    <Field label="এলাকা" required error={errors.area} className="sm:col-span-2">
-                      <input value={form.area} placeholder="যেমন: মিরপুর ১০, ধানমন্ডি ২৭" onChange={(e) => setField('area', e.target.value)}
+                    <Field label="Area" required error={errors.area} className="sm:col-span-2">
+                      <input value={form.area} placeholder="e.g. Mirpur 10, Dhanmondi 27" onChange={(e) => setField('area', e.target.value)}
                         onBlur={() => validate('area')} className={inputCls(!!errors.area)} />
                     </Field>
-                    <Field label="পূর্ণ ঠিকানা" required error={errors.address} className="sm:col-span-2">
-                      <textarea rows={3} autoComplete="street-address" placeholder="বাসা নং, রোড নং, বিল্ডিং, ফ্লোর, ল্যান্ডমার্ক…"
+                    <Field label="Full address" required error={errors.address} className="sm:col-span-2">
+                      <textarea rows={3} autoComplete="street-address" placeholder="House no., road no., building, floor, landmark…"
                         value={form.address} onChange={(e) => setField('address', e.target.value)} onBlur={() => validate('address')}
                         className={`${inputCls(!!errors.address)} resize-none`} />
                     </Field>
-                    <Field label="বিশেষ নির্দেশনা" optional className="sm:col-span-2">
-                      <input value={form.note} placeholder="যেমন: বিকেলে ডেলিভারি দিন" onChange={(e) => setField('note', e.target.value)}
+                    <Field label="Special instructions" optional className="sm:col-span-2">
+                      <input value={form.note} placeholder="e.g. Deliver in the afternoon" onChange={(e) => setField('note', e.target.value)}
                         className={inputCls(false)} />
                     </Field>
                   </div>
                 </CheckoutCard>
 
-                <CheckoutCard step={3} title="পেমেন্ট পদ্ধতি">
+                <CheckoutCard step={3} title="Payment method">
                   <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#dc143c] bg-[#dc143c]/10 px-4 py-3 text-sm sm:max-w-xs">
                     <input type="radio" name="payment" checked readOnly className="accent-[#dc143c]" />
-                    ক্যাশ অন ডেলিভারি
+                    Cash on delivery
                   </label>
-                  <p className="mt-2 text-xs text-gray-500">পণ্য হাতে পেয়ে টাকা পরিশোধ করুন।</p>
+                  <p className="mt-2 text-xs text-gray-500">Pay when you receive the product.</p>
                 </CheckoutCard>
               </div>
 
               <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
                 <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
-                  <h3 className="mb-2 text-base font-semibold text-gray-900">অর্ডার সামারি</h3>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">Order summary</h3>
                   {lines.length ? (
                     <ul className="divide-y divide-gray-200">
                       {lines.map((l) => (
@@ -527,7 +527,7 @@ export function OfferHome() {
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-gray-900">{l.product.name}</p>
                             <p className="text-xs text-gray-400">
-                              {l.variant ? `${l.variant.label} · ` : ''}পরিমাণ {bn(l.qty)}
+                              {l.variant ? `${l.variant.label} · ` : ''}Qty {bn(l.qty)}
                             </p>
                           </div>
                           <p className="text-sm font-medium text-gray-900">{taka(l.unitPrice * l.qty)}</p>
@@ -535,26 +535,26 @@ export function OfferHome() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="py-3 text-sm text-gray-500">এখনো কোনো পণ্য বাছাই করা হয়নি।</p>
+                    <p className="py-3 text-sm text-gray-500">No products selected yet.</p>
                   )}
 
                   <dl className="mt-4 space-y-2 border-t border-gray-200 pt-4 text-sm">
-                    <div className="flex justify-between"><dt className="text-gray-500">সাবটোটাল</dt><dd>{taka(subtotal)}</dd></div>
+                    <div className="flex justify-between"><dt className="text-gray-500">Subtotal</dt><dd>{taka(subtotal)}</dd></div>
                     {tier && (
                       <div className="flex justify-between">
-                        <dt className="text-gray-500">কম্বো ছাড় ({bn(tier.off)}%)</dt>
+                        <dt className="text-gray-500">Combo discount ({bn(tier.off)}%)</dt>
                         <dd className="text-emerald-600">−{taka(discount)}</dd>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <dt className="text-gray-500">
-                        ডেলিভারি চার্জ{' '}
+                        Delivery charge{' '}
                         {form.district && <span className="text-xs text-gray-400">({ZONE_LABEL[zone]})</span>}
                       </dt>
                       <dd>{count ? taka(shipping) : '—'}</dd>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold">
-                      <dt>সর্বমোট</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
+                      <dt>Grand total</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
                     </div>
                   </dl>
 
@@ -563,9 +563,9 @@ export function OfferHome() {
                   <button type="submit" disabled={submitting || (!!TURNSTILE_SITE_KEY && !captcha)}
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#dc143c] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b80f31] focus:outline-none focus:ring-2 focus:ring-[#dc143c]/50 disabled:cursor-not-allowed disabled:opacity-60">
                     {submitting && <Loader2 className="size-4 animate-spin" />}
-                    {submitting ? 'অর্ডার হচ্ছে…' : `অর্ডার কনফার্ম করুন — ${taka(total)}`}
+                    {submitting ? 'Placing order…' : `Confirm order — ${taka(total)}`}
                   </button>
-                  <p className="mt-3 text-center text-xs text-gray-400">অর্ডার করলে আপনি আমাদের শর্তাবলী মেনে নিচ্ছেন।</p>
+                  <p className="mt-3 text-center text-xs text-gray-400">By placing an order you agree to our terms.</p>
                 </div>
               </aside>
             </form>
@@ -579,12 +579,12 @@ export function OfferHome() {
           <p className="truncate text-xs text-foreground sm:text-sm">
             {next ? (
               <>
-                আর <b className="text-rose-600">{taka(next.min - comboSubtotal)}</b> এর পণ্য নিলে{' '}
-                <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(next.off)}% ছাড়</b>
-                {tier && <> · এখন পাচ্ছেন <b className="text-emerald-600">{bn(tier.off)}%</b></>}
+                Add <b className="text-rose-600">{taka(next.min - comboSubtotal)}</b> more to get{' '}
+                <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(next.off)}% off</b>
+                {tier && <> · you now get <b className="text-emerald-600">{bn(tier.off)}%</b></>}
               </>
             ) : (
-              <>🎉 সর্বোচ্চ <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(topTier.off)}% ছাড়</b> পাচ্ছেন!</>
+              <>🎉 You get the maximum <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(topTier.off)}% off</b>!</>
             )}
           </p>
           <div className="relative mt-2 h-2.5 rounded-full bg-gray-200">
@@ -599,8 +599,8 @@ export function OfferHome() {
           <div className="mt-2.5 flex items-center justify-between gap-3">
             <div className="leading-tight">
               <p className="text-xs text-gray-600">
-                {bn(count)}টি পণ্য
-                {discount > 0 && <span className="ml-1.5 font-semibold text-emerald-600">সাশ্রয় {taka(discount)}</span>}
+                {bn(count)} {count === 1 ? 'item' : 'items'}
+                {discount > 0 && <span className="ml-1.5 font-semibold text-emerald-600">You save {taka(discount)}</span>}
               </p>
               <p className="text-xl font-bold text-rose-600">
                 {taka(total)}
@@ -608,7 +608,7 @@ export function OfferHome() {
               </p>
             </div>
             <Button onClick={goCheckout} className="h-11 rounded-full px-6">
-              চেকআউট <ArrowRight />
+              Checkout <ArrowRight />
             </Button>
           </div>
         </div>
@@ -644,7 +644,7 @@ function Field({ label, required, optional, error, className = '', children }: {
     <div className={className}>
       <label className="mb-1.5 block text-sm font-medium text-gray-900">
         {label} {required && <span className="text-[#b80f31]">*</span>}
-        {optional && <span className="text-xs font-normal text-gray-400">(ঐচ্ছিক)</span>}
+        {optional && <span className="text-xs font-normal text-gray-400">(optional)</span>}
       </label>
       {children}
       {error && <p data-error className="mt-1 text-xs text-[#b80f31]">{error}</p>}

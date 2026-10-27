@@ -30,7 +30,7 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
             size="icon"
             className="h-8 w-8 rounded-full"
             onClick={() => dec(product.id)}
-            aria-label="কমান"
+            aria-label="Decrease quantity"
           >
             <Minus className="h-3.5 w-3.5" />
           </Button>
@@ -40,7 +40,7 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
             size="icon"
             className="h-8 w-8 rounded-full"
             onClick={() => inc(product.id)}
-            aria-label="বাড়ান"
+            aria-label="Increase quantity"
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>
@@ -52,7 +52,7 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
           className="mt-1 text-xs text-primary underline"
           onClick={() => remove(product.id)}
         >
-          মুছুন
+          Remove
         </button>
       </div>
     </div>

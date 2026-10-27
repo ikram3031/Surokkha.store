@@ -14,15 +14,15 @@ export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex w-full max-w-md flex-col gap-0 p-0">
         <SheetHeader className="border-b border-border px-5 py-4">
-          <SheetTitle className="font-display text-xl">আপনার কার্ট</SheetTitle>
+          <SheetTitle className="font-display text-xl">Your cart</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
           {count === 0 ? (
             <div className="py-16 text-center text-muted-foreground">
-              <p>আপনার কার্ট খালি।</p>
+              <p>Your cart is empty.</p>
               <Button className="mt-4 rounded-full" onClick={() => onOpenChange(false)}>
-                পণ্য দেখুন
+                Browse products
               </Button>
             </div>
           ) : (
@@ -36,16 +36,16 @@ export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
           {freeShipNote && <p className="mb-3 text-sm text-muted-foreground">{freeShipNote}</p>}
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">সাবটোটাল</dt>
+              <dt className="text-muted-foreground">Subtotal</dt>
               <dd>{taka(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">ডেলিভারি চার্জ</dt>
-              <dd>{shipping ? taka(shipping) : 'ফ্রি'}</dd>
+              <dt className="text-muted-foreground">Delivery charge</dt>
+              <dd>{shipping ? taka(shipping) : 'Free'}</dd>
             </div>
             <Separator className="my-1" />
             <div className="flex justify-between text-base font-bold">
-              <dt>মোট</dt>
+              <dt>Total</dt>
               <dd>{taka(total)}</dd>
             </div>
           </dl>
@@ -57,7 +57,7 @@ export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
               navigate('/checkout')
             }}
           >
-            অর্ডার করুন
+            Place order
           </Button>
         </div>
       </SheetContent>

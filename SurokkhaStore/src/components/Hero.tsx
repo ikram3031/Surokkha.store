@@ -7,24 +7,24 @@ export function Hero() {
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 md:grid-cols-2 md:py-20">
         <div>
           <h1 className="font-display text-4xl font-extrabold leading-[1.25] text-foreground sm:text-5xl sm:leading-[1.25]">
-            নিরাপদ ভালোবাসা,
+            Safe love,
             <br />
-            নিঃসংকোচে
+            without hesitation
           </h1>
           <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-            কনডম ও লুব্রিকেন্ট অর্ডার করুন ঘরে বসেই। বাইরে থেকে বোঝা যাবে না এমন সাদামাটা
-            প্যাকেটে পৌঁছে যাবে আপনার দরজায়।
+            Order condoms and lubricants from home. They arrive at your door in plain
+            packaging that gives nothing away.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="rounded-full px-7">
-              <a href="#shop">কেনাকাটা শুরু করুন</a>
+              <a href="#shop">Start shopping</a>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full px-7">
-              <a href="#faq">প্রশ্নোত্তর দেখুন</a>
+              <a href="#faq">View FAQ</a>
             </Button>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            বিকাশ, নগদ ও ক্যাশ অন ডেলিভারিতে পেমেন্ট করা যায়।
+            Pay with bKash, Nagad or cash on delivery.
           </p>
         </div>
 

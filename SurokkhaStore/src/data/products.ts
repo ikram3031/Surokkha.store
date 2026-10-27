@@ -30,20 +30,20 @@ export interface Product {
 }
 
 export const products: Product[] = [
-  { id: 1, cat: 'condom', name: 'সুরক্ষা ক্লাসিক', desc: '৩ পিস, মসৃণ ল্যাটেক্স', price: 90, art: 'box', c1: '#F4919F', c2: '#C9475F', badge: 'বেস্ট সেলার' },
-  { id: 2, cat: 'condom', name: 'আল্ট্রা থিন', desc: '১০ পিস, অতিপাতলা', price: 320, art: 'box', c1: '#F5E6D3', c2: '#948B86' },
-  { id: 3, cat: 'condom', name: 'ডটেড ও রিবড', desc: '১২ পিস, টেক্সচারড', price: 420, art: 'box', c1: '#C9475F', c2: '#3A322F' },
-  { id: 4, cat: 'condom', name: 'ফ্রুটি ফ্লেভার', desc: '৩ পিস, স্ট্রবেরি ফ্লেভার', price: 120, art: 'box', c1: '#F7B3BE', c2: '#F4919F', badge: 'নতুন' },
-  { id: 5, cat: 'lube', name: 'ওয়াটার-বেসড লুব', desc: '১০০ মি.লি., সহজে ধুয়ে যায়', price: 350, art: 'bottle', c1: '#F5E6D3', c2: '#948B86', badge: 'বেস্ট সেলার' },
-  { id: 6, cat: 'lube', name: 'সিলিকন-বেসড লুব', desc: '৫০ মি.লি., দীর্ঘস্থায়ী', price: 480, art: 'bottle', c1: '#F4919F', c2: '#C9475F' },
-  { id: 7, cat: 'lube', name: 'সেনসিটিভ স্কিন লুব', desc: '৭৫ মি.লি., সুগন্ধিমুক্ত', price: 390, art: 'bottle', c1: '#FBD6DB', c2: '#C9475F' },
-  { id: 8, cat: 'combo', name: 'স্টার্টার কম্বো', desc: 'ক্লাসিক ৩ পিস + ওয়াটার-বেসড লুব ৫০ মি.লি.', price: 390, art: 'combo', badge: 'সাশ্রয়ী' },
+  { id: 1, cat: 'condom', name: 'Surokkha Classic', desc: '3 pcs, smooth latex', price: 90, art: 'box', c1: '#F4919F', c2: '#C9475F', badge: 'Best Seller' },
+  { id: 2, cat: 'condom', name: 'Ultra Thin', desc: '10 pcs, extra thin', price: 320, art: 'box', c1: '#F5E6D3', c2: '#948B86' },
+  { id: 3, cat: 'condom', name: 'Dotted & Ribbed', desc: '12 pcs, textured', price: 420, art: 'box', c1: '#C9475F', c2: '#3A322F' },
+  { id: 4, cat: 'condom', name: 'Fruity Flavour', desc: '3 pcs, strawberry flavour', price: 120, art: 'box', c1: '#F7B3BE', c2: '#F4919F', badge: 'New' },
+  { id: 5, cat: 'lube', name: 'Water-Based Lube', desc: '100 ml, washes off easily', price: 350, art: 'bottle', c1: '#F5E6D3', c2: '#948B86', badge: 'Best Seller' },
+  { id: 6, cat: 'lube', name: 'Silicone-Based Lube', desc: '50 ml, long lasting', price: 480, art: 'bottle', c1: '#F4919F', c2: '#C9475F' },
+  { id: 7, cat: 'lube', name: 'Sensitive Skin Lube', desc: '75 ml, fragrance free', price: 390, art: 'bottle', c1: '#FBD6DB', c2: '#C9475F' },
+  { id: 8, cat: 'combo', name: 'Starter Combo', desc: 'Classic 3 pcs + water-based lube 50 ml', price: 390, art: 'combo', badge: 'Great Value' },
 ]
 
 export const catLabel: Record<ProductCategory, string> = {
-  condom: 'কনডম',
-  lube: 'লুব্রিকেন্ট',
-  combo: 'কম্বো প্যাক',
+  condom: 'Condoms',
+  lube: 'Lubricants',
+  combo: 'Combo Packs',
 }
 
 // Soft tint behind each product's art, grouped by category.

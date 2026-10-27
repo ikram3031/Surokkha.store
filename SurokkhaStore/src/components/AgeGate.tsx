@@ -17,22 +17,22 @@ export function AgeGate() {
       >
         <LogoMark className="mx-auto h-14 w-14" />
         <DialogTitle className="mt-3 font-display text-2xl font-bold">
-          আপনার বয়স কি ১৮ বা তার বেশি?
+          Are you 18 or older?
         </DialogTitle>
         <DialogDescription className="mt-2 text-muted-foreground">
-          এই সাইটের পণ্য শুধুমাত্র প্রাপ্তবয়স্কদের জন্য।
+          Products on this site are for adults only.
         </DialogDescription>
         <div className="mt-6 flex flex-col gap-3">
           <Button className="rounded-full" onClick={confirm}>
-            হ্যাঁ, আমার বয়স ১৮ বা বেশি
+            Yes, I'm 18 or older
           </Button>
           <Button variant="outline" className="rounded-full" onClick={() => setDeclined(true)}>
-            না
+            No
           </Button>
         </div>
         {declined && (
           <p className="mt-4 text-sm text-primary">
-            দুঃখিত, প্রাপ্তবয়স্ক হওয়ার পর আবার আসুন।
+            Sorry, please come back when you are an adult.
           </p>
         )}
       </DialogContent>

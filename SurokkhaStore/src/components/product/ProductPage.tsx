@@ -73,9 +73,9 @@ export function ProductPage({ slug }: { slug: string }) {
   if (failed || !product) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-24 text-center">
-        <p className="text-lg font-semibold">পণ্যটি পাওয়া যায়নি।</p>
+        <p className="text-lg font-semibold">Product not found.</p>
         <Button className="mt-4 rounded-full" onClick={() => navigate('/')}>
-          সব পণ্য দেখুন
+          View all products
         </Button>
       </div>
     )
@@ -106,7 +106,7 @@ export function ProductPage({ slug }: { slug: string }) {
                 key={src}
                 type="button"
                 onClick={() => setActiveImage(i)}
-                aria-label={`ছবি ${bn(i + 1)}`}
+                aria-label={`Image ${i + 1}`}
                 className={`h-20 w-full overflow-hidden rounded-lg border-2 transition-colors ${i === activeImage ? 'border-primary' : 'border-transparent'}`}
               >
                 <img src={src} alt="" className="h-full w-full object-cover" />
@@ -136,7 +136,7 @@ export function ProductPage({ slug }: { slug: string }) {
               size="icon"
               className="rounded-full"
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              aria-label="কমান"
+              aria-label="Decrease quantity"
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -146,12 +146,12 @@ export function ProductPage({ slug }: { slug: string }) {
               size="icon"
               className="rounded-full"
               onClick={() => setQty((q) => Math.min(10, q + 1))}
-              aria-label="বাড়ান"
+              aria-label="Increase quantity"
             >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <span className="text-sm text-muted-foreground">মোট {taka(product.price * qty)}</span>
+          <span className="text-sm text-muted-foreground">Total {taka(product.price * qty)}</span>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -164,7 +164,7 @@ export function ProductPage({ slug }: { slug: string }) {
               navigate('/checkout')
             }}
           >
-            {soldOut ? 'স্টকে নেই' : 'এখনই অর্ডার করুন'}
+            {soldOut ? 'Out of stock' : 'Order now'}
           </Button>
           <Button
             size="lg"
@@ -174,17 +174,17 @@ export function ProductPage({ slug }: { slug: string }) {
             onClick={() => add(product, qty)}
           >
             <ShoppingCart className="h-4 w-4" />
-            কার্টে যোগ করুন
+            Add to cart
           </Button>
         </div>
 
         <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
           <li className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-primary" />১০০% গোপন প্যাকেজিং, কোনো ব্র্যান্ডিং ছাড়াই
+            <ShieldCheck className="h-4 w-4 text-primary" />100% discreet packaging, no branding
           </li>
           <li className="flex items-center gap-2">
             <Truck className="h-4 w-4 text-primary" />
-            ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে টাকা দিন
+            Cash on delivery — pay when you receive it
           </li>
         </ul>
 

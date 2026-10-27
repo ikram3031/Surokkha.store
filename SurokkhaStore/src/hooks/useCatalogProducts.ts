@@ -15,9 +15,8 @@ interface ApiProduct {
   name?: string
   price?: number | null
   stockStatus?: string
-  description_bn?: string
-  tagline_bn?: string | null
-  bn?: { tagline?: string; benefits?: { title?: string }[] }
+  description?: string
+  tagline?: string | null
   benefits?: { title?: string }[]
   thumbnailUrl?: string | null
   featuredImage?: string | null
@@ -40,7 +39,7 @@ function toOfferProduct(p: ApiProduct, entity: 'product' | 'item' = 'product'): 
   const images = [p.thumbnailUrl, p.featuredImage, ...(p.gallery ?? []), ...(p.variants ?? []).map((v) => v.imageUrl)]
     .map((src) => resolveMediaUrl(src ?? undefined))
     .filter((src, i, all): src is string => !!src && all.indexOf(src) === i)
-  const benefits = p.bn?.benefits?.length ? p.bn.benefits : p.benefits ?? []
+  const benefits = p.benefits ?? []
   return {
     id: p.did,
     apiId: p.id ?? p._id ?? '',
@@ -48,7 +47,7 @@ function toOfferProduct(p: ApiProduct, entity: 'product' | 'item' = 'product'): 
     entity,
     sku: p.did,
     name: p.name ?? p.did,
-    desc: p.bn?.tagline || p.tagline_bn || plain(p.description_bn).slice(0, 90),
+    desc: p.tagline || plain(p.description).slice(0, 90),
     details: benefits.map((b) => b.title ?? '').filter(Boolean).slice(0, 4),
     // Regular price; the page's tiered discount is applied on top
     price: variants.length ? Math.min(...variants.map((v) => v.price)) : Number(p.price ?? 0),
@@ -59,7 +58,7 @@ function toOfferProduct(p: ApiProduct, entity: 'product' | 'item' = 'product'): 
     images,
     // A single-variant product (e.g. "Pack One") is just sold as itself
     variants: variants.length > 1 ? variants : undefined,
-    variantLabel: variants.length > 1 ? 'অপশন' : undefined,
+    variantLabel: variants.length > 1 ? 'Option' : undefined,
   }
 }
 

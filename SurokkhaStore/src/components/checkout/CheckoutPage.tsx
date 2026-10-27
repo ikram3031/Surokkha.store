@@ -124,23 +124,23 @@ export function CheckoutPage() {
 
   const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase()
-    if (!code) return setCouponError('কুপন কোড লিখুন।')
+    if (!code) return setCouponError('Enter a coupon code.')
     setApplying(true)
     setCouponError('')
     try {
       const res = await getCoupon<{ data?: Coupon }>(code)
       const found = res.data
       const now = new Date()
-      if (!found || !found.active) throw new Error('কুপনটি সঠিক নয় বা সক্রিয় নয়।')
-      if (found.validFrom && now < new Date(found.validFrom)) throw new Error('কুপনের অফারটি এখনো শুরু হয়নি।')
-      if (found.validTo && now > new Date(found.validTo)) throw new Error('কুপনের মেয়াদ শেষ হয়ে গেছে।')
+      if (!found || !found.active) throw new Error('This coupon is invalid or inactive.')
+      if (found.validFrom && now < new Date(found.validFrom)) throw new Error('This coupon offer has not started yet.')
+      if (found.validTo && now > new Date(found.validTo)) throw new Error('This coupon has expired.')
       if (subtotal < Number(found.minOrderAmount || 0))
-        throw new Error(`এই কুপনের জন্য সর্বনিম্ন ${taka(Number(found.minOrderAmount))} টাকার অর্ডার প্রয়োজন।`)
+        throw new Error(`This coupon needs a minimum order of ${taka(Number(found.minOrderAmount))}.`)
       setCoupon({ ...found, code })
-      toast(`কুপন "${code}" প্রয়োগ হয়েছে`)
+      toast(`Coupon "${code}" applied`)
     } catch (err) {
       setCoupon(null)
-      setCouponError(err instanceof ApiError ? 'কুপন কোডটি সঠিক নয় বা মেয়াদ শেষ।' : (err as Error).message)
+      setCouponError(err instanceof ApiError ? 'This coupon code is invalid or expired.' : (err as Error).message)
     } finally {
       setApplying(false)
     }
@@ -148,19 +148,19 @@ export function CheckoutPage() {
 
   const validate = () => {
     const next: Record<string, string> = {}
-    if (!form.fullName.trim()) next.fullName = 'নাম লিখুন'
-    if (!isValidPhone(form.phone)) next.phone = 'সঠিক মোবাইল নম্বর দিন (যেমন 01XXXXXXXXX)'
-    if (!form.email.trim()) next.email = 'ইমেইল লিখুন'
-    else if (!isValidEmail(form.email)) next.email = 'সঠিক ইমেইল দিন'
-    if (form.address.trim().length < 5) next.address = 'বাসা, রোড ও এলাকাসহ পূর্ণ ঠিকানা লিখুন'
-    if (!form.district) next.district = 'জেলা নির্বাচন করুন'
-    else if (thanas.length > 0 && !thanas.includes(form.thana)) next.thana = 'থানা / উপজেলা নির্বাচন করুন'
+    if (!form.fullName.trim()) next.fullName = 'Enter your name'
+    if (!isValidPhone(form.phone)) next.phone = 'Enter a valid mobile number (e.g. 01XXXXXXXXX)'
+    if (!form.email.trim()) next.email = 'Enter your email'
+    else if (!isValidEmail(form.email)) next.email = 'Enter a valid email'
+    if (form.address.trim().length < 5) next.address = 'Enter your full address with house, road and area'
+    if (!form.district) next.district = 'Select a district'
+    else if (thanas.length > 0 && !thanas.includes(form.thana)) next.thana = 'Select a thana / upazila'
     if (!sameAsBilling) {
-      if (!ship.fullName.trim()) next.ship_fullName = 'প্রাপকের নাম লিখুন'
-      if (!isValidPhone(ship.phone)) next.ship_phone = 'প্রাপকের সঠিক মোবাইল নম্বর দিন'
-      if (ship.address.trim().length < 5) next.ship_address = 'প্রাপকের পূর্ণ ঠিকানা লিখুন'
-      if (!ship.district) next.ship_district = 'জেলা নির্বাচন করুন'
-      else if (shipThanas.length > 0 && !shipThanas.includes(ship.thana)) next.ship_thana = 'থানা / উপজেলা নির্বাচন করুন'
+      if (!ship.fullName.trim()) next.ship_fullName = 'Enter the recipient name'
+      if (!isValidPhone(ship.phone)) next.ship_phone = 'Enter a valid recipient mobile number'
+      if (ship.address.trim().length < 5) next.ship_address = 'Enter the recipient full address'
+      if (!ship.district) next.ship_district = 'Select a district'
+      else if (shipThanas.length > 0 && !shipThanas.includes(ship.thana)) next.ship_thana = 'Select a thana / upazila'
     }
     setErrors(next)
     return next
@@ -174,7 +174,7 @@ export function CheckoutPage() {
       toast(Object.values(found)[0])
       return
     }
-    if (!agreed) return toast('শর্তাবলীতে সম্মতি দিন')
+    if (!agreed) return toast('Please accept the terms to continue')
 
     submittingRef.current = true
     setSubmitting(true)
@@ -182,8 +182,8 @@ export function CheckoutPage() {
       const phone = normalizePhone(form.phone)
       const flagged = await checkPhone(phone.slice(-10)).catch(() => null)
       if (flagged?.isFake) {
-        setErrors({ phone: 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।' })
-        throw new Error('অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।')
+        setErrors({ phone: 'Please use a different valid phone number.' })
+        throw new Error('Please use a different valid phone number.')
       }
 
       const district = form.district.trim()
@@ -275,9 +275,9 @@ export function CheckoutPage() {
       setSubmitting(false)
       const body = err instanceof ApiError ? (err.body as { code?: string; message?: string } | null) : null
       if (body?.code === 'CONTACT_REQUIRED') {
-        toast('দুঃখিত, অনলাইনে এই অর্ডার করা যাচ্ছে না। অনুগ্রহ করে আমাদের সাথে যোগাযোগ করুন।')
+        toast('Sorry, this order cannot be placed online. Please contact us.')
       } else {
-        toast(err instanceof Error ? err.message : 'অর্ডার সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।')
+        toast(err instanceof Error ? err.message : 'Could not place the order. Please try again.')
       }
     }
   }
@@ -286,15 +286,15 @@ export function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-      <h1 className="font-display text-2xl font-bold md:text-3xl">চেকআউট</h1>
+      <h1 className="font-display text-2xl font-bold md:text-3xl">Checkout</h1>
       <form onSubmit={submit} noValidate className="mt-6 grid gap-8 lg:grid-cols-[1fr_380px]">
         <div className="space-y-4 rounded-3xl border border-border bg-card p-5 md:p-6">
-          <h2 className="font-display text-lg font-bold">ডেলিভারির তথ্য</h2>
-          <Field label="আপনার নাম" error={errors.fullName}>
+          <h2 className="font-display text-lg font-bold">Delivery details</h2>
+          <Field label="Your name" error={errors.fullName}>
             <Input value={form.fullName} onChange={(e) => set('fullName', e.target.value)} autoComplete="name" aria-invalid={!!errors.fullName} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="মোবাইল নম্বর" error={errors.phone}>
+            <Field label="Mobile number" error={errors.phone}>
               <Input
                 value={form.phone}
                 onChange={(e) => set('phone', toEnDigits(e.target.value))}
@@ -304,14 +304,14 @@ export function CheckoutPage() {
                 aria-invalid={!!errors.phone}
               />
             </Field>
-            <Field label="ইমেইল" error={errors.email}>
+            <Field label="Email" error={errors.email}>
               <Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} autoComplete="email" aria-invalid={!!errors.email} />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="জেলা" error={errors.district}>
+            <Field label="District" error={errors.district}>
               <select className={selectClass} value={form.district} onChange={(e) => set('district', e.target.value)} aria-invalid={!!errors.district}>
-                <option value="">জেলা নির্বাচন করুন</option>
+                <option value="">Select a district</option>
                 {DISTRICT_NAMES.map((d) => (
                   <option key={d} value={d}>
                     {d}
@@ -319,9 +319,9 @@ export function CheckoutPage() {
                 ))}
               </select>
             </Field>
-            <Field label="থানা / উপজেলা" error={errors.thana}>
+            <Field label="Thana / Upazila" error={errors.thana}>
               <select className={selectClass} value={form.thana} onChange={(e) => set('thana', e.target.value)} disabled={!form.district} aria-invalid={!!errors.thana}>
-                <option value="">{form.district ? 'থানা নির্বাচন করুন' : 'আগে জেলা নির্বাচন করুন'}</option>
+                <option value="">{form.district ? 'Select a thana' : 'Select a district first'}</option>
                 {thanas.map((t) => (
                   <option key={t} value={t}>
                     {t}
@@ -330,29 +330,29 @@ export function CheckoutPage() {
               </select>
             </Field>
           </div>
-          <Field label="পূর্ণ ঠিকানা" error={errors.address}>
-            <Input value={form.address} onChange={(e) => set('address', e.target.value)} autoComplete="street-address" placeholder="বাসা, রোড, এলাকা" aria-invalid={!!errors.address} />
+          <Field label="Full address" error={errors.address}>
+            <Input value={form.address} onChange={(e) => set('address', e.target.value)} autoComplete="street-address" placeholder="House, road, area" aria-invalid={!!errors.address} />
           </Field>
-          <Field label="অর্ডার নোট (ঐচ্ছিক)">
+          <Field label="Order note (optional)">
             <Input value={form.notes} onChange={(e) => set('notes', e.target.value)} />
           </Field>
           <label className="flex items-center gap-2 text-sm font-medium">
             <input type="checkbox" checked={!sameAsBilling} onChange={(e) => setSameAsBilling(!e.target.checked)} />
-            অন্য ঠিকানায় ডেলিভারি দিন
+            Deliver to a different address
           </label>
           {!sameAsBilling && (
             <div className="space-y-4 rounded-2xl border border-border p-4">
-              <h3 className="font-semibold">প্রাপকের তথ্য</h3>
+              <h3 className="font-semibold">Recipient details</h3>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="প্রাপকের নাম" error={errors.ship_fullName}>
+                <Field label="Recipient name" error={errors.ship_fullName}>
                   <Input value={ship.fullName} onChange={(e) => setShipField('fullName', e.target.value)} aria-invalid={!!errors.ship_fullName} />
                 </Field>
-                <Field label="প্রাপকের মোবাইল" error={errors.ship_phone}>
+                <Field label="Recipient mobile" error={errors.ship_phone}>
                   <Input value={ship.phone} onChange={(e) => setShipField('phone', toEnDigits(e.target.value))} inputMode="tel" placeholder="01XXXXXXXXX" aria-invalid={!!errors.ship_phone} />
                 </Field>
-                <Field label="জেলা" error={errors.ship_district}>
+                <Field label="District" error={errors.ship_district}>
                   <select className={selectClass} value={ship.district} onChange={(e) => setShipField('district', e.target.value)} aria-invalid={!!errors.ship_district}>
-                    <option value="">জেলা নির্বাচন করুন</option>
+                    <option value="">Select a district</option>
                     {DISTRICT_NAMES.map((d) => (
                       <option key={d} value={d}>
                         {d}
@@ -360,9 +360,9 @@ export function CheckoutPage() {
                     ))}
                   </select>
                 </Field>
-                <Field label="থানা / উপজেলা" error={errors.ship_thana}>
+                <Field label="Thana / Upazila" error={errors.ship_thana}>
                   <select className={selectClass} value={ship.thana} onChange={(e) => setShipField('thana', e.target.value)} disabled={!ship.district} aria-invalid={!!errors.ship_thana}>
-                    <option value="">{ship.district ? 'থানা নির্বাচন করুন' : 'আগে জেলা নির্বাচন করুন'}</option>
+                    <option value="">{ship.district ? 'Select a thana' : 'Select a district first'}</option>
                     {shipThanas.map((t) => (
                       <option key={t} value={t}>
                         {t}
@@ -371,16 +371,16 @@ export function CheckoutPage() {
                   </select>
                 </Field>
               </div>
-              <Field label="প্রাপকের পূর্ণ ঠিকানা" error={errors.ship_address}>
-                <Input value={ship.address} onChange={(e) => setShipField('address', e.target.value)} placeholder="বাসা, রোড, এলাকা" aria-invalid={!!errors.ship_address} />
+              <Field label="Recipient full address" error={errors.ship_address}>
+                <Input value={ship.address} onChange={(e) => setShipField('address', e.target.value)} placeholder="House, road, area" aria-invalid={!!errors.ship_address} />
               </Field>
             </div>
           )}
-          <p className="rounded-xl bg-secondary px-4 py-3 text-sm">পেমেন্ট: ক্যাশ অন ডেলিভারি — পণ্য হাতে পেয়ে টাকা দিন। প্যাকেজ সম্পূর্ণ গোপনীয়ভাবে পাঠানো হয়।</p>
+          <p className="rounded-xl bg-secondary px-4 py-3 text-sm">Payment: cash on delivery — pay when you receive the product. Your package is shipped fully discreetly.</p>
         </div>
 
         <aside className="h-fit space-y-4 rounded-3xl border border-border bg-card p-5 md:p-6">
-          <h2 className="font-display text-lg font-bold">অর্ডার সারাংশ</h2>
+          <h2 className="font-display text-lg font-bold">Order summary</h2>
           <ul className="space-y-3">
             {lines.map(({ product, qty }) => (
               <li key={product.id} className="flex items-center gap-3">
@@ -404,14 +404,14 @@ export function CheckoutPage() {
 
           <div>
             <div className="flex gap-2">
-              <Input value={couponInput} onChange={(e) => setCouponInput(e.target.value)} placeholder="কুপন কোড" disabled={!!coupon} />
+              <Input value={couponInput} onChange={(e) => setCouponInput(e.target.value)} placeholder="Coupon code" disabled={!!coupon} />
               {coupon ? (
                 <Button type="button" variant="outline" onClick={() => { setCoupon(null); setCouponInput('') }}>
-                  মুছুন
+                  Remove
                 </Button>
               ) : (
                 <Button type="button" variant="outline" onClick={applyCoupon} disabled={applying}>
-                  {applying ? '...' : 'প্রয়োগ'}
+                  {applying ? '...' : 'Apply'}
                 </Button>
               )}
             </div>
@@ -420,32 +420,32 @@ export function CheckoutPage() {
 
           <dl className="space-y-1 border-t border-border pt-4 text-sm">
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">সাবটোটাল</dt>
+              <dt className="text-muted-foreground">Subtotal</dt>
               <dd>{taka(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">ডেলিভারি চার্জ</dt>
-              <dd>{totals.fee ? taka(totals.fee) : 'ফ্রি'}</dd>
+              <dt className="text-muted-foreground">Delivery charge</dt>
+              <dd>{totals.fee ? taka(totals.fee) : 'Free'}</dd>
             </div>
             {totals.discount > 0 && (
               <div className="flex justify-between text-primary">
-                <dt>ছাড়</dt>
+                <dt>Discount</dt>
                 <dd>−{taka(totals.discount)}</dd>
               </div>
             )}
             <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
-              <dt>মোট</dt>
+              <dt>Total</dt>
               <dd>{taka(totals.total)}</dd>
             </div>
           </dl>
 
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-            <span>আমি শর্তাবলী ও রিফান্ড নীতিতে সম্মত এবং আমার বয়স ১৮ বা তার বেশি।</span>
+            <span>I agree to the terms and refund policy, and I am 18 or older.</span>
           </label>
 
           <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={submitting}>
-            {submitting ? 'অর্ডার হচ্ছে...' : `অর্ডার কনফার্ম করুন · ${taka(totals.total)}`}
+            {submitting ? 'Placing order...' : `Confirm order · ${taka(totals.total)}`}
           </Button>
         </aside>
       </form>

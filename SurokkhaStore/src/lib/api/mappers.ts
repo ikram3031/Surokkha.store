@@ -54,8 +54,8 @@ function categoryNameOf(raw: ApiProduct['category'] | string | undefined): strin
 /** Best-effort guess at which of our three catalog buckets an API category belongs to. */
 function normalizeCategory(raw: string): ProductCategory {
   const name = raw.toLowerCase()
-  if (name.includes('condom') || name.includes('কনডম')) return 'condom'
-  if (name.includes('lub') || name.includes('লুব')) return 'lube'
+  if (name.includes('condom')) return 'condom'
+  if (name.includes('lub')) return 'lube'
   return 'combo'
 }
 
@@ -88,8 +88,8 @@ export function mapApiProduct(raw: ApiProduct): Product {
   return {
     id: toNumericId(raw),
     cat,
-    name: raw.name_bn || raw.bn?.name || raw.name || raw.title || 'পণ্য',
-    desc: raw.description_bn || raw.bn?.description || raw.description || raw.shortDescription || '',
+    name: raw.name || raw.title || 'Product',
+    desc: raw.description || raw.shortDescription || '',
     // Same precedence as SurokkhaShop: active offer price, else list price
     price: offer || (raw.price ?? raw.salePrice ?? raw.regularPrice ?? 0),
     slug: raw.slug,
@@ -106,7 +106,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
     art: visual.art,
     c1: visual.c1,
     c2: visual.c2,
-    badge: raw.badge ?? (raw.isNew ? 'নতুন' : raw.isBestSeller ? 'বেস্ট সেলার' : undefined),
+    badge: raw.badge ?? (raw.isNew ? 'New' : raw.isBestSeller ? 'Best Seller' : undefined),
     image: resolveMediaUrl(raw.thumbnailUrl || raw.featuredImage || raw.imageUrl || raw.gallery?.[0]),
   }
 }

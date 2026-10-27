@@ -24,7 +24,7 @@
   --brand-taupe: #948b86;
   --brand-taupe-dark: #6f6560;
   --brand-ink: #3a322f;
-  /* Dominant maroon ("খয়েরি") sampled from the logo wordmark. */
+  /* Dominant maroon sampled from the logo wordmark. */
   --brand-maroon: #4d1224;
 
   --background: #ffffff;
@@ -199,7 +199,7 @@ input[type='search']::-webkit-search-results-decoration {
   }
 }
 
-/* /offer heading: "কম্বো" cycles through bright colours with a gentle bounce */
+/* /offer heading: "Combo" cycles through bright colours with a gentle bounce */
 .offer-combo {
   display: inline-block;
   padding: 0 0.1em;

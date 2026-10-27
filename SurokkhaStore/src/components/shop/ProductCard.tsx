@@ -41,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
             <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
           </div>
         )}
-        {/* হোভারে ওভারলে + সাদা ভিউ আইকন */}
+        {/* Hover overlay with a white view icon */}
         {product.slug && (
           <div
             aria-hidden="true"
@@ -70,7 +70,7 @@ export function ProductCard({ product }: { product: Product }) {
               e.stopPropagation()
               add(product)
             }}
-            aria-label={`${product.name} কার্টে যোগ করুন`}
+            aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingCart className="h-4 w-4" />
           </Button>

@@ -2,16 +2,16 @@ import { SectionBackground } from '@/components/SectionBackground'
 
 const tips = [
   {
-    title: 'মেয়াদ দেখে নিন',
-    desc: 'প্যাকেটের গায়ে লেখা মেয়াদোত্তীর্ণের তারিখ পার হয়ে গেলে ব্যবহার করবেন না।',
+    title: 'Check the expiry date',
+    desc: 'Do not use a pack once the expiry date printed on it has passed.',
   },
   {
-    title: 'সঠিক লুব্রিকেন্ট বেছে নিন',
-    desc: 'ল্যাটেক্স কনডমের সাথে ওয়াটার বা সিলিকন বেসড লুব্রিকেন্ট ব্যবহার করুন। তেলভিত্তিক কিছু ব্যবহার করলে কনডম নষ্ট হতে পারে।',
+    title: 'Choose the right lubricant',
+    desc: 'Use water or silicone based lubricant with latex condoms. Anything oil based can damage the condom.',
   },
   {
-    title: 'ঠান্ডা ও শুকনো জায়গায় রাখুন',
-    desc: 'ওয়ালেট বা গাড়িতে দীর্ঘদিন রাখলে তাপে কনডমের ক্ষতি হয়।',
+    title: 'Store in a cool, dry place',
+    desc: 'Keeping condoms in a wallet or car for long periods exposes them to heat and damages them.',
   },
 ]
 
@@ -22,11 +22,11 @@ export function SafeUse() {
       <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-14 md:grid-cols-2">
         <div>
           <h2 className="font-display text-3xl font-bold leading-snug">
-            নিরাপদ ব্যবহারের তিনটি কথা
+            Three things to know about safe use
           </h2>
           <p className="mt-4 max-w-md text-muted-foreground">
-            সঠিকভাবে ব্যবহার করলেই কনডম পুরো সুরক্ষা দেয়। কেনার আগে ও ব্যবহারের আগে এগুলো মাথায়
-            রাখুন।
+            Condoms only protect fully when used correctly. Keep these in mind before you buy
+            and before you use.
           </p>
         </div>
         <ol className="space-y-4">

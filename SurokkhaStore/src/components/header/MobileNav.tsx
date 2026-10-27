@@ -25,8 +25,8 @@ export function MobileNav({
   }
 
   return (
-    <nav className="flex h-full flex-col" aria-label="মোবাইল মেনু">
-      {/* লোগো — ডানদিকে বন্ধ করার X বাটন (Sheet-এর নিজস্ব) */}
+    <nav className="flex h-full flex-col" aria-label="Mobile menu">
+      {/* Logo — the sheet's own close (X) button sits on the right */}
       <div className="flex h-16 shrink-0 items-center px-4 pr-14">
         <a
           href="/"
@@ -34,9 +34,9 @@ export function MobileNav({
             e.preventDefault()
             go('/')
           }}
-          aria-label="সুরক্ষা হোমপেজ"
+          aria-label="Surokkha home"
         >
-          <img src="/logo_2.png" alt="সুরক্ষা" className="h-9 w-auto" />
+          <img src="/logo_2.png" alt="Surokkha" className="h-9 w-auto" />
         </a>
       </div>
 
@@ -45,7 +45,7 @@ export function MobileNav({
         <ul className="flex flex-col">
           <li>
             <button type="button" className={itemClass} onClick={() => go('/')}>
-              হোম
+              Home
             </button>
           </li>
           {categories.map((c) => (
@@ -72,13 +72,13 @@ export function MobileNav({
                 setTimeout(() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }), 150)
               }}
             >
-              যোগাযোগ
+              Contact
             </button>
           </li>
         </ul>
       </div>
 
-      {/* একেবারে নিচে */}
+      {/* Pinned to the bottom */}
       <div className="mt-auto border-t border-background/15 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
