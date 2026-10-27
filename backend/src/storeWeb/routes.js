@@ -17,6 +17,8 @@ import storeUtilsRouter from "./routes/StoreUtilsRoute.js";
 import sizeChartRouter from "./routes/SizeChartRoute.js";
 import pixelEventsRouter from "./routes/PixelEventsRoute.js";
 import locationsRouter from "./routes/LocationsRoute.js";
+import cmsContentRouter from "./routes/CmsContentRoute.js";
+import siteConfigRouter from "./routes/SiteConfigRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
 const storefrontRouter = Router();
@@ -39,6 +41,8 @@ storefrontRouter.use("/store-utils", storeUtilsRouter);
 storefrontRouter.use("/search", searchRouter);
 storefrontRouter.use("/events", pixelEventsRouter);
 storefrontRouter.use("/locations", locationsRouter);
+storefrontRouter.use("/cms-content", cmsContentRouter);
+storefrontRouter.use("/site-config", siteConfigRouter);
 storefrontRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket

@@ -16,6 +16,11 @@ export const CMSContentTypeModel = models.CMSContentType || model("CMSContentTyp
 
 export const DEFAULT_CMS_CONTENT_TYPES = [
   { key: "slider", label: "Slider", description: "Homepage hero banner slider with dynamic slides" },
+  {
+    key: "section-bg",
+    label: "Section Background",
+    description: "Background images for homepage sections (item badge = section key, item image = background)",
+  },
 ];
 
 // Ensures the built-in content types exist in the database

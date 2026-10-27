@@ -20,6 +20,31 @@ export const cmsImageUpload = multer({
 
 const str = (v) => (typeof v === "string" ? v.trim() : "");
 
+// Section names become file names, so keep them URL-safe (e.g. "Safe Use" -> "safe-use")
+const slugifyName = (v) =>
+  str(v)
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+
+const WEBP_MAX_WIDTH = 2400;
+const WEBP_START_QUALITY = 90;
+const WEBP_MIN_QUALITY = 74;
+const WEBP_SOFT_LIMIT_BYTES = 450 * 1024;
+
+// High-quality WebP: starts at q90 and only steps down if the file grows unreasonably large
+export const encodeHighQualityWebp = async (input) => {
+  const base = sharp(input).rotate().resize({ width: WEBP_MAX_WIDTH, withoutEnlargement: true });
+  let quality = WEBP_START_QUALITY;
+  let buffer;
+  do {
+    buffer = await base.clone().webp({ quality, effort: 6 }).toBuffer();
+    quality -= 4;
+  } while (buffer.length > WEBP_SOFT_LIMIT_BYTES && quality >= WEBP_MIN_QUALITY);
+  return { buffer, quality: quality + 4 };
+};
+
 // Normalises one slide payload to the allowed schema fields
 const sanitizeSlide = (raw = {}, index = 0) => ({
   ...(raw._id && /^[0-9a-fA-F]{24}$/.test(raw._id) ? { _id: raw._id } : {}),
@@ -150,16 +175,22 @@ export const deleteCmsContent = async (req, res, next) => {
   }
 };
 
-// Compresses an uploaded slide image to WebP and returns its public path
+// Converts an uploaded CMS image to high-quality WebP, saves it under its section name and returns its public path
 export const uploadCmsImage = async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ status: "error", message: "No image file provided" });
     const dir = path.join(process.cwd(), "uploads", "cms");
     await fs.promises.mkdir(dir, { recursive: true });
-    const filename = `slide-${Date.now()}-${crypto.randomBytes(3).toString("hex")}.webp`;
-    const buffer = await sharp(req.file.buffer).rotate().webp({ quality: 85, effort: 5 }).toBuffer();
+    // A "name" field (e.g. the section key) names the file; without one it is a timestamped slide image
+    const name = slugifyName(req.body?.name);
+    const filename = name ? `${name}.webp` : `slide-${Date.now()}-${crypto.randomBytes(3).toString("hex")}.webp`;
+    const { buffer, quality } = await encodeHighQualityWebp(req.file.buffer);
     await fs.promises.writeFile(path.join(dir, filename), buffer);
-    res.json({ status: "success", data: { path: `/uploads/cms/${filename}`, size: buffer.length } });
+    // Same name overwrites the old file, so the version query busts browser/CDN caches
+    res.json({
+      status: "success",
+      data: { path: `/uploads/cms/${filename}?v=${Date.now()}`, filename, size: buffer.length, quality },
+    });
   } catch (err) {
     next(err);
   }
