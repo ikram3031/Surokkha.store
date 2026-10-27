@@ -18,10 +18,11 @@ interface CartContextValue {
   shipping: number
   total: number
   freeShipNote: string
-  add: (product: Product) => void
+  add: (product: Product, qty?: number) => void
   inc: (id: number) => void
   dec: (id: number) => void
   remove: (id: number) => void
+  clear: () => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -29,14 +30,15 @@ const CartContext = createContext<CartContextValue | null>(null)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartState>({})
 
-  const add = (product: Product) => {
+  const add = (product: Product, qty = 1) => {
     setCart((prev) => {
       const existing = prev[product.id]
-      return { ...prev, [product.id]: { product, qty: (existing?.qty ?? 0) + 1 } }
+      return { ...prev, [product.id]: { product, qty: (existing?.qty ?? 0) + qty } }
     })
     toast('কার্টে যোগ হয়েছে')
-    trackAddToCart({ productId: product.id, qty: 1, price: product.price })
+    trackAddToCart({ productId: product.apiId ?? product.id, qty, price: product.price })
   }
+  const clear = () => setCart({})
   const inc = (id: number) =>
     setCart((prev) => {
       const existing = prev[id]
@@ -85,6 +87,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     inc,
     dec,
     remove,
+    clear,
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

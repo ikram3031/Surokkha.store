@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { resolveMediaUrl } from '@/lib/api/client'
+import { navigate, productPath } from '@/lib/router'
 
 // Ported from SurokkhaShop's HeroBannerSlider (Trial Pack, Ultimate 3-in-1, Protection Combo banners).
 interface HeroSlide {
@@ -14,11 +15,14 @@ interface HeroSlide {
   /** Packet cut-out art renders bare; product photos get the rounded card frame. */
   framed: boolean
   ctaNote: string
+  /** Product page the slide's CTA opens (slugs as served by the StoreWeb API). */
+  slug: string
 }
 
 const SLIDES: HeroSlide[] = [
   {
     key: 'trial-pack',
+    slug: 'mo-trial-pack-6-pcs',
     badge: 'Trial Combo Pack',
     title: [
       { text: 'MO ', color: 'text-[#4a0f1f]' },
@@ -39,6 +43,7 @@ const SLIDES: HeroSlide[] = [
   },
   {
     key: 'ultimate-combo',
+    slug: 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo',
     badge: 'Best Value Combo',
     title: [
       { text: 'Ultimate ', color: 'text-[#4a0f1f]' },
@@ -58,6 +63,7 @@ const SLIDES: HeroSlide[] = [
   },
   {
     key: 'protection-combo',
+    slug: 'protection-combo-20-pcs-50gm-gel',
     badge: 'Protection Combo',
     title: [
       { text: 'Protection ', color: 'text-[#4a0f1f]' },
@@ -79,10 +85,6 @@ const SLIDES: HeroSlide[] = [
 const SPEED_MS = 5000
 const TRANSITION_MS = 700
 const SWIPE_THRESHOLD_PX = 50
-
-function scrollToShop() {
-  document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })
-}
 
 function Slide({ slide }: { slide: HeroSlide }) {
   return (
@@ -137,7 +139,7 @@ function Slide({ slide }: { slide: HeroSlide }) {
           <img
             src={slide.image}
             alt={slide.imageAlt}
-            onClick={scrollToShop}
+            onClick={() => navigate(productPath(slide.slug))}
             className={
               slide.framed
                 ? 'aspect-square w-full max-w-[340px] cursor-pointer rounded-3xl object-cover shadow-2xl ring-4 shadow-rose-900/20 ring-rose-200/70 md:max-w-[460px]'
@@ -152,7 +154,7 @@ function Slide({ slide }: { slide: HeroSlide }) {
           <div className="flex flex-col items-center gap-3 md:flex-row md:gap-5">
             <button
               type="button"
-              onClick={scrollToShop}
+              onClick={() => navigate(productPath(slide.slug))}
               className="inline-flex cursor-pointer items-center gap-3 rounded-full bg-gradient-to-r from-[#5a1426] to-[#a51d3a] py-2 pl-2 pr-8 text-white shadow-xl shadow-rose-900/20 transition hover:from-[#6b1830] hover:to-[#be2446] active:scale-95"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 md:h-11 md:w-11">

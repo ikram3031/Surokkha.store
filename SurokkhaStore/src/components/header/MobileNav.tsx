@@ -1,10 +1,10 @@
 import { SearchInput } from '@/components/header/SearchInput'
 
 const links = [
-  { href: '#shop', label: 'সব পণ্য' },
-  { href: '#categories', label: 'ক্যাটাগরি' },
-  { href: '#why', label: 'কেন সুরক্ষা' },
-  { href: '#faq', label: 'প্রশ্নোত্তর' },
+  { href: '/#shop', label: 'সব পণ্য' },
+  { href: '/#categories', label: 'ক্যাটাগরি' },
+  { href: '/#why', label: 'কেন সুরক্ষা' },
+  { href: '/#faq', label: 'প্রশ্নোত্তর' },
 ]
 
 export function MobileNav({

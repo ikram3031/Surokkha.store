@@ -6,12 +6,16 @@ import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import { catBg, catLabel, type Product } from '@/data/products'
 import { taka } from '@/lib/bn'
 import { useCart } from '@/context/CartContext'
+import { navigate, productPath } from '@/lib/router'
 
 export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart()
 
   return (
-    <Card className="gap-0 overflow-hidden rounded-3xl p-0">
+    <Card
+      className={`gap-0 overflow-hidden rounded-3xl p-0 ${product.slug ? 'cursor-pointer' : ''}`}
+      onClick={product.slug ? () => navigate(productPath(product.slug!)) : undefined}
+    >
       <div className={`relative flex aspect-square items-center justify-center ${catBg[product.cat]}`}>
         {product.badge && (
           <Badge className="absolute left-3 top-3 bg-card text-primary hover:bg-card">
@@ -44,7 +48,10 @@ export function ProductCard({ product }: { product: Product }) {
           <Button
             size="icon"
             className="rounded-full"
-            onClick={() => add(product)}
+            onClick={(e) => {
+              e.stopPropagation()
+              add(product)
+            }}
             aria-label={`${product.name} কার্টে যোগ করুন`}
           >
             <ShoppingCart className="h-4 w-4" />

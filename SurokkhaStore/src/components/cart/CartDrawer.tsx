@@ -1,10 +1,10 @@
-import { toast } from 'sonner'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { CartItem } from '@/components/cart/CartItem'
 import { taka } from '@/lib/bn'
 import { useCart } from '@/context/CartContext'
+import { navigate } from '@/lib/router'
 
 export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { cart, count, subtotal, shipping, total, freeShipNote } = useCart()
@@ -49,11 +49,13 @@ export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
               <dd>{taka(total)}</dd>
             </div>
           </dl>
-          {/* TODO: send cart to your checkout / backend here */}
           <Button
             className="mt-4 w-full rounded-full"
             disabled={count === 0}
-            onClick={() => toast('চেকআউট পেজ এখানে যুক্ত করুন')}
+            onClick={() => {
+              onOpenChange(false)
+              navigate('/checkout')
+            }}
           >
             অর্ডার করুন
           </Button>

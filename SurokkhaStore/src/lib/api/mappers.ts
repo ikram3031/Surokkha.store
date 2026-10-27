@@ -28,6 +28,12 @@ export interface ApiProduct {
   thumbnailUrl?: string
   imageUrl?: string
   gallery?: string[]
+  offerPrice?: number | null
+  longDescription?: string
+  name_bn?: string
+  description_bn?: string
+  stockStatus?: string
+  bn?: { name?: string; description?: string }
   [key: string]: unknown
 }
 
@@ -72,9 +78,18 @@ export function mapApiProduct(raw: ApiProduct): Product {
   return {
     id: toNumericId(raw),
     cat,
-    name: raw.name ?? raw.title ?? 'পণ্য',
-    desc: raw.description ?? raw.shortDescription ?? '',
-    price: raw.price ?? raw.salePrice ?? raw.regularPrice ?? 0,
+    name: raw.name_bn || raw.bn?.name || raw.name || raw.title || 'পণ্য',
+    desc: raw.description_bn || raw.bn?.description || raw.description || raw.shortDescription || '',
+    // Same precedence as SurokkhaShop: active offer price, else list price
+    price: Number(raw.offerPrice) > 0 ? Number(raw.offerPrice) : (raw.price ?? raw.salePrice ?? raw.regularPrice ?? 0),
+    slug: raw.slug,
+    apiName: raw.name ?? raw.title,
+    apiId: raw._id ?? raw.id?.toString(),
+    did: raw.did,
+    gallery: (raw.gallery ?? []).map((g) => resolveMediaUrl(g)!).filter(Boolean),
+    longDescription: raw.longDescription,
+    regularPrice: raw.regularPrice,
+    inStock: String(raw.stockStatus ?? 'instock').toLowerCase() !== 'outofstock',
     art: visual.art,
     c1: visual.c1,
     c2: visual.c2,

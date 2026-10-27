@@ -13,6 +13,16 @@ export interface Product {
   c2?: string
   badge?: string
   image?: string
+  /** Set for products loaded from the API; needed for the product page and order payload. */
+  slug?: string
+  /** API's canonical (English) name — sent on orders, as SurokkhaShop does. */
+  apiName?: string
+  apiId?: string
+  did?: string
+  gallery?: string[]
+  longDescription?: string
+  regularPrice?: number
+  inStock?: boolean
 }
 
 export const products: Product[] = [

@@ -6,10 +6,10 @@ import { CartButton } from '@/components/header/CartButton'
 import { MobileNav } from '@/components/header/MobileNav'
 
 const links = [
-  { href: '#shop', label: 'সব পণ্য' },
-  { href: '#categories', label: 'ক্যাটাগরি' },
-  { href: '#why', label: 'কেন সুরক্ষা' },
-  { href: '#faq', label: 'প্রশ্নোত্তর' },
+  { href: '/#shop', label: 'সব পণ্য' },
+  { href: '/#categories', label: 'ক্যাটাগরি' },
+  { href: '/#why', label: 'কেন সুরক্ষা' },
+  { href: '/#faq', label: 'প্রশ্নোত্তর' },
 ]
 
 export function Header({
@@ -39,7 +39,7 @@ export function Header({
           </SheetContent>
         </Sheet>
 
-        <a href="#" className="flex items-center gap-2" aria-label="সুরক্ষা হোমপেজ">
+        <a href="/" className="flex items-center gap-2" aria-label="সুরক্ষা হোমপেজ">
           <img src="/logo.png" alt="সুরক্ষা" className="h-10 w-auto" />
         </a>
 

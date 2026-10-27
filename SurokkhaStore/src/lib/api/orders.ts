@@ -1,35 +1,68 @@
 import { api } from '@/lib/api/client'
 
 export interface OrderItemInput {
-  productId: string
-  qty: number
-  [key: string]: unknown
+  productId?: string
+  productDid?: string
+  itemType: 'product' | 'item'
+  name: string
+  image?: string
+  quantity: number
+  unitPrice: number
+  size?: string
 }
 
+export interface OrderAddress {
+  fullName: string
+  phone: string
+  email?: string
+  address: string
+  city: string
+  thana: string
+  district: string
+  state: string
+  division: string
+  zip: string
+}
+
+/** Payload accepted by POST /store/v1/orders/new-order (see backend OrdersController.createOrder). */
 export interface NewOrderPayload {
+  billingInfo: OrderAddress
+  shippingInfo: OrderAddress | null
+  shipToDifferentAddress: boolean
+  orderPrefix: 'ST'
+  orderNotes: string
+  paymentMethod: 'cod'
+  giftWrap: boolean
+  subtotal: number
+  shippingFee: number
+  shippingTotalAmount: number
+  tax: number
+  discountTotalAmount: number
+  couponCode: string | null
+  total: number
   items: OrderItemInput[]
-  customer: {
-    name: string
-    phone: string
-    address: string
-    district?: string
-    thana?: string
-  }
-  paymentMethod?: 'cod' | 'bkash' | 'nagad'
-  couponCode?: string
-  [key: string]: unknown
+  paymentDetails: null
+  timestamp: string
 }
 
 export interface Order {
-  orderId: string
-  /** Order numbers are prefixed "ST" (previously "SH"). */
   orderNumber: string
   [key: string]: unknown
 }
 
+export interface CreateOrderResponse {
+  status: 'success'
+  data: Order
+}
+
 /** POST /store/v1/orders/new-order */
 export function createOrder(payload: NewOrderPayload) {
-  return api.post<Order>('/orders/new-order', payload)
+  return api.post<CreateOrderResponse>('/orders/new-order', payload)
+}
+
+/** GET /store/v1/orders/check-phone — flags numbers on the fake-order list. */
+export function checkPhone(phone: string) {
+  return api.get<{ isFake?: boolean }>('/orders/check-phone', { phone })
 }
 
 /** GET /store/v1/orders/:orderId */
