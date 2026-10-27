@@ -25,6 +25,16 @@ const paymentSchema = new Schema(
     isActive: { type: Boolean, default: true, index: true },
     active: { type: Boolean, default: true, index: true },
     notes: { type: String, trim: true, default: "" },
+    // Slips / receipts uploaded with the payment (files live in uploads/docs/payments/<YYMM>/)
+    attachments: [
+      {
+        _id: false,
+        name: { type: String, trim: true, default: "" },
+        url: { type: String, required: true },
+        size: { type: Number, default: 0 },
+        mimeType: { type: String, default: "" },
+      },
+    ],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },

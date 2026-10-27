@@ -65,6 +65,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { useBillings } from '@/hooks/use-billings';
 import { useBillTypes } from '@/hooks/use-bill-types';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
+import { resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 const formatCurrency = (val) => {
@@ -466,7 +467,14 @@ export const AllBillsPage = () => {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{b.billingDate || b.date}</TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{b.dueDate || '—'}</TableCell>
-                    <TableCell className="text-xs font-bold text-foreground whitespace-nowrap">{formatCurrency(b.totalAmount)}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      <div className="font-bold text-foreground">{formatCurrency(b.totalAmount)}</div>
+                      {b.feeAmount > 0 && (
+                        <div className="text-[10px] text-muted-foreground">
+                          Bill {formatCurrency(b.billAmount)} + charge {formatCurrency(b.feeAmount)}
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-xs whitespace-nowrap">
                       <span className="text-emerald-600 font-semibold">{formatCurrency(b.paidAmount)}</span>
                       {b.pendingAmount > 0 && (
@@ -625,8 +633,22 @@ export const AllBillsPage = () => {
               </div>
 
               <div className="p-3.5 rounded-xl bg-muted/50 border space-y-2">
-                <div className="flex justify-between font-medium">
-                  <span className="text-muted-foreground">Total Bill Amount:</span>
+                {viewBillTarget.feeAmount > 0 && (
+                  <>
+                    <div className="flex justify-between font-medium">
+                      <span className="text-muted-foreground">Bill Amount (received by payee):</span>
+                      <span className="font-bold text-foreground">{formatCurrency(viewBillTarget.billAmount)}</span>
+                    </div>
+                    <div className="flex justify-between font-medium">
+                      <span className="text-muted-foreground">
+                        Payment Charge{viewBillTarget.paymentFee?.name ? ` (${viewBillTarget.paymentFee.name})` : ''}:
+                      </span>
+                      <span className="font-bold text-foreground">{formatCurrency(viewBillTarget.feeAmount)}</span>
+                    </div>
+                  </>
+                )}
+                <div className={`flex justify-between font-medium ${viewBillTarget.feeAmount > 0 ? 'border-t pt-2' : ''}`}>
+                  <span className="text-muted-foreground">Total Deducted (Bill + Charge):</span>
                   <span className="font-bold text-foreground text-sm">{formatCurrency(viewBillTarget.totalAmount)}</span>
                 </div>
                 <div className="flex justify-between font-medium">
@@ -638,6 +660,24 @@ export const AllBillsPage = () => {
                   <span className="font-bold text-amber-600">{formatCurrency(viewBillTarget.pendingAmount)}</span>
                 </div>
               </div>
+
+              {viewBillTarget.attachments?.length > 0 && (
+                <div className="p-3 rounded-lg bg-muted/30 border space-y-1.5">
+                  <span className="font-semibold text-foreground block">Attachments:</span>
+                  {viewBillTarget.attachments.map((file) => (
+                    <a
+                      key={file.url}
+                      href={resolveImageUrl(file.url)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 text-primary hover:underline truncate"
+                    >
+                      <FileText className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{file.name || file.url.split('/').pop()}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
 
               {viewBillTarget.notes && (
                 <div className="p-3 rounded-lg bg-muted/30 border text-muted-foreground">

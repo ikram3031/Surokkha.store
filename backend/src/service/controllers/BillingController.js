@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { BillingModel } from "../../common/models/billing.model.js";
 import { BillTypeModel } from "../../common/models/billType.model.js";
 import { logger } from "../../common/config/logger.js";
+import { normalizeAttachments } from "../../common/utils/accountAttachments.js";
 
 const { Types } = mongoose;
 
@@ -101,6 +102,7 @@ export const createBilling = async (req, res, next) => {
       dueDate: dueDate ? new Date(dueDate) : null,
       billingDate: billingDate ? new Date(billingDate) : new Date(),
       notes: notes?.trim() || "",
+      attachments: normalizeAttachments(req.body?.attachments, "bills"),
       createdBy: req.user?.userId || null,
     };
 
@@ -150,9 +152,19 @@ export const listBilling = async (req, res, next) => {
       const statusQuery = req.query.status.toString().trim().toLowerCase();
       if (statusQuery === "completed") {
         filter.status = "paid";
+      } else if (statusQuery === "active") {
+        // "Active (Unpaid)" in the UI covers every bill that still has something due
+        filter.status = { $in: ["pending", "partial", "active"] };
       } else {
         filter.status = statusQuery;
       }
+    }
+
+    if (req.query.billType && req.query.billType !== "All") {
+      const escaped = req.query.billType.toString().trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const types = await BillTypeModel.find({ name: { $regex: `^${escaped}$`, $options: "i" } }, { _id: 1 }).lean();
+      // No matching type means no bills can match, so force an empty result
+      filter.billTypeId = { $in: types.map((t) => t._id) };
     }
 
     const startDate = req.query.startDate || req.query.from;
@@ -194,7 +206,7 @@ export const listBilling = async (req, res, next) => {
       .populate("billTypeId")
       .populate("investorId", "name email phone did type status")
       .populate("investmentId", "takenAmount returnedAmount did status")
-      .sort({ billingDate: -1, createdAt: -1 })
+      .sort({ billingDate: -1, createdAt: -1, _id: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
@@ -334,6 +346,9 @@ export const updateBilling = async (req, res, next) => {
     }
     if (payload.notes !== undefined) {
       allowedUpdates.notes = payload.notes.trim();
+    }
+    if (payload.attachments !== undefined) {
+      allowedUpdates.attachments = normalizeAttachments(payload.attachments, "bills");
     }
     if (payload.orderId !== undefined) {
       if (payload.orderId && !Types.ObjectId.isValid(payload.orderId)) {

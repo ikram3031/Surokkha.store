@@ -71,6 +71,7 @@ const mapPayment = (payment) => {
     paidAmount,
     status: normalizeStatus(payment.status || (paidAmount >= amount && amount > 0 ? 'paid' : 'pending'), paidAmount, amount),
     notes: payment.notes || '',
+    attachments: Array.isArray(payment.attachments) ? payment.attachments : [],
     createdAt: payment.createdAt || new Date().toISOString(),
   };
 };
@@ -91,6 +92,12 @@ const fetchPayments = async (params = {}) => {
     if (params?.search) {
       queryParams.search = params.search;
     }
+    if (params?.startDate) {
+      queryParams.startDate = params.startDate;
+    }
+    if (params?.endDate) {
+      queryParams.endDate = params.endDate;
+    }
 
     const response = await apiClient.get('/api/v1/payments', { params: queryParams });
     const paymentList = Array.isArray(response.data?.data)
@@ -101,8 +108,10 @@ const fetchPayments = async (params = {}) => {
 
     const allPayments = paymentList.map(mapPayment);
     let filtered = [...allPayments];
+    // The server already filtered and paginated; only filter locally when it returned a bare list
+    const serverFiltered = Boolean(response.data?.meta);
 
-    if (params.search) {
+    if (!serverFiltered && params.search) {
       const q = params.search.toLowerCase().trim();
       filtered = filtered.filter(
         (p) =>
@@ -114,7 +123,7 @@ const fetchPayments = async (params = {}) => {
       );
     }
 
-    if (params.status && params.status !== 'All') {
+    if (!serverFiltered && params.status && params.status !== 'All') {
       const s = params.status.toLowerCase();
       if (s === 'paid' || s === 'completed') {
         filtered = filtered.filter((p) => p.status === 'Completed' || p.status === 'Paid');
@@ -123,16 +132,16 @@ const fetchPayments = async (params = {}) => {
       }
     }
 
-    if (params.method && params.method !== 'All') {
+    if (!serverFiltered && params.method && params.method !== 'All') {
       filtered = filtered.filter((p) => p.method.toLowerCase() === params.method.toLowerCase());
     }
 
-    if (params.startDate) {
+    if (!serverFiltered && params.startDate) {
       const start = new Date(params.startDate).getTime();
       filtered = filtered.filter((p) => new Date(p.date).getTime() >= start);
     }
 
-    if (params.endDate) {
+    if (!serverFiltered && params.endDate) {
       const end = new Date(params.endDate).getTime() + 86400000;
       filtered = filtered.filter((p) => new Date(p.date).getTime() <= end);
     }

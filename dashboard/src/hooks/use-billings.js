@@ -54,6 +54,10 @@ const mapBilling = (billing) => {
   const paidAmount = typeof billing.paidAmount === 'number' ? billing.paidAmount : (billing.status === 'paid' ? totalAmount : 0);
   const pendingAmount = typeof billing.pendingAmount === 'number' ? billing.pendingAmount : Math.max(0, totalAmount - paidAmount);
 
+  // Payee receives the bill amount; the payment-method charge is on top, so total = bill amount + charge
+  const feeAmount = Number(billing.paymentFee?.amount) || 0;
+  const billAmount = Number(billing.baseAmount) > 0 ? Number(billing.baseAmount) : Math.max(0, totalAmount - feeAmount);
+
   const investor = typeof billing.investorId === 'object' && billing.investorId !== null ? billing.investorId : {};
   const investorId = investor._id || investor.id || (typeof billing.investorId === 'string' ? billing.investorId : null);
   const investorName = investor.name || (billing.billType === 'Investment Return' ? billing.vendor || '' : '');
@@ -73,6 +77,8 @@ const mapBilling = (billing) => {
     billingMethod: billing.billingMethod || 'Cash',
     paymentFee: billing.paymentFee || null,
     baseAmount: billing.baseAmount,
+    billAmount,
+    feeAmount,
     investorId,
     investorName,
     investmentId,
@@ -85,6 +91,7 @@ const mapBilling = (billing) => {
     pendingAmount,
     status: normalizeStatus(billing.status, paidAmount, totalAmount),
     notes: billing.notes || '',
+    attachments: Array.isArray(billing.attachments) ? billing.attachments : [],
     createdAt: billing.createdAt || new Date().toISOString(),
   };
 };
@@ -102,6 +109,15 @@ const fetchBillings = async (params = {}) => {
     if (params?.search) {
       queryParams.search = params.search;
     }
+    if (params?.billType && params.billType !== 'All') {
+      queryParams.billType = params.billType;
+    }
+    if (params?.startDate) {
+      queryParams.startDate = params.startDate;
+    }
+    if (params?.endDate) {
+      queryParams.endDate = params.endDate;
+    }
 
     const response = await apiClient.get('/api/v1/billing', { params: queryParams });
     const billingList = Array.isArray(response.data?.data)
@@ -112,8 +128,10 @@ const fetchBillings = async (params = {}) => {
 
     const allBills = billingList.map(mapBilling);
     let filtered = [...allBills];
+    // The server already filtered and paginated; only filter locally when it returned a bare list
+    const serverFiltered = Boolean(response.data?.meta);
 
-    if (params.search) {
+    if (!serverFiltered && params.search) {
       const q = params.search.toLowerCase().trim();
       filtered = filtered.filter(
         (b) =>
@@ -126,7 +144,7 @@ const fetchBillings = async (params = {}) => {
       );
     }
 
-    if (params.status && params.status !== 'All') {
+    if (!serverFiltered && params.status && params.status !== 'All') {
       const s = params.status.toLowerCase();
       if (s === 'active') {
         filtered = filtered.filter((b) => b.status === 'Pending' || b.status === 'Partial' || b.status === 'Active');
@@ -135,16 +153,16 @@ const fetchBillings = async (params = {}) => {
       }
     }
 
-    if (params.billType && params.billType !== 'All') {
+    if (!serverFiltered && params.billType && params.billType !== 'All') {
       filtered = filtered.filter((b) => b.billType.toLowerCase() === params.billType.toLowerCase());
     }
 
-    if (params.startDate) {
+    if (!serverFiltered && params.startDate) {
       const start = new Date(params.startDate).getTime();
       filtered = filtered.filter((b) => new Date(b.billingDate || b.date).getTime() >= start);
     }
 
-    if (params.endDate) {
+    if (!serverFiltered && params.endDate) {
       const end = new Date(params.endDate).getTime() + 86400000;
       filtered = filtered.filter((b) => new Date(b.billingDate || b.date).getTime() <= end);
     }

@@ -3,6 +3,7 @@ import { PaymentModel } from "../../common/models/payment.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { logger } from "../../common/config/logger.js";
 import { LogModel } from "../../common/models/log.model.js";
+import { normalizeAttachments } from "../../common/utils/accountAttachments.js";
 
 const { Types } = mongoose;
 
@@ -69,6 +70,7 @@ export const createPayment = async (req, res, next) => {
       amount,
       status,
       notes: notes?.trim() || "",
+      attachments: normalizeAttachments(req.body?.attachments, "payments"),
       createdBy: req.user?.userId || null,
     };
 
@@ -172,7 +174,7 @@ export const listPayments = async (req, res, next) => {
     const total = await PaymentModel.countDocuments(filter);
     const payments = await PaymentModel.find(filter)
       .populate("orderId")
-      .sort({ paymentDate: -1, createdAt: -1 })
+      .sort({ paymentDate: -1, createdAt: -1, _id: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
@@ -270,6 +272,9 @@ export const updatePayment = async (req, res, next) => {
     }
     if (payload.notes !== undefined) {
       allowedUpdates.notes = payload.notes.trim();
+    }
+    if (payload.attachments !== undefined) {
+      allowedUpdates.attachments = normalizeAttachments(payload.attachments, "payments");
     }
     if (payload.orderId !== undefined) {
       if (payload.orderId && !Types.ObjectId.isValid(payload.orderId)) {

@@ -30,6 +30,7 @@ import { usePayments } from '@/hooks/use-payments';
 import { usePaymentTypes } from '@/hooks/use-payment-types';
 import { useMembers } from '@/hooks/use-members';
 import { useSystemUsers } from '@/hooks/use-users';
+import { AttachmentUploader } from '@/components/dashboard/accounts/AttachmentUploader';
 import { toast } from 'sonner';
 
 const formatCurrency = (val) => {
@@ -51,6 +52,20 @@ export const AddNewPaymentPage = () => {
   const membersList = membersResponse?.data || [];
   const usersList = usersResponse?.data || [];
 
+  const [customerSelectionType, setCustomerSelectionType] = useState('manual');
+  const [formData, setFormData] = useState({
+    customerName: '',
+    invoiceId: '',
+    amount: '',
+    paidAmount: '',
+    paymentMethod: 'bKash',
+    trxId: '',
+    date: new Date().toISOString().slice(0, 10),
+    status: 'Completed',
+    notes: '',
+    attachments: [],
+  });
+
   const defaultMethods = ['bKash', 'Nagad', 'Cash', 'Card', 'Bank Transfer', 'COD'];
   const availableMethods = React.useMemo(() => {
     const customNames = allPaymentTypes
@@ -63,19 +78,6 @@ export const AddNewPaymentPage = () => {
     }
     return combined;
   }, [allPaymentTypes, formData.paymentMethod]);
-
-  const [customerSelectionType, setCustomerSelectionType] = useState('manual');
-  const [formData, setFormData] = useState({
-    customerName: '',
-    invoiceId: '',
-    amount: '',
-    paidAmount: '',
-    paymentMethod: 'bKash',
-    trxId: '',
-    date: new Date().toISOString().slice(0, 10),
-    status: 'Completed',
-    notes: '',
-  });
 
   // Pre-fill form if editing
   useEffect(() => {
@@ -92,6 +94,7 @@ export const AddNewPaymentPage = () => {
           date: existing.date || new Date().toISOString().slice(0, 10),
           status: existing.status || 'Completed',
           notes: existing.notes || '',
+          attachments: existing.attachments || [],
         });
       }
     }
@@ -151,6 +154,7 @@ export const AddNewPaymentPage = () => {
       date: formData.date,
       status: formData.status,
       notes: formData.notes.trim(),
+      attachments: formData.attachments,
     };
 
     try {
@@ -406,6 +410,15 @@ export const AddNewPaymentPage = () => {
                   value={formData.notes}
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   className="text-xs min-h-[70px]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">Attachments (Slip / Receipt)</label>
+                <AttachmentUploader
+                  kind="payments"
+                  value={formData.attachments}
+                  onChange={(files) => handleInputChange('attachments', files)}
                 />
               </div>
             </CardContent>

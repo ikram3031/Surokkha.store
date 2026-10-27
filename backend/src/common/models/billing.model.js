@@ -38,6 +38,16 @@ const billingSchema = new Schema(
       default: "pending",
     },
     notes: { type: String, trim: true, default: "" },
+    // Receipts / invoices uploaded with the bill (files live in uploads/docs/bills/<YYMM>/)
+    attachments: [
+      {
+        _id: false,
+        name: { type: String, trim: true, default: "" },
+        url: { type: String, required: true },
+        size: { type: Number, default: 0 },
+        mimeType: { type: String, default: "" },
+      },
+    ],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },

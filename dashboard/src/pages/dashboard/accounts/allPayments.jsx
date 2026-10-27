@@ -62,6 +62,7 @@ import {
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { usePayments } from '@/hooks/use-payments';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
+import { resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 const METHOD_COLORS = {
@@ -598,6 +599,24 @@ export const AllPaymentsPage = () => {
                   <span className="font-bold text-emerald-600 text-sm">{formatCurrency(viewPaymentTarget.paidAmount || (viewPaymentTarget.status === 'Completed' ? viewPaymentTarget.amount : 0))}</span>
                 </div>
               </div>
+
+              {viewPaymentTarget.attachments?.length > 0 && (
+                <div className="p-3 rounded-lg bg-muted/30 border space-y-1.5">
+                  <span className="font-semibold text-foreground block">Attachments:</span>
+                  {viewPaymentTarget.attachments.map((file) => (
+                    <a
+                      key={file.url}
+                      href={resolveImageUrl(file.url)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 text-primary hover:underline truncate"
+                    >
+                      <FileText className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{file.name || file.url.split('/').pop()}</span>
+                    </a>
+                  ))}
+                </div>
+              )}
 
               {viewPaymentTarget.notes && (
                 <div className="p-3 rounded-lg bg-muted/30 border text-muted-foreground">

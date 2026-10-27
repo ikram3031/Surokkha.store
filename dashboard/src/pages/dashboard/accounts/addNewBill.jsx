@@ -42,6 +42,7 @@ import { usePaymentTypes } from '@/hooks/use-payment-types';
 import { useInvestors } from '@/hooks/use-investors';
 import { toast } from 'sonner';
 import { calculateFeeAmount, formatFeeRate } from '@/components/dashboard/accounts/PaymentFeesEditor';
+import { AttachmentUploader } from '@/components/dashboard/accounts/AttachmentUploader';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
@@ -105,6 +106,7 @@ export const AddNewBillPage = () => {
     customFeeFixed: '',
     status: 'Pending',
     notes: '',
+    attachments: [],
   });
 
   const [newTypeModalOpen, setNewTypeModalOpen] = useState(false);
@@ -161,6 +163,7 @@ export const AddNewBillPage = () => {
           ...feeFieldsFromBill(existing.paymentFee),
           status: existing.status || 'Pending',
           notes: existing.notes || '',
+          attachments: existing.attachments || [],
         });
       }
     }
@@ -272,6 +275,7 @@ export const AddNewBillPage = () => {
         : { name: '', percent: 0, fixed: 0, amount: 0, isCustom: false },
       status: formData.status.toLowerCase(),
       notes: formData.notes.trim(),
+      attachments: formData.attachments,
     };
 
     try {
@@ -645,6 +649,15 @@ export const AddNewBillPage = () => {
                   value={formData.notes}
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   className="text-xs min-h-[80px]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">Attachments (Invoice / Receipt)</label>
+                <AttachmentUploader
+                  kind="bills"
+                  value={formData.attachments}
+                  onChange={(files) => handleInputChange('attachments', files)}
                 />
               </div>
             </CardContent>

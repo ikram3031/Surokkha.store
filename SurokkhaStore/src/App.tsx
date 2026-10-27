@@ -30,7 +30,7 @@ function AppShell() {
       <AgeGate />
       <AnnouncementBar />
       <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} />
-      <main>
+      <main className="bg-[#eee]">
         <HeroSlider />
         <TrustStrip />
         <Categories onSelect={selectCategory} />
