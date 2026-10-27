@@ -474,9 +474,7 @@ export default function CartDrawer() {
                     {totals.isFreeShippingCoupon ? (
                       <strong className="text-emerald-700 font-bold uppercase">{isBn ? 'ফ্রি' : 'FREE'}</strong>
                     ) : (
-                      <span className="text-[11px] text-slate-600 font-medium">
-                        {isBn ? 'চেকআউটে নির্ধারিত হবে' : 'Calculated at checkout'}
-                      </span>
+                      <span className="font-bold text-slate-900 font-mono">{formatPrice(totals.deliveryFee)}</span>
                     )}
                   </span>
                 </div>
