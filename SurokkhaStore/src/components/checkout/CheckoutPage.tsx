@@ -25,7 +25,7 @@ import { navigate } from '@/lib/router'
 import { getFbIdentifiers, pixelTrack } from '@/lib/pixel'
 
 const selectClass =
-  'h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 aria-invalid:border-destructive'
+  'h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-primary disabled:opacity-50 aria-invalid:border-destructive'
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (

@@ -86,7 +86,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
             openList()
           }
         }}
-        className={`flex h-11 w-full items-center justify-between gap-2 rounded-lg border bg-white px-3.5 text-left text-sm outline-none transition focus:border-[#dc143c] focus:ring-2 focus:ring-[#dc143c]/30 disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`flex h-11 w-full items-center justify-between gap-2 rounded-lg border bg-white px-3.5 text-left text-sm outline-none transition focus:border-[#dc143c] disabled:cursor-not-allowed disabled:opacity-50 ${
           invalid ? 'border-[#dc143c]' : 'border-gray-300'
         }`}
       >

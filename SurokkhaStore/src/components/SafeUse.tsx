@@ -1,6 +1,6 @@
 import { SectionBackground } from '@/components/SectionBackground'
 
-const tips = [
+export const tips = [
   {
     title: 'Check the expiry date',
     desc: 'Do not use a pack once the expiry date printed on it has passed.',

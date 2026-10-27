@@ -109,7 +109,7 @@ const RULES: Record<FieldKey, (v: string) => string | true> = {
 }
 
 const inputCls = (bad: boolean) =>
-  `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#dc143c] focus:ring-2 focus:ring-[#dc143c]/30 ${
+  `w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#dc143c] ${
     bad ? 'border-[#dc143c]' : 'border-gray-300'
   }`
 
@@ -455,7 +455,7 @@ export function OfferHome() {
                         className={inputCls(!!errors.name)} />
                     </Field>
                     <Field label="Mobile number" required error={errors.phone}>
-                      <div className={`flex rounded-lg border bg-white transition focus-within:border-[#dc143c] focus-within:ring-2 focus-within:ring-[#dc143c]/30 ${
+                      <div className={`flex rounded-lg border bg-white transition focus-within:border-[#dc143c] ${
                         errors.phone ? 'border-[#dc143c]' : 'border-gray-300'}`}>
                         <span className="flex items-center border-r border-gray-300 px-3 text-sm text-gray-500">+88</span>
                         <input type="tel" inputMode="numeric" maxLength={11} autoComplete="tel-national" placeholder="01XXXXXXXXX"

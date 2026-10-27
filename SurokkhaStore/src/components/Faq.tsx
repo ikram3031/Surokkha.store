@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 
-const faqs = [
+export const faqs = [
   {
     q: 'Will the packaging really be discreet?',
     a: 'Yes. Products ship in plain packaging with no product name or image on the outside. The invoice only shows "Surokkha".',

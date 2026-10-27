@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react'
 // Minimal History-API router: the store only has a handful of pages, so no router library.
 export type Route =
   | { name: 'home' }
+  | { name: 'home-classic' }
   | { name: 'product'; slug: string }
   | { name: 'offer' }
+  | { name: 'category'; slug: string }
   | { name: 'checkout' }
   | { name: 'account' }
   | { name: 'confirmation' }
@@ -13,11 +15,15 @@ export function parseRoute(pathname: string): Route {
   const parts = pathname.split('/').filter(Boolean)
   if (parts[0] === 'product' && parts[1]) return { name: 'product', slug: decodeURIComponent(parts[1]) }
   if (parts[0] === 'offer') return { name: 'offer' }
+  if (parts[0] === 'category' && parts[1]) return { name: 'category', slug: decodeURIComponent(parts[1]) }
+  if (parts[0] === 'home-classic') return { name: 'home-classic' }
   if (parts[0] === 'checkout') return { name: 'checkout' }
   if (parts[0] === 'account') return { name: 'account' }
   if (parts[0] === 'order-confirmed') return { name: 'confirmation' }
   return { name: 'home' }
 }
+
+export const categoryPath = (slug: string) => `/category/${encodeURIComponent(slug)}`
 
 export const productPath = (slug: string) => `/product/${encodeURIComponent(slug)}`
 

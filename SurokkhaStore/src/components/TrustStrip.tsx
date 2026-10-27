@@ -23,16 +23,16 @@ const items = [
 
 export function TrustStrip() {
   return (
-    <section id="why" className="border-y border-border bg-gradient-to-b from-secondary/50 to-background">
-      <div className="mx-auto grid max-w-7xl gap-4 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
+    <section id="why" className="border-y border-border bg-card">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-7 px-4 py-8 lg:grid-cols-4 lg:gap-x-0">
         {items.map((item) => (
           <div
             key={item.title}
-            className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs transition duration-300 hover:-translate-y-1 hover:shadow-md"
+            className="flex items-center gap-3 lg:justify-center lg:border-l lg:border-border lg:px-6 lg:first:border-l-0"
           >
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
               <svg
-                className="h-6 w-6"
+                className="h-5 w-5"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={1.8}
@@ -54,10 +54,10 @@ export function TrustStrip() {
                 )}
               </svg>
             </span>
-            <div>
-              <h3 className="font-display text-lg font-bold leading-snug">{item.title}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
-            </div>
+            <span className="min-w-0">
+              <b className="block text-sm font-semibold leading-snug">{item.title}</b>
+              <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">{item.desc}</span>
+            </span>
           </div>
         ))}
       </div>
