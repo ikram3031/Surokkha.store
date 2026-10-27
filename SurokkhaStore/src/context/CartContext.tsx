@@ -36,7 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev[product.id]
       return { ...prev, [product.id]: { product, qty: (existing?.qty ?? 0) + qty } }
     })
-    toast('Added to cart')
+    toast.success('Added to cart')
     trackAddToCart({ productId: product.apiId ?? product.id, qty, price: product.price })
     pixelTrack('AddToCart', {
       content_ids: [product.did ?? product.slug ?? String(product.id)],

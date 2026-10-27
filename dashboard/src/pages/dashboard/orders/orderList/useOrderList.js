@@ -298,6 +298,23 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
     }
   };
 
+  // Blocks the customer's phone/email from placing new orders
+  const markAsSpam = async (order) => {
+    const phone = getCustomerPhone(order);
+    const email = order?.billingInfo?.email || order?.customer?.email || '';
+    if (!phone && !email) {
+      toast.error(t('spam.phone_or_email_required', 'This order has no phone number or email'));
+      return;
+    }
+    try {
+      await apiClient.post('/api/v1/orders/spam', { phone, email });
+      toast.success(t('spam.added_success', 'Added to spam list'));
+      queryClient.invalidateQueries({ queryKey: ['spam-list'] });
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, t('spam.added_error', 'Failed to add to spam list')));
+    }
+  };
+
   const [invoiceTarget, setInvoiceTarget] = useState(null);
 
   // Opens the printable invoice in a new tab
@@ -544,6 +561,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       viewDetails,
       edit: editOrder,
       openInvoice,
+      markAsSpam,
       invoiceTarget,
       setInvoiceTarget,
       deleteTarget,

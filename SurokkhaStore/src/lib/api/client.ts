@@ -59,15 +59,19 @@ interface RequestOptions {
   params?: QueryParams
   body?: unknown
   auth?: boolean
+  /** An explicit bearer token (used for customer sessions, which are separate from the staff token). */
+  token?: string
   signal?: AbortSignal
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', params, body, auth = false, signal } = options
+  const { method = 'GET', params, body, auth = false, token: bearer, signal } = options
 
   const headers: Record<string, string> = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
-  if (auth) {
+  if (bearer) {
+    headers.Authorization = `Bearer ${bearer}`
+  } else if (auth) {
     const token = getAccessToken()
     if (token) headers.Authorization = `Bearer ${token}`
   }

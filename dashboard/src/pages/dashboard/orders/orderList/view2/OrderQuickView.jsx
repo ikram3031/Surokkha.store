@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Copy, ExternalLink, Loader2, Mail, MapPin, Package, Pencil, Phone, Printer, Tag } from 'lucide-react';
+import { Check, Copy, ExternalLink, Loader2, Mail, MapPin, Package, Pencil, Phone, Printer, ShieldAlert, Tag } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -339,13 +339,24 @@ export function OrderQuickView({ list }) {
                 </Section>
               )}
 
-              <button
-                type="button"
-                onClick={() => orderActions.viewDetails(order)}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-              >
-                {t('common.details', 'View full details')} <ExternalLink className="size-3.5" />
-              </button>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => orderActions.viewDetails(order)}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                >
+                  {t('common.details', 'View full details')} <ExternalLink className="size-3.5" />
+                </button>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => orderActions.markAsSpam(order)}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-destructive hover:underline"
+                  >
+                    <ShieldAlert className="size-3.5" /> {t('orders.mark_as_spam', 'Mark as Spam')}
+                  </button>
+                )}
+              </div>
             </div>
 
             {!isReadOnly && (

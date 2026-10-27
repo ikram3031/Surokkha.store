@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ব্লগ পোস্টের শিরোনাম | সুরক্ষা</title>
+<meta name="description" content="ব্লগ পোস্টের সংক্ষিপ্ত বর্ণনা (১৫০–১৬০ অক্ষর)।">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind (Play CDN). Production-এ build করা CSS ব্যবহার করুন। -->
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
+<style>
+  /*
+    থিম টোকেন — SurokkhaStore/src/index.css-এর সাথে হুবহু এক।
+    থিম বদলাতে হলে শুধু এই ব্লক বদলান; নিচের কোথাও hex কোড নেই।
+    (RGB চ্যানেল আকারে রাখা, যাতে Tailwind-এর /opacity কাজ করে।)
+  */
+  :root {
+    --background: 251 245 236;      /* cream-light */
+    --foreground: 58 50 47;         /* ink */
+    --card: 255 255 255;
+    --primary: 77 18 36;            /* maroon */
+    --primary-foreground: 255 255 255;
+    --secondary: 245 230 211;       /* cream */
+    --muted: 235 213 186;           /* cream-deep */
+    --muted-foreground: 111 101 96; /* taupe-dark */
+    --accent: 251 214 219;          /* blush-soft */
+    --border: 235 213 186;
+    --ring: 244 145 159;            /* blush */
+  }
+  .dark {
+    --background: 36 31 28;
+    --foreground: 251 245 236;
+    --card: 45 39 35;
+    --primary: 244 145 159;
+    --primary-foreground: 36 31 28;
+    --secondary: 58 50 47;
+    --muted: 58 50 47;
+    --muted-foreground: 148 139 134;
+    --accent: 74 63 58;
+    --border: 58 50 47;
+    --ring: 244 145 159;
+  }
+
+  body { font-family: 'Hind Siliguri', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Noto Serif Bengali', serif; }
+
+  /* আর্টিকেলের ভেতরের লেখার স্টাইল (CMS/এডিটর থেকে আসা HTML-এর জন্য) */
+  .prose-blog { font-size: 1.0625rem; line-height: 1.9; color: rgb(var(--foreground) / .88); }
+  .prose-blog > * + * { margin-top: 1.25rem; }
+  .prose-blog h2 { font-family: 'Noto Serif Bengali', serif; font-weight: 700; font-size: 1.5rem; line-height: 1.5; color: rgb(var(--foreground)); margin-top: 2.5rem; scroll-margin-top: 5rem; }
+  .prose-blog h3 { font-weight: 700; font-size: 1.2rem; color: rgb(var(--foreground)); margin-top: 2rem; }
+  .prose-blog a { color: rgb(var(--primary)); text-decoration: underline; text-underline-offset: 3px; }
+  .prose-blog ul, .prose-blog ol { padding-left: 1.4rem; }
+  .prose-blog ul { list-style: disc; }
+  .prose-blog ol { list-style: decimal; }
+  .prose-blog li + li { margin-top: .4rem; }
+  .prose-blog li::marker { color: rgb(var(--primary)); }
+  .prose-blog blockquote { border-left: 4px solid rgb(var(--ring)); background: rgb(var(--accent) / .45); padding: 1rem 1.25rem; border-radius: 0 1rem 1rem 0; font-family: 'Noto Serif Bengali', serif; font-size: 1.1rem; color: rgb(var(--foreground)); }
+  .prose-blog img { border-radius: 1.25rem; width: 100%; height: auto; }
+  .prose-blog figcaption { margin-top: .5rem; text-align: center; font-size: .875rem; color: rgb(var(--muted-foreground)); }
+  .prose-blog strong { color: rgb(var(--foreground)); }
+
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  html { scroll-behavior: smooth; }
+</style>
+
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          background: 'rgb(var(--background) / <alpha-value>)',
+          foreground: 'rgb(var(--foreground) / <alpha-value>)',
+          card: 'rgb(var(--card) / <alpha-value>)',
+          primary: { DEFAULT: 'rgb(var(--primary) / <alpha-value>)', foreground: 'rgb(var(--primary-foreground) / <alpha-value>)' },
+          secondary: 'rgb(var(--secondary) / <alpha-value>)',
+          muted: { DEFAULT: 'rgb(var(--muted) / <alpha-value>)', foreground: 'rgb(var(--muted-foreground) / <alpha-value>)' },
+          accent: 'rgb(var(--accent) / <alpha-value>)',
+          border: 'rgb(var(--border) / <alpha-value>)',
+          ring: 'rgb(var(--ring) / <alpha-value>)',
+        },
+        borderRadius: { '2xl': '1.25rem', '3xl': '1.75rem' },
+      },
+    },
+  };
+</script>
+</head>
+
+<body class="bg-background text-foreground">
+
+  <!-- পড়ার অগ্রগতি (reading progress) -->
+  <div class="fixed inset-x-0 top-0 z-50 h-1 bg-transparent">
+    <div id="progress" class="h-full w-0 bg-primary transition-[width] duration-100"></div>
+  </div>
+
+  <main>
+    <article class="mx-auto max-w-3xl px-4 pb-16 pt-8 sm:px-6 sm:pt-12">
+
+      <!-- ব্রেডক্রাম্ব + ক্যাটাগরি -->
+      <nav aria-label="breadcrumb" class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <a href="/blog" class="hover:text-primary">ব্লগ</a>
+        <span aria-hidden="true">/</span>
+        <a href="/blog/category/sexual-health" class="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-foreground hover:bg-accent/70">যৌন স্বাস্থ্য</a>
+      </nav>
+
+      <!-- শিরোনাম -->
+      <h1 class="font-display mt-5 text-3xl font-extrabold leading-snug sm:text-4xl sm:leading-snug md:text-[2.75rem] md:leading-tight">
+        নিরাপদ সম্পর্কের জন্য জেনে রাখা জরুরি ৫টি বিষয়
+      </h1>
+      <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
+        সঠিক তথ্য জানলেই সঠিক সিদ্ধান্ত নেওয়া যায়। এই লেখায় সহজ ভাষায় জেনে নিন প্রতিদিনের কাজে লাগার মতো কিছু কথা।
+      </p>
+
+      <!-- লেখকের তথ্য -->
+      <div class="mt-6 flex items-center gap-3 border-y border-border py-4">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23fbd6db'/%3E%3Ctext x='48' y='62' font-size='44' font-family='serif' font-weight='700' text-anchor='middle' fill='%234d1224'%3ES%3C/text%3E%3C/svg%3E" alt="" class="h-11 w-11 rounded-full object-cover" width="44" height="44">
+        <div class="min-w-0 flex-1 leading-tight">
+          <p class="truncate font-semibold">সুরক্ষা টিম</p>
+          <p class="text-sm text-muted-foreground">
+            <time datetime="2026-10-27">২৭ অক্টোবর ২০২৬</time> · ৫ মিনিট পড়া
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" data-share aria-label="শেয়ার করুন"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- কভার ছবি -->
+      <figure class="mt-6">
+        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1600&h=900&q=80" alt="কভার ছবির বর্ণনা"
+          class="aspect-[16/9] w-full rounded-3xl object-cover shadow-sm" width="1200" height="675" fetchpriority="high">
+      </figure>
+
+      <!-- সূচিপত্র -->
+      <details class="group mt-8 rounded-2xl border border-border bg-card p-4 sm:p-5" open>
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-display text-lg font-bold">
+          এই লেখায় কী আছে
+          <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 transition group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <ol id="toc" class="mt-3 space-y-2 text-[0.95rem]"></ol>
+      </details>
+
+      <!-- আর্টিকেলের মূল অংশ: CMS-এর HTML এখানে বসবে -->
+      <div id="content" class="prose-blog mt-10">
+        <p>এখানে লেখার শুরুর অনুচ্ছেদ। পাঠককে প্রথম দুই লাইনেই বুঝিয়ে দিন লেখাটি থেকে সে কী পাবে। ছোট অনুচ্ছেদ আর সহজ বাক্য মোবাইলে পড়তে আরাম দেয়।</p>
+
+        <h2 id="s1">১. সঠিক তথ্যই প্রথম ধাপ</h2>
+        <p>প্রতিটি সেকশনের শিরোনামে <code>h2</code> ব্যবহার করুন; সূচিপত্র আপনা-আপনি তৈরি হয়ে যাবে। প্রয়োজনে <strong>গুরুত্বপূর্ণ শব্দ</strong> বোল্ড করুন বা <a href="#">অন্য লেখার লিংক</a> দিন।</p>
+        <blockquote>উদ্ধৃতি বা মূল বার্তা এখানে দিন — পাঠকের চোখ আটকে রাখার জন্য।</blockquote>
+
+        <h2 id="s2">২. পরামর্শ তালিকা আকারে</h2>
+        <ul>
+          <li>প্রতিটি পয়েন্ট ছোট ও পরিষ্কার রাখুন</li>
+          <li>একটি পয়েন্টে একটি কথা</li>
+          <li>প্রয়োজনে সংখ্যা বা উদাহরণ দিন</li>
+        </ul>
+
+        <figure>
+          <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&h=720&q=80" alt="লেখার মাঝের ছবি" loading="lazy" width="1000" height="600">
+          <figcaption>ছবির ক্যাপশন এখানে</figcaption>
+        </figure>
+
+        <h2 id="s3">৩. ধাপে ধাপে করণীয়</h2>
+        <ol>
+          <li>প্রথম ধাপ</li>
+          <li>দ্বিতীয় ধাপ</li>
+          <li>তৃতীয় ধাপ</li>
+        </ol>
+        <p>লেখার শেষ অনুচ্ছেদে মূল কথাটা আবার এক লাইনে মনে করিয়ে দিন।</p>
+      </div>
+
+      <!-- পণ্যের সফট CTA -->
+      <aside class="mt-12 overflow-hidden rounded-3xl bg-primary text-primary-foreground">
+        <div class="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wider opacity-80">সুরক্ষা শপ</p>
+            <p class="font-display mt-1 text-xl font-bold leading-snug sm:text-2xl">গোপন প্যাকেজিংয়ে, ক্যাশ অন ডেলিভারি</p>
+          </div>
+          <a href="/" class="inline-flex w-full items-center justify-center rounded-full bg-card px-6 py-3 font-semibold text-primary transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto">
+            পণ্য দেখুন
+          </a>
+        </div>
+      </aside>
+
+      <!-- ট্যাগ -->
+      <div class="mt-8 flex flex-wrap gap-2">
+        <a href="/blog/tag/safety" class="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground hover:border-primary hover:text-primary">#নিরাপত্তা</a>
+        <a href="/blog/tag/health" class="rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground hover:border-primary hover:text-primary">#স্বাস্থ্য</a>
+      </div>
+    </article>
+
+    <!-- সম্পর্কিত লেখা -->
+    <section class="border-t border-border bg-secondary/50 py-12 sm:py-16" aria-labelledby="related">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6">
+        <h2 id="related" class="font-display text-2xl font-bold">আরও পড়ুন</h2>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- কার্ডটি কপি করে যত খুশি বাড়ান -->
+          <a href="/blog/post-1" class="group overflow-hidden rounded-3xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg">
+            <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=640&h=400&q=80" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover" width="640" height="400">
+            <div class="p-4">
+              <span class="text-xs font-semibold text-primary">স্বাস্থ্য</span>
+              <h3 class="font-display mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-primary">সম্পর্কিত লেখার শিরোনাম এখানে দুই লাইন পর্যন্ত</h3>
+              <p class="mt-2 text-sm text-muted-foreground">৩ মিনিট পড়া</p>
+            </div>
+          </a>
+          <a href="/blog/post-2" class="group overflow-hidden rounded-3xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg">
+            <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=640&h=400&q=80" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover" width="640" height="400">
+            <div class="p-4">
+              <span class="text-xs font-semibold text-primary">নিরাপত্তা</span>
+              <h3 class="font-display mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-primary">আরেকটি লেখার শিরোনাম</h3>
+              <p class="mt-2 text-sm text-muted-foreground">৪ মিনিট পড়া</p>
+            </div>
+          </a>
+          <a href="/blog/post-3" class="group hidden overflow-hidden rounded-3xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg sm:max-lg:hidden lg:block">
+            <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=640&h=400&q=80" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover" width="640" height="400">
+            <div class="p-4">
+              <span class="text-xs font-semibold text-primary">টিপস</span>
+              <h3 class="font-display mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-primary">তৃতীয় লেখার শিরোনাম</h3>
+              <p class="mt-2 text-sm text-muted-foreground">২ মিনিট পড়া</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+  // পড়ার অগ্রগতি বার
+  const bar = document.getElementById('progress');
+  const article = document.querySelector('article');
+  const onScroll = () => {
+    const rect = article.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    const done = Math.min(Math.max(-rect.top / (total || 1), 0), 1);
+    bar.style.width = (done * 100).toFixed(1) + '%';
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // সূচিপত্র: content-এর h2 থেকে নিজে নিজে তৈরি
+  const toc = document.getElementById('toc');
+  document.querySelectorAll('#content h2').forEach((h, i) => {
+    if (!h.id) h.id = 'section-' + (i + 1);
+    const li = document.createElement('li');
+    li.innerHTML = '<a class="block rounded-lg px-2 py-1 text-muted-foreground hover:bg-accent/60 hover:text-primary"></a>';
+    const a = li.firstChild;
+    a.href = '#' + h.id;
+    a.textContent = h.textContent;
+    toc.appendChild(li);
+  });
+  if (!toc.children.length) toc.closest('details').remove();
+
+  // শেয়ার: মোবাইলে native share, না থাকলে লিংক কপি
+  document.querySelector('[data-share]').addEventListener('click', async () => {
+    const data = { title: document.title, url: location.href };
+    try {
+      if (navigator.share) await navigator.share(data);
+      else { await navigator.clipboard.writeText(data.url); alert('লিংক কপি হয়েছে'); }
+    } catch (_) {}
+  });
+</script>
+</body>
+</html>

@@ -15,6 +15,7 @@ const buttonClass =
 // The key is stored in the CMS item's `badge` field; the storefront looks sections up by it.
 const SECTIONS = [
   { key: 'categories', label: 'Categories — "কী খুঁজছেন?"', hint: 'Behind the category boxes, right under the featured carousel.' },
+  { key: 'login', label: 'Account page — login / sign up image', hint: 'Shown on the left of the customer login, sign up and forgot password page.' },
   { key: 'safe-use', label: 'Safe use — "নিরাপদ ব্যবহারের তিনটি কথা"', hint: 'Behind the three safe-use tips section.' },
 ];
 

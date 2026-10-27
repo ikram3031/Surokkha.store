@@ -10,6 +10,7 @@ import {
   Pencil,
   Printer,
   RefreshCw,
+  ShieldAlert,
   StickyNote,
   Trash2,
   Truck,
@@ -94,6 +95,11 @@ function RowActions({ order, list }) {
         <DropdownMenuItem onClick={() => orderActions.setInvoiceTarget(order)} className="cursor-pointer">
           <Mail className="text-muted-foreground" /> {t('orders.send_invoice_email', 'Email Invoice')}
         </DropdownMenuItem>
+        {!isReadOnly && (
+          <DropdownMenuItem onClick={() => orderActions.markAsSpam(order)} className="cursor-pointer">
+            <ShieldAlert className="text-muted-foreground" /> {t('orders.mark_as_spam', 'Mark as Spam')}
+          </DropdownMenuItem>
+        )}
         {!isReadOnly && (
           <>
             <DropdownMenuSeparator />

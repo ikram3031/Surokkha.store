@@ -137,7 +137,7 @@ export function CheckoutPage() {
       if (subtotal < Number(found.minOrderAmount || 0))
         throw new Error(`This coupon needs a minimum order of ${taka(Number(found.minOrderAmount))}.`)
       setCoupon({ ...found, code })
-      toast(`Coupon "${code}" applied`)
+      toast.success(`Coupon "${code}" applied`)
     } catch (err) {
       setCoupon(null)
       setCouponError(err instanceof ApiError ? 'This coupon code is invalid or expired.' : (err as Error).message)
@@ -171,10 +171,10 @@ export function CheckoutPage() {
     if (submittingRef.current) return
     const found = validate()
     if (Object.keys(found).length > 0) {
-      toast(Object.values(found)[0])
+      toast.error(Object.values(found)[0])
       return
     }
-    if (!agreed) return toast('Please accept the terms to continue')
+    if (!agreed) return toast.error('Please accept the terms to continue')
 
     submittingRef.current = true
     setSubmitting(true)
@@ -275,9 +275,9 @@ export function CheckoutPage() {
       setSubmitting(false)
       const body = err instanceof ApiError ? (err.body as { code?: string; message?: string } | null) : null
       if (body?.code === 'CONTACT_REQUIRED') {
-        toast('Sorry, this order cannot be placed online. Please contact us.')
+        toast.error('Sorry, this order cannot be placed online. Please contact us.')
       } else {
-        toast(err instanceof Error ? err.message : 'Could not place the order. Please try again.')
+        toast.error(err instanceof Error ? err.message : 'Could not place the order. Please try again.')
       }
     }
   }

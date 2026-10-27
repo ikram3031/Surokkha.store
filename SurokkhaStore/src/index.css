@@ -48,8 +48,11 @@
   --accent: var(--brand-blush-soft);
   --accent-foreground: var(--brand-ink);
 
-  --destructive: #c9475f;
+  --destructive: #d92d20;
   --destructive-foreground: #ffffff;
+
+  --success: #1f8a4c;
+  --success-foreground: #ffffff;
 
   --border: var(--brand-cream-deep);
   --input: var(--brand-cream-deep);
@@ -84,6 +87,9 @@
   --destructive: #e4677d;
   --destructive-foreground: #241f1c;
 
+  --success: #3ec97b;
+  --success-foreground: #241f1c;
+
   --border: #3a322f;
   --input: #3a322f;
   --ring: var(--brand-blush);
@@ -106,6 +112,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -238,4 +246,22 @@ input[type='search']::-webkit-search-results-decoration {
 [data-slot='dialog-close']:focus-visible {
   outline: none;
   box-shadow: none;
+}
+
+/* Toasts: errors are red, successes are green (plain toasts keep the brand maroon) */
+[data-sonner-toast][data-type='error'] {
+  --normal-bg: var(--destructive);
+  --normal-text: var(--destructive-foreground);
+  --normal-border: var(--destructive);
+  --close-button-bg: var(--destructive);
+  --close-button-text: var(--destructive-foreground);
+  --close-button-border: var(--destructive-foreground);
+}
+[data-sonner-toast][data-type='success'] {
+  --normal-bg: var(--success);
+  --normal-text: var(--success-foreground);
+  --normal-border: var(--success);
+  --close-button-bg: var(--success);
+  --close-button-text: var(--success-foreground);
+  --close-button-border: var(--success-foreground);
 }
