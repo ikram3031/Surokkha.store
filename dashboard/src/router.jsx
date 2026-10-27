@@ -25,6 +25,7 @@ import MetaPixelPage from './pages/dashboard/settings/metaPixel';
 import TikTokPixelPage from './pages/dashboard/settings/tiktokPixel';
 import CMSContentPage from './pages/dashboard/settings/cmsContent';
 import HeroSliderPage from './pages/dashboard/cms/heroSlider';
+import SectionBackgroundsPage from './pages/dashboard/cms/sectionBackgrounds';
 import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
@@ -311,6 +312,14 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="settings">
                 <HeroSliderPage key="store" site="store" />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'cms-content/backgrounds/store',
+            element: (
+              <RoleGuard menuKey="settings">
+                <SectionBackgroundsPage key="store" site="store" />
               </RoleGuard>
             ),
           },

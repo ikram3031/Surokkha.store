@@ -101,6 +101,7 @@ const CMSContentPage = ({ site = 'shop' }) => {
   const queryClient = useQueryClient();
   const { pathname } = useLocation();
   const sliderPath = `${pathname.split('/cms-content')[0]}/cms-content/slider/${site}`;
+  const backgroundsPath = `${pathname.split('/cms-content')[0]}/cms-content/backgrounds/store`;
   const [copiedKey, setCopiedKey] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeUploadingSlot, setActiveUploadingSlot] = useState(null);
@@ -339,6 +340,31 @@ const CMSContentPage = ({ site = 'shop' }) => {
           </Link>
         </CardContent>
       </Card>
+
+      {site === 'store' && (
+        <Card className="border border-primary/30 shadow-xs bg-primary/5">
+          <CardContent className="flex items-center justify-between gap-4 flex-wrap py-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <GalleryHorizontal className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Section Backgrounds</h3>
+                <p className="text-xs text-muted-foreground">
+                  Set background images for the homepage category and safe-use sections.
+                </p>
+              </div>
+            </div>
+            <Link
+              to={backgroundsPath}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-4 text-sm font-medium cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-primary dark:text-primary-foreground"
+            >
+              <span>Manage Backgrounds</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {sections.map((section) => (
         <Card key={section.id} className="border shadow-xs">
