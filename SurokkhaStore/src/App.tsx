@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { AgeGate } from '@/components/AgeGate'
 import { AnnouncementBar } from '@/components/AnnouncementBar'
@@ -16,6 +16,7 @@ import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/components/checkout/ConfirmationPage'
 import { CartProvider } from '@/context/CartContext'
 import { useRoute } from '@/lib/router'
+import { pixelTrack } from '@/lib/pixel'
 import type { ShopFilter } from '@/components/shop/FilterBar'
 
 function AppShell() {
@@ -24,6 +25,12 @@ function AppShell() {
   const [cartOpen, setCartOpen] = useState(false)
   const shopRef = useRef<HTMLDivElement>(null)
   const route = useRoute()
+  const routeKey = route.name === 'product' ? `product:${route.slug}` : route.name
+
+  // One PageView per page (the SPA never reloads between routes)
+  useEffect(() => {
+    pixelTrack('PageView')
+  }, [routeKey])
 
   const selectCategory = (cat: ShopFilter) => {
     setFilter(cat)

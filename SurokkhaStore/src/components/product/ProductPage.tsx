@@ -9,6 +9,7 @@ import { trackViewContent } from '@/lib/api/events'
 import { mapApiProduct, type ApiProduct } from '@/lib/api/mappers'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
+import { pixelTrack } from '@/lib/pixel'
 
 /** The API wraps single resources as `{ status, data }`; unwrap defensively. */
 function unwrapOne(res: unknown): ApiProduct | null {
@@ -38,6 +39,13 @@ export function ProductPage({ slug }: { slug: string }) {
         if (cancelled) return
         setProduct(mapped)
         trackViewContent({ productId: mapped.apiId ?? mapped.id })
+        pixelTrack('ViewContent', {
+          content_ids: [mapped.did ?? mapped.slug ?? String(mapped.id)],
+          content_name: mapped.apiName ?? mapped.name,
+          content_type: 'product',
+          value: mapped.price,
+          currency: 'BDT',
+        })
       })
       .catch(() => !cancelled && setFailed(true))
       .finally(() => !cancelled && setLoading(false))

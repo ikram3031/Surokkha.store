@@ -22,6 +22,7 @@ import {
 } from '@/lib/checkout'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
+import { getFbIdentifiers, pixelTrack } from '@/lib/pixel'
 
 const selectClass =
   'h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50 aria-invalid:border-destructive'
@@ -95,6 +96,19 @@ export function CheckoutPage() {
     setShip((f) => ({ ...f, [key]: value, ...(key === 'district' ? { thana: '' } : {}) }))
     setErrors((e) => ({ ...e, [`ship_${key}`]: '' }))
   }
+
+  const checkoutTracked = useRef(false)
+  useEffect(() => {
+    if (count === 0 || checkoutTracked.current) return
+    checkoutTracked.current = true
+    pixelTrack('InitiateCheckout', {
+      content_ids: lines.map((l) => l.product.did ?? l.product.slug ?? String(l.product.id)),
+      content_type: 'product',
+      num_items: count,
+      value: subtotal,
+      currency: 'BDT',
+    })
+  }, [count, lines, subtotal])
 
   // An empty cart has nothing to check out
   useEffect(() => {
@@ -224,6 +238,7 @@ export function CheckoutPage() {
         })),
         paymentDetails: null,
         timestamp: new Date().toISOString(),
+        ...getFbIdentifiers(),
       }
 
       const res = await createOrder(payload)
@@ -240,6 +255,18 @@ export function CheckoutPage() {
         discount: totals.discount,
         total: totals.total,
       })
+      const orderNumber = String(res.data?.orderNumber ?? '')
+      pixelTrack(
+        'Purchase',
+        {
+          content_ids: lines.map((l) => l.product.did ?? l.product.slug ?? String(l.product.id)),
+          content_type: 'product',
+          num_items: count,
+          value: totals.total,
+          currency: 'BDT',
+        },
+        orderNumber || undefined,
+      )
       clear()
       navigate('/order-confirmed', { replace: true })
     } catch (err) {

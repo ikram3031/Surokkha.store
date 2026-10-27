@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ব্লগ | সুরক্ষা</title>
+<meta name="description" content="নিরাপদ ও সুস্থ সম্পর্ক নিয়ে সহজ ভাষায় লেখা, সুরক্ষা টিমের পক্ষ থেকে।">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind (Play CDN). Production-এ build করা CSS ব্যবহার করুন। -->
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+
+<style>
+  /* থিম টোকেন — blog-template.html ও SurokkhaStore/src/index.css-এর সাথে এক। থিম বদলাতে শুধু এই ব্লক বদলান। */
+  :root {
+    --background: 251 245 236;
+    --foreground: 58 50 47;
+    --card: 255 255 255;
+    --primary: 77 18 36;
+    --primary-foreground: 255 255 255;
+    --secondary: 245 230 211;
+    --muted: 235 213 186;
+    --muted-foreground: 111 101 96;
+    --accent: 251 214 219;
+    --border: 235 213 186;
+    --ring: 244 145 159;
+  }
+  .dark {
+    --background: 36 31 28;
+    --foreground: 251 245 236;
+    --card: 45 39 35;
+    --primary: 244 145 159;
+    --primary-foreground: 36 31 28;
+    --secondary: 58 50 47;
+    --muted: 58 50 47;
+    --muted-foreground: 148 139 134;
+    --accent: 74 63 58;
+    --border: 58 50 47;
+    --ring: 244 145 159;
+  }
+  body { font-family: 'Hind Siliguri', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Noto Serif Bengali', serif; }
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+</style>
+
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          background: 'rgb(var(--background) / <alpha-value>)',
+          foreground: 'rgb(var(--foreground) / <alpha-value>)',
+          card: 'rgb(var(--card) / <alpha-value>)',
+          primary: { DEFAULT: 'rgb(var(--primary) / <alpha-value>)', foreground: 'rgb(var(--primary-foreground) / <alpha-value>)' },
+          secondary: 'rgb(var(--secondary) / <alpha-value>)',
+          muted: { DEFAULT: 'rgb(var(--muted) / <alpha-value>)', foreground: 'rgb(var(--muted-foreground) / <alpha-value>)' },
+          accent: 'rgb(var(--accent) / <alpha-value>)',
+          border: 'rgb(var(--border) / <alpha-value>)',
+          ring: 'rgb(var(--ring) / <alpha-value>)',
+        },
+        borderRadius: { '2xl': '1.25rem', '3xl': '1.75rem' },
+      },
+    },
+  };
+</script>
+</head>
+
+<body class="bg-background text-foreground">
+<main class="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12">
+
+  <!-- পেজ হেডিং -->
+  <header class="max-w-2xl">
+    <p class="text-sm font-semibold uppercase tracking-wider text-primary">সুরক্ষা ব্লগ</p>
+    <h1 class="font-display mt-2 text-3xl font-extrabold leading-snug sm:text-4xl md:text-5xl md:leading-tight">
+      জানুন, বুঝুন, নিরাপদ থাকুন
+    </h1>
+    <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
+      যৌন স্বাস্থ্য ও নিরাপদ সম্পর্ক নিয়ে সহজ ভাষায় সঠিক তথ্য।
+    </p>
+  </header>
+
+  <!-- সার্চ -->
+  <form role="search" class="mt-6 max-w-xl" onsubmit="return false">
+    <label for="q" class="sr-only">লেখা খুঁজুন</label>
+    <div class="relative">
+      <svg viewBox="0 0 24 24" class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="লেখা খুঁজুন..."
+        class="h-12 w-full rounded-full border border-border bg-card pl-12 pr-4 text-base outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/30">
+    </div>
+  </form>
+
+  <!-- ক্যাটাগরি ফিল্টার (মোবাইলে আড়াআড়ি স্ক্রল) -->
+  <nav aria-label="ক্যাটাগরি" class="-mx-4 mt-6 sm:mx-0">
+    <ul id="cats" class="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1 sm:flex-wrap sm:px-0">
+      <li><button data-cat="all" class="cat-btn">সব</button></li>
+      <li><button data-cat="health" class="cat-btn">স্বাস্থ্য</button></li>
+      <li><button data-cat="safety" class="cat-btn">নিরাপত্তা</button></li>
+      <li><button data-cat="tips" class="cat-btn">টিপস</button></li>
+      <li><button data-cat="myth" class="cat-btn">ভুল ধারণা</button></li>
+    </ul>
+  </nav>
+
+  <!-- ফিচারড পোস্ট -->
+  <a href="/blog/featured-post" data-card data-cat="safety" data-title="নিরাপদ সম্পর্কের জন্য জেনে রাখা জরুরি ৫টি বিষয়"
+     class="group mt-8 grid overflow-hidden rounded-3xl border border-border bg-card transition hover:shadow-lg md:grid-cols-2">
+    <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1200&h=760&q=80" alt="" class="aspect-[16/10] h-full w-full object-cover md:aspect-auto" width="1000" height="640" fetchpriority="high">
+    <div class="flex flex-col justify-center p-6 sm:p-8">
+      <span class="w-fit rounded-full bg-accent px-3 py-1 text-xs font-semibold">সম্পাদকের পছন্দ</span>
+      <h2 class="font-display mt-4 text-2xl font-bold leading-snug group-hover:text-primary sm:text-3xl">নিরাপদ সম্পর্কের জন্য জেনে রাখা জরুরি ৫টি বিষয়</h2>
+      <p class="mt-3 line-clamp-3 text-muted-foreground">সঠিক তথ্য জানলেই সঠিক সিদ্ধান্ত নেওয়া যায়। এই লেখায় সহজ ভাষায় জেনে নিন প্রতিদিনের কাজে লাগার মতো কিছু কথা।</p>
+      <p class="mt-4 text-sm text-muted-foreground">২৭ অক্টোবর ২০২৬ · ৫ মিনিট পড়া</p>
+    </div>
+  </a>
+
+  <!-- পোস্ট গ্রিড -->
+  <section aria-label="সব লেখা" class="mt-10">
+    <div id="grid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- কার্ডটি কপি করে বাড়ান; data-cat ও data-title ফিল্টার/সার্চের জন্য -->
+      <a href="/blog/post-1" data-card data-cat="health" data-title="কনডম ব্যবহারের সঠিক নিয়ম"
+         class="group overflow-hidden rounded-3xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg">
+        <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=640&h=400&q=80" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover" width="640" height="400">
+        <div class="p-4 sm:p-5">
+          <span class="text-xs font-semibold text-primary">স্বাস্থ্য</span>
+          <h3 class="font-display mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-primary">কনডম ব্যবহারের সঠিক নিয়ম</h3>
+          <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">ধাপে ধাপে জেনে নিন কীভাবে ব্যবহার করলে সুরক্ষা সবচেয়ে কার্যকর হয়।</p>
+          <p class="mt-3 text-sm text-muted-foreground">৩ মিনিট পড়া</p>
+        </div>
+      </a>
+      <a href="/blog/post-2" data-card data-cat="myth" data-title="কনডম নিয়ে ৭টি প্রচলিত ভুল ধারণা"
+         class="group overflow-hidden rounded-3xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg">
+        <img src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=640&h=400&q=80" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover" width="640" height="400">
+        <div class="p-4 sm:p-5">
+          <span class="text-xs font-semibold text-primary">ভুল ধারণা</span>
+          <h3 class="font-display mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-primary">কনডম নিয়ে ৭টি প্রচলিত ভুল ধারণা</h3>
+          <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">যা শুনে আসছেন, তার অনেকটাই ঠিক নয়। সত্যটা জেনে নিন।</p>
+          <p class="mt-3 text-sm text-muted-foreground">৪ মিনিট পড়া</p>
+        </div>
+      </a>
+      <a href="/blog/post-3" data-card data-cat="tips" data-title="সঠিক সাইজ বেছে নেওয়ার সহজ উপায়"
+         class="group overflow-hidden rounded-3xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg">
+        <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=640&h=400&q=80" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover" width="640" height="400">
+        <div class="p-4 sm:p-5">
+          <span class="text-xs font-semibold text-primary">টিপস</span>
+          <h3 class="font-display mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-primary">সঠিক সাইজ বেছে নেওয়ার সহজ উপায়</h3>
+          <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">ঢিলা বা টাইট, দুটোই ঝুঁকির। নিজের জন্য ঠিক মাপ কীভাবে বুঝবেন।</p>
+          <p class="mt-3 text-sm text-muted-foreground">২ মিনিট পড়া</p>
+        </div>
+      </a>
+      <a href="/blog/post-4" data-card data-cat="safety" data-title="গোপনীয়তা বজায় রেখে অনলাইনে কেনাকাটা"
+         class="group overflow-hidden rounded-3xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-lg">
+        <img src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=640&h=400&q=80" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover" width="640" height="400">
+        <div class="p-4 sm:p-5">
+          <span class="text-xs font-semibold text-primary">নিরাপত্তা</span>
+          <h3 class="font-display mt-1 line-clamp-2 text-lg font-bold leading-snug group-hover:text-primary">গোপনীয়তা বজায় রেখে অনলাইনে কেনাকাটা</h3>
+          <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">গোপন প্যাকেজিং ও ক্যাশ অন ডেলিভারিতে নিশ্চিন্তে অর্ডার করার উপায়।</p>
+          <p class="mt-3 text-sm text-muted-foreground">৩ মিনিট পড়া</p>
+        </div>
+      </a>
+    </div>
+
+    <p id="empty" class="mt-10 hidden text-center text-muted-foreground">এই নামে কোনো লেখা পাওয়া যায়নি।</p>
+
+    <!-- পেজিনেশন: সার্ভার-সাইড হলে লিংকগুলো আসল URL দিন -->
+    <nav aria-label="পেজ" class="mt-10 flex items-center justify-center gap-2 text-sm">
+      <a href="?page=1" aria-current="page" class="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-primary px-3 font-semibold text-primary-foreground">১</a>
+      <a href="?page=2" class="inline-flex h-10 min-w-10 items-center justify-center rounded-full border border-border bg-card px-3 hover:border-primary hover:text-primary">২</a>
+      <a href="?page=3" class="inline-flex h-10 min-w-10 items-center justify-center rounded-full border border-border bg-card px-3 hover:border-primary hover:text-primary">৩</a>
+      <a href="?page=2" class="inline-flex h-10 items-center justify-center rounded-full border border-border bg-card px-4 hover:border-primary hover:text-primary">পরের পাতা →</a>
+    </nav>
+  </section>
+
+  <!-- সাবস্ক্রাইব -->
+  <section class="mt-16 overflow-hidden rounded-3xl bg-primary text-primary-foreground">
+    <div class="flex flex-col gap-5 p-6 sm:p-8 md:flex-row md:items-center md:justify-between">
+      <div class="md:max-w-md">
+        <h2 class="font-display text-xl font-bold leading-snug sm:text-2xl">নতুন লেখার খবর পেতে চান?</h2>
+        <p class="mt-1 opacity-80">ইমেইলে পাঠিয়ে দেব। কোনো স্প্যাম নয়।</p>
+      </div>
+      <form class="flex w-full flex-col gap-2 sm:flex-row md:max-w-md" onsubmit="return false">
+        <label for="email" class="sr-only">ইমেইল</label>
+        <input id="email" type="email" placeholder="আপনার ইমেইল" required
+          class="h-12 flex-1 rounded-full bg-card px-5 text-foreground outline-none placeholder:text-muted-foreground focus:ring-4 focus:ring-ring/50">
+        <button type="submit" class="h-12 rounded-full bg-card px-6 font-semibold text-primary transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/50">সাবস্ক্রাইব</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<style>
+  .cat-btn { white-space: nowrap; border-radius: 9999px; border: 1px solid rgb(var(--border)); background: rgb(var(--card)); padding: .5rem 1rem; font-size: .9rem; font-weight: 600; transition: .15s; }
+  .cat-btn:hover { border-color: rgb(var(--primary)); color: rgb(var(--primary)); }
+  .cat-btn[aria-pressed="true"] { background: rgb(var(--primary)); border-color: rgb(var(--primary)); color: rgb(var(--primary-foreground)); }
+</style>
+
+<script>
+  // ক্যাটাগরি ফিল্টার + লাইভ সার্চ (ক্লায়েন্ট-সাইড; ডেটা বেশি হলে API-তে সরান)
+  const cards = [...document.querySelectorAll('[data-card]')];
+  const buttons = [...document.querySelectorAll('.cat-btn')];
+  const q = document.getElementById('q');
+  const empty = document.getElementById('empty');
+  let cat = 'all';
+
+  const apply = () => {
+    const term = q.value.trim().toLowerCase();
+    let shown = 0;
+    cards.forEach((c) => {
+      const ok = (cat === 'all' || c.dataset.cat === cat) && (!term || c.dataset.title.toLowerCase().includes(term));
+      c.classList.toggle('hidden', !ok);
+      if (ok) shown++;
+    });
+    empty.classList.toggle('hidden', shown > 0);
+  };
+
+  buttons.forEach((b) => {
+    b.setAttribute('aria-pressed', b.dataset.cat === cat);
+    b.addEventListener('click', () => {
+      cat = b.dataset.cat;
+      buttons.forEach((x) => x.setAttribute('aria-pressed', x === b));
+      apply();
+    });
+  });
+  q.addEventListener('input', apply);
+</script>
+</body>
+</html>
