@@ -29,7 +29,7 @@ export function SearchInput({
         className={
           inverted
             ? 'rounded-full border-background/20 bg-background/10 pl-10 pr-9 text-background placeholder:text-background/60'
-            : 'rounded-full pl-10 pr-9'
+            : 'rounded-full bg-background pl-10 pr-9 text-foreground'
         }
       />
       <Search

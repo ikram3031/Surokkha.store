@@ -19,15 +19,17 @@ export const Shop = forwardRef<HTMLDivElement, ShopProps>(function Shop(
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
+    // An API category slug wins over the legacy condom/lube/combo buckets (the slug "combo" exists in both)
+    const bySlug = products.some((p) => p.categorySlugs?.includes(filter))
     return products.filter(
       (p) =>
-        (filter === 'all' || p.cat === filter) &&
+        (filter === 'all' || (bySlug ? p.categorySlugs?.includes(filter) : p.cat === filter)) &&
         (!q || (p.name + p.desc + catLabel[p.cat]).toLowerCase().includes(q)),
     )
   }, [products, filter, query])
 
   return (
-    <section id="shop" ref={ref} className="mx-auto max-w-6xl px-4 pb-16">
+    <section id="shop" ref={ref} className="mx-auto max-w-7xl px-4 pb-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h2 className="font-display text-3xl font-bold">সব পণ্য</h2>
         <FilterBar value={filter} onChange={onFilterChange} />

@@ -24,7 +24,7 @@ const items = [
 export function TrustStrip() {
   return (
     <section id="why" className="border-b border-border bg-card">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:grid-cols-2 lg:grid-cols-4">
         {items.map((item) => (
           <div key={item.title} className="flex gap-3">
             <svg

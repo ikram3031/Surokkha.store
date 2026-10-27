@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
+import { Flower2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { BoxIcon, BottleIcon, ComboIcon } from '@/components/icons/ArtIcons'
 import type { ShopFilter } from '@/components/shop/FilterBar'
+import { SectionBackground } from '@/components/SectionBackground'
 
 const tiles: {
   cat: ShopFilter
@@ -11,14 +13,14 @@ const tiles: {
   icon: ReactNode
 }[] = [
   {
-    cat: 'condom',
+    cat: 'condoms',
     title: 'কনডম',
     desc: 'ক্লাসিক, আল্ট্রা থিন ও ফ্লেভারড',
     bg: 'bg-secondary hover:bg-muted',
     icon: <BoxIcon c1="#F4919F" c2="#C9475F" />,
   },
   {
-    cat: 'lube',
+    cat: 'lubricants',
     title: 'লুব্রিকেন্ট',
     desc: 'ওয়াটার ও সিলিকন বেসড',
     bg: 'bg-accent hover:bg-accent/80',
@@ -31,13 +33,22 @@ const tiles: {
     bg: 'bg-muted hover:bg-muted/70',
     icon: <ComboIcon />,
   },
+  {
+    cat: 'feminine-care',
+    title: 'ফেমিনিন কেয়ার',
+    desc: 'ব্যক্তিগত যত্ন ও হাইজিন',
+    bg: 'bg-secondary hover:bg-muted',
+    icon: <Flower2 className="h-full w-full text-primary" strokeWidth={1.5} />,
+  },
 ]
 
 export function Categories({ onSelect }: { onSelect: (cat: ShopFilter) => void }) {
   return (
-    <section id="categories" className="mx-auto max-w-6xl px-4 py-14">
-      <h2 className="font-display text-3xl font-bold">কী খুঁজছেন?</h2>
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
+    <section id="categories" className="relative overflow-hidden">
+      <SectionBackground name="categories" />
+      <div className="relative mx-auto max-w-7xl px-4 py-14">
+      <h2 className="text-center font-display text-3xl font-bold">কী খুঁজছেন?</h2>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((tile) => (
           <Card
             key={tile.cat}
@@ -47,9 +58,9 @@ export function Categories({ onSelect }: { onSelect: (cat: ShopFilter) => void }
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') onSelect(tile.cat)
             }}
-            className={`flex cursor-pointer flex-row items-center gap-4 rounded-[2rem] border-none p-6 text-left shadow-none ${tile.bg}`}
+            className={`flex cursor-pointer flex-row items-center gap-4 rounded-[2rem] border-none p-5 text-left shadow-none ${tile.bg}`}
           >
-            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-background p-3">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-background p-3 lg:h-[4.5rem] lg:w-[4.5rem]">
               {tile.icon}
             </span>
             <span>
@@ -58,6 +69,7 @@ export function Categories({ onSelect }: { onSelect: (cat: ShopFilter) => void }
             </span>
           </Card>
         ))}
+      </div>
       </div>
     </section>
   )

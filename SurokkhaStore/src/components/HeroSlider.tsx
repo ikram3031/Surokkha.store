@@ -94,7 +94,7 @@ function Slide({ slide }: { slide: HeroSlide }) {
         <div className="absolute -bottom-32 left-[-8rem] h-[30rem] w-[30rem] rounded-full bg-pink-200/40 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-y-5 px-4 pb-12 pt-8 md:grid-cols-2 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-8 md:py-10 lg:py-14">
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-y-5 px-4 pb-12 pt-8 md:grid-cols-2 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-8 md:py-10 lg:py-14">
         <div className="text-center md:col-start-1 md:row-start-1 md:self-end md:text-left">
           <span className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white/80 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#b0213f] shadow-xs md:px-5 md:py-2 md:text-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-[#e05578]" />

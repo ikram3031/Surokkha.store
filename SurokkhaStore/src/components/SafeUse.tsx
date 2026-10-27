@@ -1,3 +1,5 @@
+import { SectionBackground } from '@/components/SectionBackground'
+
 const tips = [
   {
     title: 'মেয়াদ দেখে নিন',
@@ -15,8 +17,9 @@ const tips = [
 
 export function SafeUse() {
   return (
-    <section className="bg-secondary">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 md:grid-cols-2">
+    <section className="relative overflow-hidden bg-secondary">
+      <SectionBackground name="safe-use" />
+      <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-14 md:grid-cols-2">
         <div>
           <h2 className="font-display text-3xl font-bold leading-snug">
             নিরাপদ ব্যবহারের তিনটি কথা

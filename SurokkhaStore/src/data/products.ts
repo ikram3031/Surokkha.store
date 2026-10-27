@@ -15,9 +15,13 @@ export interface Product {
   image?: string
   /** Set for products loaded from the API; needed for the product page and order payload. */
   slug?: string
+  /** Slugs of every API category the product belongs to (drives the dynamic category menu/filter). */
+  categorySlugs?: string[]
   /** API's canonical (English) name — sent on orders, as SurokkhaShop does. */
   apiName?: string
   apiId?: string
+  /** Which API collection the product comes from; orders reference items by `itemId`. */
+  itemType?: 'product' | 'item'
   did?: string
   gallery?: string[]
   longDescription?: string

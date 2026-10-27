@@ -3,16 +3,26 @@ import { Separator } from '@/components/ui/separator'
 export function Footer() {
   return (
     <footer className="bg-foreground text-background">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-3">
         <div>
           <img src="/logo_2.png" alt="সুরক্ষা" className="h-10 w-auto" />
           <p className="mt-3 text-sm text-background/70">আজ নিরাপদ, আগামীকালও।</p>
         </div>
-        <div className="text-sm">
+        <div id="contact" className="scroll-mt-24 text-sm">
           <h3 className="font-semibold text-background">যোগাযোগ</h3>
           <ul className="mt-3 space-y-2 text-background/70">
-            <li>হেল্পলাইন: ০১৭XX-XXXXXX</li>
-            <li>ইমেইল: hello@surokkha.example</li>
+            <li>
+              হোয়াটসঅ্যাপ:{' '}
+              <a href="https://wa.me/8801600905774" target="_blank" rel="noopener noreferrer" className="hover:text-background">
+                +৮৮০ ১৬০০-৯০৫৭৭৪
+              </a>
+            </li>
+            <li>
+              ইমেইল:{' '}
+              <a href="mailto:surokkha.store@gmail.com" className="hover:text-background">
+                surokkha.store@gmail.com
+              </a>
+            </li>
             <li>সকাল ১০টা থেকে রাত ১০টা, প্রতিদিন</li>
           </ul>
         </div>

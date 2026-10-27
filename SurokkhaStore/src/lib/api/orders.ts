@@ -2,6 +2,7 @@ import { api } from '@/lib/api/client'
 
 export interface OrderItemInput {
   productId?: string
+  itemId?: string
   productDid?: string
   itemType: 'product' | 'item'
   name: string
@@ -43,6 +44,9 @@ export interface NewOrderPayload {
   items: OrderItemInput[]
   paymentDetails: null
   timestamp: string
+  /** Meta cookies so the server-side CAPI event matches this browser. */
+  fbp?: string
+  fbc?: string
 }
 
 export interface Order {

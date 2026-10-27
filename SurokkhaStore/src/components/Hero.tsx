@@ -4,7 +4,7 @@ import { BoxIcon, BottleIcon } from '@/components/icons/ArtIcons'
 export function Hero() {
   return (
     <section className="overflow-hidden bg-secondary">
-      <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 md:grid-cols-2 md:py-20">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 md:grid-cols-2 md:py-20">
         <div>
           <h1 className="font-display text-4xl font-extrabold leading-[1.25] text-foreground sm:text-5xl sm:leading-[1.25]">
             নিরাপদ ভালোবাসা,

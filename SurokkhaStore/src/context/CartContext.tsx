@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { FREE_SHIP_AT, SHIP_FEE, type Product } from '@/data/products'
 import { taka } from '@/lib/bn'
 import { trackAddToCart } from '@/lib/api/events'
+import { pixelTrack } from '@/lib/pixel'
 
 interface CartLine {
   product: Product
@@ -37,6 +38,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
     toast('কার্টে যোগ হয়েছে')
     trackAddToCart({ productId: product.apiId ?? product.id, qty, price: product.price })
+    pixelTrack('AddToCart', {
+      content_ids: [product.did ?? product.slug ?? String(product.id)],
+      content_name: product.apiName ?? product.name,
+      content_type: 'product',
+      value: product.price * qty,
+      currency: 'BDT',
+    })
   }
   const clear = () => setCart({})
   const inc = (id: number) =>

@@ -27,7 +27,7 @@
   /* Dominant maroon ("খয়েরি") sampled from the logo wordmark. */
   --brand-maroon: #4d1224;
 
-  --background: var(--brand-cream-light);
+  --background: #ffffff;
   --foreground: var(--brand-ink);
 
   --card: #ffffff;
@@ -197,4 +197,45 @@ input[type='search']::-webkit-search-results-decoration {
   * {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* /offer heading: "কম্বো" cycles through bright colours with a gentle bounce */
+.offer-combo {
+  display: inline-block;
+  padding: 0 0.1em;
+  color: #e11d48;
+  animation: offer-combo-color 4s linear infinite, offer-combo-pop 1.8s ease-in-out infinite;
+}
+@keyframes offer-combo-color {
+  0%, 100% { color: #e11d48; }
+  25% { color: #f97316; }
+  50% { color: #059669; }
+  75% { color: #7c3aed; }
+}
+@keyframes offer-combo-pop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .offer-combo { animation: none; }
+}
+
+/* /offer page and its dialogs: a cleaner Bangla face (Hind Siliguri's digits read poorly at small sizes) */
+.offer-font,
+[data-slot="dialog-content"].offer-font {
+  font-family: "Noto Sans Bengali", "Hind Siliguri", sans-serif;
+}
+
+/* Checkout fields draw their own red focus border/ring, so drop the global pink outline there */
+#checkout input:focus-visible,
+#checkout textarea:focus-visible,
+#checkout button[aria-haspopup='listbox']:focus-visible {
+  outline: none;
+}
+
+/* The dialog close (X) has its own red border; no focus ring after a click */
+[data-slot='dialog-close']:focus,
+[data-slot='dialog-close']:focus-visible {
+  outline: none;
+  box-shadow: none;
 }

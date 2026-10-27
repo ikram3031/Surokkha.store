@@ -5,10 +5,12 @@ import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import { catBg, catLabel, type Product } from '@/data/products'
 import { useCart } from '@/context/CartContext'
 import { getProduct } from '@/lib/api/products'
+import { getItem } from '@/lib/api/items'
 import { trackViewContent } from '@/lib/api/events'
 import { mapApiProduct, type ApiProduct } from '@/lib/api/mappers'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
+import { pixelTrack } from '@/lib/pixel'
 
 /** The API wraps single resources as `{ status, data }`; unwrap defensively. */
 function unwrapOne(res: unknown): ApiProduct | null {
@@ -30,7 +32,9 @@ export function ProductPage({ slug }: { slug: string }) {
     setFailed(false)
     setQty(1)
     setActiveImage(0)
+    // Catalog entries live in either the products or the items collection
     getProduct<unknown>(slug)
+      .catch(() => getItem<unknown>(slug))
       .then((res) => {
         const raw = unwrapOne(res)
         if (!raw) throw new Error('not found')
@@ -38,6 +42,13 @@ export function ProductPage({ slug }: { slug: string }) {
         if (cancelled) return
         setProduct(mapped)
         trackViewContent({ productId: mapped.apiId ?? mapped.id })
+        pixelTrack('ViewContent', {
+          content_ids: [mapped.did ?? mapped.slug ?? String(mapped.id)],
+          content_name: mapped.apiName ?? mapped.name,
+          content_type: 'product',
+          value: mapped.price,
+          currency: 'BDT',
+        })
       })
       .catch(() => !cancelled && setFailed(true))
       .finally(() => !cancelled && setLoading(false))
@@ -48,8 +59,8 @@ export function ProductPage({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-2">
-        <div className="aspect-square animate-pulse rounded-3xl bg-muted" />
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-2">
+        <div className="h-80 animate-pulse rounded-xl bg-muted sm:h-[28rem]" />
         <div className="space-y-4">
           <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
           <div className="h-6 w-1/4 animate-pulse rounded bg-muted" />
@@ -61,7 +72,7 @@ export function ProductPage({ slug }: { slug: string }) {
 
   if (failed || !product) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-24 text-center">
+      <div className="mx-auto max-w-7xl px-4 py-24 text-center">
         <p className="text-lg font-semibold">পণ্যটি পাওয়া যায়নি।</p>
         <Button className="mt-4 rounded-full" onClick={() => navigate('/')}>
           সব পণ্য দেখুন
@@ -77,9 +88,9 @@ export function ProductPage({ slug }: { slug: string }) {
   const hasDiscount = !!product.regularPrice && product.regularPrice > product.price
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 md:grid-cols-2 md:gap-12 md:py-12">
+    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 md:grid-cols-2 md:gap-12 md:py-12">
       <div>
-        <div className={`flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-border ${catBg[product.cat]}`}>
+        <div className={`flex h-80 w-full items-center justify-center overflow-hidden rounded-xl border border-border sm:h-[28rem] ${catBg[product.cat]}`}>
           {images.length > 0 ? (
             <img src={images[activeImage]} alt={product.name} className="h-full w-full object-cover" />
           ) : (
@@ -89,14 +100,14 @@ export function ProductPage({ slug }: { slug: string }) {
           )}
         </div>
         {images.length > 1 && (
-          <div className="mt-3 flex gap-2 overflow-x-auto">
+          <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: `repeat(${images.length}, minmax(0, 1fr))` }}>
             {images.map((src, i) => (
               <button
                 key={src}
                 type="button"
                 onClick={() => setActiveImage(i)}
                 aria-label={`ছবি ${bn(i + 1)}`}
-                className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 ${i === activeImage ? 'border-primary' : 'border-transparent'}`}
+                className={`h-20 w-full overflow-hidden rounded-lg border-2 transition-colors ${i === activeImage ? 'border-primary' : 'border-transparent'}`}
               >
                 <img src={src} alt="" className="h-full w-full object-cover" />
               </button>

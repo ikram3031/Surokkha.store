@@ -4,13 +4,17 @@ import { useEffect, useState } from 'react'
 export type Route =
   | { name: 'home' }
   | { name: 'product'; slug: string }
+  | { name: 'offer' }
   | { name: 'checkout' }
+  | { name: 'account' }
   | { name: 'confirmation' }
 
 export function parseRoute(pathname: string): Route {
   const parts = pathname.split('/').filter(Boolean)
   if (parts[0] === 'product' && parts[1]) return { name: 'product', slug: decodeURIComponent(parts[1]) }
+  if (parts[0] === 'offer') return { name: 'offer' }
   if (parts[0] === 'checkout') return { name: 'checkout' }
+  if (parts[0] === 'account') return { name: 'account' }
   if (parts[0] === 'order-confirmed') return { name: 'confirmation' }
   return { name: 'home' }
 }

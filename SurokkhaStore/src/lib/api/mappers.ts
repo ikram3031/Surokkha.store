@@ -28,7 +28,9 @@ export interface ApiProduct {
   thumbnailUrl?: string
   imageUrl?: string
   gallery?: string[]
+  categories?: { name?: string; slug?: string }[]
   offerPrice?: number | null
+  itemType?: string
   longDescription?: string
   name_bn?: string
   description_bn?: string
@@ -69,11 +71,19 @@ function toNumericId(raw: ApiProduct): number {
   return Math.floor(Math.random() * 1_000_000)
 }
 
+function categorySlugsOf(raw: ApiProduct): string[] {
+  const list = [...(Array.isArray(raw.categories) ? raw.categories : []), ...(typeof raw.category === 'object' && raw.category ? [raw.category] : [])]
+  return [...new Set(list.map((c) => c.slug).filter((s): s is string => !!s))]
+}
+
 /** Maps a loosely-typed API product into the shape the UI (ProductCard, cart, filters) expects. */
 export function mapApiProduct(raw: ApiProduct): Product {
   const categoryName = categoryNameOf(raw.category) || raw.categoryName || ''
   const cat = normalizeCategory(categoryName)
   const visual = DEFAULT_ART_BY_CATEGORY[cat]
+  // Same rule as SurokkhaShop: a sale exists when offerPrice is positive and below the regular price
+  const regular = Number(raw.regularPrice || raw.price || 0)
+  const offer = Number(raw.offerPrice) > 0 && Number(raw.offerPrice) < regular ? Number(raw.offerPrice) : 0
 
   return {
     id: toNumericId(raw),
@@ -81,14 +91,17 @@ export function mapApiProduct(raw: ApiProduct): Product {
     name: raw.name_bn || raw.bn?.name || raw.name || raw.title || 'পণ্য',
     desc: raw.description_bn || raw.bn?.description || raw.description || raw.shortDescription || '',
     // Same precedence as SurokkhaShop: active offer price, else list price
-    price: Number(raw.offerPrice) > 0 ? Number(raw.offerPrice) : (raw.price ?? raw.salePrice ?? raw.regularPrice ?? 0),
+    price: offer || (raw.price ?? raw.salePrice ?? raw.regularPrice ?? 0),
     slug: raw.slug,
+    categorySlugs: categorySlugsOf(raw),
     apiName: raw.name ?? raw.title,
     apiId: raw._id ?? raw.id?.toString(),
+    itemType: raw.itemType === 'item' ? 'item' : 'product',
     did: raw.did,
     gallery: (raw.gallery ?? []).map((g) => resolveMediaUrl(g)!).filter(Boolean),
     longDescription: raw.longDescription,
-    regularPrice: raw.regularPrice,
+    // Only set when there is a real sale, so the UI can show the strike-through price and discount %
+    regularPrice: offer ? regular : undefined,
     inStock: String(raw.stockStatus ?? 'instock').toLowerCase() !== 'outofstock',
     art: visual.art,
     c1: visual.c1,
