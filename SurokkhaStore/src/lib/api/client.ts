@@ -44,8 +44,9 @@ export class ApiError extends Error {
 export type QueryParams = Record<string, string | number | boolean | undefined | null>
 
 function toQueryString(params?: QueryParams): string {
-  if (!params) return ''
-  const search = new URLSearchParams()
+  // The API answers in Bengali for browsers whose Accept-Language includes "bn"; the storefront is English-only
+  const search = new URLSearchParams({ lang: 'en' })
+  if (!params) return `?${search}`
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null || value === '') continue
     search.set(key, String(value))
