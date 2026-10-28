@@ -28,9 +28,14 @@ import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/components/checkout/ConfirmationPage'
 import { CartProvider } from '@/context/CartContext'
 import { AccountPage } from '@/components/account/AccountPage'
-import { categoryPath, navigate, useRoute } from '@/lib/router'
+import { categoryPath, navigate, useRoute, type Route } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
 import type { ShopFilter } from '@/components/shop/FilterBar'
+
+// Ads launch mode: the whole storefront is the single offer page (same UI as offer.surokkha.shop),
+// with no header, footer, announcement bar or home page. The catalog, Meta pixel and cart storage all keep
+// working. Set to false to bring the full home page, header and footer back.
+const OFFER_ONLY_MODE = true
 
 // "All Products" grid is hidden on the home page for now; flip to true to bring it back
 const SHOW_ALL_PRODUCTS = false
@@ -40,7 +45,11 @@ function AppShell() {
   const [filter, setFilter] = useState<ShopFilter>('all')
   const [cartOpen, setCartOpen] = useState(false)
   const shopRef = useRef<HTMLDivElement>(null)
-  const route = useRoute()
+  const urlRoute = useRoute()
+  // In offer-only mode the site root (and the old home URLs) show the offer page
+  const route: Route =
+    OFFER_ONLY_MODE && (urlRoute.name === 'home' || urlRoute.name === 'home-classic') ? { name: 'offer' } : urlRoute
+  const bare = OFFER_ONLY_MODE && route.name === 'offer'
   const routeKey = route.name === 'product' || route.name === 'category' || route.name === 'group-offer' ? `${route.name}:${route.slug}` : route.name
 
   // One PageView per page (the SPA never reloads between routes)
@@ -57,8 +66,8 @@ function AppShell() {
   return (
     <>
       <AgeGate />
-      <AnnouncementBar />
-      <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />
+      {!bare && <AnnouncementBar />}
+      {!bare && <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />}
       <main className="min-h-[90vh]">
         {route.name === 'home-classic' && (
           <HomeClassic
@@ -95,9 +104,9 @@ function AppShell() {
         {route.name === 'confirmation' && <ConfirmationPage />}
         {route.name === 'account' && <AccountPage />}
       </main>
-      <Footer />
-      {route.name !== 'checkout' && <FloatingWhatsApp />}
-      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+      {!bare && <Footer />}
+      {!bare && route.name !== 'checkout' && <FloatingWhatsApp />}
+      {!bare && <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />}
       <Toaster />
     </>
   )

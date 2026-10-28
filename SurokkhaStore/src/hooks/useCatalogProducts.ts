@@ -121,3 +121,28 @@ export function useComboProducts() {
 
   return { products, loading }
 }
+
+/** The Trial Pack is one ordinary product (no group offer, no special pricing); it gets the page's common discount. */
+export const TRIAL_PACK_SLUG = 'mo-trial-pack-6-pcs'
+
+export function useTrialPack() {
+  const [product, setProduct] = useState<OfferProduct | null>(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    const opts = { signal: controller.signal }
+    const load = (entity: 'product' | 'item') =>
+      api.get<{ data?: ApiProduct }>(`/${entity}s/${TRIAL_PACK_SLUG}`, undefined, opts).then((res) => {
+        if (!res?.data?.did) throw new Error('not found')
+        return toOfferProduct(res.data, entity)
+      })
+    // The pack lives in the products or the items collection depending on how it was set up in the dashboard
+    load('product')
+      .catch(() => load('item'))
+      .then((p) => !controller.signal.aborted && setProduct(p))
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
+
+  return product
+}

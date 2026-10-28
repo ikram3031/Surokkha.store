@@ -11,9 +11,11 @@ interface Props {
   onDec: () => void
   onChooseOptions: () => void
   onQuickView: () => void
+  /** Click on the photo: adds the product, or opens its view when it needs options / is out of stock */
+  onMediaClick: () => void
 }
 
-export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, onQuickView }: Props) {
+export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, onQuickView, onMediaClick }: Props) {
   const isVariable = !!product.variants?.length
 
   return (
@@ -22,7 +24,14 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         qty ? 'border-primary shadow-lg' : 'border-gray-200'
       }`}
     >
-      <div className="group/media relative">
+      <div
+        className="group/media relative cursor-pointer"
+        onClick={(e) => {
+          // Slider arrows, dots and the Details buttons keep their own behaviour
+          if ((e.target as HTMLElement).closest('button')) return
+          onMediaClick()
+        }}
+      >
         <ProductSlider product={product} compact />
         {/* Hover overlay with a view icon; only the icon takes clicks so the slider arrows keep working */}
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/35 opacity-0 transition-opacity duration-200 group-hover/media:opacity-100">

@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } 
 import { ArrowRight, CheckCircle2, Loader2, Lock, Truck, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { GroupOfferPage } from '@/components/offer/GroupOfferPage'
+import { TrialPackSection } from '@/components/offer/TrialPackSection'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
-import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
+import { TOP_PRODUCTS, useCatalogProducts, useComboProducts, useTrialPack } from '@/hooks/useCatalogProducts'
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from '@/components/offer/Turnstile'
 import { QuickViewDialog, VariantDialog } from '@/components/offer/ProductDialogs'
 import {
@@ -128,9 +128,13 @@ const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 export function OfferHome() {
   const { products: catalogProducts, loading: catalogLoading } = useCatalogProducts()
   const { products: comboProducts, loading: combosLoading } = useComboProducts()
+  const trialPack = useTrialPack()
   const products = useMemo(
-    () => [...catalogProducts, ...comboProducts],
-    [catalogProducts, comboProducts],
+    () => {
+      const all = [...catalogProducts, ...comboProducts, ...(trialPack ? [trialPack] : [])]
+      return all.filter((p, i) => all.findIndex((x) => x.id === p.id) === i)
+    },
+    [catalogProducts, comboProducts, trialPack],
   )
   const [qty, setQty] = useState<Record<string, number>>({})
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
@@ -213,18 +217,24 @@ export function OfferHome() {
   const total = subtotal - discount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]
 
-  const change = (productId: string, variantId: string | undefined, delta: number) => {
+  const fail = (message: string) => {
+    toast.error(message)
+    return false
+  }
+
+  /** Adds/removes one piece; returns false when the change was refused (stock or order limits). */
+  const change = (productId: string, variantId: string | undefined, delta: number): boolean => {
     const k = keyOf(productId, variantId)
     const cur = qty[k] ?? 0
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
       const v = p.variants?.find((x) => x.id === variantId)
-      if (!(v ? v.inStock : p.inStock)) return toast.error('Sorry, this is out of stock right now')
+      if (!(v ? v.inStock : p.inStock)) return fail('Sorry, this is out of stock right now')
       const price = variantPrice(p, v)
-      if (cur >= MAX_QTY_PER_LINE) return toast.error(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
-      if (count >= MAX_QTY_PER_ORDER) return toast.error(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
+      if (cur >= MAX_QTY_PER_LINE) return fail(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
+      if (count >= MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
       if (subtotal + price > MAX_ORDER_AMOUNT)
-        return toast.error(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
+        return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
     }
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
@@ -238,12 +248,33 @@ export function OfferHome() {
       })
     }
     setQty((q) => ({ ...q, [k]: Math.max(0, cur + delta) }))
+    return true
   }
 
 
   const goCheckout = () => {
     if (!count) return toast.error('Please select at least one product first')
     track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count })
+    checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Click on a product photo: add it; products that need options or are out of stock open their view instead
+  const addFromPhoto = (p: OfferProduct) => {
+    if (p.variants?.length) return setVariantFor(p)
+    if (!p.inStock) return setQuickView(p)
+    if (change(p.id, undefined, 1)) toast.success(`${p.name} added to your order`)
+  }
+
+  // Trial Pack "Order now": make sure it is in the order, then go straight to the checkout form
+  const orderTrialPack = () => {
+    if (!trialPack) return
+    const adding = qtyOf(trialPack.id) === 0
+    if (adding && !change(trialPack.id, undefined, 1)) return
+    track('InitiateCheckout', {
+      value: subtotal + (adding ? trialPack.price : 0) - discount,
+      currency: 'BDT',
+      num_items: count + (adding ? 1 : 0),
+    })
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -387,16 +418,20 @@ export function OfferHome() {
                 onDec={() => change(p.id, undefined, -1)}
                 onChooseOptions={() => setVariantFor(p)}
                 onQuickView={() => setQuickView(p)}
+                onMediaClick={() => addFromPhoto(p)}
               />
             ))}
           </div>
         </section>
 
-        <section className="bg-white">
-          <div className="mx-auto max-w-6xl px-4 pb-8 sm:pb-12">
-            <GroupOfferPage slug="surokkha-trial-pack" embedded />
-          </div>
-        </section>
+        {trialPack && (
+          <TrialPackSection
+            product={trialPack}
+            qty={qtyOf(trialPack.id)}
+            onOrderNow={orderTrialPack}
+            onQuickView={() => setQuickView(trialPack)}
+          />
+        )}
 
         <section className="bg-rose-50">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 py-8 sm:grid-cols-3">
@@ -437,6 +472,7 @@ export function OfferHome() {
                     onDec={() => change(p.id, undefined, -1)}
                     onChooseOptions={() => setVariantFor(p)}
                     onQuickView={() => setQuickView(p)}
+                    onMediaClick={() => addFromPhoto(p)}
                   />
                 ))}
               </div>
