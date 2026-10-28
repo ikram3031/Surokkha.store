@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } 
 import { ArrowRight, CheckCircle2, Loader2, Lock, Truck, Wallet } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { GroupOfferPage } from '@/components/offer/GroupOfferPage'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
 import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
@@ -388,6 +389,12 @@ export function OfferHome() {
                 onQuickView={() => setQuickView(p)}
               />
             ))}
+          </div>
+        </section>
+
+        <section className="bg-white">
+          <div className="mx-auto max-w-6xl px-4 pb-8 sm:pb-12">
+            <GroupOfferPage slug="surokkha-trial-pack" embedded />
           </div>
         </section>
 

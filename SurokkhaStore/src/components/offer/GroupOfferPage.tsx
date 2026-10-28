@@ -16,7 +16,7 @@ const describe = (d: { discountType: string; discountValue: number }) =>
   d.discountType === 'percentage' ? `${d.discountValue}% off` : `${taka(d.discountValue)} off`
 
 /** A Group Offer: pick pieces from several products; the whole group is priced by the offer's rules. */
-export function GroupOfferPage({ slug }: { slug: string }) {
+export function GroupOfferPage({ slug, embedded = false }: { slug: string; embedded?: boolean }) {
   const { addGroup } = useCart()
   const [offer, setOffer] = useState<GroupOffer | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'missing'>('loading')
@@ -73,7 +73,7 @@ export function GroupOfferPage({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 pb-40 md:py-12">
+    <div className={embedded ? 'py-4' : 'mx-auto max-w-5xl px-4 py-8 pb-40 md:py-12'}>
       <h1 className="font-display text-3xl font-bold md:text-4xl">{offer.name}</h1>
       {offer.description && <p className="mt-2 text-muted-foreground">{offer.description}</p>}
       <p className="mt-3 text-sm text-muted-foreground">
@@ -120,7 +120,7 @@ export function GroupOfferPage({ slug }: { slug: string }) {
         })}
       </ul>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card px-4 py-3 shadow-lg">
+      <div className={embedded ? 'mt-6 rounded-2xl border border-border bg-card px-4 py-3 shadow-sm' : 'fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card px-4 py-3 shadow-lg'}>
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
           <div className="text-sm">
             <p>

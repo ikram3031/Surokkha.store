@@ -22,8 +22,19 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         qty ? 'border-primary shadow-lg' : 'border-gray-200'
       }`}
     >
-      <div className="relative">
+      <div className="group/media relative">
         <ProductSlider product={product} compact />
+        {/* Hover overlay with a view icon; only the icon takes clicks so the slider arrows keep working */}
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/35 opacity-0 transition-opacity duration-200 group-hover/media:opacity-100">
+          <button
+            type="button"
+            onClick={onQuickView}
+            aria-label={`${product.name} বিস্তারিত দেখুন`}
+            className="pointer-events-auto flex size-12 items-center justify-center rounded-full bg-white text-gray-900 shadow-lg transition hover:scale-110"
+          >
+            <Eye className="size-6" />
+          </button>
+        </div>
         <button
           type="button"
           onClick={onQuickView}

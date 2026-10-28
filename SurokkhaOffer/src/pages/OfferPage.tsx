@@ -25,7 +25,9 @@ import {
   type OfferVariant,
 } from '@/data/offerProducts'
 
-import { api, ApiError } from '@/lib/api/client'
+import { api, ApiError, resolveMediaUrl } from '@/lib/api/client'
+import { getGroupOffer, groupOfferDiscount, type GroupOffer } from '@/lib/api/groupOffers'
+import { TrialPack } from '@/components/offer/TrialPack'
 import { bn, taka } from '@/lib/bn'
 
 // value: Pathao spelling the thana API and orders use; label: Bangla name from the store DB
@@ -156,6 +158,8 @@ const trackedOrders = new Set<string>()
 // Pixel browser ids, passed to the backend so its Conversions API event matches this visitor
 const cookie = (name: string) => document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] ?? ''
 
+const TRIAL_PACK_SLUG = 'surokkha-trial-pack'
+
 const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 
 export default function OfferPage() {
@@ -166,6 +170,8 @@ export default function OfferPage() {
     [catalogProducts, comboProducts],
   )
   const [qty, setQty] = useState<Record<string, number>>({})
+  const [trial, setTrial] = useState<GroupOffer | null>(null)
+  const [trialQty, setTrialQty] = useState<Record<string, number>>({})
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
   const [quickView, setQuickView] = useState<OfferProduct | null>(null)
   const [form, setForm] = useState<CheckoutForm>({
@@ -193,6 +199,14 @@ export default function OfferPage() {
     const p = id && products.find((x) => x.id === id)
     if (p) setQuickView(p)
   }, [products])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    getGroupOffer(TRIAL_PACK_SLUG, { signal: controller.signal })
+      .then((res) => setTrial(res.data ?? null))
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
 
   // Thanas come from the store's Pathao-synced location API
   useEffect(() => {
@@ -234,8 +248,16 @@ export default function OfferPage() {
     [products, qty],
   )
 
-  const count = lines.reduce((s, l) => s + l.qty, 0)
+  const regularCount = lines.reduce((s, l) => s + l.qty, 0)
   const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.qty, 0)
+  // Trial Pack pieces are priced by their own group offer, outside the tiered discount
+  const trialLines = (trial?.products ?? [])
+    .filter((p) => (trialQty[p.id] ?? 0) > 0)
+    .map((p) => ({ product: p, qty: trialQty[p.id] }))
+  const trialCount = trialLines.reduce((s, l) => s + l.qty, 0)
+  const trialSubtotal = trialLines.reduce((s, l) => s + l.product.unitPrice * l.qty, 0)
+  const trialCalc = trial ? groupOfferDiscount(trial, trialSubtotal) : { discount: 0, eligible: false, next: undefined }
+  const count = regularCount + trialCount
   // The tiered discount counts every product, ready combos included
   const comboSubtotal = subtotal
   const tier = tierFor(comboSubtotal)
@@ -243,7 +265,9 @@ export default function OfferPage() {
   const discount = tier ? Math.round((comboSubtotal * tier.off) / 100) : 0
   const zone = deliveryZone(form.district, form.thana)
   const shipping = count === 0 ? 0 : DELIVERY[zone]
-  const total = subtotal - discount + shipping
+  const allSubtotal = subtotal + trialSubtotal
+  const allDiscount = discount + trialCalc.discount
+  const total = allSubtotal - allDiscount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]
 
   const change = (productId: string, variantId: string | undefined, delta: number) => {
@@ -274,15 +298,32 @@ export default function OfferPage() {
   }
 
 
+  const stepTrial = (id: string, delta: 1 | -1) => {
+    if (!trial) return
+    const cur = trialQty[id] ?? 0
+    const price = trial.products.find((p) => p.id === id)?.unitPrice ?? 0
+    let n = cur
+    if (delta === 1) {
+      if (cur >= MAX_QTY_PER_LINE) return toast.error(`একটি পণ্য সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি নেওয়া যাবে`)
+      n = cur === 0 ? trial.minPerProduct : cur + 1
+      if (count - cur + n > MAX_QTY_PER_ORDER) return toast.error(`এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি পণ্য নেওয়া যাবে`)
+      if (allSubtotal + (n - cur) * price > MAX_ORDER_AMOUNT)
+        return toast.error(`${taka(MAX_ORDER_AMOUNT)}-এর বেশি অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`)
+    } else n = cur <= trial.minPerProduct ? 0 : cur - 1
+    setTrialQty((q) => ({ ...q, [id]: n }))
+  }
+
   const goCheckout = () => {
     if (!count) return toast.error('আগে অন্তত একটি পণ্য বাছাই করুন')
-    track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count })
+    track('InitiateCheckout', { value: allSubtotal - allDiscount, currency: 'BDT', num_items: count })
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!count) return toast.error('আগে অন্তত একটি পণ্য বাছাই করুন')
+    if (trial && trialCount > 0 && !trialCalc.eligible)
+      return toast.error(`${trial.name}-এ কমপক্ষে ${taka(trial.minOrderAmount)}-এর পণ্য নিন, অথবা সেটি বাদ দিন`)
     const ok = (Object.keys(RULES) as FieldKey[]).map((k) => validate(k)).every(Boolean)
     if (!ok) {
       setTimeout(() => document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
@@ -318,7 +359,7 @@ export default function OfferPage() {
         shipToDifferentAddress: false,
         orderNotes: form.note.trim(),
         // Real store products, so the backend checks stock and the dashboard links each line
-        items: lines.map((l) => ({
+        items: [...lines.map((l) => ({
           name: l.variant ? `${l.product.name} (${l.variant.label})` : l.product.name,
           quantity: l.qty,
           unitPrice: l.unitPrice,
@@ -330,8 +371,20 @@ export default function OfferPage() {
           sku: l.variant?.sku || l.product.sku,
           image: l.product.images[0] ?? '',
         })),
-        subtotal,
-        discountTotalAmount: discount,
+        ...trialLines.map(({ product: p, qty: q }) => ({
+          name: p.name,
+          quantity: q,
+          unitPrice: p.unitPrice,
+          size: `Group Offer: ${trial!.name}`,
+          productId: p.id,
+          itemId: '',
+          productDid: p.did,
+          itemType: 'product',
+          sku: p.did,
+          image: p.image,
+        }))],
+        subtotal: allSubtotal,
+        discountTotalAmount: allDiscount,
         shippingFee: shipping,
         shippingTotalAmount: shipping,
         tax: 0,
@@ -342,7 +395,7 @@ export default function OfferPage() {
       if (!orderNumber || !trackedOrders.has(orderNumber)) track(
         'Purchase',
         {
-          content_ids: lines.map((l) => l.variant?.sku || l.product.sku || l.product.id),
+          content_ids: [...lines.map((l) => l.variant?.sku || l.product.sku || l.product.id), ...trialLines.map((l) => l.product.did)],
           contents: lines.map((l) => ({ id: l.variant?.sku || l.product.sku || l.product.id, quantity: l.qty, item_price: l.unitPrice })),
           content_type: 'product',
           num_items: count,
@@ -354,6 +407,7 @@ export default function OfferPage() {
       if (orderNumber) trackedOrders.add(orderNumber)
       setPlaced(orderNumber)
       setQty({})
+      setTrialQty({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'অর্ডার করা যায়নি, আবার চেষ্টা করুন')
@@ -454,6 +508,14 @@ export default function OfferPage() {
             ))}
           </div>
         </section>
+
+        {trial && (
+          <section className="bg-white">
+            <div className="mx-auto max-w-6xl px-4 pb-8 sm:pb-12">
+              <TrialPack offer={trial} qty={trialQty} onStep={stepTrial} subtotal={trialSubtotal} />
+            </div>
+          </section>
+        )}
 
         <section className="bg-rose-50">
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-3 px-4 py-8 sm:grid-cols-3">
@@ -581,7 +643,7 @@ export default function OfferPage() {
               <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
                 <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                   <h3 className="mb-2 text-base font-semibold text-gray-900">অর্ডার সামারি</h3>
-                  {lines.length ? (
+                  {lines.length || trialLines.length ? (
                     <ul className="divide-y divide-gray-200">
                       {lines.map((l) => (
                         <li key={keyOf(l.product.id, l.variant?.id)} className="flex items-center gap-3 py-3">
@@ -597,17 +659,35 @@ export default function OfferPage() {
                           <p className="text-sm font-medium text-gray-900">{taka(l.unitPrice * l.qty)}</p>
                         </li>
                       ))}
+                      {trialLines.map(({ product: p, qty: q }) => (
+                        <li key={`trial:${p.id}`} className="flex items-center gap-3 py-3">
+                          <div className="size-14 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                            {p.image && <img src={resolveMediaUrl(p.image)} alt="" className="h-full w-full object-cover" />}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-gray-900">{p.name}</p>
+                            <p className="text-xs text-gray-400">{trial!.name} · পরিমাণ {bn(q)}</p>
+                          </div>
+                          <p className="text-sm font-medium text-gray-900">{taka(p.unitPrice * q)}</p>
+                        </li>
+                      ))}
                     </ul>
                   ) : (
                     <p className="py-3 text-sm text-gray-500">এখনো কোনো পণ্য বাছাই করা হয়নি।</p>
                   )}
 
                   <dl className="mt-4 space-y-2 border-t border-gray-200 pt-4 text-sm">
-                    <div className="flex justify-between"><dt className="text-gray-500">সাবটোটাল</dt><dd>{taka(subtotal)}</dd></div>
+                    <div className="flex justify-between"><dt className="text-gray-500">সাবটোটাল</dt><dd>{taka(allSubtotal)}</dd></div>
                     {tier && (
                       <div className="flex justify-between">
                         <dt className="text-gray-500">কম্বো ছাড় ({bn(tier.off)}%)</dt>
                         <dd className="text-emerald-600">−{taka(discount)}</dd>
+                      </div>
+                    )}
+                    {trialCalc.discount > 0 && (
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">{trial?.name} ছাড়</dt>
+                        <dd className="text-emerald-600">−{taka(trialCalc.discount)}</dd>
                       </div>
                     )}
                     <div className="flex justify-between">
@@ -664,11 +744,11 @@ export default function OfferPage() {
             <div className="leading-tight">
               <p className="text-xs text-gray-600">
                 {bn(count)}টি পণ্য
-                {discount > 0 && <span className="ml-1.5 font-semibold text-emerald-600">সাশ্রয় {taka(discount)}</span>}
+                {allDiscount > 0 && <span className="ml-1.5 font-semibold text-emerald-600">সাশ্রয় {taka(allDiscount)}</span>}
               </p>
               <p className="text-xl font-bold text-rose-600">
                 {taka(total)}
-                {discount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(subtotal + shipping)}</s>}
+                {allDiscount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(allSubtotal + shipping)}</s>}
               </p>
             </div>
             <Button onClick={goCheckout} className="h-11 rounded-full px-6">
