@@ -7,7 +7,7 @@ const itemSchema = new Schema(
     name: { type: String, required: true, trim: true, index: true },
     slug: { type: String, required: true, trim: true, unique: true, index: true },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
-    description: { type: String, required: true, trim: true },
+    description: { type: String, trim: true, default: "", required: function () { return this.type !== "group"; } },
     longDescription: { type: String, trim: true },
 
     isActive: { type: Boolean, default: true, index: true },
@@ -22,7 +22,7 @@ const itemSchema = new Schema(
     // Item Type (Simple or Variant)
     type: {
       type: String,
-      enum: ["simple", "variant"],
+      enum: ["simple", "variant", "group"],
       default: "simple",
       required: true,
       index: true
@@ -61,6 +61,28 @@ const itemSchema = new Schema(
       },
     ],
 
+    // Group Offer Fields (Type = "group" hole eiti babohar hobe): customer picks pieces from several products
+    groupOffer: {
+      _id: false,
+      products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+      minOrderAmount: { type: Number, default: 250, min: 0 },
+      minPerProduct: { type: Number, default: 2, min: 1 },
+      pricingMode: { type: String, enum: ["fixed", "conditional"], default: "fixed" },
+      fixedDiscount: {
+        _id: false,
+        discountType: { type: String, enum: ["percentage", "fixed"], default: "percentage" },
+        discountValue: { type: Number, min: 0, default: 0 },
+      },
+      conditions: [
+        {
+          _id: false,
+          minOrderAmount: { type: Number, required: true, min: 0 },
+          discountType: { type: String, enum: ["percentage", "fixed"], default: "percentage" },
+          discountValue: { type: Number, min: 0, default: 0 },
+        },
+      ],
+    },
+
     tags: [{ type: String, trim: true, lowercase: true }],
 
     // SEO Meta Data
@@ -82,7 +104,7 @@ const itemSchema = new Schema(
     ],
 
     // Images
-    imageUrl: { type: String, required: true, trim: true },
+    imageUrl: { type: String, trim: true, default: "", required: function () { return this.type !== "group"; } },
     thumbnailUrl: { type: String, trim: true },
     gallery: [{ type: String, trim: true }],
 
