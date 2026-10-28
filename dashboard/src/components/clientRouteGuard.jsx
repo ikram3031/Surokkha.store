@@ -19,7 +19,7 @@ const getRequiredPermission = (pathname) => {
   if (cleanPath === '/dashboard/products/categories') return 'products.categories';
   if (cleanPath === '/dashboard/products/brands') return 'products.brands';
   if (cleanPath === '/dashboard/products/attributes') return 'products.attributes';
-  if (cleanPath === '/dashboard/products/coupons') return 'products.coupons';
+  if (cleanPath === '/dashboard/products/coupons' || cleanPath === '/dashboard/products/group-offers') return 'products.coupons';
   if (cleanPath === '/dashboard/products/size-charts') return 'products.size-charts';
   if (cleanPath.startsWith('/dashboard/products')) return 'products.list';
 

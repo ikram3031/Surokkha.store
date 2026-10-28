@@ -43,6 +43,7 @@ import ProductDetails from './pages/dashboard/products/productDetails';
 import AddNewProduct from './pages/dashboard/products/addNewProduct';
 // import Stock from './pages/dashboard/products/stock';
 import Coupons from './pages/dashboard/products/coupons';
+import GroupOffers from './pages/dashboard/products/groupOffers';
 import SizeCharts from './pages/dashboard/products/sizeCharts';
 import Categories from './pages/dashboard/products/categories';
 import Brands from './pages/dashboard/products/brands';
@@ -536,6 +537,14 @@ const dashboardRoutes = [
               </RoleGuard>
             ),
           }, */
+          {
+            path: 'group-offers',
+            element: (
+              <RoleGuard menuKey="products.coupons">
+                <GroupOffers />
+              </RoleGuard>
+            ),
+          },
           {
             path: 'coupons',
             element: (

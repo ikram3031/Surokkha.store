@@ -440,6 +440,9 @@ export const AppSidebar = ({ ...props }) => {
           {showProducts && isAllowed("products.coupons") && (
             <NavLink to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket} label={t("nav.coupons", "Coupons")} />
           )}
+          {showProducts && isAllowed("products.coupons") && (
+            <NavLink to="/dashboard/products/group-offers" active={pathname === "/dashboard/products/group-offers"} icon={Ticket} label={t("nav.groupOffers", "Group Offers")} />
+          )}
           {showProducts && isAllowed("products.categories") && (
             <NavLink to="/dashboard/products/categories" active={pathname === "/dashboard/products/categories"} icon={Receipt} label={t("nav.categories", "Categories")} />
           )}
