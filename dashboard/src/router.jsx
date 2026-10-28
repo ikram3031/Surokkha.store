@@ -72,6 +72,7 @@ import PathaoWebhookPage from './pages/dashboard/orders/pathao/PathaoWebhookPage
 import BalanceOverview from './pages/dashboard/accounts/balanceOverview';
 import AllBills from './pages/dashboard/accounts/allBills';
 import AddNewBill from './pages/dashboard/accounts/addNewBill';
+import BillSlips from './pages/dashboard/accounts/billSlips';
 import BillTypes from './pages/dashboard/accounts/billTypes';
 import AllPayments from './pages/dashboard/accounts/allPayments';
 import AddNewPayment from './pages/dashboard/accounts/addNewPayment';
@@ -763,6 +764,14 @@ const dashboardRoutes = [
                 element: (
                   <RoleGuard menuKey="accounts.bills.new">
                     <AddNewBill />
+                  </RoleGuard>
+                ),
+              },
+              {
+                path: 'slips',
+                element: (
+                  <RoleGuard menuKey="accounts.bills">
+                    <BillSlips />
                   </RoleGuard>
                 ),
               },

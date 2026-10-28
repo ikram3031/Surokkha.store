@@ -17,6 +17,7 @@ import {
   Eye,
   Filter,
   RefreshCw,
+  Printer,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -255,6 +256,12 @@ export const AllBillsPage = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <Button asChild variant="outline" className="h-9 text-xs gap-1.5 shadow-sm">
+            <Link to="/dashboard/accounts/bills/slips">
+              <Printer className="w-4 h-4" />
+              <span>Receipt / Invoice</span>
+            </Link>
+          </Button>
           <Button
             asChild
             className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
