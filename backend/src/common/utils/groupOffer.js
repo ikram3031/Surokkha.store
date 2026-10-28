@@ -24,10 +24,20 @@ export function normalizeGroupOfferPayload(body = {}) {
   const slug = slugify(body.slug || name);
   if (!slug) errors.push("Slug is required");
 
-  const products = [
-    ...new Set((Array.isArray(body.products) ? body.products : []).map((p) => String(p?.id || p?._id || p)).filter(Boolean)),
-  ];
-  if (products.length < 2) errors.push("Select at least 2 products");
+  // Products are typed by hand: { name, unitPrice, imageUrl? }; duplicates by name are dropped
+  const seen = new Set();
+  const products = [];
+  for (const raw of Array.isArray(body.products) ? body.products : []) {
+    const productName = String(raw?.name || "").trim();
+    if (!productName || seen.has(productName.toLowerCase())) continue;
+    seen.add(productName.toLowerCase());
+    const unitPrice = Number(raw?.unitPrice);
+    if (!(unitPrice > 0)) errors.push(`Enter a price per piece for "${productName}"`);
+    let key = slugify(productName) || `product-${products.length + 1}`;
+    while (products.some((p) => p.key === key)) key += "-x";
+    products.push({ key, name: productName, unitPrice: unitPrice > 0 ? unitPrice : 0, imageUrl: String(raw?.imageUrl || "").trim() });
+  }
+  if (products.length < 2) errors.push("Add at least 2 products");
 
   const minOrderAmount = Math.max(0, Number(body.minOrderAmount ?? 250) || 0);
   const minPerProduct = Math.max(1, Math.floor(Number(body.minPerProduct ?? 2) || 2));
@@ -60,22 +70,11 @@ export function normalizeGroupOfferPayload(body = {}) {
   };
 }
 
-// Per-piece price shown to customers: active offer price, else list price (variant products start at their cheapest variant)
-const unitPriceOf = (p) => {
-  if (Array.isArray(p.variants) && p.variants.length) {
-    return Math.min(...p.variants.map((v) => (Number(v.offerPrice) > 0 ? Number(v.offerPrice) : Number(v.price))));
-  }
-  return Number(p.offerPrice) > 0 && Number(p.offerPrice) < Number(p.price) ? Number(p.offerPrice) : Number(p.price || 0);
-};
-
-const POPULATE_FIELDS = "name did slug thumbnailUrl imageUrl gallery price offerPrice variants stockStatus categories";
-export const GROUP_POPULATE = { path: "groupOffer.products", select: POPULATE_FIELDS, populate: { path: "categories", select: "slug" } };
-
 /** Item document (type "group") -> flat Group Offer shape used by the dashboard and storefront. */
 export function serializeGroupOffer(item, { publicView = false } = {}) {
   const o = item.toJSON ? item.toJSON() : item;
   const g = o.groupOffer || {};
-  const products = (g.products || []).filter((p) => p && typeof p === "object");
+  const products = (g.products || []).filter((p) => p && p.key);
   return {
     id: String(o.id || o._id),
     did: o.did,
@@ -91,15 +90,15 @@ export function serializeGroupOffer(item, { publicView = false } = {}) {
     conditions: g.conditions || [],
     products: publicView
       ? products.map((p) => ({
-          id: String(p.id || p._id),
-          did: p.did,
-          slug: p.slug,
+          id: p.key,
+          did: p.key,
+          slug: p.key,
           name: p.name,
-          unitPrice: unitPriceOf(p),
-          image: p.thumbnailUrl || p.imageUrl || p.gallery?.[0] || "",
-          inStock: String(p.stockStatus || "instock").toLowerCase() !== "outofstock",
+          unitPrice: p.unitPrice,
+          image: p.imageUrl || "",
+          inStock: true,
         }))
-      : products.map((p) => ({ id: String(p.id || p._id), name: p.name })),
+      : products.map((p) => ({ name: p.name, unitPrice: p.unitPrice, imageUrl: p.imageUrl || "" })),
   };
 }
 

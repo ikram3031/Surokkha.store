@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -20,6 +20,16 @@ import { getApiErrorMessage } from '@/lib/error-handler';
 
 const EMPTY_DISCOUNT = { discountType: 'percentage', discountValue: '' };
 
+// Hard-coded product names (not in the catalog); one click adds the name, then set its price per piece
+const PRESET_PRODUCTS = [
+  'MO ULTRA RIBBED',
+  'MO ULTRA THIN',
+  'DUREX BUBBLEGUM',
+  'DUREX EXTRA TIME',
+  'SKORE NOTOUT',
+  'MO DOTTED PLEASURE',
+];
+
 const initialForm = (offer) =>
   offer
     ? {
@@ -27,7 +37,11 @@ const initialForm = (offer) =>
         slug: offer.slug || '',
         description: offer.description || '',
         isActive: offer.isActive !== false,
-        products: (offer.products || []).map((p) => String(p.id || p._id || p)),
+        products: (offer.products || []).map((p) => ({
+          name: p.name || '',
+          unitPrice: String(p.unitPrice ?? ''),
+          imageUrl: p.imageUrl || '',
+        })),
         minOrderAmount: String(offer.minOrderAmount ?? 250),
         minPerProduct: String(offer.minPerProduct ?? 2),
         pricingMode: offer.pricingMode || 'fixed',
@@ -88,8 +102,6 @@ function GroupOfferDialog({ open, onOpenChange, offerToEdit }) {
   const isEdit = !!offerToEdit;
   const queryClient = useQueryClient();
   const [form, setForm] = useState(() => initialForm(offerToEdit));
-  const [productsList, setProductsList] = useState([]);
-  const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
 
   const patch = (changes) => setForm((f) => ({ ...f, ...changes }));
@@ -97,29 +109,23 @@ function GroupOfferDialog({ open, onOpenChange, offerToEdit }) {
   useEffect(() => {
     if (!open) return;
     setForm(initialForm(offerToEdit));
-    setSearch('');
-    apiClient
-      .get('/api/v1/products', { params: { limit: 200 } })
-      .then((res) => {
-        const rows = Array.isArray(res.data) ? res.data : res.data?.data;
-        setProductsList(
-          (Array.isArray(rows) ? rows : [])
-            .map((p) => ({ id: String(p._id || p.id || ''), name: p.name }))
-            .filter((p) => p.id && p.name),
-        );
-      })
-      .catch(() => toast.error('Failed to load products.'));
   }, [open, offerToEdit]);
 
-  const toggleProduct = (id) =>
-    patch({ products: form.products.includes(id) ? form.products.filter((p) => p !== id) : [...form.products, id] });
+  const hasProduct = (name) => form.products.some((p) => p.name.trim().toLowerCase() === name.toLowerCase());
+  const addProduct = (name = '') => patch({ products: [...form.products, { name, unitPrice: '', imageUrl: '' }] });
+  const setProduct = (i, value) => patch({ products: form.products.map((p, idx) => (idx === i ? { ...p, ...value } : p)) });
+  const removeProduct = (i) => patch({ products: form.products.filter((_, idx) => idx !== i) });
 
   const setCondition = (i, value) => patch({ conditions: form.conditions.map((c, idx) => (idx === i ? { ...c, ...value } : c)) });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return toast.error('Name is required.');
-    if (form.products.length < 2) return toast.error('Select at least 2 products.');
+    const products = form.products
+      .map((p) => ({ name: p.name.trim(), unitPrice: parseFloat(p.unitPrice), imageUrl: p.imageUrl.trim() }))
+      .filter((p) => p.name);
+    if (products.length < 2) return toast.error('Add at least 2 products.');
+    if (products.some((p) => !(p.unitPrice > 0))) return toast.error('Every product needs a price per piece.');
 
     const discounts = form.pricingMode === 'fixed' ? [form.fixedDiscount] : form.conditions;
     if (form.pricingMode === 'conditional' && discounts.length === 0) return toast.error('Add at least one condition.');
@@ -136,7 +142,7 @@ function GroupOfferDialog({ open, onOpenChange, offerToEdit }) {
       slug: form.slug.trim() || undefined,
       description: form.description.trim(),
       isActive: form.isActive,
-      products: form.products,
+      products,
       minOrderAmount: parseFloat(form.minOrderAmount) || 0,
       minPerProduct: parseInt(form.minPerProduct, 10) || 2,
       pricingMode: form.pricingMode,
@@ -163,7 +169,6 @@ function GroupOfferDialog({ open, onOpenChange, offerToEdit }) {
   };
 
   const label = 'text-xs font-semibold uppercase tracking-wider text-muted-foreground';
-  const filtered = productsList.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -210,19 +215,28 @@ function GroupOfferDialog({ open, onOpenChange, offerToEdit }) {
 
           {/* Products */}
           <div className="space-y-2 border rounded-lg p-3 bg-muted/10">
-            <span className={`${label} block border-b pb-1`}>Products ({form.products.length} selected)</span>
-            <div className="relative">
-              <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground/60" />
-              <Input placeholder="Search products..." className="pl-7 h-7 text-xs" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <div className="h-40 overflow-y-auto border rounded bg-background p-1 space-y-1">
-              {filtered.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 px-1.5 py-1 text-xs hover:bg-muted/50 rounded cursor-pointer">
-                  <input type="checkbox" checked={form.products.includes(p.id)} onChange={() => toggleProduct(p.id)} className="rounded border-border" />
-                  <span className="truncate" title={p.name}>{p.name}</span>
-                </label>
+            <span className={`${label} block border-b pb-1`}>Products ({form.products.length} added)</span>
+            <div className="flex flex-wrap gap-2">
+              {PRESET_PRODUCTS.map((name) => (
+                <Button key={name} type="button" variant="outline" size="sm" disabled={saving || hasProduct(name)} onClick={() => addProduct(name)}>
+                  <Plus className="mr-1 h-3.5 w-3.5" /> {name}
+                </Button>
               ))}
-              {filtered.length === 0 && <span className="text-[10px] text-muted-foreground p-2 block text-center">No products found</span>}
+            </div>
+            <div className="space-y-2">
+              {form.products.map((p, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input className="flex-1" placeholder="Product name" value={p.name} onChange={(e) => setProduct(i, { name: e.target.value })} disabled={saving} />
+                  <Input type="number" min="0" step="any" className="w-[130px]" placeholder="৳ / piece" value={p.unitPrice} onChange={(e) => setProduct(i, { unitPrice: e.target.value })} disabled={saving} />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => removeProduct(i)} disabled={saving}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              {form.products.length === 0 && <span className="text-[10px] text-muted-foreground block text-center">Add a name above or type your own</span>}
+              <Button type="button" variant="outline" size="sm" onClick={() => addProduct()} disabled={saving}>
+                <Plus className="mr-1 h-3.5 w-3.5" /> Add product manually
+              </Button>
             </div>
           </div>
 

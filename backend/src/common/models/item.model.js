@@ -64,7 +64,16 @@ const itemSchema = new Schema(
     // Group Offer Fields (Type = "group" hole eiti babohar hobe): customer picks pieces from several products
     groupOffer: {
       _id: false,
-      products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+      // Typed in by hand (not catalog refs): key is a stable slug used as the cart/line id
+      products: [
+        {
+          _id: false,
+          key: { type: String, required: true, trim: true },
+          name: { type: String, required: true, trim: true },
+          unitPrice: { type: Number, required: true, min: 0 },
+          imageUrl: { type: String, default: "", trim: true },
+        },
+      ],
       minOrderAmount: { type: Number, default: 250, min: 0 },
       minPerProduct: { type: Number, default: 2, min: 1 },
       pricingMode: { type: String, enum: ["fixed", "conditional"], default: "fixed" },

@@ -1,12 +1,10 @@
 import { ItemModel } from "../../common/models/item.model.js";
-import { GROUP_POPULATE, serializeGroupOffer } from "../../common/utils/groupOffer.js";
-
-const POPULATE = GROUP_POPULATE;
+import { serializeGroupOffer } from "../../common/utils/groupOffer.js";
 
 // GET /api/v1/group-offers
 export const listGroupOffers = async (_req, res) => {
   try {
-    const offers = await ItemModel.find({ type: "group", isActive: true }).populate(POPULATE).sort({ createdAt: -1 });
+    const offers = await ItemModel.find({ type: "group", isActive: true }).sort({ createdAt: -1 });
     res.json({ status: "success", data: offers.map((o) => serializeGroupOffer(o, { publicView: true })) });
   } catch {
     res.status(500).json({ status: "error", message: "Unable to retrieve group offers" });
@@ -21,7 +19,7 @@ export const getGroupOffer = async (req, res) => {
       type: "group",
       isActive: true,
       $or: [{ _id: /^[0-9a-fA-F]{24}$/.test(id) ? id : null }, { did: id }, { slug: id }],
-    }).populate(POPULATE);
+    });
     if (!offer) return res.status(404).json({ status: "error", message: "Group offer not found" });
     res.json({ status: "success", data: serializeGroupOffer(offer, { publicView: true }) });
   } catch {
