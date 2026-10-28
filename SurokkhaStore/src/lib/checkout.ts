@@ -1,4 +1,5 @@
 import type { Order } from '@/lib/api/orders'
+import { groupOfferDiscount, type GroupOfferRule } from '@/lib/api/groupOffers'
 
 const BN_TO_EN: Record<string, string> = { '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4', '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9' }
 
@@ -39,12 +40,48 @@ export interface Coupon {
   validTo?: string | null
 }
 
-export function couponDiscount(coupon: Coupon | null, subtotal: number, fee: number) {
+/** Coupons that only discount ready combos from the Products collection (not "items", not other products). */
+export const COMBO_ONLY_COUPONS = ['COMBO20']
+
+export const isComboOnlyCoupon = (code?: string) => COMBO_ONLY_COUPONS.includes(String(code ?? '').toUpperCase())
+
+type CartLine = { product: { price: number; itemType?: string; categorySlugs?: string[]; groupOffer?: GroupOfferRule }; qty: number }
+
+/** Pricing of every Group Offer in the cart: each group is discounted on its own pieces total. */
+export function groupOfferTotals(lines: CartLine[]) {
+  const groups = new Map<string, { rule: GroupOfferRule; subtotal: number }>()
+  for (const { product, qty } of lines) {
+    const rule = product.groupOffer
+    if (!rule) continue
+    const g = groups.get(rule.id) ?? { rule, subtotal: 0 }
+    g.subtotal += product.price * qty
+    groups.set(rule.id, g)
+  }
+  const list = [...groups.values()].map((g) => ({ ...g, ...groupOfferDiscount(g.rule, g.subtotal) }))
+  return {
+    groups: list,
+    discount: list.reduce((s, g) => s + g.discount, 0),
+    subtotal: list.reduce((s, g) => s + g.subtotal, 0),
+    /** First group still under its minimum order amount (blocks checkout) */
+    short: list.find((g) => !g.eligible),
+  }
+}
+
+/** Sum of the cart lines a COMBO20-style coupon applies to: Products-collection items in the "combo" category. */
+export function comboSubtotal(lines: CartLine[]) {
+  return lines
+    .filter(({ product }) => product.itemType !== 'item' && !product.groupOffer && product.categorySlugs?.includes('combo'))
+    .reduce((sum, { product, qty }) => sum + product.price * qty, 0)
+}
+
+export function couponDiscount(coupon: Coupon | null, subtotal: number, fee: number, lines: CartLine[] = []) {
   if (!coupon || subtotal < Number(coupon.minOrderAmount || 0)) return { discount: 0, fee }
   if (coupon.discountType === 'free_shipping') return { discount: 0, fee: 0 }
   const value = Number(coupon.discountValue || 0)
-  const raw = coupon.discountType === 'percentage' ? Math.round((subtotal * value) / 100) : value
-  return { discount: Math.max(0, Math.min(subtotal, raw)), fee }
+  // Group Offer pieces already carry their own discount, so coupons never stack on them
+  const base = isComboOnlyCoupon(coupon.code) ? comboSubtotal(lines) : subtotal - groupOfferTotals(lines).subtotal
+  const raw = coupon.discountType === 'percentage' ? Math.round((base * value) / 100) : value
+  return { discount: Math.max(0, Math.min(base, raw)), fee }
 }
 
 export interface ConfirmedOrder {

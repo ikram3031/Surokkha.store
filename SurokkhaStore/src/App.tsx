@@ -22,6 +22,7 @@ import { Shop } from '@/components/Shop'
 import { Footer } from '@/components/Footer'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { OfferHome } from '@/components/OfferHome'
+import { GroupOfferPage } from '@/components/offer/GroupOfferPage'
 import { ProductPage } from '@/components/product/ProductPage'
 import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/components/checkout/ConfirmationPage'
@@ -40,7 +41,7 @@ function AppShell() {
   const [cartOpen, setCartOpen] = useState(false)
   const shopRef = useRef<HTMLDivElement>(null)
   const route = useRoute()
-  const routeKey = route.name === 'product' || route.name === 'category' ? `${route.name}:${route.slug}` : route.name
+  const routeKey = route.name === 'product' || route.name === 'category' || route.name === 'group-offer' ? `${route.name}:${route.slug}` : route.name
 
   // One PageView per page (the SPA never reloads between routes)
   useEffect(() => {
@@ -87,6 +88,7 @@ function AppShell() {
           </>
         )}
         {route.name === 'offer' && <OfferHome />}
+        {route.name === 'group-offer' && <GroupOfferPage slug={route.slug} />}
         {route.name === 'category' && <CategoryPage slug={route.slug} />}
         {route.name === 'product' && <ProductPage slug={route.slug} />}
         {route.name === 'checkout' && <CheckoutPage />}

@@ -11,7 +11,10 @@ import { getCoupon } from '@/lib/api/catalog'
 import { getThanasByDistrict } from '@/lib/api/locations'
 import { checkPhone, createOrder, type NewOrderPayload, type OrderAddress } from '@/lib/api/orders'
 import {
+  comboSubtotal,
   couponDiscount,
+  groupOfferTotals,
+  isComboOnlyCoupon,
   deliveryFee,
   isValidEmail,
   isValidPhone,
@@ -118,9 +121,11 @@ export function CheckoutPage() {
   const totals = useMemo(() => {
     const dest = sameAsBilling ? form : ship
     const baseFee = count > 0 ? deliveryFee(dest.district, dest.thana) : 0
-    const { discount, fee } = couponDiscount(coupon, subtotal, baseFee)
-    return { fee, baseFee, discount, total: Math.max(0, subtotal + fee - discount) }
-  }, [count, sameAsBilling, form, ship, coupon, subtotal])
+    const { discount: couponOff, fee } = couponDiscount(coupon, subtotal, baseFee, lines)
+    const group = groupOfferTotals(lines)
+    const discount = couponOff + group.discount
+    return { fee, baseFee, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
+  }, [count, sameAsBilling, form, ship, coupon, subtotal, cart])
 
   const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase()
@@ -136,6 +141,8 @@ export function CheckoutPage() {
       if (found.validTo && now > new Date(found.validTo)) throw new Error('This coupon has expired.')
       if (subtotal < Number(found.minOrderAmount || 0))
         throw new Error(`This coupon needs a minimum order of ${taka(Number(found.minOrderAmount))}.`)
+      if (isComboOnlyCoupon(code) && comboSubtotal(lines) <= 0)
+        throw new Error('This coupon applies only to combo products. Add a combo to your cart.')
       setCoupon({ ...found, code })
       toast.success(`Coupon "${code}" applied`)
     } catch (err) {
@@ -174,6 +181,8 @@ export function CheckoutPage() {
       toast.error(Object.values(found)[0])
       return
     }
+    if (totals.groupShort)
+      return toast.error(`${totals.groupShort.rule.name} needs at least ${taka(totals.groupShort.rule.minOrderAmount)} in pieces. Add more or remove it from your cart.`)
     if (!agreed) return toast.error('Please accept the terms to continue')
 
     submittingRef.current = true
@@ -235,7 +244,7 @@ export function CheckoutPage() {
           image: product.image,
           quantity: qty,
           unitPrice: product.price,
-          size: 'Standard Pack',
+          size: product.groupOffer ? `Group Offer: ${product.groupOffer.name}` : 'Standard Pack',
         })),
         paymentDetails: null,
         timestamp: new Date().toISOString(),

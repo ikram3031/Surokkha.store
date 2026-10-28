@@ -6,6 +6,7 @@ export type Route =
   | { name: 'home-classic' }
   | { name: 'product'; slug: string }
   | { name: 'offer' }
+  | { name: 'group-offer'; slug: string }
   | { name: 'category'; slug: string }
   | { name: 'checkout' }
   | { name: 'account' }
@@ -15,6 +16,7 @@ export function parseRoute(pathname: string): Route {
   const parts = pathname.split('/').filter(Boolean)
   if (parts[0] === 'product' && parts[1]) return { name: 'product', slug: decodeURIComponent(parts[1]) }
   if (parts[0] === 'offer') return { name: 'offer' }
+  if (parts[0] === 'group-offer' && parts[1]) return { name: 'group-offer', slug: decodeURIComponent(parts[1]) }
   if (parts[0] === 'category' && parts[1]) return { name: 'category', slug: decodeURIComponent(parts[1]) }
   if (parts[0] === 'home-classic') return { name: 'home-classic' }
   if (parts[0] === 'checkout') return { name: 'checkout' }
@@ -24,6 +26,8 @@ export function parseRoute(pathname: string): Route {
 }
 
 export const categoryPath = (slug: string) => `/category/${encodeURIComponent(slug)}`
+
+export const groupOfferPath = (slug: string) => `/group-offer/${encodeURIComponent(slug)}`
 
 export const productPath = (slug: string) => `/product/${encodeURIComponent(slug)}`
 

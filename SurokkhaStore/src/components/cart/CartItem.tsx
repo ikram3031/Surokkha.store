@@ -23,7 +23,10 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
       )}
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold">{product.name}</p>
-        <p className="text-sm text-muted-foreground">{taka(product.price)}</p>
+        <p className="text-sm text-muted-foreground">
+          {taka(product.price)}
+          {product.groupOffer && <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">Group Offer</span>}
+        </p>
         <div className="mt-1 inline-flex items-center rounded-full border border-border">
           <Button
             variant="ghost"

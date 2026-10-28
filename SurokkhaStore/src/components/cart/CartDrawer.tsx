@@ -7,7 +7,7 @@ import { useCart } from '@/context/CartContext'
 import { navigate } from '@/lib/router'
 
 export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const { cart, count, subtotal, shipping, total, freeShipNote } = useCart()
+  const { cart, count, subtotal, shipping, total, freeShipNote, groupDiscount } = useCart()
   const lines = Object.values(cart)
 
   return (
@@ -39,6 +39,12 @@ export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
               <dt className="text-muted-foreground">Subtotal</dt>
               <dd>{taka(subtotal)}</dd>
             </div>
+            {groupDiscount > 0 && (
+              <div className="flex justify-between text-primary">
+                <dt>Group Offer discount</dt>
+                <dd>-{taka(groupDiscount)}</dd>
+              </div>
+            )}
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Delivery charge</dt>
               <dd>{shipping ? taka(shipping) : 'Free'}</dd>

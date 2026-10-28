@@ -1,6 +1,8 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { FREE_SHIP_AT, SHIP_FEE, type Product } from '@/data/products'
+import { groupOfferTotals } from '@/lib/checkout'
+import type { GroupOfferProduct, GroupOfferRule } from '@/lib/api/groupOffers'
 import { taka } from '@/lib/bn'
 import { trackAddToCart } from '@/lib/api/events'
 import { pixelTrack } from '@/lib/pixel'
@@ -19,7 +21,11 @@ interface CartContextValue {
   shipping: number
   total: number
   freeShipNote: string
+  /** Discount from Group Offers in the cart */
+  groupDiscount: number
   add: (product: Product, qty?: number) => void
+  /** Replaces this Group Offer's lines in the cart with the picked pieces */
+  addGroup: (rule: GroupOfferRule, picks: { product: GroupOfferProduct; qty: number }[]) => void
   inc: (id: number) => void
   dec: (id: number) => void
   remove: (id: number) => void
@@ -46,6 +52,47 @@ export function CartProvider({ children }: { children: ReactNode }) {
       currency: 'BDT',
     })
   }
+  const addGroup = (rule: GroupOfferRule, picks: { product: GroupOfferProduct; qty: number }[]) => {
+    setCart((prev) => {
+      const next: CartState = {}
+      for (const [id, line] of Object.entries(prev)) if (line.product.groupOffer?.id !== rule.id) next[Number(id)] = line
+      for (const { product: p, qty } of picks) {
+        if (qty <= 0) continue
+        // Group lines get their own cart id so the same product can also be bought outside the group
+        let hash = 0
+        for (const ch of `${rule.id}:${p.id}`) hash = (hash * 31 + ch.charCodeAt(0)) | 0
+        const id = -(Math.abs(hash) + 1)
+        next[id] = {
+          qty,
+          product: {
+            id,
+            cat: 'condom',
+            name: p.name,
+            desc: rule.name,
+            price: p.unitPrice,
+            art: 'box',
+            slug: p.slug,
+            apiName: p.name,
+            apiId: p.id,
+            itemType: 'product',
+            did: p.did,
+            image: p.image || undefined,
+            inStock: p.inStock,
+            groupOffer: rule,
+          },
+        }
+      }
+      return next
+    })
+    toast.success(`${rule.name} added to cart`)
+    pixelTrack('AddToCart', {
+      content_ids: picks.filter((x) => x.qty > 0).map((x) => x.product.did),
+      content_name: rule.name,
+      content_type: 'product',
+      value: picks.reduce((s, x) => s + x.product.unitPrice * x.qty, 0),
+      currency: 'BDT',
+    })
+  }
   const clear = () => setCart({})
   const inc = (id: number) =>
     setCart((prev) => {
@@ -59,7 +106,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (!existing) return prev
       const qty = existing.qty - 1
       const next = { ...prev }
-      if (qty <= 0) delete next[id]
+      // Group Offer pieces never drop below the offer's minimum: going under it removes the product
+      if (qty <= 0 || (existing.product.groupOffer && qty < existing.product.groupOffer.minPerProduct)) delete next[id]
       else next[id] = { ...existing, qty }
       return next
     })
@@ -70,7 +118,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return next
     })
 
-  const { count, subtotal, shipping, total, freeShipNote } = useMemo(() => {
+  const { count, subtotal, shipping, total, freeShipNote, groupDiscount } = useMemo(() => {
     const lines = Object.values(cart)
     const count = lines.reduce((s, line) => s + line.qty, 0)
     const subtotal = lines.reduce((s, line) => s + line.qty * line.product.price, 0)
@@ -81,7 +129,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         : subtotal >= FREE_SHIP_AT
           ? 'Delivery is free on your order.'
           : `Add ${taka(FREE_SHIP_AT - subtotal)} more for free delivery.`
-    return { count, subtotal, shipping, total: subtotal + shipping, freeShipNote }
+    const groupDiscount = groupOfferTotals(lines).discount
+    return { count, subtotal, shipping, total: subtotal + shipping - groupDiscount, freeShipNote, groupDiscount }
   }, [cart])
 
   const value: CartContextValue = {
@@ -91,7 +140,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     shipping,
     total,
     freeShipNote,
+    groupDiscount,
     add,
+    addGroup,
     inc,
     dec,
     remove,

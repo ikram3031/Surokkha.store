@@ -1,4 +1,7 @@
-const MESSAGE = 'Cash on delivery available. Free delivery on orders above ৳1,000.'
+const MESSAGES = [
+  'Cash on delivery available. Free delivery on orders above ৳1,000.',
+  '20% off combo packs — use code COMBO20 at checkout.',
+]
 
 export function AnnouncementBar() {
   return (
@@ -10,7 +13,12 @@ export function AnnouncementBar() {
             aria-hidden={i === 1}
             className="flex shrink-0 items-center px-4 text-sm whitespace-nowrap"
           >
-            {MESSAGE}
+            {MESSAGES.map((m, j) => (
+              <span key={j} className="flex items-center">
+                {m}
+                <span aria-hidden className="mx-6 opacity-60">•</span>
+              </span>
+            ))}
           </p>
         ))}
       </div>

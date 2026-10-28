@@ -1,4 +1,5 @@
 import type { ProductArt } from '@/components/icons/ArtIcons'
+import type { GroupOfferRule } from '@/lib/api/groupOffers'
 
 export type ProductCategory = 'condom' | 'lube' | 'combo'
 
@@ -27,6 +28,8 @@ export interface Product {
   longDescription?: string
   regularPrice?: number
   inStock?: boolean
+  /** Set on cart lines that came from a Group Offer: they are priced together by the offer's rules. */
+  groupOffer?: GroupOfferRule
 }
 
 export const products: Product[] = [
