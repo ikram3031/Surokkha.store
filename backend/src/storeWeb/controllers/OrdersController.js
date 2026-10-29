@@ -50,11 +50,13 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
-    // Offer page orders must pass Cloudflare Turnstile once a secret key is configured
+    // Offer page orders must pass Cloudflare Turnstile once a secret key is configured.
+    // The offer checkout is served from offer.surokkha.shop and, in launch mode, from the store root itself;
+    // TURNSTILE_HOSTNAMES (comma separated) overrides this list.
     if (String(payload.orderPrefix || '').toUpperCase() === 'OS' && isTurnstileConfigured()) {
       const human = await verifyTurnstile(payload.turnstileToken, clientIp, {
         action: 'checkout',
-        hostnames: ['offer.surokkha.shop'],
+        hostnames: ['offer.surokkha.shop', 'surokkha.store', 'www.surokkha.store'],
       });
       if (!human) {
         return res.status(400).json({
