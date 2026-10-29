@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { ArrowRight, CheckCircle2, Loader2, Lock, Truck, Wallet } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Loader2, Lock, Truck, Wallet, Minus, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { TrialPackSection } from '@/components/offer/TrialPackSection'
+import { OfferCart, type CartLine } from '@/components/offer/OfferCart'
+import { getGroupOffer, type GroupOffer } from '@/lib/api/groupOffers'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
-import { TOP_PRODUCTS, useCatalogProducts, useComboProducts, useTrialPack } from '@/hooks/useCatalogProducts'
+import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from '@/components/offer/Turnstile'
 import { QuickViewDialog, VariantDialog } from '@/components/offer/ProductDialogs'
 import {
@@ -118,6 +120,10 @@ const inputCls = (bad: boolean) =>
 // Selection key: product id, plus variant id on variable products
 const keyOf = (productId: string, variantId?: string) => (variantId ? `${productId}:${variantId}` : productId)
 
+// The "Surokkha Trial Pack" group product (Dashboard → Products → Group Offers). Only its products and the
+// minimum pieces are used here; the page's common tier discount applies to everything.
+const TRIAL_GROUP_SLUG = 'surokkha-trial-pack'
+
 const trackedOrders = new Set<string>()
 
 // Pixel browser ids, passed to the backend so its Conversions API event matches this visitor
@@ -128,14 +134,12 @@ const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 export function OfferHome() {
   const { products: catalogProducts, loading: catalogLoading } = useCatalogProducts()
   const { products: comboProducts, loading: combosLoading } = useComboProducts()
-  const trialPack = useTrialPack()
   const products = useMemo(
-    () => {
-      const all = [...catalogProducts, ...comboProducts, ...(trialPack ? [trialPack] : [])]
-      return all.filter((p, i) => all.findIndex((x) => x.id === p.id) === i)
-    },
-    [catalogProducts, comboProducts, trialPack],
+    () => [...catalogProducts, ...comboProducts],
+    [catalogProducts, comboProducts],
   )
+  const [trial, setTrial] = useState<GroupOffer | null>(null)
+  const [trialQty, setTrialQty] = useState<Record<string, number>>({})
   const [qty, setQty] = useState<Record<string, number>>({})
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
   const [quickView, setQuickView] = useState<OfferProduct | null>(null)
@@ -157,6 +161,14 @@ export function OfferHome() {
     setForm((f) => ({ ...f, [key]: value }))
     if (key !== 'note') setErrors((e) => ({ ...e, [key]: undefined }))
   }
+
+  useEffect(() => {
+    const controller = new AbortController()
+    getGroupOffer(TRIAL_GROUP_SLUG, { signal: controller.signal })
+      .then((res) => setTrial(res.data ?? null))
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
 
   // Catalog ad links (?product=<did>) open that product's Details on arrival
   useEffect(() => {
@@ -205,15 +217,23 @@ export function OfferHome() {
     [products, qty],
   )
 
-  const count = lines.reduce((s, l) => s + l.qty, 0)
-  const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.qty, 0)
+  // Trial Pack pieces live in the same order; the tiered discount below counts them like any other product
+  const trialLines = (trial?.products ?? [])
+    .filter((p) => (trialQty[p.id] ?? 0) > 0)
+    .map((p) => ({ product: p, qty: trialQty[p.id] }))
+  const trialCount = trialLines.reduce((s, l) => s + l.qty, 0)
+  const trialSubtotal = trialLines.reduce((s, l) => s + l.product.unitPrice * l.qty, 0)
+  const count = lines.reduce((s, l) => s + l.qty, 0) + trialCount
+  const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.qty, 0) + trialSubtotal
   // The tiered discount counts every product, ready combos included
   const comboSubtotal = subtotal
   const tier = tierFor(comboSubtotal)
   const next = nextTier(comboSubtotal)
   const discount = tier ? Math.round((comboSubtotal * tier.off) / 100) : 0
   const zone = deliveryZone(form.district, form.thana)
-  const shipping = count === 0 ? 0 : DELIVERY[zone]
+  // No delivery charge until the customer has told us where it goes (Dhaka also needs the thana for the suburb rate)
+  const addressKnown = !!form.district && (form.district.trim().toLowerCase() !== 'dhaka' || !!form.thana)
+  const shipping = count === 0 || !addressKnown ? 0 : DELIVERY[zone]
   const total = subtotal - discount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]
 
@@ -258,6 +278,14 @@ export function OfferHome() {
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // Take a whole line (a product, or one variant of it) out of the order
+  const removeLine = (productId: string, variantId?: string) =>
+    setQty((q) => {
+      const next = { ...q }
+      delete next[keyOf(productId, variantId)]
+      return next
+    })
+
   // Click on a product photo: add it; products that need options or are out of stock open their view instead
   const addFromPhoto = (p: OfferProduct) => {
     if (p.variants?.length) return setVariantFor(p)
@@ -265,22 +293,91 @@ export function OfferHome() {
     if (change(p.id, undefined, 1)) toast.success(`${p.name} added to your order`)
   }
 
-  // Trial Pack "Order now": make sure it is in the order, then go straight to the checkout form
-  const orderTrialPack = () => {
-    if (!trialPack) return
-    const adding = qtyOf(trialPack.id) === 0
-    if (adding && !change(trialPack.id, undefined, 1)) return
-    track('InitiateCheckout', {
-      value: subtotal + (adding ? trialPack.price : 0) - discount,
-      currency: 'BDT',
-      num_items: count + (adding ? 1 : 0),
+  const trialMin = Math.max(1, trial?.minPerProduct || 1)
+
+  /** Steps one Trial Pack product: the first piece jumps to the minimum, going below the minimum clears it. */
+  const stepTrial = (id: string, delta: 1 | -1): boolean => {
+    const p = trial?.products.find((x) => x.id === id)
+    if (!p) return false
+    const cur = trialQty[id] ?? 0
+    let n = cur
+    if (delta === 1) {
+      if (!p.inStock) return fail('Sorry, this is out of stock right now')
+      if (cur >= MAX_QTY_PER_LINE) return fail(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
+      n = cur === 0 ? trialMin : cur + 1
+      if (count - cur + n > MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
+      if (subtotal + (n - cur) * p.unitPrice > MAX_ORDER_AMOUNT)
+        return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
+      track('AddToCart', { content_ids: [p.did], content_name: p.name, content_type: 'product', value: (n - cur) * p.unitPrice, currency: 'BDT' })
+    } else n = cur <= trialMin ? 0 : cur - 1
+    setTrialQty((q) => ({ ...q, [id]: n }))
+    return true
+  }
+
+  const removeTrialLine = (id: string) =>
+    setTrialQty((q) => {
+      const next = { ...q }
+      delete next[id]
+      return next
     })
+
+  // Trial Pack "Order now": pick a starter set if nothing is chosen yet (first products, the minimum of each,
+  // until the pack's minimum amount is met), then go straight to the checkout form
+  const orderTrialPack = () => {
+    if (!trial) return
+    let added = 0
+    if (trialCount === 0) {
+      const picks: Record<string, number> = {}
+      let pieces = 0
+      let amount = 0
+      for (const p of trial.products.filter((x) => x.inStock)) {
+        if (Object.keys(picks).length >= 3 && amount >= trial.minOrderAmount) break
+        picks[p.id] = trialMin
+        pieces += trialMin
+        amount += trialMin * p.unitPrice
+      }
+      if (!pieces) return fail('Sorry, the Trial Pack is out of stock right now')
+      if (count + pieces > MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
+      if (subtotal + amount > MAX_ORDER_AMOUNT) return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
+      setTrialQty((q) => ({ ...q, ...picks }))
+      track('AddToCart', { content_ids: Object.keys(picks), content_name: trial.name, content_type: 'product', value: amount, currency: 'BDT' })
+      added = amount
+    }
+    track('InitiateCheckout', { value: subtotal + added - discount, currency: 'BDT', num_items: count + (added ? 1 : 0) })
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
+
+  // One list for the floating cart: ordinary products and Trial Pack pieces
+  const cartLines: CartLine[] = [
+    ...lines.map((l) => ({
+      key: keyOf(l.product.id, l.variant?.id),
+      name: l.product.name,
+      sub: l.variant?.label,
+      image: l.product.images[0],
+      qty: l.qty,
+      amount: l.unitPrice * l.qty,
+      onDec: () => change(l.product.id, l.variant?.id, -1),
+      onInc: () => change(l.product.id, l.variant?.id, 1),
+      onRemove: () => removeLine(l.product.id, l.variant?.id),
+    })),
+    ...trialLines.map(({ product: p, qty: q }) => ({
+      key: `trial:${p.id}`,
+      name: p.name,
+      sub: trial?.name,
+      image: undefined,
+      qty: q,
+      amount: p.unitPrice * q,
+      onDec: () => stepTrial(p.id, -1),
+      onInc: () => stepTrial(p.id, 1),
+      onRemove: () => removeTrialLine(p.id),
+    })),
+  ]
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!count) return toast.error('Please select at least one product first')
+    if (trial && trialCount > 0 && trial.minOrderAmount > 0 && trialSubtotal < trial.minOrderAmount)
+      return toast.error(`Take at least ${taka(trial.minOrderAmount)} of ${trial.name} pieces, or remove them`)
     const ok = (Object.keys(RULES) as FieldKey[]).map((k) => validate(k)).every(Boolean)
     if (!ok) {
       setTimeout(() => document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
@@ -316,18 +413,33 @@ export function OfferHome() {
         shipToDifferentAddress: false,
         orderNotes: form.note.trim(),
         // Real store products, so the backend checks stock and the dashboard links each line
-        items: lines.map((l) => ({
-          name: l.variant ? `${l.product.name} (${l.variant.label})` : l.product.name,
-          quantity: l.qty,
-          unitPrice: l.unitPrice,
-          size: l.variant?.label ?? '',
-          productId: l.product.entity === 'product' ? l.product.apiId : '',
-          itemId: l.product.entity === 'item' ? l.product.apiId : '',
-          productDid: l.product.did,
-          itemType: l.product.entity,
-          sku: l.variant?.sku || l.product.sku,
-          image: l.product.images[0] ?? '',
-        })),
+        items: [
+          ...lines.map((l) => ({
+            name: l.variant ? `${l.product.name} (${l.variant.label})` : l.product.name,
+            quantity: l.qty,
+            unitPrice: l.unitPrice,
+            size: l.variant?.label ?? '',
+            productId: l.product.entity === 'product' ? l.product.apiId : '',
+            itemId: l.product.entity === 'item' ? l.product.apiId : '',
+            productDid: l.product.did,
+            itemType: l.product.entity,
+            sku: l.variant?.sku || l.product.sku,
+            image: l.product.images[0] ?? '',
+          })),
+          // Trial Pack pieces, in the same format the offer site sends
+          ...trialLines.map(({ product: p, qty: q }) => ({
+            name: p.name,
+            quantity: q,
+            unitPrice: p.unitPrice,
+            size: `Group Offer: ${trial!.name}`,
+            productId: p.id,
+            itemId: '',
+            productDid: p.did,
+            itemType: 'product',
+            sku: p.did,
+            image: p.image,
+          })),
+        ],
         subtotal,
         discountTotalAmount: discount,
         shippingFee: shipping,
@@ -340,8 +452,11 @@ export function OfferHome() {
       if (!orderNumber || !trackedOrders.has(orderNumber)) track(
         'Purchase',
         {
-          content_ids: lines.map((l) => l.variant?.sku || l.product.sku || l.product.id),
-          contents: lines.map((l) => ({ id: l.variant?.sku || l.product.sku || l.product.id, quantity: l.qty, item_price: l.unitPrice })),
+          content_ids: [...lines.map((l) => l.variant?.sku || l.product.sku || l.product.id), ...trialLines.map((l) => l.product.did)],
+          contents: [
+            ...lines.map((l) => ({ id: l.variant?.sku || l.product.sku || l.product.id, quantity: l.qty, item_price: l.unitPrice })),
+            ...trialLines.map((l) => ({ id: l.product.did, quantity: l.qty, item_price: l.product.unitPrice })),
+          ],
           content_type: 'product',
           num_items: count,
           value: total,
@@ -352,6 +467,7 @@ export function OfferHome() {
       if (orderNumber) trackedOrders.add(orderNumber)
       setPlaced(orderNumber)
       setQty({})
+      setTrialQty({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Could not place the order, please try again')
@@ -424,12 +540,13 @@ export function OfferHome() {
           </div>
         </section>
 
-        {trialPack && (
+        {trial && (
           <TrialPackSection
-            product={trialPack}
-            qty={qtyOf(trialPack.id)}
+            offer={trial}
+            qty={trialQty}
+            onStep={stepTrial}
             onOrderNow={orderTrialPack}
-            onQuickView={() => setQuickView(trialPack)}
+            subtotal={trialSubtotal}
           />
         )}
 
@@ -560,7 +677,7 @@ export function OfferHome() {
               <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
                 <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                   <h3 className="mb-2 text-base font-semibold text-gray-900">Order summary</h3>
-                  {lines.length ? (
+                  {lines.length || trialLines.length ? (
                     <ul className="divide-y divide-gray-200">
                       {lines.map((l) => (
                         <li key={keyOf(l.product.id, l.variant?.id)} className="flex items-center gap-3 py-3">
@@ -569,11 +686,77 @@ export function OfferHome() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-gray-900">{l.product.name}</p>
-                            <p className="text-xs text-gray-400">
-                              {l.variant ? `${l.variant.label} · ` : ''}Qty {bn(l.qty)}
-                            </p>
+                            {l.variant && <p className="text-xs text-gray-400">{l.variant.label}</p>}
+                            <div className="mt-1.5 inline-flex items-center rounded-full border border-gray-200">
+                              <button
+                                type="button"
+                                onClick={() => change(l.product.id, l.variant?.id, -1)}
+                                aria-label={`Decrease ${l.product.name} quantity`}
+                                className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
+                              >
+                                <Minus className="size-3.5" />
+                              </button>
+                              <span className="min-w-6 text-center text-sm font-semibold tabular-nums">{bn(l.qty)}</span>
+                              <button
+                                type="button"
+                                onClick={() => change(l.product.id, l.variant?.id, 1)}
+                                aria-label={`Increase ${l.product.name} quantity`}
+                                className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
+                              >
+                                <Plus className="size-3.5" />
+                              </button>
+                            </div>
                           </div>
-                          <p className="text-sm font-medium text-gray-900">{taka(l.unitPrice * l.qty)}</p>
+                          <div className="flex shrink-0 flex-col items-end gap-2">
+                            <p className="text-sm font-medium text-gray-900">{taka(l.unitPrice * l.qty)}</p>
+                            <button
+                              type="button"
+                              onClick={() => removeLine(l.product.id, l.variant?.id)}
+                              aria-label={`Remove ${l.product.name}`}
+                              className="flex items-center gap-1 text-xs text-gray-500 hover:text-rose-600"
+                            >
+                              <Trash2 className="size-3.5" /> Remove
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                      {trialLines.map(({ product: p, qty: q }) => (
+                        <li key={`trial:${p.id}`} className="flex items-center gap-3 py-3">
+                          <div className="size-14 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-rose-50" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-gray-900">{p.name}</p>
+                            <p className="text-xs text-gray-400">{trial!.name}</p>
+                            <div className="mt-1.5 inline-flex items-center rounded-full border border-gray-200">
+                              <button
+                                type="button"
+                                onClick={() => stepTrial(p.id, -1)}
+                                aria-label={`Decrease ${p.name} quantity`}
+                                className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
+                              >
+                                <Minus className="size-3.5" />
+                              </button>
+                              <span className="min-w-6 text-center text-sm font-semibold tabular-nums">{bn(q)}</span>
+                              <button
+                                type="button"
+                                onClick={() => stepTrial(p.id, 1)}
+                                aria-label={`Increase ${p.name} quantity`}
+                                className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
+                              >
+                                <Plus className="size-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 flex-col items-end gap-2">
+                            <p className="text-sm font-medium text-gray-900">{taka(p.unitPrice * q)}</p>
+                            <button
+                              type="button"
+                              onClick={() => removeTrialLine(p.id)}
+                              aria-label={`Remove ${p.name}`}
+                              className="flex items-center gap-1 text-xs text-gray-500 hover:text-rose-600"
+                            >
+                              <Trash2 className="size-3.5" /> Remove
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -594,7 +777,7 @@ export function OfferHome() {
                         Delivery charge{' '}
                         {form.district && <span className="text-xs text-gray-400">({ZONE_LABEL[zone]})</span>}
                       </dt>
-                      <dd>{count ? taka(shipping) : '—'}</dd>
+                      <dd>{count ? (addressKnown ? taka(shipping) : <span className="text-gray-500">Added after you choose your area</span>) : '—'}</dd>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold">
                       <dt>Grand total</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
@@ -645,9 +828,15 @@ export function OfferHome() {
                 {bn(count)} {count === 1 ? 'item' : 'items'}
                 {discount > 0 && <span className="ml-1.5 font-semibold text-emerald-600">You save {taka(discount)}</span>}
               </p>
+              {/* Product price only (after the discount); delivery is shown separately and added in the checkout summary */}
               <p className="text-xl font-bold text-rose-600">
-                {taka(total)}
-                {discount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(subtotal + shipping)}</s>}
+                {taka(subtotal - discount)}
+                {discount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(subtotal)}</s>}
+                {count > 0 && (
+                  <span className="ml-2 text-xs font-normal text-gray-600">
+                    {addressKnown ? `+ ${taka(shipping)} delivery` : '+ delivery (added at checkout)'}
+                  </span>
+                )}
               </p>
             </div>
             <Button onClick={goCheckout} className="h-11 rounded-full px-6">
@@ -656,6 +845,18 @@ export function OfferHome() {
           </div>
         </div>
       </div>
+
+      <OfferCart
+        lines={cartLines}
+        count={count}
+        subtotal={subtotal}
+        discount={discount}
+        discountPercent={tier?.off}
+        shipping={shipping}
+        addressKnown={addressKnown}
+        total={total}
+        onCheckout={goCheckout}
+      />
 
       <VariantDialog product={variantFor} onOpenChange={(o) => !o && setVariantFor(null)} qtyOf={qtyOf} change={change} />
       <QuickViewDialog product={quickView} onOpenChange={(o) => !o && setQuickView(null)} qtyOf={qtyOf} change={change} />
