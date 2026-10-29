@@ -32,70 +32,70 @@ import { bn, taka } from '@/lib/bn'
 
 // value: Pathao spelling the thana API and orders use; label: Bangla name from the store DB
 const DISTRICTS: SelectOption[] = [
-  { value: "Cox's Bazar", label: "Cox's Bazar" },
-  { value: 'Kishoreganj', label: 'Kishoreganj' },
-  { value: 'Kurigram', label: 'Kurigram' },
-  { value: 'Cumilla', label: 'Cumilla' },
-  { value: 'Kushtia', label: 'Kushtia' },
-  { value: 'Khagrachari', label: 'Khagrachari' },
-  { value: 'Khulna', label: 'Khulna' },
-  { value: 'Gaibandha', label: 'Gaibandha' },
-  { value: 'Gazipur', label: 'Gazipur' },
-  { value: 'Gopalgonj', label: 'Gopalgonj' },
-  { value: 'Chittagong', label: 'Chittagong' },
-  { value: 'Chandpur', label: 'Chandpur' },
-  { value: 'Chapainawabganj', label: 'Chapainawabganj' },
-  { value: 'Chuadanga', label: 'Chuadanga' },
-  { value: 'Joypurhat', label: 'Joypurhat' },
-  { value: 'Jamalpur', label: 'Jamalpur' },
-  { value: 'Jhalokathi', label: 'Jhalokathi' },
-  { value: 'Jhenidah', label: 'Jhenidah' },
-  { value: 'Tangail', label: 'Tangail' },
-  { value: 'Thakurgaon', label: 'Thakurgaon' },
-  { value: 'Dhaka', label: 'Dhaka' },
-  { value: 'Dinajpur', label: 'Dinajpur' },
-  { value: 'Naogaon', label: 'Naogaon' },
-  { value: 'Narail', label: 'Narail' },
-  { value: 'Narshingdi', label: 'Narshingdi' },
-  { value: 'Natore', label: 'Natore' },
-  { value: 'Narayanganj', label: 'Narayanganj' },
-  { value: 'Nilphamari', label: 'Nilphamari' },
-  { value: 'Netrakona', label: 'Netrakona' },
-  { value: 'Noakhali', label: 'Noakhali' },
-  { value: 'Panchagarh', label: 'Panchagarh' },
-  { value: 'Patuakhali', label: 'Patuakhali' },
-  { value: 'Pabna', label: 'Pabna' },
-  { value: 'Pirojpur', label: 'Pirojpur' },
-  { value: 'Faridpur', label: 'Faridpur' },
-  { value: 'Feni', label: 'Feni' },
-  { value: 'Bogra', label: 'Bogra' },
-  { value: 'Barguna', label: 'Barguna' },
-  { value: 'Barisal', label: 'Barisal' },
-  { value: 'Bagerhat', label: 'Bagerhat' },
-  { value: 'Bandarban', label: 'Bandarban' },
-  { value: 'B. Baria', label: 'Brahmanbaria' },
-  { value: 'Bhola', label: 'Bhola' },
-  { value: 'Mymensingh', label: 'Mymensingh' },
-  { value: 'Magura', label: 'Magura' },
-  { value: 'Madaripur', label: 'Madaripur' },
-  { value: 'Manikganj', label: 'Manikganj' },
-  { value: 'Munsiganj', label: 'Munsiganj' },
-  { value: 'Meherpur', label: 'Meherpur' },
-  { value: 'Moulvibazar', label: 'Moulvibazar' },
-  { value: 'Jashore', label: 'Jashore' },
-  { value: 'Rangpur', label: 'Rangpur' },
-  { value: 'Rangamati', label: 'Rangamati' },
-  { value: 'Rajbari', label: 'Rajbari' },
-  { value: 'Rajshahi', label: 'Rajshahi' },
-  { value: 'Lakshmipur', label: 'Lakshmipur' },
-  { value: 'Lalmonirhat', label: 'Lalmonirhat' },
-  { value: 'Shariatpur', label: 'Shariatpur' },
-  { value: 'Sherpur', label: 'Sherpur' },
-  { value: 'Satkhira', label: 'Satkhira' },
-  { value: 'Sirajganj', label: 'Sirajganj' },
-  { value: 'Sylhet', label: 'Sylhet' },
-  { value: 'Sunamganj', label: 'Sunamganj' },
-  { value: 'Habiganj', label: 'Habiganj' },
+  { value: "Cox's Bazar", label: "Cox's Bazar · কক্সবাজার" },
+  { value: 'Kishoreganj', label: 'Kishoreganj · কিশোরগঞ্জ' },
+  { value: 'Kurigram', label: 'Kurigram · কুড়িগ্রাম' },
+  { value: 'Cumilla', label: 'Cumilla · কুমিল্লা' },
+  { value: 'Kushtia', label: 'Kushtia · কুষ্টিয়া' },
+  { value: 'Khagrachari', label: 'Khagrachari · খাগড়াছড়ি' },
+  { value: 'Khulna', label: 'Khulna · খুলনা' },
+  { value: 'Gaibandha', label: 'Gaibandha · গাইবান্ধা' },
+  { value: 'Gazipur', label: 'Gazipur · গাজীপুর' },
+  { value: 'Gopalgonj', label: 'Gopalgonj · গোপালগঞ্জ' },
+  { value: 'Chittagong', label: 'Chittagong · চট্টগ্রাম' },
+  { value: 'Chandpur', label: 'Chandpur · চাঁদপুর' },
+  { value: 'Chapainawabganj', label: 'Chapainawabganj · চাঁপাইনবাবগঞ্জ' },
+  { value: 'Chuadanga', label: 'Chuadanga · চুয়াডাঙ্গা' },
+  { value: 'Joypurhat', label: 'Joypurhat · জয়পুরহাট' },
+  { value: 'Jamalpur', label: 'Jamalpur · জামালপুর' },
+  { value: 'Jhalokathi', label: 'Jhalokathi · ঝালকাঠি' },
+  { value: 'Jhenidah', label: 'Jhenidah · ঝিনাইদহ' },
+  { value: 'Tangail', label: 'Tangail · টাঙ্গাইল' },
+  { value: 'Thakurgaon', label: 'Thakurgaon · ঠাকুরগাঁও' },
+  { value: 'Dhaka', label: 'Dhaka · ঢাকা' },
+  { value: 'Dinajpur', label: 'Dinajpur · দিনাজপুর' },
+  { value: 'Naogaon', label: 'Naogaon · নওগাঁ' },
+  { value: 'Narail', label: 'Narail · নড়াইল' },
+  { value: 'Narshingdi', label: 'Narshingdi · নরসিংদী' },
+  { value: 'Natore', label: 'Natore · নাটোর' },
+  { value: 'Narayanganj', label: 'Narayanganj · নারায়ণগঞ্জ' },
+  { value: 'Nilphamari', label: 'Nilphamari · নীলফামারী' },
+  { value: 'Netrakona', label: 'Netrakona · নেত্রকোণা' },
+  { value: 'Noakhali', label: 'Noakhali · নোয়াখালী' },
+  { value: 'Panchagarh', label: 'Panchagarh · পঞ্চগড়' },
+  { value: 'Patuakhali', label: 'Patuakhali · পটুয়াখালী' },
+  { value: 'Pabna', label: 'Pabna · পাবনা' },
+  { value: 'Pirojpur', label: 'Pirojpur · পিরোজপুর' },
+  { value: 'Faridpur', label: 'Faridpur · ফরিদপুর' },
+  { value: 'Feni', label: 'Feni · ফেনী' },
+  { value: 'Bogra', label: 'Bogra · বগুড়া' },
+  { value: 'Barguna', label: 'Barguna · বরগুনা' },
+  { value: 'Barisal', label: 'Barisal · বরিশাল' },
+  { value: 'Bagerhat', label: 'Bagerhat · বাগেরহাট' },
+  { value: 'Bandarban', label: 'Bandarban · বান্দরবান' },
+  { value: 'B. Baria', label: 'Brahmanbaria · ব্রাহ্মণবাড়িয়া' },
+  { value: 'Bhola', label: 'Bhola · ভোলা' },
+  { value: 'Mymensingh', label: 'Mymensingh · ময়মনসিংহ' },
+  { value: 'Magura', label: 'Magura · মাগুরা' },
+  { value: 'Madaripur', label: 'Madaripur · মাদারীপুর' },
+  { value: 'Manikganj', label: 'Manikganj · মানিকগঞ্জ' },
+  { value: 'Munsiganj', label: 'Munsiganj · মুন্সীগঞ্জ' },
+  { value: 'Meherpur', label: 'Meherpur · মেহেরপুর' },
+  { value: 'Moulvibazar', label: 'Moulvibazar · মৌলভীবাজার' },
+  { value: 'Jashore', label: 'Jashore · যশোর' },
+  { value: 'Rangpur', label: 'Rangpur · রংপুর' },
+  { value: 'Rangamati', label: 'Rangamati · রাঙ্গামাটি' },
+  { value: 'Rajbari', label: 'Rajbari · রাজবাড়ী' },
+  { value: 'Rajshahi', label: 'Rajshahi · রাজশাহী' },
+  { value: 'Lakshmipur', label: 'Lakshmipur · লক্ষ্মীপুর' },
+  { value: 'Lalmonirhat', label: 'Lalmonirhat · লালমনিরহাট' },
+  { value: 'Shariatpur', label: 'Shariatpur · শরীয়তপুর' },
+  { value: 'Sherpur', label: 'Sherpur · শেরপুর' },
+  { value: 'Satkhira', label: 'Satkhira · সাতক্ষীরা' },
+  { value: 'Sirajganj', label: 'Sirajganj · সিরাজগঞ্জ' },
+  { value: 'Sylhet', label: 'Sylhet · সিলেট' },
+  { value: 'Sunamganj', label: 'Sunamganj · সুনামগঞ্জ' },
+  { value: 'Habiganj', label: 'Habiganj · হবিগঞ্জ' },
 ]
 
 type FieldKey = 'name' | 'phone' | 'email' | 'district' | 'thana' | 'area' | 'address'
@@ -187,7 +187,7 @@ export function OfferHome() {
       .get<{ data?: { name: string; bnName?: string }[] }>(`/locations/districts/${encodeURIComponent(form.district)}/thanas`, undefined, {
         signal: controller.signal,
       })
-      .then((res) => setThanas((res?.data ?? []).map((t) => ({ value: t.name, label: t.bnName || t.name })).sort((x, y) => x.label.localeCompare(y.label, 'bn'))))
+      .then((res) => setThanas((res?.data ?? []).map((t) => ({ value: t.name, label: t.bnName && t.bnName !== t.name ? `${t.name} · ${t.bnName}` : t.name })).sort((x, y) => x.label.localeCompare(y.label))))
       .catch(() => {
         if (!controller.signal.aborted) setThanas([])
       })
@@ -713,7 +713,7 @@ export function OfferHome() {
                               type="button"
                               onClick={() => removeLine(l.product.id, l.variant?.id)}
                               aria-label={`Remove ${l.product.name}`}
-                              className="flex items-center gap-1 text-xs text-gray-500 hover:text-rose-600"
+                              className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="size-3.5" /> Remove
                             </button>
@@ -752,7 +752,7 @@ export function OfferHome() {
                               type="button"
                               onClick={() => removeTrialLine(p.id)}
                               aria-label={`Remove ${p.name}`}
-                              className="flex items-center gap-1 text-xs text-gray-500 hover:text-rose-600"
+                              className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="size-3.5" /> Remove
                             </button>
