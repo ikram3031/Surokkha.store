@@ -91,10 +91,6 @@ import MetaCatalog from './pages/dashboard/tools/metaCatalog';
 import SystemLogs from './pages/dashboard/tools/systemLogs';
 import SupportDesk from './pages/dashboard/tools/supportDesk';
 
-// AI Studio
-import Studio from './pages/dashboard/studio/index';
-import BatchImagesStudio from './pages/dashboard/studio/batchImages';
-
 // Operations & cPanel Micro-Frontend
 import CPanelManager from './pages/dashboard/cpanel/index';
 
@@ -879,25 +875,6 @@ const dashboardRoutes = [
           { path: '', element: <Navigate to="/dashboard/accounts/balance" replace /> },
           { path: 'payments', element: <Navigate to="/dashboard/accounts/payments" replace /> },
           { path: 'billings', element: <Navigate to="/dashboard/accounts/bills" replace /> },
-        ],
-      },
-      {
-        path: 'studio',
-        element: (
-          <RoleGuard menuKey="studio">
-            <Studio />
-          </RoleGuard>
-        ),
-        children: [
-          { path: '', element: <Navigate to="batch-images" replace /> },
-          {
-            path: 'batch-images',
-            element: (
-              <RoleGuard menuKey="studio.batch-images">
-                <BatchImagesStudio />
-              </RoleGuard>
-            ),
-          },
         ],
       },
       {
