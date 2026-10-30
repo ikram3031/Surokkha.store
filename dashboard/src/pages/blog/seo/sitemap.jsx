@@ -1,38 +1,40 @@
-import { useState } from 'react';
-import { Bot, Copy, ExternalLink, Map, RefreshCw, RotateCcw, Save, Send, TriangleAlert } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bot, Copy, ExternalLink, Map, RefreshCw, RotateCcw, Save, TriangleAlert } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { PageHeader, ToggleRow, ToneBadge } from '@/components/dashboard/blog/blog-ui';
-
-const SITEMAP_URL = 'https://surokkha.store/sitemap.xml';
-const DEFAULT_ROBOTS = `User-agent: *
-Allow: /
-Disallow: /dashboard/
-Disallow: /checkout/
-Disallow: /cart/
-
-Sitemap: ${SITEMAP_URL}`;
-
-const SECTIONS = [
-  { key: 'posts', title: 'Blog posts', urls: 128 },
-  { key: 'taxonomy', title: 'Categories & tags', urls: 56 },
-  { key: 'products', title: 'Products', urls: 212 },
-  { key: 'pages', title: 'Static pages', urls: 42 },
-];
+import { LoadingBlocks, PageHeader, ToggleRow, ToneBadge } from '@/components/dashboard/blog/blog-ui';
+import { useRegenerateSitemap, useSitemapInfo, useUpdateSeoSettings } from '@/hooks/use-blog';
+import { timeAgo } from '@/lib/blog-seo';
 
 // XML sitemap sections and robots.txt editor
 const SeoSitemap = () => {
-  const [included, setIncluded] = useState({ posts: true, taxonomy: true, products: true, pages: true });
-  const [robots, setRobots] = useState(DEFAULT_ROBOTS);
+  const { data, isLoading } = useSitemapInfo();
+  const save = useUpdateSeoSettings();
+  const regenerate = useRegenerateSitemap();
+  const [robots, setRobots] = useState('');
+  const info = data?.data;
 
-  const copyUrl = () => navigator.clipboard?.writeText(SITEMAP_URL);
+  useEffect(() => {
+    if (info) setRobots(info.robots);
+  }, [info]);
+
+  if (isLoading || !info) return <LoadingBlocks rows={2} className="h-48" />;
+
+  const toggle = (key, value) => save.mutate({ sitemap: { [key]: value } });
+  const copyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(info.url);
+      toast.success('Sitemap URL copied');
+    } catch (_) {
+      toast.error('Could not copy the URL');
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Sitemap & Robots" description="Help crawlers discover and index your content.">
-        <Button><Save />Save changes</Button>
-      </PageHeader>
+      <PageHeader title="Sitemap & Robots" description="Help crawlers discover and index your blog content." />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -42,31 +44,24 @@ const SeoSitemap = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
-              <span className="min-w-0 flex-1 truncate font-mono text-xs">{SITEMAP_URL}</span>
+              <span className="min-w-0 flex-1 truncate font-mono text-xs">{info.url}</span>
               <Button variant="ghost" size="icon" title="Copy" onClick={copyUrl}><Copy /></Button>
-              <a href={SITEMAP_URL} target="_blank" rel="noreferrer" title="Open"><Button variant="ghost" size="icon" tabIndex={-1}><ExternalLink /></Button></a>
+              <a href={info.url} target="_blank" rel="noreferrer" title="Open"><Button variant="ghost" size="icon" tabIndex={-1}><ExternalLink /></Button></a>
             </div>
-            {SECTIONS.map((s) => (
-              <ToggleRow
-                key={s.key}
-                title={s.title}
-                description={`${s.urls} URLs`}
-                checked={included[s.key]}
-                onCheckedChange={(v) => setIncluded((prev) => ({ ...prev, [s.key]: v }))}
-              />
+            {info.sections.map((s) => (
+              <ToggleRow key={s.key} title={s.title} description={`${s.urls} URLs`} checked={s.enabled} onCheckedChange={(v) => toggle(s.key, v)} />
             ))}
           </CardContent>
           <CardFooter className="gap-2">
-            <span className="flex-1 text-xs text-muted-foreground">Last generated 2 hours ago</span>
-            <Button variant="outline"><RefreshCw />Regenerate</Button>
-            <Button><Send />Ping Google</Button>
+            <span className="flex-1 text-xs text-muted-foreground">{info.lastGeneratedAt ? `Last generated ${timeAgo(info.lastGeneratedAt)}` : 'Generated live on every request'}</span>
+            <Button variant="outline" onClick={() => regenerate.mutate()} disabled={regenerate.isPending}><RefreshCw className={regenerate.isPending ? 'animate-spin' : ''} />Regenerate</Button>
           </CardFooter>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><Bot className="h-4 w-4 text-primary" />robots.txt</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setRobots(DEFAULT_ROBOTS)}><RotateCcw />Reset</Button>
+            <Button variant="ghost" size="sm" onClick={() => setRobots(info.defaultRobots)}><RotateCcw />Reset</Button>
           </CardHeader>
           <CardContent className="space-y-3">
             <Textarea rows={12} className="font-mono text-xs leading-relaxed" value={robots} onChange={(e) => setRobots(e.target.value)} />
@@ -75,6 +70,9 @@ const SeoSitemap = () => {
               Changes take effect immediately. A wrong rule can hide your whole site from search engines.
             </div>
           </CardContent>
+          <CardFooter>
+            <Button className="w-full" onClick={() => save.mutate({ robots })} disabled={save.isPending || robots === info.robots}><Save />Save robots.txt</Button>
+          </CardFooter>
         </Card>
       </div>
     </div>

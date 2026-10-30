@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -136,6 +138,28 @@ export const IconTile = ({ icon: Icon, className }) => (
     <Icon className="h-5 w-5" />
   </span>
 );
+
+// Returns a value that only updates after the input has stopped changing
+export const useDebounced = (value, delay = 300) => {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+};
+
+// Placeholder blocks shown while a page's data loads
+export const LoadingBlocks = ({ rows = 3, className = 'h-24' }) => (
+  <div className="space-y-4">
+    {Array.from({ length: rows }, (_unused, index) => (
+      <Skeleton key={index} className={className} />
+    ))}
+  </div>
+);
+
+// Centered message for empty lists
+export const EmptyState = ({ children }) => <p className="px-4 py-10 text-center text-sm text-muted-foreground">{children}</p>;
 
 // Row of icon buttons shown at the end of a table row
 export const RowActions = ({ children }) => <div className="flex justify-end gap-1">{children}</div>;
