@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
   getSingleProduct,
   getMetaCatalogCsv,
-  getOfferCatalogCsv,
   listProducts,
 } from "../controllers/ProductsController.js";
 
@@ -20,8 +19,6 @@ productsRouter.post("/search", listProducts);
 productsRouter.get("/feed/meta-catalog.csv", getMetaCatalogCsv);
 productsRouter.get("/feed/meta-catalog-store.csv", getMetaCatalogCsv);
 productsRouter.get("/feed/meta-catalog-shop.csv", getMetaCatalogCsv);
-// GET /store/v1/products/feed/meta-catalog-offer.csv : live feed of the products offer.surokkha.shop shows
-productsRouter.get("/feed/meta-catalog-offer.csv", getOfferCatalogCsv);
 
 productsRouter.get("/:identifier", getSingleProduct);
 

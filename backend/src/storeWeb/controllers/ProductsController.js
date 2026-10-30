@@ -1,6 +1,5 @@
 import { config } from "../../common/config/index.js";
 import { ProductModel } from "../../common/models/product.model.js";
-import { CategoryModel } from "../../common/models/category.model.js";
 import {
   serializeProduct,
   attachBrandNames,
@@ -228,73 +227,5 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     res.send(csvData);
   } catch (err) {
     next(err);
-  }
-};
-
-// Live Meta catalog for offer.surokkha.shop: the real products that page shows, never items.
-// Top products come from client config offerPage.catalogProductDids; ready combos are every
-// in-stock product in the "combo" category. Ids are product dids, the same ids the page's pixel sends.
-export const getOfferCatalogCsv = async (req, res, next) => {
-  try {
-    const offerCfg = config.offerPage || {};
-    const siteUrl = String(offerCfg.url || "https://offer.surokkha.shop").replace(/\/$/, "");
-    const mediaOrigin = String(config.sites?.store?.apiBaseUrl || "https://web.surokkha.store").replace(/\/$/, "");
-    const topDids = Array.isArray(offerCfg.catalogProductDids) ? offerCfg.catalogProductDids : [];
-
-    const visible = { isActive: { $ne: false }, excludeFromMetaCatalog: { $ne: true } };
-    const comboCategory = await CategoryModel.findOne({ slug: "combo" }).select("_id").lean();
-    const [topProducts, combos] = await Promise.all([
-      ProductModel.find({ ...visible, did: { $in: topDids } }).lean(),
-      comboCategory
-        ? ProductModel.find({ ...visible, categories: comboCategory._id, stockStatus: { $ne: "outofstock" } }).lean()
-        : [],
-    ]);
-
-    // Keep the page's order: top products first (in config order), then combos
-    const byDid = new Map(topProducts.map((p) => [p.did, p]));
-    const ordered = [...topDids.map((d) => byDid.get(d)).filter(Boolean), ...combos];
-
-    const media = (u) => (!u ? "" : /^(https?:|data:)/i.test(u) ? u : `${mediaOrigin}${u.startsWith("/") ? "" : "/"}${u}`);
-    const plain = (html) => String(html ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
-    const inStock = (s) => String(s ?? "").toLowerCase().replace(/[\s_-]/g, "") !== "outofstock";
-    const cell = (v) => {
-      const str = String(v ?? "").replace(/\r?\n/g, " ").trim();
-      return /[",]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-    };
-
-    const seen = new Set();
-    const rows = [];
-    for (const p of ordered) {
-      if (!p.did || seen.has(p.did)) continue;
-      seen.add(p.did);
-      // Same price rule as the page: regular price, or the lowest variant price
-      const variants = (p.variants || []).filter((v) => v?.size && v.price != null);
-      const price = variants.length ? Math.min(...variants.map((v) => Number(v.price))) : Number(p.price || 0);
-      if (!(price > 0)) continue;
-      const available = variants.length ? variants.some((v) => inStock(v.stockStatus)) : inStock(p.stockStatus);
-      const images = [p.thumbnailUrl, p.featuredImage, p.imageUrl, ...(p.gallery || [])]
-        .map(media)
-        .filter((u, i, all) => u && all.indexOf(u) === i);
-      rows.push([
-        p.did,
-        p.name,
-        plain(p.description) || plain(p.description_bn) || p.name,
-        available ? "in stock" : "out of stock",
-        "new",
-        `${price.toFixed(2)} BDT`,
-        `${siteUrl}/?product=${encodeURIComponent(p.did)}`,
-        images[0] || "",
-        images.slice(1, 10).join(","),
-        "Surokkha",
-      ]);
-    }
-
-    const header = ["id", "title", "description", "availability", "condition", "price", "link", "image_link", "additional_image_link", "brand"];
-    const csv = [header.join(","), ...rows.map((r) => r.map(cell).join(","))].join("\n") + "\n";
-    res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    return res.send(csv);
-  } catch (error) {
-    next(error);
   }
 };
