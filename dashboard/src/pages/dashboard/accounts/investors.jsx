@@ -487,7 +487,7 @@ export const InvestorsPage = () => {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-500/10"
-                            onClick={() => navigate(`/dashboard/accounts/investments?investorId=${inv.id}`)}
+                            onClick={() => navigate(`/finance/investments?investorId=${inv.id}`)}
                             title="View Investments"
                           >
                             <TrendingUp className="h-3.5 w-3.5" />

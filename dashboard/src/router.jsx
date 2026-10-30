@@ -1,9 +1,11 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 
 // Layout
 import DashboardLayout from './layouts/dashboardLayout';
 import AdminLayout from './layouts/adminLayout';
 import BlogLayout from './layouts/blogLayout';
+import FinanceLayout from './layouts/financeLayout';
+import SettingsLayout from './layouts/settingsLayout';
 
 // Auth & Onboarding
 import Login from './pages/auth/login';
@@ -99,6 +101,31 @@ import RoleGuard from './components/RoleGuard';
 import NotFound from './components/NotFound';
 import { RouteErrorElement } from './components/ErrorBoundary';
 
+// Maps an old accounts, billing or reports URL onto its place in the finance workspace
+const toFinancePath = (pathname) => {
+  const tail = pathname.replace(/^\/(dashboard|admin)/, '');
+  if (tail.startsWith('/reports')) return '/finance/reports';
+  if (tail === '/billing' || tail === '/billing/') return '/finance/balance';
+  if (tail.startsWith('/billing/billings')) return '/finance/bills';
+  if (tail.startsWith('/billing/payments')) return '/finance/payments';
+  const rest = tail.replace(/^\/accounts/, '').replace(/^\/$/, '');
+  return `/finance${rest}`;
+};
+
+// Sends legacy finance URLs to the standalone finance workspace
+const RedirectToFinance = () => {
+  const { pathname, search } = useLocation();
+  return <Navigate to={`${toFinancePath(pathname)}${search}`} replace />;
+};
+
+// Sends legacy settings and users URLs to the standalone settings workspace
+const RedirectToSettings = () => {
+  const { pathname, search } = useLocation();
+  const tail = pathname.replace(/^\/(dashboard|admin)/, '');
+  const target = tail.startsWith('/users') ? '/settings/users' : tail;
+  return <Navigate to={`${target}${search}`} replace />;
+};
+
 const dashboardRoutes = [
       {
         path: '',
@@ -120,22 +147,10 @@ const dashboardRoutes = [
           </RoleGuard>
         ),
       },
-      {
-        path: 'users',
-        element: (
-          <RoleGuard menuKey="users">
-            <Users />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'reports',
-        element: (
-          <RoleGuard menuKey="reports">
-            <Reports />
-          </RoleGuard>
-        ),
-      },
+      { path: 'users', element: <RedirectToSettings /> },
+      { path: 'accounts/*', element: <RedirectToFinance /> },
+      { path: 'billing/*', element: <RedirectToFinance /> },
+      { path: 'reports', element: <RedirectToFinance /> },
       {
         path: 'pathao',
         children: [
@@ -238,174 +253,16 @@ const dashboardRoutes = [
           </RoleGuard>
         ),
       },
+      { path: 'settings', element: <Navigate to="products" replace /> },
       {
-        path: 'settings',
-        children: [
-          { path: '', element: <Navigate to="products" replace /> },
-          {
-            path: 'products',
-            element: (
-              <RoleGuard menuKey="settings">
-                <ProductShowcasesPage />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'meta-pixel',
-            element: <Navigate to="shop" replace />,
-          },
-          {
-            path: 'meta-pixel/shop',
-            element: (
-              <RoleGuard menuKey="settings">
-                <MetaPixelPage key="shop" site="shop" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'meta-pixel/store',
-            element: (
-              <RoleGuard menuKey="settings">
-                <MetaPixelPage key="store" site="store" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'tiktok-pixel',
-            element: (
-              <RoleGuard menuKey="settings">
-                <TikTokPixelPage />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'cms-content',
-            element: <Navigate to="shop" replace />,
-          },
-          {
-            path: 'cms-content/shop',
-            element: (
-              <RoleGuard menuKey="settings">
-                <CMSContentPage key="shop" site="shop" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'cms-content/store',
-            element: (
-              <RoleGuard menuKey="settings">
-                <CMSContentPage key="store" site="store" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'cms-content/slider/shop',
-            element: (
-              <RoleGuard menuKey="settings">
-                <HeroSliderPage key="shop" site="shop" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'cms-content/slider/store',
-            element: (
-              <RoleGuard menuKey="settings">
-                <HeroSliderPage key="store" site="store" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'cms-content/backgrounds/store',
-            element: (
-              <RoleGuard menuKey="settings">
-                <SectionBackgroundsPage key="store" site="store" />
-              </RoleGuard>
-            ),
-          },
-          { path: 'cms', element: <Navigate to="cms-content/shop" replace /> },
-          {
-            path: 'google-analytics',
-            element: (
-              <RoleGuard menuKey="settings">
-                <GoogleAnalyticsPage />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'seo',
-            element: <Navigate to="shop" replace />,
-          },
-          {
-            path: 'seo/shop',
-            element: (
-              <RoleGuard menuKey="settings">
-                <SEOSettingsPage key="shop" site="shop" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'seo/store',
-            element: (
-              <RoleGuard menuKey="settings">
-                <SEOSettingsPage key="store" site="store" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'pathao-courier',
-            element: (
-              <RoleGuard menuKey="settings">
-                <PathaoCourierPage />
-              </RoleGuard>
-            ),
-          },
-          { path: 'pathao', element: <Navigate to="pathao-courier" replace /> },
-          {
-            path: 'admin-view/styles',
-            element: (
-              <RoleGuard menuKey="settings">
-                <AdminStylesPage />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'smtp',
-            element: <Navigate to="shop" replace />,
-          },
-          {
-            path: 'smtp/shop',
-            element: (
-              <RoleGuard menuKey="settings">
-                <SmtpSettingsPage key="shop" site="shop" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'smtp/store',
-            element: (
-              <RoleGuard menuKey="settings">
-                <SmtpSettingsPage key="store" site="store" />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'r2-storage',
-            element: (
-              <RoleGuard menuKey="settings">
-                <R2StorageSettingsPage />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'templates',
-            element: (
-              <RoleGuard menuKey="settings">
-                <TemplatesPage />
-              </RoleGuard>
-            ),
-          },
-        ],
+        path: 'settings/products',
+        element: (
+          <RoleGuard menuKey="settings">
+            <ProductShowcasesPage />
+          </RoleGuard>
+        ),
       },
+      { path: 'settings/*', element: <RedirectToSettings /> },
       {
         path: 'templates',
         element: (
@@ -734,154 +591,320 @@ const dashboardRoutes = [
         ],
       },
       {
-        path: 'accounts',
-        children: [
-          { path: '', element: <Navigate to="balance" replace /> },
-          {
-            path: 'balance',
-            element: (
-              <RoleGuard menuKey="accounts.balance">
-                <BalanceOverview />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'bills',
-            children: [
-              {
-                path: '',
-                element: (
-                  <RoleGuard menuKey="accounts.bills">
-                    <AllBills />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'new',
-                element: (
-                  <RoleGuard menuKey="accounts.bills.new">
-                    <AddNewBill />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'slips',
-                element: (
-                  <RoleGuard menuKey="accounts.bills">
-                    <BillSlips />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'types',
-                element: (
-                  <RoleGuard menuKey="accounts.bills.types">
-                    <BillTypes />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'payment-methods',
-                element: (
-                  <RoleGuard menuKey="accounts.payments.types">
-                    <PaymentTypes />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'methods',
-                element: (
-                  <RoleGuard menuKey="accounts.payments.types">
-                    <PaymentTypes />
-                  </RoleGuard>
-                ),
-              },
-            ],
-          },
-          {
-            path: 'payments',
-            children: [
-              {
-                path: '',
-                element: (
-                  <RoleGuard menuKey="accounts.payments">
-                    <AllPayments />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'new',
-                element: (
-                  <RoleGuard menuKey="accounts.payments.new">
-                    <AddNewPayment />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'types',
-                element: (
-                  <RoleGuard menuKey="accounts.payments.types">
-                    <PaymentTypes />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'methods',
-                element: (
-                  <RoleGuard menuKey="accounts.payments.types">
-                    <PaymentTypes />
-                  </RoleGuard>
-                ),
-              },
-              {
-                path: 'payment-methods',
-                element: (
-                  <RoleGuard menuKey="accounts.payments.types">
-                    <PaymentTypes />
-                  </RoleGuard>
-                ),
-              },
-            ],
-          },
-          {
-            path: 'payment-methods',
-            element: (
-              <RoleGuard menuKey="accounts.payments.types">
-                <PaymentTypes />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'investors',
-            element: (
-              <RoleGuard menuKey="accounts.investors">
-                <Investors />
-              </RoleGuard>
-            ),
-          },
-          {
-            path: 'investments',
-            element: (
-              <RoleGuard menuKey="accounts.investments">
-                <InvestmentsList />
-              </RoleGuard>
-            ),
-          },
-        ],
-      },
-      {
-        path: 'billing',
-        children: [
-          { path: '', element: <Navigate to="/dashboard/accounts/balance" replace /> },
-          { path: 'payments', element: <Navigate to="/dashboard/accounts/payments" replace /> },
-          { path: 'billings', element: <Navigate to="/dashboard/accounts/bills" replace /> },
-        ],
-      },
-      {
         path: '*',
         element: <NotFound />,
       },
     ];
+
+const financeRoutes = [
+  { path: '', element: <Navigate to="balance" replace /> },
+  {
+    path: 'balance',
+    element: (
+      <RoleGuard menuKey="accounts.balance">
+        <BalanceOverview />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'bills',
+    children: [
+      {
+        path: '',
+        element: (
+          <RoleGuard menuKey="accounts.bills">
+            <AllBills />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'new',
+        element: (
+          <RoleGuard menuKey="accounts.bills.new">
+            <AddNewBill />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'slips',
+        element: (
+          <RoleGuard menuKey="accounts.bills">
+            <BillSlips />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'types',
+        element: (
+          <RoleGuard menuKey="accounts.bills.types">
+            <BillTypes />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'payment-methods',
+        element: (
+          <RoleGuard menuKey="accounts.payments.types">
+            <PaymentTypes />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'methods',
+        element: (
+          <RoleGuard menuKey="accounts.payments.types">
+            <PaymentTypes />
+          </RoleGuard>
+        ),
+      },
+    ],
+  },
+  {
+    path: 'payments',
+    children: [
+      {
+        path: '',
+        element: (
+          <RoleGuard menuKey="accounts.payments">
+            <AllPayments />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'new',
+        element: (
+          <RoleGuard menuKey="accounts.payments.new">
+            <AddNewPayment />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'types',
+        element: (
+          <RoleGuard menuKey="accounts.payments.types">
+            <PaymentTypes />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'methods',
+        element: (
+          <RoleGuard menuKey="accounts.payments.types">
+            <PaymentTypes />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'payment-methods',
+        element: (
+          <RoleGuard menuKey="accounts.payments.types">
+            <PaymentTypes />
+          </RoleGuard>
+        ),
+      },
+    ],
+  },
+  {
+    path: 'payment-methods',
+    element: (
+      <RoleGuard menuKey="accounts.payments.types">
+        <PaymentTypes />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'investors',
+    element: (
+      <RoleGuard menuKey="accounts.investors">
+        <Investors />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'investments',
+    element: (
+      <RoleGuard menuKey="accounts.investments">
+        <InvestmentsList />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'reports',
+    element: (
+      <RoleGuard menuKey="reports">
+        <Reports />
+      </RoleGuard>
+    ),
+  },
+  { path: '*', element: <NotFound /> },
+];
+
+const settingsRoutes = [
+  { path: '', element: <Navigate to="cms-content/shop" replace /> },
+  {
+    path: 'users',
+    element: (
+      <RoleGuard menuKey="users">
+        <Users />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'meta-pixel',
+    element: <Navigate to="shop" replace />,
+  },
+  {
+    path: 'meta-pixel/shop',
+    element: (
+      <RoleGuard menuKey="settings">
+        <MetaPixelPage key="shop" site="shop" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'meta-pixel/store',
+    element: (
+      <RoleGuard menuKey="settings">
+        <MetaPixelPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'tiktok-pixel',
+    element: (
+      <RoleGuard menuKey="settings">
+        <TikTokPixelPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'cms-content',
+    element: <Navigate to="shop" replace />,
+  },
+  {
+    path: 'cms-content/shop',
+    element: (
+      <RoleGuard menuKey="settings">
+        <CMSContentPage key="shop" site="shop" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'cms-content/store',
+    element: (
+      <RoleGuard menuKey="settings">
+        <CMSContentPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'cms-content/slider/shop',
+    element: (
+      <RoleGuard menuKey="settings">
+        <HeroSliderPage key="shop" site="shop" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'cms-content/slider/store',
+    element: (
+      <RoleGuard menuKey="settings">
+        <HeroSliderPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'cms-content/backgrounds/store',
+    element: (
+      <RoleGuard menuKey="settings">
+        <SectionBackgroundsPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  { path: 'cms', element: <Navigate to="cms-content/shop" replace /> },
+  {
+    path: 'google-analytics',
+    element: (
+      <RoleGuard menuKey="settings">
+        <GoogleAnalyticsPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'seo',
+    element: <Navigate to="shop" replace />,
+  },
+  {
+    path: 'seo/shop',
+    element: (
+      <RoleGuard menuKey="settings">
+        <SEOSettingsPage key="shop" site="shop" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'seo/store',
+    element: (
+      <RoleGuard menuKey="settings">
+        <SEOSettingsPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'pathao-courier',
+    element: (
+      <RoleGuard menuKey="settings">
+        <PathaoCourierPage />
+      </RoleGuard>
+    ),
+  },
+  { path: 'pathao', element: <Navigate to="pathao-courier" replace /> },
+  {
+    path: 'admin-view/styles',
+    element: (
+      <RoleGuard menuKey="settings">
+        <AdminStylesPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'smtp',
+    element: <Navigate to="shop" replace />,
+  },
+  {
+    path: 'smtp/shop',
+    element: (
+      <RoleGuard menuKey="settings">
+        <SmtpSettingsPage key="shop" site="shop" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'smtp/store',
+    element: (
+      <RoleGuard menuKey="settings">
+        <SmtpSettingsPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'r2-storage',
+    element: (
+      <RoleGuard menuKey="settings">
+        <R2StorageSettingsPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'templates',
+    element: (
+      <RoleGuard menuKey="settings">
+        <TemplatesPage />
+      </RoleGuard>
+    ),
+  },
+  { path: '*', element: <NotFound /> },
+];
 
 // Blog & SEO workspace: pages load on demand so they stay out of the main bundle
 const lazyPage = (loader) => ({
@@ -932,6 +955,18 @@ export const router = createBrowserRouter([
     element: <AdminLayout />,
     errorElement: <RouteErrorElement />,
     children: dashboardRoutes
+  },
+  {
+    path: '/finance',
+    element: <FinanceLayout />,
+    errorElement: <RouteErrorElement />,
+    children: financeRoutes,
+  },
+  {
+    path: '/settings',
+    element: <SettingsLayout />,
+    errorElement: <RouteErrorElement />,
+    children: settingsRoutes,
   },
   {
     path: '/blog',

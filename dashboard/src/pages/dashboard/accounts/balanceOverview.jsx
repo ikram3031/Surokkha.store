@@ -382,21 +382,21 @@ export const BalanceOverview = () => {
             {/* Quick Links */}
             <div className="grid grid-cols-3 gap-2 pt-2 border-t text-center">
               <Link
-                to="/dashboard/accounts/bills"
+                to="/finance/bills"
                 className="p-2 rounded-lg bg-muted/40 hover:bg-muted/80 text-[11px] font-semibold text-foreground transition-all flex flex-col items-center gap-1"
               >
                 <FileText className="w-3.5 h-3.5 text-red-500" />
                 <span>All Bills</span>
               </Link>
               <Link
-                to="/dashboard/accounts/payments"
+                to="/finance/payments"
                 className="p-2 rounded-lg bg-muted/40 hover:bg-muted/80 text-[11px] font-semibold text-foreground transition-all flex flex-col items-center gap-1"
               >
                 <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
                 <span>All Payments</span>
               </Link>
               <Link
-                to="/dashboard/accounts/investments"
+                to="/finance/investments"
                 className="p-2 rounded-lg bg-muted/40 hover:bg-muted/80 text-[11px] font-semibold text-foreground transition-all flex flex-col items-center gap-1"
               >
                 <Landmark className="w-3.5 h-3.5 text-purple-500" />

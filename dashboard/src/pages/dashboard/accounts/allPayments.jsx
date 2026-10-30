@@ -262,7 +262,7 @@ export const AllPaymentsPage = () => {
             asChild
             className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <Link to="/dashboard/accounts/payments/new">
+            <Link to="/finance/payments/new">
               <PlusCircle className="w-4 h-4" />
               <span>{t('accounts.add_payment_btn', 'Add New Payment')}</span>
             </Link>
@@ -474,7 +474,7 @@ export const AllPaymentsPage = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="cursor-pointer gap-2"
-                            onClick={() => navigate(`/dashboard/accounts/payments/new?edit=${p.id}`)}
+                            onClick={() => navigate(`/finance/payments/new?edit=${p.id}`)}
                           >
                             <Edit className="w-3.5 h-3.5 text-blue-500" />
                             <span>Edit Payment</span>
@@ -636,7 +636,7 @@ export const AllPaymentsPage = () => {
               onClick={() => {
                 const id = viewPaymentTarget?.id;
                 setViewPaymentTarget(null);
-                navigate(`/dashboard/accounts/payments/new?edit=${id}`);
+                navigate(`/finance/payments/new?edit=${id}`);
               }}
             >
               Edit Payment

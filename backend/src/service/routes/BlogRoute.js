@@ -1,6 +1,6 @@
 import express from "express";
 import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
-import { upload } from "../../common/middlewares/upload.middleware.js";
+import { blogUpload } from "../../common/middlewares/blogUpload.middleware.js";
 import {
   bulkPosts,
   createCategory,
@@ -55,7 +55,7 @@ router.get("/posts/:id", getPost);
 router.put("/posts/:id", updatePost);
 router.delete("/posts/:id", deletePost);
 
-router.post("/upload", upload("image"), uploadBlogImage);
+router.post("/upload", blogUpload("image"), uploadBlogImage);
 
 router.get("/categories", listCategories);
 router.post("/categories", createCategory);

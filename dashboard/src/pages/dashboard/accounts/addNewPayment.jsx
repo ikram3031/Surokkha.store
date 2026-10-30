@@ -163,7 +163,7 @@ export const AddNewPaymentPage = () => {
       } else {
         await createPayment(payload);
       }
-      navigate('/dashboard/accounts/payments');
+      navigate('/finance/payments');
     } catch {
       toast.error('Failed to save payment record');
     }
@@ -177,7 +177,7 @@ export const AddNewPaymentPage = () => {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => navigate('/dashboard/accounts/payments')}
+            onClick={() => navigate('/finance/payments')}
             className="h-9 w-9"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -412,22 +412,28 @@ export const AddNewPaymentPage = () => {
                   className="text-xs min-h-[70px]"
                 />
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Attachments (Slip / Receipt)</label>
-                <AttachmentUploader
-                  kind="payments"
-                  value={formData.attachments}
-                  onChange={(files) => handleInputChange('attachments', files)}
-                />
-              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Right Receipt Preview (4 cols) */}
-        <div className="lg:col-span-4 space-y-5">
-          <Card className="border-border/70 shadow-sm sticky top-20 bg-muted/10">
+        <div className="lg:col-span-4 space-y-5 lg:self-start lg:sticky lg:top-2 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pb-1">
+          <Card className="border-border/70 shadow-sm">
+            <CardHeader className="pb-3 border-b bg-muted/30">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Attachments (Slip / Receipt)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <AttachmentUploader
+                kind="payments"
+                value={formData.attachments}
+                onChange={(files) => handleInputChange('attachments', files)}
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/70 shadow-sm bg-muted/10">
             <CardHeader className="pb-3 border-b bg-muted/30">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                 <span>Payment Receipt Preview</span>
@@ -489,7 +495,7 @@ export const AddNewPaymentPage = () => {
                 <Button
                   type="button"
                   variant="cancel"
-                  onClick={() => navigate('/dashboard/accounts/payments')}
+                  onClick={() => navigate('/finance/payments')}
                   className="w-full text-xs"
                 >
                   Cancel

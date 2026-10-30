@@ -243,17 +243,10 @@ export const AppSidebar = ({ ...props }) => {
     : pathname.startsWith("/dashboard/items") ? "products"
     : (pathname === "/dashboard/products" || pathname === "/dashboard/products/list") ? "products"
     : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
-    : (pathname.startsWith("/dashboard/accounts") || pathname.startsWith("/dashboard/billing")) ? "accounts"
-    : (pathname.startsWith("/dashboard/settings") || pathname.startsWith("/dashboard/users")) ? "settings"
     : (pathname.startsWith("/dashboard/cloudflare") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/analytics") || pathname.startsWith("/dashboard/tools/analytics") || pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs") || pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs") || pathname.startsWith("/dashboard/cpanel") || pathname.startsWith("/dashboard/trash")) ? "system"
     : null
 
   const settingsProductsActive = pathname === "/dashboard/settings/products"
-  const paymentMethodsActive =
-    pathname === "/dashboard/accounts/payments/methods" ||
-    pathname === "/dashboard/accounts/payments/types" ||
-    pathname === "/dashboard/accounts/bills/payment-methods" ||
-    pathname === "/dashboard/accounts/payment-methods"
 
   // Auto-close mobile navigation drawer and open the active group on route transition
   React.useEffect(() => {
@@ -418,7 +411,7 @@ export const AppSidebar = ({ ...props }) => {
             <NavLink to="/dashboard/reviews" active={pathname.startsWith("/dashboard/reviews")} icon={Star} label={t("nav.reviews", "Reviews")} />
           )}
 
-          {(showProducts || showItems || showMedia || showBlog || isAllowed("tools.meta-catalog")) && <NavLabel>{t("nav.group_catalog", "Catalog")}</NavLabel>}
+          {(showProducts || showItems || showMedia || isAllowed("tools.meta-catalog")) && <NavLabel>{t("nav.group_catalog", "Catalog")}</NavLabel>}
           {showProducts && (
             <NavGroup id="products" icon={Package} label={t("nav.products", "Products")} active={activeGroup === "products"} open={openMenu === "products"} onToggle={toggleMenu}>
               {isAllowed("products.list") && (
@@ -475,132 +468,19 @@ export const AppSidebar = ({ ...props }) => {
             </NavGroup>
           )}
 
+          {(showAccounts || showReports) && <NavLabel>{t("nav.group_finance", "Finance")}</NavLabel>}
+          {(showAccounts || showReports) && (
+            <NavLink to="/finance" active={pathname.startsWith("/finance")} icon={Landmark} label={t("nav.finance", "Finance")} />
+          )}
+
+          {showBlog && <NavLabel>{t("nav.group_blog", "Blog")}</NavLabel>}
           {showBlog && (
             <NavLink to="/blog" active={pathname.startsWith("/blog")} icon={Newspaper} label={t("nav.blog", "Blog")} />
           )}
 
-          {(showAccounts || showReports) && <NavLabel>{t("nav.group_finance", "Finance")}</NavLabel>}
-          {showAccounts && (
-            <NavGroup id="accounts" icon={Landmark} label={t("nav.accounts", "Accounts")} active={activeGroup === "accounts"} open={openMenu === "accounts"} onToggle={toggleMenu}>
-              <NavSub
-                to="/dashboard/accounts/balance"
-                active={pathname === "/dashboard/accounts/balance" || pathname === "/dashboard/accounts" || pathname === "/dashboard/billing"}
-                icon={Scale}
-                iconClass="text-blue-500"
-              >
-                {t("nav.account_balance", "Account Balance")}
-              </NavSub>
-
-              <SubLabel>{t("nav.bills", "Bills")}</SubLabel>
-              <NavSub to="/dashboard/accounts/bills/new" active={pathname === "/dashboard/accounts/bills/new"} icon={PlusCircle} iconClass="text-red-500">
-                {t("nav.add_bill", "Add New")}
-              </NavSub>
-              <NavSub to="/dashboard/accounts/bills/types" active={pathname === "/dashboard/accounts/bills/types"} icon={Tag} iconClass="text-amber-500">
-                {t("nav.bill_types", "Bill Types")}
-              </NavSub>
-              <NavSub to="/dashboard/accounts/bills" active={pathname === "/dashboard/accounts/bills" || pathname === "/dashboard/billing/billings"} icon={Receipt} iconClass="text-red-500">
-                {t("nav.all_bills", "All Bills")}
-              </NavSub>
-
-              <SubLabel>{t("nav.payments", "Payments")}</SubLabel>
-              <NavSub to="/dashboard/accounts/payments/new" active={pathname === "/dashboard/accounts/payments/new"} icon={PlusCircle} iconClass="text-emerald-500">
-                {t("nav.add_payment", "Add New")}
-              </NavSub>
-              <NavSub to="/dashboard/accounts/payments/methods" active={paymentMethodsActive} icon={CreditCard} iconClass="text-emerald-500">
-                {t("nav.payment_methods", "Payment Methods")}
-              </NavSub>
-              <NavSub to="/dashboard/accounts/payments" active={pathname === "/dashboard/accounts/payments" || pathname === "/dashboard/billing/payments"} icon={Receipt} iconClass="text-emerald-500">
-                {t("nav.all_payments", "All Payments")}
-              </NavSub>
-
-              <SubLabel>{t("nav.investments", "Investments")}</SubLabel>
-              <NavSub to="/dashboard/accounts/investors" active={pathname === "/dashboard/accounts/investors"} icon={Users} iconClass="text-purple-500">
-                {t("nav.investors", "Investors")}
-              </NavSub>
-              <NavSub to="/dashboard/accounts/investments" active={pathname === "/dashboard/accounts/investments"} icon={TrendingUp} iconClass="text-purple-500">
-                {t("nav.investments_list", "Investments")}
-              </NavSub>
-            </NavGroup>
-          )}
-          {showReports && (
-            <NavLink to="/dashboard/reports" active={pathname.startsWith("/dashboard/reports")} icon={BarChart3} label={t("nav.reports", "Reports")} />
-          )}
-
           {(showSettingsGroup || showSystem) && <NavLabel>{t("nav.group_system", "System")}</NavLabel>}
           {showSettingsGroup && (
-            <NavGroup id="settings" icon={Settings} label={t("nav.settings", "Settings")} active={activeGroup === "settings"} open={openMenu === "settings"} onToggle={toggleMenu}>
-              {showSettings && (
-                <>
-                  <SubLabel>{t("nav.store_content", "Store & Content")}</SubLabel>
-                        <NavSub to="/dashboard/settings/cms-content/shop" active={pathname === "/dashboard/settings/cms-content"} icon={ImageIcon}>
-                          {t("nav.cms_content", "CMS Content")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/cms-content/shop" active={pathname.startsWith("/dashboard/settings/cms-content/shop")} className="pl-8">
-                          {t("nav.meta_pixel_shop", "Shop")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/cms-content/store" active={pathname.startsWith("/dashboard/settings/cms-content/store")} className="pl-8">
-                          {t("nav.meta_pixel_store", "Store")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/cms-content/slider/shop" active={pathname.startsWith("/dashboard/settings/cms-content/slider")} icon={GalleryHorizontal}>
-                          {t("nav.hero_slider", "Hero Slider")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/seo/shop" active={pathname === "/dashboard/settings/seo"} icon={Search}>
-                          {t("nav.general_seo", "General & SEO")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/seo/shop" active={pathname.startsWith("/dashboard/settings/seo/shop")} className="pl-8">
-                          {t("nav.meta_pixel_shop", "Shop")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/seo/store" active={pathname.startsWith("/dashboard/settings/seo/store")} className="pl-8">
-                          {t("nav.meta_pixel_store", "Store")}
-                        </NavSub>
-                        {features?.templates !== false && (isAllowed("templates") || isAllowed("settings")) && (
-                          <NavSub to="/dashboard/settings/templates" active={pathname.startsWith("/dashboard/settings/templates") || pathname === "/dashboard/templates"} icon={Receipt} iconClass="text-blue-500">
-                            {t("nav.templates", "Invoice & Templates")}
-                          </NavSub>
-                        )}
-                        <NavSub to="/dashboard/settings/admin-view/styles" active={pathname.startsWith("/dashboard/settings/admin-view/styles")} icon={Sparkles} iconClass="text-indigo-500">
-                          {t("nav.admin_view_styles", "Admin View Styles")}
-                        </NavSub>
-                  <SubLabel>{t("nav.marketing", "Marketing")}</SubLabel>
-                        <NavSub to="/dashboard/settings/meta-pixel/shop" active={pathname === "/dashboard/settings/meta-pixel"} icon={Share2}>
-                          {t("nav.meta_pixel", "Meta Pixel")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/meta-pixel/shop" active={pathname.startsWith("/dashboard/settings/meta-pixel/shop")} className="pl-8">
-                          {t("nav.meta_pixel_shop", "Shop")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/meta-pixel/store" active={pathname.startsWith("/dashboard/settings/meta-pixel/store")} className="pl-8">
-                          {t("nav.meta_pixel_store", "Store")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/tiktok-pixel" active={pathname.startsWith("/dashboard/settings/tiktok-pixel")} icon={TikTokIcon} iconClass="shrink-0">
-                          {t("nav.tiktok_pixel", "TikTok Pixel")}
-                        </NavSub>
-                  <SubLabel>{t("nav.integrations", "Integrations")}</SubLabel>
-                        <NavSub to="/dashboard/settings/pathao-courier" active={pathname.startsWith("/dashboard/settings/pathao")} icon={Truck} iconClass="text-red-500">
-                          {t("nav.pathao_courier", "Pathao Courier")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/smtp/shop" active={pathname === "/dashboard/settings/smtp"} icon={Mail} iconClass="text-indigo-500">
-                          {t("nav.email_server_setup", "SMTP Configuration")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/smtp/shop" active={pathname.startsWith("/dashboard/settings/smtp/shop")} className="pl-8">
-                          {t("nav.meta_pixel_shop", "Shop")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/smtp/store" active={pathname.startsWith("/dashboard/settings/smtp/store")} className="pl-8">
-                          {t("nav.meta_pixel_store", "Store")}
-                        </NavSub>
-                        <NavSub to="/dashboard/settings/r2-storage" active={pathname.startsWith("/dashboard/settings/r2-storage")} icon={HardDrive} iconClass="text-orange-400">
-                          {t("nav.r2_storage", "R2 Storage")}
-                        </NavSub>
-                </>
-              )}
-              {isAllowed("users") && (
-                <>
-                  <SubLabel>{t("nav.team", "Team")}</SubLabel>
-                  <NavSub to="/dashboard/users" active={pathname.startsWith("/dashboard/users")} icon={ShieldAlert}>
-                    {t("nav.system_users", "System Users")}
-                  </NavSub>
-                </>
-              )}
-            </NavGroup>
+            <NavLink to="/settings" active={pathname.startsWith("/settings")} icon={Settings} label={t("nav.settings", "Settings")} />
           )}
           {showSystem && (
             <NavGroup id="system" icon={Terminal} label={t("nav.system", "System")} active={activeGroup === "system"} open={openMenu === "system"} onToggle={toggleMenu}>

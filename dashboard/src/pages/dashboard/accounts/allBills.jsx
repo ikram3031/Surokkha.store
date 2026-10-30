@@ -257,7 +257,7 @@ export const AllBillsPage = () => {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <Button asChild variant="outline" className="h-9 text-xs gap-1.5 shadow-sm">
-            <Link to="/dashboard/accounts/bills/slips">
+            <Link to="/finance/bills/slips">
               <Printer className="w-4 h-4" />
               <span>Receipt / Invoice</span>
             </Link>
@@ -266,7 +266,7 @@ export const AllBillsPage = () => {
             asChild
             className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            <Link to="/dashboard/accounts/bills/new">
+            <Link to="/finance/bills/new">
               <PlusCircle className="w-4 h-4" />
               <span>{t('accounts.add_bill_btn', 'Add New Bill')}</span>
             </Link>
@@ -507,7 +507,7 @@ export const AllBillsPage = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="cursor-pointer gap-2"
-                            onClick={() => navigate(`/dashboard/accounts/bills/new?edit=${b.id}`)}
+                            onClick={() => navigate(`/finance/bills/new?edit=${b.id}`)}
                           >
                             <Edit className="w-3.5 h-3.5 text-blue-500" />
                             <span>Edit Bill</span>
@@ -704,7 +704,7 @@ export const AllBillsPage = () => {
               onClick={() => {
                 const id = viewBillTarget?.id;
                 setViewBillTarget(null);
-                navigate(`/dashboard/accounts/bills/new?edit=${id}`);
+                navigate(`/finance/bills/new?edit=${id}`);
               }}
             >
               Edit Bill
