@@ -10,6 +10,7 @@ import { FakeOrderModel } from '../models/fakeOrder.model.js';
 import { buildOrderNumber } from './orderHelper.js';
 import { config, getClientPolicy } from '../config/index.js';
 import { extractClientIp } from '../services/facebookCapi.service.js';
+import { normalizeCustomerPhone } from '../services/customer.service.js';
 
 const { Types } = mongoose;
 
@@ -152,7 +153,7 @@ export const buildOrderDocument = async (payload, req = null) => {
 
   const billingInfo = {
     fullName: normalizeText(payload.billingInfo?.fullName || payload.fullName),
-    phone: normalizeText(payload.billingInfo?.phone || payload.phone),
+    phone: normalizeCustomerPhone(payload.billingInfo?.phone || payload.phone),
     email: normalizeText(payload.billingInfo?.email || payload.email),
     address: normalizeText(payload.billingInfo?.address || payload.address),
     thana: normalizeText(payload.billingInfo?.thana || payload.thana),
@@ -166,7 +167,7 @@ export const buildOrderDocument = async (payload, req = null) => {
   const shippingInfo = hasCustomShipping
     ? {
         fullName: normalizeText(payload.shippingInfo.fullName || billingInfo.fullName),
-        phone: normalizeText(payload.shippingInfo.phone || billingInfo.phone),
+        phone: normalizeCustomerPhone(payload.shippingInfo.phone || billingInfo.phone),
         address: normalizeText(payload.shippingInfo.address || payload.shippingInfo.street || billingInfo.address),
         thana: normalizeText(payload.shippingInfo.thana || billingInfo.thana),
         district: normalizeText(payload.shippingInfo.district || billingInfo.district),
@@ -406,7 +407,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   if (payload.shippingInfo) {
     allowedUpdates.shippingInfo = {
       fullName: normalizeText(payload.shippingInfo.fullName) || existingOrder.shippingInfo?.fullName || '',
-      phone: normalizeText(payload.shippingInfo.phone) || existingOrder.shippingInfo?.phone || '',
+      phone: normalizeCustomerPhone(payload.shippingInfo.phone || existingOrder.shippingInfo?.phone || ''),
       address: normalizeText(payload.shippingInfo.address) || existingOrder.shippingInfo?.address || '',
       thana: normalizeText(payload.shippingInfo.thana) || existingOrder.shippingInfo?.thana || '',
       district: normalizeText(payload.shippingInfo.district) || existingOrder.shippingInfo?.district || '',
@@ -464,7 +465,7 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
   if (customerInfo) {
     allowedUpdates.billingInfo = {
       fullName: normalizeText(customerInfo.fullName || customerInfo.name) || existingOrder.billingInfo?.fullName || '',
-      phone: normalizeText(customerInfo.phone) || existingOrder.billingInfo?.phone || '',
+      phone: normalizeCustomerPhone(customerInfo.phone || existingOrder.billingInfo?.phone || ''),
       email: normalizeText(customerInfo.email) || existingOrder.billingInfo?.email || '',
       address: normalizeText(customerInfo.address || customerInfo.street) || existingOrder.billingInfo?.address || '',
       thana: normalizeText(customerInfo.thana) || existingOrder.billingInfo?.thana || '',

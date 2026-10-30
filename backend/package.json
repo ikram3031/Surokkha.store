@@ -22,6 +22,7 @@
 		"mongo": "node scripts/start-local-mongo.js",
 		"img": "node scripts/check-img-urls.js",
 		"sync:payments": "node src/common/scripts/syncExistingOrderPayments.js",
+		"reconcile:customers": "node src/common/scripts/reconcileCustomers.js",
 		"lint": "eslint .",
 		"format": "prettier --write ."
 	},

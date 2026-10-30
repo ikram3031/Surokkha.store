@@ -8,18 +8,17 @@ export const normalizeCustomerPhone = (rawPhone) => {
   if (!rawPhone || typeof rawPhone !== "string") return "";
   const digits = rawPhone.replace(/\D/g, "");
   if (!digits) return "";
-
-  // 8801XXXXXXXXX -> 01XXXXXXXXX
-  if (digits.length === 13 && digits.startsWith("880")) {
-    return "0" + digits.slice(3);
+  if (digits.startsWith("88001") && digits.length >= 14) {
+    return digits.slice(3, 14);
   }
-  // 1XXXXXXXXX -> 01XXXXXXXXX
+  if (digits.startsWith("880") && digits.length >= 12) {
+    return "0" + digits.slice(3, 13);
+  }
   if (digits.length === 10 && digits.startsWith("1")) {
     return "0" + digits;
   }
-  // Already 01XXXXXXXXX
-  if (digits.length === 11 && digits.startsWith("01")) {
-    return digits;
+  if (digits.length >= 11 && digits.slice(-11).startsWith("01")) {
+    return digits.slice(-11);
   }
   return digits;
 };
@@ -76,21 +75,19 @@ export const findCustomerByPhoneOrEmail = async ({ phone = "", email = "" }) => 
     cleanEmail.includes("@local") ||
     cleanEmail.includes("walkin@");
 
-  const queryOr = [];
   if (cleanPhone) {
-    // Match normalized phone or exact raw string or regex matching the 10/11 digits
     const phoneSuffix = cleanPhone.startsWith("0") ? cleanPhone.slice(1) : cleanPhone;
-    queryOr.push({ phone: cleanPhone });
-    queryOr.push({ phone: { $regex: `${phoneSuffix}$` } });
+    const byPhone = await CustomerModel.findOne({
+      $or: [{ phone: cleanPhone }, { phone: { $regex: `${phoneSuffix}$` } }],
+    }).sort({ updatedAt: -1 });
+    if (byPhone) return byPhone;
   }
 
-  if (cleanEmail && !isDummyEmail) {
-    queryOr.push({ email: cleanEmail });
+  if (!cleanPhone && cleanEmail && !isDummyEmail) {
+    return await CustomerModel.findOne({ email: cleanEmail }).sort({ updatedAt: -1 });
   }
 
-  if (queryOr.length === 0) return null;
-
-  return await CustomerModel.findOne({ $or: queryOr }).sort({ updatedAt: -1 });
+  return null;
 };
 
 /**
@@ -235,17 +232,17 @@ export const upsertCustomerFromOrder = async ({ order, payload = {}, updatedBy =
           orderId: order._id,
           orderNumber,
           total: orderTotal,
-          date: new Date(),
+          date: order.createdAt ? new Date(order.createdAt) : new Date(),
           orderType,
         });
       }
-
-      await customer.save();
     }
 
-    // Link customer to the order document
     await OrderModel.findByIdAndUpdate(order._id, { customer: customer._id });
     order.customer = customer._id;
+
+    await recomputeCustomerStats(customer);
+    await customer.save();
 
     return customer;
   } catch (err) {
@@ -294,4 +291,117 @@ export const searchCustomers = async ({ query = "", limit = 10 }) => {
     id: c._id.toString(),
     fullName: [c.firstName, c.lastName].filter(Boolean).join(" "),
   }));
+};
+
+/**
+ * Orders that still count towards a customer: not cancelled / returned / fake and not deleted.
+ * Pending, processing, hold, shipped and completed orders are all "live".
+ */
+export const LIVE_ORDER_STATUSES = ["pending", "processing", "hold", "shipped", "completed"];
+export const isLiveOrder = (order) =>
+  !!order && order.active !== false && LIVE_ORDER_STATUSES.includes(String(order.status || "").toLowerCase());
+
+// Customers created by hand or imported (or carrying staff notes) are never removed automatically
+export const isAutoRemovable = (customer) =>
+  ["online", "custom", "instore"].includes(customer.source) && !String(customer.notes || "").trim();
+
+/**
+ * Rebuild a customer's order refs and totals from the orders collection (idempotent, never increments).
+ * Looks at orders linked through order.customer, stored order refs, and normalized phone number,
+ * so older orders that were never linked still count.
+ */
+export const recomputeCustomerStats = async (customer, { relink = true } = {}) => {
+  const refIds = (customer.orders || []).map((o) => o.orderId).filter(Boolean);
+  const cleanPhone = normalizeCustomerPhone(customer.phone);
+  const phoneSuffix = cleanPhone.startsWith("0") ? cleanPhone.slice(1) : cleanPhone;
+  const orConditions = [{ customer: customer._id }, { _id: { $in: refIds } }];
+  if (phoneSuffix && phoneSuffix.length >= 10) {
+    orConditions.push({ "billingInfo.phone": { $regex: `${phoneSuffix}$` } });
+    orConditions.push({ "shippingInfo.phone": { $regex: `${phoneSuffix}$` } });
+  }
+  const orders = await OrderModel.find({ $or: orConditions })
+    .select("orderNumber orderType status active totals createdAt customer")
+    .lean();
+  const live = orders.filter(isLiveOrder).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  const unlinkedLiveIds = live
+    .filter((o) => String(o.customer || "") !== String(customer._id))
+    .map((o) => o._id);
+  if (relink && unlinkedLiveIds.length > 0) {
+    await OrderModel.updateMany({ _id: { $in: unlinkedLiveIds } }, { $set: { customer: customer._id } });
+  }
+
+  customer.orders = live.map((o) => ({
+    orderId: o._id,
+    orderNumber: o.orderNumber,
+    total: Number(o.totals?.total || 0),
+    date: o.createdAt,
+    orderType: o.orderType || "online",
+  }));
+  customer.totalOrders = live.length;
+  customer.totalSpent = live.reduce((sum, o) => sum + Number(o.totals?.total || 0), 0);
+  customer.lastOrderAt = live.length ? live[live.length - 1].createdAt : null;
+  return { liveCount: live.length, liveIds: live.map((o) => String(o._id)) };
+};
+
+/**
+ * Call after an order's status/active flag changed (cancel, return, fake, delete, restore).
+ * - order became live again  -> (re)link it to its customer, creating the customer if needed
+ * - order stopped being live -> unlink it; remove the customer when no live order is left,
+ *                               otherwise keep the customer and just recompute its totals
+ */
+export const reconcileCustomerForOrder = async ({ order, updatedBy = null }) => {
+  try {
+    if (!order) return { action: "none" };
+
+    if (isLiveOrder(order)) {
+      const customer = await upsertCustomerFromOrder({ order, updatedBy });
+      if (customer) {
+        const fresh = await CustomerModel.findById(customer._id);
+        if (fresh) {
+          await recomputeCustomerStats(fresh);
+          await fresh.save();
+        }
+      }
+      return { action: "linked", customerId: customer?._id || null };
+    }
+
+    const billing = order.billingInfo || {};
+    const shipping = order.shippingInfo || {};
+    let customer = order.customer ? await CustomerModel.findById(order.customer) : null;
+    if (!customer) {
+      customer = await findCustomerByPhoneOrEmail({
+        phone: billing.phone || shipping.phone || "",
+        email: billing.email || shipping.email || "",
+      });
+    }
+    if (!customer) return { action: "none" };
+
+    const { liveCount } = await recomputeCustomerStats(customer);
+
+    // The order itself no longer belongs to the customer
+    await OrderModel.updateOne({ _id: order._id, customer: customer._id }, { $unset: { customer: "" } });
+
+    if (liveCount === 0 && isAutoRemovable(customer)) {
+      await OrderModel.updateMany({ customer: customer._id }, { $unset: { customer: "" } });
+      await CustomerModel.deleteOne({ _id: customer._id });
+      console.log(`[Customer cleanup] Removed customer ${customer.did} (${customer.phone}): no live orders left after order #${order.orderNumber} became ${order.active === false ? "deleted" : order.status}`);
+      return { action: "removed", customerId: customer._id };
+    }
+
+    customer.history.push(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        action: "order_unlinked",
+        orderNumber: order.orderNumber,
+        updatedBy: updatedBy || "order_system",
+        note: `Order #${order.orderNumber} (${order.active === false ? "deleted" : order.status}) unlinked from customer`,
+      })
+    );
+    await customer.save();
+    return { action: "unlinked", customerId: customer._id };
+  } catch (err) {
+    console.error("[reconcileCustomerForOrder] Error:", err);
+    return { action: "error" };
+  }
 };

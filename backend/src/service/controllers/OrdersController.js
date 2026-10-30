@@ -27,7 +27,7 @@ import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.serv
 import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
 import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
-import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
+import { upsertCustomerFromOrder, reconcileCustomerForOrder, isLiveOrder } from '../../common/services/customer.service.js';
 import { syncCourierBill } from '../services/pathaoBill.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
@@ -376,8 +376,29 @@ export const listOrders = async (req, res, next) => {
       .lean();
     const paymentMap = new Map(payments.map((p) => [p.orderId.toString(), p]));
 
+    // Returning customer = the same phone (last 10 digits) already has other delivered orders
+    const phoneKey = (o) => String(o.billingInfo?.phone || o.shippingInfo?.phone || '').replace(/\D/g, '').slice(-10);
+    const pageKeys = [...new Set(orders.map(phoneKey).filter((k) => k.length === 10))];
+    const deliveredByPhone = new Map();
+    if (pageKeys.length > 0) {
+      const delivered = await OrderModel.find({
+        active: true,
+        status: 'completed',
+        $or: pageKeys.flatMap((k) => [{ 'billingInfo.phone': { $regex: `${k}$` } }, { 'shippingInfo.phone': { $regex: `${k}$` } }]),
+      })
+        .select('billingInfo.phone shippingInfo.phone')
+        .lean();
+      for (const d of delivered) {
+        const key = phoneKey(d);
+        if (!deliveredByPhone.has(key)) deliveredByPhone.set(key, new Set());
+        deliveredByPhone.get(key).add(d._id.toString());
+      }
+    }
+
     const data = orders.map((order) => {
       const payment = paymentMap.get(order._id.toString());
+      const deliveredIds = deliveredByPhone.get(phoneKey(order));
+      const previousDelivered = deliveredIds ? [...deliveredIds].filter((id) => id !== order._id.toString()).length : 0;
       const pStatus = payment?.status || order.paymentStatus;
       const fallbackPaid = order.status === 'completed';
       const effectivePaymentStatus = pStatus || (fallbackPaid ? 'paid' : 'pending');
@@ -389,6 +410,8 @@ export const listOrders = async (req, res, next) => {
         paidAmount: effectivePaid,
         paymentPhone: payment?.paymentPhone ?? order.paymentPhone ?? '',
         paymentDetails: payment || null,
+        previousDeliveredOrders: previousDelivered,
+        isReturningCustomer: previousDelivered > 0,
       };
     });
 
@@ -540,6 +563,11 @@ export const updateOrder = async (req, res, next) => {
       }
     }
 
+    // Cancel / return / fake / restore changes whether the order still counts for its customer
+    if (isLiveOrder(existingOrder) !== isLiveOrder(order)) {
+      await reconcileCustomerForOrder({ order, updatedBy: req.user?.name || req.user?.did || 'staff' });
+    }
+
     await syncPaymentDocument(order, payload);
     // Status changes by staff (cancel, return, ...) keep the auto Pathao charge bill in step
     if (order.courier?.consignmentId) {
@@ -601,6 +629,8 @@ export const deleteOrder = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
 
+    await reconcileCustomerForOrder({ order: deletedOrder, updatedBy: req.user?.name || req.user?.did || 'staff' });
+
     // Safe cleanup of payment record
     try {
       await PaymentModel.findOneAndDelete({ orderId: deletedOrder._id });
@@ -660,6 +690,10 @@ export const bulkDeleteOrders = async (req, res, next) => {
     await OrderModel.updateMany(deleteQuery, { $set: { active: false } });
 
     const orderDbIds = orders.map(o => o._id);
+
+    for (const ord of orders) {
+      await reconcileCustomerForOrder({ order: { ...ord, active: false }, updatedBy: req.user?.name || req.user?.did || 'staff' });
+    }
 
     // Delete all linked payment documents in bulk
     try {
@@ -784,6 +818,9 @@ export const bulkUpdateOrders = async (req, res, next) => {
     for (const order of orders) {
       const updatedOrder = await OrderModel.findById(order._id).lean();
       if (!updatedOrder) continue;
+      if (isLiveOrder(order) !== isLiveOrder(updatedOrder)) {
+        await reconcileCustomerForOrder({ order: updatedOrder, updatedBy: req.user?.name || req.user?.did || 'staff' });
+      }
       // syncPaymentDocument keeps the order's payment fields and its payment record in step
       // (zeroes cancelled/fake/returned orders, only creates a record once the order has shipped)
       const isClosingStatus = ['fake', 'cancelled', 'canceled', 'return'].includes(updateFields.status);

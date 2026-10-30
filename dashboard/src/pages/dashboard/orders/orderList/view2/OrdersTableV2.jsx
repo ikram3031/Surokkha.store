@@ -347,6 +347,14 @@ export function OrdersTableV2({ list }) {
                 <TableCell className="overflow-hidden">
                   <span className="block truncate font-medium text-foreground" title={order.customerName}>
                     {order.customerName}
+                    {order.isReturningCustomer && (
+                      <span
+                        className="ml-1.5 inline-flex shrink-0 items-center rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-0 text-[10px] font-semibold text-emerald-700 align-middle"
+                        title={t('orders.returning_customer_hint', '{{count}} delivered order(s) before this one', { count: order.previousDeliveredOrders })}
+                      >
+                        {t('orders.returning_customer', 'Returning')} · {order.previousDeliveredOrders}
+                      </span>
+                    )}
                   </span>
                   {phone && <span className="mt-0.5 block truncate font-mono text-xs text-muted-foreground">{phone}</span>}
                 </TableCell>
