@@ -1,4 +1,5 @@
 import { Separator } from '@/components/ui/separator'
+import { navigate } from '@/lib/router'
 
 export function Footer() {
   return (
@@ -24,6 +25,11 @@ export function Footer() {
               </a>
             </li>
             <li>Every day, 10 AM to 10 PM</li>
+            <li>
+              <a href="/blog" onClick={(e) => { e.preventDefault(); navigate('/blog') }} className="hover:text-background">
+                Health &amp; safety blog
+              </a>
+            </li>
           </ul>
         </div>
         <div className="text-sm">

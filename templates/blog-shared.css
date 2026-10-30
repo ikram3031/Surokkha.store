@@ -1,0 +1,118 @@
+/*
+  সুরক্ষা ব্লগ — শেয়ার্ড স্টাইল (blog-archive.html + blog-post.html)
+  থিম টোকেন SurokkhaStore/src/index.css-এর সাথে এক। থিম বদলাতে শুধু :root ও .dark ব্লক বদলান।
+*/
+:root {
+  --background: 251 245 236;
+  --foreground: 58 50 47;
+  --card: 255 255 255;
+  --primary: 77 18 36;
+  --primary-foreground: 255 255 255;
+  --secondary: 245 230 211;
+  --muted: 235 213 186;
+  --muted-foreground: 111 101 96;
+  --accent: 251 214 219;
+  --border: 235 213 186;
+  --ring: 244 145 159;
+  --blush: 244 145 159;
+  --blush-deep: 201 71 95;
+}
+.dark {
+  --background: 36 31 28;
+  --foreground: 251 245 236;
+  --card: 45 39 35;
+  --primary: 244 145 159;
+  --primary-foreground: 36 31 28;
+  --secondary: 58 50 47;
+  --muted: 58 50 47;
+  --muted-foreground: 168 158 152;
+  --accent: 74 63 58;
+  --border: 58 50 47;
+  --ring: 244 145 159;
+  --blush: 244 145 159;
+  --blush-deep: 244 145 159;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: 'Hind Siliguri', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+.font-display { font-family: 'Noto Serif Bengali', serif; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+:focus-visible { outline: 3px solid rgb(var(--ring)); outline-offset: 2px; }
+body.locked { overflow: hidden; }
+
+/* মোবাইলে সাইডবার ড্রয়ার: Tailwind CDN লোড হওয়ার আগেই লুকানো, যাতে পেজ খোলার সময় ঝলকানি না হয় */
+@media (max-width: 1023px) {
+  #sidebar:not(.is-open) { position: fixed; visibility: hidden; transform: translateX(-100%); }
+}
+
+/* ফুটার সবসময় গাঢ়, যাতে cream লোগো পড়া যায় */
+.footer-surface { background: #3a322f; color: #fbf5ec; }
+.dark .footer-surface { background: #1a1614; }
+
+/* কার্ড ও লিস্টের প্রবেশ অ্যানিমেশন */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise .45s cubic-bezier(.22,.8,.3,1) both; }
+@keyframes pop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+.pop { animation: pop .25s ease-out both; }
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.floaty { animation: floaty 5s ease-in-out infinite; }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgb(var(--blush) / .55); } 100% { box-shadow: 0 0 0 14px rgb(var(--blush) / 0); } }
+.pulse-ring { animation: pulse-ring 2.2s ease-out infinite; }
+
+/* কার্ড হোভার */
+.post-card { transition: transform .3s cubic-bezier(.22,.8,.3,1), box-shadow .3s, border-color .3s; }
+.post-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -18px rgb(var(--primary) / .35); border-color: rgb(var(--ring)); }
+.post-card .cover-inner { transition: transform .6s cubic-bezier(.22,.8,.3,1); }
+.post-card:hover .cover-inner { transform: scale(1.06); }
+
+/* সাইডবার ক্যাটাগরি রো */
+.cat-row { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; border-radius: 1rem; padding: .6rem .85rem; font-weight: 500; transition: background-color .2s, color .2s, transform .2s; }
+.cat-row:hover { background: rgb(var(--accent) / .55); }
+.cat-row[aria-current="true"] { background: rgb(var(--primary)); color: rgb(var(--primary-foreground)); font-weight: 700; }
+.cat-row small { border-radius: 9999px; background: rgb(var(--muted) / .6); padding: .05rem .55rem; font-size: .75rem; font-weight: 600; color: rgb(var(--muted-foreground)); }
+.cat-row[aria-current="true"] small { background: rgb(var(--primary-foreground) / .2); color: rgb(var(--primary-foreground)); }
+
+/* ট্যাগ পিল */
+.tag-pill { display: inline-flex; align-items: center; gap: .25rem; border-radius: 9999px; border: 1px solid rgb(var(--border)); background: rgb(var(--card)); padding: .3rem .8rem; font-size: .85rem; font-weight: 500; color: rgb(var(--muted-foreground)); transition: .2s; }
+.tag-pill:hover { border-color: rgb(var(--primary)); color: rgb(var(--primary)); }
+.tag-pill[aria-pressed="true"] { background: rgb(var(--primary)); border-color: rgb(var(--primary)); color: rgb(var(--primary-foreground)); }
+
+/* সক্রিয় ফিল্টার চিপ */
+.chip { display: inline-flex; align-items: center; gap: .35rem; border-radius: 9999px; background: rgb(var(--accent)); padding: .3rem .45rem .3rem .85rem; font-size: .85rem; font-weight: 600; animation: pop .25s ease-out; }
+.chip button { display: grid; place-items: center; height: 1.4rem; width: 1.4rem; border-radius: 9999px; transition: background-color .2s; }
+.chip button:hover { background: rgb(var(--primary) / .18); }
+
+/* আর্টিকেলের টাইপোগ্রাফি */
+.prose-blog { font-size: 1.0625rem; line-height: 1.95; color: rgb(var(--foreground) / .92); }
+.prose-blog > * + * { margin-top: 1.1rem; }
+.prose-blog h2 { font-family: 'Noto Serif Bengali', serif; font-size: 1.6rem; line-height: 1.5; font-weight: 800; margin-top: 2.6rem; scroll-margin-top: 6rem; color: rgb(var(--foreground)); }
+.prose-blog h3 { font-family: 'Noto Serif Bengali', serif; font-size: 1.25rem; font-weight: 700; margin-top: 1.8rem; scroll-margin-top: 6rem; }
+.prose-blog a { color: rgb(var(--primary)); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+.prose-blog ul, .prose-blog ol { padding-left: 1.4rem; }
+.prose-blog ul { list-style: disc; }
+.prose-blog ol { list-style: decimal; }
+.prose-blog li + li { margin-top: .45rem; }
+.prose-blog li::marker { color: rgb(var(--blush-deep)); font-weight: 700; }
+.prose-blog strong { color: rgb(var(--foreground)); font-weight: 700; }
+.prose-blog blockquote { border-left: 4px solid rgb(var(--ring)); background: rgb(var(--accent) / .5); padding: 1rem 1.25rem; border-radius: 0 1rem 1rem 0; font-family: 'Noto Serif Bengali', serif; font-size: 1.1rem; line-height: 1.8; }
+.prose-blog .callout { border: 1px solid rgb(var(--border)); background: rgb(var(--card)); border-radius: 1.25rem; padding: 1rem 1.25rem; font-size: .98rem; }
+.prose-blog .callout b { display: block; margin-bottom: .2rem; color: rgb(var(--primary)); }
+.prose-blog .checklist { list-style: none; padding-left: 0; }
+.prose-blog .checklist li { position: relative; padding-left: 1.9rem; }
+.prose-blog .checklist li::before { content: '✓'; position: absolute; left: 0; top: .1rem; display: grid; place-items: center; height: 1.35rem; width: 1.35rem; border-radius: 9999px; background: rgb(var(--primary)); color: rgb(var(--primary-foreground)); font-size: .8rem; font-weight: 700; line-height: 1; }
+
+/* আর্টিকেলের ভেতরে বসানো সিটিএ: টাইপোগ্রাফির লিংক-স্টাইল থেকে মুক্ত */
+.prose-blog [data-cta] { line-height: 1.5; font-size: 1rem; }
+.prose-blog [data-cta] a { color: rgb(var(--primary-foreground)); text-decoration: none; font-weight: 700; }
+
+/* সূচিপত্রে সক্রিয় লিংক */
+#toc a { display: block; border-left: 2px solid rgb(var(--border)); padding: .25rem 0 .25rem .85rem; color: rgb(var(--muted-foreground)); transition: .2s; }
+#toc a:hover { color: rgb(var(--primary)); }
+#toc a.on { border-color: rgb(var(--primary)); color: rgb(var(--primary)); font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rise, .pop, .floaty, .pulse-ring { animation: none !important; }
+  * { transition-duration: .01ms !important; }
+}

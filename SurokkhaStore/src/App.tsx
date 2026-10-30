@@ -28,6 +28,8 @@ import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/components/checkout/ConfirmationPage'
 import { CartProvider } from '@/context/CartContext'
 import { AccountPage } from '@/components/account/AccountPage'
+import { BlogArchive } from '@/components/blog/BlogArchive'
+import { BlogPost } from '@/components/blog/BlogPost'
 import { categoryPath, navigate, useRoute, type Route } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
 import type { ShopFilter } from '@/components/shop/FilterBar'
@@ -50,7 +52,8 @@ function AppShell() {
   const route: Route =
     OFFER_ONLY_MODE && (urlRoute.name === 'home' || urlRoute.name === 'home-classic') ? { name: 'offer' } : urlRoute
   const bare = OFFER_ONLY_MODE && route.name === 'offer'
-  const routeKey = route.name === 'product' || route.name === 'category' || route.name === 'group-offer' ? `${route.name}:${route.slug}` : route.name
+  const routeKey =
+    route.name === 'product' || route.name === 'category' || route.name === 'group-offer' || route.name === 'blog-post' ? `${route.name}:${route.slug}` : route.name
 
   // One PageView per page (the SPA never reloads between routes)
   useEffect(() => {
@@ -103,6 +106,8 @@ function AppShell() {
         {route.name === 'checkout' && <CheckoutPage />}
         {route.name === 'confirmation' && <ConfirmationPage />}
         {route.name === 'account' && <AccountPage />}
+        {route.name === 'blog' && <BlogArchive />}
+        {route.name === 'blog-post' && <BlogPost slug={route.slug} />}
       </main>
       {!bare && <Footer />}
       {!bare && route.name !== 'checkout' && <FloatingWhatsApp />}

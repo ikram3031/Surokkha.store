@@ -63,6 +63,11 @@ export function MobileNav({
             </li>
           ))}
           <li>
+            <button type="button" className={itemClass} onClick={() => go('/blog')}>
+              Blog
+            </button>
+          </li>
+          <li>
             <button
               type="button"
               className={itemClass}

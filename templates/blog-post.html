@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ব্লগ | সুরক্ষা</title>
+<meta id="metaDesc" name="description" content="সুরক্ষা ব্লগ: নিরাপদ ও সুস্থ সম্পর্ক নিয়ে সহজ ভাষায় সঠিক তথ্য।">
+<script>try{if(localStorage.theme==='dark'||(!localStorage.theme&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind (Play CDN)। Production-এ build করা CSS ব্যবহার করুন। কনফিগ blog-shared.js-এ -->
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script src="blog-shared.js"></script>
+<link rel="stylesheet" href="blog-shared.css">
+</head>
+
+<body class="bg-background text-foreground">
+
+<!-- পড়ার অগ্রগতি -->
+<div class="fixed inset-x-0 top-0 z-[60] h-1"><div id="progress" class="h-full w-0 bg-primary transition-[width] duration-100"></div></div>
+
+<div id="siteHeader"></div>
+
+<main class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 sm:pt-10">
+  <div class="grid gap-8 lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-10">
+    <div id="sidebarSlot"></div>
+
+    <div class="min-w-0">
+      <article id="article" class="mx-auto max-w-3xl"></article>
+
+      <!-- আরও পড়ুন -->
+      <section id="relatedWrap" class="mx-auto mt-14 max-w-3xl lg:max-w-none" hidden>
+        <h2 class="font-display text-2xl font-bold">আরও পড়ুন</h2>
+        <div id="related" class="mt-5 grid gap-5 sm:grid-cols-2 2xl:grid-cols-3"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div id="siteFooter"></div>
+
+<script>
+  const { POSTS, bn, esc, catOf, tagOf, icon, card, cta, fmtDate, postUrl, archiveUrl } = SB;
+  const $ = (id) => document.getElementById(id);
+
+  SB.mountChrome();
+  SB.initNewsletter();
+  const drawer = SB.initDrawer();
+
+  const slug = new URLSearchParams(location.search).get('slug');
+  const post = POSTS.find((p) => p.slug === slug) || (slug ? null : POSTS[0]);
+
+  // সাইডবারে এই লেখার ক্যাটাগরি হাইলাইট (লিংকগুলো আর্কাইভে নিয়ে যায়)
+  SB.fillSidebar({ cat: post ? post.cat : 'all' });
+  $('sbSearch').addEventListener('submit', () => drawer.close());
+
+  if (!post) {
+    document.title = 'লেখাটি পাওয়া যায়নি | সুরক্ষা';
+    $('article').innerHTML = `<div class="rounded-3xl border border-dashed border-border bg-card p-10 text-center">
+      <p class="font-display text-2xl font-bold">লেখাটি খুঁজে পাওয়া যায়নি</p>
+      <p class="mt-2 text-muted-foreground">লিংকটি ভুল হতে পারে বা লেখাটি সরানো হয়েছে।</p>
+      <a href="${SB.SITE.archive}" class="mt-6 inline-flex h-12 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground">সব লেখা দেখুন</a></div>`;
+  } else {
+    renderPost(post);
+  }
+
+  function renderPost(p) {
+    const c = catOf(p.cat);
+    document.title = `${p.title} | সুরক্ষা ব্লগ`;
+    $('metaDesc').setAttribute('content', p.excerpt);
+
+    // SEO: Article structured data
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Article', headline: p.title, description: p.excerpt, datePublished: p.date, inLanguage: 'bn', author: { '@type': 'Organization', name: 'সুরক্ষা টিম' }, publisher: { '@type': 'Organization', name: 'Surokkha' } });
+    document.head.appendChild(ld);
+
+    // মূল লেখা: h2-তে আইডি দেওয়া, সূচিপত্র তৈরি, মাঝখানে সিটিএ বসানো
+    const body = document.createElement('div');
+    body.className = 'prose-blog';
+    body.innerHTML = p.body;
+    const h2s = [...body.querySelectorAll('h2')];
+    h2s.forEach((h, i) => { h.id = 's' + (i + 1); });
+    if (h2s.length >= 3) h2s[2].before(Object.assign(document.createElement('div'), { innerHTML: cta('inline', p.title) }).firstElementChild);
+    else if (h2s.length >= 2) body.append(Object.assign(document.createElement('div'), { innerHTML: cta('inline', p.title) }).firstElementChild);
+
+    const toc = h2s.length > 1 ? `
+      <details class="group mt-8 rounded-2xl border border-border bg-card p-4 sm:p-5" open>
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-display text-lg font-bold">এই লেখায় কী আছে
+          <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 transition group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <ol id="toc" class="mt-3 space-y-1 text-[0.95rem]">${h2s.map((h) => `<li><a href="#${h.id}">${h.textContent}</a></li>`).join('')}</ol>
+      </details>` : '';
+
+    const url = location.href.split('#')[0];
+    const shareBtn = 'grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition hover:border-primary hover:text-primary';
+
+    // আগের / পরের লেখা
+    const byDate = [...POSTS].sort((a, b) => b.date.localeCompare(a.date));
+    const idx = byDate.indexOf(p), prev = byDate[idx + 1], next = byDate[idx - 1];
+    const nav = (q, label, dir) => q ? `<a href="${postUrl(q)}" class="group flex flex-1 flex-col gap-1 rounded-2xl border border-border bg-card p-4 transition hover:border-primary ${dir === 'next' ? 'text-right sm:items-end' : ''}">
+        <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">${label}</span>
+        <span class="font-display line-clamp-2 font-bold leading-snug group-hover:text-primary">${q.title}</span></a>` : '<span class="hidden flex-1 sm:block"></span>';
+
+    $('article').innerHTML = `
+      <nav aria-label="breadcrumb" class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <a href="${SB.SITE.archive}" class="hover:text-primary">ব্লগ</a><span aria-hidden="true">/</span>
+        <a href="${archiveUrl({ cat: p.cat })}" class="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-foreground hover:bg-accent/70">${c.name}</a>
+      </nav>
+
+      <h1 class="font-display mt-5 text-3xl font-extrabold leading-snug sm:text-4xl sm:leading-snug md:text-[2.6rem] md:leading-tight">${p.title}</h1>
+      <p class="mt-4 text-lg leading-relaxed text-muted-foreground">${p.excerpt}</p>
+
+      <div class="mt-6 flex flex-wrap items-center gap-3 border-y border-border py-4">
+        <span class="font-display grid h-11 w-11 place-items-center rounded-full bg-accent text-lg font-extrabold text-primary">সু</span>
+        <div class="min-w-0 flex-1 leading-tight">
+          <p class="font-semibold">সুরক্ষা টিম</p>
+          <p class="text-sm text-muted-foreground"><time datetime="${p.date}">${fmtDate(p.date)}</time> · ${bn(p.read)} মিনিট পড়া</p>
+        </div>
+        <div class="flex items-center gap-2" role="group" aria-label="শেয়ার করুন">
+          <a class="${shareBtn}" aria-label="WhatsApp-এ শেয়ার" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(p.title + ' ' + url)}">${icon('chat', 'h-5 w-5')}</a>
+          <a class="${shareBtn}" aria-label="Facebook-এ শেয়ার" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}"><span class="font-display text-lg font-extrabold leading-none">f</span></a>
+          <button type="button" id="copyLink" class="${shareBtn}" aria-label="লিংক কপি করুন">${icon('link', 'h-5 w-5')}</button>
+        </div>
+      </div>
+
+      <figure class="mt-6 overflow-hidden rounded-3xl shadow-sm">${SB.cover(p, 'aspect-[16/8]')}</figure>
+
+      ${toc}
+      <div id="bodyMount" class="mt-8"></div>
+
+      <!-- কাজে লেগেছে? -->
+      <div id="feedback" class="mt-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
+        <p class="font-semibold">লেখাটি কি কাজে লেগেছে?</p>
+        <div class="flex gap-2">
+          <button type="button" data-fb="yes" class="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 font-semibold transition hover:border-primary hover:text-primary">${icon('thumbUp', 'h-4 w-4')} হ্যাঁ</button>
+          <button type="button" data-fb="no" class="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 font-semibold transition hover:border-primary hover:text-primary">${icon('thumbDown', 'h-4 w-4')} না</button>
+        </div>
+        <p id="fbMsg" class="hidden w-full text-sm text-muted-foreground" role="status"></p>
+      </div>
+
+      <div class="mt-10">${cta('end', p.title)}</div>
+
+      <!-- ট্যাগ -->
+      <div class="mt-8 flex flex-wrap items-center gap-2">
+        <span class="mr-1 text-sm font-semibold text-muted-foreground">ট্যাগ:</span>
+        ${p.tags.map((t) => `<a href="${archiveUrl({ tag: t })}" class="tag-pill">#${tagOf(t).name}</a>`).join('')}
+      </div>
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">${nav(prev, '← আগের লেখা', 'prev')}${nav(next, 'পরের লেখা →', 'next')}</div>`;
+
+    $('bodyMount').replaceWith(body);
+
+    // লিংক কপি
+    $('copyLink').addEventListener('click', async (e) => {
+      const b = e.currentTarget;
+      try {
+        if (navigator.share && matchMedia('(pointer:coarse)').matches) await navigator.share({ title: p.title, url });
+        else await navigator.clipboard.writeText(url);
+        b.innerHTML = icon('check', 'h-5 w-5'); b.setAttribute('aria-label', 'কপি হয়েছে');
+        setTimeout(() => { b.innerHTML = icon('link', 'h-5 w-5'); b.setAttribute('aria-label', 'লিংক কপি করুন'); }, 1800);
+      } catch (err) { /* ব্যবহারকারী বাতিল করলে কিছু করার নেই */ }
+    });
+
+    // ফিডব্যাক (ব্রাউজারে সেভ হয়)
+    const fbKey = 'sb-fb-' + p.slug;
+    const showFb = (v) => {
+      const m = $('fbMsg'); m.classList.remove('hidden');
+      m.innerHTML = v === 'yes' ? 'ধন্যবাদ! আপনার মতামত আমাদের উৎসাহ দেয়।'
+        : `দুঃখিত! কী জানতে চান, <a class="font-semibold text-primary underline" target="_blank" rel="noopener" href="${SB.waLink('ব্লগ নিয়ে একটি প্রশ্ন ছিল: ' + p.title)}">WhatsApp-এ জিজ্ঞেস করুন</a>, আমরা সাহায্য করব।`;
+      document.querySelectorAll('[data-fb]').forEach((b) => { b.disabled = true; b.classList.toggle('!border-primary', b.dataset.fb === v); b.classList.toggle('!text-primary', b.dataset.fb === v); });
+    };
+    try { const old = localStorage.getItem(fbKey); if (old) showFb(old); } catch (e) { /* ignore */ }
+    document.querySelectorAll('[data-fb]').forEach((b) => b.addEventListener('click', () => { showFb(b.dataset.fb); try { localStorage.setItem(fbKey, b.dataset.fb); } catch (e) { /* ignore */ } }));
+
+    // সম্পর্কিত লেখা
+    const rel = POSTS.filter((x) => x !== p)
+      .map((x) => ({ x, s: (x.cat === p.cat ? 2 : 0) + x.tags.filter((t) => p.tags.includes(t)).length }))
+      .sort((a, b) => b.s - a.s || b.x.pop - a.x.pop).slice(0, 3).map((o) => o.x);
+    $('related').innerHTML = rel.map((x, i) => card(x, i)).join('');
+    $('relatedWrap').hidden = !rel.length;
+
+    // পড়ার অগ্রগতি + সূচিপত্রের সক্রিয় সেকশন
+    const links = [...document.querySelectorAll('#toc a')];
+    const onScroll = () => {
+      const r = $('article').getBoundingClientRect();
+      const pct = Math.min(100, Math.max(0, ((-r.top + innerHeight * 0.4) / r.height) * 100));
+      $('progress').style.width = pct + '%';
+      let cur = null;
+      h2s.forEach((h) => { if (h.getBoundingClientRect().top < 140) cur = h.id; });
+      links.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + cur));
+    };
+    addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  }
+</script>
+</body>
+</html>
