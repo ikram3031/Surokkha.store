@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blog &amp; SEO – Dashboard Template</title>
+
+  <!-- Tailwind v4 (browser build) + Lucide icons. Tokens below are copied from dashboard/src/index.css -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.4"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:is(.dark *));
+
+    :root {
+      --background: #ffffff;
+      --foreground: #111827;
+      --card: #ffffff;
+      --card-foreground: #111827;
+      --popover: #ffffff;
+      --primary: #c5a059;
+      --primary-foreground: #ffffff;
+      --secondary: #c5a059;
+      --secondary-foreground: #ffffff;
+      --muted: #f3f4f6;
+      --muted-foreground: #6b7280;
+      --accent: #eeeeee;
+      --destructive: #ef4444;
+      --border: #e5e7eb;
+      --input: #e5e7eb;
+      --ring: #c5a059;
+      --sidebar: #f3f4f6;
+      --sidebar-foreground: #111827;
+      --sidebar-accent: #ffffff;
+      --sidebar-border: #e5e7eb;
+      --radius: 0.25rem;
+    }
+    .dark {
+      --background: #121113;
+      --foreground: #c1c1c1;
+      --card: #121212;
+      --card-foreground: #c1c1c1;
+      --popover: #121113;
+      --primary: #c5a059;
+      --primary-foreground: #121113;
+      --secondary: #c5a059;
+      --secondary-foreground: #121113;
+      --muted: #222222;
+      --muted-foreground: #888888;
+      --accent: #333333;
+      --destructive: #ef4444;
+      --border: #222222;
+      --input: #222222;
+      --ring: #c5a059;
+      --sidebar: #121212;
+      --sidebar-foreground: #c1c1c1;
+      --sidebar-accent: #333333;
+      --sidebar-border: #222222;
+    }
+
+    @theme inline {
+      --color-background: var(--background);
+      --color-foreground: var(--foreground);
+      --color-card: var(--card);
+      --color-card-foreground: var(--card-foreground);
+      --color-popover: var(--popover);
+      --color-primary: var(--primary);
+      --color-primary-foreground: var(--primary-foreground);
+      --color-secondary: var(--secondary);
+      --color-secondary-foreground: var(--secondary-foreground);
+      --color-muted: var(--muted);
+      --color-muted-foreground: var(--muted-foreground);
+      --color-accent: var(--accent);
+      --color-destructive: var(--destructive);
+      --color-border: var(--border);
+      --color-input: var(--input);
+      --color-ring: var(--ring);
+      --color-sidebar: var(--sidebar);
+      --color-sidebar-foreground: var(--sidebar-foreground);
+      --color-sidebar-accent: var(--sidebar-accent);
+      --color-sidebar-border: var(--sidebar-border);
+      --font-mono: JetBrains Mono, monospace;
+      --radius-sm: var(--radius);
+      --radius-md: var(--radius);
+      --radius-lg: var(--radius);
+      --radius-xl: var(--radius);
+      --radius-2xl: var(--radius);
+      --radius-4xl: var(--radius);
+    }
+
+    @layer base {
+      * { @apply border-border; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+      body { @apply bg-background text-foreground; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    }
+
+    /* ---- Shared components (mirror components/ui/* and styles.json) ---- */
+    @layer components {
+      .card { @apply flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10; }
+      .card-h { @apply flex items-start justify-between gap-2 px-4; }
+      .card-t { @apply text-base font-medium leading-snug; }
+      .card-d { @apply text-sm text-muted-foreground; }
+      .card-c { @apply px-4; }
+      .card-f { @apply flex items-center gap-2 border-t bg-muted/50 p-4; }
+
+      .btn { @apply inline-flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-md border border-transparent bg-secondary px-2 text-xs font-medium text-secondary-foreground transition-all outline-none select-none hover:bg-secondary/80 focus-visible:ring-2 focus-visible:ring-ring/30 active:translate-y-px disabled:pointer-events-none disabled:opacity-50; }
+      .btn svg { @apply size-3.5 shrink-0; }
+      .btn-outline { @apply bg-transparent border-border text-foreground hover:bg-input/50 dark:bg-input/30; }
+      .btn-ghost { @apply bg-transparent text-foreground hover:bg-muted; }
+      .btn-destructive { @apply bg-destructive text-white hover:bg-destructive/90; }
+      .btn-cancel { @apply bg-transparent border-destructive/40 text-destructive hover:bg-destructive/10; }
+      .btn-icon { @apply size-7 px-0; }
+      .btn-sm { @apply h-6; }
+
+      .lbl { @apply mb-1.5 block text-xs font-semibold text-muted-foreground; }
+      .input { @apply h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30; }
+      .textarea { @apply w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring; }
+      select.input { @apply cursor-pointer pr-6; }
+
+      .badge { @apply inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-4xl border border-transparent px-2 text-xs font-medium; }
+      .badge svg { @apply size-3; }
+      .b-green { @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400; }
+      .b-amber { @apply bg-amber-500/10 text-amber-600 dark:text-amber-400; }
+      .b-blue { @apply bg-sky-500/10 text-sky-600 dark:text-sky-400; }
+      .b-red { @apply bg-destructive/10 text-destructive; }
+      .b-gray { @apply bg-muted text-muted-foreground; }
+      .b-gold { @apply bg-primary/15 text-primary; }
+
+      .tbl { @apply w-full text-left text-sm; }
+      .tbl th { @apply whitespace-nowrap border-b px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground; }
+      .tbl td { @apply border-b px-4 py-3 align-middle; }
+      .tbl tbody tr { @apply transition-colors hover:bg-muted/40; }
+      .tbl tbody tr:last-child td { @apply border-b-0; }
+
+      .chk { @apply size-4 cursor-pointer rounded border-input accent-[var(--primary)]; }
+      .tab { @apply -mb-px cursor-pointer whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground; }
+      .tab.on { @apply border-primary font-semibold text-foreground; }
+      .tool { @apply inline-flex size-7 cursor-pointer items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground; }
+      .tool svg { @apply size-3.5; }
+
+      /* sidebar items (see app-sidebar.jsx NavLink / NavSub / NavGroup) */
+      .nav-label { @apply px-2.5 pb-1.5 pt-3.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/80; }
+      .nav-link { @apply relative flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent; }
+      .nav-link svg { @apply size-4 shrink-0; }
+      .nav-link.on { @apply bg-primary/10 font-semibold text-foreground before:absolute before:-left-3 before:bottom-2 before:top-2 before:w-[3px] before:rounded-r before:bg-primary; }
+      .nav-link.on > svg:first-child { @apply text-primary; }
+      .nav-sub { @apply relative flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2.5 text-left text-[13px] text-sidebar-foreground transition-colors hover:bg-sidebar-accent; }
+      .nav-sub svg { @apply size-3.5 shrink-0; }
+      .nav-sub.on { @apply bg-primary/10 font-semibold text-foreground before:absolute before:-left-[calc(0.5rem+1px)] before:bottom-1.5 before:top-1.5 before:w-0.5 before:rounded before:bg-primary; }
+      .sub-label { @apply px-2 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70; }
+      .grp-body { @apply grid transition-[grid-template-rows] duration-200 ease-out; grid-template-rows: 0fr; }
+      .grp.open .grp-body { grid-template-rows: 1fr; }
+      .grp.open .chev { @apply rotate-180; }
+      .grp.has-on > button { @apply text-foreground; }
+      .grp.has-on > button > div > svg { @apply text-primary; }
+    }
+
+    .page { display: none; }
+    .page.active { display: block; animation: fade .18s ease-out; }
+    @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .ring-score { background: conic-gradient(var(--primary) calc(var(--v) * 1%), var(--muted) 0); }
+  </style>
+</head>
+
+<body>
+<div class="flex h-screen overflow-hidden">
+
+  <!-- ============================== SIDEBAR ============================== -->
+  <div id="overlay" class="fixed inset-0 z-40 hidden bg-black/50 md:hidden"></div>
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 -translate-x-full flex-col border-r border-sidebar-border bg-sidebar transition-transform md:static md:translate-x-0">
+    <div class="flex h-14 shrink-0 items-center justify-between border-b border-sidebar-border px-3 sm:h-16">
+      <div class="flex flex-col items-start gap-1">
+        <span class="text-lg font-extrabold tracking-tight text-primary leading-none">SUROKKHA</span>
+        <span class="ml-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-slate-400">v1.1.04</span>
+      </div>
+      <button id="closeSide" class="flex size-8 items-center justify-center rounded-lg border border-sidebar-border text-muted-foreground hover:bg-sidebar-accent hover:text-foreground md:hidden" aria-label="Close sidebar"><i data-lucide="x" class="size-4"></i></button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-3 pb-3">
+      <ul class="flex flex-col gap-0.5">
+        <li class="nav-label">Main</li>
+        <li><a href="#" class="nav-link"><i data-lucide="layout-dashboard"></i><span>Overview</span></a></li>
+
+        <li class="nav-label">Sell</li>
+        <li class="grp">
+          <button class="nav-link justify-between" data-toggle><div class="flex items-center gap-2.5"><i data-lucide="shopping-bag"></i><span>Orders</span></div><i data-lucide="chevron-down" class="chev !size-3.5 opacity-60 transition-transform duration-200"></i></button>
+          <div class="grp-body"><div class="min-h-0 overflow-hidden"><ul class="my-1 ml-[1.1rem] flex flex-col gap-px border-l border-sidebar-border px-2"><li><a href="#" class="nav-sub"><i data-lucide="list-ordered"></i>Orders List</a></li><li><a href="#" class="nav-sub"><i data-lucide="shopping-cart"></i>Abandoned Checkouts</a></li></ul></div></div>
+        </li>
+        <li><a href="#" class="nav-link"><i data-lucide="users"></i><span>Customers</span></a></li>
+        <li><a href="#" class="nav-link"><i data-lucide="star"></i><span>Reviews</span></a></li>
+
+        <li class="nav-label">Catalog</li>
+        <li><a href="#" class="nav-link"><i data-lucide="package"></i><span>Products</span></a></li>
+        <li><a href="#" class="nav-link"><i data-lucide="images"></i><span>Media</span></a></li>
+
+        <!-- ================= NEW: CONTENT ================= -->
+        <li class="nav-label">Content</li>
+
+        <li class="grp" data-grp="blog">
+          <button class="nav-link justify-between" data-toggle><div class="flex items-center gap-2.5"><i data-lucide="newspaper"></i><span>Blog</span></div><i data-lucide="chevron-down" class="chev !size-3.5 opacity-60 transition-transform duration-200"></i></button>
+          <div class="grp-body"><div class="min-h-0 overflow-hidden"><ul class="my-1 ml-[1.1rem] flex flex-col gap-px border-l border-sidebar-border px-2">
+            <li><button class="nav-sub" data-nav="blog-overview"><i data-lucide="layout-dashboard"></i>Blog Overview</button></li>
+            <li><button class="nav-sub" data-nav="blog-posts"><i data-lucide="file-text"></i>All Posts</button></li>
+            <li><button class="nav-sub" data-nav="blog-editor"><i data-lucide="plus-circle"></i>New Post</button></li>
+            <li><button class="nav-sub" data-nav="blog-categories"><i data-lucide="folder"></i>Categories</button></li>
+            <li><button class="nav-sub" data-nav="blog-tags"><i data-lucide="tag"></i>Tags</button></li>
+            <li><button class="nav-sub" data-nav="blog-comments"><i data-lucide="message-square"></i>Comments<span class="badge b-gold ml-auto">4</span></button></li>
+          </ul></div></div>
+        </li>
+
+        <li class="grp" data-grp="seo">
+          <button class="nav-link justify-between" data-toggle><div class="flex items-center gap-2.5"><i data-lucide="search"></i><span>SEO</span></div><i data-lucide="chevron-down" class="chev !size-3.5 opacity-60 transition-transform duration-200"></i></button>
+          <div class="grp-body"><div class="min-h-0 overflow-hidden"><ul class="my-1 ml-[1.1rem] flex flex-col gap-px border-l border-sidebar-border px-2">
+            <li><button class="nav-sub" data-nav="seo-overview"><i data-lucide="gauge"></i>SEO Overview</button></li>
+            <li><button class="nav-sub" data-nav="seo-audit"><i data-lucide="scan-search"></i>Site Audit</button></li>
+            <div class="sub-label">Optimize</div>
+            <li><button class="nav-sub" data-nav="seo-meta"><i data-lucide="heading"></i>Meta &amp; Titles</button></li>
+            <li><button class="nav-sub" data-nav="seo-social"><i data-lucide="share-2"></i>Social &amp; Schema</button></li>
+            <li><button class="nav-sub" data-nav="seo-keywords"><i data-lucide="key-round"></i>Keywords</button></li>
+            <div class="sub-label">Technical</div>
+            <li><button class="nav-sub" data-nav="seo-sitemap"><i data-lucide="map"></i>Sitemap &amp; Robots</button></li>
+            <li><button class="nav-sub" data-nav="seo-redirects"><i data-lucide="arrow-right-left"></i>Redirects &amp; 404s</button></li>
+          </ul></div></div>
+        </li>
+
+        <li class="nav-label">Finance</li>
+        <li><a href="#" class="nav-link"><i data-lucide="landmark"></i><span>Accounts</span></a></li>
+        <li><a href="#" class="nav-link"><i data-lucide="bar-chart-3"></i><span>Reports</span></a></li>
+
+        <li class="nav-label">System</li>
+        <li><a href="#" class="nav-link"><i data-lucide="settings"></i><span>Settings</span></a></li>
+      </ul>
+    </nav>
+
+    <div class="mt-auto border-t border-sidebar-border p-3">
+      <button class="flex w-full items-center gap-2.5 rounded-lg p-2 text-left outline-none transition-colors hover:bg-sidebar-accent">
+        <span class="relative flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">M<span class="absolute -bottom-0.5 -right-0.5 size-2.5 rounded border-2 border-sidebar bg-emerald-500"></span></span>
+        <span class="grid min-w-0 flex-1 leading-tight"><span class="truncate text-sm font-semibold">Marketing Expert</span><span class="truncate text-xs capitalize text-muted-foreground">marketing</span></span>
+        <i data-lucide="chevrons-up-down" class="size-4 opacity-60"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============================== MAIN ============================== -->
+  <div class="flex w-full min-w-0 flex-1 flex-col overflow-hidden">
+    <header class="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/95 px-3 backdrop-blur-md sm:h-16 sm:gap-4 sm:px-6">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="openSide" class="flex size-[34px] items-center justify-center rounded-lg border border-[#C5A059]/40 bg-[#C5A059]/15 text-[#C5A059] hover:bg-[#C5A059]/25 md:hidden" aria-label="Open sidebar"><i data-lucide="menu" class="size-4"></i></button>
+        <button class="flex size-[34px] items-center justify-center rounded-lg border border-primary bg-primary text-white hover:bg-primary/85" title="Refresh"><i data-lucide="rotate-cw" class="size-4"></i></button>
+        <nav id="crumbs" class="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex"></nav>
+      </div>
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <div class="hidden items-center gap-2 md:flex">
+          <button class="btn btn-outline btn-icon" title="Clear cache"><i data-lucide="eraser"></i></button>
+          <button class="btn btn-outline"><i data-lucide="languages"></i>EN</button>
+          <button id="themeBtn" class="btn btn-outline btn-icon" title="Toggle theme"><i data-lucide="moon"></i></button>
+        </div>
+        <button class="btn btn-outline btn-icon relative" title="Notifications"><i data-lucide="bell"></i><span class="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-primary"></span></button>
+      </div>
+    </header>
+
+    <main id="main" class="min-w-0 flex-1 overflow-y-auto bg-muted/20 p-2 sm:p-6">
+      <div class="mx-auto w-full max-w-[1440px]">
+
+<!-- ====================================================================== -->
+<!--                               BLOG PAGES                               -->
+<!-- ====================================================================== -->
+
+<!-- ---------- Blog Overview ---------- -->
+<section class="page space-y-6" data-page="blog-overview" data-title="Blog Overview" data-parent="Blog">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">Blog Overview</h1><p class="text-sm text-muted-foreground">Performance of your articles at a glance.</p></div>
+    <div class="flex gap-2"><button class="btn btn-outline"><i data-lucide="calendar"></i>Last 30 days</button><button class="btn" data-nav="blog-editor"><i data-lucide="plus"></i>New Post</button></div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Total Posts</div><i data-lucide="file-text" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">128</div><p class="mt-1 text-xs text-emerald-500">+12 from last month</p></div></div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Total Views</div><i data-lucide="eye" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">48.2K</div><p class="mt-1 text-xs text-emerald-500">+18.4% from last month</p></div></div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Avg. Read Time</div><i data-lucide="clock" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">3m 42s</div><p class="mt-1 text-xs text-destructive">-0.2% from last month</p></div></div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Pending Comments</div><i data-lucide="message-square" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">4</div><p class="mt-1 text-xs text-muted-foreground">Needs moderation</p></div></div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <div class="card lg:col-span-2">
+      <div class="card-h"><div><div class="card-t">Views by Day</div><div class="card-d">Blog traffic, last 14 days</div></div></div>
+      <div class="card-c">
+        <div class="flex h-48 items-end gap-2">
+          <script>document.write([42,55,38,70,64,81,59,92,77,66,88,73,95,84].map((v,i)=>`<div class="group relative flex flex-1 flex-col items-center justify-end gap-1"><div class="w-full rounded-t bg-primary/70 transition-all hover:bg-primary" style="height:${v}%"></div><span class="text-[10px] text-muted-foreground">${i+1}</span></div>`).join(''))</script>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">Top Posts</div></div>
+      <div class="card-c space-y-3">
+        <div class="flex items-center gap-3"><span class="flex size-6 items-center justify-center rounded bg-primary/15 text-xs font-bold text-primary">1</span><div class="min-w-0 flex-1"><p class="truncate text-sm font-medium">How to choose your signature attar</p><p class="text-xs text-muted-foreground">9,420 views</p></div></div>
+        <div class="flex items-center gap-3"><span class="flex size-6 items-center justify-center rounded bg-primary/15 text-xs font-bold text-primary">2</span><div class="min-w-0 flex-1"><p class="truncate text-sm font-medium">Oud vs Musk: what's the difference?</p><p class="text-xs text-muted-foreground">7,115 views</p></div></div>
+        <div class="flex items-center gap-3"><span class="flex size-6 items-center justify-center rounded bg-primary/15 text-xs font-bold text-primary">3</span><div class="min-w-0 flex-1"><p class="truncate text-sm font-medium">Eid gift guide 2026</p><p class="text-xs text-muted-foreground">5,980 views</p></div></div>
+        <div class="flex items-center gap-3"><span class="flex size-6 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">4</span><div class="min-w-0 flex-1"><p class="truncate text-sm font-medium">Perfume storage tips for summer</p><p class="text-xs text-muted-foreground">3,204 views</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <div class="card lg:col-span-2">
+      <div class="card-h"><div class="card-t">Recent Activity</div><button class="btn btn-ghost btn-sm" data-nav="blog-posts">View all<i data-lucide="arrow-right"></i></button></div>
+      <div class="overflow-x-auto"><table class="tbl">
+        <thead><tr><th>Post</th><th>Author</th><th>Status</th><th class="text-right">Updated</th></tr></thead>
+        <tbody>
+          <tr><td class="font-medium">Eid gift guide 2026</td><td class="text-muted-foreground">Rafi</td><td><span class="badge b-green">Published</span></td><td class="text-right text-muted-foreground">2h ago</td></tr>
+          <tr><td class="font-medium">Winter fragrance layering</td><td class="text-muted-foreground">Nadia</td><td><span class="badge b-amber">Scheduled</span></td><td class="text-right text-muted-foreground">5h ago</td></tr>
+          <tr><td class="font-medium">Behind the scenes: our distillery</td><td class="text-muted-foreground">Rafi</td><td><span class="badge b-gray">Draft</span></td><td class="text-right text-muted-foreground">Yesterday</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">Content Pipeline</div></div>
+      <div class="card-c space-y-3 text-sm">
+        <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2 rounded-full bg-emerald-500"></span>Published</span><b>112</b></div>
+        <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2 rounded-full bg-amber-500"></span>Scheduled</span><b>6</b></div>
+        <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2 rounded-full bg-muted-foreground"></span>Draft</span><b>9</b></div>
+        <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="size-2 rounded-full bg-sky-500"></span>In review</span><b>1</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- All Posts ---------- -->
+<section class="page space-y-6" data-page="blog-posts" data-title="All Posts" data-parent="Blog">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">All Posts</h1><p class="text-sm text-muted-foreground">Create, edit and schedule your articles.</p></div>
+    <div class="flex gap-2"><button class="btn btn-outline"><i data-lucide="download"></i>Export</button><button class="btn" data-nav="blog-editor"><i data-lucide="plus"></i>New Post</button></div>
+  </div>
+
+  <div class="card !gap-0 !py-0">
+    <div class="flex flex-wrap items-center gap-x-1 border-b px-2">
+      <button class="tab on">All <span class="ml-1 text-muted-foreground">128</span></button>
+      <button class="tab">Published <span class="ml-1 text-muted-foreground">112</span></button>
+      <button class="tab">Scheduled <span class="ml-1 text-muted-foreground">6</span></button>
+      <button class="tab">Draft <span class="ml-1 text-muted-foreground">9</span></button>
+      <button class="tab">Trash <span class="ml-1 text-muted-foreground">1</span></button>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 border-b p-3">
+      <div class="relative min-w-[200px] flex-1 sm:max-w-xs"><i data-lucide="search" class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"></i><input class="input pl-8" placeholder="Search posts…" /></div>
+      <select class="input !w-auto"><option>All categories</option><option>Guides</option><option>News</option><option>Care Tips</option></select>
+      <select class="input !w-auto"><option>All authors</option><option>Rafi</option><option>Nadia</option></select>
+      <select class="input !w-auto"><option>Newest first</option><option>Most viewed</option><option>Title A–Z</option></select>
+      <div class="ml-auto hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><select class="input !h-7 !w-auto"><option>Bulk actions</option><option>Publish</option><option>Move to trash</option></select><button class="btn btn-outline">Apply</button></div>
+    </div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th class="w-10"><input type="checkbox" class="chk" data-all /></th><th>Title</th><th>Category</th><th>Author</th><th>SEO</th><th>Status</th><th class="text-right">Views</th><th>Date</th><th class="w-24"></th></tr></thead>
+      <tbody>
+        <tr><td><input type="checkbox" class="chk" /></td><td><div class="flex items-center gap-3"><div class="size-10 shrink-0 rounded-md bg-gradient-to-br from-primary/60 to-primary/20"></div><div class="min-w-0"><p class="max-w-[260px] truncate font-medium">How to choose your signature attar</p><p class="font-mono text-[11px] text-muted-foreground">/blog/choose-signature-attar</p></div></div></td><td>Guides</td><td>Rafi</td><td><span class="badge b-green">92</span></td><td><span class="badge b-green">Published</span></td><td class="text-right">9,420</td><td class="whitespace-nowrap text-muted-foreground">Oct 28, 2026</td><td><div class="flex justify-end gap-1"><button class="tool" title="View"><i data-lucide="eye"></i></button><button class="tool" title="Edit" data-nav="blog-editor"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive" title="Trash"><i data-lucide="trash-2"></i></button></div></td></tr>
+        <tr><td><input type="checkbox" class="chk" /></td><td><div class="flex items-center gap-3"><div class="size-10 shrink-0 rounded-md bg-gradient-to-br from-sky-500/50 to-sky-500/10"></div><div class="min-w-0"><p class="max-w-[260px] truncate font-medium">Oud vs Musk: what's the difference?</p><p class="font-mono text-[11px] text-muted-foreground">/blog/oud-vs-musk</p></div></div></td><td>Guides</td><td>Nadia</td><td><span class="badge b-green">88</span></td><td><span class="badge b-green">Published</span></td><td class="text-right">7,115</td><td class="whitespace-nowrap text-muted-foreground">Oct 21, 2026</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="eye"></i></button><button class="tool" data-nav="blog-editor"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+        <tr><td><input type="checkbox" class="chk" /></td><td><div class="flex items-center gap-3"><div class="size-10 shrink-0 rounded-md bg-gradient-to-br from-emerald-500/50 to-emerald-500/10"></div><div class="min-w-0"><p class="max-w-[260px] truncate font-medium">Winter fragrance layering</p><p class="font-mono text-[11px] text-muted-foreground">/blog/winter-layering</p></div></div></td><td>Care Tips</td><td>Nadia</td><td><span class="badge b-amber">64</span></td><td><span class="badge b-amber">Scheduled</span></td><td class="text-right">—</td><td class="whitespace-nowrap text-muted-foreground">Nov 02, 2026</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="eye"></i></button><button class="tool" data-nav="blog-editor"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+        <tr><td><input type="checkbox" class="chk" /></td><td><div class="flex items-center gap-3"><div class="size-10 shrink-0 rounded-md bg-gradient-to-br from-violet-500/50 to-violet-500/10"></div><div class="min-w-0"><p class="max-w-[260px] truncate font-medium">Behind the scenes: our distillery</p><p class="font-mono text-[11px] text-muted-foreground">/blog/our-distillery</p></div></div></td><td>News</td><td>Rafi</td><td><span class="badge b-red">41</span></td><td><span class="badge b-gray">Draft</span></td><td class="text-right">—</td><td class="whitespace-nowrap text-muted-foreground">Oct 29, 2026</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="eye"></i></button><button class="tool" data-nav="blog-editor"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+        <tr><td><input type="checkbox" class="chk" /></td><td><div class="flex items-center gap-3"><div class="size-10 shrink-0 rounded-md bg-gradient-to-br from-rose-500/50 to-rose-500/10"></div><div class="min-w-0"><p class="max-w-[260px] truncate font-medium">Eid gift guide 2026</p><p class="font-mono text-[11px] text-muted-foreground">/blog/eid-gift-guide-2026</p></div></div></td><td>Guides</td><td>Rafi</td><td><span class="badge b-green">95</span></td><td><span class="badge b-green">Published</span></td><td class="text-right">5,980</td><td class="whitespace-nowrap text-muted-foreground">Oct 30, 2026</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="eye"></i></button><button class="tool" data-nav="blog-editor"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+      </tbody>
+    </table></div>
+    <div class="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-3 text-xs text-muted-foreground">
+      <span>Showing 1–5 of 128</span>
+      <div class="flex items-center gap-1"><button class="btn btn-outline btn-icon" disabled><i data-lucide="chevron-left"></i></button><button class="btn btn-icon">1</button><button class="btn btn-outline btn-icon">2</button><button class="btn btn-outline btn-icon">3</button><span class="px-1">…</span><button class="btn btn-outline btn-icon">26</button><button class="btn btn-outline btn-icon"><i data-lucide="chevron-right"></i></button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Post Editor (with SEO card) ---------- -->
+<section class="page space-y-6" data-page="blog-editor" data-title="New Post" data-parent="Blog">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3"><button class="btn btn-outline btn-icon" data-nav="blog-posts" title="Back"><i data-lucide="arrow-left"></i></button><div><h1 class="text-xl font-bold">New Post</h1><p class="text-sm text-muted-foreground">Autosaved 12 seconds ago</p></div></div>
+    <div class="flex gap-2"><button class="btn btn-outline"><i data-lucide="eye"></i>Preview</button><button class="btn btn-outline">Save Draft</button><button class="btn"><i data-lucide="send"></i>Publish</button></div>
+  </div>
+
+  <div class="grid gap-4 xl:grid-cols-[1fr_340px]">
+    <div class="min-w-0 space-y-4">
+      <div class="card">
+        <div class="card-c space-y-4">
+          <div><label class="lbl">Title</label><input id="pTitle" class="input !h-10 !text-base font-semibold" placeholder="Enter post title…" value="How to choose your signature attar" /></div>
+          <div><label class="lbl">Permalink</label>
+            <div class="flex items-center overflow-hidden rounded-lg border border-input text-sm"><span class="bg-muted px-2.5 py-1.5 font-mono text-xs text-muted-foreground">surokkha.store/blog/</span><input id="pSlug" class="h-8 min-w-0 flex-1 bg-transparent px-2.5 font-mono text-xs outline-none" value="choose-signature-attar" /></div>
+          </div>
+          <div>
+            <label class="lbl">Content</label>
+            <div class="overflow-hidden rounded-lg border border-input">
+              <div class="flex flex-wrap items-center gap-0.5 border-b bg-muted/40 p-1.5">
+                <select class="input !h-7 !w-28 !text-xs"><option>Paragraph</option><option>Heading 2</option><option>Heading 3</option></select>
+                <span class="mx-1 h-5 w-px bg-border"></span>
+                <button class="tool"><i data-lucide="bold"></i></button><button class="tool"><i data-lucide="italic"></i></button><button class="tool"><i data-lucide="underline"></i></button><button class="tool"><i data-lucide="strikethrough"></i></button>
+                <span class="mx-1 h-5 w-px bg-border"></span>
+                <button class="tool"><i data-lucide="list"></i></button><button class="tool"><i data-lucide="list-ordered"></i></button><button class="tool"><i data-lucide="quote"></i></button>
+                <span class="mx-1 h-5 w-px bg-border"></span>
+                <button class="tool"><i data-lucide="link"></i></button><button class="tool"><i data-lucide="image"></i></button><button class="tool"><i data-lucide="table"></i></button><button class="tool"><i data-lucide="code"></i></button>
+                <span class="ml-auto"></span><button class="tool"><i data-lucide="undo-2"></i></button><button class="tool"><i data-lucide="redo-2"></i></button>
+              </div>
+              <div class="min-h-[320px] space-y-3 p-4 text-sm leading-relaxed" contenteditable="true">
+                <h2 class="text-lg font-bold">Start with the notes, not the name</h2>
+                <p>Every attar is a story told in layers. Before you buy, learn the three families — woody, floral and musky — and notice which one your skin warms to first.</p>
+                <p class="text-muted-foreground">Start writing here…</p>
+              </div>
+              <div class="flex justify-between border-t bg-muted/30 px-3 py-1.5 text-[11px] text-muted-foreground"><span>Words: 148</span><span>Reading time: ~1 min</span></div>
+            </div>
+          </div>
+          <div><label class="lbl">Excerpt</label><textarea rows="3" class="textarea" placeholder="Short summary shown on blog cards…"></textarea></div>
+        </div>
+      </div>
+
+      <!-- SEO card (extends SEOOverviewCard.jsx) -->
+      <div class="card">
+        <div class="card-h !items-center border-b pb-4"><div class="card-t flex items-center gap-2"><i data-lucide="search" class="size-4 text-primary"></i>Search Engine Optimization (SEO)</div><span class="badge b-green">Score 92 · Good</span></div>
+        <div class="card-c space-y-4">
+          <div>
+            <label class="lbl">Focus keyword</label>
+            <input class="input" value="signature attar" />
+          </div>
+          <div>
+            <div class="mb-1.5 flex items-center justify-between"><label class="lbl !mb-0">Meta title</label><span id="mtCount" class="text-[11px] text-muted-foreground">0 / 60</span></div>
+            <input id="mTitle" class="input" placeholder="e.g. How to Choose Your Signature Attar | Surokkha" value="How to Choose Your Signature Attar | Surokkha" />
+            <div class="mt-1.5 h-1 overflow-hidden rounded bg-muted"><div id="mtBar" class="h-full bg-emerald-500 transition-all" style="width:0"></div></div>
+          </div>
+          <div>
+            <div class="mb-1.5 flex items-center justify-between"><label class="lbl !mb-0">Meta description</label><span id="mdCount" class="text-[11px] text-muted-foreground">0 / 160</span></div>
+            <textarea id="mDesc" rows="3" class="textarea" placeholder="Brief summary for search engine results…">Learn how to pick an attar that matches your skin and style. Our perfumers explain woody, floral and musky notes in plain language.</textarea>
+            <div class="mt-1.5 h-1 overflow-hidden rounded bg-muted"><div id="mdBar" class="h-full bg-emerald-500 transition-all" style="width:0"></div></div>
+          </div>
+
+          <div>
+            <label class="lbl">Search preview</label>
+            <div class="rounded-lg border bg-background p-4">
+              <div class="mb-3 flex gap-1"><button class="tab on !py-1" data-serp="d">Desktop</button><button class="tab !py-1" data-serp="m">Mobile</button></div>
+              <div id="serp" class="max-w-[600px]">
+                <div class="flex items-center gap-2 text-xs"><span class="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-bold">S</span><div><p class="leading-tight text-foreground">Surokkha</p><p id="serpUrl" class="leading-tight text-muted-foreground">https://surokkha.store › blog › choose-signature-attar</p></div></div>
+                <p id="serpTitle" class="mt-1.5 text-xl leading-snug text-[#1a0dab] dark:text-[#8ab4f8]">How to Choose Your Signature Attar | Surokkha</p>
+                <p id="serpDesc" class="mt-1 text-sm leading-snug text-muted-foreground"></p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="lbl">SEO checklist</label>
+            <ul class="space-y-1.5 text-xs">
+              <li class="flex items-center gap-2"><i data-lucide="circle-check" class="size-4 text-emerald-500"></i>Focus keyword appears in the title</li>
+              <li class="flex items-center gap-2"><i data-lucide="circle-check" class="size-4 text-emerald-500"></i>Focus keyword appears in the first paragraph</li>
+              <li class="flex items-center gap-2"><i data-lucide="circle-check" class="size-4 text-emerald-500"></i>Meta description length is within range</li>
+              <li class="flex items-center gap-2"><i data-lucide="triangle-alert" class="size-4 text-amber-500"></i>Add at least one internal link</li>
+              <li class="flex items-center gap-2"><i data-lucide="circle-x" class="size-4 text-destructive"></i>Featured image is missing alt text</li>
+            </ul>
+          </div>
+
+          <details class="rounded-lg border">
+            <summary class="flex cursor-pointer items-center justify-between px-3 py-2 text-xs font-semibold">Advanced <i data-lucide="chevron-down" class="size-3.5"></i></summary>
+            <div class="grid gap-3 border-t p-3 sm:grid-cols-2">
+              <div><label class="lbl">Canonical URL</label><input class="input" placeholder="https://…" /></div>
+              <div><label class="lbl">Robots</label><select class="input"><option>index, follow</option><option>noindex, follow</option><option>noindex, nofollow</option></select></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar cards -->
+    <div class="space-y-4">
+      <div class="card">
+        <div class="card-h"><div class="card-t">Publish</div></div>
+        <div class="card-c space-y-3 text-sm">
+          <div class="flex items-center justify-between"><span class="text-muted-foreground">Status</span><span class="badge b-gray">Draft</span></div>
+          <div><label class="lbl">Visibility</label><select class="input"><option>Public</option><option>Private</option><option>Password protected</option></select></div>
+          <div><label class="lbl">Publish date</label><input type="datetime-local" class="input" /></div>
+          <label class="flex cursor-pointer items-center gap-2 text-xs"><input type="checkbox" class="chk" checked />Allow comments</label>
+          <label class="flex cursor-pointer items-center gap-2 text-xs"><input type="checkbox" class="chk" />Feature on homepage</label>
+        </div>
+        <div class="card-f"><button class="btn btn-outline flex-1">Save Draft</button><button class="btn flex-1">Publish</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><div class="card-t">Featured Image</div></div>
+        <div class="card-c space-y-3">
+          <div class="flex aspect-video cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-primary"><i data-lucide="upload" class="size-5"></i><span class="text-xs font-medium">Click or drop an image</span><span class="text-[10px]">1200 × 630 recommended</span></div>
+          <div><label class="lbl">Alt text</label><input class="input" placeholder="Describe the image" /></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><div class="card-t">Category</div><button class="btn btn-ghost btn-sm"><i data-lucide="plus"></i>New</button></div>
+        <div class="card-c space-y-2 text-sm">
+          <label class="flex cursor-pointer items-center gap-2"><input type="checkbox" class="chk" checked />Guides</label>
+          <label class="flex cursor-pointer items-center gap-2"><input type="checkbox" class="chk" />News</label>
+          <label class="flex cursor-pointer items-center gap-2"><input type="checkbox" class="chk" />Care Tips</label>
+          <label class="flex cursor-pointer items-center gap-2"><input type="checkbox" class="chk" />Behind the Scenes</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><div class="card-t">Tags</div></div>
+        <div class="card-c space-y-2">
+          <input class="input" placeholder="Add tag and press Enter" />
+          <div class="flex flex-wrap gap-1.5"><span class="badge b-gold">attar <i data-lucide="x" class="cursor-pointer"></i></span><span class="badge b-gold">oud <i data-lucide="x" class="cursor-pointer"></i></span><span class="badge b-gold">guide <i data-lucide="x" class="cursor-pointer"></i></span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><div class="card-t">Author</div></div>
+        <div class="card-c"><select class="input"><option>Rafi</option><option>Nadia</option></select></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Categories ---------- -->
+<section class="page space-y-6" data-page="blog-categories" data-title="Categories" data-parent="Blog">
+  <div><h1 class="text-xl font-bold">Categories</h1><p class="text-sm text-muted-foreground">Organise posts into topics.</p></div>
+  <div class="grid gap-4 lg:grid-cols-[340px_1fr]">
+    <div class="card self-start">
+      <div class="card-h"><div class="card-t">Add Category</div></div>
+      <div class="card-c space-y-3">
+        <div><label class="lbl">Name</label><input class="input" placeholder="e.g. Care Tips" /></div>
+        <div><label class="lbl">Slug</label><input class="input font-mono text-xs" placeholder="care-tips" /></div>
+        <div><label class="lbl">Parent</label><select class="input"><option>None</option><option>Guides</option><option>News</option></select></div>
+        <div><label class="lbl">Description</label><textarea rows="3" class="textarea"></textarea></div>
+        <div><label class="lbl">SEO title</label><input class="input" /></div>
+      </div>
+      <div class="card-f"><button class="btn w-full"><i data-lucide="plus"></i>Add Category</button></div>
+    </div>
+    <div class="card !gap-0 !py-0">
+      <div class="flex items-center gap-2 border-b p-3"><div class="relative max-w-xs flex-1"><i data-lucide="search" class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"></i><input class="input pl-8" placeholder="Search categories…" /></div></div>
+      <div class="overflow-x-auto"><table class="tbl">
+        <thead><tr><th>Name</th><th>Slug</th><th class="text-right">Posts</th><th class="w-24"></th></tr></thead>
+        <tbody>
+          <tr><td class="font-medium">Guides</td><td class="font-mono text-xs text-muted-foreground">guides</td><td class="text-right">64</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+          <tr><td class="font-medium pl-8"><span class="text-muted-foreground">— </span>Buying Guides</td><td class="font-mono text-xs text-muted-foreground">buying-guides</td><td class="text-right">22</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+          <tr><td class="font-medium">News</td><td class="font-mono text-xs text-muted-foreground">news</td><td class="text-right">31</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+          <tr><td class="font-medium">Care Tips</td><td class="font-mono text-xs text-muted-foreground">care-tips</td><td class="text-right">19</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+          <tr><td class="font-medium">Behind the Scenes</td><td class="font-mono text-xs text-muted-foreground">behind-the-scenes</td><td class="text-right">14</td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Tags ---------- -->
+<section class="page space-y-6" data-page="blog-tags" data-title="Tags" data-parent="Blog">
+  <div class="flex flex-wrap items-center justify-between gap-3"><div><h1 class="text-xl font-bold">Tags</h1><p class="text-sm text-muted-foreground">Fine-grained labels for related posts.</p></div><button class="btn btn-outline"><i data-lucide="git-merge"></i>Merge tags</button></div>
+  <div class="grid gap-4 lg:grid-cols-[340px_1fr]">
+    <div class="card self-start">
+      <div class="card-h"><div class="card-t">Add Tag</div></div>
+      <div class="card-c space-y-3"><div><label class="lbl">Name</label><input class="input" /></div><div><label class="lbl">Slug</label><input class="input font-mono text-xs" /></div></div>
+      <div class="card-f"><button class="btn w-full"><i data-lucide="plus"></i>Add Tag</button></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">All Tags <span class="text-muted-foreground">(42)</span></div></div>
+      <div class="card-c flex flex-wrap gap-2">
+        <span class="badge b-gold !h-7 !px-3 !text-sm">attar <b class="ml-1 text-xs opacity-70">34</b></span>
+        <span class="badge b-gold !h-7 !px-3 !text-sm">oud <b class="ml-1 text-xs opacity-70">28</b></span>
+        <span class="badge b-gray !h-7 !px-3 !text-sm">musk <b class="ml-1 text-xs opacity-70">17</b></span>
+        <span class="badge b-gray !h-7 !px-3 !text-sm">gift <b class="ml-1 text-xs opacity-70">15</b></span>
+        <span class="badge b-gray !h-7 !px-3 !text-sm">eid <b class="ml-1 text-xs opacity-70">12</b></span>
+        <span class="badge b-gray !h-7 !px-3 !text-sm">rose <b class="ml-1 text-xs opacity-70">9</b></span>
+        <span class="badge b-gray !h-7 !px-3 !text-sm">layering <b class="ml-1 text-xs opacity-70">7</b></span>
+        <span class="badge b-gray !h-7 !px-3 !text-sm">summer <b class="ml-1 text-xs opacity-70">5</b></span>
+        <span class="badge b-gray !h-7 !px-3 !text-sm">storage <b class="ml-1 text-xs opacity-70">3</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Comments ---------- -->
+<section class="page space-y-6" data-page="blog-comments" data-title="Comments" data-parent="Blog">
+  <div><h1 class="text-xl font-bold">Comments</h1><p class="text-sm text-muted-foreground">Moderate reader discussions.</p></div>
+  <div class="card !gap-0 !py-0">
+    <div class="flex flex-wrap items-center gap-x-1 border-b px-2">
+      <button class="tab on">Pending <span class="ml-1 text-muted-foreground">4</span></button><button class="tab">Approved</button><button class="tab">Spam <span class="ml-1 text-muted-foreground">11</span></button><button class="tab">Trash</button>
+    </div>
+    <div class="divide-y">
+      <div class="flex flex-wrap gap-3 p-4 sm:flex-nowrap">
+        <input type="checkbox" class="chk mt-1" />
+        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-sm font-bold text-primary">T</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-x-2 text-sm"><b>Tanvir H.</b><span class="text-xs text-muted-foreground">tanvir@example.com · 2h ago</span></div>
+          <p class="mt-1 text-sm">Loved this guide! Which attar would you suggest for daily office wear?</p>
+          <p class="mt-1 text-xs text-muted-foreground">On: <a href="#" class="text-primary hover:underline">How to choose your signature attar</a></p>
+        </div>
+        <div class="flex shrink-0 items-start gap-1"><button class="btn btn-outline"><i data-lucide="check"></i>Approve</button><button class="btn btn-outline"><i data-lucide="reply"></i>Reply</button><button class="btn btn-cancel btn-icon"><i data-lucide="trash-2"></i></button></div>
+      </div>
+      <div class="flex flex-wrap gap-3 p-4 sm:flex-nowrap">
+        <input type="checkbox" class="chk mt-1" />
+        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/15 text-sm font-bold text-sky-500">S</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-x-2 text-sm"><b>Sumaiya R.</b><span class="text-xs text-muted-foreground">sumaiya@example.com · 6h ago</span></div>
+          <p class="mt-1 text-sm">Can I get a sample of the oud before buying the full bottle?</p>
+          <p class="mt-1 text-xs text-muted-foreground">On: <a href="#" class="text-primary hover:underline">Oud vs Musk: what's the difference?</a></p>
+        </div>
+        <div class="flex shrink-0 items-start gap-1"><button class="btn btn-outline"><i data-lucide="check"></i>Approve</button><button class="btn btn-outline"><i data-lucide="reply"></i>Reply</button><button class="btn btn-cancel btn-icon"><i data-lucide="trash-2"></i></button></div>
+      </div>
+      <div class="flex flex-wrap gap-3 p-4 sm:flex-nowrap">
+        <input type="checkbox" class="chk mt-1" />
+        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive/15 text-sm font-bold text-destructive">?</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-x-2 text-sm"><b>cheap-seo-links</b><span class="badge b-red">Possible spam</span><span class="text-xs text-muted-foreground">1d ago</span></div>
+          <p class="mt-1 text-sm">Buy backlinks now!!! www.spam-link.example</p>
+        </div>
+        <div class="flex shrink-0 items-start gap-1"><button class="btn btn-destructive"><i data-lucide="shield-alert"></i>Mark spam</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<!--                                SEO PAGES                               -->
+<!-- ====================================================================== -->
+
+<!-- ---------- SEO Overview ---------- -->
+<section class="page space-y-6" data-page="seo-overview" data-title="SEO Overview" data-parent="SEO">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">SEO Overview</h1><p class="text-sm text-muted-foreground">Search health of surokkha.store.</p></div>
+    <div class="flex gap-2"><button class="btn btn-outline"><i data-lucide="link"></i>Search Console</button><button class="btn" data-nav="seo-audit"><i data-lucide="scan-search"></i>Run Audit</button></div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-4">
+    <div class="card items-center justify-center text-center lg:row-span-1">
+      <div class="ring-score relative flex size-28 items-center justify-center rounded-full" style="--v:82"><div class="flex size-[88px] flex-col items-center justify-center rounded-full bg-card"><span class="text-3xl font-extrabold leading-none">82</span><span class="text-[10px] uppercase tracking-wider text-muted-foreground">/ 100</span></div></div>
+      <p class="mt-1 text-sm font-semibold">SEO Health</p><span class="badge b-green">Good</span>
+    </div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Organic Clicks</div><i data-lucide="mouse-pointer-click" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">12,480</div><p class="mt-1 text-xs text-emerald-500">+9.2% from last month</p></div></div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Impressions</div><i data-lucide="eye" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">214K</div><p class="mt-1 text-xs text-emerald-500">+14.8% from last month</p></div></div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Avg. Position</div><i data-lucide="trending-up" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">14.3</div><p class="mt-1 text-xs text-emerald-500">-1.6 improved</p></div></div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <div class="card lg:col-span-2">
+      <div class="card-h"><div><div class="card-t">Organic Traffic</div><div class="card-d">Clicks vs impressions, 28 days</div></div><div class="flex gap-3 text-xs"><span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-primary"></span>Clicks</span><span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-muted-foreground/50"></span>Impressions</span></div></div>
+      <div class="card-c">
+        <svg viewBox="0 0 600 180" class="h-48 w-full" preserveAspectRatio="none">
+          <g stroke="var(--border)" stroke-width="1"><line x1="0" y1="45" x2="600" y2="45"/><line x1="0" y1="90" x2="600" y2="90"/><line x1="0" y1="135" x2="600" y2="135"/></g>
+          <polyline fill="none" stroke="var(--muted-foreground)" stroke-opacity=".5" stroke-width="2" points="0,120 50,110 100,115 150,95 200,100 250,80 300,85 350,65 400,70 450,50 500,55 550,35 600,40"/>
+          <polygon fill="var(--primary)" fill-opacity=".15" points="0,160 0,150 50,142 100,148 150,128 200,132 250,112 300,118 350,98 400,104 450,84 500,90 550,70 600,76 600,160"/>
+          <polyline fill="none" stroke="var(--primary)" stroke-width="2.5" points="0,150 50,142 100,148 150,128 200,132 250,112 300,118 350,98 400,104 450,84 500,90 550,70 600,76"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">Indexing</div></div>
+      <div class="card-c space-y-3 text-sm">
+        <div><div class="mb-1 flex justify-between"><span>Indexed pages</span><b>412 / 438</b></div><div class="h-1.5 overflow-hidden rounded bg-muted"><div class="h-full w-[94%] bg-emerald-500"></div></div></div>
+        <div class="flex items-center justify-between"><span class="flex items-center gap-2 text-muted-foreground"><i data-lucide="circle-check" class="size-4 text-emerald-500"></i>Valid</span><b>412</b></div>
+        <div class="flex items-center justify-between"><span class="flex items-center gap-2 text-muted-foreground"><i data-lucide="triangle-alert" class="size-4 text-amber-500"></i>Excluded</span><b>19</b></div>
+        <div class="flex items-center justify-between"><span class="flex items-center gap-2 text-muted-foreground"><i data-lucide="circle-x" class="size-4 text-destructive"></i>Errors</span><b>7</b></div>
+        <button class="btn btn-outline w-full" data-nav="seo-sitemap"><i data-lucide="map"></i>Manage sitemap</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-2">
+    <div class="card">
+      <div class="card-h"><div class="card-t">Top Issues</div><button class="btn btn-ghost btn-sm" data-nav="seo-audit">View all<i data-lucide="arrow-right"></i></button></div>
+      <div class="card-c space-y-2.5 text-sm">
+        <div class="flex items-center justify-between gap-2"><span class="flex items-center gap-2"><i data-lucide="circle-x" class="size-4 text-destructive"></i>Missing meta descriptions</span><span class="badge b-red">23 pages</span></div>
+        <div class="flex items-center justify-between gap-2"><span class="flex items-center gap-2"><i data-lucide="triangle-alert" class="size-4 text-amber-500"></i>Images without alt text</span><span class="badge b-amber">41 images</span></div>
+        <div class="flex items-center justify-between gap-2"><span class="flex items-center gap-2"><i data-lucide="triangle-alert" class="size-4 text-amber-500"></i>Title too long (&gt; 60 chars)</span><span class="badge b-amber">12 pages</span></div>
+        <div class="flex items-center justify-between gap-2"><span class="flex items-center gap-2"><i data-lucide="circle-x" class="size-4 text-destructive"></i>Broken internal links</span><span class="badge b-red">7 links</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">Top Keywords</div><button class="btn btn-ghost btn-sm" data-nav="seo-keywords">View all<i data-lucide="arrow-right"></i></button></div>
+      <div class="overflow-x-auto"><table class="tbl">
+        <thead><tr><th>Keyword</th><th class="text-right">Position</th><th class="text-right">Clicks</th></tr></thead>
+        <tbody>
+          <tr><td>best attar in bangladesh</td><td class="text-right"><span class="badge b-green">3</span></td><td class="text-right">1,240</td></tr>
+          <tr><td>oud perfume price</td><td class="text-right"><span class="badge b-green">6</span></td><td class="text-right">880</td></tr>
+          <tr><td>surokkha attar</td><td class="text-right"><span class="badge b-green">1</span></td><td class="text-right">2,310</td></tr>
+          <tr><td>eid gift perfume</td><td class="text-right"><span class="badge b-amber">14</span></td><td class="text-right">420</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Site Audit ---------- -->
+<section class="page space-y-6" data-page="seo-audit" data-title="Site Audit" data-parent="SEO">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">Site Audit</h1><p class="text-sm text-muted-foreground">Last crawl: Oct 30, 2026 · 438 pages</p></div>
+    <button class="btn"><i data-lucide="refresh-cw"></i>Re-run audit</button>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-3">
+    <div class="card"><div class="card-c flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive"><i data-lucide="circle-x" class="size-5"></i></span><div><p class="text-2xl font-bold leading-none">9</p><p class="mt-1 text-xs text-muted-foreground">Errors</p></div></div></div>
+    <div class="card"><div class="card-c flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500"><i data-lucide="triangle-alert" class="size-5"></i></span><div><p class="text-2xl font-bold leading-none">76</p><p class="mt-1 text-xs text-muted-foreground">Warnings</p></div></div></div>
+    <div class="card"><div class="card-c flex items-center gap-3"><span class="flex size-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500"><i data-lucide="circle-check" class="size-5"></i></span><div><p class="text-2xl font-bold leading-none">353</p><p class="mt-1 text-xs text-muted-foreground">Passed</p></div></div></div>
+  </div>
+  <div class="card !gap-0 !py-0">
+    <div class="flex flex-wrap items-center gap-2 border-b p-3">
+      <div class="relative min-w-[200px] flex-1 sm:max-w-xs"><i data-lucide="search" class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"></i><input class="input pl-8" placeholder="Filter by URL…" /></div>
+      <select class="input !w-auto"><option>All severities</option><option>Errors</option><option>Warnings</option></select>
+      <select class="input !w-auto"><option>All types</option><option>Posts</option><option>Products</option><option>Pages</option></select>
+    </div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>Page</th><th>Issue</th><th>Severity</th><th class="text-right">Score</th><th class="w-24"></th></tr></thead>
+      <tbody>
+        <tr><td><p class="font-medium">/blog/our-distillery</p><p class="text-xs text-muted-foreground">Post</p></td><td>Missing meta description</td><td><span class="badge b-red">Error</span></td><td class="text-right">41</td><td><div class="flex justify-end"><button class="btn btn-outline btn-sm" data-nav="blog-editor">Fix</button></div></td></tr>
+        <tr><td><p class="font-medium">/product/oud-imperial</p><p class="text-xs text-muted-foreground">Product</p></td><td>Duplicate title with /product/oud-royal</td><td><span class="badge b-red">Error</span></td><td class="text-right">52</td><td><div class="flex justify-end"><button class="btn btn-outline btn-sm">Fix</button></div></td></tr>
+        <tr><td><p class="font-medium">/blog/winter-layering</p><p class="text-xs text-muted-foreground">Post</p></td><td>Title longer than 60 characters</td><td><span class="badge b-amber">Warning</span></td><td class="text-right">64</td><td><div class="flex justify-end"><button class="btn btn-outline btn-sm" data-nav="blog-editor">Fix</button></div></td></tr>
+        <tr><td><p class="font-medium">/collections/gift-sets</p><p class="text-xs text-muted-foreground">Page</p></td><td>3 images without alt text</td><td><span class="badge b-amber">Warning</span></td><td class="text-right">70</td><td><div class="flex justify-end"><button class="btn btn-outline btn-sm">Fix</button></div></td></tr>
+        <tr><td><p class="font-medium">/about</p><p class="text-xs text-muted-foreground">Page</p></td><td>Only 1 internal link</td><td><span class="badge b-amber">Warning</span></td><td class="text-right">76</td><td><div class="flex justify-end"><button class="btn btn-outline btn-sm">Fix</button></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ---------- Meta & Titles ---------- -->
+<section class="page space-y-6" data-page="seo-meta" data-title="Meta &amp; Titles" data-parent="SEO">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">Meta &amp; Titles</h1><p class="text-sm text-muted-foreground">Default title and description templates for each content type.</p></div>
+    <button class="btn"><i data-lucide="save"></i>Save changes</button>
+  </div>
+
+  <div class="card !gap-0 !py-0">
+    <div class="flex flex-wrap gap-x-1 border-b px-2"><button class="tab on">General</button><button class="tab">Blog Posts</button><button class="tab">Categories &amp; Tags</button><button class="tab">Products</button><button class="tab">Pages</button></div>
+    <div class="space-y-5 p-4">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div><label class="lbl">Site name</label><input class="input" value="Surokkha" /></div>
+        <div><label class="lbl">Title separator</label>
+          <div class="flex gap-2"><button class="btn btn-outline btn-icon !border-primary">|</button><button class="btn btn-outline btn-icon">–</button><button class="btn btn-outline btn-icon">·</button><button class="btn btn-outline btn-icon">»</button></div>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">Blog post title template</label>
+        <input class="input font-mono text-xs" value="%post_title% %sep% %site_name%" />
+        <div class="mt-2 flex flex-wrap gap-1.5"><span class="badge b-gray cursor-pointer font-mono">%post_title%</span><span class="badge b-gray cursor-pointer font-mono">%category%</span><span class="badge b-gray cursor-pointer font-mono">%author%</span><span class="badge b-gray cursor-pointer font-mono">%sep%</span><span class="badge b-gray cursor-pointer font-mono">%site_name%</span><span class="badge b-gray cursor-pointer font-mono">%year%</span></div>
+      </div>
+      <div><label class="lbl">Blog post description template</label><textarea rows="2" class="textarea font-mono">%excerpt%</textarea></div>
+      <div><label class="lbl">Blog archive title</label><input class="input font-mono text-xs" value="Blog %sep% %site_name%" /></div>
+      <div class="rounded-lg border bg-background p-4">
+        <p class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Live example</p>
+        <p class="text-xl leading-snug text-[#1a0dab] dark:text-[#8ab4f8]">How to choose your signature attar | Surokkha</p>
+        <p class="text-xs text-muted-foreground">https://surokkha.store › blog › choose-signature-attar</p>
+      </div>
+      <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3"><span><span class="block text-sm font-medium">Show posts in search results</span><span class="text-xs text-muted-foreground">Turn off to add noindex to every blog post.</span></span><input type="checkbox" class="chk" checked /></label>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Social & Schema ---------- -->
+<section class="page space-y-6" data-page="seo-social" data-title="Social &amp; Schema" data-parent="SEO">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">Social &amp; Schema</h1><p class="text-sm text-muted-foreground">Control how links look when shared and how search engines read your content.</p></div>
+    <button class="btn"><i data-lucide="save"></i>Save changes</button>
+  </div>
+  <div class="grid gap-4 lg:grid-cols-2">
+    <div class="card">
+      <div class="card-h"><div class="card-t flex items-center gap-2"><i data-lucide="share-2" class="size-4 text-primary"></i>Open Graph &amp; Twitter</div></div>
+      <div class="card-c space-y-3">
+        <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Enable Open Graph tags</span><input type="checkbox" class="chk" checked /></label>
+        <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Enable Twitter cards</span><input type="checkbox" class="chk" checked /></label>
+        <div><label class="lbl">Default share image</label><div class="flex items-center gap-3"><div class="h-14 w-24 rounded-md bg-gradient-to-br from-primary/60 to-primary/20"></div><button class="btn btn-outline"><i data-lucide="upload"></i>Replace</button></div></div>
+        <div><label class="lbl">Twitter card type</label><select class="input"><option>Summary with large image</option><option>Summary</option></select></div>
+        <div><label class="lbl">Facebook App ID</label><input class="input" placeholder="Optional" /></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">Share preview</div></div>
+      <div class="card-c">
+        <div class="overflow-hidden rounded-lg border bg-background">
+          <div class="aspect-[1.91/1] bg-gradient-to-br from-primary/70 to-primary/20"></div>
+          <div class="space-y-0.5 p-3"><p class="text-[11px] uppercase text-muted-foreground">surokkha.store</p><p class="text-sm font-semibold">How to Choose Your Signature Attar</p><p class="line-clamp-2 text-xs text-muted-foreground">Learn how to pick an attar that matches your skin and style.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="card lg:col-span-2">
+      <div class="card-h"><div class="card-t flex items-center gap-2"><i data-lucide="code-xml" class="size-4 text-primary"></i>Structured Data (Schema.org)</div></div>
+      <div class="card-c grid gap-4 md:grid-cols-2">
+        <div class="space-y-3">
+          <div><label class="lbl">Organization name</label><input class="input" value="Surokkha" /></div>
+          <div><label class="lbl">Logo URL</label><input class="input" placeholder="https://…" /></div>
+          <div><label class="lbl">Default blog post type</label><select class="input"><option>Article</option><option>BlogPosting</option><option>NewsArticle</option></select></div>
+          <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Breadcrumb schema</span><input type="checkbox" class="chk" checked /></label>
+          <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Product &amp; review schema</span><input type="checkbox" class="chk" checked /></label>
+        </div>
+        <div>
+          <label class="lbl">JSON-LD preview</label>
+          <pre class="max-h-72 overflow-auto rounded-lg border bg-muted/50 p-3 font-mono text-[11px] leading-relaxed">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "How to choose your signature attar",
+  "author": { "@type": "Person", "name": "Rafi" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Surokkha"
+  },
+  "datePublished": "2026-10-28"
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Keywords ---------- -->
+<section class="page space-y-6" data-page="seo-keywords" data-title="Keywords" data-parent="SEO">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">Keywords</h1><p class="text-sm text-muted-foreground">Track rankings for the terms that matter.</p></div>
+    <div class="flex gap-2"><button class="btn btn-outline"><i data-lucide="upload"></i>Import</button><button class="btn"><i data-lucide="plus"></i>Add keyword</button></div>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-3">
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Tracked</div><i data-lucide="key-round" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">86</div></div></div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">In top 10</div><i data-lucide="trophy" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">21</div><p class="mt-1 text-xs text-emerald-500">+4 this month</p></div></div>
+    <div class="card"><div class="card-h !items-center"><div class="text-sm font-medium">Avg. position</div><i data-lucide="trending-up" class="size-4 text-muted-foreground"></i></div><div class="card-c"><div class="text-2xl font-bold">14.3</div></div></div>
+  </div>
+  <div class="card !gap-0 !py-0">
+    <div class="flex flex-wrap items-center gap-2 border-b p-3"><div class="relative min-w-[200px] flex-1 sm:max-w-xs"><i data-lucide="search" class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"></i><input class="input pl-8" placeholder="Search keywords…" /></div><select class="input !w-auto"><option>All countries</option><option>Bangladesh</option></select></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>Keyword</th><th>Target page</th><th class="text-right">Position</th><th class="text-right">Change</th><th class="text-right">Volume</th><th>Trend</th><th class="w-12"></th></tr></thead>
+      <tbody>
+        <tr><td class="font-medium">surokkha attar</td><td class="font-mono text-xs text-muted-foreground">/</td><td class="text-right"><span class="badge b-green">1</span></td><td class="text-right text-muted-foreground">—</td><td class="text-right">2,900</td><td><svg viewBox="0 0 60 20" class="h-5 w-16"><polyline fill="none" stroke="var(--primary)" stroke-width="2" points="0,12 10,11 20,10 30,8 40,9 50,6 60,5"/></svg></td><td><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></td></tr>
+        <tr><td class="font-medium">best attar in bangladesh</td><td class="font-mono text-xs text-muted-foreground">/blog/choose-signature-attar</td><td class="text-right"><span class="badge b-green">3</span></td><td class="text-right text-emerald-500">▲ 2</td><td class="text-right">1,600</td><td><svg viewBox="0 0 60 20" class="h-5 w-16"><polyline fill="none" stroke="var(--primary)" stroke-width="2" points="0,16 10,14 20,13 30,11 40,9 50,7 60,4"/></svg></td><td><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></td></tr>
+        <tr><td class="font-medium">oud perfume price</td><td class="font-mono text-xs text-muted-foreground">/product/oud-imperial</td><td class="text-right"><span class="badge b-green">6</span></td><td class="text-right text-destructive">▼ 1</td><td class="text-right">1,100</td><td><svg viewBox="0 0 60 20" class="h-5 w-16"><polyline fill="none" stroke="var(--primary)" stroke-width="2" points="0,6 10,7 20,6 30,9 40,8 50,10 60,11"/></svg></td><td><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></td></tr>
+        <tr><td class="font-medium">eid gift perfume</td><td class="font-mono text-xs text-muted-foreground">/blog/eid-gift-guide-2026</td><td class="text-right"><span class="badge b-amber">14</span></td><td class="text-right text-emerald-500">▲ 5</td><td class="text-right">880</td><td><svg viewBox="0 0 60 20" class="h-5 w-16"><polyline fill="none" stroke="var(--primary)" stroke-width="2" points="0,17 10,15 20,16 30,12 40,10 50,9 60,6"/></svg></td><td><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></td></tr>
+        <tr><td class="font-medium">how to layer fragrances</td><td class="font-mono text-xs text-muted-foreground">/blog/winter-layering</td><td class="text-right"><span class="badge b-red">38</span></td><td class="text-right text-muted-foreground">—</td><td class="text-right">720</td><td><svg viewBox="0 0 60 20" class="h-5 w-16"><polyline fill="none" stroke="var(--primary)" stroke-width="2" points="0,10 10,10 20,11 30,10 40,11 50,10 60,10"/></svg></td><td><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ---------- Sitemap & Robots ---------- -->
+<section class="page space-y-6" data-page="seo-sitemap" data-title="Sitemap &amp; Robots" data-parent="SEO">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">Sitemap &amp; Robots</h1><p class="text-sm text-muted-foreground">Help crawlers discover and index your content.</p></div>
+    <button class="btn"><i data-lucide="save"></i>Save changes</button>
+  </div>
+  <div class="grid gap-4 lg:grid-cols-2">
+    <div class="card">
+      <div class="card-h !items-center"><div class="card-t flex items-center gap-2"><i data-lucide="map" class="size-4 text-primary"></i>XML Sitemap</div><span class="badge b-green">Active</span></div>
+      <div class="card-c space-y-3">
+        <div class="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2"><span class="min-w-0 flex-1 truncate font-mono text-xs">https://surokkha.store/sitemap.xml</span><button class="tool"><i data-lucide="copy"></i></button><button class="tool"><i data-lucide="external-link"></i></button></div>
+        <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Blog posts<span class="block text-xs text-muted-foreground">128 URLs</span></span><input type="checkbox" class="chk" checked /></label>
+        <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Categories &amp; tags<span class="block text-xs text-muted-foreground">56 URLs</span></span><input type="checkbox" class="chk" checked /></label>
+        <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Products<span class="block text-xs text-muted-foreground">212 URLs</span></span><input type="checkbox" class="chk" checked /></label>
+        <label class="flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm"><span>Static pages<span class="block text-xs text-muted-foreground">42 URLs</span></span><input type="checkbox" class="chk" checked /></label>
+      </div>
+      <div class="card-f"><span class="flex-1 text-xs text-muted-foreground">Last generated 2 hours ago</span><button class="btn btn-outline"><i data-lucide="refresh-cw"></i>Regenerate</button><button class="btn"><i data-lucide="send"></i>Ping Google</button></div>
+    </div>
+    <div class="card">
+      <div class="card-h !items-center"><div class="card-t flex items-center gap-2"><i data-lucide="bot" class="size-4 text-primary"></i>robots.txt</div><button class="btn btn-ghost btn-sm"><i data-lucide="rotate-ccw"></i>Reset</button></div>
+      <div class="card-c space-y-3">
+        <textarea rows="12" class="textarea font-mono leading-relaxed">User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /checkout/
+Disallow: /cart/
+
+Sitemap: https://surokkha.store/sitemap.xml</textarea>
+        <div class="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400"><i data-lucide="triangle-alert" class="mt-0.5 size-4 shrink-0"></i>Changes take effect immediately. A wrong rule can hide your whole site from search engines.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- Redirects & 404s ---------- -->
+<section class="page space-y-6" data-page="seo-redirects" data-title="Redirects &amp; 404s" data-parent="SEO">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-xl font-bold">Redirects &amp; 404s</h1><p class="text-sm text-muted-foreground">Keep link equity when URLs change.</p></div>
+    <div class="flex gap-2"><button class="btn btn-outline"><i data-lucide="upload"></i>Import CSV</button><button class="btn"><i data-lucide="plus"></i>Add redirect</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><div class="card-t">Add redirect</div></div>
+    <div class="card-c grid gap-3 md:grid-cols-[1fr_1fr_140px_auto] md:items-end">
+      <div><label class="lbl">From</label><input class="input font-mono text-xs" placeholder="/old-url" /></div>
+      <div><label class="lbl">To</label><input class="input font-mono text-xs" placeholder="/new-url" /></div>
+      <div><label class="lbl">Type</label><select class="input"><option>301 Permanent</option><option>302 Temporary</option><option>410 Gone</option></select></div>
+      <button class="btn !h-8"><i data-lucide="plus"></i>Add</button>
+    </div>
+  </div>
+
+  <div class="card !gap-0 !py-0">
+    <div class="flex flex-wrap gap-x-1 border-b px-2"><button class="tab on">Redirects <span class="ml-1 text-muted-foreground">18</span></button><button class="tab">404 Monitor <span class="ml-1 text-muted-foreground">7</span></button></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>From</th><th>To</th><th>Type</th><th class="text-right">Hits</th><th>Status</th><th class="w-20"></th></tr></thead>
+      <tbody>
+        <tr><td class="font-mono text-xs">/blog/attar-guide</td><td class="font-mono text-xs">/blog/choose-signature-attar</td><td><span class="badge b-blue">301</span></td><td class="text-right">1,204</td><td><span class="badge b-green">Active</span></td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+        <tr><td class="font-mono text-xs">/shop/oud</td><td class="font-mono text-xs">/collections/oud</td><td><span class="badge b-blue">301</span></td><td class="text-right">682</td><td><span class="badge b-green">Active</span></td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+        <tr><td class="font-mono text-xs">/eid-sale</td><td class="font-mono text-xs">/blog/eid-gift-guide-2026</td><td><span class="badge b-amber">302</span></td><td class="text-right">91</td><td><span class="badge b-gray">Paused</span></td><td><div class="flex justify-end gap-1"><button class="tool"><i data-lucide="pencil"></i></button><button class="tool hover:!text-destructive"><i data-lucide="trash-2"></i></button></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card !gap-0 !py-0">
+    <div class="flex items-center justify-between border-b p-4"><div><div class="card-t">Recent 404 errors</div><div class="card-d">Pages visitors tried to open but could not find.</div></div></div>
+    <div class="overflow-x-auto"><table class="tbl">
+      <thead><tr><th>URL</th><th>Referrer</th><th class="text-right">Hits</th><th>Last seen</th><th class="w-32"></th></tr></thead>
+      <tbody>
+        <tr><td class="font-mono text-xs">/blog/oud-guide</td><td class="text-xs text-muted-foreground">google.com</td><td class="text-right">48</td><td class="text-muted-foreground">1h ago</td><td><div class="flex justify-end"><button class="btn btn-outline btn-sm"><i data-lucide="arrow-right-left"></i>Create redirect</button></div></td></tr>
+        <tr><td class="font-mono text-xs">/products/rose-attar</td><td class="text-xs text-muted-foreground">facebook.com</td><td class="text-right">23</td><td class="text-muted-foreground">5h ago</td><td><div class="flex justify-end"><button class="btn btn-outline btn-sm"><i data-lucide="arrow-right-left"></i>Create redirect</button></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  // ---- page switching ----
+  function go(id) {
+    const page = $(`[data-page="${id}"]`);
+    if (!page) return;
+    $$('.page').forEach(p => p.classList.remove('active'));
+    page.classList.add('active');
+    $$('[data-nav]').forEach(n => n.classList.toggle('on', n.dataset.nav === id && n.classList.contains('nav-sub')));
+    // open the group that owns the active page
+    $$('.grp').forEach(g => {
+      const has = !!$(`.nav-sub[data-nav="${id}"]`, g);
+      g.classList.toggle('has-on', has);
+      if (has) g.classList.add('open');
+    });
+    $('#crumbs').innerHTML =
+      `<span>Dashboard</span><i data-lucide="chevron-right" class="size-3"></i><span>${page.dataset.parent}</span><i data-lucide="chevron-right" class="size-3"></i><span class="font-medium text-foreground">${page.dataset.title}</span>`;
+    lucide.createIcons();
+    $('#main').scrollTo({ top: 0 });
+    closeSide();
+    history.replaceState(null, '', '#' + id);
+  }
+  document.addEventListener('click', e => {
+    const n = e.target.closest('[data-nav]');
+    if (n) { e.preventDefault(); go(n.dataset.nav); }
+    const t = e.target.closest('[data-toggle]');
+    if (t) t.closest('.grp').classList.toggle('open');
+    const tab = e.target.closest('.tab:not([data-serp])');
+    if (tab) { $$('.tab:not([data-serp])', tab.parentElement).forEach(x => x.classList.remove('on')); tab.classList.add('on'); }
+  });
+
+  // ---- mobile sidebar ----
+  const side = $('#sidebar'), ov = $('#overlay');
+  function openSide() { side.classList.remove('-translate-x-full'); ov.classList.remove('hidden'); }
+  function closeSide() { side.classList.add('-translate-x-full'); ov.classList.add('hidden'); }
+  $('#openSide').onclick = openSide; $('#closeSide').onclick = closeSide; ov.onclick = closeSide;
+
+  // ---- theme ----
+  const root = document.documentElement;
+  function setTheme(dark) {
+    root.classList.toggle('dark', dark);
+    $('#themeBtn').innerHTML = `<i data-lucide="${dark ? 'sun' : 'moon'}"></i>`;
+    lucide.createIcons();
+  }
+  $('#themeBtn').onclick = () => setTheme(!root.classList.contains('dark'));
+
+  // ---- select all in table ----
+  $$('[data-all]').forEach(a => a.onchange = () => $$('tbody .chk', a.closest('table')).forEach(c => c.checked = a.checked));
+
+  // ---- editor: slug, counters, SERP preview ----
+  const slugify = s => s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
+  const bar = (el, v, min, max, limit) => {
+    el.style.width = Math.min(100, v / limit * 100) + '%';
+    el.className = 'h-full transition-all ' + (v === 0 ? 'bg-muted' : v < min || v > limit ? 'bg-amber-500' : 'bg-emerald-500');
+  };
+  function updateSeo() {
+    const t = $('#mTitle').value, d = $('#mDesc').value, slug = $('#pSlug').value;
+    $('#mtCount').textContent = `${t.length} / 60`; bar($('#mtBar'), t.length, 30, 60, 60);
+    $('#mdCount').textContent = `${d.length} / 160`; bar($('#mdBar'), d.length, 80, 160, 160);
+    $('#serpTitle').textContent = t || 'Page title';
+    $('#serpDesc').textContent = d || 'Meta description will appear here…';
+    $('#serpUrl').textContent = `https://surokkha.store › blog › ${slug}`;
+  }
+  ['#mTitle', '#mDesc', '#pSlug'].forEach(s => $(s).addEventListener('input', updateSeo));
+  $('#pTitle').addEventListener('input', e => { $('#pSlug').value = slugify(e.target.value); updateSeo(); });
+  $$('[data-serp]').forEach(b => b.onclick = () => {
+    $$('[data-serp]').forEach(x => x.classList.remove('on')); b.classList.add('on');
+    $('#serp').style.maxWidth = b.dataset.serp === 'm' ? '360px' : '600px';
+  });
+
+  // ---- init ----
+  lucide.createIcons();
+  updateSeo();
+  go((location.hash || '#blog-overview').slice(1));
+</script>
+</body>
+</html>

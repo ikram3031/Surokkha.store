@@ -49,6 +49,7 @@ import {
   Scale,
   HardDrive,
   GalleryHorizontal,
+  Newspaper,
 } from "lucide-react"
 
 import {
@@ -103,7 +104,7 @@ const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
 const navItemClass = "relative h-9 gap-2.5 font-medium text-sidebar-foreground data-active:bg-primary/10 data-active:font-semibold data-active:text-foreground data-active:before:absolute data-active:before:-left-3 data-active:before:bottom-2 data-active:before:top-2 data-active:before:w-[3px] data-active:before:rounded-r data-active:before:bg-primary data-active:[&>svg]:text-primary group-data-[collapsible=icon]:data-active:before:-left-1.5"
 
 // Section caption rendered above a navigation group, collapsing to a divider in rail mode
-const NavLabel = ({ children }) => (
+export const NavLabel = ({ children }) => (
   <li
     role="presentation"
     className="px-2.5 pb-1.5 pt-3.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/80 group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:bg-sidebar-border group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-[0px]"
@@ -113,7 +114,7 @@ const NavLabel = ({ children }) => (
 )
 
 // Expandable parent entry with animated accordion submenu
-const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, children }) => (
+export const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, children }) => (
   <SidebarMenuItem>
     <SidebarMenuButton
       tooltip={label}
@@ -150,7 +151,7 @@ const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, children }) =
 )
 
 // Submenu link with active indicator bar
-const NavSub = ({ to, active, icon: Icon, iconClass = "", children, className = "" }) => (
+export const NavSub = ({ to, active, icon: Icon, iconClass = "", children, className = "" }) => (
   <SidebarMenuSubItem>
     <SidebarMenuSubButton
       isActive={active}
@@ -167,7 +168,7 @@ const NavSub = ({ to, active, icon: Icon, iconClass = "", children, className = 
 )
 
 // Top-level single link entry
-const NavLink = ({ to, active, icon: Icon, label }) => (
+export const NavLink = ({ to, active, icon: Icon, label }) => (
   <SidebarMenuItem>
     <SidebarMenuButton isActive={active} tooltip={label} render={<Link to={to} />} className={navItemClass}>
       <Icon className="h-4 w-4" />
@@ -177,7 +178,7 @@ const NavLink = ({ to, active, icon: Icon, label }) => (
 )
 
 // Sub-section caption inside a submenu
-const SubLabel = ({ children }) => (
+export const SubLabel = ({ children }) => (
   <div className="px-2 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
     {children}
   </div>
@@ -230,6 +231,7 @@ export const AppSidebar = ({ ...props }) => {
   const showAdmin = isAllowed("admin")
   const showSystem = isAllowed("tools") || isAllowed("logs") || isAllowed("tools.logs") || isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("cpanel") || showAdmin
   const showItems = isAllowed("items")
+  const showBlog = isAllowed("blog")
   const showAdminLayout = Boolean(features?.adminMenuLayout) && isAllowed("admin")
 
   // Pathao webhook log is Owner/Admin only, matching its API
@@ -416,7 +418,7 @@ export const AppSidebar = ({ ...props }) => {
             <NavLink to="/dashboard/reviews" active={pathname.startsWith("/dashboard/reviews")} icon={Star} label={t("nav.reviews", "Reviews")} />
           )}
 
-          {(showProducts || showItems || showMedia || isAllowed("tools.meta-catalog")) && <NavLabel>{t("nav.group_catalog", "Catalog")}</NavLabel>}
+          {(showProducts || showItems || showMedia || showBlog || isAllowed("tools.meta-catalog")) && <NavLabel>{t("nav.group_catalog", "Catalog")}</NavLabel>}
           {showProducts && (
             <NavGroup id="products" icon={Package} label={t("nav.products", "Products")} active={activeGroup === "products"} open={openMenu === "products"} onToggle={toggleMenu}>
               {isAllowed("products.list") && (
@@ -471,6 +473,10 @@ export const AppSidebar = ({ ...props }) => {
                 </NavSub>
               )}
             </NavGroup>
+          )}
+
+          {showBlog && (
+            <NavLink to="/blog" active={pathname.startsWith("/blog")} icon={Newspaper} label={t("nav.blog", "Blog")} />
           )}
 
           {(showAccounts || showReports) && <NavLabel>{t("nav.group_finance", "Finance")}</NavLabel>}

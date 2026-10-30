@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 // Layout
 import DashboardLayout from './layouts/dashboardLayout';
 import AdminLayout from './layouts/adminLayout';
+import BlogLayout from './layouts/blogLayout';
 
 // Auth & Onboarding
 import Login from './pages/auth/login';
@@ -905,6 +906,29 @@ const dashboardRoutes = [
       },
     ];
 
+// Blog & SEO workspace: pages load on demand so they stay out of the main bundle
+const lazyPage = (loader) => ({
+  lazy: async () => ({ Component: (await loader()).default }),
+});
+
+const blogRoutes = [
+  { index: true, ...lazyPage(() => import('./pages/blog/overview')) },
+  { path: 'posts', ...lazyPage(() => import('./pages/blog/posts')) },
+  { path: 'posts/new', ...lazyPage(() => import('./pages/blog/postEditor')) },
+  { path: 'posts/:id', ...lazyPage(() => import('./pages/blog/postEditor')) },
+  { path: 'categories', ...lazyPage(() => import('./pages/blog/categories')) },
+  { path: 'tags', ...lazyPage(() => import('./pages/blog/tags')) },
+  { path: 'comments', ...lazyPage(() => import('./pages/blog/comments')) },
+  { path: 'seo', ...lazyPage(() => import('./pages/blog/seo/overview')) },
+  { path: 'seo/audit', ...lazyPage(() => import('./pages/blog/seo/audit')) },
+  { path: 'seo/meta', ...lazyPage(() => import('./pages/blog/seo/meta')) },
+  { path: 'seo/social', ...lazyPage(() => import('./pages/blog/seo/social')) },
+  { path: 'seo/keywords', ...lazyPage(() => import('./pages/blog/seo/keywords')) },
+  { path: 'seo/sitemap', ...lazyPage(() => import('./pages/blog/seo/sitemap')) },
+  { path: 'seo/redirects', ...lazyPage(() => import('./pages/blog/seo/redirects')) },
+  { path: '*', element: <NotFound /> },
+];
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -931,6 +955,13 @@ export const router = createBrowserRouter([
     element: <AdminLayout />,
     errorElement: <RouteErrorElement />,
     children: dashboardRoutes
+  },
+  {
+    path: '/blog',
+    element: <BlogLayout />,
+    errorElement: <RouteErrorElement />,
+    HydrateFallback: () => null,
+    children: blogRoutes,
   },
   {
     path: '*',
