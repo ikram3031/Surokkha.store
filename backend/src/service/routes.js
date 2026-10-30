@@ -28,7 +28,6 @@ import couponRouter from "./routes/CouponRoute.js";
 import groupOfferRouter from "./routes/GroupOfferRoute.js";
 import systemRouter from "./routes/SystemRoute.js";
 import searchRouter from "./routes/SearchRoute.js";
-import studioRouter from "./routes/studio.js";
 import logsRouter from "./routes/LogsRoute.js";
 import subscriberRouter from "./routes/SubscriberRoute.js";
 import contactRouter from "./routes/ContactRoute.js";
@@ -47,6 +46,7 @@ import courierRouter from "./routes/CourierRoute.js";
 import customerRouter from "./routes/CustomerRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 import stylesRouter from "./routes/StylesRoute.js";
+import blogRouter from "./routes/BlogRoute.js";
 
 const serviceRouter = Router();
 
@@ -104,12 +104,12 @@ serviceRouter.use("/telemetry", telemetryRouter);
 serviceRouter.use("/search", searchRouter);
 serviceRouter.use("/logs", logsRouter);
 serviceRouter.use("/reports", reportsRouter);
-serviceRouter.use("/studio", express.json({ limit: "60mb" }), studioRouter);
 serviceRouter.use("/developer", developerRouter);
 serviceRouter.use(attributeRouter);
 serviceRouter.use("/attribute", attributeRouter);
 serviceRouter.use("/courier", courierRouter);
 serviceRouter.use("/customers", customerRouter);
+serviceRouter.use("/blog", blogRouter);
 serviceRouter.use("/admin/media-audit", mediaAuditRouter);
 serviceRouter.get("/search-products", searchProducts);
 
