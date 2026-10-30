@@ -228,6 +228,19 @@ input[type='search']::-webkit-search-results-decoration {
   .offer-combo { animation: none; }
 }
 
+/* Floating cart button: cycles light pink, rose pink and the primary colour so it stands out; the icon flips to stay readable */
+.offer-cart-fab {
+  animation: offer-cart-fab-bg 3s ease-in-out infinite;
+}
+@keyframes offer-cart-fab-bg {
+  0%, 100% { background-color: #ffe4e6; color: var(--primary); }
+  40% { background-color: #fb7185; color: #ffffff; }
+  70% { background-color: var(--primary); color: #ffffff; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .offer-cart-fab { animation: none; }
+}
+
 /* /offer page and its dialogs: a cleaner Bangla face (Hind Siliguri's digits read poorly at small sizes) */
 .offer-font,
 [data-slot="dialog-content"].offer-font {

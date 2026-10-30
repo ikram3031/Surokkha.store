@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { TrialPackSection } from '@/components/offer/TrialPackSection'
 import { OfferCart, type CartLine } from '@/components/offer/OfferCart'
-import { getGroupOffer, type GroupOffer } from '@/lib/api/groupOffers'
+import { getTrialPack, type GroupOffer } from '@/lib/api/groupOffers'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
 import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
@@ -123,6 +123,8 @@ const keyOf = (productId: string, variantId?: string) => (variantId ? `${product
 // The "Surokkha Trial Pack" group product (Dashboard → Products → Group Offers). Only its products and the
 // minimum pieces are used here; the page's common tier discount applies to everything.
 const TRIAL_GROUP_SLUG = 'surokkha-trial-pack'
+/** Trial Pack pieces are added one at a time; the order needs this many in total */
+const TRIAL_MIN_PIECES = 6
 
 const trackedOrders = new Set<string>()
 
@@ -140,6 +142,8 @@ export function OfferHome() {
   )
   const [trial, setTrial] = useState<GroupOffer | null>(null)
   const [trialQty, setTrialQty] = useState<Record<string, number>>({})
+  // Pieces being chosen in the Trial Pack section; they reach the cart together via its one Add to cart
+  const [trialPick, setTrialPick] = useState<Record<string, number>>({})
   const [qty, setQty] = useState<Record<string, number>>({})
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
   const [quickView, setQuickView] = useState<OfferProduct | null>(null)
@@ -164,8 +168,8 @@ export function OfferHome() {
 
   useEffect(() => {
     const controller = new AbortController()
-    getGroupOffer(TRIAL_GROUP_SLUG, { signal: controller.signal })
-      .then((res) => setTrial(res.data ?? null))
+    getTrialPack(TRIAL_GROUP_SLUG, { signal: controller.signal })
+      .then((offer) => setTrial(offer))
       .catch(() => {})
     return () => controller.abort()
   }, [])
@@ -314,38 +318,53 @@ export function OfferHome() {
     return true
   }
 
+  const pickedPieces = Object.values(trialPick).reduce((s, n) => s + n, 0)
+  const pickedAmount = (trial?.products ?? []).reduce((s, p) => s + (trialPick[p.id] ?? 0) * p.unitPrice, 0)
+
+  /** Choosing pieces inside the Trial Pack section only; nothing reaches the cart yet. */
+  const pickTrial = (id: string, delta: 1 | -1) => {
+    const p = trial?.products.find((x) => x.id === id)
+    if (!p) return
+    const cur = trialPick[id] ?? 0
+    if (delta === 1) {
+      if (!p.inStock) return void fail('Sorry, this is out of stock right now')
+      if (cur + (trialQty[id] ?? 0) >= MAX_QTY_PER_LINE) return void fail(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
+    }
+    setTrialPick((q) => {
+      const c = q[id] ?? 0
+      // First Add puts the minimum in; stepping below the minimum takes the piece out
+      const n = delta === 1 ? (c === 0 ? trialMin : c + 1) : c <= trialMin ? 0 : c - 1
+      const next = { ...q }
+      if (n === 0) delete next[id]
+      else next[id] = n
+      return next
+    })
+  }
+
+  /** The Trial Pack's single Add to cart: needs the minimum pieces, then moves the whole pick into the cart. */
+  const addTrialPackToCart = () => {
+    if (!trial) return false
+    if (pickedPieces < TRIAL_MIN_PIECES)
+      return fail(`Pick at least ${bn(TRIAL_MIN_PIECES)} pieces for the Trial Pack (you have ${bn(pickedPieces)})`)
+    if (count + pickedPieces > MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
+    if (subtotal + pickedAmount > MAX_ORDER_AMOUNT) return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
+    setTrialQty((q) => {
+      const next = { ...q }
+      for (const [id, n] of Object.entries(trialPick)) next[id] = (next[id] ?? 0) + n
+      return next
+    })
+    track('AddToCart', { content_ids: [trial.did], content_name: trial.name, content_type: 'product', value: pickedAmount, currency: 'BDT' })
+    setTrialPick({})
+    toast.success(`${trial.name} added to your order`)
+    return true
+  }
+
   const removeTrialLine = (id: string) =>
     setTrialQty((q) => {
       const next = { ...q }
       delete next[id]
       return next
     })
-
-  // Trial Pack "Order now": pick a starter set if nothing is chosen yet (first products, the minimum of each,
-  // until the pack's minimum amount is met), then go straight to the checkout form
-  const orderTrialPack = () => {
-    if (!trial) return
-    let added = 0
-    if (trialCount === 0) {
-      const picks: Record<string, number> = {}
-      let pieces = 0
-      let amount = 0
-      for (const p of trial.products.filter((x) => x.inStock)) {
-        if (Object.keys(picks).length >= 3 && amount >= trial.minOrderAmount) break
-        picks[p.id] = trialMin
-        pieces += trialMin
-        amount += trialMin * p.unitPrice
-      }
-      if (!pieces) return fail('Sorry, the Trial Pack is out of stock right now')
-      if (count + pieces > MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
-      if (subtotal + amount > MAX_ORDER_AMOUNT) return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
-      setTrialQty((q) => ({ ...q, ...picks }))
-      track('AddToCart', { content_ids: Object.keys(picks), content_name: trial.name, content_type: 'product', value: amount, currency: 'BDT' })
-      added = amount
-    }
-    track('InitiateCheckout', { value: subtotal + added - discount, currency: 'BDT', num_items: count + (added ? 1 : 0) })
-    checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   // One list for the floating cart: ordinary products and Trial Pack pieces
   const cartLines: CartLine[] = [
@@ -376,8 +395,8 @@ export function OfferHome() {
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!count) return toast.error('Please select at least one product first')
-    if (trial && trialCount > 0 && trial.minOrderAmount > 0 && trialSubtotal < trial.minOrderAmount)
-      return toast.error(`Take at least ${taka(trial.minOrderAmount)} of ${trial.name} pieces, or remove them`)
+    if (trial && trialCount > 0 && trialCount < TRIAL_MIN_PIECES)
+      return toast.error(`Take at least ${bn(TRIAL_MIN_PIECES)} pieces of ${trial.name}, or remove them`)
     const ok = (Object.keys(RULES) as FieldKey[]).map((k) => validate(k)).every(Boolean)
     if (!ok) {
       setTimeout(() => document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
@@ -543,10 +562,12 @@ export function OfferHome() {
         {trial && (
           <TrialPackSection
             offer={trial}
-            qty={trialQty}
-            onStep={stepTrial}
-            onOrderNow={orderTrialPack}
-            subtotal={trialSubtotal}
+            qty={trialPick}
+            onStep={pickTrial}
+            onConfirm={addTrialPackToCart}
+            onReset={() => setTrialPick({})}
+            subtotal={pickedAmount}
+            minPieces={TRIAL_MIN_PIECES}
           />
         )}
 

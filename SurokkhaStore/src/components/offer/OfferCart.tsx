@@ -42,7 +42,7 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Open cart${count ? `, ${count} items` : ''}`}
-        className="offer-font fixed bottom-32 left-3 z-40 flex size-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:scale-105 hover:bg-blue-700 active:scale-95 sm:left-5"
+        className="offer-font fixed bottom-32 left-3 z-40 flex size-12 items-center justify-center rounded-full offer-cart-fab shadow-lg ring-1 ring-rose-200 transition-transform hover:scale-105 active:scale-95 sm:left-5"
       >
         <ShoppingBag className="size-6" />
         <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[11px] font-bold leading-none text-white ring-2 ring-white">
