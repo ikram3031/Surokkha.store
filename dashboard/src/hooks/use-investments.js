@@ -181,7 +181,6 @@ export const useInvestments = (params = {}) => {
       returnDate,
       paymentMethod,
       notes,
-      createBill = true,
     }) => {
       const payload = {
         investmentId: investmentId || id,
@@ -190,7 +189,6 @@ export const useInvestments = (params = {}) => {
         returnDate,
         paymentMethod,
         notes,
-        createBill,
       };
       const endpoint = id ? `/api/v1/investments/${id}/return` : '/api/v1/investments/return';
       const res = await apiClient.post(endpoint, payload);

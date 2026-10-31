@@ -32,10 +32,8 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { useBillings } from '@/hooks/use-billings';
-import { usePayments } from '@/hooks/use-payments';
-import { useInvestments } from '@/hooks/use-investments';
-import { useInvestors } from '@/hooks/use-investors';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
 import { DateRangeFilter, getDateRangeBounds } from '@/components/dashboard/accounts/DateRangeFilter';
 import { Link } from 'react-router-dom';
 
@@ -77,105 +75,35 @@ export const BalanceOverview = () => {
   const { t } = useTranslation();
   const [dateFilter, setDateFilter] = useState(() => getDateRangeBounds('thisMonth'));
 
-  const { allBillings = [], isLoading: isLoadingBills } = useBillings();
-  const { allPayments = [], isLoading: isLoadingPayments } = usePayments();
-  const { allInvestments = [], isLoading: isLoadingInvestments } = useInvestments();
-  const { allInvestors = [] } = useInvestors();
+  // All figures come from the server, which counts every record (cash basis, Bangladesh days)
+  const { data: summary, isLoading } = useQuery({
+    queryKey: ['account-balance', dateFilter.startDate, dateFilter.endDate],
+    queryFn: async () => {
+      const params = {};
+      if (dateFilter.startDate) params.startDate = dateFilter.startDate;
+      if (dateFilter.endDate) params.endDate = dateFilter.endDate;
+      const res = await apiClient.get('/api/v1/accounts/balance', { params });
+      return res.data?.data || {};
+    },
+    staleTime: 30 * 1000,
+  });
 
-  // Helper to filter data by current date range
-  const filterByRange = (items, dateGetter) => {
-    if (!dateFilter.startDate && !dateFilter.endDate) return items;
-    const start = dateFilter.startDate ? new Date(dateFilter.startDate).getTime() : 0;
-    const end = dateFilter.endDate ? new Date(dateFilter.endDate).getTime() + 86400000 : Infinity;
+  const n = (key) => Number(summary?.[key]) || 0;
+  const openingBalance = n('openingBalance');
+  const receipts = n('receipts');
+  const investmentsTaken = n('investmentsTaken');
+  const billsPaid = n('billsPaid');
+  const investmentReturns = n('investmentReturns');
+  const totalIn = n('totalIn');
+  const totalOut = n('totalOut');
+  const closingBalance = n('closingBalance');
+  const receivable = n('receivable');
+  const payable = n('payable');
+  const outstandingInvestment = n('outstandingInvestment');
+  const businessAsset = n('businessAsset');
+  const loadingText = isLoading ? '…' : null;
 
-    return items.filter((item) => {
-      const d = new Date(dateGetter(item)).getTime();
-      return d >= start && d <= end;
-    });
-  };
-
-  const filteredBills = useMemo(
-    () => filterByRange(allBillings, (b) => b.billingDate || b.date || b.createdAt),
-    [allBillings, dateFilter]
-  );
-
-  const filteredPayments = useMemo(
-    () => filterByRange(allPayments, (p) => p.date || p.createdAt),
-    [allPayments, dateFilter]
-  );
-
-  const filteredInvestments = useMemo(
-    () => filterByRange(allInvestments, (inv) => inv.takenDate || inv.createdAt),
-    [allInvestments, dateFilter]
-  );
-
-  // 1. Top Section - 4 Metrics
-  const totalReceipt = useMemo(() => {
-    return filteredPayments.reduce((sum, p) => {
-      const isPaid = p.status === 'Completed' || p.status === 'Paid';
-      const amt = Number(p.paidAmount !== undefined ? p.paidAmount : isPaid ? p.amount : 0);
-      return sum + (amt || 0);
-    }, 0);
-  }, [filteredPayments]);
-
-  const totalBills = useMemo(() => {
-    return filteredBills.reduce((sum, b) => {
-      const isPaid = b.status === 'Paid' || b.status === 'Completed';
-      const amt = Number(b.paidAmount !== undefined && b.paidAmount > 0 ? b.paidAmount : isPaid ? b.totalAmount : b.totalAmount || b.amount || 0);
-      return sum + (amt || 0);
-    }, 0);
-  }, [filteredBills]);
-
-  const totalInvestmentsTaken = useMemo(() => {
-    return filteredInvestments.reduce((sum, inv) => sum + (Number(inv.takenAmount) || 0), 0);
-  }, [filteredInvestments]);
-
-  const totalInvestmentsReturned = useMemo(() => {
-    return filteredInvestments.reduce((sum, inv) => sum + (Number(inv.returnedAmount) || 0), 0);
-  }, [filteredInvestments]);
-
-  const netInvestmentsTaken = Math.max(0, totalInvestmentsTaken - totalInvestmentsReturned);
-
-  // Total Cash Balance = (Total Receipts + Total Investments Taken) - Total Bills
-  const totalCashBalance = totalReceipt + totalInvestmentsTaken - totalBills;
-
-  // Operating Balance: Total Payments - Total Bills
-  const operatingBalance = totalReceipt - totalBills;
-
-  // Second Section - Business Asset Calculation
-  // Business Asset = Total Cash Balance - Net Outstanding Investments
-  const businessAsset = totalCashBalance - netInvestmentsTaken;
-
-  // Chart Data Generator: Daily breakdown of Payments and Bills
-  const chartData = useMemo(() => {
-    const dayMap = {};
-
-    // Populate timeline entries
-    filteredPayments.forEach((p) => {
-      const day = (p.date || p.createdAt || '').slice(0, 10);
-      if (!day) return;
-      if (!dayMap[day]) dayMap[day] = { date: day, payments: 0, bills: 0 };
-      const isPaid = p.status === 'Completed' || p.status === 'Paid';
-      const amt = Number(p.paidAmount !== undefined ? p.paidAmount : isPaid ? p.amount : 0);
-      dayMap[day].payments += amt;
-    });
-
-    filteredBills.forEach((b) => {
-      const day = (b.billingDate || b.date || b.createdAt || '').slice(0, 10);
-      if (!day) return;
-      if (!dayMap[day]) dayMap[day] = { date: day, payments: 0, bills: 0 };
-      const isPaid = b.status === 'Paid' || b.status === 'Completed';
-      const amt = Number(b.paidAmount !== undefined && b.paidAmount > 0 ? b.paidAmount : isPaid ? b.totalAmount : b.totalAmount || b.amount || 0);
-      dayMap[day].bills += amt;
-    });
-
-    const sortedDays = Object.keys(dayMap).sort();
-    return sortedDays.map((d) => ({
-      date: d,
-      payments: dayMap[d].payments,
-      bills: dayMap[d].bills,
-    }));
-  }, [filteredPayments, filteredBills]);
+  const chartData = useMemo(() => (summary?.timeline || []).filter((d) => d.payments || d.bills), [summary]);
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
@@ -212,7 +140,7 @@ export const BalanceOverview = () => {
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {t('accounts.total_receipt', 'Total Receipt')}
+              {t('accounts.money_in', 'Money In')}
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
               <CreditCard className="h-4 w-4" />
@@ -220,11 +148,11 @@ export const BalanceOverview = () => {
           </CardHeader>
           <CardContent className="space-y-1">
             <div className="text-2xl font-bold text-foreground tracking-tight">
-              {formatCurrency(totalReceipt)}
+              {loadingText || formatCurrency(totalIn)}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
               <ArrowDownRight className="h-3.5 w-3.5" />
-              <span>{filteredPayments.length} transactions received</span>
+              <span>Sales {formatCurrency(receipts)} + Investment {formatCurrency(investmentsTaken)}</span>
             </div>
           </CardContent>
         </Card>
@@ -234,7 +162,7 @@ export const BalanceOverview = () => {
           <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {t('accounts.total_bills', 'Total Bills & Returns')}
+              {t('accounts.money_out', 'Money Out')}
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-red-500/10 text-red-600 flex items-center justify-center">
               <Receipt className="h-4 w-4" />
@@ -242,11 +170,11 @@ export const BalanceOverview = () => {
           </CardHeader>
           <CardContent className="space-y-1">
             <div className="text-2xl font-bold text-foreground tracking-tight">
-              {formatCurrency(totalBills)}
+              {loadingText || formatCurrency(totalOut)}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium">
               <ArrowUpRight className="h-3.5 w-3.5" />
-              <span>{filteredBills.length} bills in range</span>
+              <span>Bills {formatCurrency(billsPaid)} + Investor returns {formatCurrency(investmentReturns)}</span>
             </div>
           </CardContent>
         </Card>
@@ -256,7 +184,7 @@ export const BalanceOverview = () => {
           <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {t('accounts.total_investments', 'Total Investments')}
+              {t('accounts.opening_balance', 'Opening Balance')}
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
               <Landmark className="h-4 w-4" />
@@ -264,10 +192,10 @@ export const BalanceOverview = () => {
           </CardHeader>
           <CardContent className="space-y-1">
             <div className="text-2xl font-bold text-foreground tracking-tight">
-              {formatCurrency(totalInvestmentsTaken)}
+              {loadingText || formatCurrency(openingBalance)}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-purple-600 font-medium">
-              <span>Outstanding Due: {formatCurrency(netInvestmentsTaken)}</span>
+              <span>Cash in hand at the start of the period</span>
             </div>
           </CardContent>
         </Card>
@@ -277,24 +205,24 @@ export const BalanceOverview = () => {
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {t('accounts.total_cash_balance', 'Total Cash Balance')}
+              {t('accounts.closing_balance', 'Closing Balance')}
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
               <Wallet className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent className="space-y-1">
-            <div className={`text-2xl font-bold tracking-tight ${totalCashBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-              {formatCurrency(totalCashBalance)}
+            <div className={`text-2xl font-bold tracking-tight ${closingBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              {loadingText || formatCurrency(closingBalance)}
             </div>
             <div className="flex items-center gap-1.5 text-xs font-medium">
               <Badge
                 variant="outline"
-                className={totalCashBalance >= 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' : 'bg-red-500/10 text-red-600 border-red-500/30'}
+                className={closingBalance >= 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' : 'bg-red-500/10 text-red-600 border-red-500/30'}
               >
-                {totalCashBalance >= 0 ? t('accounts.surplus', 'Surplus') : t('accounts.deficit', 'Deficit')}
+                {closingBalance >= 0 ? t('accounts.surplus', 'Surplus') : t('accounts.deficit', 'Deficit')}
               </Badge>
-              <span className="text-muted-foreground text-[11px]">(Receipts + Investments) − Bills</span>
+              <span className="text-muted-foreground text-[11px]">Opening + In − Out</span>
             </div>
           </CardContent>
         </Card>
@@ -327,35 +255,43 @@ export const BalanceOverview = () => {
             <div className="space-y-3">
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60 space-y-2 text-xs">
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>1. {t('accounts.total_receipt', 'Total Customer Receipts')}</span>
-                  <span className="font-bold text-emerald-600 font-mono">+{formatCurrency(totalReceipt)}</span>
+                  <span>Opening balance</span>
+                  <span className="font-bold text-foreground font-mono">{formatCurrency(openingBalance)}</span>
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>2. {t('accounts.investments_taken', 'Investments Taken (Capital In)')}</span>
-                  <span className="font-bold text-purple-600 font-mono">+{formatCurrency(totalInvestmentsTaken)}</span>
+                  <span>Customer payments received</span>
+                  <span className="font-bold text-emerald-600 font-mono">+{formatCurrency(receipts)}</span>
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>3. {t('accounts.total_bills', 'Total Bills & Repayments (Outflow)')}</span>
-                  <span className="font-bold text-red-600 font-mono">−{formatCurrency(totalBills)}</span>
+                  <span>Investments taken</span>
+                  <span className="font-bold text-purple-600 font-mono">+{formatCurrency(investmentsTaken)}</span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground font-medium">
+                  <span>Bills paid</span>
+                  <span className="font-bold text-red-600 font-mono">−{formatCurrency(billsPaid)}</span>
+                </div>
+                <div className="flex items-center justify-between text-muted-foreground font-medium">
+                  <span>Investor returns paid</span>
+                  <span className="font-bold text-red-600 font-mono">−{formatCurrency(investmentReturns)}</span>
                 </div>
                 <div className="border-t border-border/60 pt-2 flex items-center justify-between font-semibold text-foreground">
-                  <span>= {t('accounts.total_cash_balance', 'Total Cash Balance in Hand')}</span>
-                  <span className="font-mono text-blue-600 dark:text-blue-400">{formatCurrency(totalCashBalance)}</span>
+                  <span>= {t('accounts.closing_balance', 'Closing balance (cash in hand)')}</span>
+                  <span className="font-mono text-blue-600 dark:text-blue-400">{formatCurrency(closingBalance)}</span>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60 space-y-2 text-xs">
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>Investments Taken:</span>
-                  <span className="font-bold text-purple-600 font-mono">{formatCurrency(totalInvestmentsTaken)}</span>
+                  <span>Customers still owe (receivable)</span>
+                  <span className="font-bold text-emerald-600 font-mono">+{formatCurrency(receivable)}</span>
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground font-medium">
-                  <span>Investments Returned:</span>
-                  <span className="font-bold text-emerald-600 font-mono">−{formatCurrency(totalInvestmentsReturned)}</span>
+                  <span>Unpaid bills (payable)</span>
+                  <span className="font-bold text-red-600 font-mono">−{formatCurrency(payable)}</span>
                 </div>
-                <div className="border-t border-border/60 pt-2 flex items-center justify-between font-semibold text-foreground">
-                  <span>= {t('accounts.net_investments_taken', 'Net Investor Due Obligation')}</span>
-                  <span className="font-mono text-purple-600">{formatCurrency(netInvestmentsTaken)}</span>
+                <div className="flex items-center justify-between text-muted-foreground font-medium">
+                  <span>Still owed to investors</span>
+                  <span className="font-bold text-purple-600 font-mono">−{formatCurrency(outstandingInvestment)}</span>
                 </div>
               </div>
             </div>
@@ -365,17 +301,17 @@ export const BalanceOverview = () => {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-primary" />
-                  {t('accounts.true_business_asset', 'True Business Asset (Retained Capital)')}
+                  {t('accounts.true_business_asset', 'Business Asset')}
                 </span>
                 <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[10px]">
                   Net Capital
                 </Badge>
               </div>
               <div className="text-3xl font-extrabold tracking-tight text-foreground font-mono">
-                {formatCurrency(businessAsset)}
+                {loadingText || formatCurrency(businessAsset)}
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">
-                {t('accounts.asset_explanation', 'Deducting outstanding investor debt from total cash balance reflects the store’s actual self-owned equity & retained earnings.')}
+                {t('accounts.asset_explanation', 'Closing cash + what customers owe − unpaid bills − what is still owed to investors.')}
               </p>
             </div>
 

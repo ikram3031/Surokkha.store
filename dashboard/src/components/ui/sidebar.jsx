@@ -25,9 +25,9 @@ import { PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "200px"
+const SIDEBAR_WIDTH = "250px"
 const SIDEBAR_WIDTH_MOBILE = "200px"
-const SIDEBAR_WIDTH_ICON = "3rem"
+const SIDEBAR_WIDTH_ICON = "72px"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 const SidebarContext = React.createContext(null)
@@ -147,7 +147,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar-mobile"
           data-mobile="true"
-          className="w-[280px] sm:w-[320px] max-w-[85vw] bg-sidebar p-0 text-sidebar-foreground z-50 border-r border-sidebar-border"
+          className="dark v2-shell w-[280px] sm:w-[320px] max-w-[85vw] bg-sidebar p-0 text-sidebar-foreground z-50 border-r border-sidebar-border"
           side={side}
           showCloseButton={false}
         >
@@ -166,7 +166,7 @@ function Sidebar({
       <div
         data-slot="sidebar"
         className={cn(
-          "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
+          "dark v2-shell flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
           className
         )}
         {...props}
@@ -217,7 +217,7 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
+          className="dark v2-shell flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
         >
           {children}
         </div>

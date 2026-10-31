@@ -101,13 +101,13 @@ const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
   </svg>
 );
 
-const navItemClass = "relative h-9 gap-2.5 font-medium text-sidebar-foreground data-active:bg-primary/10 data-active:font-semibold data-active:text-foreground data-active:before:absolute data-active:before:-left-3 data-active:before:bottom-2 data-active:before:top-2 data-active:before:w-[3px] data-active:before:rounded-r data-active:before:bg-primary data-active:[&>svg]:text-primary group-data-[collapsible=icon]:data-active:before:-left-1.5"
+const navItemClass = "relative h-10 gap-3 rounded-lg px-3 font-medium text-white hover:bg-white/5 hover:text-primary data-active:bg-primary/12 data-active:font-medium data-active:text-primary data-active:[&>svg]:text-primary"
 
 // Section caption rendered above a navigation group, collapsing to a divider in rail mode
 export const NavLabel = ({ children }) => (
   <li
     role="presentation"
-    className="px-2.5 pb-1.5 pt-3.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/80 group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:bg-sidebar-border group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-[0px]"
+    className="px-2.5 pb-1.5 pt-3.5 text-xs font-normal uppercase leading-5 text-[#a3a3a3] group-data-[collapsible=icon]:mx-2 group-data-[collapsible=icon]:my-2 group-data-[collapsible=icon]:h-px group-data-[collapsible=icon]:bg-sidebar-border group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:text-[0px]"
   >
     {children}
   </li>
@@ -122,7 +122,7 @@ export const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, childr
       onClick={() => onToggle(id)}
       aria-expanded={open}
       data-has-active={active ? "true" : "false"}
-      className="relative h-9 cursor-pointer justify-between font-medium text-sidebar-foreground data-[has-active=true]:text-foreground data-[has-active=true]:[&>div>svg]:text-primary group-data-[collapsible=icon]:data-[has-active=true]:bg-primary/10"
+      className="relative h-10 cursor-pointer justify-between rounded-lg px-3 font-medium text-white hover:bg-white/5 hover:text-primary data-[has-active=true]:bg-primary/12 data-[has-active=true]:text-primary data-[has-active=true]:[&>div>svg]:text-primary"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <Icon className="h-4 w-4" />
@@ -142,7 +142,7 @@ export const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, childr
       )}
     >
       <div className={cn("min-h-0 overflow-hidden transition-[visibility] duration-200", open ? "visible" : "invisible")}>
-        <SidebarMenuSub className="mx-0 ml-[1.1rem] my-1 translate-x-0 gap-px border-sidebar-border px-2 py-0">
+        <SidebarMenuSub className="mx-0 ml-9 my-1 translate-x-0 gap-1 border-0 px-0 py-0">
           {children}
         </SidebarMenuSub>
       </div>
@@ -157,7 +157,7 @@ export const NavSub = ({ to, active, icon: Icon, iconClass = "", children, class
       isActive={active}
       render={<Link to={to} />}
       className={cn(
-        "relative h-8 translate-x-0 rounded-md px-2.5 text-[13px] data-active:bg-primary/10 data-active:font-semibold data-active:text-foreground data-active:before:absolute data-active:before:-left-[calc(0.5rem+1px)] data-active:before:bottom-1.5 data-active:before:top-1.5 data-active:before:w-0.5 data-active:before:rounded data-active:before:bg-primary",
+        "relative h-9 translate-x-0 rounded-lg px-3 text-sm font-medium text-white hover:bg-white/5 hover:text-primary data-active:bg-primary/12 data-active:text-primary",
         className
       )}
     >
@@ -179,7 +179,7 @@ export const NavLink = ({ to, active, icon: Icon, label }) => (
 
 // Sub-section caption inside a submenu
 export const SubLabel = ({ children }) => (
-  <div className="px-2 pb-1 pt-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 group-data-[collapsible=icon]:hidden">
+  <div className="px-2 pb-1 pt-2.5 text-[11px] font-semibold uppercase tracking-wider text-[#a3a3a3] group-data-[collapsible=icon]:hidden">
     {children}
   </div>
 )

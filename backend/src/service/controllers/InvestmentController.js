@@ -209,16 +209,7 @@ export const createInvestment = async (req, res, next) => {
       .lean();
 
     // A tranche recorded with an amount already paid back also books that repayment as a bill
-    if (numReturnedAmount > 0) {
-      await createInvestmentReturnBill({
-        investor,
-        investmentId: investment._id,
-        amount: numReturnedAmount,
-        date: investment.returnedDate || new Date(),
-        paymentMethod: investment.paymentMethod,
-        userId: req.user?.userId,
-      });
-    }
+    await syncInvestmentReturnBills({ investment, investor, userId: req.user?.userId });
 
     return res.status(201).json({
       status: "success",
@@ -323,17 +314,9 @@ export const updateInvestment = async (req, res, next) => {
       return res.status(404).json({ status: "error", message: "Investment not found" });
     }
 
-    // Raising the returned amount from the edit form pays the difference out as a bill, like the Return modal does
-    const returnedIncrease = before ? Number(updated.returnedAmount || 0) - Number(before.returnedAmount || 0) : 0;
-    if (returnedIncrease > 0 && updated.investorId?._id) {
-      await createInvestmentReturnBill({
-        investor: updated.investorId,
-        investmentId: updated._id,
-        amount: returnedIncrease,
-        date: updated.returnedDate || new Date(),
-        paymentMethod: updated.paymentMethod,
-        userId: req.user?.userId,
-      });
+    // Editing the returned amount keeps the Investment Return bills equal to it (adds the rise, takes back a cut)
+    if (before && Number(before.returnedAmount || 0) !== Number(updated.returnedAmount || 0) && updated.investorId?._id) {
+      await syncInvestmentReturnBills({ investment: updated, investor: updated.investorId, userId: req.user?.userId });
     }
 
     return res.json({
@@ -357,6 +340,7 @@ export const deleteInvestment = async (req, res, next) => {
     if (!deleted) {
       return res.status(404).json({ status: "error", message: "Investment not found" });
     }
+    await BillingModel.deleteMany({ investmentId: deleted._id });
 
     return res.json({
       status: "success",
@@ -405,9 +389,10 @@ export const bulkDeleteInvestments = async (req, res, next) => {
     const objectIds = ids.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));
     const dids = ids.filter((id) => typeof id === "string");
 
-    const result = await InvestmentModel.deleteMany({
-      $or: [{ _id: { $in: objectIds } }, { did: { $in: dids } }],
-    });
+    const filter = { $or: [{ _id: { $in: objectIds } }, { did: { $in: dids } }] };
+    const removedIds = (await InvestmentModel.find(filter).select("_id").lean()).map((i) => i._id);
+    const result = await InvestmentModel.deleteMany(filter);
+    await BillingModel.deleteMany({ investmentId: { $in: removedIds } });
 
     return res.json({
       status: "success",
@@ -462,6 +447,45 @@ const createInvestmentReturnBill = async ({ investor, investmentId, amount, date
   });
 };
 
+/**
+ * Keeps an investment's "Investment Return" bills summing to its returnedAmount: a shortfall is booked as a new
+ * paid bill, an excess is taken back from the newest bills. Returns the bills created.
+ */
+const syncInvestmentReturnBills = async ({ investment, investor, date, paymentMethod, notes, userId }) => {
+  const bills = await BillingModel.find({ investmentId: investment._id }).sort({ billingDate: -1, createdAt: -1 });
+  const billed = bills.reduce((sum, b) => sum + Number(b.paidAmount || b.amount || 0), 0);
+  const diff = Math.round((Number(investment.returnedAmount || 0) - billed) * 100) / 100;
+  if (diff > 0) {
+    const bill = await createInvestmentReturnBill({
+      investor,
+      investmentId: investment._id,
+      amount: diff,
+      date: date || investment.returnedDate || new Date(),
+      paymentMethod: paymentMethod || investment.paymentMethod,
+      notes,
+      userId,
+    });
+    return [bill];
+  }
+  let excess = -diff;
+  for (const bill of bills) {
+    if (excess <= 0) break;
+    const amount = Number(bill.paidAmount || bill.amount || 0);
+    if (amount <= excess) {
+      await BillingModel.deleteOne({ _id: bill._id });
+      excess -= amount;
+    } else {
+      const left = Math.round((amount - excess) * 100) / 100;
+      await BillingModel.updateOne(
+        { _id: bill._id },
+        { $set: { baseAmount: left, totalAmount: left, paidAmount: left, amount: left, pendingAmount: 0 } }
+      );
+      excess = 0;
+    }
+  }
+  return [];
+};
+
 // Records an investment repayment/return to an investor and syncs with billing
 export const recordInvestmentReturn = async (req, res, next) => {
   try {
@@ -474,7 +498,6 @@ export const recordInvestmentReturn = async (req, res, next) => {
       returnedDate,
       paymentMethod,
       notes,
-      createBill = true,
     } = req.body ?? {};
 
     const numAmount = Number(amount ?? returnAmount);
@@ -569,17 +592,11 @@ export const recordInvestmentReturn = async (req, res, next) => {
       }
     }
 
+    // Money paid back always leaves the balance as an Investment Return bill, split per investment it repaid
     let createdBill = null;
-    if (createBill !== false) {
-      createdBill = await createInvestmentReturnBill({
-        investor,
-        investmentId: targetInvestment?._id || updatedInvestments[0]?._id || null,
-        amount: numAmount,
-        date: validReturnDate,
-        paymentMethod,
-        notes,
-        userId: req.user?.userId,
-      });
+    for (const inv of updatedInvestments) {
+      const bills = await syncInvestmentReturnBills({ investment: inv, investor, date: validReturnDate, paymentMethod, notes, userId: req.user?.userId });
+      createdBill = createdBill || bills[0] || null;
     }
 
     const allInvestorInvestments = await InvestmentModel.find({ investorId: investor._id }).lean();

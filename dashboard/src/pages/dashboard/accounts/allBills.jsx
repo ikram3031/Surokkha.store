@@ -74,6 +74,28 @@ const formatCurrency = (val) => {
   return `৳${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 };
 
+// Solid chip color per bill type; the same type always gets the same color
+const TYPE_CHIP_COLORS = [
+  'bg-blue-600 text-white',
+  'bg-emerald-600 text-white',
+  'bg-amber-500 text-white',
+  'bg-rose-600 text-white',
+  'bg-violet-600 text-white',
+  'bg-cyan-600 text-white',
+  'bg-orange-600 text-white',
+  'bg-pink-600 text-white',
+  'bg-teal-600 text-white',
+  'bg-indigo-600 text-white',
+  'bg-lime-600 text-white',
+  'bg-slate-600 text-white',
+];
+const billTypeChipClass = (name = '') => {
+  if (name === 'Investment Return') return 'bg-purple-600 text-white';
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return TYPE_CHIP_COLORS[Math.abs(hash) % TYPE_CHIP_COLORS.length];
+};
+
 // Pathao's auto charge bills (billingMethod "pathao") live on their own page; All Bills leaves them out
 const PATHAO_METHOD = 'pathao';
 
@@ -407,8 +429,8 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
                 </TableHead>
-                <TableHead className="text-xs">Bill Ref / DID</TableHead>
-                <TableHead className="text-xs">Title / Payee</TableHead>
+                <TableHead className="text-xs">Title</TableHead>
+                <TableHead className="text-xs">Billed To</TableHead>
                 <TableHead className="text-xs">Type</TableHead>
                 <TableHead className="text-xs">Billing Date</TableHead>
                 <TableHead className="text-xs">Due Date</TableHead>
@@ -457,27 +479,19 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
                         }}
                       />
                     </TableCell>
-                    <TableCell className="font-mono text-xs font-semibold text-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <span>{b.did || b.invoiceId}</span>
-                      </div>
-                    </TableCell>
                     <TableCell>
                       <div className="font-semibold text-xs text-foreground line-clamp-1">{b.title}</div>
-                      <div className="text-[11px] text-muted-foreground line-clamp-1">{b.vendor || b.customerName}</div>
+                    </TableCell>
+                    <TableCell className="text-xs text-foreground">
+                      <div className="line-clamp-1">{b.vendor || b.customerName || '—'}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`text-[11px] font-medium ${
-                          b.billType === 'Investment Return'
-                            ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30'
-                            : 'bg-muted/40'
-                        }`}
+                      <span
+                        title={b.billType}
+                        className={`inline-flex w-28 items-center justify-center truncate rounded-full px-2 py-0.5 text-[11px] font-semibold ${billTypeChipClass(b.billType)}`}
                       >
                         {b.billType}
-                      </Badge>
+                      </span>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{b.billingDate || b.date}</TableCell>
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{b.dueDate || '—'}</TableCell>

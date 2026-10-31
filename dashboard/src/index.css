@@ -285,3 +285,15 @@ input[type="number"] {
 :has(> * > [data-slot="table-container"]) {
   border-radius: 0;
 }
+
+/* Always-dark shell for the sidebar and navbar (paired with the `dark` class). Accent follows the tenant primary. */
+.v2-shell {
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-border: #1f1f1f;
+  --sidebar-accent: color-mix(in srgb, var(--primary) 12%, transparent);
+  --sidebar-accent-foreground: var(--primary);
+  --background: #0a0a0a;
+  --border: #1f1f1f;
+  --muted-foreground: #a3a3a3;
+}

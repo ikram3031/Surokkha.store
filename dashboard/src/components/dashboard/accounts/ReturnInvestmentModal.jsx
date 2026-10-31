@@ -59,7 +59,6 @@ export const ReturnInvestmentModal = ({
   const [returnAmount, setReturnAmount] = useState('');
   const [returnDate, setReturnDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [paymentMethod, setPaymentMethod] = useState('Bank Transfer');
-  const [createBill, setCreateBill] = useState(true);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -89,7 +88,6 @@ export const ReturnInvestmentModal = ({
 
       setReturnDate(new Date().toISOString().slice(0, 10));
       setPaymentMethod('Bank Transfer');
-      setCreateBill(true);
       setNotes('');
     }
   }, [open, defaultInvestorId, defaultInvestmentId, allInvestments, allInvestors]);
@@ -163,7 +161,6 @@ export const ReturnInvestmentModal = ({
         returnDate,
         paymentMethod,
         notes: notes.trim(),
-        createBill,
       });
 
       if (onSuccess) onSuccess();
@@ -385,25 +382,10 @@ export const ReturnInvestmentModal = ({
             </div>
           </div>
 
-          {/* 6. Sync with Accounts Billing Checkbox */}
-          <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="create-bill-checkbox"
-                checked={createBill}
-                onCheckedChange={(checked) => setCreateBill(Boolean(checked))}
-              />
-              <label
-                htmlFor="create-bill-checkbox"
-                className="font-semibold text-foreground cursor-pointer select-none text-xs"
-              >
-                Log as Bill under <span className="text-emerald-600 font-bold">'Investment Return'</span> Category
-              </label>
-            </div>
-            <p className="text-[11px] text-muted-foreground pl-6 leading-relaxed">
-              Automatically creates a paid bill entry in Accounts so that total company outflow and net business balance stay 100% synchronized.
-            </p>
-          </div>
+          {/* 6. Every return is booked as a paid 'Investment Return' bill */}
+          <p className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-[11px] text-muted-foreground leading-relaxed">
+            This repayment is recorded as a paid bill under <span className="text-emerald-600 font-bold">'Investment Return'</span>, so the account balance stays in sync.
+          </p>
 
           {/* 7. Notes */}
           <div className="space-y-1.5">

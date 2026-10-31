@@ -31,9 +31,9 @@ export const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center justify-between gap-2 sm:gap-4 border-b bg-background/95 backdrop-blur-md px-3 sm:px-6">
+    <header className="dark v2-shell sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center justify-between gap-2 sm:gap-4 border-b border-[#1f1f1f] bg-[#0a0a0a] px-3 sm:px-5 text-white">
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        <SidebarTrigger className="md:hidden h-8.5 w-8.5 rounded-lg border border-[#C5A059]/40 bg-[#C5A059]/15 text-[#C5A059] hover:bg-[#C5A059]/25 hover:text-[#C5A059] shrink-0 cursor-pointer" />
+        <SidebarTrigger className="h-8.5 w-8.5 rounded-lg border border-primary bg-transparent text-primary hover:bg-primary/10 hover:text-primary shrink-0 cursor-pointer" />
         <Button
           type="button"
           variant="outline"
