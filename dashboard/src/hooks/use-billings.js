@@ -118,6 +118,11 @@ const fetchBillings = async (params = {}) => {
     if (params?.endDate) {
       queryParams.endDate = params.endDate;
     }
+    if (params?.billingMethod) {
+      queryParams.billingMethod = params.billingMethod;
+    } else if (params?.excludeBillingMethod) {
+      queryParams.excludeBillingMethod = params.excludeBillingMethod;
+    }
 
     const response = await apiClient.get('/api/v1/billing', { params: queryParams });
     const billingList = Array.isArray(response.data?.data)

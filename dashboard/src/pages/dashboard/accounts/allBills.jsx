@@ -74,7 +74,10 @@ const formatCurrency = (val) => {
   return `৳${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 };
 
-export const AllBillsPage = () => {
+// Pathao's auto charge bills (billingMethod "pathao") live on their own page; All Bills leaves them out
+const PATHAO_METHOD = 'pathao';
+
+export const AllBillsPage = ({ pathaoOnly = false }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -108,6 +111,8 @@ export const AllBillsPage = () => {
     billType: billTypeFilter !== 'All' ? billTypeFilter : undefined,
     startDate: dateRange.startDate || undefined,
     endDate: dateRange.endDate || undefined,
+    billingMethod: pathaoOnly ? PATHAO_METHOD : undefined,
+    excludeBillingMethod: pathaoOnly ? undefined : PATHAO_METHOD,
     page: currentPage,
     limit: 15,
   });
@@ -246,10 +251,12 @@ export const AllBillsPage = () => {
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {t('accounts.all_bills_title', 'All Bills')}
+                {pathaoOnly ? t('accounts.pathao_bills_title', 'Pathao Bills') : t('accounts.all_bills_title', 'All Bills')}
               </h1>
               <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {t('accounts.all_bills_subtitle', 'Manage company invoices, vendor expenses, utilities, and operational costs.')}
+                {pathaoOnly
+                  ? t('accounts.pathao_bills_subtitle', 'Pathao delivery and return charges, synced automatically from Pathao payouts.')
+                  : t('accounts.all_bills_subtitle', 'Manage company invoices, vendor expenses, utilities, and operational costs.')}
               </p>
             </div>
           </div>

@@ -634,6 +634,14 @@ const financeRoutes = [
         ),
       },
       {
+        path: 'pathao',
+        element: (
+          <RoleGuard menuKey="accounts.bills">
+            <AllBills pathaoOnly />
+          </RoleGuard>
+        ),
+      },
+      {
         path: 'types',
         element: (
           <RoleGuard menuKey="accounts.bills.types">

@@ -146,6 +146,9 @@ export const listBilling = async (req, res, next) => {
 
     if (req.query.billingMethod) {
       filter.billingMethod = { $regex: `^${req.query.billingMethod.toString().trim()}$`, $options: "i" };
+    } else if (req.query.excludeBillingMethod) {
+      // e.g. All Bills leaves out the auto Pathao charge bills, which have their own page
+      filter.billingMethod = { $ne: req.query.excludeBillingMethod.toString().trim().toLowerCase() };
     }
 
     if (req.query.status && req.query.status !== "all") {
@@ -172,15 +175,13 @@ export const listBilling = async (req, res, next) => {
     if (startDate || endDate) {
       const dateField = req.query.dateField || "billingDate";
       filter[dateField] = {};
+      // Plain YYYY-MM-DD dates are whole Bangladesh days, whatever timezone the server runs in
+      const isDay = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v));
       if (startDate) {
-        filter[dateField].$gte = new Date(startDate);
+        filter[dateField].$gte = isDay(startDate) ? new Date(`${startDate}T00:00:00.000+06:00`) : new Date(startDate);
       }
       if (endDate) {
-        const end = new Date(endDate);
-        if (endDate.length <= 10) {
-          end.setHours(23, 59, 59, 999);
-        }
-        filter[dateField].$lte = end;
+        filter[dateField].$lte = isDay(endDate) ? new Date(`${endDate}T23:59:59.999+06:00`) : new Date(endDate);
       }
     }
 

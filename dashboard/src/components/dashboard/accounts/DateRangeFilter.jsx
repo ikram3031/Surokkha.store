@@ -17,9 +17,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
+// YYYY-MM-DD of the local calendar day (toISOString would shift it to UTC, i.e. the previous day in Bangladesh)
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export const getDateRangeBounds = (preset) => {
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = ymd(now);
 
   if (preset === 'today') {
     return { startDate: todayStr, endDate: todayStr, label: 'Today' };
@@ -27,35 +30,35 @@ export const getDateRangeBounds = (preset) => {
   if (preset === 'yesterday') {
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
-    const yStr = yesterday.toISOString().slice(0, 10);
+    const yStr = ymd(yesterday);
     return { startDate: yStr, endDate: yStr, label: 'Yesterday' };
   }
   if (preset === '7days') {
     const d = new Date(now);
     d.setDate(now.getDate() - 7);
-    return { startDate: d.toISOString().slice(0, 10), endDate: todayStr, label: 'Last 7 Days' };
+    return { startDate: ymd(d), endDate: todayStr, label: 'Last 7 Days' };
   }
   if (preset === '30days') {
     const d = new Date(now);
     d.setDate(now.getDate() - 30);
-    return { startDate: d.toISOString().slice(0, 10), endDate: todayStr, label: 'Last 30 Days' };
+    return { startDate: ymd(d), endDate: todayStr, label: 'Last 30 Days' };
   }
   if (preset === 'thisMonth') {
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    return { startDate: firstDay.toISOString().slice(0, 10), endDate: todayStr, label: 'This Month' };
+    return { startDate: ymd(firstDay), endDate: todayStr, label: 'This Month' };
   }
   if (preset === 'lastMonth') {
     const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
     return {
-      startDate: firstDay.toISOString().slice(0, 10),
-      endDate: lastDay.toISOString().slice(0, 10),
+      startDate: ymd(firstDay),
+      endDate: ymd(lastDay),
       label: 'Last Month',
     };
   }
   if (preset === 'thisYear') {
     const firstDay = new Date(now.getFullYear(), 0, 1);
-    return { startDate: firstDay.toISOString().slice(0, 10), endDate: todayStr, label: 'This Year' };
+    return { startDate: ymd(firstDay), endDate: todayStr, label: 'This Year' };
   }
   return { startDate: '', endDate: '', label: 'All Time' };
 };

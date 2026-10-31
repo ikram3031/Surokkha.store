@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { BarChart3, CreditCard, PlusCircle, Receipt, Scale, Tag, TrendingUp, Users } from "lucide-react"
+import { BarChart3, CreditCard, PlusCircle, Receipt, Scale, Tag, TrendingUp, Truck, Users } from "lucide-react"
 
 import { useAuth } from "@/lib/auth-context"
 import { hasMenuAccess } from "@/lib/rbac"
@@ -37,6 +37,7 @@ export const FinanceSidebar = (props) => {
           <NavLink to="/finance/bills/new" active={pathname === "/finance/bills/new"} icon={PlusCircle} label={t("nav.add_bill", "Add New")} />
           <NavLink to="/finance/bills/types" active={pathname === "/finance/bills/types"} icon={Tag} label={t("nav.bill_types", "Bill Types")} />
           <NavLink to="/finance/bills" active={pathname === "/finance/bills" || pathname === "/finance/bills/slips"} icon={Receipt} label={t("nav.all_bills", "All Bills")} />
+          <NavLink to="/finance/bills/pathao" active={pathname === "/finance/bills/pathao"} icon={Truck} label={t("nav.pathao_bills", "Pathao")} />
         </>
       )}
 
