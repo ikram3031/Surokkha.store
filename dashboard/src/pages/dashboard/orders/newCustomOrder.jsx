@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
 import { useItems } from "@/hooks/use-items";
@@ -43,6 +44,8 @@ import {
   CircleDollarSign,
   User,
   Mail,
+  AlertTriangle,
+  UserCheck,
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
@@ -302,6 +305,84 @@ const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
   );
 };
 
+const LEAD_REASONS = {
+  not_found: "Product not found in catalogue",
+  inactive: "Product is not active",
+  out_of_stock: "Out of stock",
+  variation_missing: "Selected variation is not available",
+  bundle: "Bundle offer, add it manually",
+};
+
+const isOutOfStockStatus = (s) => s === "outofstock" || s === "out_of_stock";
+
+const resolveImageUrl = (raw) => {
+  if (!raw) return undefined;
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  const base = (baseURL || "").replace(/\/$/, "");
+  return `${base}${raw.startsWith("/") ? "" : "/"}${raw}`;
+};
+
+// A saved checkout's slug may belong to a product or an item, products are tried first like the storefront does
+const fetchCatalogEntry = async (slug) => {
+  for (const [path, itemType] of [["products", "product"], ["items", "item"]]) {
+    try {
+      const res = await apiClient.get(`/api/v1/${path}/${encodeURIComponent(slug)}`);
+      const entry = res.data?.data || res.data;
+      if (entry && (entry.id || entry._id)) return { entry, itemType };
+    } catch (_) {
+      // try the next catalogue
+    }
+  }
+  return null;
+};
+
+// Turns one saved checkout line into a cart line, or says why it can't be ordered right now
+const resolveLeadItem = async (leadItem) => {
+  const [baseSlug, variantSize = ""] = String(leadItem.slug || "").split(":::");
+  const label = variantSize ? `${leadItem.name || baseSlug} (${variantSize})` : leadItem.name || baseSlug;
+  const unavailable = (reason) => ({ unavailable: { name: label, reason } });
+
+  const found = baseSlug ? await fetchCatalogEntry(baseSlug) : null;
+  if (!found) return unavailable("not_found");
+
+  const { entry, itemType } = found;
+  if (entry.type === "group") return unavailable("bundle");
+  if (entry.isActive === false) return unavailable("inactive");
+  if (isOutOfStockStatus(entry.stockStatus)) return unavailable("out_of_stock");
+
+  let variant = null;
+  if (entry.type === "variant" && (entry.variants?.length ?? 0) > 0) {
+    variant = entry.variants.find((v) => String(v.size).toLowerCase() === variantSize.toLowerCase());
+    if (!variant) return unavailable("variation_missing");
+    if (isOutOfStockStatus(variant.stockStatus)) return unavailable("out_of_stock");
+  }
+
+  const source = variant || entry;
+  const price = effectivePrice(Number(source.price) || 0, source.offerPrice ?? null);
+  const rawId = entry.id || entry._id || "";
+  const isItem = itemType === "item";
+  const quantity = Math.max(1, Number(leadItem.quantity) || 1);
+
+  return {
+    line: {
+      id: variant ? `${rawId}__${variant.size}` : rawId,
+      name: variant ? `${entry.name} (${variant.size})` : entry.name,
+      price,
+      quantity,
+      image: resolveImageUrl(entry.imageUrl || entry.thumbnailUrl),
+      sku: (variant && variant.sku) || entry.sku || "",
+      size: variant ? variant.size : "",
+      productId: !isItem ? rawId : "",
+      itemId: isItem ? rawId : "",
+      itemType: isItem ? "item" : "product",
+      productDid: entry.did || entry.sku || "",
+    },
+    priceChanged: Number(leadItem.unitPrice) > 0 && Number(leadItem.unitPrice) !== price
+      ? { name: label, from: Number(leadItem.unitPrice), to: price }
+      : null,
+  };
+};
+
 // Main container component for Creating Custom Orders
 const NewCustomOrderPage = () => {
   const { t } = useTranslation();
@@ -401,6 +482,79 @@ const NewCustomOrderPage = () => {
 
   const paymentOptions = useMemo(() => resolvePaymentOptions(false), []);
 
+  // Opened from an abandoned checkout: ?lead=<id> prefills the customer and the cart
+  const [searchParams] = useSearchParams();
+  const leadId = searchParams.get("lead");
+  const [leadInfo, setLeadInfo] = useState(null);
+  const leadLoadedRef = useRef(false);
+
+  useEffect(() => {
+    if (!leadId || leadLoadedRef.current) return;
+    leadLoadedRef.current = true;
+    setLeadInfo({ loading: true, unavailable: [], priceChanged: [] });
+
+    const loadLead = async () => {
+      try {
+        const res = await apiClient.get(`/api/v1/checkout-leads/${leadId}`);
+        const lead = res.data?.data;
+        if (!lead) throw new Error("missing");
+
+        if (lead.fullName) setCustomerName(lead.fullName);
+        if (lead.phone) setCustomerPhone(formatPhoneForOrderInput(lead.phone, 11));
+        if (lead.email) setCustomerEmail(lead.email);
+        if (lead.address) setBillingAddress(lead.address);
+        if (lead.district) setBillingDistrict(lead.district);
+        if (lead.thana) setBillingThana(lead.thana);
+
+        if (lead.customer?.phone) {
+          try {
+            const lookup = await apiClient.get("/api/v1/customers/lookup", { params: { phone: lead.customer.phone } });
+            if (lookup.data?.data) setSelectedCustomer(lookup.data.data);
+          } catch (_) {
+            setSelectedCustomer(lead.customer);
+          }
+        }
+
+        const resolved = await Promise.all((lead.items || []).map(resolveLeadItem));
+        const lines = [];
+        const merged = new Map();
+        resolved.forEach((r) => {
+          if (!r.line) return;
+          const existing = merged.get(r.line.id);
+          if (existing) existing.quantity += r.line.quantity;
+          else {
+            merged.set(r.line.id, r.line);
+            lines.push(r.line);
+          }
+        });
+        setCart(lines);
+
+        const unavailable = resolved.filter((r) => r.unavailable).map((r) => r.unavailable);
+        const priceChanged = resolved.map((r) => r.priceChanged).filter(Boolean);
+        setLeadInfo({
+          loading: false,
+          leadId,
+          customerName: lead.fullName || lead.phone || "",
+          customer: lead.customer || null,
+          total: lines.length,
+          unavailable,
+          priceChanged,
+        });
+
+        if (unavailable.length > 0) {
+          toast.warning(`${unavailable.length} product(s) from this checkout are not available`);
+        } else {
+          toast.success("Checkout loaded into the order");
+        }
+      } catch (err) {
+        setLeadInfo({ loading: false, failed: true, unavailable: [], priceChanged: [] });
+        toast.error("Could not load the abandoned checkout.");
+      }
+    };
+
+    loadLead();
+  }, [leadId]);
+
   const addToCart = useCallback((item) => {
     setCart((prev) => {
       const existing = prev.find((c) => c.id === item.id);
@@ -491,7 +645,7 @@ const NewCustomOrderPage = () => {
       toast.error("Customer Full Name is required.");
       return;
     }
-    if (customerPhone.trim().length !== 10) {
+    if (![10, 11].includes(customerPhone.trim().length)) {
       toast.error("Please enter a valid Phone Number.");
       return;
     }
@@ -629,6 +783,12 @@ const NewCustomOrderPage = () => {
         items: invoiceItems,
       });
 
+      if (leadId) {
+        apiClient
+          .patch(`/api/v1/checkout-leads/${leadId}/convert`, { orderNumber })
+          .catch(() => {});
+      }
+
       toast.success(
         t("orders.order_created_success", `Custom order #${orderNumber} created successfully.`),
       );
@@ -691,6 +851,51 @@ const NewCustomOrderPage = () => {
           </p>
         </div>
       </div>
+
+      {leadInfo && !leadInfo.loading && !leadInfo.failed && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <ShoppingBag className="h-4 w-4 text-primary" />
+            <span className="font-semibold">From abandoned checkout: {leadInfo.customerName}</span>
+            {leadInfo.customer && (
+              <Link
+                to={`/dashboard/customers/${leadInfo.customer.id}`}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                <UserCheck className="h-3.5 w-3.5" />
+                Existing customer · {leadInfo.customer.totalOrders} orders
+              </Link>
+            )}
+          </div>
+          {leadInfo.unavailable.length > 0 && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 space-y-1">
+              <div className="flex items-center gap-1.5 font-semibold text-destructive">
+                <AlertTriangle className="h-4 w-4" />
+                {leadInfo.unavailable.length} product(s) are not available and were not added
+              </div>
+              <ul className="list-disc pl-6 text-xs text-destructive">
+                {leadInfo.unavailable.map((u, idx) => (
+                  <li key={`${u.name}-${idx}`}>
+                    {u.name} — {LEAD_REASONS[u.reason] || "Not available"}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {leadInfo.priceChanged.length > 0 && (
+            <ul className="list-disc pl-6 text-xs text-muted-foreground">
+              {leadInfo.priceChanged.map((p, idx) => (
+                <li key={`${p.name}-${idx}`}>
+                  {p.name}: price is now {formatBDT(p.to)} (was {formatBDT(p.from)} at checkout)
+                </li>
+              ))}
+            </ul>
+          )}
+          {leadInfo.total === 0 && leadInfo.unavailable.length > 0 && (
+            <p className="text-xs text-muted-foreground">Pick other products from the catalogue below.</p>
+          )}
+        </div>
+      )}
 
       {/* =========================================================================
           SECTION 1 (TOP): PRODUCT SELECTION & CART ITEMS (Matched Fixed Height)
@@ -1130,7 +1335,7 @@ const NewCustomOrderPage = () => {
             </div>
 
             <SelectedCustomerBanner
-              selectedCustomer={selectedCustomer}
+              customer={selectedCustomer}
               onClear={() => setSelectedCustomer(null)}
               currentValues={{
                 name: customerName,
