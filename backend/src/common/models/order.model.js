@@ -151,6 +151,20 @@ const orderSchema = new Schema(
     ipAddress: { type: String, trim: true, default: null, index: true },
     fb_login_id: { type: String, trim: true, default: null, index: true },
     active: { type: Boolean, default: true, index: true },
+    // Inventory bookkeeping: what this order took out of stock, so cancel/return/edit can undo exactly that
+    stockStage: { type: String, enum: ["deducted", "released"], default: undefined },
+    stockLedger: {
+      type: [
+        {
+          _id: false,
+          entity: { type: String, enum: ["product", "item"] },
+          refId: { type: Schema.Types.ObjectId },
+          name: { type: String, default: "" },
+          quantity: { type: Number, default: 0 },
+        },
+      ],
+      default: undefined,
+    },
   },
   {
     collection: "orders",

@@ -3,6 +3,7 @@ import { ItemModel } from "../../common/models/item.model.js";
 import { CategoryModel } from "../../common/models/category.model.js";
 import { BrandModel } from "../../common/models/brand.model.js";
 import { UserModel } from "../../common/models/user.model.js";
+import { logStockMovement } from "../../common/services/stock.service.js";
 import {
   PLACEHOLDER_IMAGE_URL,
   serializeProduct,
@@ -293,6 +294,7 @@ export const updateItem = async (req, res, next) => {
       item.thumbnailUrl = (body.thumbnailUrl || body.thumbnail_url || item.imageUrl || "").trim();
     }
 
+    const stockBefore = Number(item.stockAmount) || 0;
     if (body.stockStatus !== undefined) item.stockStatus = body.stockStatus;
     if (body.stockAmount !== undefined && body.stockAmount !== null && body.stockAmount !== "") {
       item.stockAmount = Math.max(0, Number(body.stockAmount));
@@ -426,6 +428,19 @@ export const updateItem = async (req, res, next) => {
     }
 
     await item.save();
+    if ((Number(item.stockAmount) || 0) !== stockBefore) {
+      await logStockMovement({
+        entity: "item",
+        refId: item._id,
+        name: item.name,
+        type: "edit",
+        delta: (Number(item.stockAmount) || 0) - stockBefore,
+        before: stockBefore,
+        after: Number(item.stockAmount) || 0,
+        note: "Edited on the item page",
+        createdBy: req.user?.name || req.user?.did || "staff",
+      });
+    }
     const populatedItem = await ItemModel.findById(item._id)
       .populate("categories")
       .lean();

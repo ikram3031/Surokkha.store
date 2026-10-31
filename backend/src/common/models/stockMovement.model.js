@@ -1,0 +1,30 @@
+import mongoose, { Schema, model } from "mongoose";
+
+const { models } = mongoose;
+
+// One line per stock change, so the inventory view can show why a quantity went up or down
+const stockMovementSchema = new Schema(
+  {
+    entity: { type: String, enum: ["product", "item"], required: true, index: true },
+    refId: { type: Schema.Types.ObjectId, required: true, index: true },
+    name: { type: String, default: "", trim: true },
+    type: {
+      type: String,
+      enum: ["order_deduct", "order_release", "return_restock", "manual_add", "manual_remove", "manual_set", "edit"],
+      required: true,
+      index: true,
+    },
+    delta: { type: Number, default: 0 },
+    before: { type: Number, default: 0 },
+    after: { type: Number, default: 0 },
+    orderId: { type: Schema.Types.ObjectId, default: null },
+    orderNumber: { type: String, default: "", trim: true },
+    note: { type: String, default: "", trim: true, maxlength: 300 },
+    createdBy: { type: String, default: "system", trim: true },
+  },
+  { timestamps: { createdAt: true, updatedAt: false }, versionKey: false }
+);
+
+stockMovementSchema.index({ createdAt: -1 });
+
+export const StockMovementModel = models.StockMovement || model("StockMovement", stockMovementSchema);

@@ -50,6 +50,7 @@ import {
   HardDrive,
   GalleryHorizontal,
   Newspaper,
+  Boxes,
 } from "lucide-react"
 
 import {
@@ -425,6 +426,9 @@ export const AppSidebar = ({ ...props }) => {
                 </NavSub>
               )}
             </NavGroup>
+          )}
+          {showProducts && isAllowed("products.list") && (
+            <NavLink to="/dashboard/products/inventory" active={pathname === "/dashboard/products/inventory"} icon={Boxes} label={t("nav.inventory", "Inventory")} />
           )}
           {showProducts && isAllowed("products.on-sale") && (
             <NavLink to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag} label={t("nav.on_sale", "On Sale")} />

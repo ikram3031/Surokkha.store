@@ -3,6 +3,7 @@ import { ProductModel } from "../../common/models/product.model.js";
 import { CategoryModel } from "../../common/models/category.model.js";
 import { BrandModel } from "../../common/models/brand.model.js";
 import { UserModel } from "../../common/models/user.model.js";
+import { logStockMovement } from "../../common/services/stock.service.js";
 import {
   PLACEHOLDER_IMAGE_URL,
   serializeProduct,
@@ -313,6 +314,7 @@ export const updateProduct = async (req, res, next) => {
         : [];
     }
 
+    const stockBefore = Number(product.stockAmount) || 0;
     if (body.stockStatus !== undefined) product.stockStatus = body.stockStatus;
     if (body.stockAmount !== undefined) {
       product.stockAmount =
@@ -456,6 +458,19 @@ export const updateProduct = async (req, res, next) => {
     }
 
     await product.save();
+    if ((Number(product.stockAmount) || 0) !== stockBefore) {
+      await logStockMovement({
+        entity: "product",
+        refId: product._id,
+        name: product.name,
+        type: "edit",
+        delta: (Number(product.stockAmount) || 0) - stockBefore,
+        before: stockBefore,
+        after: Number(product.stockAmount) || 0,
+        note: "Edited on the product page",
+        createdBy: req.user?.name || req.user?.did || "staff",
+      });
+    }
     const populatedProduct = await ProductModel.findById(product._id)
       .populate("categories")
       .lean();

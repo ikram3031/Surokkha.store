@@ -44,7 +44,7 @@ import OnSaleProductsList from './pages/dashboard/products/onSaleProductsList';
 import MiniatureProductsList from './pages/dashboard/products/miniatureProductsList';
 import ProductDetails from './pages/dashboard/products/productDetails';
 import AddNewProduct from './pages/dashboard/products/addNewProduct';
-// import Stock from './pages/dashboard/products/stock';
+import Inventory from './pages/dashboard/products/inventory';
 import Coupons from './pages/dashboard/products/coupons';
 import GroupOffers from './pages/dashboard/products/groupOffers';
 import SizeCharts from './pages/dashboard/products/sizeCharts';
@@ -384,14 +384,14 @@ const dashboardRoutes = [
               </RoleGuard>
             ),
           },
-          /* {
-            path: 'stock',
+          {
+            path: 'inventory',
             element: (
               <RoleGuard menuKey="products.list">
-                <Stock />
+                <Inventory />
               </RoleGuard>
             ),
-          }, */
+          },
           {
             path: 'group-offers',
             element: (

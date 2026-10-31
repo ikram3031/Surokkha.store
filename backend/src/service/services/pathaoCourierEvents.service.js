@@ -1,5 +1,6 @@
 import { ensurePaymentOnShip, syncPaymentDocument } from "../../common/helper/orderControllerHelper.js";
 import { syncCourierBill } from "./pathaoBill.service.js";
+import { syncOrderStock } from "../../common/services/stock.service.js";
 
 // Pathao's COD charge, used only while the real fee is unknown
 const ESTIMATED_COD_RATE = 0.01;
@@ -213,7 +214,9 @@ export const applyPathaoUpdate = async (order, update) => {
     notes.push("paid return paid out");
   }
 
+  const statusChanged = order.status !== previousStatus;
   if (order.isModified()) await order.save();
+  if (statusChanged) await syncOrderStock(order, { actor: "pathao" });
 
   if (paymentUpdate) {
     await syncPaymentDocument(order.toObject(), paymentUpdate);

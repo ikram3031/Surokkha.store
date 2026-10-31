@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
+import { syncOrderStock } from '../../common/services/stock.service.js';
 import { ProductModel } from '../../common/models/product.model.js';
 import { ItemModel } from '../../common/models/item.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
@@ -207,6 +208,7 @@ export const createOrder = async (req, res, next) => {
     orderData.ipAddress = clientIp;
     const createdOrder = await OrderModel.create(orderData);
 
+    await syncOrderStock(createdOrder, { init: true, actor: "storefront_checkout" });
     await syncPaymentDocument(createdOrder, payload);
     await upsertCustomerFromOrder({
       order: createdOrder,

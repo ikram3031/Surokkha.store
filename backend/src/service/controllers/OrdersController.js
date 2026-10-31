@@ -29,6 +29,7 @@ import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceE
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { upsertCustomerFromOrder, reconcileCustomerForOrder, isLiveOrder } from '../../common/services/customer.service.js';
 import { syncCourierBill } from '../services/pathaoBill.service.js';
+import { syncOrderStock, releaseStockForDeletedOrder } from '../../common/services/stock.service.js';
 
 // Create a new order from checkout payload and sync related payment/member data.
 
@@ -152,6 +153,7 @@ export const createOrder = async (req, res, next) => {
     const orderData = await buildOrderDocument(payload, req);
     const createdOrder = await OrderModel.create(orderData);
 
+    await syncOrderStock(createdOrder, { init: true, actor: req.user?.name || req.user?.did || 'staff' });
     await syncPaymentDocument(createdOrder, payload);
     await upsertCustomerFromOrder({
       order: createdOrder,
@@ -508,6 +510,11 @@ export const updateOrder = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
 
+    await syncOrderStock(order, {
+      rebuild: Boolean(allowedUpdates.items),
+      actor: req.user?.name || req.user?.did || 'staff',
+    });
+
     // If order was marked as fake, archive it to fake_orders collection
     if (order.status === 'fake') {
       try {
@@ -630,6 +637,7 @@ export const deleteOrder = async (req, res, next) => {
     }
 
     await reconcileCustomerForOrder({ order: deletedOrder, updatedBy: req.user?.name || req.user?.did || 'staff' });
+    await releaseStockForDeletedOrder(deletedOrder, req.user?.name || req.user?.did || 'staff');
 
     // Safe cleanup of payment record
     try {
@@ -693,6 +701,7 @@ export const bulkDeleteOrders = async (req, res, next) => {
 
     for (const ord of orders) {
       await reconcileCustomerForOrder({ order: { ...ord, active: false }, updatedBy: req.user?.name || req.user?.did || 'staff' });
+      await releaseStockForDeletedOrder(ord, req.user?.name || req.user?.did || 'staff');
     }
 
     // Delete all linked payment documents in bulk
@@ -773,6 +782,11 @@ export const bulkUpdateOrders = async (req, res, next) => {
     // Update order documents status in bulk
     if (Object.keys(updateFields).length > 0) {
       await OrderModel.updateMany(query, { $set: updateFields });
+      if (updateFields.status) {
+        for (const ord of orders) {
+          await syncOrderStock(ord, { actor: req.user?.name || req.user?.did || 'staff' });
+        }
+      }
     }
 
     // If marked as fake or cancelled in bulk, archive fake orders and remove from members' active orders
