@@ -1,6 +1,6 @@
 import { BillingModel } from "../../common/models/billing.model.js";
 import { BillTypeModel } from "../../common/models/billType.model.js";
-import { estimateCourierCharge, PAID_OUT_STATUSES } from "./pathaoCourierEvents.service.js";
+import { estimateCourierCharge, invoiceDateFromId, PAID_OUT_STATUSES } from "./pathaoCourierEvents.service.js";
 
 // Bills this service owns are tagged so staff-entered bills (e.g. a manual return fee) are never touched
 const AUTO_BILLING_METHOD = "pathao";
@@ -26,6 +26,12 @@ const courierChargeFor = (order) => {
   const toCollect = Number(courier.amountToCollect ?? order.totals?.total ?? 0);
   const { deliveryCharge, codFee } = estimateCourierCharge(courier, toCollect);
   return round2(deliveryCharge + codFee);
+};
+
+// The day Pathao paid out and took its charge: the invoice id's date, else when the payout was recorded
+const payoutDate = (order) => {
+  const s = order.courier?.settlement || {};
+  return invoiceDateFromId(s.invoiceId) || s.settledAt || s.invoicedAt || null;
 };
 
 const billDetails = (order, isReturn) => {
@@ -76,13 +82,16 @@ export const syncCourierBill = async (order) => {
   }
 
   const isPaid = PAID_OUT_STATUSES.includes(courier.settlement?.status);
+  // Paid bills are dated the day Pathao took the money; pending ones stay on the dispatch date
+  const paidOn = isPaid ? payoutDate(order) : null;
   await BillingModel.findOneAndUpdate(
     filter,
     {
       $set: {
         billTypeId,
         ...billDetails(order, isReturn),
-        billingDate: courier.dispatchedAt || new Date(),
+        billingDate: paidOn || courier.dispatchedAt || new Date(),
+        dueDate: paidOn,
         baseAmount: amount,
         totalAmount: amount,
         amount,

@@ -10,6 +10,15 @@ const COURIER_MANAGED_STATUSES = ["pending", "processing", "shipped", "completed
 // Settlement states meaning Pathao has paid the parcel out (invoice paid)
 export const PAID_OUT_STATUSES = ["invoiced", "settled"];
 
+// Pathao invoice ids start with the payout date as DDMMYY (e.g. "291026KCKUHIX" = 29 Oct 2026, Dhaka time)
+export const invoiceDateFromId = (invoiceId) => {
+  const m = /^(\d{2})(\d{2})(\d{2})/.exec(String(invoiceId || ""));
+  if (!m) return null;
+  const [, dd, mm, yy] = m;
+  const date = new Date(`20${yy}-${mm}-${dd}T12:00:00+06:00`);
+  return Number.isNaN(date.getTime()) || Number(mm) > 12 ? null : date;
+};
+
 // Pathao slugs/events (status slugs and webhook events normalise to the same keys) grouped by outcome
 const KIND_BY_SLUG = {
   delivered: "delivered",
@@ -121,7 +130,7 @@ export const recomputeSettlement = (order, { collectedAmount, paidOut = false } 
   if (["settled", "disputed"].includes(s.status)) return;
   if (s.invoiceId || paidOut || s.status === "invoiced") {
     s.status = "invoiced";
-    if (!s.invoicedAt) s.invoicedAt = new Date();
+    if (!s.invoicedAt) s.invoicedAt = invoiceDateFromId(s.invoiceId) || new Date();
   } else {
     s.status = "pending";
   }
