@@ -102,32 +102,47 @@ export const POLICIES: Record<'terms' | 'privacy' | 'refund', Policy> = {
   },
   refund: {
     title: 'Return & Refund Policy',
-    intro: 'For hygiene reasons opened or used products cannot be returned, but we will always put right a problem that is on our side.',
+    intro:
+      'Every order is confirmed with you before we send it. Because these are intimate-care products, returns are limited and must be approved by us first.',
     sections: [
       {
-        title: 'When you can get a replacement or refund',
-        bullets: [
-          'The pack was damaged in transit.',
-          'You received a different product or quantity from what you ordered.',
-          'The factory seal was already broken when it arrived.',
-        ],
-      },
-      {
-        title: 'Tell us within 24 hours',
+        title: 'Returns must be verified by us first',
         paragraphs: [
-          `Please check your parcel when it arrives. If something is wrong, message us on WhatsApp (${WHATSAPP}) within 24 hours of delivery with your order phone number and a clear photo or short video of the problem.`,
+          `Please do not send anything back without telling us. Message us on WhatsApp (${WHATSAPP}) or email ${EMAIL} with your order number, phone number and a clear photo or short video. We will check the request and confirm whether the return is accepted. Parcels sent back without our approval will not be accepted or refunded.`,
         ],
       },
       {
-        title: 'What happens next',
+        title: 'Return delivery charge',
+        paragraphs: ['If a return is approved, the delivery charge for sending the product back is paid by the customer.'],
+      },
+      {
+        title: 'Products we can accept back',
         bullets: [
-          'Replacement: we send the correct item at no extra delivery cost.',
-          'Refund: if a replacement is not possible, we refund the amount to your bKash or Nagad within 2–5 working days.',
+          'The pack may be opened, but every inner packet must still be intact, sealed and unused.',
+          'The product must be in its original condition, with no damage of any kind.',
+          'The return is reported to us soon after delivery, within 24 hours.',
         ],
       },
       {
-        title: 'What we cannot take back',
-        bullets: ['Packs that have been opened or used.', 'Change of mind after the factory seal has been broken.'],
+        title: 'Products we cannot take back',
+        bullets: [
+          'Any product that is damaged in any way.',
+          'Packets that have been opened, torn, used or had their seal broken.',
+          'Trial Packs, Smart Packs and any other product we sell as loose pieces: these have no returns.',
+          'Change of mind once a pack has been opened.',
+        ],
+      },
+      {
+        title: 'If we sent the wrong item',
+        paragraphs: [
+          'If you received a different product or quantity from what you ordered, tell us within 24 hours with a photo or video. Once we verify it, we will arrange the correct item.',
+        ],
+      },
+      {
+        title: 'Refunds',
+        paragraphs: [
+          'When a return is approved and the product reaches us in the condition described above, the refund is paid to your bKash or Nagad within 2–5 working days. The return delivery charge is not refunded.',
+        ],
       },
     ],
   },

@@ -10,6 +10,7 @@ import { CareTabs } from '@/components/home/CareTabs'
 import { ShopByNeed } from '@/components/home/ShopByNeed'
 import { CategoryPage } from '@/components/category/CategoryPage'
 import { MoProducts, ComboProducts, WellnessProducts } from '@/components/home/CatalogSections'
+import { SearchResults } from '@/components/shop/SearchResults'
 import { FaqPage } from '@/components/pages/FaqPage'
 import { PolicyPage } from '@/components/pages/PolicyPage'
 import { LearnCards } from '@/components/home/LearnCards'
@@ -52,12 +53,16 @@ function AppShell() {
   const route: Route =
     OFFER_ONLY_MODE && (urlRoute.name === 'home' || urlRoute.name === 'home-classic') ? { name: 'offer' } : urlRoute
   const bare = OFFER_ONLY_MODE && route.name === 'offer'
+  // While something is typed in the header search, results replace the page (except during checkout)
+  const searching = query.trim().length > 0 && route.name !== 'checkout' && route.name !== 'confirmation'
   const routeKey =
     route.name === 'product' || route.name === 'category' || route.name === 'group-offer' || route.name === 'blog-post' ? `${route.name}:${route.slug}` : route.name === 'policy' ? `policy:${route.page}` : route.name
 
   // One PageView per page (the SPA never reloads between routes)
   useEffect(() => {
     pixelTrack('PageView')
+    // Opening any page (a product from the results, a category...) ends the search
+    setQuery('')
   }, [routeKey])
 
   // Menu and category tiles open that category's own page
@@ -72,6 +77,9 @@ function AppShell() {
       {!bare && <AnnouncementBar />}
       {!bare && <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />}
       <main className="min-h-[90vh]">
+        {searching && <SearchResults query={query} onClear={() => setQuery('')} />}
+        {!searching && (
+          <>
         {route.name === 'home-classic' && (
           <HomeClassic
             shopRef={shopRef}
@@ -110,6 +118,8 @@ function AppShell() {
         {route.name === 'policy' && <PolicyPage page={route.page} />}
         {route.name === 'blog' && <BlogArchive />}
         {route.name === 'blog-post' && <BlogPost slug={route.slug} />}
+          </>
+        )}
       </main>
       {!bare && <Footer />}
       {!bare && route.name !== 'checkout' && <FloatingWhatsApp />}
