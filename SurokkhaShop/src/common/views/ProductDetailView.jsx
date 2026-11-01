@@ -445,11 +445,13 @@ export default function ProductDetailView() {
         {/* Product Purchase & Info Column */}
         <div className="lg:col-span-6 space-y-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-                {t('brand', 'Brand')}: {product.brand || 'MO'}
-              </span>
-            </div>
+            {product.brand && (
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                  {t('brand', 'Brand')}: {product.brand}
+                </span>
+              </div>
+            )}
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold text-slate-900">
               {localizedName}
             </h1>

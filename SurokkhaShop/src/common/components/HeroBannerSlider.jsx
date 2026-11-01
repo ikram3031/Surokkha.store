@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import SmartPackHero from './SmartPackHero';
 import TrialPackHero from './TrialPackHero';
 import UltimateComboHero from './UltimateComboHero';
-import ProtectionComboHero from './ProtectionComboHero';
 import CmsHeroSlide from './CmsHeroSlide';
 import { SITE_CONFIG } from '../config/siteConfig';
 
@@ -11,9 +11,9 @@ const DEFAULT_SETTINGS = { autoplay: true, speedMs: 5000, transitionMs: 700, pau
 
 // Built-in coded banners, shown only when the dashboard has no slider saved (or the API is unreachable).
 const FALLBACK_SLIDES = [
+  { key: 'smart-pack', Component: SmartPackHero },
   { key: 'trial-pack', Component: TrialPackHero },
   { key: 'ultimate-combo', Component: UltimateComboHero },
-  { key: 'protection-combo', Component: ProtectionComboHero },
 ];
 
 // Reads the last CMS slider from localStorage so repeat visits render instantly
@@ -36,7 +36,9 @@ const SWIPE_THRESHOLD_PX = 50;
 
 // Home hero slider. Slides, speed and display options come from the dashboard (CMSContent type "slider").
 export default function HeroBannerSlider() {
-  const [active, setActive] = useState(0);
+  // pos runs 0..slideCount; slideCount is a clone of slide 0 so the last slide keeps sliding forward
+  const [pos, setPos] = useState(0);
+  const [animate, setAnimate] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [cms, setCms] = useState(() => readCache());
   const [loaded, setLoaded] = useState(() => readCache() !== null);
@@ -63,15 +65,44 @@ export default function HeroBannerSlider() {
     : FALLBACK_SLIDES.map(({ key, Component }) => ({ key, render: () => <Component /> }));
 
   const slideCount = slides.length;
-  const current = active % slideCount;
+  const current = pos % slideCount;
+
+  const next = () => {
+    setAnimate(true);
+    setPos((p) => Math.min(p + 1, slideCount));
+  };
+  const prev = () => {
+    if (pos === 0) {
+      // jump (no animation) to the clone of slide 0, then slide back one to the last slide
+      setAnimate(false);
+      setPos(slideCount);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        setAnimate(true);
+        setPos(slideCount - 1);
+      }));
+    } else {
+      setAnimate(true);
+      setPos(pos - 1);
+    }
+  };
+  const goTo = (index) => {
+    setAnimate(true);
+    setPos(((index % slideCount) + slideCount) % slideCount);
+  };
+
+  // After sliding onto the clone, snap back to the real first slide without animation
+  const handleTransitionEnd = () => {
+    if (pos === slideCount) {
+      setAnimate(false);
+      setPos(0);
+    }
+  };
 
   useEffect(() => {
     if (slideCount <= 1 || !settings.autoplay || (settings.pauseOnHover && isPaused)) return;
-    const id = setInterval(() => setActive((a) => (a + 1) % slideCount), settings.speedMs);
+    const id = setInterval(next, settings.speedMs);
     return () => clearInterval(id);
   }, [slideCount, isPaused, settings.autoplay, settings.pauseOnHover, settings.speedMs]);
-
-  const goTo = (index) => setActive((index + slideCount) % slideCount);
 
   // Touch swipe for phones
   const touchStartX = useRef(null);
@@ -86,7 +117,7 @@ export default function HeroBannerSlider() {
     if (startX == null) return;
     const deltaX = e.changedTouches[0].clientX - startX;
     if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX) return;
-    goTo(deltaX < 0 ? current + 1 : current - 1);
+    if (deltaX < 0) next(); else prev();
   };
 
   if (!loaded) return <section className="w-full min-h-[28rem]" aria-hidden="true" />;
@@ -101,13 +132,19 @@ export default function HeroBannerSlider() {
     >
       <div
         className="flex ease-out"
-        style={{ transform: `translateX(-${current * 100}%)`, transitionProperty: 'transform', transitionDuration: `${settings.transitionMs}ms` }}
+        onTransitionEnd={handleTransitionEnd}
+        style={{ transform: `translateX(-${pos * 100}%)`, transitionProperty: 'transform', transitionDuration: animate ? `${settings.transitionMs}ms` : '0ms' }}
       >
         {slides.map(({ key, render }, i) => (
           <div key={key} className="w-full flex-shrink-0 flex" inert={current !== i}>
             {render()}
           </div>
         ))}
+        {slideCount > 1 && (
+          <div key={`${slides[0].key}-clone`} className="w-full flex-shrink-0 flex" inert aria-hidden="true">
+            {slides[0].render()}
+          </div>
+        )}
       </div>
 
       {slideCount > 1 && (
@@ -116,7 +153,7 @@ export default function HeroBannerSlider() {
           <>
           <button
             type="button"
-            onClick={() => goTo(current - 1)}
+            onClick={prev}
             aria-label="Previous slide"
             className="hidden 2xl:flex absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 hover:bg-white text-[#5a1426] shadow-md items-center justify-center text-2xl cursor-pointer transition"
           >
@@ -124,7 +161,7 @@ export default function HeroBannerSlider() {
           </button>
           <button
             type="button"
-            onClick={() => goTo(current + 1)}
+            onClick={next}
             aria-label="Next slide"
             className="hidden 2xl:flex absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 hover:bg-white text-[#5a1426] shadow-md items-center justify-center text-2xl cursor-pointer transition"
           >

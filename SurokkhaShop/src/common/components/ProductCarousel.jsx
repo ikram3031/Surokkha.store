@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
+import { isMoProduct } from '../utils/moProducts';
 
 // Renders the curated product carousel.
 // mode="default" → non-combo wellness products (shuffled)
@@ -63,9 +64,9 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
       } else {
         // Default carousel: exclude combos (they have their own showcase)
         if (isCombo) continue;
-        // and exclude the 3 primary MO condoms featured in the lineup section
-        const isPrimaryMo = mo3Keys.has(key) || mo3Keys.has(p.slug) || mo3Keys.has(p.did);
-        if (isPrimaryMo) continue;
+        // and exclude every MO product (they all live in the MO lineup carousel above)
+        const isMo = isMoProduct(p, key) || mo3Keys.has(key) || mo3Keys.has(p.slug) || mo3Keys.has(p.did);
+        if (isMo) continue;
       }
 
       const uniqueId = p.did || p.slug || p._id || key;
@@ -118,9 +119,20 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
   };
 
+  // Default mode shows pages of 12: 4 per row x 3 rows on desktop, 2 per row x 6 rows on mobile
+  const pages = useMemo(() => {
+    const out = [];
+    for (let i = 0; i < displayKeys.length; i += 12) out.push(displayKeys.slice(i, i + 12));
+    return out;
+  }, [displayKeys]);
+
   const handleScroll = (direction) => {
     if (!scrollContainerRef.current) return;
     const el = scrollContainerRef.current;
+    if (!isComboMode) {
+      el.scrollBy({ left: (direction === 'left' ? -1 : 1) * el.clientWidth, behavior: 'smooth' });
+      return;
+    }
     const firstChild = el.firstElementChild;
     const cardWidth = firstChild ? firstChild.clientWidth + 20 : 300;
     const scrollAmount = cardWidth * 1.5;
@@ -131,7 +143,7 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
   };
 
   React.useEffect(() => {
-    if (isPaused || displayKeys.length <= 1) return;
+    if (!isComboMode || isPaused || displayKeys.length <= 1) return;
 
     const interval = setInterval(() => {
       if (!scrollContainerRef.current) return;
@@ -148,7 +160,7 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
     }, 3200);
 
     return () => clearInterval(interval);
-  }, [isPaused, displayKeys.length]);
+  }, [isPaused, displayKeys.length, isComboMode]);
 
   if (!isLoadingProducts && displayKeys.length === 0) {
     return null;
@@ -230,6 +242,7 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
           </div>
         </div>
 
+        {isComboMode ? (
         <div
           ref={scrollContainerRef}
           onScroll={checkScrollability}
@@ -256,6 +269,26 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
             ))
           )}
         </div>
+        ) : (
+          <div
+            ref={scrollContainerRef}
+            onScroll={checkScrollability}
+            className="flex overflow-x-auto scroll-smooth snap-x snap-mandatory pb-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {isLoadingProducts ? (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6 w-full flex-shrink-0 snap-start">
+                {Array.from({ length: 4 }).map((_, idx) => <ProductCardSkeleton key={`other-skeleton-${idx}`} />)}
+              </div>
+            ) : (
+              pages.map((pageKeys, i) => (
+                <div key={`other-page-${i}`} className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6 content-start w-full flex-shrink-0 snap-start">
+                  {pageKeys.map((key) => <ProductCard key={`other-${key}`} productKey={key} className="h-full" />)}
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
       </div>
     </section>

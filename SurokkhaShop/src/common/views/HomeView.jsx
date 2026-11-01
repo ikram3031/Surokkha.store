@@ -8,6 +8,8 @@ import HeroSlider from '../components/HeroSlider';
 import HeroBannerSlider from '../components/HeroBannerSlider';
 import PromoComboBanner from '../components/PromoComboBanner';
 import ProductCarousel from '../components/ProductCarousel';
+import MoLineupCarousel from '../components/MoLineupCarousel';
+import SpecialOffersStrip from '../components/SpecialOffersStrip';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 
 export default function HomeView() {
@@ -32,32 +34,6 @@ export default function HomeView() {
     getLocalizedDescription, 
     getLocalizedFeatures 
   } = useTranslation();
-
-  // Filter exclusively the 3 single contraceptive products from the 'products' collection (The MO Lineup)
-  const moLineupKeys = productKeys.filter((k) => {
-    const p = products[k];
-    if (!p) return false;
-    const isFromProductsCollection = p.itemType === 'product' || p.entityType === 'product';
-    const isCombo = p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-    const isContraceptive = p.categorySlug === 'contraceptive' || 
-      (p.slug && (p.slug.includes('contraceptive') || p.slug.includes('latex') || p.slug.includes('mo-')));
-    return isFromProductsCollection && !isCombo && isContraceptive;
-  }).slice(0, 3);
-
-  // Always show 3 cards: top up with other non-combo products when the strict filter finds fewer
-  const isComboKey = (k) => {
-    const p = products[k];
-    return !p || p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
-  };
-  const displaySingleKeys = [...moLineupKeys];
-  for (const k of productKeys) {
-    if (displaySingleKeys.length >= 3) break;
-    if (!displaySingleKeys.includes(k) && !isComboKey(k)) displaySingleKeys.push(k);
-  }
-  for (const k of productKeys) {
-    if (displaySingleKeys.length >= 3) break;
-    if (!displaySingleKeys.includes(k) && products[k]) displaySingleKeys.push(k);
-  }
 
   const activeCombos = Object.values(products).filter(p => {
     return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.isActive !== false &&
@@ -104,49 +80,52 @@ export default function HomeView() {
       <HeroBannerSlider />
 
       {/* 3 DEDICATED FEATURE CARDS (Directly Under Hero Slider, White Theme) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      {/* SPECIAL OFFERS (hard-coded lowest prices) */}
+      <SpecialOffersStrip />
+
+      <section className="bg-[#0b0a0e] mt-6 sm:mt-10 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           
           {/* Feature 1: 100% Private Packaging */}
-          <div className="bg-white border border-slate-200/90 hover:border-rose-300 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
-            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
+          <div className="bg-white/5 border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
+            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
               🔒
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 font-heading leading-snug">
+              <h3 className="text-sm sm:text-base font-bold text-white font-heading leading-snug">
                 {isBn ? '১০০% প্রাইভেট ও ডিসক্রিট' : '100% Discreet & Confidential'}
               </h3>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                 {isBn ? 'বাইরে কোনো পণ্যের নাম বা লেবেল ছাড়া সিল করা পার্সেল।' : 'Plain unmarked packaging with zero external product labels.'}
               </p>
             </div>
           </div>
 
           {/* Feature 2: Cash on Delivery */}
-          <div className="bg-white border border-slate-200/90 hover:border-rose-300 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
-            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
+          <div className="bg-white/5 border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
+            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
               🚚
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 font-heading leading-snug">
+              <h3 className="text-sm sm:text-base font-bold text-white font-heading leading-snug">
                 {isBn ? 'ক্যাশ অন ডেলিভারি (COD)' : 'Cash on Delivery (COD)'}
               </h3>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                 {isBn ? 'পণ্য হাতে পেয়ে নিশ্চিন্তে টাকা পরিশোধের সুবিধা।' : 'Pay securely in cash directly upon doorstep handoff.'}
               </p>
             </div>
           </div>
 
           {/* Feature 3: 100% Authentic Quality */}
-          <div className="bg-white border border-slate-200/90 hover:border-rose-300 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
-            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-rose-50 border border-rose-200/70 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
+          <div className="bg-white/5 border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
+            <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
               ✨
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 font-heading leading-snug">
+              <h3 className="text-sm sm:text-base font-bold text-white font-heading leading-snug">
                 {isBn ? '১০০% আসল প্রিমিয়াম কোয়ালিটি' : '100% Authentic MO Quality'}
               </h3>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                 {isBn ? 'ইলেকট্রনিক্যালি টেস্টেড আন্তর্জাতিক মানের প্রোডাক্ট।' : 'Electronically pinhole-tested certified wellness products.'}
               </p>
             </div>
@@ -169,18 +148,8 @@ export default function HomeView() {
           </p>
         </div>
 
-        {/* Dynamic Compact Sales-Focused Product Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-6">
-          {isLoadingProducts ? (
-            Array.from({ length: 3 }).map((_, idx) => (
-              <ProductCardSkeleton key={`skeleton-home-${idx}`} />
-            ))
-          ) : (
-            displaySingleKeys.map((key) => (
-              <ProductCard key={key} productKey={key} />
-            ))
-          )}
-        </div>
+        {/* All MO-brand products, a row of 4 per page */}
+        <MoLineupCarousel />
       </section>
 
       {/* HIGH-CONVERSION SPOTLIGHT COMBO SHOWCASE */}
@@ -430,7 +399,7 @@ export default function HomeView() {
       )}
 
       {/* RANDOMIZED NON-COMBO PRODUCT CAROUSEL (Max 10 Products) */}
-      <ProductCarousel maxItems={10} />
+      <ProductCarousel maxItems={36} />
 
       {/* WHY SUROKKHA / SERVICE STANDARDS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

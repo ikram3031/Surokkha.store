@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { HARDCODED_OFFER_PRICES } from '../config/hardcodedOffers';
 import { SITE_CONFIG } from '../config/siteConfig';
 import {
   trackPageView,
@@ -364,6 +365,26 @@ export const useStore = create((set, get) => ({
         ? itemsResult.value.map((i) => ({ ...i, entityType: 'item', itemType: 'item' }))
         : [];
 
+      // Brands are shared by products and items. Items may come without resolved brand names, so build a
+      // brand id -> name map from whatever records do carry names and fill the gaps.
+      const brandNameByDid = {};
+      for (const rec of [...rawProducts, ...rawItems]) {
+        const dids = Array.isArray(rec.brand) ? rec.brand : (rec.brand ? [rec.brand] : []);
+        const names = Array.isArray(rec.brandNames) && rec.brandNames.length ? rec.brandNames : (rec.brandName ? [rec.brandName] : []);
+        dids.forEach((did, i) => {
+          if (did && names[i]) brandNameByDid[String(did).toLowerCase()] = names[i];
+        });
+      }
+      for (const rec of rawItems) {
+        if (rec.brandName) continue;
+        const dids = Array.isArray(rec.brand) ? rec.brand : (rec.brand ? [rec.brand] : []);
+        const names = dids.map((d) => brandNameByDid[String(d).toLowerCase()]).filter(Boolean);
+        if (names.length) {
+          rec.brandNames = names;
+          rec.brandName = names[0];
+        }
+      }
+
       const combinedRaw = [...rawProducts, ...rawItems];
 
       if (combinedRaw.length > 0) {
@@ -462,9 +483,17 @@ export const useStore = create((set, get) => ({
           let resolvedOfferPrice = offerPriceVal;
 
           // If offerPrice is set and lower than base price, it is a discounted price
-          const resolvedPrice = (resolvedOfferPrice != null && resolvedOfferPrice > 0 && resolvedOfferPrice < resolvedRegularPrice)
+          let resolvedPrice = (resolvedOfferPrice != null && resolvedOfferPrice > 0 && resolvedOfferPrice < resolvedRegularPrice)
             ? resolvedOfferPrice
             : resolvedRegularPrice;
+
+          // Hard-coded special offer price (product/cart/checkout all read price from here)
+          const forcedOfferPrice = HARDCODED_OFFER_PRICES[String(p._id || p.id || '')];
+          if (forcedOfferPrice) {
+            resolvedRegularPrice = Math.max(resolvedRegularPrice, forcedOfferPrice);
+            resolvedOfferPrice = forcedOfferPrice;
+            resolvedPrice = forcedOfferPrice;
+          }
 
           // High-resolution featured image resolution:
           // Un-thumb helper to always request the full-resolution asset instead of low-res thumbnail
@@ -577,7 +606,10 @@ export const useStore = create((set, get) => ({
           let resolvedCategorySlug = rawCatSlug || "uncategorized";
           let resolvedCategoryBn = rawCatBn || resolvedCategory;
 
-          const rawBrand = p.brandName || (Array.isArray(p.brand) ? (p.brand[0] || 'MO') : (typeof p.brand === 'string' ? p.brand : 'MO'));
+          // p.brand can hold brand DIDs (hex ids) when the API did not resolve names; never show those as a brand
+          const looksLikeDid = (v) => /^[0-9a-f]{12,}$/i.test(String(v || '').trim());
+          const brandCandidate = p.brandName || (Array.isArray(p.brand) ? p.brand[0] : (typeof p.brand === 'string' ? p.brand : ''));
+          const rawBrand = brandCandidate && !looksLikeDid(brandCandidate) ? brandCandidate : (p.brandName || brandCandidate ? '' : 'MO');
 
           const productObj = {
             id: key,
@@ -594,6 +626,8 @@ export const useStore = create((set, get) => ({
             name_bn: nameBn,
             bn: itemBn,
             brand: rawBrand,
+            brandName: p.brandName || '',
+            brandNames: Array.isArray(p.brandNames) ? p.brandNames : [],
             origin: p.origin || 'Imported (CE Certified)',
             category: resolvedCategory,
             categorySlug: resolvedCategorySlug,
