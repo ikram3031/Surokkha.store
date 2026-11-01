@@ -242,7 +242,9 @@ export const AppSidebar = ({ ...props }) => {
     pathname.startsWith("/dashboard/pathao") ? "pathao"
     : pathname.startsWith("/dashboard/orders") ? "orders"
     : pathname.startsWith("/dashboard/items") ? "products"
-    : (pathname === "/dashboard/products" || pathname === "/dashboard/products/list") ? "products"
+    : (pathname.startsWith("/dashboard/products/coupons") || pathname.startsWith("/dashboard/products/group-offers") || pathname === "/dashboard/settings/products") ? "promotions"
+    : (pathname.startsWith("/dashboard/products/categories") || pathname.startsWith("/dashboard/products/brands") || pathname.startsWith("/dashboard/products/attributes") || pathname.startsWith("/dashboard/products/size-charts")) ? "metadata"
+    : pathname.startsWith("/dashboard/products") ? "products"
     : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
     : (pathname.startsWith("/dashboard/cloudflare") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/analytics") || pathname.startsWith("/dashboard/tools/analytics") || pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs") || pathname.startsWith("/dashboard/logs") || pathname.startsWith("/dashboard/tools/logs") || pathname.startsWith("/dashboard/cpanel") || pathname.startsWith("/dashboard/trash")) ? "system"
     : null
@@ -425,34 +427,60 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.item_list", "Item List")}
                 </NavSub>
               )}
+              {isAllowed("products.list") && (
+                <NavSub to="/dashboard/products/inventory" active={pathname === "/dashboard/products/inventory"} icon={Boxes}>
+                  {t("nav.inventory", "Inventory")}
+                </NavSub>
+              )}
+              {isAllowed("products.on-sale") && (
+                <NavSub to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag}>
+                  {t("nav.on_sale", "On Sale")}
+                </NavSub>
+              )}
             </NavGroup>
           )}
-          {showProducts && isAllowed("products.list") && (
-            <NavLink to="/dashboard/products/inventory" active={pathname === "/dashboard/products/inventory"} icon={Boxes} label={t("nav.inventory", "Inventory")} />
+          {showProducts && (isAllowed("products.categories") || isAllowed("products.brands") || isAllowed("products.attributes") || isAllowed("products.size-charts")) && (
+            <NavGroup id="metadata" icon={Sliders} label={t("nav.product_metadata", "Product Metadata")} active={activeGroup === "metadata"} open={openMenu === "metadata"} onToggle={toggleMenu}>
+              {isAllowed("products.categories") && (
+                <NavSub to="/dashboard/products/categories" active={pathname === "/dashboard/products/categories"} icon={Receipt}>
+                  {t("nav.categories", "Categories")}
+                </NavSub>
+              )}
+              {isAllowed("products.brands") && (
+                <NavSub to="/dashboard/products/brands" active={pathname === "/dashboard/products/brands"} icon={CreditCard}>
+                  {t("nav.brands", "Brands")}
+                </NavSub>
+              )}
+              {isAllowed("products.attributes") && (
+                <NavSub to="/dashboard/products/attributes" active={pathname.startsWith("/dashboard/products/attributes")} icon={Sliders}>
+                  {t("nav.attributes", "Attributes")}
+                </NavSub>
+              )}
+              {isAllowed("products.size-charts") && (
+                <NavSub to="/dashboard/products/size-charts" active={pathname === "/dashboard/products/size-charts"} icon={Ruler}>
+                  {t("nav.size_charts", "Size Charts")}
+                </NavSub>
+              )}
+            </NavGroup>
           )}
-          {showProducts && isAllowed("products.on-sale") && (
-            <NavLink to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag} label={t("nav.on_sale", "On Sale")} />
-          )}
-          {showProducts && (isAllowed("products.showcases") || isAllowed("settings")) && (
-            <NavLink to="/dashboard/settings/products" active={settingsProductsActive} icon={Sparkles} label={t("nav.showcases", "Showcases")} />
-          )}
-          {showProducts && isAllowed("products.coupons") && (
-            <NavLink to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket} label={t("nav.coupons", "Coupons")} />
-          )}
-          {showProducts && isAllowed("products.coupons") && (
-            <NavLink to="/dashboard/products/group-offers" active={pathname === "/dashboard/products/group-offers"} icon={Ticket} label={t("nav.groupOffers", "Group Offers")} />
-          )}
-          {showProducts && isAllowed("products.categories") && (
-            <NavLink to="/dashboard/products/categories" active={pathname === "/dashboard/products/categories"} icon={Receipt} label={t("nav.categories", "Categories")} />
-          )}
-          {showProducts && isAllowed("products.brands") && (
-            <NavLink to="/dashboard/products/brands" active={pathname === "/dashboard/products/brands"} icon={CreditCard} label={t("nav.brands", "Brands")} />
-          )}
-          {showProducts && isAllowed("products.attributes") && (
-            <NavLink to="/dashboard/products/attributes" active={pathname.startsWith("/dashboard/products/attributes")} icon={Sliders} label={t("nav.attributes", "Attributes")} />
-          )}
-          {showProducts && isAllowed("products.size-charts") && (
-            <NavLink to="/dashboard/products/size-charts" active={pathname === "/dashboard/products/size-charts"} icon={Ruler} label={t("nav.size_charts", "Size Charts")} />
+          {showProducts && (isAllowed("products.showcases") || isAllowed("settings") || isAllowed("products.coupons")) && (
+            <NavGroup id="promotions" icon={Ticket} label={t("nav.promotions", "Promotions")} active={activeGroup === "promotions"} open={openMenu === "promotions"} onToggle={toggleMenu}>
+              {(isAllowed("products.showcases") || isAllowed("settings")) && (
+                <NavSub to="/dashboard/settings/products" active={settingsProductsActive} icon={Sparkles}>
+                  {t("nav.showcases", "Showcases")}
+                </NavSub>
+              )}
+              {isAllowed("products.coupons") && (
+                <NavSub to="/dashboard/products/coupons" active={pathname === "/dashboard/products/coupons"} icon={Ticket}>
+                  {t("nav.coupons", "Coupons")}
+                </NavSub>
+              )}
+              {isAllowed("products.coupons") && (
+                <NavSub to="/dashboard/products/group-offers" active={pathname === "/dashboard/products/group-offers"} icon={Ticket}>
+                  {t("nav.groupOffers", "Group Offers")}
+                </NavSub>
+              )}
+            </NavGroup>
           )}
           {isAllowed("tools.meta-catalog") && (
             <NavLink to="/dashboard/tools/meta-catalog" active={pathname === "/dashboard/tools/meta-catalog"} icon={Share2} label={t("nav.meta_catalog", "Meta Catalog")} />
@@ -470,6 +498,11 @@ export const AppSidebar = ({ ...props }) => {
                 </NavSub>
               )}
             </NavGroup>
+          )}
+
+          {(showProducts || showOrders) && <NavLabel>{t("nav.group_analytics", "Analytics")}</NavLabel>}
+          {(showProducts || showOrders) && (
+            <NavLink to="/analytics" active={pathname.startsWith("/analytics")} icon={TrendingUp} label={t("nav.analytics", "Analytics")} />
           )}
 
           {(showAccounts || showReports) && <NavLabel>{t("nav.group_finance", "Finance")}</NavLabel>}

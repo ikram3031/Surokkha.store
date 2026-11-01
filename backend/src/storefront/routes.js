@@ -19,6 +19,7 @@ import cmsContentRouter from "./routes/CmsContentRoute.js";
 import pixelEventsRouter from "./routes/PixelEventsRoute.js";
 import locationsRouter from "./routes/LocationsRoute.js";
 import checkoutLeadRouter from "./routes/CheckoutLeadRoute.js";
+import productEventRouter from "./routes/ProductEventRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
 const storefrontRouter = Router();
@@ -43,6 +44,7 @@ storefrontRouter.use("/search", searchRouter);
 storefrontRouter.use("/events", pixelEventsRouter);
 storefrontRouter.use("/locations", locationsRouter);
 storefrontRouter.use("/checkout-leads", checkoutLeadRouter);
+storefrontRouter.use("/product-events", productEventRouter);
 storefrontRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket

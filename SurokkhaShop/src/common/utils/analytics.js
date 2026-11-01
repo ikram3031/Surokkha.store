@@ -356,6 +356,61 @@ export async function sendMetaCAPI() {
   return;
 }
 
+/**
+ * First-party product funnel tracking (dashboard "Product Analytics").
+ * Stores view / add_to_cart / checkout / purchase per product, tied to the anonymous visitor id.
+ */
+const VIEW_REPEAT_WINDOW_MS = 30 * 60 * 1000;
+
+const resolveTrafficSource = () => {
+  if (!isBrowser) return 'direct';
+  try {
+    const utm = new URLSearchParams(window.location.search).get('utm_source');
+    if (utm) return utm.toLowerCase().slice(0, 60);
+    if (window.location.search.includes('fbclid=')) return 'facebook';
+    if (document.referrer) {
+      const host = new URL(document.referrer).hostname.replace(/^www\./, '');
+      if (host && host !== window.location.hostname.replace(/^www\./, '')) return host;
+    }
+  } catch (_) {}
+  return 'direct';
+};
+
+export const trackProductEvents = (events = []) => {
+  if (!isBrowser) return;
+  const valid = events.filter((e) => e && e.productKey && e.eventType);
+  if (!valid.length) return;
+  try {
+    const visitorId = getExternalId();
+    const source = resolveTrafficSource();
+    const referrer = document.referrer || '';
+    const pageUrl = window.location.href;
+    fetch(`${API_BASE_URL}/api/v1/product-events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        events: valid.map((e) => ({ visitorId, source, referrer, pageUrl, ...e }))
+      }),
+      keepalive: true
+    }).catch(() => {});
+  } catch (_) {}
+};
+
+const productKeyOf = (product) => product?.slug || product?.id || null;
+
+// One "view" per visitor per product per 30 minutes, so refreshes and back/forward don't inflate the count
+const trackProductView = (product) => {
+  const productKey = productKeyOf(product);
+  if (!productKey) return;
+  const storageKey = `_sk_pv_${productKey}`;
+  try {
+    const last = Number(window.sessionStorage?.getItem(storageKey) || 0);
+    if (last && Date.now() - last < VIEW_REPEAT_WINDOW_MS) return;
+    window.sessionStorage?.setItem(storageKey, String(Date.now()));
+  } catch (_) {}
+  trackProductEvents([{ eventType: 'view', productKey, productName: product.name || productKey }]);
+};
+
 // Safe helper for Meta Pixel (Browser)
 export const fbqTrack = (eventName, params = {}, eventId = null) => {
   if (isBrowser && typeof window.fbq === 'function') {
@@ -446,7 +501,8 @@ export const trackPageView = (pageName = 'home', path = '/') => {
  */
 export const trackViewContent = (product) => {
   if (!product) return;
-  
+  trackProductView(product);
+
   const isItem = product.itemType === 'item' || product.type === 'item';
   if (isItem) return;
   const value = Number(product.price) || 400;
@@ -518,7 +574,16 @@ export const trackViewContent = (product) => {
  */
 export const trackAddToCart = (product, quantity = 1) => {
   if (!product) return;
-  
+  if (productKeyOf(product)) {
+    trackProductEvents([{
+      eventType: 'add_to_cart',
+      productKey: productKeyOf(product),
+      productName: product.name,
+      quantity,
+      value: (Number(product.price) || 0) * quantity
+    }]);
+  }
+
   const isItem = product.itemType === 'item' || product.type === 'item';
   if (isItem) return;
 
@@ -690,6 +755,23 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
   const grandTotal = Number(totals.grandTotal || totals.subtotal || 0);
   const itemCount = cartEntries.reduce((sum, [_, q]) => sum + q, 0);
   if (isDuplicateEvent(`InitiateCheckout|${grandTotal}|${itemCount}`)) return;
+
+  const checkoutLines = new Map();
+  cartEntries.forEach(([key, qty]) => {
+    const baseSlug = key.split(':::')[0];
+    const p = products[baseSlug];
+    const line = checkoutLines.get(baseSlug) || {
+      eventType: 'checkout',
+      productKey: productKeyOf(p) || baseSlug,
+      productName: p?.name || baseSlug,
+      quantity: 0,
+      value: 0
+    };
+    line.quantity += qty || 1;
+    line.value += (Number(p?.price) || 0) * (qty || 1);
+    checkoutLines.set(baseSlug, line);
+  });
+  trackProductEvents([...checkoutLines.values()]);
   // Same id on the server InitiateCheckout (sent with the saved checkout lead) so Meta merges the pair
   const eventId = `ic_${getCheckoutSessionId()}`;
 
@@ -815,6 +897,23 @@ export const trackPurchase = (order, products = {}) => {
   });
 
   if (purchasedItems.length === 0) return;
+
+  const purchaseLines = new Map();
+  purchasedItems.forEach(([key, qty]) => {
+    const baseSlug = key.split(':::')[0];
+    const p = products[baseSlug];
+    const line = purchaseLines.get(baseSlug) || {
+      eventType: 'purchase',
+      productKey: productKeyOf(p) || baseSlug,
+      productName: p?.name || baseSlug,
+      quantity: 0,
+      value: 0
+    };
+    line.quantity += qty || 1;
+    line.value += (Number(p?.price) || 0) * (qty || 1);
+    purchaseLines.set(baseSlug, line);
+  });
+  trackProductEvents([...purchaseLines.values()]);
 
   const grandTotal = Number(order.totals.grandTotal || order.totals.subtotal || 0);
   const itemCount = purchasedItems.reduce((sum, [_, q]) => sum + q, 0);

@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 import DashboardLayout from './layouts/dashboardLayout';
 import AdminLayout from './layouts/adminLayout';
 import BlogLayout from './layouts/blogLayout';
+import AnalyticsLayout from './layouts/analyticsLayout';
 import FinanceLayout from './layouts/financeLayout';
 import SettingsLayout from './layouts/settingsLayout';
 
@@ -919,6 +920,13 @@ const lazyPage = (loader) => ({
   lazy: async () => ({ Component: (await loader()).default }),
 });
 
+// Analytics workspace: store traffic and conversion reports
+const analyticsRoutes = [
+  { index: true, ...lazyPage(() => import('./pages/analytics/overview')) },
+  { path: 'products', ...lazyPage(() => import('./pages/analytics/products')) },
+  { path: 'live', ...lazyPage(() => import('./pages/analytics/live')) },
+];
+
 const blogRoutes = [
   { index: true, ...lazyPage(() => import('./pages/blog/overview')) },
   { path: 'posts', ...lazyPage(() => import('./pages/blog/posts')) },
@@ -975,6 +983,13 @@ export const router = createBrowserRouter([
     element: <SettingsLayout />,
     errorElement: <RouteErrorElement />,
     children: settingsRoutes,
+  },
+  {
+    path: '/analytics',
+    element: <AnalyticsLayout />,
+    errorElement: <RouteErrorElement />,
+    HydrateFallback: () => null,
+    children: analyticsRoutes,
   },
   {
     path: '/blog',
