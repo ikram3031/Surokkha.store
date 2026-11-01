@@ -6,18 +6,8 @@ import { Eye, ShoppingCart, CreditCard, PackageCheck } from 'lucide-react';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DateRangeSelect } from '@/components/dashboard/date-range-select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-
-export const PRESETS = [
-  { id: 'today', label: 'Today' },
-  { id: 'yesterday', label: 'Yesterday' },
-  { id: '7', label: 'Last 7 days' },
-  { id: '15', label: 'Last 15 days' },
-  { id: '30', label: 'Last 30 days' },
-  { id: 'custom', label: 'Custom range' },
-];
 
 export const EVENT_LABELS = {
   view: 'Viewed',
@@ -49,46 +39,18 @@ export const formatDateTime = (v) =>
   v ? new Date(v).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '-';
 export const formatTime = (v) => (v ? new Date(v).toLocaleTimeString('en-US', { timeStyle: 'short' }) : '-');
 
-const todayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-
 // Date range state shared by the analytics pages. `query` is ready to append to an API URL.
 export const useAnalyticsRange = () => {
-  const [preset, setPreset] = useState('today');
-  const [from, setFrom] = useState(todayStr());
-  const [to, setTo] = useState(todayStr());
-  const customReady = preset !== 'custom' || (from && to && from <= to);
-  const params = new URLSearchParams({ preset });
-  if (preset === 'custom') {
-    params.set('from', from);
-    params.set('to', to);
+  const [value, setValue] = useState({ preset: 'today', from: null, to: null });
+  const params = new URLSearchParams({ preset: value.preset });
+  if (value.preset === 'custom') {
+    params.set('from', value.from);
+    params.set('to', value.to);
   }
-  return { preset, setPreset, from, setFrom, to, setTo, query: params.toString(), enabled: !!customReady };
+  return { ...value, value, setValue, query: params.toString(), enabled: value.preset !== 'custom' || !!(value.from && value.to) };
 };
 
-export const RangeBar = ({ range }) => {
-  const { t } = useTranslation();
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {PRESETS.map((p) => (
-        <Button
-          key={p.id}
-          size="sm"
-          variant={range.preset === p.id ? 'default' : 'outline'}
-          onClick={() => range.setPreset(p.id)}
-        >
-          {t(`analytics.range_${p.id}`, p.label)}
-        </Button>
-      ))}
-      {range.preset === 'custom' && (
-        <div className="flex items-center gap-1.5">
-          <Input type="date" value={range.from} max={range.to} onChange={(e) => range.setFrom(e.target.value)} className="h-8 w-36" />
-          <span className="text-muted-foreground">→</span>
-          <Input type="date" value={range.to} min={range.from} onChange={(e) => range.setTo(e.target.value)} className="h-8 w-36" />
-        </div>
-      )}
-    </div>
-  );
-};
+export const RangeBar = ({ range }) => <DateRangeSelect value={range.value} onChange={range.setValue} />;
 
 export const StatCard = ({ icon: Icon, label, value, sub, accent }) => (
   <Card>
