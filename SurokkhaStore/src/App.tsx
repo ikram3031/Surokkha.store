@@ -37,7 +37,7 @@ import type { ShopFilter } from '@/components/shop/FilterBar'
 // Ads launch mode: the whole storefront is the single offer page (same UI as offer.surokkha.shop),
 // with no header, footer, announcement bar or home page. The catalog, Meta pixel and cart storage all keep
 // working. Set to false to bring the full home page, header and footer back.
-const OFFER_ONLY_MODE = true
+const OFFER_ONLY_MODE = false
 
 // "All Products" grid is hidden on the home page for now; flip to true to bring it back
 const SHOW_ALL_PRODUCTS = false
