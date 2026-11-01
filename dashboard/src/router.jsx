@@ -21,6 +21,7 @@ import Users from './pages/dashboard/users';
 import Reports from './pages/dashboard/reportsV2';
 import Members from './pages/dashboard/members';
 import MemberDetails from './pages/dashboard/memberDetails';
+import RegisteredMembers from './pages/dashboard/registeredMembers';
 import Trash from './pages/dashboard/trash';
 import ActivityLogs from './pages/dashboard/activityLogs';
 import Reviews from './pages/dashboard/reviews';
@@ -203,6 +204,14 @@ const dashboardRoutes = [
         element: (
           <RoleGuard menuKey="members">
             <Members />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'registered-members',
+        element: (
+          <RoleGuard menuKey="members">
+            <RegisteredMembers />
           </RoleGuard>
         ),
       },

@@ -7,6 +7,7 @@ import {
   ShoppingCart,
   ShoppingBag,
   Users,
+  UserCheck,
   CreditCard,
   BarChart3,
   ShieldAlert,
@@ -240,6 +241,7 @@ export const AppSidebar = ({ ...props }) => {
 
   const activeGroup =
     pathname.startsWith("/dashboard/pathao") ? "pathao"
+    : (pathname.startsWith("/dashboard/members") || pathname.startsWith("/dashboard/registered-members") || pathname.startsWith("/dashboard/customers")) ? "customers"
     : pathname.startsWith("/dashboard/orders") ? "orders"
     : pathname.startsWith("/dashboard/items") ? "products"
     : (pathname.startsWith("/dashboard/products/coupons") || pathname.startsWith("/dashboard/products/group-offers") || pathname === "/dashboard/settings/products") ? "promotions"
@@ -408,7 +410,14 @@ export const AppSidebar = ({ ...props }) => {
             </NavGroup>
           )}
           {showCustomers && (
-            <NavLink to="/dashboard/members" active={pathname.startsWith("/dashboard/members")} icon={Users} label={t("nav.customer_list", "Customers")} />
+            <NavGroup id="customers" icon={Users} label={t("nav.customer_list", "Customers")} active={activeGroup === "customers"} open={openMenu === "customers"} onToggle={toggleMenu}>
+              <NavSub to="/dashboard/members" active={pathname === "/dashboard/members" || pathname.startsWith("/dashboard/customers")} icon={Users}>
+                {t("nav.customer_list_orders", "Customer List")}
+              </NavSub>
+              <NavSub to="/dashboard/registered-members" active={pathname.startsWith("/dashboard/registered-members") || pathname.startsWith("/dashboard/members/")} icon={UserCheck}>
+                {t("nav.members", "Members")}
+              </NavSub>
+            </NavGroup>
           )}
           {showReviews && (
             <NavLink to="/dashboard/reviews" active={pathname.startsWith("/dashboard/reviews")} icon={Star} label={t("nav.reviews", "Reviews")} />
