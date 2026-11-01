@@ -31,6 +31,10 @@ const userSchema = new Schema(
       weekStart: { type: String, enum: ["saturday", "sunday", "monday"], default: "saturday" },
       language: { type: String, enum: ["en", "bn"], default: "en" },
       timeFormat: { type: String, enum: ["12h", "24h"], default: "12h" },
+      appearance: {
+        primaryColor: { type: String, trim: true, default: "" },
+        radius: { type: String, trim: true, default: "" },
+      },
     },
     refreshTokens: {
       type: [

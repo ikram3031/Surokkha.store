@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Sparkles, Tag, TrendingUp, Sliders, ShieldCheck } from 'lucide-react';
+import { Sparkles, Tag, TrendingUp, Sliders, ShieldCheck, Palette } from 'lucide-react';
 import FeaturedProductsTab from './FeaturedProductsTab';
 import OnSaleProductsTab from './OnSaleProductsTab';
 import BestSellingProductsTab from './BestSellingProductsTab';
 import CatalogPreferencesTab from './CatalogPreferencesTab';
 import SecurityAccessTab from './SecurityAccessTab';
+import AppearanceTab from './AppearanceTab';
 
 // Displays product showcase curation tabs for featured, on sale, and bestseller products
 const ProductShowcasesPage = () => {
@@ -16,6 +17,7 @@ const ProductShowcasesPage = () => {
     { id: 'bestseller', label: 'Best Selling Products', icon: TrendingUp, iconColor: 'text-emerald-500' },
     { id: 'catalog-preferences', label: 'Catalog Display', icon: Sliders, iconColor: 'text-blue-500' },
     { id: 'advanced-security', label: 'Security & Access', icon: ShieldCheck, iconColor: 'text-purple-500' },
+    { id: 'appearance', label: 'Appearance', icon: Palette, iconColor: 'text-pink-500' },
   ];
 
   return (
@@ -57,6 +59,7 @@ const ProductShowcasesPage = () => {
         {activeTab === 'bestseller' && <BestSellingProductsTab />}
         {activeTab === 'catalog-preferences' && <CatalogPreferencesTab />}
         {activeTab === 'advanced-security' && <SecurityAccessTab />}
+        {activeTab === 'appearance' && <AppearanceTab />}
       </div>
     </div>
   );

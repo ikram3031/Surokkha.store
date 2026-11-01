@@ -391,6 +391,8 @@ const ActivityLogsPage = () => {
                                   ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
                                   : log.type === 'created'
                                   ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                                  : log.type === 'backup'
+                                  ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                                   : log.type === 'updated'
                                   ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
                                   : 'bg-red-500/10 text-red-600 border-red-500/30'

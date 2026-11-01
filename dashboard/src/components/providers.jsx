@@ -2,6 +2,7 @@ import * as React from 'react';
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/lib/auth-context';
+import UserAppearance from '@/components/userAppearance';
 import { ThemeProvider } from '@/components/theme-provider';
 import { handleGlobalError } from '@/lib/error-handler';
 
@@ -53,6 +54,7 @@ export const ReactQueryProvider = ({ children }) => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <AuthProvider>
+          <UserAppearance />
           {children}
           <Toaster />
         </AuthProvider>

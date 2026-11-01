@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight } from 'lucide-react';
+import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight, DatabaseBackup } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -117,6 +117,8 @@ export const NotificationBell = () => {
     setIsOpen(false);
     if (log.type === 'contactMessage' || log.type === 'webmailMessage') {
       navigate('/dashboard/tools/messages');
+    } else if (log.type === 'backup') {
+      navigate('/settings/r2-storage');
     } else {
       navigate('/dashboard/orders');
     }
@@ -187,12 +189,14 @@ export const NotificationBell = () => {
             <div className="py-8 text-center text-xs text-muted-foreground space-y-1">
               <Bell className="h-6 w-6 mx-auto text-muted-foreground/40 mb-1.5" />
               <p className="font-semibold text-foreground">No new notifications</p>
-              <p className="text-[11px]">When customers place orders or send messages, they will appear here.</p>
+              <p className="text-[11px]">When customers place orders, send messages, or a backup finishes, they will appear here.</p>
             </div>
           ) : (
             logs.map((log) => {
               const isUnread = !log.readStatus;
               const isMail = log.type === 'contactMessage' || log.type === 'webmailMessage';
+              const isBackup = log.type === 'backup';
+              const backupFailed = isBackup && /FAILED/.test(log.description || '');
 
               return (
                 <DropdownMenuItem
@@ -205,13 +209,19 @@ export const NotificationBell = () => {
                   <div
                     className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
                       isUnread
-                        ? isMail
-                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                          : 'bg-primary/15 text-primary'
+                        ? isBackup
+                          ? backupFailed
+                            ? 'bg-red-500/15 text-red-600 dark:text-red-400'
+                            : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                          : isMail
+                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                            : 'bg-primary/15 text-primary'
                         : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {isMail ? (
+                    {isBackup ? (
+                      <DatabaseBackup className="h-4 w-4" />
+                    ) : isMail ? (
                       <Mail className="h-4 w-4" />
                     ) : (
                       <ShoppingBag className="h-4 w-4" />

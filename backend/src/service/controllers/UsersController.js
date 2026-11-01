@@ -373,6 +373,13 @@ const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
 const PROFILE_WEEK_STARTS = ["saturday", "sunday", "monday"];
 const PROFILE_LANGUAGES = ["en", "bn"];
 const PROFILE_TIME_FORMATS = ["12h", "24h"];
+const APPEARANCE_RADII = ["0rem", "0.25rem", "0.5rem", "0.75rem", "1rem"];
+
+// Keeps only a valid hex colour and one of the allowed corner radii; anything else clears the choice
+const sanitizeAppearance = (value = {}) => ({
+  primaryColor: /^#[0-9a-f]{6}$/i.test(String(value.primaryColor || "")) ? String(value.primaryColor) : "",
+  radius: APPEARANCE_RADII.includes(value.radius) ? value.radius : "",
+});
 
 // Accepts a single "avatar" image up to 10MB, kept in memory for resizing
 export const avatarUploadMiddleware = multer({
@@ -450,6 +457,7 @@ export const updateProfile = async (req, res, next) => {
         ...(PROFILE_WEEK_STARTS.includes(prefs.weekStart) ? { weekStart: prefs.weekStart } : {}),
         ...(PROFILE_LANGUAGES.includes(prefs.language) ? { language: prefs.language } : {}),
         ...(PROFILE_TIME_FORMATS.includes(prefs.timeFormat) ? { timeFormat: prefs.timeFormat } : {}),
+        ...(prefs.appearance && typeof prefs.appearance === "object" ? { appearance: sanitizeAppearance(prefs.appearance) } : {}),
       };
     }
 

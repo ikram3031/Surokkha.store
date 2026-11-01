@@ -85,7 +85,7 @@ export const initWebSocketServer = (httpServer) => {
 
     // Send initial notification snapshot upon connection
     try {
-      const notificationFilter = { active: true, type: { $in: ["newOrder", "contactMessage", "webmailMessage"] } };
+      const notificationFilter = { active: true, type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup"] } };
       const [topLogs, unreadCount] = await Promise.all([
         LogModel.find(notificationFilter).sort({ createdAt: -1 }).limit(10).lean(),
         LogModel.countDocuments({ ...notificationFilter, readStatus: false }),
@@ -161,7 +161,7 @@ export async function broadcastLiveNotification(logEntry) {
   try {
     const unreadCount = await LogModel.countDocuments({
       active: true,
-      type: { $in: ["newOrder", "contactMessage", "webmailMessage"] },
+      type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup"] },
       readStatus: false,
     });
 

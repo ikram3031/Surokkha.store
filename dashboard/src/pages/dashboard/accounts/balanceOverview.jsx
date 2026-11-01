@@ -297,17 +297,30 @@ export const BalanceOverview = () => {
             </div>
 
             {/* True Business Asset Highlight Box */}
-            <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 shadow-inner space-y-1.5">
+            <div
+              className={`p-4 rounded-xl bg-gradient-to-r to-transparent border shadow-inner space-y-1.5 ${
+                businessAsset < 0
+                  ? 'from-red-500/10 via-red-500/5 border-red-500/20'
+                  : 'from-emerald-500/10 via-emerald-500/5 border-emerald-500/20'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-primary" />
+                  <ShieldCheck className={`w-4 h-4 ${businessAsset < 0 ? 'text-red-500' : 'text-emerald-500'}`} />
                   {t('accounts.true_business_asset', 'Business Asset')}
                 </span>
-                <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30 text-[10px]">
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] ${
+                    businessAsset < 0
+                      ? 'bg-red-500/15 text-red-600 border-red-500/30 dark:text-red-400'
+                      : 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400'
+                  }`}
+                >
                   Net Capital
                 </Badge>
               </div>
-              <div className="text-3xl font-extrabold tracking-tight text-foreground font-mono">
+              <div className={`text-3xl font-extrabold tracking-tight font-mono ${businessAsset < 0 ? 'text-red-600 dark:text-red-400' : 'text-foreground'}`}>
                 {loadingText || formatCurrency(businessAsset)}
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">

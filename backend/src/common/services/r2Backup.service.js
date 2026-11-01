@@ -1,5 +1,5 @@
 import { runDailyR2Backup } from '../../../../scripts/backup-to-r2.js';
-import { LogModel } from '../models/log.model.js';
+import { notifyBackupResult } from '../utils/backupNotification.js';
 import { logger } from '../config/logger.js';
 import { getR2Config, isR2Configured, recordBackupStatus } from './r2Config.service.js';
 import { syncUploadsToR2 } from './r2Sync.service.js';
@@ -11,15 +11,6 @@ const formatBytes = (bytes) =>
   bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(2)} MB` : `${(Number(bytes || 0) / 1024).toFixed(1)} KB`;
 
 let isRunning = false;
-
-// Writes a System Logs entry for a backup run (never throws)
-const writeBackupLog = async (type, description, triggeredBy) => {
-  try {
-    await LogModel.create({ type, typeDid: '115', description, readStatus: false, createdBy: triggeredBy });
-  } catch {
-    // ignore database logging errors
-  }
-};
 
 // Executes full database and uploads backup to Cloudflare R2, recording the result in settings and System Logs
 export const executeR2Backup = async (triggeredBy = 'SCHEDULER_DAILY_3AM') => {
@@ -61,16 +52,19 @@ export const executeR2Backup = async (triggeredBy = 'SCHEDULER_DAILY_3AM') => {
 
     const size = `DB ${manifest.database.sizeFormatted}, uploads ${uploadsText}`;
     await recordBackupStatus('success', `Saved to bucket '${manifest.bucket}' (${triggeredBy})`, size);
-    await writeBackupLog(
-      'created',
-      `Cloudflare R2 Backup: Database (${manifest.database.sizeFormatted}) saved; uploads mirror: ${uploadsText}; ${pruned} old backup(s) removed. Bucket '${manifest.bucket}'.`,
-      triggeredBy
-    );
+    await notifyBackupResult({
+      ok: true,
+      triggeredBy,
+      bucket: manifest.bucket,
+      database: manifest.database.sizeFormatted,
+      uploads: uploadsText,
+      pruned,
+    });
     logger.info({ manifest }, '[R2Backup] Cloudflare R2 backup finished successfully');
     return manifest;
   } catch (error) {
     await recordBackupStatus('failed', error.message).catch(() => {});
-    await writeBackupLog('error', `Cloudflare R2 Backup FAILED (${triggeredBy}): ${error.message}`, triggeredBy);
+    await notifyBackupResult({ ok: false, triggeredBy, error: error.message });
     logger.error({ err: error.message }, '[R2Backup] Cloudflare R2 backup failed');
     throw error;
   } finally {
