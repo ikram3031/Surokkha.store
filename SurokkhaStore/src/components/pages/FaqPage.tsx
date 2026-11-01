@@ -1,0 +1,22 @@
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { faqs } from '@/components/Faq'
+import { Breadcrumb } from '@/components/pages/PolicyPage'
+
+/** Frequently asked questions (moved off the home page). */
+export function FaqPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 pb-16 pt-6 lg:pt-8">
+      <Breadcrumb current="FAQ" />
+      <h1 className="mt-6 font-display text-3xl font-bold md:text-4xl">Frequently asked questions</h1>
+      <p className="mt-3 text-muted-foreground">Quick answers about packaging, payment, delivery and privacy.</p>
+      <Accordion type="single" collapsible className="mt-8 rounded-2xl bg-card px-6 shadow-xs ring-1 ring-border">
+        {faqs.map((item, i) => (
+          <AccordionItem key={item.q} value={`item-${i}`}>
+            <AccordionTrigger className="py-5 text-base font-semibold">{item.q}</AccordionTrigger>
+            <AccordionContent className="leading-relaxed text-muted-foreground">{item.a}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  )
+}

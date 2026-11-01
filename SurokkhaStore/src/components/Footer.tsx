@@ -1,10 +1,17 @@
 import { Separator } from '@/components/ui/separator'
 import { navigate } from '@/lib/router'
 
+const QUICK_LINKS = [
+  { label: 'Privacy Policy', path: '/privacy-policy' },
+  { label: 'Terms & Conditions', path: '/terms-and-conditions' },
+  { label: 'Return & Refund Policy', path: '/return-and-refund-policy' },
+  { label: 'FAQ', path: '/faq' },
+]
+
 export function Footer() {
   return (
     <footer className="bg-foreground text-background">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-3">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
         <div>
           <img src="/logo_2.png" alt="Surokkha" className="h-10 w-auto" />
           <p className="mt-3 text-sm text-background/70">Safe today, tomorrow too.</p>
@@ -28,6 +35,37 @@ export function Footer() {
             <li>
               <a href="/blog" onClick={(e) => { e.preventDefault(); navigate('/blog') }} className="hover:text-background">
                 Health &amp; safety blog
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div className="text-sm">
+          <h3 className="font-semibold text-background">Quick Links</h3>
+          <ul className="mt-3 space-y-2 text-background/70">
+            {QUICK_LINKS.map((link) => (
+              <li key={link.path}>
+                <a
+                  href={link.path}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    navigate(link.path)
+                  }}
+                  className="hover:text-background"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a
+                href="#contact"
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="hover:text-background"
+              >
+                Contact
               </a>
             </li>
           </ul>

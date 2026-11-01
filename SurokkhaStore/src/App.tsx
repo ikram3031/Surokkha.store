@@ -9,15 +9,15 @@ import { IntroProducts } from '@/components/home/IntroProducts'
 import { CareTabs } from '@/components/home/CareTabs'
 import { ShopByNeed } from '@/components/home/ShopByNeed'
 import { CategoryPage } from '@/components/category/CategoryPage'
-import { PopularProducts } from '@/components/home/PopularProducts'
+import { MoProducts, ComboProducts, WellnessProducts } from '@/components/home/CatalogSections'
+import { FaqPage } from '@/components/pages/FaqPage'
+import { PolicyPage } from '@/components/pages/PolicyPage'
 import { LearnCards } from '@/components/home/LearnCards'
 import { Testimonial } from '@/components/home/Testimonial'
-import { FaqSection } from '@/components/home/FaqSection'
 import { Newsletter } from '@/components/home/Newsletter'
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp'
 import { DeliverySteps } from '@/components/home/DeliverySteps'
 import { TrustStrip } from '@/components/TrustStrip'
-import { FeaturedCarousel } from '@/components/FeaturedCarousel'
 import { Shop } from '@/components/Shop'
 import { Footer } from '@/components/Footer'
 import { CartDrawer } from '@/components/cart/CartDrawer'
@@ -53,7 +53,7 @@ function AppShell() {
     OFFER_ONLY_MODE && (urlRoute.name === 'home' || urlRoute.name === 'home-classic') ? { name: 'offer' } : urlRoute
   const bare = OFFER_ONLY_MODE && route.name === 'offer'
   const routeKey =
-    route.name === 'product' || route.name === 'category' || route.name === 'group-offer' || route.name === 'blog-post' ? `${route.name}:${route.slug}` : route.name
+    route.name === 'product' || route.name === 'category' || route.name === 'group-offer' || route.name === 'blog-post' ? `${route.name}:${route.slug}` : route.name === 'policy' ? `policy:${route.page}` : route.name
 
   // One PageView per page (the SPA never reloads between routes)
   useEffect(() => {
@@ -87,15 +87,15 @@ function AppShell() {
             <HomeHero />
             <TrustStrip />
             <IntroProducts />
+            <MoProducts />
+            <ComboProducts />
             <CareTabs />
             <DeliverySteps />
             <ShopByNeed />
-            <FeaturedCarousel />
-            <PopularProducts />
+            <WellnessProducts />
             {SHOW_ALL_PRODUCTS && <Shop ref={shopRef} query={query} filter={filter} onFilterChange={setFilter} />}
             <LearnCards />
             <Testimonial />
-            <FaqSection />
             <Newsletter />
           </>
         )}
@@ -106,6 +106,8 @@ function AppShell() {
         {route.name === 'checkout' && <CheckoutPage />}
         {route.name === 'confirmation' && <ConfirmationPage />}
         {route.name === 'account' && <AccountPage />}
+        {route.name === 'faq' && <FaqPage />}
+        {route.name === 'policy' && <PolicyPage page={route.page} />}
         {route.name === 'blog' && <BlogArchive />}
         {route.name === 'blog-post' && <BlogPost slug={route.slug} />}
       </main>

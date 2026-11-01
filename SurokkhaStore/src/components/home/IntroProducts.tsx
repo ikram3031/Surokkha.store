@@ -13,13 +13,6 @@ import { navigate, productPath } from '@/lib/router'
 const AUTOPLAY_MS = 3500
 const GAP_PX = 24
 
-// The three 10-piece MO packs this carousel shows, in order. `image` is the pack shot in /public/banners.
-const TRIO = [
-  { slug: 'mo-multi-textured-latex-contraceptive-10-pcs', image: '/banners/mo-dotted-10.webp' }, // Dotted
-  { slug: 'mo-micro-thin-latex-contraceptive-10-pcs', image: '/banners/mo-thin-10.webp' }, // Ultra Thin
-  { slug: 'mo-micro-ribbed-natural-latex-contraceptive-10-pcs', image: '/banners/mo-ribbed-10.webp' }, // Ultra Ribbed
-]
-
 function IntroProductCard({ product }: { product: Product }) {
   const { add } = useCart()
   const onSale = !!product.regularPrice && product.regularPrice > product.price
@@ -84,18 +77,15 @@ function IntroProductCard({ product }: { product: Product }) {
   )
 }
 
-/** Intro copy on the left, an auto-moving carousel of the three 10-piece MO packs on the right. */
+/** Dark band right under the trust strip: the products on sale now, four at a time, moving on their own. */
 export function IntroProducts() {
-  const { products: bestSellers, loading } = useShowcaseProducts('bestSeller')
+  const { products: showcase, loading } = useShowcaseProducts('onSale')
   const { products: all } = useProducts()
 
-  // The three MO packs; if any is missing from the catalog, top up with dashboard best sellers
-  const trio: Product[] = TRIO.flatMap(({ slug, image }) => {
-    const product = all.find((p) => p.slug === slug)
-    return product ? [{ ...product, image }] : []
-  })
-  const used = new Set(trio.map((p) => p.id))
-  const picks = [...trio, ...bestSellers.filter((p) => !used.has(p.id))].slice(0, 3)
+  // Dashboard "On Sale" picks first; if none are set, anything in the catalog with a sale price
+  const picks: Product[] = showcase.length
+    ? showcase
+    : all.filter((p) => p.inStock !== false && !!p.regularPrice && p.regularPrice > p.price)
 
   const trackRef = useRef<HTMLDivElement>(null)
   const [paused, setPaused] = useState(false)
@@ -152,28 +142,24 @@ export function IntroProducts() {
   if (picks.length === 0) return null
 
   return (
-    <section className="bg-foreground py-16 text-background md:py-24">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 lg:grid-cols-[1fr_1.6fr]">
-        <div className="lg:pt-6">
-          <h2 className="font-display text-4xl font-bold leading-[1.15] md:text-[2.6rem]">
-            Care you can order
-            <br />
-            without the awkwardness
-          </h2>
-          <p className="mt-5 max-w-sm leading-relaxed text-background/70">
-            Everything you need for safer sex and everyday intimate care, all in one place and delivered discreetly.
-          </p>
+    <section id="on-sale" className="bg-foreground py-14 text-background md:py-20">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-display text-3xl font-bold leading-tight md:text-4xl">On sale now</h2>
+            <p className="mt-2 text-background/70">Our best offers right now, delivered discreetly.</p>
+          </div>
           <Button
             size="lg"
-            className="mt-8 h-12 rounded-full bg-background px-8 text-base text-foreground hover:bg-accent"
-            onClick={() => document.getElementById('on-sale')?.scrollIntoView({ behavior: 'smooth' })}
+            className="h-11 rounded-full bg-background px-7 text-foreground hover:bg-accent"
+            onClick={() => navigate('/category/combo')}
           >
-            Shop now
+            See all offers
           </Button>
         </div>
 
         <div
-          className="min-w-0"
+          className="mt-8 min-w-0"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onFocus={() => setPaused(true)}
@@ -187,7 +173,7 @@ export function IntroProducts() {
             className="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {picks.map((product) => (
-              <div key={product.id} className="w-full shrink-0 snap-start sm:w-[calc(50%-0.75rem)]">
+              <div key={product.id} className="w-[calc(50%-0.75rem)] shrink-0 snap-start lg:w-[calc(25%-1.125rem)]">
                 <IntroProductCard product={product} />
               </div>
             ))}

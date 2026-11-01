@@ -11,6 +11,8 @@ export type Route =
   | { name: 'checkout' }
   | { name: 'account' }
   | { name: 'confirmation' }
+  | { name: 'faq' }
+  | { name: 'policy'; page: 'terms' | 'privacy' | 'refund' }
   | { name: 'blog' }
   | { name: 'blog-post'; slug: string }
 
@@ -25,6 +27,10 @@ export function parseRoute(pathname: string): Route {
   if (parts[0] === 'home-classic') return { name: 'home-classic' }
   if (parts[0] === 'checkout') return { name: 'checkout' }
   if (parts[0] === 'account') return { name: 'account' }
+  if (parts[0] === 'faq') return { name: 'faq' }
+  if (parts[0] === 'terms-and-conditions') return { name: 'policy', page: 'terms' }
+  if (parts[0] === 'privacy-policy') return { name: 'policy', page: 'privacy' }
+  if (parts[0] === 'return-and-refund-policy') return { name: 'policy', page: 'refund' }
   if (parts[0] === 'order-confirmed') return { name: 'confirmation' }
   // offer.surokkha.shop serves the offer page at its root
   if (parts.length === 0 && typeof window !== 'undefined' && window.location.hostname.startsWith('offer.')) return { name: 'offer' }
