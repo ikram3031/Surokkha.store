@@ -300,7 +300,9 @@ const ProductTable = ({ list, colorFor, onSelect }) => {
                       <TableCell key={m.id}>
                         <div className="text-center tabular-nums">
                           <div className="font-semibold">{p[m.id].unique}</div>
-                          <div className="text-[11px] text-muted-foreground">{p[m.id].total} total</div>
+                          {p[m.id].total !== p[m.id].unique && (
+                            <div className="text-[11px] text-muted-foreground">{p[m.id].total} total</div>
+                          )}
                         </div>
                       </TableCell>
                     ))}

@@ -96,7 +96,9 @@ export default function AnalyticsProducts() {
                   </div>
                   <div className="shrink-0 text-right tabular-nums">
                     <div className="font-semibold">{p[metric].unique}</div>
-                    <div className="text-[11px] text-muted-foreground">{p[metric].total} total</div>
+                    {p[metric].total !== p[metric].unique && (
+                      <div className="text-[11px] text-muted-foreground">{p[metric].total} total</div>
+                    )}
                   </div>
                 </button>
               ))}
