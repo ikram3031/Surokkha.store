@@ -15,6 +15,7 @@ import { buildAllowedOrderUpdates,
 } from '../../common/helper/orderControllerHelper.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
 import { SpamListModel } from '../../common/models/spamList.model.js';
+import { addToSpamList } from '../../common/services/spamList.service.js';
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from "../../common/websocket.js";
@@ -525,7 +526,7 @@ export const updateOrder = async (req, res, next) => {
         const phone = rawPhone.replace(/\D/g, '').slice(-11) || rawPhone;
         const email = order.billingInfo?.email || order.shippingInfo?.email || "";
         if (ip || phone || email) {
-          await SpamListModel.create({ ip, phone, email });
+          await addToSpamList({ ip, phone, email });
         }
       } catch (fakeErr) {
         console.error("Error archiving fake order:", fakeErr);
@@ -792,6 +793,7 @@ export const bulkUpdateOrders = async (req, res, next) => {
     // If marked as fake or cancelled in bulk, archive fake orders and remove from members' active orders
     const isBulkRemovedStatus = ['fake', 'cancelled', 'canceled'].includes(updateFields.status);
     if (updateFields.status === 'fake') {
+      // Sequential so orders from the same customer in one batch share a single spam entry
       for (const ord of orders) {
         const ip = ord.ipAddress || null;
         archiveFakeOrder(ord, req.user?.userId || null, req.body?.reason || "Bulk marked as fake order").catch(e => console.error(e));
@@ -800,7 +802,11 @@ export const bulkUpdateOrders = async (req, res, next) => {
         const phone = rawOrdPhone.replace(/\D/g, '').slice(-11) || rawOrdPhone;
         const email = ord.billingInfo?.email || ord.shippingInfo?.email || "";
         if (ip || phone || email) {
-          SpamListModel.create({ ip, phone, email }).catch(e => console.error("Error adding to spam list:", e));
+          try {
+            await addToSpamList({ ip, phone, email });
+          } catch (e) {
+            console.error("Error adding to spam list:", e);
+          }
         }
       }
     } else {
