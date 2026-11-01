@@ -54,7 +54,7 @@ export function Header({
         </a>
 
         <div className="flex items-center justify-end gap-2">
-          <Button size="icon" className="hidden rounded-full bg-background text-foreground hover:bg-background/90 sm:inline-flex" aria-label="My account" onClick={() => navigate('/account')}>
+          <Button size="icon" className="rounded-full bg-background text-foreground hover:bg-background/90" aria-label="My account" onClick={() => navigate('/account')}>
             <User className="h-5 w-5" />
           </Button>
           <CartButton onClick={onCartOpen} />

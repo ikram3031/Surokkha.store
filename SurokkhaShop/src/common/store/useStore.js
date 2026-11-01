@@ -55,6 +55,9 @@ export const parseRouteFromLocation = () => {
   if (pathname === '/contact' || pathname === '/contact-us' || pathname === '/support') {
     return { view: 'contact', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
   }
+  if (pathname === '/account' || pathname === '/login' || pathname === '/register' || pathname === '/signup') {
+    return { view: 'account', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  }
 
   // Handle /product/:slug or /products/:slug dynamically
   if (pathname.startsWith('/product/') || pathname.startsWith('/products/')) {
@@ -800,6 +803,8 @@ export const useStore = create((set, get) => ({
         targetPath = '/faq';
       } else if (view === 'contact') {
         targetPath = '/contact';
+      } else if (view === 'account') {
+        targetPath = '/account';
       }
 
       if (window.location.pathname !== targetPath) {

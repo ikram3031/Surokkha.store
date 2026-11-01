@@ -20,6 +20,7 @@ import PrivacyView from './views/PrivacyView';
 import RefundView from './views/RefundView';
 import FaqView from './views/FaqView';
 import ContactView from './views/ContactView';
+import AccountView from './views/AccountView';
 
 export default function App() {
   const currentView = useStore((state) => state.currentView);
@@ -73,6 +74,7 @@ export default function App() {
         {currentView === 'refund' && <RefundView />}
         {currentView === 'faq' && <FaqView />}
         {currentView === 'contact' && <ContactView />}
+        {currentView === 'account' && <AccountView />}
       </main>
 
       <Footer />
