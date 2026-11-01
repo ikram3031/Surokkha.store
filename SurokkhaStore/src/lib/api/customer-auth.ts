@@ -13,6 +13,8 @@ interface SessionResponse {
 }
 
 const TOKEN_KEY = 'surokkha-customer-token'
+/** Fired on window whenever the customer logs in or out, so the header can refresh. */
+export const SESSION_EVENT = 'surokkha-customer-session'
 
 export function getCustomerToken(): string | null {
   try {
@@ -29,6 +31,7 @@ function setCustomerToken(token: string | null) {
   } catch {
     /* storage may be blocked (private mode) — the session then lasts until the page closes */
   }
+  window.dispatchEvent(new Event(SESSION_EVENT))
 }
 
 async function startSession(res: SessionResponse): Promise<Customer> {

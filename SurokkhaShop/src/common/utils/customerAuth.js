@@ -5,6 +5,8 @@ import { SITE_CONFIG } from '../config/siteConfig';
 const API_BASE_URL = (SITE_CONFIG.apiBaseUrl || 'https://api.surokkha.store').replace(/\/$/, '');
 const AUTH_URL = `${API_BASE_URL}/api/v1/customer-auth`;
 const TOKEN_KEY = 'surokkha-customer-token';
+// Fired on window whenever the customer logs in or out, so the header can refresh
+export const SESSION_EVENT = 'surokkha-customer-session';
 
 export const getCustomerToken = () => {
   try {
@@ -21,6 +23,7 @@ const setCustomerToken = (token) => {
   } catch {
     /* storage blocked (private mode): the session then lasts until the page closes */
   }
+  window.dispatchEvent(new Event(SESSION_EVENT));
 };
 
 async function request(path, { method = 'GET', body, token } = {}) {

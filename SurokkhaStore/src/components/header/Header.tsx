@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Menu, User } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { SearchInput } from '@/components/header/SearchInput'
 import { CartButton } from '@/components/header/CartButton'
 import { MobileNav } from '@/components/header/MobileNav'
-import { navigate } from '@/lib/router'
+import { AccountMenu } from '@/components/header/AccountMenu'
 
 export function Header({
   query,
@@ -54,9 +54,7 @@ export function Header({
         </a>
 
         <div className="flex items-center justify-end gap-2">
-          <Button size="icon" className="rounded-full bg-background text-foreground hover:bg-background/90" aria-label="My account" onClick={() => navigate('/account')}>
-            <User className="h-5 w-5" />
-          </Button>
+          <AccountMenu />
           <CartButton onClick={onCartOpen} />
         </div>
       </div>
