@@ -3,6 +3,13 @@ import { useStore, getFeaturedCombo } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
+// The three single 10-pc products the combo bundles; their own product photos are shown in the banner
+const COMBO_PACK_SLUGS = {
+  textured: 'mo-multi-textured-latex-contraceptive-10-pcs',
+  thin: 'mo-micro-thin-latex-contraceptive-10-pcs',
+  ribbed: 'mo-micro-ribbed-natural-latex-contraceptive-10-pcs',
+};
+
 export default function PromoComboBanner() {
   const buyNowDirect = useStore((state) => state.buyNowDirect);
   const addToCart = useStore((state) => state.addToCart);
@@ -64,7 +71,7 @@ export default function PromoComboBanner() {
                 title={isBn ? 'MO টেক্সচার্ড ম্যাট্রিক্স (১০ পিস)' : 'MO Textured Matrix (10 pcs)'}
               >
                 <div className="bg-slate-900/90 rounded-2xl p-1.5 border border-rose-500/40 shadow-xl overflow-hidden">
-                  <ProductArtwork productKey="mo-dotted-condom" sizeClass="w-full h-32 sm:h-44" imgClassName="w-full h-full object-cover object-center rounded-xl" />
+                  <ProductArtwork productKey={products[COMBO_PACK_SLUGS.textured] || COMBO_PACK_SLUGS.textured} sizeClass="w-full h-32 sm:h-44" imgClassName="w-full h-full object-cover object-center rounded-xl" />
                 </div>
                 <div className="text-center mt-1.5">
                   <span className="text-[10px] sm:text-xs font-bold text-rose-300 bg-rose-950/80 px-2 py-0.5 rounded-md border border-rose-800/60">
@@ -83,7 +90,7 @@ export default function PromoComboBanner() {
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 text-[9px] sm:text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-md whitespace-nowrap z-30">
                     ⭐ {isBn ? 'টপ সেলার' : 'Best Seller'}
                   </div>
-                  <ProductArtwork productKey="mo-ultra-thin-condom" sizeClass="w-full h-36 sm:h-48" imgClassName="w-full h-full object-cover object-center rounded-xl" />
+                  <ProductArtwork productKey={products[COMBO_PACK_SLUGS.thin] || COMBO_PACK_SLUGS.thin} sizeClass="w-full h-36 sm:h-48" imgClassName="w-full h-full object-cover object-center rounded-xl" />
                 </div>
                 <div className="text-center mt-1.5">
                   <span className="text-[10px] sm:text-xs font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-800/60">
@@ -99,7 +106,7 @@ export default function PromoComboBanner() {
                 title={isBn ? 'MO কনট্যুরড রিজ (১০ পিস)' : 'MO Contoured Ridges (10 pcs)'}
               >
                 <div className="bg-slate-900/90 rounded-2xl p-1.5 border border-purple-500/40 shadow-xl overflow-hidden">
-                  <ProductArtwork productKey="mo-ultra-ribbed-condom" sizeClass="w-full h-32 sm:h-44" imgClassName="w-full h-full object-cover object-center rounded-xl" />
+                  <ProductArtwork productKey={products[COMBO_PACK_SLUGS.ribbed] || COMBO_PACK_SLUGS.ribbed} sizeClass="w-full h-32 sm:h-44" imgClassName="w-full h-full object-cover object-center rounded-xl" />
                 </div>
                 <div className="text-center mt-1.5">
                   <span className="text-[10px] sm:text-xs font-bold text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded-md border border-purple-800/60">

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
 import { Eye, ShoppingCart, CreditCard, PackageCheck, LayoutDashboard } from 'lucide-react';
 import {
-  ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
+  ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend,
 } from 'recharts';
 
@@ -119,7 +119,38 @@ const ProductShareCard = ({ list, metric, setMetric, colorFor }) => {
   );
 };
 
-// Day-by-day (or hour-by-hour for a single day) lines, one colored line per product
+// "14:00" stays as is for hourly charts; "2026-11-01" becomes "Nov 1"
+const formatBucket = (bucket, hourly) => {
+  if (hourly || !bucket) return bucket;
+  return new Date(`${bucket}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+};
+
+// Tooltip listing only the products that had activity in the hovered hour/day, biggest first
+const TrendTooltip = ({ active, payload, label, series, colorFor, hourly }) => {
+  if (!active || !payload?.length) return null;
+  const rows = payload
+    .filter((p) => p.value > 0)
+    .sort((a, b) => b.value - a.value);
+  const total = rows.reduce((n, r) => n + r.value, 0);
+  return (
+    <div style={tooltipStyle} className="max-w-xs space-y-1 p-2.5 shadow-lg">
+      <div className="flex justify-between gap-4 font-semibold">
+        <span>{formatBucket(label, hourly)}</span>
+        <span className="tabular-nums">{total}</span>
+      </div>
+      {rows.length === 0 && <div className="text-muted-foreground">No activity</div>}
+      {rows.map((r) => (
+        <div key={r.dataKey} className="flex items-center gap-2">
+          <span className="size-2.5 shrink-0 rounded-sm" style={{ background: colorFor(r.dataKey) }} />
+          <span className="min-w-0 flex-1 truncate">{series.find((s) => s.productKey === r.dataKey)?.name || r.name}</span>
+          <span className="tabular-nums">{r.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Hour-by-hour (single day) or day-by-day stacked bars, one color per product, one colored line per product
 const TrendCard = ({ query, enabled, colorFor }) => {
   const { t } = useTranslation();
   const [metric, setMetric] = useState('view');
@@ -148,32 +179,35 @@ const TrendCard = ({ query, enabled, colorFor }) => {
         </div>
       </CardHeader>
       <CardContent>
-        {rows.length === 0 ? (
+        {series.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">{t('analytics.no_data', 'No activity in this period yet.')}</p>
         ) : (
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={rows} margin={{ left: -16, right: 8, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="bucket" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                {series.map((s) => (
-                  <Line
-                    key={s.productKey}
-                    type="monotone"
-                    dataKey={s.productKey}
-                    name={s.name}
-                    stroke={colorFor(s.productKey)}
-                    strokeWidth={2}
-                    dot={rows.length < 15}
-                    connectNulls
+          <>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={rows} margin={{ left: -16, right: 8, top: 8 }} barCategoryGap="20%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis
+                    dataKey="bucket"
+                    tickFormatter={(b) => formatBucket(b, data?.hourly)}
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    minTickGap={12}
                   />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'var(--muted)', opacity: 0.4 }}
+                    content={<TrendTooltip series={series} colorFor={colorFor} hourly={data?.hourly} />}
+                  />
+                  {series.map((s) => (
+                    <Bar key={s.productKey} dataKey={s.productKey} name={s.name} stackId="trend" fill={colorFor(s.productKey)} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>

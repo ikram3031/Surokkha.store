@@ -31,7 +31,8 @@ export const PRODUCT_COLORS = [
 
 export const makeColorFor = (products = []) => {
   const index = new Map(products.map((p, i) => [p.productKey, i]));
-  return (productKey) => PRODUCT_COLORS[(index.get(productKey) ?? 0) % PRODUCT_COLORS.length];
+  // "Others" (products outside the top 8 of a chart) is always neutral gray
+  return (productKey) => (productKey === '__others' ? '#94a3b8' : PRODUCT_COLORS[(index.get(productKey) ?? 0) % PRODUCT_COLORS.length]);
 };
 
 export const formatMoney = (v) => `৳${Number(v || 0).toLocaleString('en-US')}`;

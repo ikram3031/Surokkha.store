@@ -149,6 +149,27 @@ export const getProductFunnel = async (req, res) => {
   }
 };
 
+const OTHERS_KEY = "__others";
+const pad2 = (n) => String(n).padStart(2, "0");
+const dhakaDay = (d) => new Date(d.getTime() + DHAKA_OFFSET_MS).toISOString().slice(0, 10);
+
+// Every hour ("HH:00") or day ("YYYY-MM-DD", Asia/Dhaka) of the range; a range that is still running stops at the current hour
+const bucketKeysOf = (range, hourly) => {
+  if (hourly) {
+    const stillRunning = range.to.getTime() >= Date.now() - 1000;
+    const last = stillRunning ? new Date(Date.now() + DHAKA_OFFSET_MS).getUTCHours() : 23;
+    return Array.from({ length: last + 1 }, (_, h) => `${pad2(h)}:00`);
+  }
+  const end = dhakaDay(range.to);
+  const keys = [];
+  for (let t = range.from.getTime(); ; t += DAY_MS) {
+    const day = dhakaDay(new Date(t));
+    if (day > end) break;
+    keys.push(day);
+  }
+  return keys;
+};
+
 // Day-by-day totals for the chart, plus a per-product daily series for the top products (one color each)
 export const getProductTrend = async (req, res) => {
   try {
@@ -179,40 +200,38 @@ export const getProductTrend = async (req, res) => {
       ]),
     ]);
 
-    const buckets = new Map();
+    const keys = bucketKeysOf(range, hourly);
+    const emptyTotals = () => ({ view: 0, add_to_cart: 0, checkout: 0, purchase: 0 });
+    const totalsByBucket = new Map(keys.map((k) => [k, { bucket: k, ...emptyTotals() }]));
     for (const t of totals) {
-      const row = buckets.get(t._id.bucket) || { bucket: t._id.bucket, view: 0, add_to_cart: 0, checkout: 0, purchase: 0 };
-      row[t._id.type] = t.count;
-      buckets.set(t._id.bucket, row);
+      const row = totalsByBucket.get(t._id.bucket);
+      if (row) row[t._id.type] = t.count;
     }
 
-    // Keep the 8 products with the most activity so the chart stays readable
+    // Keep the 5 products with the most activity so the chart stays readable; the rest are grouped as "Others"
     const sumByProduct = new Map();
     const names = new Map();
     for (const r of perProduct) {
       sumByProduct.set(r._id.productKey, (sumByProduct.get(r._id.productKey) || 0) + r.count);
       if (r.name) names.set(r._id.productKey, r.name);
     }
-    const top = [...sumByProduct.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([key]) => key);
+    const top = [...sumByProduct.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([key]) => key);
     const series = top.map((key) => ({ productKey: key, name: names.get(key) || key, total: sumByProduct.get(key) }));
-    const rowsByBucket = new Map();
-    for (const r of perProduct) {
-      if (!top.includes(r._id.productKey)) continue;
-      const row = rowsByBucket.get(r._id.bucket) || { bucket: r._id.bucket };
-      row[r._id.productKey] = r.count;
-      rowsByBucket.set(r._id.bucket, row);
-    }
 
-    const sortBuckets = (m) => [...m.values()].sort((a, b) => a.bucket.localeCompare(b.bucket));
+    // One row per hour/day (zeros when quiet), so the chart shows the whole timeline
+    const byProduct = new Map(keys.map((k) => [k, { bucket: k, ...Object.fromEntries(top.map((p) => [p, 0])), [OTHERS_KEY]: 0 }]));
+    for (const r of perProduct) {
+      const row = byProduct.get(r._id.bucket);
+      if (!row) continue;
+      if (top.includes(r._id.productKey)) row[r._id.productKey] = r.count;
+      else row[OTHERS_KEY] += r.count;
+    }
+    const othersTotal = [...byProduct.values()].reduce((n, row) => n + row[OTHERS_KEY], 0);
+    if (othersTotal > 0) series.push({ productKey: OTHERS_KEY, name: "Others", total: othersTotal });
+
     return res.json({
       status: "success",
-      data: {
-        hourly,
-        metric,
-        totals: sortBuckets(buckets),
-        series,
-        byProduct: sortBuckets(rowsByBucket),
-      },
+      data: { hourly, metric, totals: [...totalsByBucket.values()], series, byProduct: [...byProduct.values()] },
     });
   } catch (err) {
     logger?.warn?.(`[ProductAnalytics] Failed to load trend. ${err.message}`);
