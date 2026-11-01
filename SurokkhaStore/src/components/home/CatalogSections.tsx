@@ -5,15 +5,19 @@ import type { Product } from '@/data/products'
 
 const inStock = (p: Product) => p.inStock !== false
 const isCombo = (p: Product) => !!p.categorySlugs?.includes('combo')
-// MO is Surokkha's own brand: its slugs start with "mo-" (combos are shown in their own section)
-const isMo = (p: Product) => !!p.slug?.startsWith('mo-') && !isCombo(p)
+// MO is Surokkha's own brand: single packs are in the "contraceptive" category (other brands' condoms are in
+// "condoms") or have an "mo-" slug. Combos are shown in their own section.
+const isMo = (p: Product) =>
+  !isCombo(p) &&
+  (!!p.slug?.startsWith('mo-') || (!!p.categorySlugs?.includes('contraceptive') && !p.categorySlugs?.includes('condoms')))
 
 function useCatalogGroups() {
   const { products } = useProducts()
   return useMemo(() => {
     const live = products.filter(inStock)
     const combos = live.filter(isCombo)
-    const mo = live.filter(isMo)
+    // Every MO pack is listed, including ones that are temporarily out of stock (the card says so)
+    const mo = products.filter(isMo)
     const rest = live.filter((p) => !isCombo(p) && !isMo(p))
     return { combos, mo, rest }
   }, [products])

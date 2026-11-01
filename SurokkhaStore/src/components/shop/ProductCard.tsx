@@ -10,6 +10,7 @@ import { navigate, productPath } from '@/lib/router'
 
 export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart()
+  const soldOut = product.inStock === false
   const onSale = !!product.regularPrice && product.regularPrice > product.price
   const discountPercent = onSale ? Math.round((1 - product.price / product.regularPrice!) * 100) : 0
 
@@ -23,6 +24,9 @@ export function ProductCard({ product }: { product: Product }) {
           <Badge className="absolute left-3 top-3 bg-card text-primary hover:bg-card">
             {product.badge}
           </Badge>
+        )}
+        {soldOut && (
+          <Badge className="absolute bottom-3 left-3 z-10 bg-foreground text-background hover:bg-foreground">Out of stock</Badge>
         )}
         {discountPercent > 0 && (
           <Badge className="absolute right-3 top-3 z-10 bg-primary text-primary-foreground hover:bg-primary">
@@ -66,6 +70,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Button
             size="icon"
             className="rounded-full"
+            disabled={soldOut}
             onClick={(e) => {
               e.stopPropagation()
               add(product)

@@ -82,10 +82,15 @@ export function IntroProducts() {
   const { products: showcase, loading } = useShowcaseProducts('onSale')
   const { products: all } = useProducts()
 
-  // Dashboard "On Sale" picks first; if none are set, anything in the catalog with a sale price
-  const picks: Product[] = showcase.length
-    ? showcase
-    : all.filter((p) => p.inStock !== false && !!p.regularPrice && p.regularPrice > p.price)
+  // Dashboard "On Sale" picks first, then anything else with a sale price, so at least four are always shown
+  const onSale = all.filter((p) => p.inStock !== false && !!p.regularPrice && p.regularPrice > p.price)
+  const seen = new Set<string>()
+  const picks: Product[] = [...showcase, ...onSale].filter((p) => {
+    const key = p.slug ?? String(p.id)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 
   const trackRef = useRef<HTMLDivElement>(null)
   const [paused, setPaused] = useState(false)

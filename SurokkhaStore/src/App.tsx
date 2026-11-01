@@ -6,7 +6,6 @@ import { Header } from '@/components/header/Header'
 import { HomeHero } from '@/components/home/HomeHero'
 import { HomeClassic } from '@/components/home/HomeClassic'
 import { IntroProducts } from '@/components/home/IntroProducts'
-import { CareTabs } from '@/components/home/CareTabs'
 import { ShopByNeed } from '@/components/home/ShopByNeed'
 import { CategoryPage } from '@/components/category/CategoryPage'
 import { MoProducts, ComboProducts, WellnessProducts } from '@/components/home/CatalogSections'
@@ -97,7 +96,6 @@ function AppShell() {
             <IntroProducts />
             <MoProducts />
             <ComboProducts />
-            <CareTabs />
             <DeliverySteps />
             <ShopByNeed />
             <WellnessProducts />
