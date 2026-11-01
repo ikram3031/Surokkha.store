@@ -1,5 +1,6 @@
 import { ProductEventModel } from "../../common/models/productEvent.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
+import { logger } from "../../common/config/logger.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DHAKA_OFFSET_MS = 6 * 60 * 60 * 1000;
@@ -143,7 +144,8 @@ export const getProductFunnel = async (req, res) => {
 
     return res.json({ status: "success", data, funnel, range });
   } catch (err) {
-    return res.status(500).json({ status: "error", message: "Failed to load product analytics." });
+    logger?.warn?.(`[ProductAnalytics] Failed to load product analytics. ${err.message}`);
+    return res.status(500).json({ status: "error", message: "Failed to load product analytics.", detail: err.message });
   }
 };
 
@@ -213,7 +215,8 @@ export const getProductTrend = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({ status: "error", message: "Failed to load trend." });
+    logger?.warn?.(`[ProductAnalytics] Failed to load trend. ${err.message}`);
+    return res.status(500).json({ status: "error", message: "Failed to load trend.", detail: err.message });
   }
 };
 
@@ -233,7 +236,12 @@ export const getLiveActivity = async (req, res) => {
           },
         },
       ]),
-      ProductEventModel.distinct("visitorId", { createdAt: { $gte: fiveMinAgo }, visitorId: { $ne: "" } }),
+      // Not distinct(): the database connection runs in Stable API strict mode, which rejects that command
+      ProductEventModel.aggregate([
+        { $match: { createdAt: { $gte: fiveMinAgo }, visitorId: { $ne: "" } } },
+        { $group: { _id: "$visitorId" } },
+        { $count: "n" },
+      ]),
       ProductEventModel.find({ createdAt: { $gte: since } })
         .select("productKey productName eventType quantity value source device ipAddress visitorId createdAt")
         .sort({ createdAt: -1 })
@@ -244,9 +252,10 @@ export const getLiveActivity = async (req, res) => {
     const hours = Array.from({ length: 24 }, (_, h) => ({ hour: h, view: 0, add_to_cart: 0, checkout: 0, purchase: 0 }));
     for (const r of hourly) hours[r._id.hour][r._id.type] = r.count;
 
-    return res.json({ status: "success", data: { hourly: hours, activeNow: activeNow.length, recent } });
+    return res.json({ status: "success", data: { hourly: hours, activeNow: activeNow[0]?.n || 0, recent } });
   } catch (err) {
-    return res.status(500).json({ status: "error", message: "Failed to load live activity." });
+    logger?.warn?.(`[ProductAnalytics] Failed to load live activity. ${err.message}`);
+    return res.status(500).json({ status: "error", message: "Failed to load live activity.", detail: err.message });
   }
 };
 
@@ -304,6 +313,7 @@ export const getProductDetail = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({ status: "error", message: "Failed to load product details." });
+    logger?.warn?.(`[ProductAnalytics] Failed to load product details. ${err.message}`);
+    return res.status(500).json({ status: "error", message: "Failed to load product details.", detail: err.message });
   }
 };
