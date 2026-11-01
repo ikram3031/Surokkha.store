@@ -44,7 +44,20 @@ export default function HomeView() {
     return isFromProductsCollection && !isCombo && isContraceptive;
   }).slice(0, 3);
 
-  const displaySingleKeys = moLineupKeys.length > 0 ? moLineupKeys : productKeys.slice(0, 3);
+  // Always show 3 cards: top up with other non-combo products when the strict filter finds fewer
+  const isComboKey = (k) => {
+    const p = products[k];
+    return !p || p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
+  };
+  const displaySingleKeys = [...moLineupKeys];
+  for (const k of productKeys) {
+    if (displaySingleKeys.length >= 3) break;
+    if (!displaySingleKeys.includes(k) && !isComboKey(k)) displaySingleKeys.push(k);
+  }
+  for (const k of productKeys) {
+    if (displaySingleKeys.length >= 3) break;
+    if (!displaySingleKeys.includes(k) && products[k]) displaySingleKeys.push(k);
+  }
 
   const activeCombos = Object.values(products).filter(p => {
     return p && !p.isOutOfStock && p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.isActive !== false &&
@@ -59,6 +72,11 @@ export default function HomeView() {
   const LEFT_COMBO_ID = '6ab8a664721c81cc89218856';
   const LEFT_COMBO_SLUG = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
   const pinnedLeftProd = products[LEFT_COMBO_ID] || products[LEFT_COMBO_SLUG];
+  // RIGHT card prefers the 30-pcs Micro-Thin combo, whenever it exists and is active.
+  const microThin30Prod = activeCombos.find((c) => {
+    const text = `${c.slug || ''} ${c.name || ''}`.toLowerCase();
+    return text.includes('thin') && /(^|[^0-9])30([^0-9]|$)/.test(text);
+  }) || null;
   const combo30Prod = (isComboActive(pinnedLeftProd) ? pinnedLeftProd : null) ||
     activeCombos.find(c => (c.slug && (c.slug.includes('3-in-1') || c.slug.includes('30'))) || (c.name && c.name.includes('30'))) ||
     activeCombos[0] || null;
@@ -68,7 +86,8 @@ export default function HomeView() {
   const RIGHT_COMBO_ID = '6ad3db40d7265af12af6aa8d';
   const RIGHT_COMBO_SLUG = 'protection-combo-20-pcs-50gm-gel';
   const pinnedRightProd = products[RIGHT_COMBO_ID] || products[RIGHT_COMBO_SLUG];
-  const comboRibbedProd = (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) ||
+  const comboRibbedProd = (microThin30Prod && microThin30Prod !== combo30Prod ? microThin30Prod : null) ||
+    (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) ||
     activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('thin') || c.slug.includes('30'))) || (c.name && c.name.includes('30')))) ||
     activeCombos.find(c => c !== combo30Prod) || activeCombos[1] || null;
   const COMBO_30_KEY = combo30Prod?.slug || combo30Prod?.id || '';
