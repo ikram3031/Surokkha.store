@@ -5,7 +5,6 @@ import { logger } from "../../common/config/logger.js";
 
 // Pathao's own auto bills (see pathaoBill.service.js)
 const PATHAO_BILLING_METHOD = "pathao";
-const VOID_STATUSES = ["cancelled", "failed"];
 
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
 const isDayKey = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ""));
@@ -46,7 +45,8 @@ export const getDailyBillSummary = async (req, res, next) => {
 
     const bills = await BillingModel.find({
       billingDate: { $gte: new Date(`${day}T00:00:00.000+06:00`), $lte: new Date(`${day}T23:59:59.999+06:00`) },
-      status: { $nin: VOID_STATUSES },
+      // Only money actually spent; Pathao bills are dated the day Pathao took its charge
+      status: "paid",
     })
       .populate("billTypeId", "name")
       .sort({ billingDate: 1 })
@@ -72,11 +72,10 @@ export const getDailyBillSummary = async (req, res, next) => {
       ...others.map((o) => ({ label: `${o.label} (${o.type})`, quantity: 1, amount: o.amount })),
     ];
     const total = round2(lineItems.reduce((acc, li) => acc + li.amount, 0));
-    const paid = round2(bills.reduce((acc, b) => acc + (Number(b.paidAmount) || 0), 0));
 
     return res.json({
       success: true,
-      data: { date: day, bills_count: bills.length, total, paid, line_items: lineItems, pathao_sync: pathaoSync },
+      data: { date: day, bills_count: bills.length, total, paid: total, line_items: lineItems, pathao_sync: pathaoSync },
     });
   } catch (error) {
     return next(error);
