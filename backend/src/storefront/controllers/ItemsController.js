@@ -1,6 +1,7 @@
 import { config } from "../../common/config/index.js";
 import { ItemModel } from "../../common/models/item.model.js";
 import {
+  attachBrandNames,
   serializeProduct,
   buildProductFilter,
   buildProductSort,
@@ -32,7 +33,7 @@ export const listItems = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: items.map((p) => serializeProduct(p, "en", "item")),
+      data: await attachBrandNames(items.map((p) => serializeProduct(p, "en", "item"))),
       pagination: {
         total: count,
         limit,
@@ -68,7 +69,7 @@ export const getSingleItem = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: serializeProduct(item, "en", "item"),
+      data: await attachBrandNames(serializeProduct(item, "en", "item")),
     });
   } catch (err) {
     next(err);
