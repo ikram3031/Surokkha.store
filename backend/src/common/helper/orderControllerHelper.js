@@ -11,6 +11,7 @@ import { buildOrderNumber } from './orderHelper.js';
 import { config, getClientPolicy } from '../config/index.js';
 import { extractClientIp } from '../services/facebookCapi.service.js';
 import { normalizeCustomerPhone } from '../services/customer.service.js';
+import { invoiceDateFromId } from '../../service/services/pathaoCourierEvents.service.js';
 
 const { Types } = mongoose;
 
@@ -251,21 +252,16 @@ export const canHavePaymentDocument = async (order) => {
 export const ensurePaymentOnShip = async (order, payload = {}) => {
   if (!order?._id) return;
   if (!PAYMENT_COLLECTION_STATUSES.includes(String(order.status || '').toLowerCase())) return;
-  if (await PaymentModel.exists({ orderId: order._id })) {
-    // A record opened before the parcel went out (older orders) moves to the dispatch date
-    const dispatchedAt = courierDispatchDate(order);
-    if (dispatchedAt) await PaymentModel.updateOne({ orderId: order._id }, { $set: { paymentDate: dispatchedAt } });
-    return;
-  }
+  if (await PaymentModel.exists({ orderId: order._id })) return;
   await syncPaymentDocument(order, payload);
 };
 
-// The day the parcel was handed to the courier; this is the payment date of a courier order
-export const courierDispatchDate = (order) => {
-  const value = order?.courier?.dispatchedAt;
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+// The day Pathao paid the parcel out (invoice date); null until the money has actually arrived
+export const courierPayoutDate = (order) => {
+  const s = order?.courier?.settlement || {};
+  if (!["invoiced", "settled"].includes(s.status)) return null;
+  const date = invoiceDateFromId(s.invoiceId) || s.settledAt || s.invoicedAt || null;
+  return date && !Number.isNaN(new Date(date).getTime()) ? new Date(date) : null;
 };
 
 // Upsert the linked payment record so it reflects the created order totals.
@@ -370,12 +366,12 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     '';
 
   // Pending/processing orders keep payment info on the order only; the payment record is created on first ship
-  // Not yet shipped by courier: the payment keeps its own date (the day it was opened, i.e. first shipped)
-  const dispatchedAt = courierDispatchDate(orderData);
+  // Courier orders: the payment date is the day Pathao paid out; until then it keeps the day it was opened
+  const payoutDate = courierPayoutDate(orderData);
   if (await canHavePaymentDocument(orderData)) await PaymentModel.findOneAndUpdate(
     { orderId: orderData._id },
     {
-      ...(dispatchedAt ? { paymentDate: dispatchedAt } : {}),
+      ...(payoutDate ? { paymentDate: payoutDate } : {}),
       paymentMethod: orderData.paymentMethod,
       paymentPhone,
       transactionId: orderData.paymentTransactionId || '',

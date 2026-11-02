@@ -82,7 +82,7 @@ export const syncCourierBill = async (order) => {
   }
 
   const isPaid = PAID_OUT_STATUSES.includes(courier.settlement?.status);
-  // Bills are dated the day the parcel was sent to Pathao; the payout day only sets the due date
+  // Paid bills are dated the day Pathao took the money; pending ones stay on the dispatch date
   const paidOn = isPaid ? payoutDate(order) : null;
   await BillingModel.findOneAndUpdate(
     filter,
@@ -90,7 +90,7 @@ export const syncCourierBill = async (order) => {
       $set: {
         billTypeId,
         ...billDetails(order, isReturn),
-        billingDate: courier.dispatchedAt || paidOn || new Date(),
+        billingDate: paidOn || courier.dispatchedAt || new Date(),
         dueDate: paidOn,
         baseAmount: amount,
         totalAmount: amount,
