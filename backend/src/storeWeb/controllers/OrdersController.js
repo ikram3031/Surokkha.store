@@ -21,6 +21,7 @@ import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEvent
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
+import { markCheckoutLeadConverted } from '../../storefront/controllers/CheckoutLeadController.js';
 
 const { Types } = mongoose;
 
@@ -241,6 +242,12 @@ export const createOrder = async (req, res, next) => {
       order: createdOrder,
       payload,
       updatedBy: "storefront_checkout",
+    });
+
+    markCheckoutLeadConverted({
+      sessionId: payload.checkoutSessionId,
+      phone: rawBillingPhone,
+      orderNumber: createdOrder.orderNumber,
     });
 
     // Non-blocking email notifications for Customer and Admin

@@ -44,6 +44,8 @@ export interface NewOrderPayload {
   items: OrderItemInput[]
   paymentDetails: null
   timestamp: string
+  /** Ties the order to the checkout lead saved while the customer was typing. */
+  checkoutSessionId?: string
   /** Meta cookies so the server-side CAPI event matches this browser. */
   fbp?: string
   fbc?: string

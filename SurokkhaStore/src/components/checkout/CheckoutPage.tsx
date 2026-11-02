@@ -26,6 +26,7 @@ import {
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
 import { getFbIdentifiers, pixelTrack } from '@/lib/pixel'
+import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 
 const selectClass =
   'h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-primary disabled:opacity-50 aria-invalid:border-destructive'
@@ -101,17 +102,59 @@ export function CheckoutPage() {
   }
 
   const checkoutTracked = useRef(false)
+  const initiateData = useRef<Record<string, unknown> | undefined>(undefined)
   useEffect(() => {
     if (count === 0 || checkoutTracked.current) return
     checkoutTracked.current = true
-    pixelTrack('InitiateCheckout', {
+    const data = {
       content_ids: lines.map((l) => l.product.did ?? l.product.slug ?? String(l.product.id)),
+      contents: lines.map((l) => ({ id: l.product.did ?? l.product.slug ?? String(l.product.id), quantity: l.qty, item_price: l.product.price })),
       content_type: 'product',
       num_items: count,
       value: subtotal,
       currency: 'BDT',
-    })
+    }
+    initiateData.current = data
+    // Same event id the server sends once a phone number is known, so Meta merges the pair
+    pixelTrack('InitiateCheckout', data, `ic_${getCheckoutSessionId()}`)
   }, [count, lines, subtotal])
+
+  // Keep what the customer has typed so far (abandoned checkout capture); debounced, and flushed when they leave
+  const leadRef = useRef<() => CheckoutLeadPayload>(() => ({ fullName: '', phone: '', email: '', address: '', district: '', thana: '', cartTotal: 0, items: [] }))
+  leadRef.current = () => ({
+    fullName: form.fullName,
+    phone: form.phone,
+    email: form.email,
+    address: form.address,
+    district: form.district,
+    thana: form.thana,
+    cartTotal: Math.max(0, subtotal),
+    items: lines.map(({ product, qty }) => ({
+      slug: product.slug ?? String(product.id),
+      name: product.apiName ?? product.name,
+      quantity: qty,
+      unitPrice: product.price,
+    })),
+    customData: initiateData.current,
+    ...getFbIdentifiers(),
+  })
+  const leadSig = JSON.stringify([form.fullName, form.phone, form.email, form.address, form.district, form.thana, subtotal, lines.map((l) => `${l.product.id}:${l.qty}`).join(',')])
+  useEffect(() => {
+    if (submittingRef.current || (!form.phone && !form.fullName && !form.email)) return
+    const timer = setTimeout(() => {
+      if (!submittingRef.current) saveCheckoutLead(leadRef.current())
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [leadSig])
+  useEffect(() => {
+    const flush = () => {
+      if (submittingRef.current) return
+      const lead = leadRef.current()
+      if (lead.items.length > 0 && (lead.phone || lead.fullName || lead.email)) saveCheckoutLead(lead, true)
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [])
 
   // An empty cart has nothing to check out
   useEffect(() => {
@@ -248,6 +291,7 @@ export function CheckoutPage() {
         })),
         paymentDetails: null,
         timestamp: new Date().toISOString(),
+        checkoutSessionId: getCheckoutSessionId(),
         ...getFbIdentifiers(),
       }
 
@@ -277,6 +321,7 @@ export function CheckoutPage() {
         },
         orderNumber || undefined,
       )
+      resetCheckoutSession()
       clear()
       navigate('/order-confirmed', { replace: true })
     } catch (err) {
