@@ -14,7 +14,7 @@ const startOfDhakaToday = () => {
 
 const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ""));
 
-// ?preset=today|yesterday|7|15|30  or  ?preset=custom&from=YYYY-MM-DD&to=YYYY-MM-DD (dates are Asia/Dhaka days)
+// ?preset=today|yesterday|month|7|15|30  or  ?preset=custom&from=YYYY-MM-DD&to=YYYY-MM-DD (dates are Asia/Dhaka days)
 const rangeOf = (query) => {
   const todayStart = startOfDhakaToday();
   const preset = String(query.preset || "today");
@@ -30,6 +30,12 @@ const rangeOf = (query) => {
   }
   if (preset === "yesterday") {
     return { from: new Date(todayStart.getTime() - DAY_MS), to: new Date(todayStart.getTime() - 1), preset };
+  }
+  if (preset === "month") {
+    // From the 1st of the current Asia/Dhaka month (at most 31 days, within the 90-day event retention)
+    const d = new Date(todayStart.getTime() + DHAKA_OFFSET_MS);
+    const from = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) - DHAKA_OFFSET_MS);
+    return { from, to: new Date(), preset };
   }
   if (PRESET_DAYS[preset]) {
     // "Last 7 days" = today plus the 6 days before it

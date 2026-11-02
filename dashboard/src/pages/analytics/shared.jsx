@@ -42,7 +42,7 @@ export const formatTime = (v) => (v ? new Date(v).toLocaleTimeString('en-US', { 
 
 // Date range state shared by the analytics pages. `query` is ready to append to an API URL.
 export const useAnalyticsRange = () => {
-  const [value, setValue] = useState({ preset: 'today', from: null, to: null });
+  const [value, setValue] = useState({ preset: 'month', from: null, to: null });
   const params = new URLSearchParams({ preset: value.preset });
   if (value.preset === 'custom') {
     params.set('from', value.from);

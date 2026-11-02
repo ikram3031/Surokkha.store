@@ -112,7 +112,7 @@ const CloudflareTrafficOverviewPage = () => {
   }, []);
 
   const [activeSiteKey, setActiveSiteKey] = useState('shop');
-  const [range, setRange] = useState('24h');
+  const [range, setRange] = useState('month');
   const [loading, setLoading] = useState(true);
   const [isLiveActive, setIsLiveActive] = useState(true);
   const [isPurging, setIsPurging] = useState(false);
@@ -354,6 +354,7 @@ const CloudflareTrafficOverviewPage = () => {
               className="bg-transparent text-xs font-medium outline-none cursor-pointer pr-1 text-foreground"
             >
               <option value="24h" className="bg-popover text-popover-foreground">Last 24 hours</option>
+              <option value="month" className="bg-popover text-popover-foreground">This month</option>
               <option value="7days" className="bg-popover text-popover-foreground">Last 7 days</option>
               <option value="30days" className="bg-popover text-popover-foreground">Last 30 days</option>
             </select>

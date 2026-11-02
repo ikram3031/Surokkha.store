@@ -15,6 +15,7 @@ export const CUSTOM_RANGE = "custom"
 export const DEFAULT_RANGE_PRESETS = [
   { id: "today", label: "Today" },
   { id: "yesterday", label: "Yesterday" },
+  { id: "month", label: "This month" },
   { id: "7", label: "Last 7 days" },
   { id: "15", label: "Last 15 days" },
   { id: "30", label: "Last 30 days" },

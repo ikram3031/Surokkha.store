@@ -293,7 +293,16 @@ export const getCloudflareAnalytics = async (req, res, next) => {
     if (range === '24h' || range === 'today') daysCount = 1;
     else if (range === '30days') daysCount = 28;
 
-    const sinceDate = new Date(Date.now() - (daysCount + 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    let sinceDate = new Date(Date.now() - (daysCount + 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    if (range === 'month') {
+      // From the 1st of the current Asia/Dhaka month; capped at 28 days like "Last 30 days" (Cloudflare's detailed data window)
+      const dhakaNow = new Date(Date.now() + 6 * 60 * 60 * 1000);
+      const dayOfMonth = dhakaNow.getUTCDate();
+      daysCount = Math.min(dayOfMonth, 28);
+      sinceDate = dayOfMonth <= 28
+        ? dhakaNow.toISOString().slice(0, 8) + '01'
+        : new Date(Date.now() - (daysCount - 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    }
 
     const query = `
       query {
