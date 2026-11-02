@@ -251,8 +251,21 @@ export const canHavePaymentDocument = async (order) => {
 export const ensurePaymentOnShip = async (order, payload = {}) => {
   if (!order?._id) return;
   if (!PAYMENT_COLLECTION_STATUSES.includes(String(order.status || '').toLowerCase())) return;
-  if (await PaymentModel.exists({ orderId: order._id })) return;
+  if (await PaymentModel.exists({ orderId: order._id })) {
+    // A record opened before the parcel went out (older orders) moves to the dispatch date
+    const dispatchedAt = courierDispatchDate(order);
+    if (dispatchedAt) await PaymentModel.updateOne({ orderId: order._id }, { $set: { paymentDate: dispatchedAt } });
+    return;
+  }
   await syncPaymentDocument(order, payload);
+};
+
+// The day the parcel was handed to the courier; this is the payment date of a courier order
+export const courierDispatchDate = (order) => {
+  const value = order?.courier?.dispatchedAt;
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 };
 
 // Upsert the linked payment record so it reflects the created order totals.
@@ -357,9 +370,12 @@ export const syncPaymentDocument = async (orderData, payload = {}) => {
     '';
 
   // Pending/processing orders keep payment info on the order only; the payment record is created on first ship
+  // Not yet shipped by courier: the payment keeps its own date (the day it was opened, i.e. first shipped)
+  const dispatchedAt = courierDispatchDate(orderData);
   if (await canHavePaymentDocument(orderData)) await PaymentModel.findOneAndUpdate(
     { orderId: orderData._id },
     {
+      ...(dispatchedAt ? { paymentDate: dispatchedAt } : {}),
       paymentMethod: orderData.paymentMethod,
       paymentPhone,
       transactionId: orderData.paymentTransactionId || '',

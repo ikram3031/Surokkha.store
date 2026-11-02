@@ -3,7 +3,6 @@ import { BillingModel } from "../../common/models/billing.model.js";
 import { InvestmentModel } from "../../common/models/investment.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { logger } from "../../common/config/logger.js";
-import { invoiceDateFromId } from "../services/pathaoCourierEvents.service.js";
 
 // All day and month boundaries are Bangladesh calendar days, whatever timezone the server runs in
 const BD_OFFSET_MS = 6 * 60 * 60 * 1000;
@@ -40,7 +39,7 @@ const resolveDateRange = (preset, startQuery, endQuery) => {
 
 /**
  * Cash-basis balance for a period:
- *  - money in  = what customers actually paid (dated the day it arrived: Pathao payout day for courier orders) + investments taken
+ *  - money in  = what customers actually paid (dated the day the parcel was sent to Pathao for courier orders) + investments taken
  *  - money out = what was actually paid on bills (Investment Return bills included), dated by billingDate
  *  - opening   = all money in minus money out before the period; closing = opening + in - out
  * Unpaid amounts never touch the balance; they show as receivable (customers owe us) and payable (we owe on bills).
@@ -62,17 +61,12 @@ export const getAccountBalance = async (req, res, next) => {
         .lean(),
     ]);
 
-    // Courier orders: the money arrives on Pathao's payout day (the invoice id's date)
+    // Courier orders are dated the day the parcel was handed to Pathao, not the order day or the payout day
     const orderIds = payments.map((p) => p.orderId).filter(Boolean);
-    const orders = await OrderModel.find({ _id: { $in: orderIds } })
-      .select("courier.settlement.invoiceId courier.settlement.settledAt courier.settlement.invoicedAt courier.settlement.status")
+    const orders = await OrderModel.find({ _id: { $in: orderIds }, "courier.dispatchedAt": { $ne: null } })
+      .select("courier.dispatchedAt")
       .lean();
-    const payoutDateByOrder = new Map();
-    for (const o of orders) {
-      const s = o.courier?.settlement || {};
-      const date = invoiceDateFromId(s.invoiceId) || (["invoiced", "settled"].includes(s.status) ? s.settledAt || s.invoicedAt : null);
-      if (date) payoutDateByOrder.set(String(o._id), date);
-    }
+    const dispatchDateByOrder = new Map(orders.map((o) => [String(o._id), o.courier.dispatchedAt]));
 
     // Each cash movement: { date, amount, kind }
     const flows = [];
@@ -80,7 +74,7 @@ export const getAccountBalance = async (req, res, next) => {
     for (const p of payments) {
       const paid = Number(p.paidAmount || 0);
       if (paid > 0) {
-        const date = payoutDateByOrder.get(String(p.orderId)) || p.paymentDate || p.createdAt;
+        const date = dispatchDateByOrder.get(String(p.orderId)) || p.paymentDate || p.createdAt;
         flows.push({ date, amount: paid, kind: "receipts" });
       }
       if (OPEN_STATUSES.includes(p.status)) receivable += Number(p.pendingAmount || 0);

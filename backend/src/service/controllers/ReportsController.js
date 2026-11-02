@@ -248,7 +248,7 @@ export const getPaymentReport = async (req, res, next) => {
     const pipeline = [
       {
         $match: {
-          createdAt: { $gte: startUtc, $lte: endUtc }
+          paymentDate: { $gte: startUtc, $lte: endUtc }
         }
       }
     ];
