@@ -9,6 +9,8 @@ const billingSchema = new Schema(
     billTypeId: { type: Schema.Types.ObjectId, ref: "BillType", default: null, index: true },
     investorId: { type: Schema.Types.ObjectId, ref: "Investor", default: null, index: true },
     investmentId: { type: Schema.Types.ObjectId, ref: "Investment", default: null, index: true },
+    // Profit paid out to an investor (not a capital return)
+    isProfitPayout: { type: Boolean, default: false, index: true },
     title: { type: String, trim: true, default: "" },
     name: { type: String, trim: true, default: "" },
     did: { type: String, default: () => generateDid(), unique: true, index: true },

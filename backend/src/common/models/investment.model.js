@@ -17,6 +17,13 @@ const investmentSchema = new Schema(
       default: "active",
     },
     paymentMethod: { type: String, trim: true, default: "" },
+    // Profit shared with the investor: a % of the taken amount or a fixed amount, once or every month
+    profitShare: {
+      enabled: { type: Boolean, default: false },
+      type: { type: String, enum: ["percentage", "fixed"], default: "percentage" },
+      value: { type: Number, min: 0, default: 0 },
+      recurring: { type: Boolean, default: false },
+    },
     notes: { type: String, trim: true, default: "" },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },

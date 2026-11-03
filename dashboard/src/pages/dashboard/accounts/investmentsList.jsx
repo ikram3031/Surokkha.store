@@ -93,6 +93,8 @@ export const InvestmentsListPage = () => {
   const [returnTarget, setReturnTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [profitTarget, setProfitTarget] = useState(null);
+  const [profitForm, setProfitForm] = useState({ amount: '', date: new Date().toISOString().slice(0, 10), paymentMethod: 'Bank Transfer', notes: '' });
 
   // Form State for Add / Edit
   const [formData, setFormData] = useState({
@@ -104,6 +106,10 @@ export const InvestmentsListPage = () => {
     returnedDate: '',
     paymentMethod: 'Bank Transfer',
     status: 'Active',
+    profitEnabled: false,
+    profitType: 'percentage',
+    profitValue: '',
+    profitRecurring: false,
     notes: '',
   });
 
@@ -118,6 +124,8 @@ export const InvestmentsListPage = () => {
     addInvestment,
     updateInvestment,
     recordReturn,
+    recordProfit,
+    isRecordingProfit,
     deleteInvestment,
     bulkUpdateInvestments,
     bulkDeleteInvestments,
@@ -199,6 +207,10 @@ export const InvestmentsListPage = () => {
       returnedDate: '',
       paymentMethod: 'Bank Transfer',
       status: 'Active',
+      profitEnabled: false,
+      profitType: 'percentage',
+      profitValue: '',
+      profitRecurring: false,
       notes: '',
     });
     setAddModalOpen(true);
@@ -215,6 +227,10 @@ export const InvestmentsListPage = () => {
       returnedDate: inv.returnedDate || '',
       paymentMethod: inv.paymentMethod || 'Bank Transfer',
       status: inv.status || 'Active',
+      profitEnabled: !!inv.profitShare?.enabled,
+      profitType: inv.profitShare?.type || 'percentage',
+      profitValue: inv.profitShare?.value ? String(inv.profitShare.value) : '',
+      profitRecurring: !!inv.profitShare?.recurring,
       notes: inv.notes || '',
     });
     setAddModalOpen(true);
@@ -243,6 +259,16 @@ export const InvestmentsListPage = () => {
       return;
     }
 
+    const profitValue = Number(formData.profitValue);
+    if (formData.profitEnabled && (!formData.profitValue || isNaN(profitValue) || profitValue <= 0)) {
+      toast.error('Please enter a valid profit share value');
+      return;
+    }
+    if (formData.profitEnabled && formData.profitType === 'percentage' && profitValue > 100) {
+      toast.error('Profit percentage cannot exceed 100');
+      return;
+    }
+
     const payload = {
       investorId: formData.investorId,
       takenAmount: taken,
@@ -251,6 +277,12 @@ export const InvestmentsListPage = () => {
       returnedDate: formData.returnedDate || null,
       paymentMethod: formData.paymentMethod || 'Bank Transfer',
       status: formData.status ? formData.status.toLowerCase() : 'active',
+      profitShare: {
+        enabled: formData.profitEnabled,
+        type: formData.profitType,
+        value: formData.profitEnabled ? profitValue : 0,
+        recurring: formData.profitEnabled && formData.profitRecurring,
+      },
       notes: formData.notes ? formData.notes.trim() : '',
     };
 
@@ -266,6 +298,37 @@ export const InvestmentsListPage = () => {
     }
   };
 
+
+  const handleOpenProfit = (inv) => {
+    setProfitTarget(inv);
+    setProfitForm({
+      amount: inv.profit?.due > 0 ? String(inv.profit.due) : '',
+      date: new Date().toISOString().slice(0, 10),
+      paymentMethod: inv.paymentMethod || 'Bank Transfer',
+      notes: '',
+    });
+  };
+
+  const handleSaveProfit = async (e) => {
+    e.preventDefault();
+    const amount = Number(profitForm.amount);
+    if (!profitForm.amount || isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid profit amount');
+      return;
+    }
+    try {
+      await recordProfit({ id: profitTarget.id, ...profitForm, amount });
+      setProfitTarget(null);
+    } catch {
+      // Toast error is handled by mutation onError
+    }
+  };
+
+  const describeProfitShare = (share) => {
+    if (!share?.enabled) return null;
+    const rate = share.type === 'percentage' ? `${share.value}%` : formatCurrency(share.value);
+    return `${rate} ${share.recurring ? '/ month' : 'one-time'}`;
+  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -498,10 +561,12 @@ export const InvestmentsListPage = () => {
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
                 </TableHead>
+                <TableHead className="text-xs">ID</TableHead>
                 <TableHead className="text-xs">Investor</TableHead>
                 <TableHead className="text-xs">Taken Amount</TableHead>
                 <TableHead className="text-xs">Returned Amount</TableHead>
                 <TableHead className="text-xs">Net Outstanding</TableHead>
+                <TableHead className="text-xs">Profit Share</TableHead>
                 <TableHead className="text-xs">Taken Date</TableHead>
                 <TableHead className="text-xs">Return / Maturity</TableHead>
                 <TableHead className="text-xs">Method</TableHead>
@@ -514,13 +579,10 @@ export const InvestmentsListPage = () => {
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell className="px-4"><span className="h-4 w-4 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-32 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
-                    <TableCell><span className="h-4 w-16 block bg-muted animate-pulse rounded" /></TableCell>
+                    {Array.from({ length: 8 }).map((__, j) => (
+                      <TableCell key={j}><span className="h-4 w-20 block bg-muted animate-pulse rounded" /></TableCell>
+                    ))}
+                    <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded-full" /></TableCell>
                     <TableCell><span className="h-5 w-16 block bg-muted animate-pulse rounded-full" /></TableCell>
                     <TableCell className="text-right"><span className="h-8 w-16 ml-auto block bg-muted animate-pulse rounded" /></TableCell>
                   </TableRow>
@@ -563,6 +625,19 @@ export const InvestmentsListPage = () => {
                       <TableCell className="text-xs font-bold text-purple-600 font-mono">
                         {formatCurrency(outstanding)}
                       </TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
+                        {inv.profitShare?.enabled ? (
+                          <div className="space-y-0.5">
+                            <div className="font-semibold text-foreground">{describeProfitShare(inv.profitShare)}</div>
+                            <div className="text-[11px] text-muted-foreground">
+                              Earned {formatCurrency(inv.profit.accrued)} · Paid {formatCurrency(inv.profit.paid)}
+                            </div>
+                            <div className="text-[11px] font-semibold text-amber-600">Due {formatCurrency(inv.profit.due)}</div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {inv.takenDate || '—'}
                       </TableCell>
@@ -597,6 +672,15 @@ export const InvestmentsListPage = () => {
                                 <span>Record Repayment</span>
                               </DropdownMenuItem>
                             )}
+                            {inv.profitShare?.enabled && (
+                              <DropdownMenuItem
+                                className="cursor-pointer gap-2 text-amber-600 font-semibold"
+                                onClick={() => handleOpenProfit(inv)}
+                              >
+                                <DollarSign className="w-3.5 h-3.5" />
+                                <span>Pay Profit</span>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               className="cursor-pointer gap-2"
                               onClick={() => handleOpenEdit(inv)}
@@ -620,7 +704,7 @@ export const InvestmentsListPage = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-28 text-center text-muted-foreground text-xs">
+                  <TableCell colSpan={12} className="h-28 text-center text-muted-foreground text-xs">
                     No investment records found matching your filters.
                   </TableCell>
                 </TableRow>
@@ -804,6 +888,81 @@ export const InvestmentsListPage = () => {
               </div>
             </div>
 
+            <div className="space-y-3 rounded-lg border p-3 bg-muted/20">
+              <label className="flex items-center gap-2 font-semibold text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 cursor-pointer"
+                  checked={formData.profitEnabled}
+                  onChange={(e) => setFormData({ ...formData, profitEnabled: e.target.checked })}
+                />
+                Profit sharing with this investor
+              </label>
+
+              {formData.profitEnabled && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="font-semibold text-foreground">Profit Type</label>
+                      <Select
+                        value={formData.profitType}
+                        onValueChange={(v) => setFormData({ ...formData, profitType: v })}
+                      >
+                        <SelectTrigger className="text-xs">
+                          <SelectValue placeholder="Profit Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="percentage">Percentage of invested amount</SelectItem>
+                          <SelectItem value="fixed">Fixed amount</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="font-semibold text-foreground">
+                        {formData.profitType === 'percentage' ? 'Profit Rate (%)' : 'Profit Amount (৳)'}{' '}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={formData.profitType === 'percentage' ? '100' : undefined}
+                        step="any"
+                        placeholder="0"
+                        value={formData.profitValue}
+                        onChange={(e) => setFormData({ ...formData, profitValue: e.target.value })}
+                        className="text-xs font-semibold font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 cursor-pointer"
+                      checked={formData.profitRecurring}
+                      onChange={(e) => setFormData({ ...formData, profitRecurring: e.target.checked })}
+                    />
+                    <span>Monthly (recurring), otherwise paid once</span>
+                  </label>
+
+                  {Number(formData.profitValue) > 0 && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Profit:{' '}
+                      <span className="font-semibold text-foreground">
+                        {formatCurrency(
+                          formData.profitType === 'percentage'
+                            ? ((Number(formData.takenAmount) || 0) * Number(formData.profitValue)) / 100
+                            : Number(formData.profitValue)
+                        )}
+                      </span>{' '}
+                      {formData.profitRecurring ? 'every month' : 'one time'}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+
             <div className="space-y-1.5">
               <label className="font-semibold text-foreground">Notes / Tranche Terms</label>
               <Textarea
@@ -820,6 +979,93 @@ export const InvestmentsListPage = () => {
               </Button>
               <Button type="submit" size="sm" disabled={isAdding || isUpdating}>
                 {isAdding || isUpdating ? 'Saving...' : editingInv ? 'Update Investment' : 'Save Investment'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pay Profit Modal */}
+      <Dialog open={!!profitTarget} onOpenChange={(open) => !open && setProfitTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-amber-600" />
+              Pay Profit to {profitTarget?.investorName}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {profitTarget?.profit &&
+                `Profit ${describeProfitShare(profitTarget.profitShare)} · Earned ${formatCurrency(profitTarget.profit.accrued)} · Paid ${formatCurrency(profitTarget.profit.paid)} · Due ${formatCurrency(profitTarget.profit.due)}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSaveProfit} className="space-y-4 py-1 text-xs">
+            <div className="space-y-1.5">
+              <label className="font-semibold text-foreground">
+                Profit Amount (৳) <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="number"
+                min="0"
+                step="any"
+                placeholder="0.00"
+                value={profitForm.amount}
+                onChange={(e) => setProfitForm({ ...profitForm, amount: e.target.value })}
+                className="text-xs font-semibold font-mono"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="font-semibold text-foreground">Payment Date</label>
+                <Input
+                  type="date"
+                  value={profitForm.date}
+                  onChange={(e) => setProfitForm({ ...profitForm, date: e.target.value })}
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="font-semibold text-foreground">Payment Method</label>
+                <Select
+                  value={profitForm.paymentMethod}
+                  onValueChange={(v) => setProfitForm({ ...profitForm, paymentMethod: v })}
+                >
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="Payment Method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="Cash">Cash</SelectItem>
+                    <SelectItem value="bKash">bKash</SelectItem>
+                    <SelectItem value="Nagad">Nagad</SelectItem>
+                    <SelectItem value="Card">Card</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-semibold text-foreground">Notes</label>
+              <Textarea
+                placeholder="e.g. October profit share"
+                value={profitForm.notes}
+                onChange={(e) => setProfitForm({ ...profitForm, notes: e.target.value })}
+                className="text-xs min-h-[60px]"
+              />
+            </div>
+
+            <p className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 text-[11px] text-muted-foreground">
+              Recorded as a paid bill under <span className="font-bold text-amber-600">Investment Profit</span>, so the account balance stays in sync.
+            </p>
+
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="cancel" size="sm" onClick={() => setProfitTarget(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" size="sm" disabled={isRecordingProfit}>
+                {isRecordingProfit ? 'Saving...' : 'Confirm Profit Payment'}
               </Button>
             </DialogFooter>
           </form>

@@ -55,7 +55,7 @@ async function run() {
 
   const plan = [];
   for (const [investorId, tranches] of byInvestor) {
-    const investorBills = existingBills.filter((b) => String(b.investorId) === investorId);
+    const investorBills = existingBills.filter((b) => !b.isProfitPayout && String(b.investorId) === investorId);
     const totalReturned = tranches.reduce((sum, inv) => sum + Number(inv.returnedAmount || 0), 0);
     const totalBilled = investorBills.reduce((sum, b) => sum + Number(b.paidAmount || b.amount || 0), 0);
     let missing = Math.round((totalReturned - totalBilled) * 100) / 100;
@@ -64,7 +64,7 @@ async function run() {
     for (const inv of tranches) {
       if (missing <= 0) break;
       const billedForTranche = investorBills
-        .filter((b) => b.investmentId && String(b.investmentId) === String(inv._id))
+        .filter((b) => b.investmentId && !b.isProfitPayout && String(b.investmentId) === String(inv._id))
         .reduce((sum, b) => sum + Number(b.paidAmount || b.amount || 0), 0);
       const unbilled = Math.max(0, Number(inv.returnedAmount || 0) - billedForTranche);
       const amount = Math.min(unbilled, missing);

@@ -31,6 +31,20 @@ const mapInvestment = (item) => {
     paymentMethod: item.paymentMethod || 'Bank Transfer',
     status,
     notes: item.notes || '',
+    profitShare: {
+      enabled: !!item.profitShare?.enabled,
+      type: item.profitShare?.type || 'percentage',
+      value: Number(item.profitShare?.value || 0),
+      recurring: !!item.profitShare?.recurring,
+    },
+    profit: {
+      enabled: !!item.profit?.enabled,
+      perPeriod: Number(item.profit?.perPeriod || 0),
+      periods: Number(item.profit?.periods || 0),
+      accrued: Number(item.profit?.accrued || 0),
+      paid: Number(item.profit?.paid || 0),
+      due: Number(item.profit?.due || 0),
+    },
     createdAt: item.createdAt || new Date().toISOString(),
   };
 };
@@ -209,6 +223,30 @@ export const useInvestments = (params = {}) => {
     },
   });
 
+  const recordProfitMutation = useMutation({
+    mutationFn: async ({ id, amount, date, paymentMethod, notes }) => {
+      const res = await apiClient.post(`/api/v1/investments/${id}/profit`, {
+        amount: amount === '' || amount === undefined ? undefined : Number(amount),
+        date,
+        paymentMethod,
+        notes,
+      });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['investments'] });
+      queryClient.invalidateQueries({ queryKey: ['investors'] });
+      queryClient.invalidateQueries({ queryKey: ['billings'] });
+      queryClient.invalidateQueries({ queryKey: ['bill-types'] });
+      queryClient.invalidateQueries({ queryKey: ['account-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      toast.success(data?.message || 'Profit payment recorded');
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to record profit payment');
+    },
+  });
+
   const deleteInvestmentMutation = useMutation({
     mutationFn: async (id) => {
       const res = await apiClient.delete(`/api/v1/investments/${id}`);
@@ -263,6 +301,8 @@ export const useInvestments = (params = {}) => {
     addInvestment: addInvestmentMutation.mutateAsync,
     updateInvestment: updateInvestmentMutation.mutateAsync,
     recordReturn: recordReturnMutation.mutateAsync,
+    recordProfit: recordProfitMutation.mutateAsync,
+    isRecordingProfit: recordProfitMutation.isPending,
     deleteInvestment: deleteInvestmentMutation.mutateAsync,
     bulkUpdateInvestments: bulkUpdateMutation.mutateAsync,
     bulkDeleteInvestments: bulkDeleteMutation.mutateAsync,

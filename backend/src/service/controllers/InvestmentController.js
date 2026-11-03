@@ -19,6 +19,57 @@ const deriveInvestmentStatus = (explicitStatus, takenAmount, returnedAmount) => 
   return "active";
 };
 
+const round2 = (n) => Math.round(Number(n || 0) * 100) / 100;
+
+// Validates the profit share config coming from the client; returns null when it is invalid
+const parseProfitShare = (raw) => {
+  if (!raw || typeof raw !== "object") return { enabled: false, type: "percentage", value: 0, recurring: false };
+  const enabled = raw.enabled === true || raw.enabled === "true";
+  const type = raw.type === "fixed" ? "fixed" : "percentage";
+  const value = Number(raw.value || 0);
+  if (enabled && (isNaN(value) || value <= 0 || (type === "percentage" && value > 100))) return null;
+  return { enabled, type, value: enabled ? value : 0, recurring: enabled && (raw.recurring === true || raw.recurring === "true") };
+};
+
+// Whole months between two dates (a month counts once its day-of-month has been reached)
+const monthsBetween = (from, to) => {
+  const a = new Date(from);
+  const b = new Date(to);
+  let months = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+  if (b.getDate() < a.getDate()) months -= 1;
+  return Math.max(0, months);
+};
+
+// Profit earned by the investor so far under the investment's profit share, against what was already paid out
+const computeProfit = (investment, paidProfit = 0) => {
+  const share = investment.profitShare || {};
+  if (!share.enabled || !(Number(share.value) > 0)) {
+    return { enabled: false, perPeriod: 0, periods: 0, accrued: 0, paid: round2(paidProfit), due: 0 };
+  }
+  const taken = Number(investment.takenAmount || 0);
+  const perPeriod = round2(share.type === "percentage" ? (taken * Number(share.value)) / 100 : Number(share.value));
+  const settled = investment.status === "returned" && investment.returnedDate ? new Date(investment.returnedDate) : new Date();
+  const periods = share.recurring ? monthsBetween(investment.takenDate || investment.createdAt, settled) : 1;
+  const accrued = round2(perPeriod * periods);
+  return { enabled: true, perPeriod, periods, accrued, paid: round2(paidProfit), due: Math.max(0, round2(accrued - paidProfit)) };
+};
+
+// Sums paid profit payouts per investment id
+const paidProfitByInvestment = async (investmentIds) => {
+  const rows = await BillingModel.aggregate([
+    { $match: { investmentId: { $in: investmentIds }, isProfitPayout: true } },
+    { $group: { _id: "$investmentId", paid: { $sum: { $ifNull: ["$paidAmount", "$amount"] } } } },
+  ]);
+  return new Map(rows.map((r) => [String(r._id), r.paid]));
+};
+
+const withProfit = async (investments) => {
+  const list = Array.isArray(investments) ? investments : [investments];
+  const paid = await paidProfitByInvestment(list.map((i) => i._id));
+  const out = list.map((i) => ({ ...i, profit: computeProfit(i, paid.get(String(i._id)) || 0) }));
+  return Array.isArray(investments) ? out : out[0];
+};
+
 // Retrieves a paginated and filtered list of investments
 export const listInvestments = async (req, res, next) => {
   try {
@@ -80,6 +131,8 @@ export const listInvestments = async (req, res, next) => {
       .limit(limit)
       .lean();
 
+    const investmentsWithProfit = await withProfit(investments);
+
     const aggregateTotals = await InvestmentModel.aggregate([
       { $match: filter },
       {
@@ -97,7 +150,7 @@ export const listInvestments = async (req, res, next) => {
 
     return res.json({
       status: "success",
-      data: investments,
+      data: investmentsWithProfit,
       meta: {
         total,
         page,
@@ -127,7 +180,7 @@ export const getInvestmentById = async (req, res, next) => {
       return res.status(404).json({ status: "error", message: "Investment not found" });
     }
 
-    return res.json({ status: "success", data: investment });
+    return res.json({ status: "success", data: await withProfit(investment) });
   } catch (error) {
     logger.error({ error }, "Failed to get investment by ID");
     next(error);
@@ -146,6 +199,7 @@ export const createInvestment = async (req, res, next) => {
       status,
       paymentMethod,
       notes,
+      profitShare,
     } = req.body ?? {};
 
     if (!investorId) {
@@ -189,6 +243,11 @@ export const createInvestment = async (req, res, next) => {
       }
     }
 
+    const resolvedProfitShare = parseProfitShare(profitShare);
+    if (!resolvedProfitShare) {
+      return res.status(400).json({ status: "error", message: "Profit share needs a value above 0 (a percentage cannot exceed 100)" });
+    }
+
     const resolvedStatus = deriveInvestmentStatus(status, numTakenAmount, numReturnedAmount);
 
     const investmentData = {
@@ -199,6 +258,7 @@ export const createInvestment = async (req, res, next) => {
       returnedDate: resolvedReturnedDate,
       status: resolvedStatus,
       paymentMethod: paymentMethod ? String(paymentMethod).trim() : "",
+      profitShare: resolvedProfitShare,
       notes: notes ? String(notes).trim() : "",
       createdBy: (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null,
     };
@@ -214,7 +274,7 @@ export const createInvestment = async (req, res, next) => {
     return res.status(201).json({
       status: "success",
       message: "Investment recorded successfully",
-      data: populated,
+      data: await withProfit(populated),
     });
   } catch (error) {
     logger.error({ error }, "Failed to create investment");
@@ -282,6 +342,14 @@ export const updateInvestment = async (req, res, next) => {
       allowedUpdates.paymentMethod = payload.paymentMethod ? String(payload.paymentMethod).trim() : "";
     }
 
+    if (payload.profitShare !== undefined) {
+      const resolvedProfitShare = parseProfitShare(payload.profitShare);
+      if (!resolvedProfitShare) {
+        return res.status(400).json({ status: "error", message: "Profit share needs a value above 0 (a percentage cannot exceed 100)" });
+      }
+      allowedUpdates.profitShare = resolvedProfitShare;
+    }
+
     if (payload.notes !== undefined) {
       allowedUpdates.notes = payload.notes ? String(payload.notes).trim() : "";
     }
@@ -322,7 +390,7 @@ export const updateInvestment = async (req, res, next) => {
     return res.json({
       status: "success",
       message: "Investment updated successfully",
-      data: updated,
+      data: await withProfit(updated),
     });
   } catch (error) {
     logger.error({ error }, "Failed to update investment");
@@ -452,7 +520,7 @@ const createInvestmentReturnBill = async ({ investor, investmentId, amount, date
  * paid bill, an excess is taken back from the newest bills. Returns the bills created.
  */
 const syncInvestmentReturnBills = async ({ investment, investor, date, paymentMethod, notes, userId }) => {
-  const bills = await BillingModel.find({ investmentId: investment._id }).sort({ billingDate: -1, createdAt: -1 });
+  const bills = await BillingModel.find({ investmentId: investment._id, isProfitPayout: { $ne: true } }).sort({ billingDate: -1, createdAt: -1 });
   const billed = bills.reduce((sum, b) => sum + Number(b.paidAmount || b.amount || 0), 0);
   const diff = Math.round((Number(investment.returnedAmount || 0) - billed) * 100) / 100;
   if (diff > 0) {
@@ -628,6 +696,80 @@ export const recordInvestmentReturn = async (req, res, next) => {
     });
   } catch (error) {
     logger.error({ error }, "Failed to record investment return");
+    next(error);
+  }
+};
+
+// Ensures the Investment Profit bill type exists in the database
+const ensureInvestmentProfitBillType = async (userId = null) => {
+  let billType = await BillTypeModel.findOne({ name: { $regex: /^investment profit$/i } });
+  if (!billType) {
+    billType = await BillTypeModel.create({
+      name: "Investment Profit",
+      description: "Profit share paid out to investors",
+      status: "active",
+      isDefault: false,
+      createdBy: userId || null,
+    });
+  }
+  return billType;
+};
+
+// Pays profit to an investor for one investment, booked as a paid "Investment Profit" bill so it leaves the balance
+export const recordInvestmentProfit = async (req, res, next) => {
+  try {
+    const { amount, date, paymentMethod, notes } = req.body ?? {};
+    const { id } = req.params;
+    const query = Types.ObjectId.isValid(id) ? { _id: id } : { did: id };
+    const investment = await InvestmentModel.findOne(query).lean();
+    if (!investment) {
+      return res.status(404).json({ status: "error", message: "Investment not found" });
+    }
+    const investor = await InvestorModel.findById(investment.investorId).lean();
+    if (!investor) {
+      return res.status(404).json({ status: "error", message: "Investor not found" });
+    }
+
+    const paidBefore = (await paidProfitByInvestment([investment._id])).get(String(investment._id)) || 0;
+    // No amount given: pay what is currently due
+    const numAmount = amount !== undefined && amount !== null && amount !== "" ? Number(amount) : computeProfit(investment, paidBefore).due;
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ status: "error", message: "A valid positive profit amount is required" });
+    }
+
+    const parsedDate = date ? new Date(date) : new Date();
+    const billDate = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
+    const billType = await ensureInvestmentProfitBillType(req.user?.userId);
+    const bill = await BillingModel.create({
+      billTypeId: billType._id,
+      investorId: investor._id,
+      investmentId: investment._id,
+      isProfitPayout: true,
+      title: `Investment Profit - ${investor.name}`,
+      name: investor.name,
+      vendor: investor.name,
+      billingPhone: investor.phone || "",
+      billingEmail: investor.email || "",
+      baseAmount: numAmount,
+      totalAmount: numAmount,
+      paidAmount: numAmount,
+      pendingAmount: 0,
+      amount: numAmount,
+      status: "paid",
+      billingDate: billDate,
+      dueDate: billDate,
+      billingMethod: paymentMethod ? String(paymentMethod).trim() : "Bank Transfer",
+      notes: notes ? `Investment profit: ${notes}` : `Profit paid to investor ${investor.name}`,
+      createdBy: (req.user?.userId && Types.ObjectId.isValid(req.user.userId)) ? req.user.userId : null,
+    });
+
+    return res.status(201).json({
+      status: "success",
+      message: `Recorded profit payment of ${numAmount.toLocaleString()} to ${investor.name}`,
+      data: { bill, investment: await withProfit(investment) },
+    });
+  } catch (error) {
+    logger.error({ error }, "Failed to record investment profit");
     next(error);
   }
 };

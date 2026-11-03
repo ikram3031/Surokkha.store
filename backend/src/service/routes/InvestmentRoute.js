@@ -8,6 +8,7 @@ import {
   bulkUpdateInvestments,
   bulkDeleteInvestments,
   recordInvestmentReturn,
+  recordInvestmentProfit,
 } from "../controllers/InvestmentController.js";
 import { authenticateToken, authorizeRoles, ADMINS } from "../../common/middlewares/auth.middleware.js";
 import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
@@ -20,6 +21,7 @@ investmentRouter.post("/bulk-update", bulkUpdateInvestments);
 investmentRouter.post("/bulk-delete", alertOwnersOnAdminAction("Bulk deleted investments"), bulkDeleteInvestments);
 investmentRouter.post("/return", recordInvestmentReturn);
 investmentRouter.post("/:id/return", recordInvestmentReturn);
+investmentRouter.post("/:id/profit", recordInvestmentProfit);
 
 investmentRouter.post("/", createInvestment);
 investmentRouter.get("/", listInvestments);

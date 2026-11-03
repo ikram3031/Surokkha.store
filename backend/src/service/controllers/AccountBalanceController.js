@@ -55,7 +55,7 @@ export const getAccountBalance = async (req, res, next) => {
         .select("orderId status paidAmount pendingAmount totalAmount paymentDate createdAt")
         .lean(),
       BillingModel.find({ status: { $nin: VOID_STATUSES } })
-        .select("status paidAmount pendingAmount totalAmount amount billingDate createdAt investmentId")
+        .select("status paidAmount pendingAmount totalAmount amount billingDate createdAt investmentId isProfitPayout")
         .lean(),
       InvestmentModel.find({})
         .select("takenAmount returnedAmount takenDate returnedDate createdAt")
@@ -89,7 +89,7 @@ export const getAccountBalance = async (req, res, next) => {
     let payable = 0;
     for (const b of bills) {
       const paid = Number(b.paidAmount || 0);
-      if (paid > 0) flows.push({ date: b.billingDate || b.createdAt, amount: paid, kind: b.investmentId ? "investmentReturns" : "bills" });
+      if (paid > 0) flows.push({ date: b.billingDate || b.createdAt, amount: paid, kind: b.investmentId && !b.isProfitPayout ? "investmentReturns" : "bills" });
       if (OPEN_STATUSES.includes(b.status)) {
         const due = Number(b.pendingAmount ?? Math.max(0, Number(b.totalAmount || b.amount || 0) - paid));
         payable += due;
