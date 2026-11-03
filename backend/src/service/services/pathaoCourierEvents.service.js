@@ -183,6 +183,7 @@ export const applyPathaoUpdate = async (order, update) => {
       if (kind === "delivered" || kind === "partial" || (kind === "invoiced" && order.status !== "return")) {
         if (order.status !== "completed") {
           order.status = "completed";
+          if (!courier.deliveredAt) courier.deliveredAt = eventAt;
           // Delivered, but the money is still with Pathao: keep only what the customer paid in advance
           paymentUpdate = { paidAmount: advanceAmount(order) };
         }

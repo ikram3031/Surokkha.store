@@ -263,12 +263,14 @@ const normalizeHeader = (h) => String(h || "").toLowerCase().replace(/[^a-z0-9]+
 // Checked in order; the first unclaimed header that matches wins
 const COLUMN_MATCHERS = [
   ["consignmentId", [/consignment/]],
+  ["merchantOrderId", [/merchant_order/]],
   ["invoiceId", [/invoice_(id|no|number)/, /^invoice$/]],
   ["codFee", [/cod_(fee|charge)/]],
   ["deliveryCharge", [/delivery_(charge|fee)/]],
-  ["totalCharge", [/total_(charge|fee)/]],
+  ["totalCharge", [/total_(charge|fee)/, /final_fee/]],
   ["netPayout", [/pay_?out/, /paid_out/, /payable/, /net_(amount|payout)/, /merchant_amount/]],
   ["collectedAmount", [/collected/, /cod_amount/, /amount_to_collect/, /cash_collect/]],
+  ["date", [/^date$/, /^invoice_date$/, /^payment_date$/]],
 ];
 
 const detectColumns = (headers) => {
@@ -314,6 +316,31 @@ const readExactFigures = (cells, columns) => {
   };
 };
 
+// "02-11-2026" / "2026-11-02" (Dhaka calendar day) from an invoice row; null when unreadable
+const parseInvoiceRowDate = (value) => {
+  const text = String(value || "").trim();
+  const dmy = /^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/.exec(text);
+  const ymd = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/.exec(text);
+  const [y, m, d] = dmy ? [dmy[3], dmy[2], dmy[1]] : ymd ? [ymd[1], ymd[2], ymd[3]] : [];
+  if (!y) return null;
+  const date = new Date(`${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T12:00:00+06:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+// A consignment can have several rows in one invoice (delivery plus e.g. an insta_fee line): they add up to one parcel
+const mergeExact = (list) => {
+  const figures = list.filter(Boolean);
+  if (figures.length === 0) return null;
+  const sum = (key) => round2(figures.reduce((total, f) => total + f[key], 0));
+  return {
+    collectedAmount: sum("collectedAmount"),
+    deliveryCharge: sum("deliveryCharge"),
+    codFee: sum("codFee"),
+    totalCharge: sum("totalCharge"),
+    netPayout: sum("netPayout"),
+  };
+};
+
 /**
  * Matches a Pathao invoice CSV against orders. With apply=false it only previews;
  * with apply=true it writes the exact figures and marks the parcels settled.
@@ -332,15 +359,35 @@ export const importInvoiceCsv = async (csvText, { apply = false, invoiceId: fall
     .map((cells) => ({ cells, consignmentId: String(cells[columns.consignmentId] || "").trim() }))
     .filter((r) => r.consignmentId && !/total/i.test(r.consignmentId));
 
-  const orders = await OrderModel.find({ "courier.consignmentId": { $in: dataRows.map((r) => r.consignmentId) } })
-    .select("orderNumber status courier.consignmentId courier.settlement")
+  // Rows of one parcel (delivery, insta_fee, reverse-logistics return fee...) can carry different consignment ids
+  // but the same merchant order id, so they are matched by consignment first, then by merchant order id.
+  const merchantIdOf = (cells) => (columns.merchantOrderId === undefined ? "" : String(cells[columns.merchantOrderId] || "").trim());
+  const orders = await OrderModel.find({
+    $or: [
+      { "courier.consignmentId": { $in: dataRows.map((r) => r.consignmentId) } },
+      { "courier.merchantOrderId": { $in: dataRows.map((r) => merchantIdOf(r.cells)).filter(Boolean) } },
+    ],
+  })
+    .select("orderNumber status courier.consignmentId courier.merchantOrderId courier.settlement")
     .lean();
   const orderByConsignment = new Map(orders.map((o) => [o.courier.consignmentId, o]));
+  const orderByMerchantId = new Map(orders.filter((o) => o.courier.merchantOrderId).map((o) => [o.courier.merchantOrderId, o]));
 
-  const results = dataRows.map(({ cells, consignmentId }) => {
-    const order = orderByConsignment.get(consignmentId);
-    const exact = readExactFigures(cells, columns);
-    const invoiceId = (columns.invoiceId !== undefined && String(cells[columns.invoiceId] || "").trim()) || fallbackInvoiceId || null;
+  const rowsByParcel = new Map();
+  for (const row of dataRows) {
+    const order = orderByConsignment.get(row.consignmentId) || orderByMerchantId.get(merchantIdOf(row.cells));
+    const key = order ? String(order._id) : row.consignmentId;
+    if (!rowsByParcel.has(key)) rowsByParcel.set(key, { consignmentId: row.consignmentId, order, cellsList: [] });
+    rowsByParcel.get(key).cellsList.push(row.cells);
+  }
+
+  const results = [...rowsByParcel.values()].map(({ consignmentId, order, cellsList }) => {
+    const exact = mergeExact(cellsList.map((cells) => readExactFigures(cells, columns)));
+    const invoiceId =
+      cellsList.map((cells) => columns.invoiceId !== undefined && String(cells[columns.invoiceId] || "").trim()).find(Boolean) ||
+      fallbackInvoiceId ||
+      null;
+    const paidOn = columns.date !== undefined ? cellsList.map((cells) => parseInvoiceRowDate(cells[columns.date])).find(Boolean) || null : null;
     const current = order?.courier?.settlement || {};
     const estimatedNet = Number.isFinite(current.netPayout) ? current.netPayout : null;
     const alreadySettled = current.status === "settled" && current.isEstimated === false && (!invoiceId || current.invoiceId === invoiceId);
@@ -355,6 +402,7 @@ export const importInvoiceCsv = async (csvText, { apply = false, invoiceId: fall
       orderNumber: order?.orderNumber || null,
       orderStatus: order?.status || null,
       invoiceId,
+      paidOn,
       exact,
       estimatedNetPayout: estimatedNet,
       difference: exact && estimatedNet !== null ? round2(exact.netPayout - estimatedNet) : null,
@@ -381,7 +429,8 @@ export const importInvoiceCsv = async (csvText, { apply = false, invoiceId: fall
               "courier.settlement.totalCharge": r.exact.totalCharge,
               "courier.settlement.netPayout": r.exact.netPayout,
               "courier.settlement.invoiceId": r.invoiceId,
-              "courier.settlement.settledAt": now,
+              "courier.settlement.settledAt": r.paidOn || now,
+              "courier.settlement.invoicedAt": r.paidOn || now,
               "courier.settlement.source": "invoice_import",
             },
           },

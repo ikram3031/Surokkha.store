@@ -132,6 +132,14 @@ export const dailyOrders = async (req, res, next) => {
   }
 };
 
+// Orders delivered in a range, dated by the courier's delivery time (falls back to the last courier event, then last update)
+const deliveredByDate = (start, end) => OrderModel.aggregate([
+  { $match: { active: { $ne: false }, status: 'completed' } },
+  { $addFields: { deliveryDate: { $ifNull: ['$courier.deliveredAt', { $ifNull: ['$courier.lastEventAt', '$updatedAt'] }] } } },
+  { $match: { deliveryDate: { $gte: start, $lt: end } } },
+  { $group: { _id: null, count: { $sum: 1 } } },
+]);
+
 // Money actually received in a range, dated by payment date (courier orders: the Pathao payout day)
 const paidByDate = (start, end) => PaymentModel.aggregate([
   { $match: { active: { $ne: false }, paidAmount: { $gt: 0 }, status: { $nin: ['returned', 'cancelled', 'failed'] }, paymentDate: { $gte: start, $lt: end } } },
@@ -146,8 +154,9 @@ export const getKpiStats = async (req, res, next) => {
     const currentOrdersAgg = await paidByDate(currentStart, currentEnd);
 
     const currentSales = currentOrdersAgg[0]?.sales || 0;
-    const currentOrdersCount = currentOrdersAgg[0]?.count || 0;
-    const currentAOV = currentOrdersCount > 0 ? currentSales / currentOrdersCount : 0;
+    const currentPaidCount = currentOrdersAgg[0]?.count || 0;
+    const currentAOV = currentPaidCount > 0 ? currentSales / currentPaidCount : 0;
+    const currentOrdersCount = (await deliveredByDate(currentStart, currentEnd))[0]?.count || 0;
 
     // Current Stats (Customers)
     const currentMembersCount = await CustomerModel.countDocuments({
@@ -158,8 +167,9 @@ export const getKpiStats = async (req, res, next) => {
     const previousOrdersAgg = await paidByDate(prevStart, prevEnd);
 
     const previousSales = previousOrdersAgg[0]?.sales || 0;
-    const previousOrdersCount = previousOrdersAgg[0]?.count || 0;
-    const previousAOV = previousOrdersCount > 0 ? previousSales / previousOrdersCount : 0;
+    const previousPaidCount = previousOrdersAgg[0]?.count || 0;
+    const previousAOV = previousPaidCount > 0 ? previousSales / previousPaidCount : 0;
+    const previousOrdersCount = (await deliveredByDate(prevStart, prevEnd))[0]?.count || 0;
 
     // Previous Stats (Customers)
     const previousMembersCount = await CustomerModel.countDocuments({
