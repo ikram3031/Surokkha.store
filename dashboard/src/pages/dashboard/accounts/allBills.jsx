@@ -66,6 +66,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { useBillings } from '@/hooks/use-billings';
 import { useBillTypes } from '@/hooks/use-bill-types';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
+import { AttachmentLightbox, isImageFile } from '@/components/dashboard/accounts/AttachmentLightbox';
 import { resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 
@@ -112,6 +113,7 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
 
   // Detail & Delete Dialog States
   const [viewBillTarget, setViewBillTarget] = useState(null);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
   const [singleDeleteTarget, setSingleDeleteTarget] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -437,7 +439,7 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
                 <TableHead className="text-xs">Total Amount</TableHead>
                 <TableHead className="text-xs">Paid / Pending</TableHead>
                 <TableHead className="text-xs">Status</TableHead>
-                <TableHead className="w-[80px] text-right text-xs">Actions</TableHead>
+                <TableHead className="w-[110px] text-right text-xs">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -510,7 +512,16 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
                       )}
                     </TableCell>
                     <TableCell>{getStatusBadge(b.status)}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-primary"
+                        title="View Details"
+                        onClick={() => setViewBillTarget(b)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger render={
                           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -604,7 +615,19 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
       </div>
 
       {/* View Bill Details Modal */}
-      <Dialog open={!!viewBillTarget} onOpenChange={(open) => !open && setViewBillTarget(null)}>
+      {viewBillTarget && lightboxIndex !== null && viewBillTarget.attachments?.length > 0 && (
+        <AttachmentLightbox
+          files={viewBillTarget.attachments}
+          startIndex={lightboxIndex}
+          resolveUrl={resolveImageUrl}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
+
+      <Dialog
+        open={!!viewBillTarget && lightboxIndex === null}
+        onOpenChange={(open) => !open && setViewBillTarget(null)}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -690,20 +713,37 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
               </div>
 
               {viewBillTarget.attachments?.length > 0 && (
-                <div className="p-3 rounded-lg bg-muted/30 border space-y-1.5">
+                <div className="p-3 rounded-lg bg-muted/30 border space-y-2">
                   <span className="font-semibold text-foreground block">Attachments:</span>
-                  {viewBillTarget.attachments.map((file) => (
-                    <a
-                      key={file.url}
-                      href={resolveImageUrl(file.url)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-1.5 text-primary hover:underline truncate"
-                    >
-                      <FileText className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{file.name || file.url.split('/').pop()}</span>
-                    </a>
-                  ))}
+                  <div className="grid grid-cols-3 gap-2">
+                    {viewBillTarget.attachments.map((file, i) => (
+                      <button
+                        key={file.url}
+                        type="button"
+                        onClick={() => setLightboxIndex(i)}
+                        title="Click to view full screen"
+                        className="group relative aspect-square overflow-hidden rounded-lg border bg-muted/40 text-left hover:border-primary"
+                      >
+                        {isImageFile(file) ? (
+                          <img
+                            src={resolveImageUrl(file.url)}
+                            alt={file.name || 'Attachment'}
+                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-muted-foreground">
+                            <FileText className="h-6 w-6" />
+                            <span className="line-clamp-2 text-center text-[10px] break-all">
+                              {file.name || file.url.split('/').pop()}
+                            </span>
+                          </div>
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                          <Eye className="h-5 w-5 text-white" />
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
