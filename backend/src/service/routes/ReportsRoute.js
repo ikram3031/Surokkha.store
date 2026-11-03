@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MANAGERS } from "../../common/middlewares/auth.middleware.js";
 import {
   getSummaryReport,
   getSalesTimeline,
@@ -11,7 +11,7 @@ import {
 const reportsRouter = Router();
 
 reportsRouter.use(authenticateToken);
-reportsRouter.use(authorizeRoles("Owner", "Admin", "Manager", "Super Admin"));
+reportsRouter.use(authorizeRoles(MANAGERS));
 
 reportsRouter.get("/summary", getSummaryReport);
 reportsRouter.get("/sales-timeline", getSalesTimeline);

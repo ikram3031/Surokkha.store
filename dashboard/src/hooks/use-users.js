@@ -22,6 +22,7 @@ const fetchSystemUsers = async (params) => {
       id: u.id || u._id,
       name: u.name || u.email?.split('@')[0] || 'User',
       email: u.email || '',
+      phone: u.phone || '',
       role: u.role || 'Admin',
       status: u.isActive !== false ? 'Active' : 'Inactive',
       receiveEmailNotifications: u.receiveEmailNotifications === true,

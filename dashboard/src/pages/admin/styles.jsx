@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,7 @@ const AdminStyles = () => {
 
   const fetchStyles = async () => {
     try {
-      const res = await axios.get('/api/v1/styles');
+      const res = await apiClient.get('/api/v1/styles');
       if (res.data?.data) {
         setStylesList(res.data.data);
       }
@@ -27,7 +27,7 @@ const AdminStyles = () => {
 
   const handleUpdate = async (id, updatedStyles) => {
     try {
-      await axios.patch(`/api/v1/styles/${id}`, { styles: updatedStyles });
+      await apiClient.patch(`/api/v1/styles/${id}`, { styles: updatedStyles });
       alert('Style updated successfully!');
       fetchStyles();
       // Need a page reload to apply new styles potentially

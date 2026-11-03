@@ -7,7 +7,7 @@ import { logger } from "../common/config/logger.js";
 import storefrontRouter from "./routes.js";
 import { env } from "../common/config/env.js";
 import { createRequestLogger } from "../common/middlewares/requestLogger.js";
-import { getDynamicCorsConfig } from "../common/config/index.js";
+import { createOriginChecker } from "../common/config/corsOrigins.js";
 
 // Creates and configures Express application specifically for high-throughput Storefront customer traffic
 export const createStorefrontApp = async () => {
@@ -16,23 +16,10 @@ export const createStorefrontApp = async () => {
   app.set("wpTablePrefix", process.env.WP_TABLE_PREFIX || "wp_");
   app.set("trust proxy", true);
 
-  const { allowedOrigins, clientKeywords } = getDynamicCorsConfig(env.ALLOWED_ORIGINS);
+  const isAllowedOrigin = createOriginChecker(env.ALLOWED_ORIGINS);
 
   const corsOptions = {
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const isAllowedExplicit = allowedOrigins.includes("*") || allowedOrigins.includes(origin);
-      if (isAllowedExplicit) {
-        return callback(null, true);
-      }
-
-      const isKnownClientDomain = clientKeywords.some((keyword) => origin.toLowerCase().includes(keyword));
-      if (isKnownClientDomain) {
-        return callback(null, true);
-      }
-
-      callback(null, true);
-    },
+    origin: (origin, callback) => callback(null, !origin || isAllowedOrigin(origin)),
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",

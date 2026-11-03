@@ -25,10 +25,8 @@ import {
   testTemplateEmail,
   resetTemplateSettings,
 } from "../controllers/SettingsController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OWNER_ONLY, MARKETERS } from "../../common/middlewares/auth.middleware.js";
+import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
 import {
   getR2StorageSettings,
   updateR2StorageSettings,
@@ -50,21 +48,21 @@ settingsRouter.get("/public/tiktok-pixel", getPublicTikTokPixelConfig);
 settingsRouter.get(
   "/meta-pixel",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   getMetaPixelSettings
 );
 
 settingsRouter.put(
   "/meta-pixel",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /meta-pixel"),
   updateMetaPixelSettings
 );
 
 settingsRouter.post(
   "/meta-pixel/test",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   testMetaPixelConnection
 );
 
@@ -72,21 +70,21 @@ settingsRouter.post(
 settingsRouter.get(
   "/tiktok-pixel",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   getTikTokPixelSettings
 );
 
 settingsRouter.put(
   "/tiktok-pixel",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /tiktok-pixel"),
   updateTikTokPixelSettings
 );
 
 settingsRouter.post(
   "/tiktok-pixel/test",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   testTikTokPixelConnection
 );
 
@@ -94,14 +92,14 @@ settingsRouter.post(
 settingsRouter.get(
   "/google-analytics",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   getGoogleAnalyticsSettings
 );
 
 settingsRouter.put(
   "/google-analytics",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /google-analytics"),
   updateGoogleAnalyticsSettings
 );
 
@@ -109,14 +107,14 @@ settingsRouter.put(
 settingsRouter.get(
   "/seo",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   getSeoSettings
 );
 
 settingsRouter.put(
   "/seo",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /seo"),
   updateSeoSettings
 );
 
@@ -124,21 +122,21 @@ settingsRouter.put(
 settingsRouter.get(
   "/smtp",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   getSmtpSettings
 );
 
 settingsRouter.put(
   "/smtp",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   updateSmtpSettings
 );
 
 settingsRouter.post(
   "/smtp/test",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   testSmtpConnection
 );
 
@@ -146,37 +144,37 @@ settingsRouter.post(
 settingsRouter.get(
   "/imap",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   getImapSettings
 );
 
 settingsRouter.put(
   "/imap",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   updateImapSettings
 );
 
 // Protected Cloudflare R2 storage (backup) endpoints
-settingsRouter.get("/r2-storage", authenticateToken, authorizeRoles("Owner", "Admin"), getR2StorageSettings);
-settingsRouter.put("/r2-storage", authenticateToken, authorizeRoles("Owner", "Admin"), updateR2StorageSettings);
-settingsRouter.post("/r2-storage/test", authenticateToken, authorizeRoles("Owner", "Admin"), testR2StorageConnection);
-settingsRouter.post("/r2-storage/backup-now", authenticateToken, authorizeRoles("Owner", "Admin"), runR2BackupNow);
-settingsRouter.get("/r2-storage/backups", authenticateToken, authorizeRoles("Owner", "Admin"), listR2Backups);
-settingsRouter.get("/r2-storage/backups/download", authenticateToken, authorizeRoles("Owner", "Admin"), downloadR2Backup);
+settingsRouter.get("/r2-storage", authenticateToken, authorizeRoles(OWNER_ONLY), getR2StorageSettings);
+settingsRouter.put("/r2-storage", authenticateToken, authorizeRoles(OWNER_ONLY), updateR2StorageSettings);
+settingsRouter.post("/r2-storage/test", authenticateToken, authorizeRoles(OWNER_ONLY), testR2StorageConnection);
+settingsRouter.post("/r2-storage/backup-now", authenticateToken, authorizeRoles(OWNER_ONLY), runR2BackupNow);
+settingsRouter.get("/r2-storage/backups", authenticateToken, authorizeRoles(OWNER_ONLY), listR2Backups);
+settingsRouter.get("/r2-storage/backups/download", authenticateToken, authorizeRoles(OWNER_ONLY), downloadR2Backup);
 
 // Protected Cloudflare administration endpoints
 settingsRouter.get(
   "/cloudflare",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   getCloudflareSettings
 );
 
 settingsRouter.put(
   "/cloudflare",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   updateCloudflareSettings
 );
 
@@ -184,65 +182,65 @@ settingsRouter.put(
 settingsRouter.get(
   "/template",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   getTemplateSettings
 );
 settingsRouter.get(
   "/templates",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   getTemplateSettings
 );
 
 settingsRouter.put(
   "/template",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /template"),
   updateTemplateSettings
 );
 settingsRouter.put(
   "/templates",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /templates"),
   updateTemplateSettings
 );
 
 settingsRouter.post(
   "/template/preview",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   previewTemplateHtml
 );
 settingsRouter.post(
   "/templates/preview",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   previewTemplateHtml
 );
 
 settingsRouter.post(
   "/template/test-email",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   testTemplateEmail
 );
 settingsRouter.post(
   "/templates/test-email",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS),
   testTemplateEmail
 );
 
 settingsRouter.post(
   "/template/reset",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /template/reset"),
   resetTemplateSettings
 );
 settingsRouter.post(
   "/templates/reset",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /templates/reset"),
   resetTemplateSettings
 );
 

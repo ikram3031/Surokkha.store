@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MARKETERS } from "../../common/middlewares/auth.middleware.js";
 import { blogUpload } from "../../common/middlewares/blogUpload.middleware.js";
 import {
   bulkPosts,
@@ -44,7 +44,7 @@ import {
 
 const router = express.Router();
 
-router.use(authenticateToken, authorizeRoles("Owner", "Admin", "Marketing Expert"));
+router.use(authenticateToken, authorizeRoles(MARKETERS));
 
 router.get("/overview", getOverview);
 

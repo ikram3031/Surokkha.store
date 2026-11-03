@@ -12,7 +12,7 @@ export const FinanceSidebar = (props) => {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const { user } = useAuth()
-  const role = user?.role || "Marketing Expert"
+  const role = user?.role
   const can = (key) => hasMenuAccess(role, key)
 
   const paymentMethodsActive =

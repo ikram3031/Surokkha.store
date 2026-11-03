@@ -199,7 +199,7 @@ export const AppSidebar = ({ ...props }) => {
   const [openMenu, setOpenMenu] = React.useState(null)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false)
 
-  const userRole = user?.role || "Marketing Expert"
+  const userRole = user?.role
 
   // Evaluates menu visibility based on tenant feature flags and role access
   const isAllowed = (menuKey) => {
@@ -474,7 +474,7 @@ export const AppSidebar = ({ ...props }) => {
           )}
           {showProducts && (isAllowed("products.showcases") || isAllowed("settings") || isAllowed("products.coupons")) && (
             <NavGroup id="promotions" icon={Ticket} label={t("nav.promotions", "Promotions")} active={activeGroup === "promotions"} open={openMenu === "promotions"} onToggle={toggleMenu}>
-              {(isAllowed("products.showcases") || isAllowed("settings")) && (
+              {isAllowed("products.showcases") && (
                 <NavSub to="/dashboard/settings/products" active={settingsProductsActive} icon={Sparkles}>
                   {t("nav.showcases", "Showcases")}
                 </NavSub>
@@ -540,7 +540,7 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.cloudflare_analytics", "Cloudflare Analytics")}
                 </NavSub>
               )}
-              {(isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("tools") || isAllowed("admin")) && (
+              {(isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("admin")) && (
                 <NavSub to="/dashboard/activity-logs" active={pathname.startsWith("/dashboard/activity-logs") || pathname.startsWith("/dashboard/tools/activity-logs")} icon={Activity}>
                   {t("nav.activity_logs", "Activity Logs")}
                 </NavSub>
@@ -555,7 +555,7 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.cpanel", "PPanel / cPanel")}
                 </NavSub>
               )}
-              {showAdmin && (
+              {isAllowed("trash") && (
                 <NavSub to="/dashboard/trash" active={pathname.startsWith("/dashboard/trash")} icon={Trash2} iconClass="text-destructive" className="text-destructive font-medium">
                   {t("nav.trash", "Trash")}
                 </NavSub>

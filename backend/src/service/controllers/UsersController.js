@@ -18,6 +18,7 @@ import {
 import { LogModel } from "../../common/models/log.model.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 import { sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
+import { canManageRole } from "../../common/middlewares/auth.middleware.js";
 import {
   getNotificationRecipientUserIds,
   setUserEmailNotification,
@@ -92,13 +93,16 @@ export const createUser = async (req, res, next) => {
     }
 
     const creatorRole = req.user?.role || null;
-    if (creatorRole === "Admin" && (payload.role === "Owner" || payload.role === "Admin")) {
+    if (!canManageRole(creatorRole, payload.role || "Marketing Expert")) {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to create this role" });
     }
 
     const email = payload.email.toLowerCase().trim();
     const existing = await UserModel.findOne({ email });
     if (existing) {
+      if (!canManageRole(creatorRole, existing.role)) {
+        return res.status(403).json({ status: "error", message: "Insufficient permissions to modify this user" });
+      }
       if (existing.isActive) {
         return res.status(409).json({ status: "error", message: "A user with this email already exists" });
       }
@@ -193,6 +197,10 @@ export const resendInvitation = async (req, res, next) => {
       return res.status(404).json({ status: "error", message: "User not found" });
     }
 
+    if (!canManageRole(req.user?.role, user.role)) {
+      return res.status(403).json({ status: "error", message: "Insufficient permissions to modify this user" });
+    }
+
     if (user.isActive) {
       return res.status(400).json({ status: "error", message: "This user account is already active" });
     }
@@ -246,8 +254,15 @@ export const updateUser = async (req, res, next) => {
     if (!user) return res.status(404).json({ status: "error", message: "User not found" });
 
     const updaterRole = req.user?.role || null;
-    if (updaterRole === "Admin" && user.role === "Owner") {
+    const isSelf = req.user?.userId === String(user._id);
+    if (!isSelf && !canManageRole(updaterRole, user.role)) {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to modify this user" });
+    }
+    if (payload.role !== undefined && !canManageRole(updaterRole, payload.role)) {
+      return res.status(403).json({ status: "error", message: "Insufficient permissions to assign this role" });
+    }
+    if (isSelf && ((payload.role !== undefined && payload.role !== user.role) || payload.isActive === false)) {
+      return res.status(403).json({ status: "error", message: "You cannot change your own role or deactivate your own account" });
     }
 
     if (payload.email && payload.email.toLowerCase().trim() !== user.email) {
@@ -276,6 +291,11 @@ export const updateUser = async (req, res, next) => {
         return res.status(400).json({ status: "error", message: "One or more assigned assets not found" });
       }
       updates.assets = assignedAssets;
+    }
+
+    // Role, status or password changes end every existing session of this user
+    if ((updates.role !== undefined && updates.role !== user.role) || updates.isActive === false || updates.passwordHash) {
+      updates.refreshTokens = [];
     }
 
     // Atomic $set so only the changed fields are validated; legacy values elsewhere on the document no longer block the update
@@ -323,11 +343,11 @@ export const deleteUser = async (req, res, next) => {
     const user = await UserModel.findById(userId).lean();
     if (!user) return res.status(404).json({ status: "error", message: "User not found" });
 
-    if (requesterRole === "Admin" && requesterId === String(user._id)) {
-      return res.status(403).json({ status: "error", message: "Admin cannot delete own account" });
+    if (requesterId === String(user._id)) {
+      return res.status(403).json({ status: "error", message: "You cannot delete your own account" });
     }
 
-    if (requesterRole === "Admin" && user.role === "Owner") {
+    if (!canManageRole(requesterRole, user.role)) {
       return res.status(403).json({ status: "error", message: "Insufficient permissions to delete this user" });
     }
 
@@ -492,11 +512,10 @@ export const resetUserPassword = async (req, res, next) => {
     }
 
     const requesterRole = req.user?.role || "";
-    // Owner protection: Admin cannot reset an Owner's password
-    if (requesterRole === "Admin" && user.role === "Owner") {
+    if (req.user?.userId !== String(user._id) && !canManageRole(requesterRole, user.role)) {
       return res.status(403).json({
         status: "error",
-        message: "Insufficient permissions: Administrators cannot reset an Owner's password.",
+        message: "Insufficient permissions to reset this user's password.",
       });
     }
 
@@ -505,6 +524,7 @@ export const resetUserPassword = async (req, res, next) => {
     user.isActive = true;
     user.inviteToken = null;
     user.inviteTokenExpiresAt = null;
+    user.refreshTokens = [];
     await user.save();
 
     // Let the staff member know their password was reset (fire-and-forget)

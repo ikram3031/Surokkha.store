@@ -148,8 +148,27 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
           logger.error({ wsErr }, "WebSocket broadcast error on incoming webmail");
         });
 
-        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || process.env.ADMIN_NOTIFY_EMAIL || "surokkha.support@gmail.com";
-        if (forwardTarget && env.SMTP_USER) {
+        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || process.env.ADMIN_NOTIFY_EMAIL || "";
+
+        // Never forward our own mail or a forward target that lands back in this mailbox, or it loops forever
+        const ownAddresses = new Set(
+          [env.SMTP_USER, env.SMTP_FROM, env.IMAP_USER, config.supportEmail]
+            .filter(Boolean)
+            .map((addr) => String(addr).toLowerCase().trim())
+        );
+        const targetsOwnMailbox = String(forwardTarget)
+          .split(",")
+          .some((addr) => ownAddresses.has(addr.toLowerCase().trim()));
+        const isOwnOrForwarded =
+          ownAddresses.has(from.address) ||
+          /^\s*\[fwd:/i.test(subject) ||
+          parsed.headers?.has("x-support-forwarded");
+
+        if (targetsOwnMailbox) {
+          logger.warn({ forwardTarget }, "Support email forward skipped: target is this mailbox itself");
+        }
+
+        if (forwardTarget && env.SMTP_USER && !targetsOwnMailbox && !isOwnOrForwarded) {
           const isSecure =
             Number(env.SMTP_PORT) === 465 ||
             String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
@@ -177,6 +196,7 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
             },
             to: forwardTarget,
             replyTo: from.address,
+            headers: { "X-Support-Forwarded": "1" },
             subject: `[Fwd: ${config.supportEmail || "support@surokkha.store"}] ${subject}`,
             html: `
               <div style="font-family: -apple-system, sans-serif; padding: 15px; border-left: 4px solid #e11d48; background: #f8fafc; margin-bottom: 20px;">

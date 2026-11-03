@@ -6,16 +6,17 @@ import {
   listBilling,
   updateBilling,
 } from "../controllers/BillingController.js";
-import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, ADMINS } from "../../common/middlewares/auth.middleware.js";
+import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
 
 const billingRouter = Router();
 
-billingRouter.use(authenticateToken);
+billingRouter.use(authenticateToken, authorizeRoles(ADMINS));
 
 billingRouter.post("/", createBilling);
 billingRouter.get("/", listBilling);
 billingRouter.get("/:billingId", getBillingById);
 billingRouter.put("/:billingId", updateBilling);
-billingRouter.delete("/:billingId", deleteBilling);
+billingRouter.delete("/:billingId", alertOwnersOnAdminAction("Deleted a bill"), deleteBilling);
 
 export default billingRouter;

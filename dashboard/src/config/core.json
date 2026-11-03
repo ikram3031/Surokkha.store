@@ -2,6 +2,16 @@
   "brandName": "Your Brand",
   "domain": "example.com",
   "supportEmail": "info@example.com",
+  "ownerOnlyMenus": [
+    "logs",
+    "tools.logs",
+    "cpanel",
+    "trash",
+    "developer",
+    "settings.smtp",
+    "settings.pathao-courier",
+    "settings.r2-storage"
+  ],
   "userRoles": {
     "Owner": {
       "name": "Store Owner",
@@ -51,16 +61,17 @@
         "tools.meta-catalog",
         "tools.messages",
         "tools.assets",
-        "tools.support",
-        "logs",
-        "accounts"
+        "tools.support"
       ]
     },
     "Marketing Expert": {
       "name": "Marketing Expert",
       "allowedMenus": [
         "overview",
+        "orders",
+        "orders.list",
         "products",
+        "products.new",
         "products.list",
         "items",
         "items.list",
@@ -99,15 +110,12 @@
       "name": "Investor",
       "allowedMenus": [
         "overview",
-        "webmail",
         "orders",
         "orders.list",
+        "items",
+        "items.list",
         "products",
-        "products.list",
-        "reports",
-        "accounts",
-        "accounts.balance",
-        "accounts.investments"
+        "products.list"
       ]
     }
   }

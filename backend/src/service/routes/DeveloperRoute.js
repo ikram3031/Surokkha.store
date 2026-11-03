@@ -1,22 +1,18 @@
 import { Router } from "express";
-import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, acceptQueryToken, OWNER_ONLY } from "../../common/middlewares/auth.middleware.js";
 import { getClientIp } from "../../common/utils/clientIp.js";
 
 const developerRouter = Router();
 
-// Verifies developer or authorized administrative staff access
-const verifyDeveloperAccess = (req, res, next) => {
-  const userRole = req.user?.role ? String(req.user.role).toLowerCase().trim() : "";
-  const allowedRoles = ["owner", "admin"];
+const ownerOnly = [authenticateToken, authorizeRoles(OWNER_ONLY)];
 
-  if (allowedRoles.includes(userRole)) {
-    return next();
-  }
+// Credentials and session secrets never leave the database in a backup
+const SECRET_FIELDS = ["passwordHash", "refreshTokens", "twoFactorSecret", "emailOtp", "emailOtpExpiresAt", "inviteToken", "inviteTokenExpiresAt"];
 
-  return res.status(403).json({
-    status: "error",
-    message: "Forbidden: You do not have permission to perform this action.",
-  });
+const stripSecretFields = (doc) => {
+  const clean = { ...doc };
+  SECRET_FIELDS.forEach((field) => delete clean[field]);
+  return clean;
 };
 
 // In-memory buffer of recent logs for SSE & polling
@@ -36,16 +32,14 @@ export function broadcastLogToClients(logEntry) {
 // GET /api/v1/developer/my-ip (the caller's own IP, so the logs page can tag it)
 developerRouter.get(
   "/my-ip",
-  authenticateToken,
-  verifyDeveloperAccess,
+  ...ownerOnly,
   (req, res) => res.json({ status: "success", data: { ip: getClientIp(req) } })
 );
 
 // GET /api/v1/developer/logs (Polling JSON fallback)
 developerRouter.get(
   "/logs",
-  authenticateToken,
-  verifyDeveloperAccess,
+  ...ownerOnly,
   (req, res) => {
     return res.json({
       status: "success",
@@ -57,8 +51,8 @@ developerRouter.get(
 // GET /api/v1/developer/logs/stream (Realtime SSE Stream)
 developerRouter.get(
   "/logs/stream",
-  authenticateToken,
-  verifyDeveloperAccess,
+  acceptQueryToken,
+  ...ownerOnly,
   (req, res) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -87,6 +81,8 @@ import { swaggerSpec } from "../../common/docs/swaggerSpec.js";
 
 developerRouter.get(
   "/docs",
+  acceptQueryToken,
+  ...ownerOnly,
   (req, res) => {
     const scalarHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -116,8 +112,7 @@ import zlib from "node:zlib";
 
 developerRouter.get(
   "/db-backup",
-  authenticateToken,
-  verifyDeveloperAccess,
+  ...ownerOnly,
   async (req, res, next) => {
     try {
       const db = mongoose.connection.db;
@@ -137,7 +132,7 @@ developerRouter.get(
         // Skip system collections
         if (name.startsWith("system.")) continue;
         const docs = await db.collection(name).find({}).toArray();
-        backupData[name] = docs;
+        backupData[name] = docs.map(stripSecretFields);
       }
 
       const jsonStr = JSON.stringify(backupData, null, 2);

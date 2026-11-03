@@ -6,7 +6,7 @@ import {
   updateBrand,
   deleteBrand,
 } from "../controllers/BrandController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 import { requireFeature } from "../../common/middlewares/feature.middleware.js";
 
 const router = express.Router();
@@ -17,12 +17,12 @@ const guard = requireFeature("brand");
 router.get("/", guard, getBrands);
 
 // POST /api/v1/brands
-router.post("/", guard, authenticateToken, authorizeRoles("Owner", "Admin"), createBrand);
+router.post("/", guard, authenticateToken, authorizeRoles(OPERATORS), createBrand);
 
 // PUT /api/v1/brands/:id
-router.put("/:id", guard, authenticateToken, authorizeRoles("Owner", "Admin"), updateBrand);
+router.put("/:id", guard, authenticateToken, authorizeRoles(OPERATORS), updateBrand);
 
 // DELETE /api/v1/brands/:id
-router.delete("/:id", guard, authenticateToken, authorizeRoles("Owner", "Admin"), deleteBrand);
+router.delete("/:id", guard, authenticateToken, authorizeRoles(OPERATORS), deleteBrand);
 
 export default router;

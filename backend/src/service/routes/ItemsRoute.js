@@ -6,10 +6,7 @@ import {
   updateItem,
   deleteItem,
 } from "../controllers/ItemsController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 
 const itemsRouter = Router();
 
@@ -20,7 +17,7 @@ itemsRouter.get("/", listItems);
 itemsRouter.post("/search", listItems);
 
 // POST /api/items : Creates a new item (restricted to Owner, Admin, and Manager roles)
-itemsRouter.post("/", authenticateToken, createItem);
+itemsRouter.post("/", authenticateToken, authorizeRoles(OPERATORS), createItem);
 
 // GET /api/items/:identifier : Retrieves details of a single item by its ObjectId or Slug
 itemsRouter.get("/:identifier", getSingleItem);
@@ -29,7 +26,7 @@ itemsRouter.get("/:identifier", getSingleItem);
 itemsRouter.put(
   "/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   updateItem,
 );
 
@@ -37,7 +34,7 @@ itemsRouter.put(
 itemsRouter.delete(
   "/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   deleteItem,
 );
 

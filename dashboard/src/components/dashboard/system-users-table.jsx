@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Mail, KeyRound } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Mail, KeyRound, Pencil } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
@@ -31,7 +31,12 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { ResetPasswordDialog } from '@/components/dashboard/reset-password-dialog';
+import { EditUserDialog } from '@/components/dashboard/edit-user-dialog';
 import { formatDateTime } from '@/utils/dateHelper';
+
+// Mirrors the backend hierarchy: Owner manages anyone, Admin only roles below Admin
+const canManageUser = (actor, target) =>
+  actor?.role === 'Owner' || (actor?.role === 'Admin' && !['Owner', 'Admin'].includes(target.role));
 
 export function SystemUsersTable({
   searchQuery,
@@ -64,6 +69,7 @@ export function SystemUsersTable({
   const [togglingMail, setTogglingMail] = useState(null);
   const [resendingInvite, setResendingInvite] = useState(null);
   const [resetPasswordTarget, setResetPasswordTarget] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
   const { user: currentUser } = useAuth();
 
   const handleToggleStatus = async (id, currentStatus) => {
@@ -243,7 +249,7 @@ export function SystemUsersTable({
                       id={`status-${user.id}`} 
                       checked={user.status === 'Active'}
                       onCheckedChange={() => handleToggleStatus(user.id, user.status)}
-                      disabled={toggling === user.id}
+                      disabled={toggling === user.id || !canManageUser(currentUser, user) || user.id === currentUser?.id}
                     />
                     <label 
                       htmlFor={`status-${user.id}`} 
@@ -259,7 +265,7 @@ export function SystemUsersTable({
                       id={`mail-${user.id}`} 
                       checked={user.receiveEmailNotifications !== false}
                       onCheckedChange={() => handleToggleMail(user.id, user.receiveEmailNotifications !== false)}
-                      disabled={togglingMail === user.id}
+                      disabled={togglingMail === user.id || (!canManageUser(currentUser, user) && user.id !== currentUser?.id)}
                     />
                     <label 
                       htmlFor={`mail-${user.id}`} 
@@ -293,21 +299,30 @@ export function SystemUsersTable({
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
+                        onClick={() => setEditTarget(user)}
+                        className="cursor-pointer font-medium"
+                        disabled={!canManageUser(currentUser, user) && user.id !== currentUser?.id}
+                      >
+                        <Pencil className="h-4 w-4 mr-2 text-primary" />
+                        Edit User
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={() => setResetPasswordTarget(user)}
                         className="cursor-pointer font-medium"
-                        disabled={currentUser?.role === 'Admin' && user.role === 'Owner'}
+                        disabled={!canManageUser(currentUser, user)}
                       >
                         <KeyRound className="h-4 w-4 mr-2 text-primary" />
                         Reset Password
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.status)} className="cursor-pointer">
+                      <DropdownMenuItem disabled={!canManageUser(currentUser, user) || user.id === currentUser?.id} onClick={() => handleToggleStatus(user.id, user.status)} className="cursor-pointer">
                         Toggle Active Status
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleToggleMail(user.id, user.receiveEmailNotifications !== false)} className="cursor-pointer">
+                      <DropdownMenuItem disabled={!canManageUser(currentUser, user) && user.id !== currentUser?.id} onClick={() => handleToggleMail(user.id, user.receiveEmailNotifications !== false)} className="cursor-pointer">
                         Toggle Get Mail
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
+                        disabled={!canManageUser(currentUser, user) || user.id === currentUser?.id}
                         className="text-destructive focus:text-destructive cursor-pointer"
                         onClick={() => setDeleteTarget({ id: user.id, name: user.name })}
                       >
@@ -334,6 +349,13 @@ export function SystemUsersTable({
         isDeleting={isRevoking}
         title="Revoke Access"
         description={`Are you sure you want to revoke access for ${deleteTarget?.name ?? ''}?`}
+      />
+      <EditUserDialog
+        open={!!editTarget}
+        onOpenChange={(open) => !open && setEditTarget(null)}
+        user={editTarget}
+        currentUser={currentUser}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['system-users'] })}
       />
       <ResetPasswordDialog
         open={!!resetPasswordTarget}

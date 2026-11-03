@@ -6,15 +6,20 @@ import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { comparePassword, hashPassword } from "../../common/utils/password.js";
 import { dispatchTwoFactorSetupEmail } from "./TwoFactorController.js";
+import { hashToken } from "../../common/utils/crypto.util.js";
+import { trackAdminLoginIp } from "../../common/utils/ownerAlerts.js";
 import { sendForgotPasswordAlertEmail } from "../../common/utils/otpDelivery.js";
 
 export const createAccessToken = (user) => {
   return jwt.sign(
-    { userId: user.id },
+    { userId: user.id, typ: "staff" },
     env.ACCESS_TOKEN_SECRET,
     { expiresIn: env.ACCESS_TOKEN_EXPIRES_IN },
   );
 };
+
+// Only the Owner role signs in with a second factor
+export const requiresTwoFactor = (user) => user.role === "Owner";
 
 export const createRefreshToken = () => {
   return crypto.randomBytes(48).toString("hex");
@@ -42,7 +47,7 @@ export const setAuthCookies = (res, req, accessToken, refreshToken) => {
   const cookieDomain = getCookieDomain(req);
   const isProd = env.NODE_ENV === "production";
   const cookieOptions = {
-    httpOnly: false,
+    httpOnly: true,
     secure: isProd,
     sameSite: "lax",
     domain: cookieDomain,
@@ -121,7 +126,7 @@ export const login = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Email and password are required" });
     }
 
-    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret +refreshTokens");
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+passwordHash +twoFactorSecret +refreshTokens +lastLoginIp");
     if (!user || !user.passwordHash) {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
@@ -135,9 +140,7 @@ export const login = async (req, res, next) => {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
 
-    // Enforce 2FA/MFA for all admin/management roles and when twoFactorEnabled is true
-    const requiresMfa = user.twoFactorEnabled !== false || ["Owner", "Admin", "Super_Admin", "Manager"].includes(user.role);
-    if (requiresMfa) {
+    if (requiresTwoFactor(user)) {
       let secret = user.twoFactorSecret;
       const isFirstTime = !user.twoFactorSecret || !user.twoFactorEnabled;
 
@@ -173,7 +176,8 @@ export const login = async (req, res, next) => {
     user.lastLogin = new Date();
     user.refreshTokens = user.refreshTokens || [];
     user.refreshTokens = user.refreshTokens.filter((rt) => rt.expiresAt > new Date());
-    user.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
+    user.refreshTokens.push({ token: hashToken(refreshToken), expiresAt: refreshTokenExpiresAt });
+    trackAdminLoginIp(user, req);
     await user.save();
 
     setAuthCookies(res, req, accessToken, refreshToken);
@@ -209,18 +213,19 @@ export const refreshToken = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "refreshToken is required" });
     }
 
-    const user = await UserModel.findOne({ "refreshTokens.token": reqRefreshToken }).select("+refreshTokens");
-    const tokenDoc = user?.refreshTokens?.find((rt) => rt.token === reqRefreshToken);
+    const hashedToken = hashToken(reqRefreshToken);
+    const user = await UserModel.findOne({ "refreshTokens.token": hashedToken }).select("+refreshTokens");
+    const tokenDoc = user?.refreshTokens?.find((rt) => rt.token === hashedToken);
 
-    if (!user || !tokenDoc || tokenDoc.expiresAt < new Date()) {
+    if (!user || user.isActive === false || !tokenDoc || tokenDoc.expiresAt < new Date()) {
       return res.status(401).json({ status: "error", message: "Invalid or expired refresh token" });
     }
 
     const newRefreshToken = createRefreshToken();
     const refreshTokenExpiresAt = new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES_MS);
     
-    user.refreshTokens = user.refreshTokens.filter((rt) => rt.token !== reqRefreshToken && rt.expiresAt > new Date());
-    user.refreshTokens.push({ token: newRefreshToken, expiresAt: refreshTokenExpiresAt });
+    user.refreshTokens = user.refreshTokens.filter((rt) => rt.token !== hashedToken && rt.expiresAt > new Date());
+    user.refreshTokens.push({ token: hashToken(newRefreshToken), expiresAt: refreshTokenExpiresAt });
     await user.save();
 
     if (!newRefreshToken) {
@@ -257,9 +262,10 @@ export const logout = async (req, res, next) => {
       return res.status(200).json({ status: "success", message: "Logged out successfully" });
     }
 
-    const user = await UserModel.findOne({ "refreshTokens.token": reqRefreshToken }).select("+refreshTokens");
+    const hashedToken = hashToken(reqRefreshToken);
+    const user = await UserModel.findOne({ "refreshTokens.token": hashedToken }).select("+refreshTokens");
     if (user) {
-      user.refreshTokens = user.refreshTokens.filter((rt) => rt.token !== reqRefreshToken);
+      user.refreshTokens = user.refreshTokens.filter((rt) => rt.token !== hashedToken);
       await user.save();
     }
 
@@ -382,7 +388,7 @@ export const googleAuth = async (req, res, next) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     // 3. Search for registered user in database
-    const user = await UserModel.findOne({ email: normalizedEmail }).select("+refreshTokens");
+    const user = await UserModel.findOne({ email: normalizedEmail }).select("+refreshTokens +lastLoginIp");
     if (!user) {
       logger.warn({ email: normalizedEmail }, "Google login attempt for unregistered email");
       return res.status(401).json({
@@ -395,6 +401,11 @@ export const googleAuth = async (req, res, next) => {
       return res.status(403).json({ status: "error", message: "This user account is currently deactivated." });
     }
 
+    // Google sign-in has no second factor, so Owner accounts must use password + 2FA
+    if (requiresTwoFactor(user)) {
+      return res.status(403).json({ status: "error", message: "Owner accounts must sign in with email, password and 2FA." });
+    }
+
     // 4. Authenticate user by issuing JWTs
     const accessToken = createAccessToken(user);
     const refreshToken = createRefreshToken();
@@ -403,7 +414,8 @@ export const googleAuth = async (req, res, next) => {
     user.lastLogin = new Date();
     user.refreshTokens = user.refreshTokens || [];
     user.refreshTokens = user.refreshTokens.filter((rt) => rt.expiresAt > new Date());
-    user.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
+    user.refreshTokens.push({ token: hashToken(refreshToken), expiresAt: refreshTokenExpiresAt });
+    trackAdminLoginIp(user, req);
     await user.save();
 
     logger.info({ userId: user.id }, "Successfully logged in via Google Auth");

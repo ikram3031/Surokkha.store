@@ -7,12 +7,12 @@ import {
   whitelistOrphanFiles,
   confirmDeleteOrphanFiles,
 } from "../controllers/MediaAuditController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OWNER_ONLY, ADMINS } from "../../common/middlewares/auth.middleware.js";
 
 const mediaAuditRouter = Router();
 
 // Protect all admin media audit routes to Owner and Admin roles only
-mediaAuditRouter.use(authenticateToken, authorizeRoles("Owner", "Admin"));
+mediaAuditRouter.use(authenticateToken, authorizeRoles(ADMINS));
 
 // High-level storage stats, orphan counts, and R2 sync status
 mediaAuditRouter.get("/summary", getMediaAuditSummary);
@@ -30,6 +30,6 @@ mediaAuditRouter.post("/r2-sync", triggerR2Sync);
 mediaAuditRouter.post("/whitelist", whitelistOrphanFiles);
 
 // Confirm and permanently delete orphan files from VPS disk
-mediaAuditRouter.delete("/confirm", confirmDeleteOrphanFiles);
+mediaAuditRouter.delete("/confirm", authorizeRoles(OWNER_ONLY), confirmDeleteOrphanFiles);
 
 export default mediaAuditRouter;

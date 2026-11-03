@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { uploadMiddleware, uploadProductImage, listAllMedia, bulkDeleteMedia } from "../controllers/ImagesController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, ADMINS, OPERATORS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const imagesRouter = Router();
 
 // Retrieve all media files from /uploads with search & pagination (Accessible to all authenticated users)
-imagesRouter.get("/", authenticateToken, listAllMedia);
+imagesRouter.get("/", authenticateToken, authorizeRoles(ALL_STAFF), listAllMedia);
 
 imagesRouter.get("/resize", async (req, res, next) => {
   try {
@@ -25,7 +25,7 @@ imagesRouter.get("/resize", async (req, res, next) => {
 imagesRouter.post(
   "/upload",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Marketing-Expert", "Marketing Expert"),
+  authorizeRoles(OPERATORS),
   uploadMiddleware,
   uploadProductImage
 );
@@ -33,7 +33,7 @@ imagesRouter.post(
 imagesRouter.post(
   "/bulk-delete",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   bulkDeleteMedia
 );
 

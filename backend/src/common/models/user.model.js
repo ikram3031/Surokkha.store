@@ -3,7 +3,8 @@ import { generateDid } from "../utils/generateDid.js";
 
 const { models } = mongoose;
 
-export const USER_ROLES = ["Owner", "Admin", "Manager", "Marketing-Expert", "Marketing Expert", "Investor"];
+// Roles that can be assigned; "Marketing-Expert" stays valid only for accounts not yet migrated
+export const USER_ROLES = ["Owner", "Admin", "Manager", "Marketing Expert", "Investor"];
 
 const userSchema = new Schema(
   {
@@ -50,7 +51,7 @@ const userSchema = new Schema(
     emailOtpExpiresAt: { type: Date, select: false },
     twoFactorSecret: { type: String, select: false },
     twoFactorEnabled: { type: Boolean, default: true },
-    role: { type: String, required: true, enum: USER_ROLES, default: "Marketing Expert" },
+    role: { type: String, required: true, enum: [...USER_ROLES, "Marketing-Expert"], default: "Marketing Expert" },
     inviteToken: { type: String, select: false },
     inviteTokenExpiresAt: { type: Date, select: false },
     assets: {
@@ -59,6 +60,7 @@ const userSchema = new Schema(
     },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date, default: null },
+    lastLoginIp: { type: String, trim: true, default: "", select: false },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },

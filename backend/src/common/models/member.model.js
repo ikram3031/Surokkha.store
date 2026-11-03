@@ -34,7 +34,7 @@ const memberSchema = new Schema(
     passwordHash: { type: String, required: true, trim: true, select: false },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
     isActive: { type: Boolean, default: true },
-    role: { type: String, trim: true, default: "Customer" },
+    role: { type: String, trim: true, enum: ["Customer"], default: "Customer" },
     emailOtp: { type: String, trim: true, select: false },
     emailOtpExpiresAt: { type: Date, select: false },
     isEmailVerified: { type: Boolean, default: false },

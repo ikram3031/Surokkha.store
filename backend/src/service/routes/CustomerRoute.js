@@ -8,50 +8,47 @@ import {
   getCustomerByIdController,
   updateCustomerController,
 } from "../controllers/CustomerController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, ADMINS, MANAGERS, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 
 const customerRouter = Router();
 
 // Search and lookup (available to all dashboard roles)
-customerRouter.get("/search", authenticateToken, searchCustomersController);
-customerRouter.get("/lookup", authenticateToken, lookupCustomerController);
+customerRouter.get("/search", authenticateToken, authorizeRoles(OPERATORS), searchCustomersController);
+customerRouter.get("/lookup", authenticateToken, authorizeRoles(OPERATORS), lookupCustomerController);
 
 // Customer CRUD
 customerRouter.post(
   "/",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(MANAGERS),
   createCustomerController
 );
 
 customerRouter.get(
   "/",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Marketing-Expert", "Marketing Expert"),
+  authorizeRoles(OPERATORS),
   getCustomersListController
 );
 
 customerRouter.get(
   "/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Marketing-Expert", "Marketing Expert"),
+  authorizeRoles(OPERATORS),
   getCustomerByIdController
 );
 
 customerRouter.put(
   "/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(MANAGERS),
   updateCustomerController
 );
 
 customerRouter.delete(
   "/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   deleteCustomerController
 );
 

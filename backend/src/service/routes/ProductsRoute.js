@@ -6,10 +6,7 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/ProductsController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 
 const productsRouter = Router();
 
@@ -20,7 +17,7 @@ productsRouter.get("/", listProducts);
 productsRouter.post("/search", listProducts);
 
 // POST /api/products : Creates a new product (restricted to Owner, Admin, and Manager roles)
-productsRouter.post("/", authenticateToken, createProduct);
+productsRouter.post("/", authenticateToken, authorizeRoles(OPERATORS), createProduct);
 
 // GET /api/products/:identifier : Retrieves details of a single product by its ObjectId or Slug
 productsRouter.get("/:identifier", getSingleProduct);
@@ -29,7 +26,7 @@ productsRouter.get("/:identifier", getSingleProduct);
 productsRouter.put(
   "/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   updateProduct,
 );
 
@@ -37,7 +34,7 @@ productsRouter.put(
 productsRouter.delete(
   "/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   deleteProduct,
 );
 

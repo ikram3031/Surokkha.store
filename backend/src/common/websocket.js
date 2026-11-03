@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import { env } from "./config/env.js";
 import { logger } from "./config/logger.js";
 import { UserModel } from "./models/user.model.js";
-import { MemberModel } from "./models/member.model.js";
 import { LogModel } from "./models/log.model.js";
 
 let wssInstance = null;
@@ -26,12 +25,9 @@ async function authenticateWsConnection(req) {
 
     const payload = jwt.verify(token, env.ACCESS_TOKEN_SECRET);
     const userId = payload.userId || payload.id || payload.sub;
-    if (!userId) return null;
+    if (!userId || (payload.typ && payload.typ !== "staff")) return null;
 
-    let user = await UserModel.findById(userId).lean();
-    if (!user) {
-      user = await MemberModel.findById(userId).lean();
-    }
+    const user = await UserModel.findById(userId).lean();
 
     if (!user || user.isActive === false) return null;
 

@@ -17,7 +17,7 @@ export const createItem = async (req, res, next) => {
   try {
     const body = req.body || {};
 
-    let userId = req.body.createdBy || req.user?.userId || req.user?.id;
+    let userId = req.user?.userId || req.user?.id;
     if (!userId) {
       const fallbackUser = await UserModel.findOne({
         role: { $in: ["Owner", "Admin"] },

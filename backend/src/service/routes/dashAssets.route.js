@@ -6,15 +6,12 @@ import {
   downloadAsset,
   assetUploadMiddleware,
 } from "../controllers/dashAssets.controller.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MARKETERS } from "../../common/middlewares/auth.middleware.js";
 
 const dashAssetsRouter = Router();
 
 // Enforce Owner and Admin access only for all assets operations
-dashAssetsRouter.use(authenticateToken, authorizeRoles("Owner", "Admin"));
+dashAssetsRouter.use(authenticateToken, authorizeRoles(MARKETERS));
 
 // GET /api/v1/dash/assets - List all assets in /uploads/assets
 dashAssetsRouter.get("/", listAssets);

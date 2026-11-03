@@ -80,7 +80,7 @@ export default function HomeView() {
       <HeroBannerSlider />
 
       {/* 3 DEDICATED FEATURE CARDS (Directly Under Hero Slider, White Theme) */}
-      {/* SPECIAL OFFERS (hard-coded lowest prices) */}
+      {/* SPECIAL OFFERS (products with a dashboard offer price) */}
       <SpecialOffersStrip />
 
       <section className="bg-[#0b0a0e] mt-6 sm:mt-10 py-6 sm:py-8">

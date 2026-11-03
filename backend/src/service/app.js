@@ -4,7 +4,7 @@ import path from "path";
 import cors from "cors";
 import fs from "fs";
 import { errorHandler } from "../common/middlewares/errorHandler.js";
-import { authenticateToken, authorizeRoles } from "../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OWNER_ONLY } from "../common/middlewares/auth.middleware.js";
 import { logger } from "../common/config/logger.js";
 import serviceRouter from "./routes.js";
 import storeSettingsRouter from "./routes/StoreSettingsRoute.js";
@@ -12,7 +12,7 @@ import swaggerRouter from "./routes/SwaggerRoute.js";
 import { env } from "../common/config/env.js";
 import { createRequestLogger } from "../common/middlewares/requestLogger.js";
 import { startRequestLogTail } from "../common/services/requestLogTail.service.js";
-import { getDynamicCorsConfig } from "../common/config/index.js";
+import { createOriginChecker } from "../common/config/corsOrigins.js";
 
 // Creates and configures Express application specifically for Dashboard & Admin Business Service
 export const createServiceApp = async () => {
@@ -21,23 +21,10 @@ export const createServiceApp = async () => {
   app.set("wpTablePrefix", process.env.WP_TABLE_PREFIX || "wp_");
   app.set("trust proxy", true);
 
-  const { allowedOrigins, clientKeywords } = getDynamicCorsConfig(env.ALLOWED_ORIGINS);
+  const isAllowedOrigin = createOriginChecker(env.ALLOWED_ORIGINS);
 
   const corsOptions = {
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const isAllowedExplicit = allowedOrigins.includes("*") || allowedOrigins.includes(origin);
-      if (isAllowedExplicit) {
-        return callback(null, true);
-      }
-
-      const isKnownClientDomain = clientKeywords.some((keyword) => origin.toLowerCase().includes(keyword));
-      if (isKnownClientDomain) {
-        return callback(null, true);
-      }
-
-      callback(null, true);
-    },
+    origin: (origin, callback) => callback(null, !origin || isAllowedOrigin(origin)),
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
@@ -122,8 +109,8 @@ export const createServiceApp = async () => {
     }
   };
 
-  app.get("/api/v2/version", authenticateToken, authorizeRoles("Owner", "Admin"), getVersionHandler);
-  app.get("/api/v1/version", authenticateToken, authorizeRoles("Owner", "Admin"), getVersionHandler);
+  app.get("/api/v2/version", authenticateToken, authorizeRoles(OWNER_ONLY), getVersionHandler);
+  app.get("/api/v1/version", authenticateToken, authorizeRoles(OWNER_ONLY), getVersionHandler);
 
   app.use((req, res) => {
     res.status(404).json({ status: "error", message: "Resource not found" });

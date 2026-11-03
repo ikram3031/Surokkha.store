@@ -28,10 +28,7 @@ import {
   getDistrictsListController,
   getDistrictThanasListController,
 } from "../controllers/CourierController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OWNER_ONLY, ADMINS, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 
 
 const courierRouter = Router();
@@ -42,28 +39,28 @@ courierRouter.post("/pathao/webhook", pathaoWebhookController);
 courierRouter.get(
   "/pathao/webhook/config",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   getPathaoWebhookConfigController
 );
 
 courierRouter.put(
   "/pathao/webhook/config",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   updatePathaoWebhookConfigController
 );
 
 courierRouter.get(
   "/pathao/webhook/events",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   listPathaoWebhookEventsController
 );
 
 courierRouter.post(
   "/pathao/webhook/events/replay",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   replayPathaoWebhookEventsController
 );
 
@@ -71,28 +68,28 @@ courierRouter.post(
 courierRouter.get(
   "/pathao/parcels",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   listPathaoParcelsController
 );
 
 courierRouter.get(
   "/pathao/parcels/summary",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getPathaoParcelSummaryController
 );
 
 courierRouter.patch(
   "/pathao/parcels/:id/settlement",
   authenticateToken,
-  authorizeRoles("Owner"),
+  authorizeRoles(OWNER_ONLY),
   updatePathaoSettlementController
 );
 
 courierRouter.post(
   "/pathao/invoices/import",
   authenticateToken,
-  authorizeRoles("Owner"),
+  authorizeRoles(OWNER_ONLY),
   express.text({ type: ["text/csv", "text/plain"], limit: "5mb" }),
   importPathaoInvoiceController
 );
@@ -101,21 +98,21 @@ courierRouter.post(
 courierRouter.get(
   "/pathao/config",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getPathaoSettings
 );
 
 courierRouter.put(
   "/pathao/config",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   updatePathaoSettings
 );
 
 courierRouter.post(
   "/pathao/test",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OWNER_ONLY),
   testPathaoConnectionController
 );
 
@@ -123,14 +120,14 @@ courierRouter.post(
 courierRouter.get(
   "/pathao/stores",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getStoresController
 );
 
 courierRouter.post(
   "/pathao/stores",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   createStoreController
 );
 
@@ -138,21 +135,21 @@ courierRouter.post(
 courierRouter.get(
   "/pathao/cities",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getCitiesController
 );
 
 courierRouter.get(
   "/pathao/zones/:cityId",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getZonesController
 );
 
 courierRouter.get(
   "/pathao/areas/:zoneId",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getAreasController
 );
 
@@ -160,7 +157,7 @@ courierRouter.get(
 courierRouter.post(
   "/pathao/price-plan",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   calculatePriceController
 );
 
@@ -168,14 +165,14 @@ courierRouter.post(
 courierRouter.post(
   "/pathao/orders/create",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   createOrderConsignmentController
 );
 
 courierRouter.post(
   "/pathao/orders/bulk-create",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   createBulkOrderConsignmentsController
 );
 
@@ -183,7 +180,7 @@ courierRouter.post(
 courierRouter.post(
   "/pathao/orders/sync",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   syncPathaoOrdersController
 );
 
@@ -191,7 +188,7 @@ courierRouter.post(
 courierRouter.get(
   "/pathao/orders/:consignmentId/track",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   trackOrderController
 );
 
@@ -199,19 +196,21 @@ courierRouter.get(
 courierRouter.post(
   "/pathao/sync-locations",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   syncPathaoLocationsController
 );
 
 courierRouter.get(
   "/districts",
   authenticateToken,
+  authorizeRoles(OPERATORS),
   getDistrictsListController
 );
 
 courierRouter.get(
   "/districts/:cityId/thanas",
   authenticateToken,
+  authorizeRoles(OPERATORS),
   getDistrictThanasListController
 );
 

@@ -1,11 +1,14 @@
 import express from 'express';
 import { dailyOrders, getKpiStats, getOrderStatusDistribution, getTopProducts } from '../controllers/DashboardController.js';
+import { authenticateToken, authorizeRoles, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get('/orders/daily', dailyOrders);
-router.get('/orders/status-distribution', getOrderStatusDistribution);
-router.get('/kpi', getKpiStats);
-router.get('/products/top', getTopProducts);
+const staffOnly = [authenticateToken, authorizeRoles(ALL_STAFF)];
+
+router.get('/orders/daily', ...staffOnly, dailyOrders);
+router.get('/orders/status-distribution', ...staffOnly, getOrderStatusDistribution);
+router.get('/kpi', ...staffOnly, getKpiStats);
+router.get('/products/top', ...staffOnly, getTopProducts);
 
 export default router;

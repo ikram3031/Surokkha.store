@@ -5,7 +5,7 @@ import {
   getReviewById,
   updateReview,
 } from "../controllers/ReviewController.js";
-import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { authenticateMember } from "../../common/middlewares/auth.middleware.js";
 
 const reviewRouter = Router();
 
@@ -16,9 +16,9 @@ reviewRouter.get("/product/:productDid", getProductReviews);
 reviewRouter.get("/:id", getReviewById);
 
 // Create a review (Requires authenticated member/customer)
-reviewRouter.post("/", authenticateToken, createReview);
+reviewRouter.post("/", authenticateMember, createReview);
 
 // Update a review (Member can update own review if permitted)
-reviewRouter.put("/:id", authenticateToken, updateReview);
+reviewRouter.put("/:id", authenticateMember, updateReview);
 
 export default reviewRouter;

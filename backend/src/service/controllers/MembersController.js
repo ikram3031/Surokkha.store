@@ -17,7 +17,7 @@ const { Types } = mongoose;
 
 const createAccessToken = (member) => {
   return jwt.sign(
-    { userId: member.id },
+    { userId: member.id, typ: "member" },
     env.ACCESS_TOKEN_SECRET,
     { expiresIn: env.ACCESS_TOKEN_EXPIRES_IN || "20m" },
   );
@@ -258,7 +258,7 @@ export const createMember = async (req, res, next) => {
       passwordHash: await hashPassword(payload.password),
       billingAddress: sanitizeInfo(payload.billingAddress ?? payload.billingInfo),
       shippingAddress: sanitizeInfo(payload.shippingAddress ?? payload.shippingInfo),
-      createdBy: payload.createdBy || req.user?.userId || req.user?.id || null,
+      createdBy: req.user?.userId || req.user?.id || null,
     });
 
     res.status(201).json({ status: "success", data: member });
@@ -280,7 +280,7 @@ export const updateMember = async (req, res, next) => {
     const payload = req.body ?? {};
     const updates = {};
     // Fixed typo: was `re.user?._id` — should be `req.user?._id`
-    updates.updatedBy = payload.updatedBy || req.user?.userId || req.user?._id || req.user?.did || null;
+    updates.updatedBy = req.user?.userId || req.user?._id || req.user?.did || null;
 
     if (payload.name) {
       updates.name = payload.name.trim();
@@ -369,14 +369,13 @@ export const updateMember = async (req, res, next) => {
 // Register a new member with automatic verification and instant token issue.
 export const registerMember = async (req, res, next) => {
   try {
-    const { name, email, password, phone, role } = req.body ?? {};
+    const { name, email, password, phone } = req.body ?? {};
 
     const trimmedName = typeof name === "string" ? name.trim() : "";
     const trimmedEmail =
       typeof email === "string" ? email.toLowerCase().trim() : "";
     const trimmedPassword = typeof password === "string" ? password : "";
     const trimmedPhone = typeof phone === "string" ? phone.trim() : "";
-    const trimmedRole = typeof role === "string" ? role.trim() : "";
 
     const errors = [];
     if (!trimmedName) {
@@ -427,7 +426,6 @@ export const registerMember = async (req, res, next) => {
         email: trimmedEmail,
         phone: trimmedPhone,
         passwordHash: await hashPassword(trimmedPassword),
-        role: trimmedRole || "Customer",
         isEmailVerified: true,
         emailVerifiedAt: new Date(),
         billingAddress: sanitizeInfo(req.body?.billingAddress ?? req.body?.billingInfo),

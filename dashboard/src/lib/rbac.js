@@ -7,13 +7,16 @@ export const hasMenuAccess = (role, menuKey) => {
   const normalizedRole = String(role).trim();
   const lowerRole = normalizedRole.toLowerCase();
 
-  if (lowerRole === 'owner' || lowerRole === 'admin') {
+  if (lowerRole === 'owner') {
     return true;
   }
 
-  // System & API logs are restricted to Owner/Admin regardless of role config
-  if (menuKey === 'logs' || menuKey === 'tools.logs') {
+  if (coreConfig?.ownerOnlyMenus?.includes(menuKey)) {
     return false;
+  }
+
+  if (lowerRole === 'admin') {
+    return true;
   }
 
   if (menuKey === 'admin' || menuKey.startsWith('admin.') || menuKey.startsWith('admin/')) {

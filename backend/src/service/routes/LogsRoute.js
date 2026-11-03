@@ -8,15 +8,12 @@ import {
   deleteLog,
   bulkDeleteLogs,
 } from "../controllers/LogsController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OWNER_ONLY, ADMINS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const logsRouter = Router();
 
 // All logs routes require authentication
-logsRouter.use(authenticateToken);
+logsRouter.use(authenticateToken, authorizeRoles(ALL_STAFF));
 
 // 1. Get top 5 newOrder notifications & unread count
 logsRouter.get("/notifications", getNotificationLogs);
@@ -28,15 +25,15 @@ logsRouter.put("/mark-read", markLogsRead);
 logsRouter.put("/mark-unread", markLogsUnread);
 
 // 4. Bulk soft delete logs
-logsRouter.post("/bulk-delete", bulkDeleteLogs);
+logsRouter.post("/bulk-delete", authorizeRoles(OWNER_ONLY), bulkDeleteLogs);
 
 // 5. List all active logs (with pagination & search)
-logsRouter.get("/", listLogs);
+logsRouter.get("/", authorizeRoles(ADMINS), listLogs);
 
 // 6. Create a log entry
 logsRouter.post("/", createLog);
 
 // 7. Soft delete a single log
-logsRouter.delete("/:id", deleteLog);
+logsRouter.delete("/:id", authorizeRoles(OWNER_ONLY), deleteLog);
 
 export default logsRouter;

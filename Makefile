@@ -26,10 +26,11 @@ sync-config:
 	@node scripts/sync-config.js $(CLIENT) 2>/dev/null || true
 
 # ── Safe Native VPS Deployment (Default) ──────────────────────
-# Pulls Live, builds the shop storefront & dashboard to their exact Nginx webroots, and restarts the backend
+# Fetches Live and hard-resets to origin/Live (VPS builds dirty tracked files like package-lock.json, which makes `git pull` fail), builds the shop storefront & dashboard to their exact Nginx webroots, and restarts the backend
 deploy:
 	@echo "🚀 Deploying Surokkha Shop [Live branch] using Native VPS Architecture..."
-	git pull origin Live
+	git fetch origin Live
+	git reset --hard origin/Live
 	@$(MAKE) sync-config
 	@# 1. Build and deploy Shop storefront
 	@if [ -d "SurokkhaShop" ]; then \

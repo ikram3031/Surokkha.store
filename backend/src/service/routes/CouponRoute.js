@@ -6,14 +6,14 @@ import {
   updateCoupon,
   deleteCoupon,
 } from "../controllers/CouponController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OPERATORS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", getAllCoupons);
-router.post("/", authenticateToken, authorizeRoles("Owner", "Admin", "Manager"), createCoupon);
-router.get("/:id", getCouponById);
-router.put("/:id", authenticateToken, authorizeRoles("Owner", "Admin", "Manager"), updateCoupon);
-router.delete("/:id", authenticateToken, authorizeRoles("Owner", "Admin"), deleteCoupon);
+router.get("/", authenticateToken, authorizeRoles(ALL_STAFF), getAllCoupons);
+router.post("/", authenticateToken, authorizeRoles(OPERATORS), createCoupon);
+router.get("/:id", authenticateToken, authorizeRoles(ALL_STAFF), getCouponById);
+router.put("/:id", authenticateToken, authorizeRoles(OPERATORS), updateCoupon);
+router.delete("/:id", authenticateToken, authorizeRoles(OPERATORS), deleteCoupon);
 
 export default router;

@@ -104,7 +104,7 @@ export const createAttribute = async (req, res) => {
       name,
       slug,
       values: sortedValues,
-      createdBy: req.body.createdBy || req.user?._id || req.user?.id || "66af9b0d9c49d21c988a6d66",
+      createdBy: req.user?._id || req.user?.id || "66af9b0d9c49d21c988a6d66",
     });
 
     await attribute.save();
@@ -135,7 +135,7 @@ export const updateAttribute = async (req, res) => {
       attribute.values = sortAttributeValues(values);
     }
 
-    attribute.updatedBy = req.body.updatedBy || req.user?._id || req.user?.id || "66af9b0d9c49d21c988a6d66";
+    attribute.updatedBy = req.user?._id || req.user?.id || "66af9b0d9c49d21c988a6d66";
     await attribute.save();
 
     res.json({ status: "success", data: attribute });

@@ -8,18 +8,19 @@ import {
   bulkUpdateBillTypes,
   bulkDeleteBillTypes,
 } from "../controllers/BillTypeController.js";
-import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, ADMINS } from "../../common/middlewares/auth.middleware.js";
+import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
 
 const billTypeRouter = Router();
 
-billTypeRouter.use(authenticateToken);
+billTypeRouter.use(authenticateToken, authorizeRoles(ADMINS));
 
 billTypeRouter.post("/", createBillType);
 billTypeRouter.post("/bulk-update", bulkUpdateBillTypes);
-billTypeRouter.post("/bulk-delete", bulkDeleteBillTypes);
+billTypeRouter.post("/bulk-delete", alertOwnersOnAdminAction("Bulk deleted bill types"), bulkDeleteBillTypes);
 billTypeRouter.get("/", listBillTypes);
 billTypeRouter.get("/:id", getBillTypeById);
 billTypeRouter.put("/:id", updateBillType);
-billTypeRouter.delete("/:id", deleteBillType);
+billTypeRouter.delete("/:id", alertOwnersOnAdminAction("Deleted a bill type"), deleteBillType);
 
 export default billTypeRouter;

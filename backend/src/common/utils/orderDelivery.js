@@ -185,8 +185,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
 
       if (!isCustomOrder) {
         const adminRecipientsSet = new Set();
-        adminRecipientsSet.add("ihkhan889@gmail.com");
-        adminRecipientsSet.add("surokkha.support@gmail.com");
         if (process.env.ADMIN_NOTIFY_EMAIL) {
           adminRecipientsSet.add(process.env.ADMIN_NOTIFY_EMAIL.toLowerCase().trim());
         }

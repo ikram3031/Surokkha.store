@@ -3,6 +3,7 @@ import { buildInvoiceEmailHtml } from "../../common/utils/invoiceEmailTemplate.j
 import { env } from "../../common/config/env.js";
 import { config } from "../../common/config/index.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
+import { authenticateToken, authorizeRoles, ADMINS } from "../../common/middlewares/auth.middleware.js";
 
 const emailRouter = Router();
 
@@ -131,6 +132,7 @@ const handleInvoiceRequest = async (req, res) => {
   }
 };
 
+emailRouter.use(authenticateToken, authorizeRoles(ADMINS));
 emailRouter.get("/", handleEmailRequest);
 emailRouter.post("/", handleEmailRequest);
 emailRouter.post("/invoice", handleInvoiceRequest);

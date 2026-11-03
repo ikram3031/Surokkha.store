@@ -8,6 +8,7 @@ import { logger } from "../../common/config/logger.js";
 import { config as clientConfig } from "../../common/config/index.js";
 import { buildTwoFactorQrEmailHtml } from "../../common/templates/twoFactorEmailTemplate.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
+import { hashToken } from "../../common/utils/crypto.util.js";
 
 authenticator.options = { window: 1 };
 
@@ -82,6 +83,11 @@ export const sendQrCodeEmail = async (req, res, next) => {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
 
+    // A confirmed secret is never emailed again; losing the device needs a server-side reset
+    if (user.twoFactorConfirmed && user.twoFactorSecret) {
+      return res.status(400).json({ status: "error", message: "2FA is already set up for this account." });
+    }
+
     let secret = user.twoFactorSecret;
     if (!secret) {
       secret = authenticator.generateSecret();
@@ -127,6 +133,10 @@ export const verify2fa = async (req, res, next) => {
       return res.status(401).json({ status: "error", message: "Invalid credentials" });
     }
 
+    if (!user.isActive) {
+      return res.status(403).json({ status: "error", message: "This user account is currently deactivated." });
+    }
+
     if (!user.twoFactorSecret) {
       return res.status(400).json({ status: "error", message: "2FA has not been set up yet. Please request a setup email first." });
     }
@@ -147,7 +157,7 @@ export const verify2fa = async (req, res, next) => {
     user.lastLogin = new Date();
     user.refreshTokens = user.refreshTokens || [];
     user.refreshTokens = user.refreshTokens.filter((rt) => rt.expiresAt > new Date());
-    user.refreshTokens.push({ token: refreshToken, expiresAt: refreshTokenExpiresAt });
+    user.refreshTokens.push({ token: hashToken(refreshToken), expiresAt: refreshTokenExpiresAt });
     await user.save();
 
     const accessToken = createAccessToken(user);
@@ -189,6 +199,10 @@ export const resetUser2fa = async (req, res, next) => {
     const targetUser = await UserModel.findById(targetUserId);
     if (!targetUser) {
       return res.status(404).json({ status: "error", message: "Target user not found" });
+    }
+
+    if (targetUser.role === "Owner") {
+      return res.status(403).json({ status: "error", message: "An Owner's 2FA can only be reset from the server with src/common/scripts/resetOwner2fa.js." });
     }
 
     targetUser.twoFactorSecret = undefined;

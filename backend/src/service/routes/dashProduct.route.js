@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { searchDashProducts } from "../controllers/dashProduct.controller.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const dashProductRouter = Router();
 
@@ -11,7 +8,7 @@ const dashProductRouter = Router();
 dashProductRouter.post(
   "/",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Marketing-Expert", "Marketing Expert"),
+  authorizeRoles(ALL_STAFF),
   searchDashProducts
 );
 

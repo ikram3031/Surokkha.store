@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { HARDCODED_OFFER_PRICES } from '../config/hardcodedOffers';
 import { SITE_CONFIG } from '../config/siteConfig';
 import {
   trackPageView,
@@ -489,14 +488,6 @@ export const useStore = create((set, get) => ({
           let resolvedPrice = (resolvedOfferPrice != null && resolvedOfferPrice > 0 && resolvedOfferPrice < resolvedRegularPrice)
             ? resolvedOfferPrice
             : resolvedRegularPrice;
-
-          // Hard-coded special offer price (product/cart/checkout all read price from here)
-          const forcedOfferPrice = HARDCODED_OFFER_PRICES[String(p._id || p.id || '')];
-          if (forcedOfferPrice) {
-            resolvedRegularPrice = Math.max(resolvedRegularPrice, forcedOfferPrice);
-            resolvedOfferPrice = forcedOfferPrice;
-            resolvedPrice = forcedOfferPrice;
-          }
 
           // High-resolution featured image resolution:
           // Un-thumb helper to always request the full-resolution asset instead of low-res thumbnail

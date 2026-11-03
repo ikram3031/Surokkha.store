@@ -1,18 +1,18 @@
 import { Router } from "express";
 import { listAssets, getAssetById, createAsset, updateAsset, deleteAsset } from "../controllers/AssetsController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MARKETERS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const assetsRouter = Router();
 
 assetsRouter.use(authenticateToken);
 
 // Public to authenticated users: list and view
-assetsRouter.get("/", listAssets);
-assetsRouter.get("/:assetId", getAssetById);
+assetsRouter.get("/", authorizeRoles(ALL_STAFF), listAssets);
+assetsRouter.get("/:assetId", authorizeRoles(ALL_STAFF), getAssetById);
 
 // Only Owner/Admin can manage assets
-assetsRouter.post("/", authorizeRoles("Owner", "Admin"), createAsset);
-assetsRouter.put("/:assetId", authorizeRoles("Owner", "Admin"), updateAsset);
-assetsRouter.delete("/:assetId", authorizeRoles("Owner", "Admin"), deleteAsset);
+assetsRouter.post("/", authorizeRoles(MARKETERS), createAsset);
+assetsRouter.put("/:assetId", authorizeRoles(MARKETERS), updateAsset);
+assetsRouter.delete("/:assetId", authorizeRoles(MARKETERS), deleteAsset);
 
 export default assetsRouter;

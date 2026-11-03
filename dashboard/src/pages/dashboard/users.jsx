@@ -1,3 +1,4 @@
+import { useAuth } from '@/lib/auth-context';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -59,7 +60,9 @@ const UsersPage = () => {
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
-  const [newUserRole, setNewUserRole] = useState('Admin');
+  const { user: currentUser } = useAuth();
+  const isOwner = currentUser?.role === 'Owner';
+  const [newUserRole, setNewUserRole] = useState(isOwner ? 'Admin' : 'Manager');
   const [newUserGetMail, setNewUserGetMail] = useState(false);
 
   const queryClient = useQueryClient();
@@ -218,12 +221,13 @@ const UsersPage = () => {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold">{t('admin.user_role')}</label>
-                <Select value={newUserRole} onValueChange={(val) => setNewUserRole(val ?? 'Admin')}>
+                <Select value={newUserRole} onValueChange={(val) => setNewUserRole(val ?? 'Manager')}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={t('admin.user_role')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Admin">{t('admin.role_admin')}</SelectItem>
+                    {isOwner && <SelectItem value="Owner">Owner</SelectItem>}
+                    {isOwner && <SelectItem value="Admin">{t('admin.role_admin')}</SelectItem>}
                     <SelectItem value="Manager">{t('admin.role_manager')}</SelectItem>
                     <SelectItem value="Marketing Expert">{t('admin.role_marketing')}</SelectItem>
                     <SelectItem value="Investor">Investor (Read-Only)</SelectItem>

@@ -6,14 +6,14 @@ import {
   updateGroupOffer,
   deleteGroupOffer,
 } from "../controllers/GroupOfferController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OPERATORS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", getAllGroupOffers);
-router.post("/", authenticateToken, authorizeRoles("Owner", "Admin", "Manager"), createGroupOffer);
-router.get("/:id", getGroupOfferById);
-router.put("/:id", authenticateToken, authorizeRoles("Owner", "Admin", "Manager"), updateGroupOffer);
-router.delete("/:id", authenticateToken, authorizeRoles("Owner", "Admin"), deleteGroupOffer);
+router.get("/", authenticateToken, authorizeRoles(ALL_STAFF), getAllGroupOffers);
+router.post("/", authenticateToken, authorizeRoles(OPERATORS), createGroupOffer);
+router.get("/:id", authenticateToken, authorizeRoles(ALL_STAFF), getGroupOfferById);
+router.put("/:id", authenticateToken, authorizeRoles(OPERATORS), updateGroupOffer);
+router.delete("/:id", authenticateToken, authorizeRoles(OPERATORS), deleteGroupOffer);
 
 export default router;

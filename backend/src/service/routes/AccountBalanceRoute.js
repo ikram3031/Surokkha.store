@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { getAccountBalance } from "../controllers/AccountBalanceController.js";
-import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, ADMINS } from "../../common/middlewares/auth.middleware.js";
 
 const accountBalanceRouter = Router();
 
-accountBalanceRouter.use(authenticateToken);
+accountBalanceRouter.use(authenticateToken, authorizeRoles(ADMINS));
 
 accountBalanceRouter.get("/", getAccountBalance);
 

@@ -4,14 +4,14 @@ import {
   getRecentSearches,
   getPopularSearches,
 } from "../controllers/SearchController.js";
-import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { authenticateMember } from "../../common/middlewares/auth.middleware.js";
 
 const searchRouter = Router();
 
 const optionalAuthenticateToken = async (req, res, next) => {
   if (req.headers.authorization) {
     try {
-      await authenticateToken(req, res, next);
+      await authenticateMember(req, res, next);
       return;
     } catch {
       // Proceed unauthenticated if token is invalid
@@ -27,6 +27,6 @@ searchRouter.get("/", optionalAuthenticateToken, searchProducts);
 searchRouter.get("/popular", getPopularSearches);
 
 // GET /api/v1/search/recent
-searchRouter.get("/recent", authenticateToken, getRecentSearches);
+searchRouter.get("/recent", authenticateMember, getRecentSearches);
 
 export default searchRouter;

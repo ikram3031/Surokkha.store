@@ -2,22 +2,21 @@ import React, { useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from './ProductCard';
-import { HARDCODED_OFFERS } from '../config/hardcodedOffers';
 
-// "Special Offers" strip on the home page: the hard-coded lowest-price offers, in the order set in
-// config/hardcodedOffers.js. Prices themselves are applied in the store (useStore), so cards, cart and checkout agree.
+// "Special Offers" strip on the home page: products that currently have an offer price set from the dashboard.
 export default function SpecialOffersStrip() {
   const products = useStore((s) => s.products);
   const productKeys = useStore((s) => s.productKeys);
   const { isBn } = useTranslation();
 
   const keys = useMemo(() => {
-    const byMongoId = {};
-    for (const key of productKeys || []) {
+    return (productKeys || []).filter((key) => {
       const p = products[key];
-      if (p) byMongoId[String(p._id || p.mongoId || '')] = key;
-    }
-    return HARDCODED_OFFERS.map((o) => byMongoId[o.id]).filter(Boolean);
+      if (!p) return false;
+      const offer = Number(p.offerPrice);
+      const regular = Number(p.regularPrice);
+      return offer > 0 && regular > 0 && offer < regular;
+    });
   }, [products, productKeys]);
 
   if (keys.length === 0) return null;

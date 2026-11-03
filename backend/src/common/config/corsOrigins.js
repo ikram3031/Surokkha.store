@@ -118,6 +118,7 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
   const clientConfigs = loadAllClientConfigs();
   const origins = new Set();
   const keywords = new Set(["localhost", "127.0.0.1"]);
+  const rootDomains = new Set();
 
   const localOrigins = [
     "http://localhost",
@@ -150,6 +151,7 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
 
     const domain = cfg.domain;
     if (domain) {
+      rootDomains.add(domain.toLowerCase());
       buildUrlVariations(domain).forEach((v) => origins.add(v));
       const kw = extractDomainKeyword(domain);
       if (kw) keywords.add(kw);
@@ -172,6 +174,7 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
     if (cfg.sites && typeof cfg.sites === "object") {
       Object.values(cfg.sites).forEach((site) => {
         if (site?.domain) {
+          rootDomains.add(site.domain.toLowerCase());
           buildUrlVariations(site.domain).forEach((v) => origins.add(v));
           const kw = extractDomainKeyword(site.domain);
           if (kw) keywords.add(kw);
@@ -201,5 +204,22 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
   return {
     allowedOrigins: Array.from(origins),
     clientKeywords: Array.from(keywords),
+    rootDomains: Array.from(rootDomains),
+  };
+};
+
+// Allows configured origins, subdomains of registered client domains, and localhost outside production
+export const createOriginChecker = (envAllowedOrigins = "") => {
+  const { allowedOrigins, rootDomains } = getDynamicCorsConfig(envAllowedOrigins);
+
+  return (origin) => {
+    if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) return true;
+    try {
+      const host = new URL(origin).hostname.toLowerCase();
+      if (process.env.NODE_ENV !== "production" && (host === "localhost" || host === "127.0.0.1")) return true;
+      return rootDomains.some((domain) => host === domain || host.endsWith(`.${domain}`));
+    } catch {
+      return false;
+    }
   };
 };

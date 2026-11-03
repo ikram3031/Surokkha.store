@@ -10,22 +10,23 @@ import {
   acceptInvite,
 } from "../controllers/AuthController.js";
 import { sendQrCodeEmail, verify2fa, resetUser2fa } from "../controllers/TwoFactorController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OWNER_ONLY } from "../../common/middlewares/auth.middleware.js";
+import { limitCredentialAttempts, limitEmailRequests } from "../../common/middlewares/rateLimit.middleware.js";
 
 const authRouter = Router();
 
-authRouter.post("/login", login);
-authRouter.post("/forgot-password", requestPasswordHelp);
-authRouter.post("/google", googleAuth);
+authRouter.post("/login", limitCredentialAttempts, login);
+authRouter.post("/forgot-password", limitEmailRequests, requestPasswordHelp);
+authRouter.post("/google", limitCredentialAttempts, googleAuth);
 authRouter.post("/refresh-token", refreshToken);
 authRouter.post("/logout", logout);
-authRouter.post("/2fa/send-qr", sendQrCodeEmail);
-authRouter.post("/2fa/verify", verify2fa);
-authRouter.post("/2fa/reset", authenticateToken, authorizeRoles("Owner", "Admin"), resetUser2fa);
+authRouter.post("/2fa/send-qr", limitEmailRequests, sendQrCodeEmail);
+authRouter.post("/2fa/verify", limitCredentialAttempts, verify2fa);
+authRouter.post("/2fa/reset", authenticateToken, authorizeRoles(OWNER_ONLY), resetUser2fa);
 
 // User Invitation & Onboarding Endpoints
 authRouter.get("/invite/verify", verifyInviteToken);
-authRouter.post("/invite/accept", acceptInvite);
+authRouter.post("/invite/accept", limitCredentialAttempts, acceptInvite);
 
 // Creation of the Owner / super-admin is intentionally disabled by default.
 // If you need to create an Owner, enable the endpoint below in a controlled environment.

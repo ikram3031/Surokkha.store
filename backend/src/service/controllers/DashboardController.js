@@ -1,5 +1,6 @@
 import { OrderModel } from '../../common/models/order.model.js';
 import { CustomerModel } from '../../common/models/customer.model.js';
+import { PaymentModel } from '../../common/models/payment.model.js';
 
 const OFFSET_MS = 6 * 60 * 60 * 1000; // BD Timezone (+06:00)
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -131,21 +132,18 @@ export const dailyOrders = async (req, res, next) => {
   }
 };
 
+// Money actually received in a range, dated by payment date (courier orders: the Pathao payout day)
+const paidByDate = (start, end) => PaymentModel.aggregate([
+  { $match: { active: { $ne: false }, paidAmount: { $gt: 0 }, status: { $nin: ['returned', 'cancelled', 'failed'] }, paymentDate: { $gte: start, $lt: end } } },
+  { $group: { _id: null, sales: { $sum: '$paidAmount' }, count: { $sum: 1 } } },
+]);
+
 export const getKpiStats = async (req, res, next) => {
   try {
     const { start: currentStart, end: currentEnd, prevStart, prevEnd } = resolveRange(req.query);
 
     // 1. Current Stats (Orders)
-    const currentOrdersAgg = await OrderModel.aggregate([
-      { $match: { active: { $ne: false }, status: 'completed', createdAt: { $gte: currentStart, $lt: currentEnd } } },
-      {
-        $group: {
-          _id: null,
-          sales: { $sum: '$totals.subtotal' },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+    const currentOrdersAgg = await paidByDate(currentStart, currentEnd);
 
     const currentSales = currentOrdersAgg[0]?.sales || 0;
     const currentOrdersCount = currentOrdersAgg[0]?.count || 0;
@@ -157,16 +155,7 @@ export const getKpiStats = async (req, res, next) => {
     });
 
     // 2. Previous Stats (Orders)
-    const previousOrdersAgg = await OrderModel.aggregate([
-      { $match: { active: { $ne: false }, status: 'completed', createdAt: { $gte: prevStart, $lt: prevEnd } } },
-      {
-        $group: {
-          _id: null,
-          sales: { $sum: '$totals.subtotal' },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+    const previousOrdersAgg = await paidByDate(prevStart, prevEnd);
 
     const previousSales = previousOrdersAgg[0]?.sales || 0;
     const previousOrdersCount = previousOrdersAgg[0]?.count || 0;

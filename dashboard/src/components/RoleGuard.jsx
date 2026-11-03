@@ -38,7 +38,7 @@ const RoleGuard = ({ menuKey, children }) => {
     return <NotFound />;
   }
 
-  const userRole = user?.role || 'Marketing Expert';
+  const userRole = user?.role;
   const isAllowed = hasMenuAccess(userRole, menuKey);
 
   if (!isAllowed) {

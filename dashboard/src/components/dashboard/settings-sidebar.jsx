@@ -34,11 +34,11 @@ export const SettingsSidebar = (props) => {
   const { pathname } = useLocation()
   const { user } = useAuth()
   const { state, setOpen, isMobile, setOpenMobile } = useSidebar()
-  const role = user?.role || "Marketing Expert"
+  const role = user?.role
   const can = (key) => hasMenuAccess(role, key)
 
   const showSettings = can("settings")
-  const showTemplates = clientConfig?.features?.templates !== false && (can("templates") || showSettings)
+  const showTemplates = clientConfig?.features?.templates !== false && can("settings.templates")
   const showUsers = can("users")
 
   const groups = [
@@ -83,20 +83,20 @@ export const SettingsSidebar = (props) => {
       {showSettings && (
         <>
           <NavLabel>{t("nav.store_content", "Store & Content")}</NavLabel>
-          {renderGroup("cms")}
-          {renderGroup("slider")}
-          {renderGroup("seo")}
+          {can("settings.cms-content") && renderGroup("cms")}
+          {can("settings.cms-content") && renderGroup("slider")}
+          {can("settings.seo") && renderGroup("seo")}
           {showTemplates && <NavLink to="/settings/templates" active={pathname.startsWith("/settings/templates")} icon={Receipt} label={t("nav.templates", "Invoice & Templates")} />}
-          <NavLink to="/settings/admin-view/styles" active={pathname.startsWith("/settings/admin-view/styles")} icon={Sparkles} label={t("nav.admin_view_styles", "Admin View Styles")} />
+          {can("settings.styles") && <NavLink to="/settings/admin-view/styles" active={pathname.startsWith("/settings/admin-view/styles")} icon={Sparkles} label={t("nav.admin_view_styles", "Admin View Styles")} />}
 
           <NavLabel>{t("nav.marketing", "Marketing")}</NavLabel>
-          {renderGroup("meta-pixel")}
-          <NavLink to="/settings/tiktok-pixel" active={pathname.startsWith("/settings/tiktok-pixel")} icon={Megaphone} label={t("nav.tiktok_pixel", "TikTok Pixel")} />
+          {can("settings.meta-pixel") && renderGroup("meta-pixel")}
+          {can("settings.tiktok-pixel") && <NavLink to="/settings/tiktok-pixel" active={pathname.startsWith("/settings/tiktok-pixel")} icon={Megaphone} label={t("nav.tiktok_pixel", "TikTok Pixel")} />}
 
-          <NavLabel>{t("nav.integrations", "Integrations")}</NavLabel>
-          <NavLink to="/settings/pathao-courier" active={pathname.startsWith("/settings/pathao")} icon={Truck} label={t("nav.pathao_courier", "Pathao Courier")} />
-          {renderGroup("smtp")}
-          <NavLink to="/settings/r2-storage" active={pathname.startsWith("/settings/r2-storage")} icon={HardDrive} label={t("nav.r2_storage", "R2 Storage")} />
+          {can("settings.smtp") && <NavLabel>{t("nav.integrations", "Integrations")}</NavLabel>}
+          {can("settings.pathao-courier") && <NavLink to="/settings/pathao-courier" active={pathname.startsWith("/settings/pathao")} icon={Truck} label={t("nav.pathao_courier", "Pathao Courier")} />}
+          {can("settings.smtp") && renderGroup("smtp")}
+          {can("settings.r2-storage") && <NavLink to="/settings/r2-storage" active={pathname.startsWith("/settings/r2-storage")} icon={HardDrive} label={t("nav.r2_storage", "R2 Storage")} />}
         </>
       )}
 

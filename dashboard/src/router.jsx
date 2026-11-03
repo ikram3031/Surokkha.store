@@ -267,7 +267,7 @@ const dashboardRoutes = [
       {
         path: 'settings/products',
         element: (
-          <RoleGuard menuKey="settings">
+          <RoleGuard menuKey="products.showcases">
             <ProductShowcasesPage />
           </RoleGuard>
         ),
@@ -283,7 +283,11 @@ const dashboardRoutes = [
       },
       {
         path: 'media',
-        element: <AllMedia />,
+        element: (
+          <RoleGuard menuKey="tools.media">
+            <AllMedia />
+          </RoleGuard>
+        ),
       },
       {
         path: 'tools',
@@ -774,7 +778,7 @@ const settingsRoutes = [
   {
     path: 'meta-pixel/shop',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.meta-pixel">
         <MetaPixelPage key="shop" site="shop" />
       </RoleGuard>
     ),
@@ -782,7 +786,7 @@ const settingsRoutes = [
   {
     path: 'meta-pixel/store',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.meta-pixel">
         <MetaPixelPage key="store" site="store" />
       </RoleGuard>
     ),
@@ -790,7 +794,7 @@ const settingsRoutes = [
   {
     path: 'tiktok-pixel',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.tiktok-pixel">
         <TikTokPixelPage />
       </RoleGuard>
     ),
@@ -802,7 +806,7 @@ const settingsRoutes = [
   {
     path: 'cms-content/shop',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.cms-content">
         <CMSContentPage key="shop" site="shop" />
       </RoleGuard>
     ),
@@ -810,7 +814,7 @@ const settingsRoutes = [
   {
     path: 'cms-content/store',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.cms-content">
         <CMSContentPage key="store" site="store" />
       </RoleGuard>
     ),
@@ -818,7 +822,7 @@ const settingsRoutes = [
   {
     path: 'cms-content/slider/shop',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.cms-content">
         <HeroSliderPage key="shop" site="shop" />
       </RoleGuard>
     ),
@@ -826,7 +830,7 @@ const settingsRoutes = [
   {
     path: 'cms-content/slider/store',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.cms-content">
         <HeroSliderPage key="store" site="store" />
       </RoleGuard>
     ),
@@ -834,7 +838,7 @@ const settingsRoutes = [
   {
     path: 'cms-content/backgrounds/store',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.cms-content">
         <SectionBackgroundsPage key="store" site="store" />
       </RoleGuard>
     ),
@@ -843,7 +847,7 @@ const settingsRoutes = [
   {
     path: 'google-analytics',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.google-analytics">
         <GoogleAnalyticsPage />
       </RoleGuard>
     ),
@@ -855,7 +859,7 @@ const settingsRoutes = [
   {
     path: 'seo/shop',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.seo">
         <SEOSettingsPage key="shop" site="shop" />
       </RoleGuard>
     ),
@@ -863,7 +867,7 @@ const settingsRoutes = [
   {
     path: 'seo/store',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.seo">
         <SEOSettingsPage key="store" site="store" />
       </RoleGuard>
     ),
@@ -871,7 +875,7 @@ const settingsRoutes = [
   {
     path: 'pathao-courier',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.pathao-courier">
         <PathaoCourierPage />
       </RoleGuard>
     ),
@@ -880,7 +884,7 @@ const settingsRoutes = [
   {
     path: 'admin-view/styles',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.styles">
         <AdminStylesPage />
       </RoleGuard>
     ),
@@ -892,7 +896,7 @@ const settingsRoutes = [
   {
     path: 'smtp/shop',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.smtp">
         <SmtpSettingsPage key="shop" site="shop" />
       </RoleGuard>
     ),
@@ -900,7 +904,7 @@ const settingsRoutes = [
   {
     path: 'smtp/store',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.smtp">
         <SmtpSettingsPage key="store" site="store" />
       </RoleGuard>
     ),
@@ -908,7 +912,7 @@ const settingsRoutes = [
   {
     path: 'r2-storage',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.r2-storage">
         <R2StorageSettingsPage />
       </RoleGuard>
     ),
@@ -916,7 +920,7 @@ const settingsRoutes = [
   {
     path: 'templates',
     element: (
-      <RoleGuard menuKey="settings">
+      <RoleGuard menuKey="settings.templates">
         <TemplatesPage />
       </RoleGuard>
     ),

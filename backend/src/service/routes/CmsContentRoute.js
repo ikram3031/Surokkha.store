@@ -9,11 +9,11 @@ import {
   deleteCmsContent,
   uploadCmsImage,
 } from "../controllers/CmsContentController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MARKETERS } from "../../common/middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(authenticateToken, authorizeRoles("Owner", "Admin"));
+router.use(authenticateToken, authorizeRoles(MARKETERS));
 
 router.get("/types", listCmsContentTypes);
 router.post("/upload", cmsImageUpload, uploadCmsImage);

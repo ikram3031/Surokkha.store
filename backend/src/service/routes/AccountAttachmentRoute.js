@@ -3,7 +3,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { authenticateToken } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, ADMINS } from "../../common/middlewares/auth.middleware.js";
 import {
   ATTACHMENT_KINDS,
   ATTACHMENT_MAX_BYTES,
@@ -11,7 +11,7 @@ import {
 } from "../../common/utils/accountAttachments.js";
 
 const attachmentRouter = Router();
-attachmentRouter.use(authenticateToken);
+attachmentRouter.use(authenticateToken, authorizeRoles(ADMINS));
 
 const uploadSingle = multer({
   storage: multer.memoryStorage(),

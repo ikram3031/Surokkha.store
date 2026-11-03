@@ -1,12 +1,12 @@
 import { Router } from "express";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "../../common/docs/swaggerSpec.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, acceptQueryToken, OWNER_ONLY } from "../../common/middlewares/auth.middleware.js";
 
 const swaggerRouter = Router();
 
 // Protect all Swagger UI and API specification endpoints for Owner and Admin roles only
-swaggerRouter.use(authenticateToken, authorizeRoles("Owner", "Admin"));
+swaggerRouter.use(acceptQueryToken, authenticateToken, authorizeRoles(OWNER_ONLY));
 
 // Custom CSS for modern, professional UI styling with dark aesthetic accents
 const customCss = `

@@ -40,3 +40,6 @@ export const decryptText = (text) => {
     return text; // Return as-is if decryption fails (might be plain text)
   }
 };
+
+// One-way hash for session tokens stored in the database
+export const hashToken = (token) => crypto.createHash("sha256").update(String(token)).digest("hex");

@@ -8,20 +8,17 @@ import {
   deleteMessage,
   bulkDeleteMessages,
 } from "../controllers/ContactController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MANAGERS } from "../../common/middlewares/auth.middleware.js";
 
 const router = Router();
 
 // Public storefront contact submission
 router.post("/", submitContact);
 
-// Admin Messages Endpoints (Owner, Admin, Manager, Super Admin)
+// Admin Messages Endpoints (Owner, Admin, Manager)
 const adminAuth = [
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Super Admin"),
+  authorizeRoles(MANAGERS),
 ];
 
 router.get("/messages", ...adminAuth, listMessages);

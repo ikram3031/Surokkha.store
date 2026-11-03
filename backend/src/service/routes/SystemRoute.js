@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getSystemInfo, getMetadata, getHealthCheck, purgeSystemCache, getCloudflareAnalytics } from "../controllers/SystemController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MANAGERS, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 
 const systemRouter = Router();
 
@@ -11,7 +11,7 @@ systemRouter.get("/health", getHealthCheck);
 systemRouter.get(
   "/info",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Super Admin"),
+  authorizeRoles(MANAGERS),
   getSystemInfo
 );
 
@@ -22,7 +22,7 @@ systemRouter.get("/metadata", getMetadata);
 systemRouter.get(
   "/cloudflare-analytics",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Super Admin"),
+  authorizeRoles(OPERATORS),
   getCloudflareAnalytics
 );
 
@@ -30,7 +30,7 @@ systemRouter.get(
 systemRouter.post(
   "/purge-cache",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Super Admin"),
+  authorizeRoles(OPERATORS),
   purgeSystemCache
 );
 

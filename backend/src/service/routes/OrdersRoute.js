@@ -13,11 +13,7 @@ import {
   deleteSpamListEntry,
   addSpamListEntry,
 } from "../controllers/OrdersController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-  optionalAuthenticate,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, optionalAuthenticate, authorizeRoles, OWNER_ONLY, ADMINS, OPERATORS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 const ordersRouter = Router();
 
@@ -28,7 +24,7 @@ ordersRouter.post("/new-order", optionalAuthenticate, createOrder);
 ordersRouter.get(
   "/spam/list",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getSpamList
 );
 
@@ -36,7 +32,7 @@ ordersRouter.get(
 ordersRouter.post(
   "/spam",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   addSpamListEntry
 );
 
@@ -44,7 +40,7 @@ ordersRouter.post(
 ordersRouter.delete(
   "/spam/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   deleteSpamListEntry
 );
 
@@ -55,7 +51,7 @@ ordersRouter.get("/:orderId/invoice", getOrderInvoiceView);
 ordersRouter.post(
   "/:orderId/send-invoice-email",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   sendOrderInvoiceEmail,
 );
 
@@ -63,7 +59,7 @@ ordersRouter.post(
 ordersRouter.get(
   "/",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(ALL_STAFF),
   listOrders,
 );
 
@@ -71,7 +67,7 @@ ordersRouter.get(
 ordersRouter.get(
   "/:orderId",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(ALL_STAFF),
   getOrderById,
 );
 
@@ -79,7 +75,7 @@ ordersRouter.get(
 ordersRouter.put(
   "/:orderId",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   updateOrder,
 );
 
@@ -87,7 +83,7 @@ ordersRouter.put(
 ordersRouter.delete(
   "/:orderId",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   deleteOrder,
 );
 
@@ -95,7 +91,7 @@ ordersRouter.delete(
 ordersRouter.post(
   "/bulk-delete",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OWNER_ONLY),
   bulkDeleteOrders,
 );
 
@@ -103,7 +99,7 @@ ordersRouter.post(
 ordersRouter.post(
   "/bulk-update",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   bulkUpdateOrders,
 );
 
@@ -111,7 +107,7 @@ ordersRouter.post(
 ordersRouter.get(
   "/spam/list",
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager"),
+  authorizeRoles(OPERATORS),
   getSpamList
 );
 
@@ -119,7 +115,7 @@ ordersRouter.get(
 ordersRouter.delete(
   "/spam/:id",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(ADMINS),
   deleteSpamListEntry
 );
 

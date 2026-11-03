@@ -3,10 +3,7 @@ import {
   getStoreUtils,
   updateStoreUtils,
 } from "../controllers/StoreUtilsController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 
 const storeUtilsRouter = Router();
 
@@ -17,7 +14,7 @@ storeUtilsRouter.get("/", getStoreUtils);
 storeUtilsRouter.put(
   "/",
   authenticateToken,
-  authorizeRoles("Owner", "Admin"),
+  authorizeRoles(OPERATORS),
   updateStoreUtils
 );
 

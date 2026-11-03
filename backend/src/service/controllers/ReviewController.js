@@ -197,7 +197,7 @@ export const updateReview = async (req, res) => {
     if (!review) return res.status(404).json({ status: "error", message: "Review not found" });
 
     const userRole = typeof req.user.role === "string" ? req.user.role.toLowerCase() : "";
-    const isAdmin = ["owner", "admin", "manager", "super admin"].includes(userRole);
+    const isAdmin = ["owner", "admin", "manager", "marketing expert", "marketing-expert"].includes(userRole);
     
     if (!isAdmin) {
       if (req.user.did !== review.memberDid) {
@@ -263,7 +263,7 @@ export const deleteReview = async (req, res) => {
     if (!review) return res.status(404).json({ status: "error", message: "Review not found" });
 
     const userRole = typeof req.user.role === "string" ? req.user.role.toLowerCase() : "";
-    const isAdmin = ["owner", "admin", "manager", "super admin"].includes(userRole);
+    const isAdmin = ["owner", "admin", "manager", "marketing expert", "marketing-expert"].includes(userRole);
     
     if (!isAdmin && req.user.did !== review.memberDid) {
       return res.status(403).json({ status: "error", message: "Forbidden: You can only delete your own reviews" });

@@ -894,12 +894,8 @@ export const bulkUpdateOrders = async (req, res, next) => {
 export const getOrderInvoiceView = async (req, res, next) => {
   try {
     const { orderId } = req.params;
-    let query = {};
-    if (Types.ObjectId.isValid(orderId)) {
-      query = { _id: orderId };
-    } else {
-      query = { $or: [{ did: orderId }, { orderNumber: orderId }] };
-    }
+    // Sequential order numbers are not accepted on this unauthenticated dashboard link
+    const query = Types.ObjectId.isValid(orderId) ? { _id: orderId } : { did: orderId };
 
     const order = await OrderModel.findOne(query).lean();
     if (!order) {

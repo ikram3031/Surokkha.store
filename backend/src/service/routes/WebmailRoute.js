@@ -9,16 +9,13 @@ import {
   deleteWebmailMessage,
   getWebmailFolders,
 } from "../controllers/WebmailController.js";
-import {
-  authenticateToken,
-  authorizeRoles,
-} from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MANAGERS } from "../../common/middlewares/auth.middleware.js";
 
 const webmailRouter = Router();
 
 const adminAuth = [
   authenticateToken,
-  authorizeRoles("Owner", "Admin", "Manager", "Super Admin"),
+  authorizeRoles(MANAGERS),
 ];
 
 webmailRouter.get("/folders", ...adminAuth, getWebmailFolders);

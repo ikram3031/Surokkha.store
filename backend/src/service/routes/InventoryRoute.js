@@ -4,11 +4,11 @@ import {
   listStockMovements,
   adjustStock,
 } from "../controllers/InventoryController.js";
-import { authenticateToken, authorizeRoles } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, OPERATORS } from "../../common/middlewares/auth.middleware.js";
 
 const router = Router();
 
-const adminAuth = [authenticateToken, authorizeRoles("Owner", "Admin", "Manager", "Super Admin")];
+const adminAuth = [authenticateToken, authorizeRoles(OPERATORS)];
 
 router.get("/", ...adminAuth, listInventory);
 router.get("/movements", ...adminAuth, listStockMovements);

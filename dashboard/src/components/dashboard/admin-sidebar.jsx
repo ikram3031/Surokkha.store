@@ -140,7 +140,7 @@ export const AdminSidebar = ({ ...props }) => {
     }
   }
 
-  const userRole = user?.role || "Marketing Expert"
+  const userRole = user?.role
 
   // Evaluates menu visibility based on tenant feature flags and role access
   const isAllowed = (menuKey) => {
@@ -558,6 +558,7 @@ export const AdminSidebar = ({ ...props }) => {
                   </SidebarMenuSubItem>
 
 
+                  {isAllowed("settings.pathao-courier") && (
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
                       isActive={pathname.startsWith("/admin/settings/pathao-courier") || pathname.startsWith("/admin/settings/pathao")}
@@ -567,7 +568,9 @@ export const AdminSidebar = ({ ...props }) => {
                       <span>{t("nav.pathao_courier", "Pathao Courier")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+                  )}
 
+                  {isAllowed("settings.smtp") && (
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
                       isActive={pathname === "/admin/settings/smtp"}
@@ -577,6 +580,7 @@ export const AdminSidebar = ({ ...props }) => {
                       <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
+                  )}
                   {["shop", "store"].map((site) => (
                     <SidebarMenuSubItem key={`smtp-${site}`}>
                       <SidebarMenuSubButton
