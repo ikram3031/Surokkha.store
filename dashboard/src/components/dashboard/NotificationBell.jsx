@@ -25,16 +25,15 @@ export const NotificationBell = () => {
   // Real-time WebSocket connection for live notification alerts
   useEffect(() => {
     if (!user) return;
-    const token = localStorage.getItem('accessToken');
-    if (!token) return;
-
     let ws = null;
     let reconnectTimeout = null;
 
     // Connects to server websocket for real-time notifications
     const connectWs = () => {
       try {
-        const wsUrl = `${getWebSocketUrl()}?token=${encodeURIComponent(token)}`;
+        const activeToken = localStorage.getItem('accessToken');
+        if (!activeToken) return;
+        const wsUrl = `${getWebSocketUrl()}?token=${encodeURIComponent(activeToken)}`;
         ws = new WebSocket(wsUrl);
 
         ws.onmessage = (event) => {
@@ -52,7 +51,10 @@ export const NotificationBell = () => {
         };
 
         ws.onclose = () => {
-          reconnectTimeout = setTimeout(connectWs, 10000);
+          const freshToken = localStorage.getItem('accessToken');
+          if (freshToken) {
+            reconnectTimeout = setTimeout(connectWs, 15000);
+          }
         };
 
         ws.onerror = () => {

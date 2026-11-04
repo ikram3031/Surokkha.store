@@ -33,22 +33,8 @@ import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import axios from "axios";
 
-const HUB_BASE_URL =
-  import.meta.env.VITE_HUB_API_URL ||
-  clientConfig?.hubApiUrl ||
-  (import.meta.env.VITE_USE_LOCAL_BACKEND === 'true' && typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:5000'
-    : 'https://hub.plexivia.online');
-
-// Fetches live hosting alerts and status from Central Hub
-const fetchBillingAlerts = async (clientKey) => {
-  try {
-    const res = await axios.get(`${HUB_BASE_URL}/api/billing/alerts/${clientKey}`, { timeout: 8000 });
-    return res.data?.data || null;
-  } catch {
-    return null;
-  }
-};
+// Safely resolves hosting alerts without direct cross-origin browser requests
+const fetchBillingAlerts = async () => null;
 
 // ── Support Desk API (Surokkha backend proxy → Plexivia) ─────────────────────────────
 // Every call is same-origin through the authenticated apiClient; the Plexivia key lives only on the server.
