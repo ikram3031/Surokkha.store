@@ -12,6 +12,8 @@ const thanaSchema = new Schema(
     districtName: { type: String, required: true, trim: true, index: true },
     name: { type: String, required: true, trim: true, index: true },
     bnName: { type: String, trim: true, default: "" },
+    deliveryZone: { type: String, enum: ["inside_dhaka", "dhaka_suburb", "outside_dhaka"], default: "outside_dhaka" },
+    deliveryCharge: { type: Number, default: 120, min: 0 },
     areasCount: { type: Number, default: 0 },
     areas: [
       {
@@ -54,6 +56,8 @@ const districtSchema = new Schema(
         zoneId: { type: Number, required: true },
         name: { type: String, required: true, trim: true },
         bnName: { type: String, trim: true, default: "" },
+        deliveryZone: { type: String, default: "outside_dhaka" },
+        deliveryCharge: { type: Number, default: 120 },
       },
     ],
     isActive: { type: Boolean, default: true, index: true },

@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
 import { useItems } from "@/hooks/use-items";
+import { useDistricts, useThanas } from "@/hooks/use-locations";
 import { apiClient, baseURL, getApiBaseUrl } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 import { useCategories, useBrands } from "@/lib/category-cache";
@@ -590,15 +591,29 @@ const NewCustomOrderPage = () => {
     [cart],
   );
 
-  // Auto-calculate Delivery Fee based on active destination district & thana
+  // Delivery charge is stored per thana in the database (set during Pathao sync)
+  const activeDeliveryDistrict = (shipToDifferent ? shipDistrict : billingDistrict).trim();
+  const activeDeliveryThana = (shipToDifferent ? shipThana : billingThana).trim();
+  const { districts: locationDistricts } = useDistricts();
+  const { thanas: activeDistrictThanas } = useThanas(activeDeliveryDistrict, locationDistricts);
+
   const deliveryFee = useMemo(() => {
     if (cart.length === 0) return 0;
-    const activeDist = (shipToDifferent ? shipDistrict : billingDistrict).trim().toLowerCase();
-    const activeTh = (shipToDifferent ? shipThana : billingThana).trim().toLowerCase();
+    const activeDist = activeDeliveryDistrict.toLowerCase();
+    const activeTh = activeDeliveryThana.toLowerCase();
 
+    const stored = activeDistrictThanas.find((t) => String(t.name || "").trim().toLowerCase() === activeTh);
+    if (activeTh && typeof stored?.deliveryCharge === "number") return stored.deliveryCharge;
+
+    // Fallback until the stored charge has loaded (keep in sync with backend deliveryCharge.helper.js)
     if (activeDist === "dhaka") {
-      const suburbThanas = ["savar", "ashulia", "dhamrai", "keraniganj", "nawabganj", "dohar"];
-      if (suburbThanas.includes(activeTh)) {
+      const suburbKeywords = ["savar", "ashulia", "dhamrai", "keraniganj", "nawabganj", "dohar"];
+      const suburbZones = [
+        "jamgora", "shimultola jamgora", "baipail", "hemayetpur", "zirabo", "zirani",
+        "nischintapur", "nobinagar", "amin bazar", "akran bazar", "bakurta", "epz",
+        "kalampur", "kholamura",
+      ];
+      if (suburbKeywords.some((k) => activeTh.includes(k)) || suburbZones.includes(activeTh)) {
         return 90; // Dhaka Suburbs
       }
       return 70; // Inside Dhaka City
@@ -608,7 +623,7 @@ const NewCustomOrderPage = () => {
       return 120; // Outside Dhaka
     }
     return 70;
-  }, [cart.length, shipToDifferent, shipDistrict, shipThana, billingDistrict, billingThana]);
+  }, [cart.length, activeDeliveryDistrict, activeDeliveryThana, activeDistrictThanas]);
 
   // Calculate discount amount based on type
   const discountAmount = useMemo(() => {

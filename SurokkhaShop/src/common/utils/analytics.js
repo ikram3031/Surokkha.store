@@ -803,6 +803,8 @@ export const trackInitiateCheckout = (cart = {}, products = {}, totals = {}) => 
 
   fbqTrack('InitiateCheckout', customData, eventId);
   sendMetaCAPI({ eventName: 'InitiateCheckout', eventId, customData });
+  // Server InitiateCheckout fires now too, so checkouts where no phone is ever typed still reach Conversions API
+  saveCheckoutLead({ initiateCheckout: true, cartTotal: grandTotal });
 
   gtagEvent('begin_checkout', {
     currency: 'BDT',

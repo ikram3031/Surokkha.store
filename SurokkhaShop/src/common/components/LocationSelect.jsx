@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICT_THANAS } from '../data/districts';
+import { registerThanaCharges } from '../utils/deliveryCharge';
 
 const thanaCache = {};
 
@@ -26,6 +27,7 @@ export function useThanas(district) {
     fetch(`${cleanBase}/api/v1/locations/districts/${encodeURIComponent(district)}/thanas`)
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
+        if (Array.isArray(json?.data)) registerThanaCharges(district, json.data);
         const names = Array.isArray(json?.data) ? json.data.map((t) => t.name).filter(Boolean) : [];
         const options = names.length > 0 ? names : fallback;
         if (options.length > 0) thanaCache[district] = options;

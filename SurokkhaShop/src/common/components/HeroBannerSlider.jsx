@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SmartPackHero from './SmartPackHero';
-import TrialPackHero from './TrialPackHero';
 import UltimateComboHero from './UltimateComboHero';
 import CmsHeroSlide from './CmsHeroSlide';
 import { SITE_CONFIG } from '../config/siteConfig';
@@ -9,10 +8,26 @@ const API_BASE_URL = SITE_CONFIG.apiBaseUrl.replace(/\/$/, '');
 const CACHE_KEY = 'cms_hero_slider_v1';
 const DEFAULT_SETTINGS = { autoplay: true, speedMs: 5000, transitionMs: 700, pauseOnHover: true, showArrows: true, showDots: true };
 
+// Special Combo: 30 pieces MO Micro Ribbed Pack (product 6aeafa497b0cbb4ad68d387d)
+const SPECIAL_COMBO_SLIDE = {
+  badge: 'Special Combo',
+  titleDark: '30 Pieces',
+  titleAccent: 'MO Micro Ribbed',
+  tagline: ['3 Full Boxes', 'Bundle Price'],
+  subtitle: '৩০ পিস স্পেশাল কম্বো — বিশেষ ছাড়ে',
+  chips: [{ label: 'Micro Ribbed', color: '#94a3b8' }, { label: '100% Confidential', color: '#e05578' }],
+  image: '/uploads/2611/261104/special-combo-30-pieces-mo-micro-ribbed-pack_main_1793784339568.webp',
+  imageAlt: 'Special Combo: 30 pieces MO Micro Ribbed Pack',
+  ctaLabel: 'Order Now',
+  ctaNote: '৳1000 (ছিল ৳1350)',
+  ctaLink: 'special-combo-30-pieces-mo-micro-ribbed-pack',
+  footnote: 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)',
+};
+
 // Built-in coded banners, shown only when the dashboard has no slider saved (or the API is unreachable).
 const FALLBACK_SLIDES = [
   { key: 'smart-pack', Component: SmartPackHero },
-  { key: 'trial-pack', Component: TrialPackHero },
+  { key: 'special-combo-30', Component: CmsHeroSlide, props: { slide: SPECIAL_COMBO_SLIDE } },
   { key: 'ultimate-combo', Component: UltimateComboHero },
 ];
 
@@ -62,7 +77,7 @@ export default function HeroBannerSlider() {
   const settings = { ...DEFAULT_SETTINGS, ...(cms?.settings || {}) };
   const slides = cms
     ? cms.items.map((item, i) => ({ key: item._id || `cms-${i}`, render: () => <CmsHeroSlide slide={item} /> }))
-    : FALLBACK_SLIDES.map(({ key, Component }) => ({ key, render: () => <Component /> }));
+    : FALLBACK_SLIDES.map(({ key, Component, props }) => ({ key, render: () => <Component {...props} /> }));
 
   const slideCount = slides.length;
   const current = pos % slideCount;

@@ -366,8 +366,12 @@ export const listOrders = async (req, res, next) => {
     const filter = andConditions.length > 0 ? { $and: andConditions } : {};
 
     const total = await OrderModel.countDocuments(filter);
-    const orders = await OrderModel.find(filter)
-      .sort({ createdAt: -1 })
+    // Order ID sort compares the numeric tail properly (…10 after …9); default is newest first
+    const sortDir = req.query.sortDir === 'asc' ? 1 : -1;
+    const byOrderNumber = req.query.sortBy === 'orderNumber';
+    let ordersQuery = OrderModel.find(filter).sort(byOrderNumber ? { orderNumber: sortDir, _id: sortDir } : { createdAt: -1 });
+    if (byOrderNumber) ordersQuery = ordersQuery.collation({ locale: 'en', numericOrdering: true });
+    const orders = await ordersQuery
       .skip((page - 1) * limit)
       .limit(limit)
       .populate('customer', 'firstName lastName phone email did')

@@ -1,5 +1,6 @@
 import { sendServerAddToCartEvent, sendServerViewContentEvent } from '../../common/services/facebookCapi.service.js';
 import { sendTikTokServerAddToCartEvent } from '../../common/services/tiktokEventsApi.service.js';
+import { seenRecently } from '../../common/utils/recentEvents.js';
 
 // Dispatches server-side AddToCart CAPI event for Meta and TikTok using product.did as content ID
 export const trackAddToCart = async (req, res) => {
@@ -29,6 +30,11 @@ export const trackAddToCart = async (req, res) => {
         status: 'error',
         message: 'productDid, productId, or sku is required to track this event.',
       });
+    }
+
+    // The same event id arriving twice (retry / doubled request) is acknowledged but not sent again
+    if (eventId && seenRecently(`atc:${eventId}`)) {
+      return res.json({ status: 'success', message: 'AddToCart event already dispatched.' });
     }
 
     const resolvedFbLoginId = fb_login_id || fbLoginId || user?.fb_login_id || user?.fbLoginId || '';

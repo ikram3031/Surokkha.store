@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { SITE_CONFIG } from '../config/siteConfig';
+import { getDeliveryCharge } from '../utils/deliveryCharge';
 import {
   trackPageView,
   trackAddToCart,
@@ -1025,20 +1026,8 @@ export const useStore = create((set, get) => ({
       const activeDistrict = (sameAsBilling ? (shippingInfo.district || '') : (shippingAddress.district || '')).trim().toLowerCase();
       const activeThana = (sameAsBilling ? (shippingInfo.thana || '') : (shippingAddress.thana || '')).trim().toLowerCase();
 
-      if (activeDistrict === 'dhaka') {
-        const suburbThanas = ['savar', 'ashulia', 'dhamrai', 'keraniganj', 'nawabganj', 'dohar'];
-        if (suburbThanas.includes(activeThana)) {
-          deliveryFee = 90; // Dhaka Suburbs
-        } else {
-          deliveryFee = 70; // Inside Dhaka City
-        }
-      } else if (activeDistrict === 'gazipur' || activeDistrict === 'narayanganj') {
-        deliveryFee = 90; // Dhaka Suburbs
-      } else if (activeDistrict) {
-        deliveryFee = 120; // Outside Dhaka
-      } else {
-        deliveryFee = 70; // Default when unselected
-      }
+      // Charge stored per thana in the database (synced from Pathao); falls back to local rules until loaded
+      deliveryFee = getDeliveryCharge(activeDistrict, activeThana);
     }
 
     // Dynamic Coupon Discount Calculation

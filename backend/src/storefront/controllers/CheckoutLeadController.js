@@ -1,6 +1,7 @@
 import { CheckoutLeadModel } from "../../common/models/checkoutLead.model.js";
 import { sendServerInitiateCheckoutEvent, extractClientIp } from "../../common/services/facebookCapi.service.js";
 import { logger } from "../../common/config/logger.js";
+import { seenRecently } from "../../common/utils/recentEvents.js";
 
 const str = (v, max = 300) => String(v ?? "").trim().slice(0, max);
 
@@ -28,6 +29,28 @@ export const markCheckoutLeadConverted = async ({ sessionId, phone, orderNumber 
   }
 };
 
+const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+
+// Cart details for the server InitiateCheckout, taken from what the browser pixel event carried
+const initiateCheckoutData = (body, cartTotal) => {
+  const cd = body.customData || {};
+  const contents = Array.isArray(cd.contents)
+    ? cd.contents.slice(0, 30).map((c) => ({
+        id: str(c?.id, 100),
+        quantity: Number(c?.quantity) || 1,
+        item_price: Number(c?.item_price) || 0,
+      }))
+    : [];
+  return {
+    content_ids: Array.isArray(cd.content_ids) ? cd.content_ids.slice(0, 30).map((v) => str(v, 100)) : [],
+    contents,
+    content_type: "product",
+    value: cartTotal,
+    currency: "BDT",
+    num_items: contents.reduce((s, c) => s + c.quantity, 0) || Number(cd.num_items) || 0,
+  };
+};
+
 // Saves (upserts) the checkout details a customer has typed so far; public storefront endpoint
 export const saveCheckoutLead = async (req, res) => {
   try {
@@ -35,6 +58,18 @@ export const saveCheckoutLead = async (req, res) => {
     const sessionId = str(body.sessionId, 100);
     if (!/^[\w-]{8,100}$/.test(sessionId)) {
       return res.status(400).json({ status: "error", message: "A valid sessionId is required." });
+    }
+
+    // The checkout page just opened: send InitiateCheckout right away (even if the customer never types a phone),
+    // with the same event_id as the browser pixel event so Meta merges the pair. Sent once per checkout session.
+    if (body.initiateCheckout === true && !seenRecently(`ic:${sessionId}`, SIX_HOURS_MS)) {
+      sendServerInitiateCheckoutEvent({
+        customData: initiateCheckoutData(body, Math.max(0, Number(body.cartTotal) || 0)),
+        req,
+        eventId: `ic_${sessionId}`,
+        eventSourceUrl: str(body.sourceUrl, 400),
+        user: { externalId: sessionId },
+      });
     }
 
     const phoneKey = phoneKeyOf(body.phone);
@@ -80,27 +115,15 @@ export const saveCheckoutLead = async (req, res) => {
     // One InitiateCheckout per lead, with customer data, once the phone is known.
     // Same event_id as the browser pixel event so Meta merges the pair.
     if (phoneKey && !lead.metaSent) {
+      // Already sent when the checkout opened: same event_id, nothing more to send
+      const alreadySent = seenRecently(`ic:${sessionId}`, SIX_HOURS_MS);
       const claimed = await CheckoutLeadModel.findOneAndUpdate(
         { _id: lead._id, metaSent: false },
         { $set: { metaSent: true } }
       );
-      if (claimed) {
-        const cd = body.customData || {};
+      if (claimed && !alreadySent) {
         sendServerInitiateCheckoutEvent({
-          customData: {
-            content_ids: Array.isArray(cd.content_ids) ? cd.content_ids.slice(0, 30).map((v) => str(v, 100)) : [],
-            contents: Array.isArray(cd.contents)
-              ? cd.contents.slice(0, 30).map((c) => ({
-                  id: str(c?.id, 100),
-                  quantity: Number(c?.quantity) || 1,
-                  item_price: Number(c?.item_price) || 0,
-                }))
-              : [],
-            content_type: "product",
-            value: set.cartTotal,
-            currency: "BDT",
-            num_items: items.reduce((s, i) => s + i.quantity, 0),
-          },
+          customData: initiateCheckoutData(body, set.cartTotal),
           req,
           eventId: `ic_${sessionId}`,
           eventSourceUrl: set.sourceUrl,

@@ -17,6 +17,8 @@ export const fetchOrders = async (params) => {
     if (params?.orderType) queryParams.orderType = params.orderType;
     if (params?.dateFrom) queryParams.dateFrom = params.dateFrom;
     if (params?.dateTo) queryParams.dateTo = params.dateTo;
+    if (params?.sortBy) queryParams.sortBy = params.sortBy;
+    if (params?.sortDir) queryParams.sortDir = params.sortDir;
 
     const response = await apiClient.get('/api/v1/orders', { params: queryParams });
     const responseData = response.data;

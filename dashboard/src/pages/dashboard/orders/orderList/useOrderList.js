@@ -87,6 +87,9 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
   const urlSearch = searchParams.get('q') || '';
   const dateFrom = searchParams.get('from') || '';
   const dateTo = searchParams.get('to') || '';
+  // Order ID sort: 'asc' | 'desc', empty = newest first
+  const idSortParam = searchParams.get('idSort');
+  const idSort = idSortParam === 'asc' || idSortParam === 'desc' ? idSortParam : '';
 
   const updateParams = useCallback(
     (updates) => {
@@ -156,6 +159,13 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
     clearSelection();
   };
 
+  // Order ID header click cycles: default -> ascending -> descending -> default
+  const cycleIdSort = () => {
+    const next = idSort === '' ? 'asc' : idSort === 'asc' ? 'desc' : '';
+    updateParams({ idSort: next, page: 1 });
+    clearSelection();
+  };
+
   const setPaymentFilter = (value) => {
     updateParams({ payment: value ?? STATUS_ALL, page: 1 });
     clearSelection();
@@ -189,11 +199,13 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       paymentStatus: paymentFilter !== STATUS_ALL ? paymentFilter : undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
+      sortBy: idSort ? 'orderNumber' : undefined,
+      sortDir: idSort || undefined,
       page: currentPage,
       limit: pageSize,
       orderType,
     }),
-    [urlSearch, statusFilter, paymentFilter, dateFrom, dateTo, currentPage, pageSize, orderType]
+    [urlSearch, statusFilter, paymentFilter, dateFrom, dateTo, idSort, currentPage, pageSize, orderType]
   );
 
   const ordersQuery = useOrders(queryParams, { enabled: fetchData });
@@ -525,6 +537,8 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       hasActive: hasActiveFilters,
       reset: resetFilters,
     },
+
+    sort: { idSort, cycleIdSort },
 
     pagination: {
       page: currentPage,

@@ -1,5 +1,6 @@
 import { DistrictModel, ThanaModel } from "../models/district.model.js";
 import { getPathaoCities, getPathaoZones } from "./pathao.service.js";
+import { getDeliveryTier } from "../helper/deliveryCharge.helper.js";
 
 // Standard 64 Districts of Bangladesh
 export const BANGLADESH_64_DISTRICTS = [
@@ -261,6 +262,7 @@ export async function syncLocationsFromPathaoAPI(options = {}) {
       zoneId: Number(z.zone_id),
       name: String(z.zone_name || "").trim(),
       bnName: String(z.zone_name_bn || "").trim(),
+      ...getDeliveryTier(cityName, z.zone_name),
     }));
 
     // Update or Insert District in MongoDB
@@ -294,6 +296,7 @@ export async function syncLocationsFromPathaoAPI(options = {}) {
               districtName: cityName,
               name: String(z.zone_name || "").trim(),
               bnName: String(z.zone_name_bn || "").trim(),
+              ...getDeliveryTier(cityName, z.zone_name),
               isActive: true,
               source: "pathao",
               lastSyncedAt: now,
@@ -353,6 +356,7 @@ export async function seedBaselineDistrictsAndThanas() {
         zoneId,
         name: tName,
         bnName: "",
+        ...getDeliveryTier(dist.name, tName),
       };
     });
 
@@ -385,6 +389,8 @@ export async function seedBaselineDistrictsAndThanas() {
             districtName: dist.name,
             name: t.name,
             bnName: t.bnName,
+            deliveryZone: t.deliveryZone,
+            deliveryCharge: t.deliveryCharge,
             isActive: true,
             source: "seed",
             lastSyncedAt: now,

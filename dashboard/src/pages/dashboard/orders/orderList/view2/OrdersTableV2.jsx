@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Check,
   Eye,
   Loader2,
@@ -215,7 +218,7 @@ function NotesCell({ order, list }) {
 // View2 orders table: fixed columns, primary-tinted header, separate View column, row click = quick view
 export function OrdersTableV2({ list }) {
   const { t } = useTranslation();
-  const { data, selection, orderActions, isReadOnly } = list;
+  const { data, selection, orderActions, isReadOnly, sort } = list;
   const { orders, isLoading, isError, error } = data;
 
   if (isError) {
@@ -254,7 +257,23 @@ export function OrdersTableV2({ list }) {
               aria-label={t('orders.select_all', 'Select all orders on this page')}
             />
           </TableHead>
-          <TableHead>{t('orders.order_id', 'Order ID')}</TableHead>
+          <TableHead aria-sort={sort.idSort === 'asc' ? 'ascending' : sort.idSort === 'desc' ? 'descending' : 'none'}>
+            <button
+              type="button"
+              onClick={sort.cycleIdSort}
+              className="inline-flex cursor-pointer items-center gap-1 font-medium hover:underline"
+              title={t('orders.sort_by_id', 'Sort by Order ID')}
+            >
+              {t('orders.order_id', 'Order ID')}
+              {sort.idSort === 'asc' ? (
+                <ArrowUp className="size-3.5" />
+              ) : sort.idSort === 'desc' ? (
+                <ArrowDown className="size-3.5" />
+              ) : (
+                <ArrowUpDown className="size-3.5 opacity-60" />
+              )}
+            </button>
+          </TableHead>
           <TableHead className="text-center">{t('common.view', 'View')}</TableHead>
           <TableHead>{t('orders.customer', 'Customer')}</TableHead>
           <TableHead>{t('orders.order_notes', 'Order Notes')}</TableHead>

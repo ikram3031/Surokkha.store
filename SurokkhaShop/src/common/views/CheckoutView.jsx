@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useStore } from '../store/useStore';
 import { DISTRICTS } from '../data/districts';
 import LocationSelect, { useThanas } from '../components/LocationSelect';
@@ -385,8 +386,9 @@ export default function CheckoutView() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 animate-fade-in text-left">
 
-      {contactModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4">
+      {/* Portalled to <body> so no transformed parent traps it under the header/footer; solid black covers the whole screen */}
+      {contactModal && createPortal(
+        <div className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black px-4">
           <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
             <button
               type="button"
@@ -409,7 +411,8 @@ export default function CheckoutView() {
               Contact on WhatsApp
             </a>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       
       {/* Page Header */}

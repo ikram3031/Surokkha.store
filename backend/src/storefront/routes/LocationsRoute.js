@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { ThanaModel } from "../../common/models/district.model.js";
+import { getDeliveryTier } from "../../common/helper/deliveryCharge.helper.js";
 
 const locationsRouter = Router();
 
@@ -15,13 +16,19 @@ locationsRouter.get("/districts/:district/thanas", async (req, res, next) => {
 
     const thanas = await ThanaModel.find(
       { districtName: new RegExp(`^${escapeRegex(district)}$`, "i"), isActive: true },
-      "name bnName -_id"
+      "name bnName districtName deliveryZone deliveryCharge -_id"
     )
       .sort({ name: 1 })
       .lean();
 
+    // Docs synced before delivery charges were stored get the charge computed on the fly
+    const data = thanas.map(({ districtName, ...t }) => ({
+      ...t,
+      ...(t.deliveryCharge == null ? getDeliveryTier(districtName, t.name) : {}),
+    }));
+
     res.set("Cache-Control", "public, max-age=3600");
-    return res.json({ status: "success", count: thanas.length, data: thanas });
+    return res.json({ status: "success", count: data.length, data });
   } catch (error) {
     next(error);
   }

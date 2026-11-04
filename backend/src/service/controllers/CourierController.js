@@ -5,6 +5,7 @@ import { OrderModel } from "../../common/models/order.model.js";
 import { ensurePaymentOnShip } from "../../common/helper/orderControllerHelper.js";
 import { LogModel } from "../../common/models/log.model.js";
 import { DistrictModel, ThanaModel } from "../../common/models/district.model.js";
+import { getDeliveryTier } from "../../common/helper/deliveryCharge.helper.js";
 import {
   getPathaoConfig,
   testPathaoConnection,
@@ -648,7 +649,10 @@ export const getDistrictThanasListController = async (req, res, next) => {
       query = { districtName: new RegExp(`^${cityId.trim()}$`, "i"), isActive: true };
     }
 
-    const thanas = await ThanaModel.find(query).sort({ name: 1 }).lean();
+    const found = await ThanaModel.find(query).sort({ name: 1 }).lean();
+    const thanas = found.map((t) =>
+      t.deliveryCharge == null ? { ...t, ...getDeliveryTier(t.districtName, t.name) } : t
+    );
     return res.json({
       status: "success",
       count: thanas.length,
