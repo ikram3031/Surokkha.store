@@ -178,7 +178,8 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (typeof window !== 'undefined' && !isAuthRequest) {
+    // Callers that render their own error state (e.g. Support Desk) pass { skipGlobalError: true }
+    if (typeof window !== 'undefined' && !isAuthRequest && !originalRequest?.skipGlobalError) {
       handleGlobalError(error);
     }
     return Promise.reject(error);

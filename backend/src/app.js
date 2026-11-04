@@ -54,6 +54,7 @@ export const createApp = async (options = {}) => {
       "Accept-Language",
       "X-Language",
       "X-Client-Key",
+      "X-File-Name",
       "x-language",
       "accept-language"
     ],
