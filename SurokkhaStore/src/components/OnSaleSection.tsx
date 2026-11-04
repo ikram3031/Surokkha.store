@@ -1,5 +1,6 @@
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import { useShowcaseProducts } from '@/hooks/useShowcaseProducts'
+import { SectionHeading } from '@/components/SectionHeading'
 
 // 4 columns × 2 rows on desktop
 const MAX_PRODUCTS = 8
@@ -11,7 +12,7 @@ export function OnSaleSection() {
 
   return (
     <section id="on-sale" className="mx-auto max-w-7xl px-4 pb-10 pt-4" aria-label="On sale products">
-      <h2 className="font-display text-3xl font-bold">On Sale</h2>
+      <SectionHeading title="On sale" />
       <ProductGrid products={products.slice(0, MAX_PRODUCTS)} />
     </section>
   )

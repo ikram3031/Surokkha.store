@@ -1,3 +1,5 @@
+import { SectionHeading } from '@/components/SectionHeading'
+
 const steps = [
   {
     title: 'Order online',
@@ -17,11 +19,12 @@ const steps = [
 export function DeliverySteps() {
   return (
     <section id="delivery" className="scroll-mt-20 bg-foreground py-16 text-background md:py-24">
-      <div className="mx-auto max-w-6xl px-4">
-        <h2 className="font-display text-3xl font-bold md:text-4xl">How private delivery works</h2>
-        <p className="mt-4 max-w-lg text-background/70">
-          From checkout to your door, nobody else needs to know what you ordered.
-        </p>
+      <div className="mx-auto max-w-7xl px-4">
+        <SectionHeading
+          invert
+          title="How private delivery works"
+          subtitle="From checkout to your door, nobody else needs to know what you ordered."
+        />
 
         <ol className="mt-12 grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => (

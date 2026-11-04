@@ -4,6 +4,7 @@ import { useProducts } from '@/hooks/useProducts'
 import { FilterBar, type ShopFilter } from '@/components/shop/FilterBar'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import { Button } from '@/components/ui/button'
+import { SectionHeading } from '@/components/SectionHeading'
 
 interface ShopProps {
   query: string
@@ -31,7 +32,7 @@ export const Shop = forwardRef<HTMLDivElement, ShopProps>(function Shop(
   return (
     <section id="shop" ref={ref} className="mx-auto max-w-7xl px-4 pb-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h2 className="font-display text-3xl font-bold">All Products</h2>
+        <SectionHeading title="All products" />
         <FilterBar value={filter} onChange={onFilterChange} />
       </div>
 

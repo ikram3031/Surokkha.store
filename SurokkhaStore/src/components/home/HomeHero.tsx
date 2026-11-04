@@ -42,7 +42,7 @@ export function HomeHero() {
             <Button
               size="lg"
               variant="outline"
-              className="h-12 rounded-full bg-card/80 px-8 text-base backdrop-blur"
+              className="h-12 rounded-full border-2 border-link bg-card/80 px-8 text-base font-semibold text-link backdrop-blur hover:bg-link hover:text-link-foreground"
               onClick={() => scrollToId('delivery')}
             >
               How it works

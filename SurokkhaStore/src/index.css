@@ -12,7 +12,8 @@
   means editing only this block.
 */
 :root {
-  --radius: 1.25rem;
+  /* Flat 4px / 8px corners everywhere (pills keep rounded-full). */
+  --radius: 0.5rem;
 
   /* brand source colors, for reference only — do not import elsewhere */
   --brand-cream: #f5e6d3;
@@ -43,7 +44,7 @@
   --secondary-foreground: var(--brand-ink);
 
   --muted: var(--brand-cream-deep);
-  --muted-foreground: var(--brand-taupe-dark);
+  --muted-foreground: #5b534f;
 
   --accent: var(--brand-blush-soft);
   --accent-foreground: var(--brand-ink);
@@ -54,11 +55,19 @@
   --success: #1f8a4c;
   --success-foreground: #ffffff;
 
+  /* Price accent: louder than the maroon primary, darker than the blush. */
+  --price: var(--brand-blush-deep);
+
+  /* The one bright colour: every link and link-like control uses it, nothing else does. */
+  --link: #e0115f;
+  --link-hover: #b50d4b;
+  --link-foreground: #ffffff;
+
   --border: var(--brand-cream-deep);
   --input: var(--brand-cream-deep);
   --ring: var(--brand-blush);
 
-  --font-display: "Noto Serif Bengali", serif;
+  --font-display: "Playfair Display", "Noto Serif Bengali", serif;
   --font-body: "Hind Siliguri", sans-serif;
 }
 
@@ -79,7 +88,7 @@
   --secondary-foreground: var(--brand-cream-light);
 
   --muted: #3a322f;
-  --muted-foreground: var(--brand-taupe);
+  --muted-foreground: #c8c2bf;
 
   --accent: #4a3f3a;
   --accent-foreground: var(--brand-cream-light);
@@ -89,6 +98,12 @@
 
   --success: #3ec97b;
   --success-foreground: #241f1c;
+
+  --price: #ff8da0;
+
+  --link: #ff2d6f;
+  --link-hover: #ff5c8d;
+  --link-foreground: #241f1c;
 
   --border: #3a322f;
   --input: #3a322f;
@@ -117,11 +132,75 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-price: var(--price);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-link-foreground: var(--link-foreground);
 
-  --radius-sm: calc(var(--radius) - 0.5rem);
-  --radius-md: calc(var(--radius) - 0.25rem);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 0.25rem);
+  /* Every rounded-* utility lands on 4px or 8px; rounded-full still gives pills. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.5rem;
+  --radius-3xl: 0.5rem;
+  --radius-4xl: 0.5rem;
+
+  --color-gray-50: #f7f6f5;
+  --color-gray-100: #efedec;
+  --color-gray-200: #e0dcda;
+  --color-gray-300: #c8c2bf;
+  --color-gray-400: #9c938e;
+  --color-gray-500: #776e69;
+  --color-gray-600: #5b534f;
+  --color-gray-700: #463f3c;
+  --color-gray-800: #3a322f;
+  --color-gray-900: #2a2421;
+  --color-gray-950: #1a1613;
+  --color-slate-50: #f7f6f5;
+  --color-slate-100: #efedec;
+  --color-slate-200: #e0dcda;
+  --color-slate-300: #c8c2bf;
+  --color-slate-400: #9c938e;
+  --color-slate-500: #776e69;
+  --color-slate-600: #5b534f;
+  --color-slate-700: #463f3c;
+  --color-slate-800: #3a322f;
+  --color-slate-900: #2a2421;
+  --color-slate-950: #1a1613;
+  --color-zinc-50: #f7f6f5;
+  --color-zinc-100: #efedec;
+  --color-zinc-200: #e0dcda;
+  --color-zinc-300: #c8c2bf;
+  --color-zinc-400: #9c938e;
+  --color-zinc-500: #776e69;
+  --color-zinc-600: #5b534f;
+  --color-zinc-700: #463f3c;
+  --color-zinc-800: #3a322f;
+  --color-zinc-900: #2a2421;
+  --color-zinc-950: #1a1613;
+  --color-neutral-50: #f7f6f5;
+  --color-neutral-100: #efedec;
+  --color-neutral-200: #e0dcda;
+  --color-neutral-300: #c8c2bf;
+  --color-neutral-400: #9c938e;
+  --color-neutral-500: #776e69;
+  --color-neutral-600: #5b534f;
+  --color-neutral-700: #463f3c;
+  --color-neutral-800: #3a322f;
+  --color-neutral-900: #2a2421;
+  --color-neutral-950: #1a1613;
+  --color-stone-50: #f7f6f5;
+  --color-stone-100: #efedec;
+  --color-stone-200: #e0dcda;
+  --color-stone-300: #c8c2bf;
+  --color-stone-400: #9c938e;
+  --color-stone-500: #776e69;
+  --color-stone-600: #5b534f;
+  --color-stone-700: #463f3c;
+  --color-stone-800: #3a322f;
+  --color-stone-900: #2a2421;
+  --color-stone-950: #1a1613;
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
@@ -321,7 +400,7 @@ input[type='search']::-webkit-search-results-decoration {
 /* Sidebar category row */
 .blog-cat-row {
   display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 0.75rem;
-  border-radius: 1rem; padding: 0.6rem 0.85rem; font-weight: 500;
+  border-radius: 0.5rem; padding: 0.6rem 0.85rem; font-weight: 500;
   transition: background-color 0.2s, color 0.2s;
 }
 .blog-cat-row:hover { background: color-mix(in oklab, var(--accent) 55%, transparent); }
@@ -362,9 +441,9 @@ input[type='search']::-webkit-search-results-decoration {
 .prose-blog strong { color: var(--foreground); font-weight: 700; }
 .prose-blog blockquote {
   border-left: 4px solid var(--ring); background: color-mix(in oklab, var(--accent) 50%, transparent);
-  padding: 1rem 1.25rem; border-radius: 0 1rem 1rem 0; font-family: var(--font-display); font-size: 1.1rem; line-height: 1.8;
+  padding: 1rem 1.25rem; border-radius: 0 0.5rem 0.5rem 0; font-family: var(--font-display); font-size: 1.1rem; line-height: 1.8;
 }
-.prose-blog .callout { border: 1px solid var(--border); background: var(--card); border-radius: 1.25rem; padding: 1rem 1.25rem; font-size: 0.98rem; }
+.prose-blog .callout { border: 1px solid var(--border); background: var(--card); border-radius: 0.5rem; padding: 1rem 1.25rem; font-size: 0.98rem; }
 .prose-blog .callout b { display: block; margin-bottom: 0.2rem; color: var(--primary); }
 .prose-blog .checklist { list-style: none; padding-left: 0; }
 .prose-blog .checklist li { position: relative; padding-left: 1.9rem; }

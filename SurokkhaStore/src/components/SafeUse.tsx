@@ -1,4 +1,5 @@
 import { SectionBackground } from '@/components/SectionBackground'
+import { SectionHeading } from '@/components/SectionHeading'
 
 export const tips = [
   {
@@ -21,13 +22,10 @@ export function SafeUse() {
       <SectionBackground name="safe-use" />
       <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-14 md:grid-cols-2">
         <div>
-          <h2 className="font-display text-3xl font-bold leading-snug">
-            Three things to know about safe use
-          </h2>
-          <p className="mt-4 max-w-md text-muted-foreground">
-            Condoms only protect fully when used correctly. Keep these in mind before you buy
-            and before you use.
-          </p>
+          <SectionHeading
+            title="Three things to know about safe use"
+            subtitle="Condoms only protect fully when used correctly. Keep these in mind before you buy and before you use."
+          />
         </div>
         <ol className="space-y-4">
           {tips.map((tip) => (

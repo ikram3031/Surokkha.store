@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { BoxIcon, BottleIcon, ComboIcon } from '@/components/icons/ArtIcons'
 import type { ShopFilter } from '@/components/shop/FilterBar'
 import { SectionBackground } from '@/components/SectionBackground'
+import { SectionHeading } from '@/components/SectionHeading'
 
 const tiles: {
   cat: ShopFilter
@@ -47,7 +48,7 @@ export function Categories({ onSelect }: { onSelect: (cat: ShopFilter) => void }
     <section id="categories" className="relative overflow-hidden">
       <SectionBackground name="categories" />
       <div className="relative mx-auto max-w-7xl px-4 py-14">
-      <h2 className="text-center font-display text-3xl font-bold">What are you looking for?</h2>
+      <SectionHeading align="center" title="What are you looking for?" />
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((tile) => (
           <Card

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/shop/ProductCard'
 import type { Product } from '@/data/products'
+import { SectionHeading } from '@/components/SectionHeading'
 
 const AUTOPLAY_MS = 3500
 
@@ -57,10 +58,7 @@ export function ProductCarousel({
       onTouchEnd={() => setPaused(false)}
     >
       <div className="flex items-end justify-between gap-4">
-        <div>
-          <h2 className="font-display text-3xl font-bold md:text-4xl">{title}</h2>
-          {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
-        </div>
+        <SectionHeading title={title} subtitle={subtitle} />
         <div className="hidden gap-2 sm:flex">
           <Button variant="outline" size="icon" className="rounded-full" aria-label="Previous" onClick={() => step(-1)}>
             <ChevronLeft className="h-5 w-5" />

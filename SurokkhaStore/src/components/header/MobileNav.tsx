@@ -1,18 +1,13 @@
 import { User } from 'lucide-react'
-import { SearchInput } from '@/components/header/SearchInput'
 import { useCategories } from '@/hooks/useCategories'
 import { navigate } from '@/lib/router'
 
 const itemClass = 'block w-full rounded-xl px-2 py-2.5 text-left font-medium transition-colors hover:bg-background/10'
 
 export function MobileNav({
-  query,
-  onQueryChange,
   onNavigate,
   onCategory,
 }: {
-  query: string
-  onQueryChange: (value: string) => void
   /** Closes the sheet after any navigation. */
   onNavigate: () => void
   onCategory: (slug: string) => void
@@ -41,7 +36,6 @@ export function MobileNav({
       </div>
 
       <div className="space-y-3 overflow-y-auto px-4 pb-3">
-        <SearchInput value={query} onChange={onQueryChange} id="searchInputM" tone="inverted" />
         <ul className="flex flex-col">
           <li>
             <button type="button" className={itemClass} onClick={() => go('/')}>

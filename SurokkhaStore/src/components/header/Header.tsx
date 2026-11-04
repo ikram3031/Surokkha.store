@@ -36,7 +36,7 @@ export function Header({
               className="max-w-xs border-none bg-foreground text-background [&_svg]:text-background"
             >
               <SheetTitle className="sr-only">Menu</SheetTitle>
-              <MobileNav query={query} onQueryChange={onQueryChange} onNavigate={() => setMenuOpen(false)} onCategory={onCategory} />
+              <MobileNav onNavigate={() => setMenuOpen(false)} onCategory={onCategory} />
             </SheetContent>
           </Sheet>
 

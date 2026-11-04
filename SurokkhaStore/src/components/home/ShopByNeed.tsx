@@ -2,6 +2,7 @@ import { SectionBackground } from '@/components/SectionBackground'
 import { useCategories } from '@/hooks/useCategories'
 import { useProducts } from '@/hooks/useProducts'
 import { categoryPath, navigate } from '@/lib/router'
+import { SectionHeading } from '@/components/SectionHeading'
 
 // Which categories lead the mosaic, in this order; anything else from the API fills the gaps
 const PREFERRED = ['condoms', 'lubricants', 'feminine-care', 'combo', 'wellness']
@@ -26,8 +27,8 @@ export function ShopByNeed() {
   return (
     <section id="categories" className="relative overflow-hidden">
       <SectionBackground name="categories" />
-      <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">
-        <h2 className="font-display text-3xl font-bold md:text-4xl">Shop by need</h2>
+      <div className="relative mx-auto max-w-7xl px-4 py-16 md:py-24">
+        <SectionHeading title="Shop by need" subtitle="Pick the category you came for — every tile opens its full range." />
 
         <div className="mt-10 grid gap-5 md:h-[560px] md:grid-flow-col md:grid-cols-3 md:grid-rows-2">
           {ordered.map((category, i) => {

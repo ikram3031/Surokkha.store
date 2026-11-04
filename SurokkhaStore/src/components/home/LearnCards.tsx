@@ -1,5 +1,6 @@
 import { SectionBackground } from '@/components/SectionBackground'
 import { tips } from '@/components/SafeUse'
+import { SectionHeading } from '@/components/SectionHeading'
 
 /** "Learn with confidence": the safe-use tips as three numbered cards. */
 export function LearnCards() {
@@ -7,11 +8,10 @@ export function LearnCards() {
     <section className="relative overflow-hidden bg-background">
       <SectionBackground name="safe-use" />
       <div className="relative mx-auto max-w-7xl px-4 py-16 md:py-24">
-        <h2 className="font-display text-3xl font-bold md:text-4xl">Learn with confidence</h2>
-        <p className="mt-3 max-w-xl text-muted-foreground">
-          Condoms only protect fully when used correctly. Keep these three things in mind before you buy and before you
-          use.
-        </p>
+        <SectionHeading
+          title="Learn with confidence"
+          subtitle="Condoms only protect fully when used correctly. Keep these three things in mind before you buy and before you use."
+        />
 
         <ol className="mt-10 grid gap-6 md:grid-cols-3">
           {tips.map((tip, i) => (

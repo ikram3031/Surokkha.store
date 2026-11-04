@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { useShowcaseProducts } from '@/hooks/useShowcaseProducts'
+import { SectionHeading } from '@/components/SectionHeading'
 
 const AUTOPLAY_MS = 3500
 
@@ -46,7 +47,7 @@ export function FeaturedCarousel() {
       onTouchEnd={() => setPaused(false)}
     >
       <div className="flex items-end justify-between gap-4">
-        <h2 className="font-display text-3xl font-bold">Featured Products</h2>
+        <SectionHeading title="Featured products" />
         <div className="hidden gap-2 sm:flex">
           <Button variant="outline" size="icon" className="rounded-full" aria-label="Previous" onClick={() => step(-1)}>
             <ChevronLeft className="h-5 w-5" />

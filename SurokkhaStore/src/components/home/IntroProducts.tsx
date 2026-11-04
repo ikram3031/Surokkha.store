@@ -9,6 +9,7 @@ import { useProducts } from '@/hooks/useProducts'
 import { useShowcaseProducts } from '@/hooks/useShowcaseProducts'
 import { taka } from '@/lib/bn'
 import { navigate, productPath } from '@/lib/router'
+import { SectionHeading } from '@/components/SectionHeading'
 
 const AUTOPLAY_MS = 3500
 const GAP_PX = 24
@@ -150,10 +151,7 @@ export function IntroProducts() {
     <section id="on-sale" className="bg-foreground py-14 text-background md:py-20">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="font-display text-3xl font-bold leading-tight md:text-4xl">On sale now</h2>
-            <p className="mt-2 text-background/70">Our best offers right now, delivered discreetly.</p>
-          </div>
+          <SectionHeading invert title="On sale now" subtitle="Our best offers right now, delivered discreetly." />
           <Button
             size="lg"
             className="h-11 rounded-full bg-background px-7 text-foreground hover:bg-accent"
