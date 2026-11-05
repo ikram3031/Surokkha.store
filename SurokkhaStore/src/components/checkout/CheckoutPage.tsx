@@ -26,6 +26,7 @@ import {
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
 import { getFbIdentifiers, pixelTrack } from '@/lib/pixel'
+import { productKeyOf, trackProductEvents, type ProductEventType } from '@/lib/api/productEvents'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 
 const selectClass =
@@ -101,6 +102,16 @@ export function CheckoutPage() {
     setErrors((e) => ({ ...e, [`ship_${key}`]: '' }))
   }
 
+  // One funnel row per product in the cart, like the shop sends
+  const productEventLines = (eventType: ProductEventType) =>
+    lines.map(({ product, qty }) => ({
+      eventType,
+      productKey: productKeyOf(product),
+      productName: product.apiName ?? product.name,
+      quantity: qty,
+      value: product.price * qty,
+    }))
+
   const checkoutTracked = useRef(false)
   const initiateData = useRef<Record<string, unknown> | undefined>(undefined)
   useEffect(() => {
@@ -117,6 +128,7 @@ export function CheckoutPage() {
     initiateData.current = data
     // Same event id the server sends once a phone number is known, so Meta merges the pair
     pixelTrack('InitiateCheckout', data, `ic_${getCheckoutSessionId()}`)
+    trackProductEvents(productEventLines('checkout'))
   }, [count, lines, subtotal])
 
   // Keep what the customer has typed so far (abandoned checkout capture); debounced, and flushed when they leave
@@ -321,6 +333,7 @@ export function CheckoutPage() {
         },
         orderNumber || undefined,
       )
+      trackProductEvents(productEventLines('purchase'))
       resetCheckoutSession()
       clear()
       navigate('/order-confirmed', { replace: true })

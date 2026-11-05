@@ -5,6 +5,7 @@ import { groupOfferTotals } from '@/lib/checkout'
 import type { GroupOfferProduct, GroupOfferRule } from '@/lib/api/groupOffers'
 import { taka } from '@/lib/bn'
 import { trackAddToCart } from '@/lib/api/events'
+import { productKeyOf, trackProductEvents } from '@/lib/api/productEvents'
 import { pixelTrack } from '@/lib/pixel'
 
 interface CartLine {
@@ -44,6 +45,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
     toast.success('Added to cart')
     trackAddToCart({ productId: product.apiId ?? product.id, qty, price: product.price })
+    trackProductEvents([{ eventType: 'add_to_cart', productKey: productKeyOf(product), productName: product.apiName ?? product.name, quantity: qty, value: product.price * qty }])
     pixelTrack('AddToCart', {
       content_ids: [product.did ?? product.slug ?? String(product.id)],
       content_name: product.apiName ?? product.name,

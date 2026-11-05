@@ -8,6 +8,8 @@ export const PRODUCT_EVENT_TYPES = ["view", "add_to_cart", "checkout", "purchase
 // Powers the dashboard's product funnel; visitorId is the browser's persistent anonymous id.
 const productEventSchema = new Schema(
   {
+    // Which storefront sent it: "shop" (surokkha.shop) or "store" (surokkha.store)
+    site: { type: String, enum: ["shop", "store"], default: "shop" },
     productKey: { type: String, required: true, trim: true },
     productName: { type: String, default: "", trim: true },
     eventType: { type: String, enum: PRODUCT_EVENT_TYPES, required: true },

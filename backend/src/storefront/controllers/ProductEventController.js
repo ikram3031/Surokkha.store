@@ -23,10 +23,13 @@ export const recordProductEvents = async (req, res) => {
     const raw = Array.isArray(body.events) ? body.events : [body];
     const ip = extractClientIp(req) || "";
     const device = deviceOf(userAgent);
+    // The StoreWeb route sets this; the shop API leaves it unset
+    const site = req.productEventSite === "store" ? "store" : "shop";
 
     const docs = raw
       .slice(0, 30)
       .map((e) => ({
+        site,
         productKey: str(e?.productKey, 160),
         productName: str(e?.productName, 200),
         eventType: str(e?.eventType, 30),

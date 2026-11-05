@@ -7,6 +7,7 @@ import { useCart } from '@/context/CartContext'
 import { getProduct } from '@/lib/api/products'
 import { getItem } from '@/lib/api/items'
 import { trackViewContent } from '@/lib/api/events'
+import { productKeyOf, trackProductView } from '@/lib/api/productEvents'
 import { mapApiProduct, type ApiProduct } from '@/lib/api/mappers'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
@@ -42,6 +43,7 @@ export function ProductPage({ slug }: { slug: string }) {
         if (cancelled) return
         setProduct(mapped)
         trackViewContent({ productId: mapped.apiId ?? mapped.id })
+        trackProductView(productKeyOf(mapped), mapped.apiName ?? mapped.name)
         pixelTrack('ViewContent', {
           content_ids: [mapped.did ?? mapped.slug ?? String(mapped.id)],
           content_name: mapped.apiName ?? mapped.name,

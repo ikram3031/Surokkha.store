@@ -112,7 +112,7 @@ const CloudflareTrafficOverviewPage = () => {
   }, []);
 
   const [activeSiteKey, setActiveSiteKey] = useState('shop');
-  const [range, setRange] = useState('month');
+  const [range, setRange] = useState('24h');
   const [loading, setLoading] = useState(true);
   const [isLiveActive, setIsLiveActive] = useState(true);
   const [isPurging, setIsPurging] = useState(false);
