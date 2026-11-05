@@ -12,7 +12,7 @@ export function CartButton({ onClick }: { onClick: () => void }) {
       variant="ghost"
       size="icon"
       onClick={onClick}
-      className="relative size-10 rounded-full text-background hover:bg-background/10 hover:text-background"
+      className="relative size-10 rounded-full text-white hover:bg-white/10 hover:text-white"
       aria-label={`Open cart${count ? `, ${count} items` : ''}`}
     >
       <ShoppingBag className="size-6" strokeWidth={1.6} />

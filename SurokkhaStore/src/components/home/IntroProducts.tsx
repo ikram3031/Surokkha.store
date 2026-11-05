@@ -48,7 +48,7 @@ function IntroProductCard({ product }: { product: Product }) {
         )}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-foreground/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-foreground shadow-lg">
             <Eye className="h-5 w-5" />
@@ -58,11 +58,11 @@ function IntroProductCard({ product }: { product: Product }) {
 
       <div className="mt-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs text-background/60">{catLabel[product.cat]}</p>
+          <p className="text-xs text-white/60">{catLabel[product.cat]}</p>
           <h3 className="mt-0.5 text-[15px] font-semibold leading-snug">{product.name}</h3>
           <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
             <span className="font-display text-lg font-bold text-accent">{taka(product.price)}</span>
-            {onSale && <s className="text-sm text-background/50">{taka(product.regularPrice!)}</s>}
+            {onSale && <s className="text-sm text-white/50">{taka(product.regularPrice!)}</s>}
           </p>
         </div>
         <Button
@@ -148,7 +148,7 @@ export function IntroProducts() {
   if (picks.length === 0) return null
 
   return (
-    <section id="on-sale" className="bg-foreground py-14 text-background md:py-20">
+    <section id="on-sale" className="bg-background py-14 text-white md:py-20">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionHeading invert title="On sale now" subtitle="Our best offers right now, delivered discreetly." />
@@ -191,7 +191,7 @@ export function IntroProducts() {
                   onClick={() => goTo(i)}
                   aria-label={`Show slide ${i + 1}`}
                   aria-current={i === current}
-                  className={`h-2 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-accent' : 'w-2 bg-background/30 hover:bg-background/50'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-accent' : 'w-2 bg-white/30 hover:bg-white/50'}`}
                 />
               ))}
             </div>

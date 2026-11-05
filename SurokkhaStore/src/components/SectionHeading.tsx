@@ -23,14 +23,14 @@ export function SectionHeading({
       <span aria-hidden="true" className={`block h-1 w-12 rounded-full bg-link ${centered ? 'mx-auto' : ''}`} />
       <h2
         className={`mt-4 font-display text-3xl font-bold leading-tight tracking-tight md:text-4xl ${
-          invert ? 'text-background' : 'text-foreground'
+          invert ? 'text-white' : 'text-foreground'
         }`}
       >
         {title}
       </h2>
       {subtitle && (
         <p
-          className={`mt-3 max-w-xl text-base ${invert ? 'text-background/70' : 'text-muted-foreground'} ${
+          className={`mt-3 max-w-xl text-base ${invert ? 'text-white/70' : 'text-muted-foreground'} ${
             centered ? 'mx-auto' : ''
           }`}
         >

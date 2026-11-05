@@ -71,14 +71,15 @@
   --font-body: "Hind Siliguri", sans-serif;
 }
 
+:root,
 .dark {
-  --background: #241f1c;
+  --background: #202529;
   --foreground: var(--brand-cream-light);
 
-  --card: #2d2723;
+  --card: #202529;
   --card-foreground: var(--brand-cream-light);
 
-  --popover: #2d2723;
+  --popover: #202529;
   --popover-foreground: var(--brand-cream-light);
 
   --primary: var(--brand-blush);
@@ -136,6 +137,9 @@
   --color-link: var(--link);
   --color-link-hover: var(--link-hover);
   --color-link-foreground: var(--link-foreground);
+
+  /* Accent orange for the mobile bottom-nav icons and the hamburger menu icon */
+  --color-nav-accent: #f15a29;
 
   /* Every rounded-* utility lands on 4px or 8px; rounded-full still gives pills. */
   --radius-sm: 0.25rem;

@@ -18,7 +18,7 @@ const steps = [
 /** Dark band explaining the discreet delivery in three steps. */
 export function DeliverySteps() {
   return (
-    <section id="delivery" className="scroll-mt-20 bg-foreground py-16 text-background md:py-24">
+    <section id="delivery" className="scroll-mt-20 bg-background py-16 text-white md:py-24">
       <div className="mx-auto max-w-7xl px-4">
         <SectionHeading
           invert
@@ -28,10 +28,10 @@ export function DeliverySteps() {
 
         <ol className="mt-12 grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => (
-            <li key={step.title} className="border-t border-background/20 pt-6">
+            <li key={step.title} className="border-t border-white/20 pt-6">
               <span className="text-sm font-semibold text-accent">Step {i + 1}</span>
               <h3 className="mt-2 font-display text-xl font-bold">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-background/70">{step.text}</p>
+              <p className="mt-2 text-sm leading-relaxed text-white/70">{step.text}</p>
             </li>
           ))}
         </ol>

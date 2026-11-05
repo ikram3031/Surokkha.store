@@ -2,7 +2,7 @@ import { User } from 'lucide-react'
 import { useCategories } from '@/hooks/useCategories'
 import { navigate } from '@/lib/router'
 
-const itemClass = 'block w-full rounded-xl px-2 py-2.5 text-left font-medium transition-colors hover:bg-background/10'
+const itemClass = 'block w-full rounded-xl px-2 py-2.5 text-left font-medium transition-colors hover:bg-white/10'
 
 export function MobileNav({
   onNavigate,
@@ -78,18 +78,18 @@ export function MobileNav({
       </div>
 
       {/* Pinned to the bottom */}
-      <div className="mt-auto border-t border-background/15 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="mt-auto border-t border-white/15 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={() => go('/account')}
-          className="flex w-full items-center gap-3 rounded-2xl bg-background/10 p-3 text-left transition-colors hover:bg-background/20"
+          className="flex w-full items-center gap-3 rounded-2xl bg-white/10 p-3 text-left transition-colors hover:bg-white/20"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground">
             <User className="h-5 w-5" />
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-semibold leading-tight">My Account</span>
-            <span className="block text-xs leading-tight text-background/70">Log in or sign up</span>
+            <span className="block text-xs leading-tight text-white/70">Log in or sign up</span>
           </span>
         </button>
       </div>

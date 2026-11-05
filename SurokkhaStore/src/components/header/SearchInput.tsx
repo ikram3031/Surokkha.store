@@ -28,13 +28,13 @@ export function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         className={
           inverted
-            ? 'rounded-full border-background/20 bg-background/10 pl-10 pr-9 text-background placeholder:text-background/60'
+            ? 'rounded-full border-white/20 bg-white/10 pl-10 pr-9 text-white placeholder:text-white/60'
             : 'rounded-full bg-background pl-10 pr-9 text-foreground'
         }
       />
       <Search
         className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
-          inverted ? 'text-background/60' : 'text-muted-foreground'
+          inverted ? 'text-white/60' : 'text-muted-foreground'
         }`}
       />
       {value && (
@@ -44,7 +44,7 @@ export function SearchInput({
           aria-label="Clear search"
           className={`absolute right-3 top-1/2 -translate-y-1/2 ${
             inverted
-              ? 'text-background/60 hover:text-background'
+              ? 'text-white/60 hover:text-white'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >

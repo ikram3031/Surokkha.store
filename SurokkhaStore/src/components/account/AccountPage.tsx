@@ -67,19 +67,19 @@ function PasswordInput({
 
 function Breadcrumb({ current, onDark = false }: { current: string; onDark?: boolean }) {
   return (
-    <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-sm ${onDark ? 'text-background/80' : 'text-muted-foreground'}`}>
+    <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-sm ${onDark ? 'text-white/80' : 'text-muted-foreground'}`}>
       <a
         href="/"
         onClick={(e) => {
           e.preventDefault()
           navigate('/')
         }}
-        className={onDark ? 'hover:text-background' : 'hover:text-primary'}
+        className={onDark ? 'hover:text-white' : 'hover:text-primary'}
       >
         Home
       </a>
       <span aria-hidden="true">/</span>
-      <span className={`font-semibold ${onDark ? 'text-background' : 'text-foreground'}`} aria-current="page">
+      <span className={`font-semibold ${onDark ? 'text-white' : 'text-foreground'}`} aria-current="page">
         {current}
       </span>
     </nav>
@@ -223,7 +223,7 @@ export function AccountPage() {
       {/* One light-tinted card (theme "secondary") on the white page: the image runs edge to edge, no inner padding */}
       <div className="mb-10 mt-4 grid overflow-hidden rounded-3xl bg-secondary/40 lg:mb-14 lg:mt-5 lg:grid-cols-2">
       {/* Left: CMS image (Dashboard → CMS → Section Backgrounds → "login"), brand panel until one is set */}
-      <aside className="relative hidden min-h-[640px] overflow-hidden bg-foreground text-background lg:block">
+      <aside className="relative hidden min-h-[640px] overflow-hidden bg-background text-white lg:block">
         {image ? (
           <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         ) : (
@@ -234,18 +234,18 @@ export function AccountPage() {
           <img src="/logo_2.png" alt="Surokkha" className="h-12 w-auto self-start" />
           <div>
             <p className="font-display text-3xl font-bold leading-snug">Safe today, tomorrow too.</p>
-            <p className="mt-2 max-w-sm text-background/80">Discreet packaging, genuine products and cash on delivery.</p>
+            <p className="mt-2 max-w-sm text-white/80">Discreet packaging, genuine products and cash on delivery.</p>
           </div>
         </div>
       </aside>
 
       {/* Mobile: slim banner using the same image */}
-      <div className="relative h-36 overflow-hidden bg-foreground lg:hidden">
+      <div className="relative h-36 overflow-hidden bg-background lg:hidden">
         {image && <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-        <div className="absolute inset-0 bg-foreground/50" />
+        <div className="absolute inset-0 bg-black/50" />
         <div className="relative flex h-full flex-col justify-end gap-1.5 p-5">
           <Breadcrumb current={crumb[view]} onDark />
-          <p className="font-display text-2xl font-bold text-background">Safe today, tomorrow too.</p>
+          <p className="font-display text-2xl font-bold text-white">Safe today, tomorrow too.</p>
         </div>
       </div>
 

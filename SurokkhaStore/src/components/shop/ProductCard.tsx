@@ -26,7 +26,7 @@ export function ProductCard({ product }: { product: Product }) {
           </Badge>
         )}
         {soldOut && (
-          <Badge className="absolute bottom-3 left-3 z-10 bg-foreground text-background hover:bg-foreground">Out of stock</Badge>
+          <Badge className="absolute bottom-3 left-3 z-10 bg-background text-white hover:bg-background">Out of stock</Badge>
         )}
         {discountPercent > 0 && (
           <Badge className="absolute right-3 top-3 z-10 bg-primary text-primary-foreground hover:bg-primary">
@@ -49,7 +49,7 @@ export function ProductCard({ product }: { product: Product }) {
         {product.slug && (
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-foreground/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           >
             <span className="flex h-12 w-12 translate-y-2 items-center justify-center rounded-full bg-white text-foreground shadow-lg transition-transform duration-300 group-hover:translate-y-0">
               <Eye className="h-5 w-5" />
@@ -57,10 +57,10 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         )}
       </div>
-      {/* Every row below is exactly one line, so all cards end up the same height */}
+      {/* Fixed-height title block + mt-auto footer keeps every card the same height, whatever the name length */}
       <CardContent className="flex flex-1 flex-col p-3 sm:p-4">
-        <p className="truncate text-center text-xs text-muted-foreground">{catLabel[product.cat]}</p>
-        <h3 className="mt-1 truncate text-base font-semibold leading-snug sm:text-lg" title={product.name}>
+        <p className="truncate text-xs text-muted-foreground">{catLabel[product.cat]}</p>
+        <h3 className="mt-1 line-clamp-2 min-h-[2.75em] text-base font-semibold leading-snug sm:text-lg" title={product.name}>
           {product.name}
         </h3>
         <div className="mt-auto flex items-center justify-between gap-2 pt-3">

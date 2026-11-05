@@ -1,6 +1,9 @@
-import { Headset, Home, ShoppingBag, Sparkles } from 'lucide-react'
+import { Home, ShoppingBag, Sparkles } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { navigate, useRoute } from '@/lib/router'
 import { useCart } from '@/context/CartContext'
+
+const WHATSAPP_URL = 'https://wa.me/8801600905774'
 
 /**
  * Sticky bottom navigation for mobile only (hidden from md up, where the
@@ -12,8 +15,8 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
   const { count } = useCart()
 
   const itemBase = 'flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors'
-  const on = 'text-background'
-  const off = 'text-background/60 hover:text-background'
+  const on = 'text-white'
+  const off = 'text-white/60 hover:text-white'
 
   const isHome = route.name === 'home' || route.name === 'home-classic'
   const isOffer = route.name === 'offer' || route.name === 'group-offer'
@@ -21,20 +24,20 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
   return (
     <nav
       aria-label="Quick navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-background/15 bg-foreground text-background pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-background text-white pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <div className="mx-auto flex max-w-md items-stretch">
         <button type="button" onClick={() => navigate('/')} className={`${itemBase} ${isHome ? on : off}`}>
-          <Home className="h-5 w-5" />
+          <Home className="h-5 w-5 text-nav-accent" />
           Home
         </button>
         <button type="button" onClick={() => navigate('/offer')} className={`${itemBase} ${isOffer ? on : off}`}>
-          <Sparkles className="h-5 w-5" />
+          <Sparkles className="h-5 w-5 text-nav-accent" />
           Offers
         </button>
         <button type="button" onClick={onCartOpen} className={`${itemBase} ${off}`}>
           <span className="relative">
-            <ShoppingBag className="h-5 w-5" />
+            <ShoppingBag className="h-5 w-5 text-nav-accent" />
             {count > 0 && (
               <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[10px] font-bold text-foreground">
                 {count}
@@ -43,14 +46,10 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
           </span>
           Cart
         </button>
-        <button
-          type="button"
-          onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-          className={`${itemBase} ${off}`}
-        >
-          <Headset className="h-5 w-5" />
+        <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={`${itemBase} ${off}`}>
+          <WhatsAppIcon className="h-5 w-5" />
           Contact
-        </button>
+        </a>
       </div>
     </nav>
   )
