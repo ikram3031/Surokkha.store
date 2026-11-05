@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import { catBg } from '@/data/products'
 import { DISTRICT_NAMES, FALLBACK_THANAS } from '@/data/districts'
+import LocationSelect from '@/components/checkout/LocationSelect'
 import { useCart } from '@/context/CartContext'
 import { ApiError } from '@/lib/api/client'
 import { getCoupon } from '@/lib/api/catalog'
@@ -29,18 +29,46 @@ import { getFbIdentifiers, pixelTrack } from '@/lib/pixel'
 import { productKeyOf, trackProductEvents, type ProductEventType } from '@/lib/api/productEvents'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 
-const selectClass =
-  'h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-primary disabled:opacity-50 aria-invalid:border-destructive'
+// Shared field styling — tighter and consistent on mobile
+const fieldClass = (err?: string) =>
+  `w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 ${
+    err ? 'border-destructive' : 'border-input'
+  }`
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+const labelClass = 'mb-1.5 block text-xs font-semibold text-foreground'
+
+function Field({
+  label,
+  error,
+  required,
+  htmlFor,
+  className = '',
+  children,
+}: {
+  label: string
+  error?: string
+  required?: boolean
+  htmlFor?: string
+  className?: string
+  children: React.ReactNode
+}) {
   return (
-    <label className="block space-y-1.5">
-      <span className="text-sm font-medium">{label}</span>
+    <div className={className}>
+      <label className={labelClass} htmlFor={htmlFor}>
+        {label} {required && <span className="text-destructive">*</span>}
+      </label>
       {children}
-      {error && <span className="block text-xs text-destructive">{error}</span>}
-    </label>
+      {error && <p className="mt-1 text-xs font-medium text-destructive">{error}</p>}
+    </div>
   )
 }
+
+// Delivery tiers shown as auto-highlighted cards — mirrors deliveryFee() in lib/checkout
+const DELIVERY_TIERS = [
+  { label: 'Inside Dhaka', time: 'Within 1–2 days', fee: 70 },
+  { label: 'Dhaka Suburbs & Nearby', time: 'Within 2–3 days', fee: 90 },
+  { label: 'Outside Dhaka', time: 'Within 2–3 days', fee: 120 },
+]
 
 // Thana list for a district: live from the API, bundled list as a fallback
 const thanaCache: Record<string, string[]> = {}
@@ -94,12 +122,12 @@ export function CheckoutPage() {
   const shipThanas = useThanas(sameAsBilling ? '' : ship.district)
   const set = (key: keyof typeof form, value: string) => {
     setForm((f) => ({ ...f, [key]: value, ...(key === 'district' ? { thana: '' } : {}) }))
-    setErrors((e) => ({ ...e, [key]: '' }))
+    setErrors((e) => ({ ...e, [key]: '', ...(key === 'district' ? { thana: '' } : {}) }))
   }
 
   const setShipField = (key: keyof typeof ship, value: string) => {
     setShip((f) => ({ ...f, [key]: value, ...(key === 'district' ? { thana: '' } : {}) }))
-    setErrors((e) => ({ ...e, [`ship_${key}`]: '' }))
+    setErrors((e) => ({ ...e, [`ship_${key}`]: '', ...(key === 'district' ? { ship_thana: '' } : {}) }))
   }
 
   // One funnel row per product in the cart, like the shop sends
@@ -181,6 +209,9 @@ export function CheckoutPage() {
     const discount = couponOff + group.discount
     return { fee, baseFee, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
   }, [count, sameAsBilling, form, ship, coupon, subtotal, cart])
+
+  const freeShipping = coupon?.discountType === 'free_shipping'
+  const destDistrict = (sameAsBilling ? form.district : ship.district).trim()
 
   const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase()
@@ -352,169 +383,332 @@ export function CheckoutPage() {
   if (count === 0) return null
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-      <h1 className="font-display text-2xl font-bold md:text-3xl">Checkout</h1>
-      <form onSubmit={submit} noValidate className="mt-6 grid gap-8 lg:grid-cols-[1fr_380px]">
-        <div className="space-y-4 rounded-3xl border border-border bg-card p-5 md:p-6">
-          <h2 className="font-display text-lg font-bold">Delivery details</h2>
-          <Field label="Your name" error={errors.fullName}>
-            <Input value={form.fullName} onChange={(e) => set('fullName', e.target.value)} autoComplete="name" aria-invalid={!!errors.fullName} />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Mobile number" error={errors.phone}>
-              <Input
-                value={form.phone}
-                onChange={(e) => set('phone', toEnDigits(e.target.value))}
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="01XXXXXXXXX"
-                aria-invalid={!!errors.phone}
+    <div id="checkout" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
+      <div className="mb-6 border-b border-border pb-5">
+        <h1 className="font-display text-2xl font-bold md:text-3xl">Checkout</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Fill in your delivery details — pay cash on delivery when the package arrives.</p>
+      </div>
+
+      <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+        {/* Left: delivery details */}
+        <div className="space-y-6 lg:col-span-7">
+          <div className="space-y-5 rounded-3xl border border-border bg-card p-5 sm:p-6">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h2 className="font-display text-lg font-bold">Delivery details</h2>
+              <span className="rounded-md bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">Step 1</span>
+            </div>
+
+            <Field label="Your name" required error={errors.fullName} htmlFor="fullName">
+              <input
+                id="fullName"
+                className={fieldClass(errors.fullName)}
+                value={form.fullName}
+                onChange={(e) => set('fullName', e.target.value)}
+                autoComplete="name"
+                placeholder="Full name"
               />
             </Field>
-            <Field label="Email" error={errors.email}>
-              <Input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} autoComplete="email" aria-invalid={!!errors.email} />
-            </Field>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="District" error={errors.district}>
-              <select className={selectClass} value={form.district} onChange={(e) => set('district', e.target.value)} aria-invalid={!!errors.district}>
-                <option value="">Select a district</option>
-                {DISTRICT_NAMES.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Thana / Upazila" error={errors.thana}>
-              <select className={selectClass} value={form.thana} onChange={(e) => set('thana', e.target.value)} disabled={!form.district} aria-invalid={!!errors.thana}>
-                <option value="">{form.district ? 'Select a thana' : 'Select a district first'}</option>
-                {thanas.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-          <Field label="Full address" error={errors.address}>
-            <Input value={form.address} onChange={(e) => set('address', e.target.value)} autoComplete="street-address" placeholder="House, road, area" aria-invalid={!!errors.address} />
-          </Field>
-          <Field label="Order note (optional)">
-            <Input value={form.notes} onChange={(e) => set('notes', e.target.value)} />
-          </Field>
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input type="checkbox" checked={!sameAsBilling} onChange={(e) => setSameAsBilling(!e.target.checked)} />
-            Deliver to a different address
-          </label>
-          {!sameAsBilling && (
-            <div className="space-y-4 rounded-2xl border border-border p-4">
-              <h3 className="font-semibold">Recipient details</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Recipient name" error={errors.ship_fullName}>
-                  <Input value={ship.fullName} onChange={(e) => setShipField('fullName', e.target.value)} aria-invalid={!!errors.ship_fullName} />
-                </Field>
-                <Field label="Recipient mobile" error={errors.ship_phone}>
-                  <Input value={ship.phone} onChange={(e) => setShipField('phone', toEnDigits(e.target.value))} inputMode="tel" placeholder="01XXXXXXXXX" aria-invalid={!!errors.ship_phone} />
-                </Field>
-                <Field label="District" error={errors.ship_district}>
-                  <select className={selectClass} value={ship.district} onChange={(e) => setShipField('district', e.target.value)} aria-invalid={!!errors.ship_district}>
-                    <option value="">Select a district</option>
-                    {DISTRICT_NAMES.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Thana / Upazila" error={errors.ship_thana}>
-                  <select className={selectClass} value={ship.thana} onChange={(e) => setShipField('thana', e.target.value)} disabled={!ship.district} aria-invalid={!!errors.ship_thana}>
-                    <option value="">{ship.district ? 'Select a thana' : 'Select a district first'}</option>
-                    {shipThanas.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              </div>
-              <Field label="Recipient full address" error={errors.ship_address}>
-                <Input value={ship.address} onChange={(e) => setShipField('address', e.target.value)} placeholder="House, road, area" aria-invalid={!!errors.ship_address} />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Mobile number" required error={errors.phone} htmlFor="phone">
+                <input
+                  id="phone"
+                  className={`${fieldClass(errors.phone)} font-mono`}
+                  value={form.phone}
+                  onChange={(e) => set('phone', toEnDigits(e.target.value))}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="01XXXXXXXXX"
+                />
+              </Field>
+              <Field label="Email" required error={errors.email} htmlFor="email">
+                <input
+                  id="email"
+                  type="email"
+                  className={fieldClass(errors.email)}
+                  value={form.email}
+                  onChange={(e) => set('email', e.target.value)}
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                />
               </Field>
             </div>
-          )}
-          <p className="rounded-xl bg-secondary px-4 py-3 text-sm">Payment: cash on delivery — pay when you receive the product. Your package is shipped fully discreetly.</p>
-        </div>
 
-        <aside className="h-fit space-y-4 rounded-3xl border border-border bg-card p-5 md:p-6">
-          <h2 className="font-display text-lg font-bold">Order summary</h2>
-          <ul className="space-y-3">
-            {lines.map(({ product, qty }) => (
-              <li key={product.id} className="flex items-center gap-3">
-                {product.image ? (
-                  <img src={product.image} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
-                ) : (
-                  <div className={`h-14 w-14 shrink-0 rounded-xl p-2 ${catBg[product.cat]}`}>
-                    <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{product.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {taka(product.price)} × {bn(qty)}
-                  </p>
+            <Field label="Full address" required error={errors.address} htmlFor="address">
+              <textarea
+                id="address"
+                rows={2}
+                className={`${fieldClass(errors.address)} resize-y`}
+                value={form.address}
+                onChange={(e) => set('address', e.target.value)}
+                autoComplete="street-address"
+                placeholder="House, road, area"
+              />
+            </Field>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="District" required error={errors.district} htmlFor="billingDistrict">
+                <LocationSelect
+                  id="billingDistrict"
+                  value={form.district}
+                  options={DISTRICT_NAMES}
+                  onSelect={(name) => set('district', name)}
+                  placeholder="Select a district"
+                  error={errors.district}
+                />
+              </Field>
+              <Field label="Thana / Upazila" required error={errors.thana} htmlFor="billingThana">
+                <LocationSelect
+                  id="billingThana"
+                  value={form.thana}
+                  options={thanas}
+                  disabled={!form.district}
+                  onSelect={(name) => set('thana', name)}
+                  placeholder={form.district ? 'Select a thana' : 'Select a district first'}
+                  error={errors.thana}
+                />
+              </Field>
+            </div>
+
+            <Field label="Order note (optional)" htmlFor="notes">
+              <textarea
+                id="notes"
+                rows={2}
+                className={`${fieldClass()} resize-y`}
+                value={form.notes}
+                onChange={(e) => set('notes', e.target.value)}
+                placeholder="Anything we should know about your order?"
+              />
+            </Field>
+
+            <div className="border-t border-border pt-4">
+              <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={!sameAsBilling}
+                  onChange={(e) => setSameAsBilling(!e.target.checked)}
+                />
+                Deliver to a different address
+              </label>
+            </div>
+
+            {!sameAsBilling && (
+              <div className="space-y-5 rounded-2xl border border-border bg-secondary/30 p-4 sm:p-5">
+                <h3 className="flex items-center gap-2 font-semibold">🚚 Recipient details</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="Recipient name" required error={errors.ship_fullName} htmlFor="shipFullName">
+                    <input
+                      id="shipFullName"
+                      className={fieldClass(errors.ship_fullName)}
+                      value={ship.fullName}
+                      onChange={(e) => setShipField('fullName', e.target.value)}
+                      placeholder="Full name"
+                    />
+                  </Field>
+                  <Field label="Recipient mobile" required error={errors.ship_phone} htmlFor="shipPhone">
+                    <input
+                      id="shipPhone"
+                      className={`${fieldClass(errors.ship_phone)} font-mono`}
+                      value={ship.phone}
+                      onChange={(e) => setShipField('phone', toEnDigits(e.target.value))}
+                      inputMode="tel"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </Field>
+                  <Field label="District" required error={errors.ship_district} htmlFor="shipDistrict">
+                    <LocationSelect
+                      id="shipDistrict"
+                      value={ship.district}
+                      options={DISTRICT_NAMES}
+                      onSelect={(name) => setShipField('district', name)}
+                      placeholder="Select a district"
+                      error={errors.ship_district}
+                    />
+                  </Field>
+                  <Field label="Thana / Upazila" required error={errors.ship_thana} htmlFor="shipThana">
+                    <LocationSelect
+                      id="shipThana"
+                      value={ship.thana}
+                      options={shipThanas}
+                      disabled={!ship.district}
+                      onSelect={(name) => setShipField('thana', name)}
+                      placeholder={ship.district ? 'Select a thana' : 'Select a district first'}
+                      error={errors.ship_thana}
+                    />
+                  </Field>
                 </div>
-                <span className="text-sm font-semibold">{taka(product.price * qty)}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div>
-            <div className="flex gap-2">
-              <Input value={couponInput} onChange={(e) => setCouponInput(e.target.value)} placeholder="Coupon code" disabled={!!coupon} />
-              {coupon ? (
-                <Button type="button" variant="outline" onClick={() => { setCoupon(null); setCouponInput('') }}>
-                  Remove
-                </Button>
-              ) : (
-                <Button type="button" variant="outline" onClick={applyCoupon} disabled={applying}>
-                  {applying ? '...' : 'Apply'}
-                </Button>
-              )}
-            </div>
-            {couponError && <p className="mt-1 text-xs text-destructive">{couponError}</p>}
-          </div>
-
-          <dl className="space-y-1 border-t border-border pt-4 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Subtotal</dt>
-              <dd>{taka(subtotal)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Delivery charge</dt>
-              <dd>{totals.fee ? taka(totals.fee) : 'Free'}</dd>
-            </div>
-            {totals.discount > 0 && (
-              <div className="flex justify-between text-primary">
-                <dt>Discount</dt>
-                <dd>−{taka(totals.discount)}</dd>
+                <Field label="Recipient full address" required error={errors.ship_address} htmlFor="shipAddress">
+                  <textarea
+                    id="shipAddress"
+                    rows={2}
+                    className={`${fieldClass(errors.ship_address)} resize-y`}
+                    value={ship.address}
+                    onChange={(e) => setShipField('address', e.target.value)}
+                    placeholder="House, road, area"
+                  />
+                </Field>
               </div>
             )}
-            <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
-              <dt>Total</dt>
-              <dd>{taka(totals.total)}</dd>
+          </div>
+
+          {/* Delivery charge tiers — auto-calculated from the selected location */}
+          <div className="space-y-3 rounded-3xl border border-border bg-secondary/20 p-5">
+            <div className="flex items-center justify-between border-b border-border pb-2.5">
+              <h3 className="flex items-center gap-1.5 text-sm font-bold">📦 Delivery charge</h3>
+              <span className="text-xs text-muted-foreground">Auto-calculated</span>
             </div>
-          </dl>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {DELIVERY_TIERS.map((tier) => {
+                const active = totals.baseFee === tier.fee && !!destDistrict
+                return (
+                  <div
+                    key={tier.fee}
+                    className={`flex items-center justify-between rounded-2xl border p-3 transition ${
+                      active ? 'border-primary bg-accent/40 font-semibold text-foreground shadow-xs' : 'border-border bg-card text-muted-foreground opacity-70'
+                    }`}
+                  >
+                    <div>
+                      <span className="block text-xs font-bold">{tier.label}</span>
+                      <span className="text-[10px] text-muted-foreground">{tier.time}</span>
+                    </div>
+                    {freeShipping && active ? (
+                      <span className="font-mono text-xs font-bold text-emerald-600">
+                        <span className="mr-1 text-[10px] font-normal text-muted-foreground line-through">{taka(tier.fee)}</span>
+                        FREE
+                      </span>
+                    ) : (
+                      <span className="font-mono text-xs font-bold">{taka(tier.fee)}</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
 
-          <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-            <span>I agree to the terms and refund policy, and I am 18 or older.</span>
-          </label>
+        {/* Right: payment + order summary */}
+        <div className="space-y-6 lg:col-span-5">
+          <div className="space-y-4 rounded-3xl border border-border bg-card p-5 sm:p-6">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h2 className="text-sm font-bold uppercase tracking-wider">Payment method</h2>
+              <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">Verified</span>
+            </div>
+            <div className="flex items-center justify-between rounded-2xl border-2 border-primary bg-accent/30 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">✓</div>
+                <div>
+                  <span className="block text-sm font-bold">Cash on Delivery</span>
+                  <span className="text-[11px] text-muted-foreground">Pay when you receive the product</span>
+                </div>
+              </div>
+              <span className="rounded bg-secondary px-2 py-0.5 text-xs font-bold text-secondary-foreground">Primary</span>
+            </div>
+          </div>
 
-          <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={submitting}>
-            {submitting ? 'Placing order...' : `Confirm order · ${taka(totals.total)}`}
-          </Button>
-        </aside>
+          <aside className="space-y-4 rounded-3xl border border-border bg-card p-5 sm:p-6">
+            <h2 className="font-display text-lg font-bold">Order summary</h2>
+            <ul className="max-h-60 space-y-3 overflow-y-auto pr-1">
+              {lines.map(({ product, qty }) => (
+                <li key={product.id} className="flex items-center gap-3">
+                  {product.image ? (
+                    <img src={product.image} alt="" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+                  ) : (
+                    <div className={`h-14 w-14 shrink-0 rounded-xl p-2 ${catBg[product.cat]}`}>
+                      <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{product.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {taka(product.price)} × {bn(qty)}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold">{taka(product.price * qty)}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div>
+              <div className="flex gap-2">
+                <input
+                  className={`${fieldClass()} flex-1 uppercase`}
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (!coupon) applyCoupon()
+                    }
+                  }}
+                  placeholder="Coupon code"
+                  disabled={!!coupon}
+                />
+                {coupon ? (
+                  <Button type="button" variant="outline" onClick={() => { setCoupon(null); setCouponInput('') }}>
+                    Remove
+                  </Button>
+                ) : (
+                  <Button type="button" variant="outline" onClick={applyCoupon} disabled={applying}>
+                    {applying ? '...' : 'Apply'}
+                  </Button>
+                )}
+              </div>
+              {couponError && <p className="mt-1 text-xs text-destructive">{couponError}</p>}
+            </div>
+
+            <dl className="space-y-1.5 border-t border-border pt-4 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Subtotal</dt>
+                <dd>{taka(subtotal)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Delivery charge{destDistrict ? ` · ${destDistrict}` : ''}</dt>
+                <dd>
+                  {freeShipping ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground line-through">{taka(totals.baseFee)}</span>
+                      <span className="font-semibold text-emerald-600">Free</span>
+                    </span>
+                  ) : totals.fee ? (
+                    taka(totals.fee)
+                  ) : (
+                    'Free'
+                  )}
+                </dd>
+              </div>
+              {totals.discount > 0 && (
+                <div className="flex justify-between text-primary">
+                  <dt>Discount</dt>
+                  <dd>−{taka(totals.discount)}</dd>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
+                <dt>Total</dt>
+                <dd>{taka(totals.total)}</dd>
+              </div>
+            </dl>
+
+            {/* Terms */}
+            <div className="space-y-2 rounded-2xl border border-border bg-secondary/30 p-3.5">
+              <div className="flex items-center gap-2 text-sm font-bold">📋 Terms &amp; Conditions</div>
+              <ol className="list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-muted-foreground">
+                <li>Please check the product before paying the delivery man. Once received, the product cannot be returned.</li>
+                <li>Products sold loose (not as a full sealed pack) are not eligible for return.</li>
+                <li>Your package is shipped fully discreetly.</li>
+              </ol>
+            </div>
+
+            <label className="flex cursor-pointer select-none items-start gap-2 text-sm">
+              <input type="checkbox" className="mt-1 h-4 w-4 accent-primary" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+              <span>I agree to the terms and refund policy, and I am 18 or older.</span>
+            </label>
+
+            <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={submitting}>
+              {submitting ? 'Placing order...' : `Confirm order · ${taka(totals.total)}`}
+            </Button>
+          </aside>
+        </div>
       </form>
     </div>
   )
