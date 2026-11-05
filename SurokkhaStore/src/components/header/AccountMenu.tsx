@@ -56,7 +56,7 @@ export function AccountMenu() {
     <div ref={ref} className="relative">
       <Button
         size="icon"
-        className="rounded-full bg-background text-foreground hover:bg-background/90"
+        className="rounded-full bg-white/10 text-white hover:bg-white/20"
         aria-label={customer ? 'My account menu' : 'Log in or sign up'}
         aria-expanded={customer ? open : undefined}
         onClick={() => (customer ? setOpen((o) => !o) : navigate('/account'))}

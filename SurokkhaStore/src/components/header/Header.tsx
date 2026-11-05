@@ -46,6 +46,7 @@ export function Header({
           <SearchInput
             value={query}
             onChange={onQueryChange}
+            tone="inverted"
             className="hidden w-full max-w-64 sm:block"
             id="searchInput"
           />

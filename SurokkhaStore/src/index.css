@@ -28,44 +28,47 @@
   /* Dominant maroon sampled from the logo wordmark. */
   --brand-maroon: #4d1224;
 
-  --background: #ffffff;
-  --foreground: var(--brand-ink);
+  /* ---- Dark brand theme (Brand Color Palette) ----
+     #202529 background · #E8A0AD pink · #F2B8C6 light pink
+     #FCD077 gold · #FFF8F0 cream · #FFFFFF white */
+  --background: #202529;
+  --foreground: #fff8f0;
 
-  --card: #ffffff;
-  --card-foreground: var(--brand-ink);
+  --card: #2a2f34;
+  --card-foreground: #fff8f0;
 
-  --popover: #ffffff;
-  --popover-foreground: var(--brand-ink);
+  --popover: #2a2f34;
+  --popover-foreground: #fff8f0;
 
-  --primary: var(--brand-maroon);
-  --primary-foreground: #ffffff;
+  --primary: #e8a0ad;
+  --primary-foreground: #202529;
 
-  --secondary: var(--brand-cream);
-  --secondary-foreground: var(--brand-ink);
+  --secondary: #2e343a;
+  --secondary-foreground: #fff8f0;
 
-  --muted: var(--brand-cream-deep);
-  --muted-foreground: #5b534f;
+  --muted: #2e343a;
+  --muted-foreground: #b9bdc2;
 
-  --accent: var(--brand-blush-soft);
-  --accent-foreground: var(--brand-ink);
+  --accent: #fcd077;
+  --accent-foreground: #202529;
 
-  --destructive: #d92d20;
-  --destructive-foreground: #ffffff;
+  --destructive: #f2708a;
+  --destructive-foreground: #202529;
 
-  --success: #1f8a4c;
-  --success-foreground: #ffffff;
+  --success: #3ec97b;
+  --success-foreground: #202529;
 
-  /* Price accent: louder than the maroon primary, darker than the blush. */
-  --price: var(--brand-blush-deep);
+  /* Gold price accent */
+  --price: #fcd077;
 
-  /* The one bright colour: every link and link-like control uses it, nothing else does. */
-  --link: #e0115f;
-  --link-hover: #b50d4b;
-  --link-foreground: #ffffff;
+  /* Light-pink links */
+  --link: #f2b8c6;
+  --link-hover: #e8a0ad;
+  --link-foreground: #202529;
 
-  --border: var(--brand-cream-deep);
-  --input: var(--brand-cream-deep);
-  --ring: var(--brand-blush);
+  --border: #363d44;
+  --input: #363d44;
+  --ring: #e8a0ad;
 
   --font-display: "Playfair Display", "Noto Serif Bengali", serif;
   --font-body: "Hind Siliguri", sans-serif;
@@ -139,7 +142,7 @@
   --color-link-foreground: var(--link-foreground);
 
   /* Accent orange for the mobile bottom-nav icons and the hamburger menu icon */
-  --color-nav-accent: #f15a29;
+  --color-nav-accent: #fcd077;
 
   /* Every rounded-* utility lands on 4px or 8px; rounded-full still gives pills. */
   --radius-sm: 0.25rem;
@@ -150,61 +153,64 @@
   --radius-3xl: 0.5rem;
   --radius-4xl: 0.5rem;
 
-  --color-gray-50: #f7f6f5;
-  --color-gray-100: #efedec;
-  --color-gray-200: #e0dcda;
-  --color-gray-300: #c8c2bf;
-  --color-gray-400: #9c938e;
-  --color-gray-500: #776e69;
-  --color-gray-600: #5b534f;
-  --color-gray-700: #463f3c;
-  --color-gray-800: #3a322f;
-  --color-gray-900: #2a2421;
-  --color-gray-950: #1a1613;
-  --color-slate-50: #f7f6f5;
-  --color-slate-100: #efedec;
-  --color-slate-200: #e0dcda;
-  --color-slate-300: #c8c2bf;
-  --color-slate-400: #9c938e;
-  --color-slate-500: #776e69;
-  --color-slate-600: #5b534f;
-  --color-slate-700: #463f3c;
-  --color-slate-800: #3a322f;
-  --color-slate-900: #2a2421;
-  --color-slate-950: #1a1613;
-  --color-zinc-50: #f7f6f5;
-  --color-zinc-100: #efedec;
-  --color-zinc-200: #e0dcda;
-  --color-zinc-300: #c8c2bf;
-  --color-zinc-400: #9c938e;
-  --color-zinc-500: #776e69;
-  --color-zinc-600: #5b534f;
-  --color-zinc-700: #463f3c;
-  --color-zinc-800: #3a322f;
-  --color-zinc-900: #2a2421;
-  --color-zinc-950: #1a1613;
-  --color-neutral-50: #f7f6f5;
-  --color-neutral-100: #efedec;
-  --color-neutral-200: #e0dcda;
-  --color-neutral-300: #c8c2bf;
-  --color-neutral-400: #9c938e;
-  --color-neutral-500: #776e69;
-  --color-neutral-600: #5b534f;
-  --color-neutral-700: #463f3c;
-  --color-neutral-800: #3a322f;
-  --color-neutral-900: #2a2421;
-  --color-neutral-950: #1a1613;
-  --color-stone-50: #f7f6f5;
-  --color-stone-100: #efedec;
-  --color-stone-200: #e0dcda;
-  --color-stone-300: #c8c2bf;
-  --color-stone-400: #9c938e;
-  --color-stone-500: #776e69;
-  --color-stone-600: #5b534f;
-  --color-stone-700: #463f3c;
-  --color-stone-800: #3a322f;
-  --color-stone-900: #2a2421;
-  --color-stone-950: #1a1613;
+  /* Neutral ramp inverted for the dark theme: 50 is the darkest surface,
+     950 the lightest text — so components written with raw gray/zinc/slate
+     (light bg / dark text) still read correctly on the dark background. */
+  --color-gray-50: #23282d;
+  --color-gray-100: #282e33;
+  --color-gray-200: #303740;
+  --color-gray-300: #3d444c;
+  --color-gray-400: #5a626b;
+  --color-gray-500: #868e97;
+  --color-gray-600: #a6adb4;
+  --color-gray-700: #c4c9ce;
+  --color-gray-800: #dde1e4;
+  --color-gray-900: #edeff1;
+  --color-gray-950: #f8f9fa;
+  --color-slate-50: #23282d;
+  --color-slate-100: #282e33;
+  --color-slate-200: #303740;
+  --color-slate-300: #3d444c;
+  --color-slate-400: #5a626b;
+  --color-slate-500: #868e97;
+  --color-slate-600: #a6adb4;
+  --color-slate-700: #c4c9ce;
+  --color-slate-800: #dde1e4;
+  --color-slate-900: #edeff1;
+  --color-slate-950: #f8f9fa;
+  --color-zinc-50: #23282d;
+  --color-zinc-100: #282e33;
+  --color-zinc-200: #303740;
+  --color-zinc-300: #3d444c;
+  --color-zinc-400: #5a626b;
+  --color-zinc-500: #868e97;
+  --color-zinc-600: #a6adb4;
+  --color-zinc-700: #c4c9ce;
+  --color-zinc-800: #dde1e4;
+  --color-zinc-900: #edeff1;
+  --color-zinc-950: #f8f9fa;
+  --color-neutral-50: #23282d;
+  --color-neutral-100: #282e33;
+  --color-neutral-200: #303740;
+  --color-neutral-300: #3d444c;
+  --color-neutral-400: #5a626b;
+  --color-neutral-500: #868e97;
+  --color-neutral-600: #a6adb4;
+  --color-neutral-700: #c4c9ce;
+  --color-neutral-800: #dde1e4;
+  --color-neutral-900: #edeff1;
+  --color-neutral-950: #f8f9fa;
+  --color-stone-50: #23282d;
+  --color-stone-100: #282e33;
+  --color-stone-200: #303740;
+  --color-stone-300: #3d444c;
+  --color-stone-400: #5a626b;
+  --color-stone-500: #868e97;
+  --color-stone-600: #a6adb4;
+  --color-stone-700: #c4c9ce;
+  --color-stone-800: #dde1e4;
+  --color-stone-900: #edeff1;
+  --color-stone-950: #f8f9fa;
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
