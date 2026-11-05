@@ -82,10 +82,15 @@ export function MobileNav({
         <button
           type="button"
           onClick={() => go('/account')}
-          className="flex w-full items-center gap-3 rounded-full border border-background/30 px-5 py-3 font-semibold transition-colors hover:bg-background/10"
+          className="flex w-full items-center gap-3 rounded-2xl bg-background/10 p-3 text-left transition-colors hover:bg-background/20"
         >
-          <User className="h-5 w-5" />
-          My Account / Log in
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground">
+            <User className="h-5 w-5" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold leading-tight">My Account</span>
+            <span className="block text-xs leading-tight text-background/70">Log in or sign up</span>
+          </span>
         </button>
       </div>
     </nav>

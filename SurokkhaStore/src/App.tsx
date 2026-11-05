@@ -16,6 +16,7 @@ import { LearnCards } from '@/components/home/LearnCards'
 import { Testimonial } from '@/components/home/Testimonial'
 import { Newsletter } from '@/components/home/Newsletter'
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp'
+import { BottomNav } from '@/components/BottomNav'
 import { DeliverySteps } from '@/components/home/DeliverySteps'
 import { TrustStrip } from '@/components/TrustStrip'
 import { Shop } from '@/components/Shop'
@@ -120,7 +121,10 @@ function AppShell() {
         )}
       </main>
       {!bare && <Footer />}
+      {/* Clearance so the sticky mobile bottom nav never covers footer content */}
+      {!bare && route.name !== 'checkout' && <div className="h-16 md:hidden" aria-hidden />}
       {!bare && route.name !== 'checkout' && <FloatingWhatsApp />}
+      {!bare && route.name !== 'checkout' && <BottomNav onCartOpen={() => setCartOpen(true)} />}
       {!bare && <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />}
       <Toaster />
     </>

@@ -54,7 +54,10 @@ export function Header({
         </a>
 
         <div className="flex items-center justify-end gap-2">
-          <AccountMenu />
+          {/* Profile icon is hidden on mobile — the account link lives in the side menu there */}
+          <div className="hidden md:flex">
+            <AccountMenu />
+          </div>
           <CartButton onClick={onCartOpen} />
         </div>
       </div>
