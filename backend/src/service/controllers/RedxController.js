@@ -261,10 +261,12 @@ export const createRedxParcelController = async (req, res, next) => {
 
     // Estimate the charge up front so the courier bill exists from the dispatch day
     let deliveryFee = 0;
+    let codCharge = null;
     if (config.pickupAreaId) {
       try {
         const charge = await calculateRedxCharge({ deliveryAreaId: payload.delivery_area_id, pickupAreaId: config.pickupAreaId, cashCollectionAmount: amountToCollect, weight });
         deliveryFee = Number(charge?.deliveryCharge || 0);
+        codCharge = Number(charge?.codCharge || 0);
       } catch (err) {
         console.error("RedX charge estimate failed:", err.message);
       }
@@ -282,6 +284,9 @@ export const createRedxParcelController = async (req, res, next) => {
       merchantOrderId: merchantInvoiceId,
       trackingCode: trackingId,
       deliveryFee,
+      // RedX quoted delivery + COD charge: used as the courier charge instead of the 1% COD guess
+      codCharge,
+      actualDeliveryFee: codCharge === null ? null : deliveryFee + codCharge,
       amountToCollect,
       orderStatus: "Pickup Pending",
       orderStatusSlug: "pickup_pending",

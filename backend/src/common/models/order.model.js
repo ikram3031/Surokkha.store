@@ -107,6 +107,8 @@ const courierInfoSchema = new Schema(
     recipientAreaId: { type: Number, default: null },
     // RedX needs the delivery area name alongside its id
     deliveryAreaName: { type: String, default: null, trim: true },
+    // COD charge quoted by the courier at dispatch (RedX charge calculator); added on top of its delivery charge
+    codCharge: { type: Number, default: null },
     dispatchedAt: { type: Date, default: null },
     itemWeight: { type: Number, default: 0.5 },
     rawResponse: { type: Schema.Types.Mixed, default: null },

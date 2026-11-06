@@ -43,11 +43,19 @@ export const redxLabelFor = (status) => {
  * Applies one RedX update (webhook or polled parcel info) to an order document.
  * update: { status, deliveryType, charge, eventAt, source }
  */
+// parcel.charge is RedX's delivery charge; the COD charge quoted at dispatch is added so the
+// courier bill = delivery + COD, exactly what the charge calculator returned.
+const totalCharge = (order, charge) => {
+  const delivery = Number(charge);
+  if (!Number.isFinite(delivery) || delivery <= 0) return undefined;
+  return delivery + Number(order.courier?.codCharge || 0);
+};
+
 export const applyRedxUpdate = (order, update) =>
   applyPathaoUpdate(order, {
     slug: redxSlugFor(update.status, update.deliveryType),
     statusLabel: redxLabelFor(update.status),
-    deliveryFee: update.charge,
+    deliveryFee: totalCharge(order, update.charge),
     eventAt: update.eventAt,
     source: update.source,
   });
