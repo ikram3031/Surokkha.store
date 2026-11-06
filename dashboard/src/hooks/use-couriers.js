@@ -8,7 +8,8 @@ export function useCourierProviders() {
   return useQuery({
     queryKey: KEY,
     queryFn: async () => (await apiClient.get('/api/v1/courier/providers')).data?.data || { couriers: [], enabledCouriers: [] },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -24,6 +25,9 @@ export function useUpdateCourierProviders() {
   return useMutation({
     mutationFn: async (enabledCouriers) =>
       (await apiClient.put('/api/v1/courier/providers', { enabledCouriers })).data?.data,
-    onSuccess: (data) => queryClient.setQueryData(KEY, data),
+    onSuccess: (data) => {
+      if (data?.enabledCouriers) queryClient.setQueryData(KEY, data);
+      queryClient.invalidateQueries({ queryKey: KEY });
+    },
   });
 }

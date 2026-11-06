@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Truck, Save, Settings2 } from 'lucide-react';
+import { Truck, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useCourierProviders, useUpdateCourierProviders } from '@/hooks/use-couriers';
@@ -19,16 +18,22 @@ export default function CouriersSettingsPage() {
   }, [data]);
 
   const couriers = data?.couriers || [];
-  const dirty = [...enabled].sort().join() !== [...(data?.enabledCouriers || [])].sort().join();
 
-  const toggle = (key, on) =>
-    setEnabled((prev) => (on ? [...new Set([...prev, key])] : prev.filter((k) => k !== key)));
-
-  const save = () =>
-    update.mutate(enabled, {
+  const save = (next) =>
+    update.mutate(next, {
       onSuccess: () => toast.success('Courier settings saved'),
-      onError: (err) => toast.error(err?.response?.data?.message || 'Could not save courier settings'),
+      onError: (err) => {
+        setEnabled(data?.enabledCouriers || []);
+        toast.error(err?.response?.data?.message || 'Could not save courier settings');
+      },
     });
+
+  // Saves right away so the switch never shows "Active" for an unsaved change
+  const toggle = (key, on) => {
+    const next = on ? [...new Set([...enabled, key])] : enabled.filter((k) => k !== key);
+    setEnabled(next);
+    save(next);
+  };
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 p-4 md:p-6">
@@ -58,15 +63,12 @@ export default function CouriersSettingsPage() {
               </div>
               <Switch
                 checked={enabled.includes(c.key)}
+                disabled={update.isPending}
                 onCheckedChange={(on) => toggle(c.key, on)}
               />
             </div>
           ))}
-          <div className="flex justify-end pt-2">
-            <Button variant="secondary" onClick={save} disabled={!dirty || update.isPending}>
-              <Save className="size-4" /> {update.isPending ? 'Saving…' : 'Save'}
-            </Button>
-          </div>
+          {update.isPending && <p className="text-xs text-muted-foreground">Saving…</p>}
         </CardContent>
       </Card>
     </div>

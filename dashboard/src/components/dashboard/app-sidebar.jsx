@@ -89,6 +89,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { hasMenuAccess } from "@/lib/rbac"
+import { useCourierProviders } from "@/hooks/use-couriers"
 
 // Renders the standard TikTok musical note brand icon
 const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
@@ -238,6 +239,11 @@ export const AppSidebar = ({ ...props }) => {
 
   // Pathao webhook log is Owner/Admin only, matching its API
   const canManagePathaoWebhook = ["owner", "admin"].includes(String(userRole).toLowerCase())
+
+  // Courier menus follow Settings → Couriers
+  const { data: courierData } = useCourierProviders()
+  const redxEnabled = (courierData?.enabledCouriers || []).includes("redx")
+  const showRedxMenu = redxEnabled && isAllowed("settings.redx-courier")
 
   const activeGroup =
     pathname.startsWith("/dashboard/pathao") ? "pathao"
@@ -408,6 +414,9 @@ export const AppSidebar = ({ ...props }) => {
                 </NavSub>
               )}
             </NavGroup>
+          )}
+          {showRedxMenu && (
+            <NavLink to="/settings/redx-courier" active={pathname.startsWith("/settings/redx")} icon={Truck} label={t("nav.redx", "RedX")} />
           )}
           {showCustomers && (
             <NavGroup id="customers" icon={Users} label={t("nav.customer_list", "Customers")} active={activeGroup === "customers"} open={openMenu === "customers"} onToggle={toggleMenu}>
