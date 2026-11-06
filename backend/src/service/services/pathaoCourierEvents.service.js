@@ -97,6 +97,8 @@ export const paidAmountOnPayout = (order) => {
 export const estimateCourierCharge = (courier, collected) => {
   const actualFee = toNumber(courier.actualDeliveryFee);
   if (Number.isFinite(actualFee) && actualFee > 0) return { deliveryCharge: actualFee, codFee: 0 };
+  // RedX: its parcel `charge` is the whole charge, so no COD estimate is added on top
+  if (courier.provider === "redx") return { deliveryCharge: Number(courier.deliveryFee || 0), codFee: 0 };
   return { deliveryCharge: Number(courier.deliveryFee || 0), codFee: round2(collected * ESTIMATED_COD_RATE) };
 };
 

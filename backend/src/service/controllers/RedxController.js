@@ -255,27 +255,34 @@ export const createRedxParcelController = async (req, res, next) => {
       parcel_weight: weight,
       instruction: String(instruction || "").trim(),
       value: declaredValue,
-      is_closed_box: String(is_closed_box ?? config.isClosedBox),
+      is_closed_box: Boolean(is_closed_box ?? config.isClosedBox), // API rejects "true"/"false" strings despite the docs
       ...(storeId ? { pickup_store_id: Number(storeId) } : {}),
     };
-
-    // Estimate the charge up front so the courier bill exists from the dispatch day
-    let deliveryFee = 0;
-    let codCharge = null;
-    if (config.pickupAreaId) {
-      try {
-        const charge = await calculateRedxCharge({ deliveryAreaId: payload.delivery_area_id, pickupAreaId: config.pickupAreaId, cashCollectionAmount: amountToCollect, weight });
-        deliveryFee = Number(charge?.deliveryCharge || 0);
-        codCharge = Number(charge?.codCharge || 0);
-      } catch (err) {
-        console.error("RedX charge estimate failed:", err.message);
-      }
-    }
 
     const result = await createRedxParcel(payload);
     const trackingId = result?.tracking_id;
     if (!trackingId) {
       return res.status(502).json({ status: "error", message: "RedX did not return a tracking id.", data: result });
+    }
+
+    // RedX's charge for the parcel = Get Parcel Details `charge`. It becomes the courier bill;
+    // what RedX collects minus this charge is the payout.
+    let deliveryFee = 0;
+    try {
+      const parcel = await getRedxParcelInfo(trackingId);
+      deliveryFee = Number(parcel?.charge || 0);
+    } catch (err) {
+      console.error("RedX parcel details after dispatch failed:", err.message);
+    }
+    // Parcel details unavailable (RedX returns 503 at times): book the charge calculator's quote
+    // until the next sync brings the real `charge`
+    if (!(deliveryFee > 0) && config.pickupAreaId) {
+      try {
+        const quote = await calculateRedxCharge({ deliveryAreaId: payload.delivery_area_id, pickupAreaId: config.pickupAreaId, cashCollectionAmount: amountToCollect, weight });
+        deliveryFee = Number(quote?.deliveryCharge || 0) + Number(quote?.codCharge || 0);
+      } catch (err) {
+        console.error("RedX charge calculator fallback failed:", err.message);
+      }
     }
 
     order.courier = {
@@ -284,9 +291,7 @@ export const createRedxParcelController = async (req, res, next) => {
       merchantOrderId: merchantInvoiceId,
       trackingCode: trackingId,
       deliveryFee,
-      // RedX quoted delivery + COD charge: used as the courier charge instead of the 1% COD guess
-      codCharge,
-      actualDeliveryFee: codCharge === null ? null : deliveryFee + codCharge,
+      actualDeliveryFee: deliveryFee > 0 ? deliveryFee : null,
       amountToCollect,
       orderStatus: "Pickup Pending",
       orderStatusSlug: "pickup_pending",

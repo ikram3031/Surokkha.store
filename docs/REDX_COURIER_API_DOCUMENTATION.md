@@ -17,7 +17,8 @@ This document specifies the **RedX OpenAPI** (`v1.0.0-beta`) as published at <ht
 9. [Status Lifecycle & Mapping](#9-status-lifecycle--mapping)
 10. [Multi-courier Controls (Settings → Couriers)](#10-multi-courier-controls-settings--couriers)
 11. [Surokkha.store Implementation Mapping](#11-surokkhastore-implementation-mapping)
-12. [Setup Checklist](#12-setup-checklist)
+12. [Sandbox Test Results](#12-sandbox-test-results-2026-11-06)
+13. [Setup Checklist](#13-setup-checklist)
 
 ---
 
@@ -87,25 +88,17 @@ The Owner picks a default pickup store in Settings. On save, the backend fetches
 - `weight` is in **grams**.
 - Response: `{ "deliveryCharge": 60, "codCharge": 0 }`.
 
-The charge is used in two places:
-- The dispatch dialog shows a live estimate.
-- On dispatch, the backend saves three fields:
-  - `deliveryCharge` as `courier.deliveryFee`
-  - `codCharge` as `courier.codCharge`
-  - `deliveryCharge + codCharge` as `courier.actualDeliveryFee`
+**The parcel's charge = Get Parcel Details `charge`** (`GET /parcel/info/<tracking_id>`). Nothing else is added on top: no COD estimate, and no extra calculator call.
 
-  The settlement and the pending **RedX delivery charge** bill then use RedX's own quote from the dispatch day. The 1% COD estimate used for Pathao is not applied.
-
-On every sync or **Sync Live Status**, the backend calls the charge calculator again. It uses the parcel's current values from `/parcel/info`:
-
-| Calculator param | Taken from `/parcel/info` |
+| Where | What happens |
 | :--- | :--- |
-| `delivery_area_id` | `parcel.delivery_area_id` |
-| `pickup_area_id` | `parcel.pickup_location.area_id` |
-| `cash_collection_amount` | `parcel.cash_collection_amount` |
-| `weight` | `parcel.parcel_weight` |
+| Dispatch dialog | The charge calculator shows a preview only (`deliveryCharge` + `codCharge`). Nothing is saved from it. |
+| Right after dispatch | `/parcel/info` is called. `parcel.charge` is saved as `courier.deliveryFee` and `courier.actualDeliveryFee`, and the pending **RedX delivery charge** bill is created with that amount. If parcel details fail (RedX returns 503 at times), the charge calculator's `deliveryCharge + codCharge` is booked until the next sync brings the real `charge`. |
+| Every sync / Sync Live Status | `parcel.charge` from `/parcel/info` refreshes `courier.actualDeliveryFee`. |
+| Bill | Courier bill amount = `parcel.charge` (`billingMethod: "redx"`). |
+| Settlement | `netPayout` = collected − `parcel.charge`. The customer's payment is the full collected amount, and the charge is booked separately as the courier bill (the same model as Pathao). |
 
-The new `deliveryCharge` and `codCharge` are saved to the order. Their sum becomes `courier.actualDeliveryFee`, which drives the settlement and the bill. If the area or cash changes (area change, partial delivery), the charge follows RedX's own rules. If the calculator call fails, the dispatch-day quote is kept. `redxChargeForParcel()` / `applyRedxParcel()` in `redxCourierEvents.service.js` do this.
+`estimateCourierCharge()` never adds the 1% COD estimate for `provider: "redx"`.
 
 ---
 
@@ -125,7 +118,7 @@ The new `deliveryCharge` and `codCharge` are saved to the order. Their sum becom
 | `value` | number | Yes | Declared value (order total) |
 | `merchant_invoice_id` | string | No | `<orderNumber>-<4 random digits>` |
 | `instruction` | string | No | |
-| `is_closed_box` | "true"/"false" | No | Closed box = customer cannot open before paying |
+| `is_closed_box` | **boolean** | No | Closed box = customer cannot open before paying. The docs say the string `"true"`/`"false"`, but the API rejects strings (`"is_closed_box" must be a boolean`). |
 | `pickup_store_id` | number | No | Default pickup store from settings |
 | `paid_return_charge` | number | No | Not used yet |
 | `parcel_details_json` | array | No | Not used yet |
@@ -142,7 +135,7 @@ Response: `{ "tracking_id": "20A312THJDJ8" }`. The tracking id is saved as `cour
 }
 ```
 
-Response: `{ "success": true, "message": "Request Accepted" }`. After a cancel, the order is updated with the `cancelled` status, and the RedX courier bill is deleted (`pickup_cancelled` slug).
+Response: `{ "success": true, "message": "Request Accepted" }`. The sandbox returns this body with HTTP **503**, so the client treats `success: true` as success whatever the status code. After a cancel, the order is updated with the `cancelled` status, and the RedX courier bill is deleted (`pickup_cancelled` slug).
 
 ---
 
@@ -153,7 +146,7 @@ Response: `{ "success": true, "message": "Request Accepted" }`. After a cancel, 
 | `GET /parcel/track/<tracking_id>` | `tracking[]` of `{ message_en, message_bn, time }` |
 | `GET /parcel/info/<tracking_id>` | `parcel` with `status`, `charge`, `cash_collection_amount`, `delivery_type`, `pickup_location`, … |
 
-**Sync Live Status** in the RedX card calls both endpoints, recalculates the charge (section 5), and applies `parcel.status` to the order. The scheduled sync calls `/parcel/info` and the charge calculator.
+**Sync Live Status** in the RedX card calls both endpoints. It applies `parcel.status` and `parcel.charge` to the order. The scheduled sync calls only `/parcel/info`.
 
 ---
 
@@ -249,14 +242,32 @@ graph TD
 
 **Data model**
 - `StoreSettings.redxCourier`: `environment`, `accessToken`, `pickupStoreId`, `pickupStoreName`, `pickupAreaId`, `defaultParcelWeight` (g), `isClosedBox`, `webhookToken`, `lastWebhookAt`, `lastTest*`, `lastOrderSync*`.
-- `Order.courier`: `provider: "redx"`, `consignmentId` / `trackingCode` = RedX tracking id, `merchantOrderId` = `merchant_invoice_id`, `recipientAreaId`, `deliveryAreaName`, `deliveryFee` (calculator `deliveryCharge`), `codCharge` (calculator `codCharge`), `actualDeliveryFee` (delivery + COD; recalculated on each sync from `/parcel/info` values), `amountToCollect`, `itemWeight` (kg), `history[]`.
+- `Order.courier`: `provider: "redx"`, `consignmentId` / `trackingCode` = RedX tracking id, `merchantOrderId` = `merchant_invoice_id`, `recipientAreaId`, `deliveryAreaName`, `deliveryFee` / `actualDeliveryFee` (`parcel.charge` from Get Parcel Details), `amountToCollect`, `itemWeight` (kg), `history[]`.
 - Bills: one auto bill per parcel with `billingMethod: "redx"` and title "RedX delivery charge – Order #…". Pathao bills keep `billingMethod: "pathao"`, so the Pathao bills page is not affected.
 
 **Isolation from Pathao.** The Pathao sync, parcels list and parcel summary now filter on `courier.provider ∈ {pathao, null}`. Because of this, RedX parcels are never polled against Pathao and never listed on the Pathao pages.
 
 ---
 
-## 12. Setup Checklist
+## 12. Sandbox Test Results (2026-11-06)
+
+These calls were made against `sandbox.redx.com.bd` with the public sandbox token from the Developer API page (shop_id 1):
+
+| Call | Result |
+| :--- | :--- |
+| `GET /pickup/stores` | 200. One store: `{ id: 1, name: "Malibag", area_id: 160 }` |
+| `GET /areas` | 200. One test area: `{ id: 1, name: "Test Area", district_name: "Test District", … }`. Note the extra `district_name` field. |
+| `GET /areas?district_name=Dhaka` | 404 in sandbox (no such district there) |
+| `GET /charge/charge_calculator` (area 1, pickup 160, ৳1500, 500 g) | 200, `{ deliveryCharge: 60, codCharge: 0 }` |
+| `POST /parcel` with `is_closed_box: "false"` | **400**, `"is_closed_box" must be a boolean` (fixed: sent as boolean) |
+| `POST /parcel` with boolean | **201**, `{ tracking_id: "20A316MOG0DI" }` |
+| `GET /parcel/track/<id>` | 200, static sample timeline |
+| `GET /parcel/info/<id>` | **503** `Service is currently unreachable` for every id, including the docs' sample id. The `charge` field could not be verified in sandbox. |
+| `PATCH /parcels` (cancel) | HTTP **503** with body `{ success: true, message: "Request Accepted" }` (handled as success) |
+
+Not covered: the webhook, because the sandbox can't reach a local dev server, and `parcel.charge` from Get Parcel Details. Verify both with the first live parcel.
+
+## 13. Setup Checklist
 
 1. In the RedX merchant panel → **Developer API**, click **Request token** for Production (and Sandbox if needed).
 2. Dashboard → Settings → **RedX Courier**: choose the environment, paste the token, click **Test connection**, pick a **pickup store**, set the default weight and the closed-box default, then **Save**.

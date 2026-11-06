@@ -1,5 +1,4 @@
 import { applyPathaoUpdate } from "./pathaoCourierEvents.service.js";
-import { calculateRedxCharge } from "../../common/services/redx.service.js";
 
 // RedX status (webhook `status` / parcel info `status`) → the shared courier slug that
 // applyPathaoUpdate understands, so order status, payment, settlement and the courier bill
@@ -44,7 +43,7 @@ export const redxLabelFor = (status) => {
  * Applies one RedX update (webhook or polled parcel info) to an order document.
  * update: { status, deliveryType, charge, eventAt, source }
  */
-// update.charge (optional) = RedX's total charge for the parcel (deliveryCharge + codCharge)
+// update.charge (optional) = RedX's charge for the parcel (Get Parcel Details `charge`)
 export const applyRedxUpdate = (order, update) =>
   applyPathaoUpdate(order, {
     slug: redxSlugFor(update.status, update.deliveryType),
@@ -54,38 +53,6 @@ export const applyRedxUpdate = (order, update) =>
     source: update.source,
   });
 
-/**
- * RedX's charge for a parcel, from its own charge calculator, using the parcel's current
- * delivery area, pickup area, cash collection and weight (all returned by /parcel/info).
- * Returns { deliveryCharge, codCharge } or null when it can't be calculated.
- */
-export const redxChargeForParcel = async (parcel) => {
-  const deliveryAreaId = parcel?.delivery_area_id;
-  const pickupAreaId = parcel?.pickup_location?.area_id;
-  if (!deliveryAreaId || !pickupAreaId) return null;
-  const res = await calculateRedxCharge({
-    deliveryAreaId,
-    pickupAreaId,
-    cashCollectionAmount: Number(parcel.cash_collection_amount || 0),
-    weight: Number(parcel.parcel_weight || 500),
-  });
-  const deliveryCharge = Number(res?.deliveryCharge);
-  if (!Number.isFinite(deliveryCharge)) return null;
-  return { deliveryCharge, codCharge: Number(res?.codCharge || 0) };
-};
-
-// Applies polled /parcel/info: status + RedX's calculated delivery and COD charges
-export const applyRedxParcel = async (order, parcel, source) => {
-  let charge;
-  try {
-    const quote = await redxChargeForParcel(parcel);
-    if (quote) {
-      order.courier.deliveryFee = quote.deliveryCharge;
-      order.courier.codCharge = quote.codCharge;
-      charge = quote.deliveryCharge + quote.codCharge;
-    }
-  } catch {
-    // charge stays as quoted at dispatch
-  }
-  return applyRedxUpdate(order, { status: parcel.status, deliveryType: parcel.delivery_type, charge, source });
-};
+// Applies Get Parcel Details: status + RedX's `charge` (the courier bill; payout = collected - charge)
+export const applyRedxParcel = (order, parcel, source) =>
+  applyRedxUpdate(order, { status: parcel.status, deliveryType: parcel.delivery_type, charge: parcel.charge, source });

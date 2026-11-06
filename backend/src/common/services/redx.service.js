@@ -50,9 +50,11 @@ async function redxRequest(endpoint, options = {}, override = {}) {
     },
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
+  // RedX sometimes answers 503 with { success: true, message: "Request Accepted" } (seen on PATCH /parcels)
+  if (!res.ok && data?.success !== true) {
+    // validation_errors: [{ "<field>": "<message>" }]
     const validation = Array.isArray(data?.validation_errors)
-      ? data.validation_errors.map((e) => e?.message || JSON.stringify(e)).join(", ")
+      ? data.validation_errors.map((e) => (e && typeof e === "object" ? e.message || Object.values(e).join(", ") : String(e))).join(", ")
       : "";
     const detail = data?.message || data?.error || validation || `RedX API Error (${res.status})`;
     const error = new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
