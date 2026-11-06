@@ -44,6 +44,7 @@ import {
   handleCopyText,
 } from '@/utils/orderDetailsHelper';
 import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
+import CourierDispatchButton from '@/components/dashboard/orders/CourierDispatchButton';
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
 
@@ -185,12 +186,11 @@ export const OrderAccordionDetail = ({ order }) => {
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap">
-          <PathaoCourierCard
+          <CourierDispatchButton
             order={order}
-            triggerOnly
-            triggerIconOnly="responsive"
-            triggerButtonVariant="outline"
-            triggerButtonClassName={PATHAO_BTN_CLASS}
+            iconOnly="responsive"
+            buttonVariant="outline"
+            buttonClassName={PATHAO_BTN_CLASS}
           />
           <Button variant="outline" size="icon" className={PRINT_BTN_CLASS} onClick={handleOpenInvoice} title={t('orders.print_invoice', 'Print Invoice')}>
             <FileText className="h-3.5 w-3.5" />

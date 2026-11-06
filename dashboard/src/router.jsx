@@ -34,6 +34,7 @@ import SectionBackgroundsPage from './pages/dashboard/cms/sectionBackgrounds';
 import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
+import CouriersSettingsPage from './pages/dashboard/settings/couriers';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import R2StorageSettingsPage from './pages/dashboard/settings/r2StorageSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
@@ -869,6 +870,14 @@ const settingsRoutes = [
     element: (
       <RoleGuard menuKey="settings.seo">
         <SEOSettingsPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'couriers',
+    element: (
+      <RoleGuard menuKey="settings.couriers">
+        <CouriersSettingsPage />
       </RoleGuard>
     ),
   },

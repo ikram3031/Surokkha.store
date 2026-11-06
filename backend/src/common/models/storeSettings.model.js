@@ -1,3 +1,4 @@
+import { COURIER_KEYS, DEFAULT_ENABLED_COURIERS } from "../config/couriers.js";
 import mongoose, { Schema, model } from "mongoose";
 
 const storeSettingsSchema = new Schema(
@@ -279,6 +280,11 @@ const storeSettingsSchema = new Schema(
         type: Boolean,
         default: false,
       },
+    },
+    // Couriers switched on by the Owner (keys from common/config/couriers.js)
+    enabledCouriers: {
+      type: [{ type: String, enum: COURIER_KEYS }],
+      default: () => [...DEFAULT_ENABLED_COURIERS],
     },
     pathaoCourier: {
       baseUrl: {

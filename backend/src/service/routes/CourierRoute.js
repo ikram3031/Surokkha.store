@@ -27,11 +27,21 @@ import {
   syncPathaoLocationsController,
   getDistrictsListController,
   getDistrictThanasListController,
+  getCourierProvidersController,
+  updateCourierProvidersController,
 } from "../controllers/CourierController.js";
-import { authenticateToken, authorizeRoles, OWNER_ONLY, ADMINS, OPERATORS } from "../../common/middlewares/auth.middleware.js";
+import { requireCourierEnabled } from "../../common/services/courierProviders.service.js";
+import { authenticateToken, authorizeRoles, OWNER_ONLY, ADMINS, OPERATORS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
 
 const courierRouter = Router();
+// Disabling a courier only blocks NEW dispatches; sync/tracking/settlement of parcels
+// already sent keep working so their accounts stay up to date.
+const pathaoOn = requireCourierEnabled("pathao");
+
+// Which couriers are active (Owner decides from Settings → Couriers)
+courierRouter.get("/providers", authenticateToken, authorizeRoles(ALL_STAFF), getCourierProvidersController);
+courierRouter.put("/providers", authenticateToken, authorizeRoles(OWNER_ONLY), updateCourierProvidersController);
 
 // Pathao webhook (public; verified by X-PATHAO-Signature inside the controller)
 courierRouter.post("/pathao/webhook", pathaoWebhookController);
@@ -165,6 +175,7 @@ courierRouter.post(
 courierRouter.post(
   "/pathao/orders/create",
   authenticateToken,
+  pathaoOn,
   authorizeRoles(OPERATORS),
   createOrderConsignmentController
 );
@@ -172,6 +183,7 @@ courierRouter.post(
 courierRouter.post(
   "/pathao/orders/bulk-create",
   authenticateToken,
+  pathaoOn,
   authorizeRoles(OPERATORS),
   createBulkOrderConsignmentsController
 );

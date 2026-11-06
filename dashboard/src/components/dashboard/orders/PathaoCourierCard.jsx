@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useCourierEnabled } from '@/hooks/use-couriers';
+import { useEffect, useState, useMemo } from "react";
 import {
   Truck,
   CheckCircle2,
@@ -36,7 +37,7 @@ import { formatBDT } from "@/utils/orderHelper";
 import { formatDateTime } from '@/utils/dateHelper';
 
 // Handles Pathao courier dispatch and consignment tracking for orders
-const PathaoCourierCard = ({
+const PathaoCourierCardInner = ({
   order,
   onOrderUpdated,
   triggerOnly = false,
@@ -44,6 +45,9 @@ const PathaoCourierCard = ({
   triggerButtonSize = "default",
   triggerButtonClassName = "",
   triggerIconOnly = false,
+  // Used by CourierDispatchButton: render only the dialog and open it whenever openSignal changes
+  dialogOnly = false,
+  openSignal = 0,
 }) => {
   const queryClient = useQueryClient();
   const [isDispatchOpen, setIsDispatchOpen] = useState(false);
@@ -706,6 +710,13 @@ const PathaoCourierCard = ({
     </Dialog>
   );
 
+  useEffect(() => {
+    if (openSignal > 0) handleOpenDispatch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openSignal]);
+
+  if (dialogOnly) return renderDispatchDialog();
+
   if (triggerOnly) {
     return (
       <>
@@ -836,6 +847,14 @@ const PathaoCourierCard = ({
       {renderDispatchDialog()}
     </>
   );
+};
+
+// When Pathao is switched off in Settings → Couriers the "Send with Pathao" button disappears,
+// but orders already dispatched with Pathao still show their card (tracking + live sync).
+const PathaoCourierCard = (props) => {
+  const enabled = useCourierEnabled("pathao");
+  const dispatched = Boolean(props.order?.courier?.consignmentId);
+  return enabled || dispatched ? <PathaoCourierCardInner {...props} /> : null;
 };
 
 export default PathaoCourierCard;

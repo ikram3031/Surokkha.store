@@ -1,3 +1,5 @@
+import { COURIERS, AVAILABLE_COURIER_KEYS } from "../../common/config/couriers.js";
+import { getEnabledCouriers } from "../../common/services/courierProviders.service.js";
 import { syncPathaoOrders } from "../services/pathaoOrderSync.service.js";
 import { syncCourierBill } from "../services/pathaoBill.service.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
@@ -671,6 +673,68 @@ export const syncPathaoOrdersController = async (req, res, next) => {
   try {
     const result = await syncPathaoOrders("MANUAL");
     return res.json({ status: "success", data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * List courier integrations and which ones are switched on
+ */
+export const getCourierProvidersController = async (req, res, next) => {
+  try {
+    const enabled = await getEnabledCouriers();
+    return res.json({
+      status: "success",
+      data: {
+        enabledCouriers: enabled,
+        couriers: COURIERS.map((c) => ({ ...c, enabled: enabled.includes(c.key) })),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Owner switches couriers on/off
+ */
+export const updateCourierProvidersController = async (req, res, next) => {
+  try {
+    const requested = Array.isArray(req.body?.enabledCouriers) ? req.body.enabledCouriers : null;
+    if (!requested) {
+      return res.status(400).json({ status: "error", message: "enabledCouriers must be an array" });
+    }
+    const invalid = requested.filter((key) => !AVAILABLE_COURIER_KEYS.includes(key));
+    if (invalid.length) {
+      return res.status(400).json({ status: "error", message: `Courier not available: ${invalid.join(", ")}` });
+    }
+    const enabledCouriers = [...new Set(requested)];
+
+    await StoreSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $set: { enabledCouriers, updatedBy: req.user?.userId || null } },
+      { upsert: true, setDefaultsOnInsert: true }
+    );
+
+    try {
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${req.user?.name || "System Admin"} set active couriers: ${enabledCouriers.join(", ") || "none"}.`,
+        readStatus: false,
+      });
+    } catch {
+      // activity log is best-effort
+    }
+
+    return res.json({
+      status: "success",
+      data: {
+        enabledCouriers,
+        couriers: COURIERS.map((c) => ({ ...c, enabled: enabledCouriers.includes(c.key) })),
+      },
+    });
   } catch (error) {
     next(error);
   }

@@ -9,6 +9,7 @@
     "trash",
     "developer",
     "settings.smtp",
+    "settings.couriers",
     "settings.pathao-courier",
     "settings.r2-storage"
   ],
