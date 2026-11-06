@@ -3,7 +3,9 @@ import { BillTypeModel } from "../../common/models/billType.model.js";
 import { estimateCourierCharge, invoiceDateFromId, PAID_OUT_STATUSES } from "./pathaoCourierEvents.service.js";
 
 // Bills this service owns are tagged so staff-entered bills (e.g. a manual return fee) are never touched
-const AUTO_BILLING_METHOD = "pathao";
+// Each courier's auto bills carry its own billingMethod ("pathao", "redx") so Pathao reports stay Pathao-only
+const PROVIDERS = { pathao: { method: "pathao", name: "Pathao" }, redx: { method: "redx", name: "RedX" } };
+const providerOf = (order) => PROVIDERS[order.courier?.provider] || PROVIDERS.pathao;
 const DELIVERY_BILL_TYPE = "Delivery Charge";
 const RETURN_BILL_TYPE = "Return";
 const CANCELLED_STATUSES = ["cancelled", "canceled", "fake"];
@@ -39,11 +41,12 @@ const billDetails = (order, isReturn) => {
   const customer = order.shippingInfo || order.billingInfo || {};
   const customerName = customer.fullName || "Customer";
   const consignment = order.courier?.consignmentId || "";
+  const provider = providerOf(order).name;
   return {
-    title: `${isReturn ? "Pathao return charge" : "Pathao delivery charge"} - Order #${orderRef} - ${customerName}`,
-    name: "Pathao Courier",
+    title: `${provider} ${isReturn ? "return charge" : "delivery charge"} - Order #${orderRef} - ${customerName}`,
+    name: `${provider} Courier`,
     billingPhone: customer.phone || "",
-    notes: `Auto-synced from Pathao. Consignment ${consignment}. Order #${orderRef}, customer ${customerName}.`,
+    notes: `Auto-synced from ${provider}. Consignment ${consignment}. Order #${orderRef}, customer ${customerName}.`,
   };
 };
 
@@ -54,7 +57,7 @@ const billDetails = (order, isReturn) => {
  */
 export const syncCourierBill = async (order) => {
   const courier = order.courier || {};
-  const filter = { orderId: order._id, billingMethod: AUTO_BILLING_METHOD };
+  const filter = { orderId: order._id, billingMethod: providerOf(order).method };
 
   const isCancelled =
     !courier.consignmentId || CANCELLED_STATUSES.includes(order.status) || /pickup_cancel/.test(courier.orderStatusSlug || "");
@@ -68,7 +71,7 @@ export const syncCourierBill = async (order) => {
 
   // A return fee entered by staff already covers this parcel
   if (isReturn) {
-    const manualReturnBill = await BillingModel.exists({ orderId: order._id, billTypeId, billingMethod: { $ne: AUTO_BILLING_METHOD } });
+    const manualReturnBill = await BillingModel.exists({ orderId: order._id, billTypeId, billingMethod: { $ne: providerOf(order).method } });
     if (manualReturnBill) {
       await BillingModel.deleteOne(filter);
       return "manual return bill";

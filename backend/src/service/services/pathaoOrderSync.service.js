@@ -40,10 +40,12 @@ export const syncPathaoOrders = async (trigger = "SCHEDULER") => {
 
     const openOrders = await OrderModel.find({
       "courier.consignmentId": { $nin: [null, ""] },
+      "courier.provider": { $in: ["pathao", null] },
       status: { $in: OPEN_STATUSES },
     });
     const finishedOrders = await OrderModel.find({
       "courier.consignmentId": { $nin: [null, ""] },
+      "courier.provider": { $in: ["pathao", null] },
       status: { $in: ["completed", "return"] },
       "courier.dispatchedAt": { $gte: new Date(Date.now() - INVOICE_LOOKBACK_DAYS * 24 * 60 * 60 * 1000) },
       "courier.settlement.invoiceId": { $in: [null, ""] },

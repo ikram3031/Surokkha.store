@@ -9,8 +9,7 @@ import { apiClient, baseURL } from "@/lib/api-client";
 import { logActivity } from "@/lib/activity-logger";
 import { toast } from "sonner";
 import { clientConfig } from "@/clientConfig";
-import PathaoCourierCard from "@/components/dashboard/orders/PathaoCourierCard";
-import CourierDispatchButton from '@/components/dashboard/orders/CourierDispatchButton';
+import CourierDispatchButton, { CourierDetailsCard } from '@/components/dashboard/orders/CourierDispatchButton';
 import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 import { DistrictCombobox, ThanaCombobox } from "@/components/orders/LocationCombobox";
 
@@ -1102,8 +1101,8 @@ const OrderDetailsPage = () => {
                   </div>
                 </div>
 
-                {/* Pathao Courier Dispatch & Tracking Card */}
-                <PathaoCourierCard order={order} />
+                {/* Courier dispatch & tracking card (dispatched courier, else each active one) */}
+                <CourierDetailsCard order={order} />
               </>
             )}
 

@@ -11,6 +11,7 @@
     "settings.smtp",
     "settings.couriers",
     "settings.pathao-courier",
+    "settings.redx-courier",
     "settings.r2-storage"
   ],
   "userRoles": {

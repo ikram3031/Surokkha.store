@@ -5,7 +5,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
-import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import CourierDispatchButton from '@/components/dashboard/orders/CourierDispatchButton';
 import { SendOrderInvoiceModal } from '@/components/dashboard/orders/SendOrderInvoiceModal';
 import { cn } from '@/lib/utils';

@@ -77,7 +77,7 @@ const dispatchedRange = ({ from, to }) => {
 };
 
 const buildParcelFilter = ({ settlement, search, from, to }) => {
-  const filter = { "courier.consignmentId": { $nin: [null, ""] } };
+  const filter = { "courier.consignmentId": { $nin: [null, ""] }, "courier.provider": { $in: ["pathao", null] } };
   if (settlement && SETTLEMENT_STATUSES.includes(settlement)) filter["courier.settlement.status"] = settlement;
   const range = dispatchedRange({ from, to });
   if (range) filter["courier.dispatchedAt"] = range;
@@ -147,7 +147,7 @@ export const listParcels = async (query = {}, canSeeMoney = false) => {
 };
 
 export const getParcelSummary = async (query = {}, canSeeMoney = false) => {
-  const match = { "courier.consignmentId": { $nin: [null, ""] } };
+  const match = { "courier.consignmentId": { $nin: [null, ""] }, "courier.provider": { $in: ["pathao", null] } };
   const range = dispatchedRange(query);
   if (range) match["courier.dispatchedAt"] = range;
 

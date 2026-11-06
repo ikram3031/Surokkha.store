@@ -853,7 +853,10 @@ const PathaoCourierCardInner = ({
 // but orders already dispatched with Pathao still show their card (tracking + live sync).
 const PathaoCourierCard = (props) => {
   const enabled = useCourierEnabled("pathao");
-  const dispatched = Boolean(props.order?.courier?.consignmentId);
+  const courier = props.order?.courier || {};
+  // An order dispatched with another courier (e.g. RedX) never shows the Pathao card
+  if (courier.consignmentId && courier.provider && courier.provider !== "pathao") return null;
+  const dispatched = Boolean(courier.consignmentId);
   return enabled || dispatched ? <PathaoCourierCardInner {...props} /> : null;
 };
 

@@ -10,11 +10,28 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useCourierProviders } from '@/hooks/use-couriers';
 import PathaoCourierCard from './PathaoCourierCard';
+import RedxCourierCard from './RedxCourierCard';
 
 // Dashboard dispatch UI per courier key. Add a courier here once its backend service exists.
 const DISPATCHERS = {
   pathao: { name: 'Pathao', Component: PathaoCourierCard },
+  redx: { name: 'RedX', Component: RedxCourierCard },
 };
+
+// Full courier card for the order details page: the dispatched courier's card, else the first active one
+export function CourierDetailsCard({ order, ...rest }) {
+  const { data } = useCourierProviders();
+  const dispatchedWith = order?.courier?.consignmentId ? order.courier.provider || 'pathao' : null;
+  if (dispatchedWith && DISPATCHERS[dispatchedWith]) {
+    const { Component } = DISPATCHERS[dispatchedWith];
+    return <Component order={order} {...rest} />;
+  }
+  const active = (data?.enabledCouriers || []).filter((key) => DISPATCHERS[key]);
+  return active.map((key) => {
+    const { Component } = DISPATCHERS[key];
+    return <Component key={key} order={order} {...rest} />;
+  });
+}
 
 // "Send with courier" action for an order:
 // - already dispatched → that courier's button (tracking), even if the courier is now disabled

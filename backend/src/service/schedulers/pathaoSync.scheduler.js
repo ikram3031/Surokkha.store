@@ -1,14 +1,20 @@
 import { syncPathaoOrders } from "../services/pathaoOrderSync.service.js";
+import { syncRedxOrders } from "../services/redxOrderSync.service.js";
 import { logger } from "../../common/config/logger.js";
 
 const SYNC_INTERVAL_MS = 30 * 60 * 1000; // every 30 minutes
 let startTimeout = null;
 let syncTimer = null;
 
-const runSync = () =>
-  syncPathaoOrders("SCHEDULER").catch((err) => {
+// Every courier with parcels is synced, whether or not it is still enabled for new dispatches
+const runSync = async () => {
+  await syncPathaoOrders("SCHEDULER").catch((err) => {
     logger.error({ err: err.message }, "[PathaoSync] Scheduled order sync failed");
   });
+  await syncRedxOrders("SCHEDULER").catch((err) => {
+    logger.error({ err: err.message }, "[RedxSync] Scheduled order sync failed");
+  });
+};
 
 // Starts the recurring Pathao order status/payment sync (first run 1 minute after boot)
 export const initPathaoSyncScheduler = () => {

@@ -96,6 +96,7 @@ export const SettingsSidebar = (props) => {
           {can("settings.smtp") && <NavLabel>{t("nav.integrations", "Integrations")}</NavLabel>}
           {can("settings.couriers") && <NavLink to="/settings/couriers" active={pathname.startsWith("/settings/couriers")} icon={Truck} label={t("nav.couriers", "Couriers")} />}
           {can("settings.pathao-courier") && <NavLink to="/settings/pathao-courier" active={pathname.startsWith("/settings/pathao")} icon={Truck} label={t("nav.pathao_courier", "Pathao Courier")} />}
+          {can("settings.redx-courier") && <NavLink to="/settings/redx-courier" active={pathname.startsWith("/settings/redx")} icon={Truck} label={t("nav.redx_courier", "RedX Courier")} />}
           {can("settings.smtp") && renderGroup("smtp")}
           {can("settings.r2-storage") && <NavLink to="/settings/r2-storage" active={pathname.startsWith("/settings/r2-storage")} icon={HardDrive} label={t("nav.r2_storage", "R2 Storage")} />}
         </>

@@ -3,6 +3,7 @@
 // only these show up in Settings → Couriers for the Owner to enable.
 export const COURIERS = [
   { key: "pathao", name: "Pathao", settingsPath: "/settings/pathao-courier" },
+  { key: "redx", name: "RedX", settingsPath: "/settings/redx-courier" },
 ];
 
 export const COURIER_KEYS = COURIERS.map((c) => c.key);

@@ -381,6 +381,23 @@ const storeSettingsSchema = new Schema(
       webhookIntegrationSecret: { type: String, default: "", trim: true },
       lastWebhookAt: { type: Date, default: null },
     },
+    // RedX OpenAPI (token is issued in the RedX merchant panel → Developer API)
+    redxCourier: {
+      environment: { type: String, enum: ["sandbox", "production"], default: "production" },
+      accessToken: { type: String, default: "", trim: true },
+      pickupStoreId: { type: Number, default: null },
+      pickupStoreName: { type: String, default: "", trim: true },
+      pickupAreaId: { type: Number, default: null },
+      defaultParcelWeight: { type: Number, default: 500 }, // grams
+      isClosedBox: { type: Boolean, default: false },
+      webhookToken: { type: String, default: "" },
+      lastWebhookAt: { type: Date, default: null },
+      lastTestedAt: { type: Date, default: null },
+      lastTestStatus: { type: String, enum: ["connected", "failed", "untested"], default: "untested" },
+      lastTestMessage: { type: String, default: "" },
+      lastOrderSyncAt: { type: Date, default: null },
+      lastOrderSyncSummary: { type: String, default: "" },
+    },
     // Cloudflare R2 object storage used for automated backups (secret stored encrypted)
     r2Storage: {
       isEnabled: { type: Boolean, default: false },

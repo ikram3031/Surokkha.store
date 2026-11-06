@@ -30,6 +30,20 @@ import {
   getCourierProvidersController,
   updateCourierProvidersController,
 } from "../controllers/CourierController.js";
+import {
+  redxWebhookController,
+  getRedxSettingsController,
+  updateRedxSettingsController,
+  testRedxConnectionController,
+  getRedxAreasController,
+  getRedxPickupStoresController,
+  createRedxPickupStoreController,
+  calculateRedxChargeController,
+  createRedxParcelController,
+  trackRedxParcelController,
+  cancelRedxParcelController,
+  syncRedxOrdersController,
+} from "../controllers/RedxController.js";
 import { requireCourierEnabled } from "../../common/services/courierProviders.service.js";
 import { authenticateToken, authorizeRoles, OWNER_ONLY, ADMINS, OPERATORS, ALL_STAFF } from "../../common/middlewares/auth.middleware.js";
 
@@ -225,6 +239,23 @@ courierRouter.get(
   authorizeRoles(OPERATORS),
   getDistrictThanasListController
 );
+
+// ─── RedX ────────────────────────────────────────────────────────────────
+// Only new dispatches need RedX enabled; tracking, sync and the webhook keep working for parcels already sent.
+const redxOn = requireCourierEnabled("redx");
+
+courierRouter.post("/redx/webhook", redxWebhookController);
+courierRouter.get("/redx/config", authenticateToken, authorizeRoles(OPERATORS), getRedxSettingsController);
+courierRouter.put("/redx/config", authenticateToken, authorizeRoles(OWNER_ONLY), updateRedxSettingsController);
+courierRouter.post("/redx/test", authenticateToken, authorizeRoles(OWNER_ONLY), testRedxConnectionController);
+courierRouter.get("/redx/areas", authenticateToken, authorizeRoles(OPERATORS), getRedxAreasController);
+courierRouter.get("/redx/pickup-stores", authenticateToken, authorizeRoles(OPERATORS), getRedxPickupStoresController);
+courierRouter.post("/redx/pickup-stores", authenticateToken, authorizeRoles(OWNER_ONLY), createRedxPickupStoreController);
+courierRouter.post("/redx/charge", authenticateToken, authorizeRoles(OPERATORS), calculateRedxChargeController);
+courierRouter.post("/redx/parcels", authenticateToken, redxOn, authorizeRoles(OPERATORS), createRedxParcelController);
+courierRouter.get("/redx/parcels/:trackingId/track", authenticateToken, authorizeRoles(OPERATORS), trackRedxParcelController);
+courierRouter.post("/redx/parcels/:trackingId/cancel", authenticateToken, authorizeRoles(ADMINS), cancelRedxParcelController);
+courierRouter.post("/redx/orders/sync", authenticateToken, authorizeRoles(OPERATORS), syncRedxOrdersController);
 
 export default courierRouter;
 

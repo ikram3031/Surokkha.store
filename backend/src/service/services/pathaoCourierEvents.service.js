@@ -73,6 +73,10 @@ export const parsePathaoTime = (value) => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
+// Shared by every courier: RedX maps its statuses onto these slugs (see redxCourierEvents.service.js)
+const PROVIDER_LABELS = { pathao: "Pathao", redx: "RedX" };
+const providerLabel = (courier) => PROVIDER_LABELS[courier?.provider] || "Pathao";
+
 const round2 = (n) => Math.round(n * 100) / 100;
 const toNumber = (value) => (value === null || value === undefined || value === "" ? NaN : Number(value));
 
@@ -173,7 +177,7 @@ export const applyPathaoUpdate = async (order, update) => {
     if (courier.orderStatus !== label) {
       courier.orderStatus = label;
       courier.orderStatusSlug = slug;
-      courier.history.push({ status: label, date: eventAt, note: `Auto-synced from Pathao (${update.source})` });
+      courier.history.push({ status: label, date: eventAt, note: `Auto-synced from ${providerLabel(courier)} (${update.source})` });
       notes.push(`status ${label}`);
     }
     courier.lastEventAt = eventAt;
@@ -217,7 +221,7 @@ export const applyPathaoUpdate = async (order, update) => {
 
   const statusChanged = order.status !== previousStatus;
   if (order.isModified()) await order.save();
-  if (statusChanged) await syncOrderStock(order, { actor: "pathao" });
+  if (statusChanged) await syncOrderStock(order, { actor: courier.provider || "pathao" });
 
   if (paymentUpdate) {
     await syncPaymentDocument(order.toObject(), paymentUpdate);

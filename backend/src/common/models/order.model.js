@@ -105,6 +105,8 @@ const courierInfoSchema = new Schema(
     recipientCityId: { type: Number, default: null },
     recipientZoneId: { type: Number, default: null },
     recipientAreaId: { type: Number, default: null },
+    // RedX needs the delivery area name alongside its id
+    deliveryAreaName: { type: String, default: null, trim: true },
     dispatchedAt: { type: Date, default: null },
     itemWeight: { type: Number, default: 0.5 },
     rawResponse: { type: Schema.Types.Mixed, default: null },

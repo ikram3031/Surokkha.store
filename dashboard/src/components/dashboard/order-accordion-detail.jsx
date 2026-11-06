@@ -43,7 +43,6 @@ import {
   WhatsAppIcon,
   handleCopyText,
 } from '@/utils/orderDetailsHelper';
-import PathaoCourierCard from '@/components/dashboard/orders/PathaoCourierCard';
 import CourierDispatchButton from '@/components/dashboard/orders/CourierDispatchButton';
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';

@@ -35,6 +35,7 @@ import GoogleAnalyticsPage from './pages/dashboard/settings/googleAnalytics';
 import SEOSettingsPage from './pages/dashboard/settings/seoSettings';
 import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
 import CouriersSettingsPage from './pages/dashboard/settings/couriers';
+import RedxCourierSettingsPage from './pages/dashboard/settings/redxCourier';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import R2StorageSettingsPage from './pages/dashboard/settings/r2StorageSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
@@ -890,6 +891,14 @@ const settingsRoutes = [
     ),
   },
   { path: 'pathao', element: <Navigate to="pathao-courier" replace /> },
+  {
+    path: 'redx-courier',
+    element: (
+      <RoleGuard menuKey="settings.redx-courier">
+        <RedxCourierSettingsPage />
+      </RoleGuard>
+    ),
+  },
   {
     path: 'admin-view/styles',
     element: (
