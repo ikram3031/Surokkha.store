@@ -66,9 +66,12 @@ export function createOrder(payload: NewOrderPayload) {
   return api.post<CreateOrderResponse>('/orders/new-order', payload)
 }
 
-/** GET /store/v1/orders/check-phone — flags numbers on the fake-order list. */
-export function checkPhone(phone: string) {
-  return api.get<{ isFake?: boolean }>('/orders/check-phone', { phone })
+/** GET /store/v1/orders/check-phone — flags numbers / emails on the fake-order or spam list. */
+export function checkPhone(phone: string, email = '') {
+  return api.get<{ isFake?: boolean; isSpam?: boolean; message?: string }>(
+    '/orders/check-phone',
+    email ? { phone, email } : { phone },
+  )
 }
 
 /** GET /store/v1/orders/:orderId */

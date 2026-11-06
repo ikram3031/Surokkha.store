@@ -9,6 +9,9 @@ import { OfferProductCard } from '@/components/offer/OfferProductCard'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
 import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from '@/components/offer/Turnstile'
+
+// Turnstile is off on checkout for now (it blocked real buyers); the backend check is off too
+const CHECKOUT_CAPTCHA = false && !!TURNSTILE_SITE_KEY
 import { QuickViewDialog, VariantDialog } from '@/components/offer/ProductDialogs'
 import {
   READY_COMBOS_TITLE,
@@ -402,7 +405,7 @@ export function OfferHome() {
       setTimeout(() => document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
       return
     }
-    if (TURNSTILE_SITE_KEY && !captcha) return toast.error('Please complete the "I am not a robot" check before ordering')
+    if (CHECKOUT_CAPTCHA && !captcha) return toast.error('Please complete the "I am not a robot" check before ordering')
 
     const info = {
       fullName: form.name.trim(),
@@ -805,9 +808,9 @@ export function OfferHome() {
                     </div>
                   </dl>
 
-                  <Turnstile ref={captchaRef} onToken={setCaptcha} />
+                  {CHECKOUT_CAPTCHA && <Turnstile ref={captchaRef} onToken={setCaptcha} />}
 
-                  <button type="submit" disabled={submitting || (!!TURNSTILE_SITE_KEY && !captcha)}
+                  <button type="submit" disabled={submitting || (CHECKOUT_CAPTCHA && !captcha)}
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#dc143c] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b80f31] focus:outline-none focus:ring-2 focus:ring-[#dc143c]/50 disabled:cursor-not-allowed disabled:opacity-60">
                     {submitting && <Loader2 className="size-4 animate-spin" />}
                     {submitting ? 'Placing order…' : `Confirm order — ${taka(total)}`}

@@ -28,6 +28,8 @@ import { navigate } from '@/lib/router'
 import { getFbIdentifiers, pixelTrack } from '@/lib/pixel'
 import { productKeyOf, trackProductEvents, type ProductEventType } from '@/lib/api/productEvents'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
+// Orders above this subtotal are taken on WhatsApp (the backend caps website orders at the same amount)
+const ORDER_LIMIT = 3000
 
 // Shared field styling — tighter and consistent on mobile
 const fieldClass = (err?: string) =>
@@ -159,6 +161,19 @@ export function CheckoutPage() {
     trackProductEvents(productEventLines('checkout'))
   }, [count, lines, subtotal])
 
+  // Orders above this subtotal are taken on WhatsApp (same cap the backend enforces)
+  const isOverLimit = subtotal > ORDER_LIMIT
+  const whatsappOrderHref = `https://wa.me/8801600905774?text=${encodeURIComponent(
+    [
+      'Hello Surokkha, আমি অর্ডার করতে চাই:',
+      ...lines.map(({ product, qty }) => `- ${product.apiName ?? product.name} x ${qty}`),
+      `মোট: ৳${subtotal}`,
+      form.fullName ? `নাম: ${form.fullName}` : '',
+      form.phone ? `মোবাইল: ${form.phone}` : '',
+      form.address ? `ঠিকানা: ${[form.address, form.thana, form.district].filter(Boolean).join(', ')}` : '',
+    ].filter(Boolean).join('\n'),
+  )}`
+
   // Keep what the customer has typed so far (abandoned checkout capture); debounced, and flushed when they leave
   const leadRef = useRef<() => CheckoutLeadPayload>(() => ({ fullName: '', phone: '', email: '', address: '', district: '', thana: '', cartTotal: 0, items: [] }))
   leadRef.current = () => ({
@@ -243,8 +258,8 @@ export function CheckoutPage() {
     const next: Record<string, string> = {}
     if (!form.fullName.trim()) next.fullName = 'Enter your name'
     if (!isValidPhone(form.phone)) next.phone = 'Enter a valid mobile number (e.g. 01XXXXXXXXX)'
-    if (!form.email.trim()) next.email = 'Enter your email'
-    else if (!isValidEmail(form.email)) next.email = 'Enter a valid email'
+    // Email is optional at checkout
+    if (form.email.trim() && !isValidEmail(form.email)) next.email = 'Enter a valid email'
     if (form.address.trim().length < 5) next.address = 'Enter your full address with house, road and area'
     if (!form.district) next.district = 'Select a district'
     else if (thanas.length > 0 && !thanas.includes(form.thana)) next.thana = 'Select a thana / upazila'
@@ -275,10 +290,21 @@ export function CheckoutPage() {
     setSubmitting(true)
     try {
       const phone = normalizePhone(form.phone)
+      // Blocked only by phone or email (fake-order / spam list), never by IP
       const flagged = await checkPhone(phone.slice(-10)).catch(() => null)
       if (flagged?.isFake) {
-        setErrors({ phone: 'Please use a different valid phone number.' })
-        throw new Error('Please use a different valid phone number.')
+        const msg = flagged.message || 'Please use a different valid phone number.'
+        setErrors({ phone: msg })
+        throw new Error(msg)
+      }
+      const email = form.email.trim().toLowerCase()
+      if (email) {
+        const flaggedEmail = await checkPhone('', email).catch(() => null)
+        if (flaggedEmail?.isFake) {
+          const msg = flaggedEmail.message || 'Please use a different email.'
+          setErrors({ email: msg })
+          throw new Error(msg)
+        }
       }
 
       const district = form.district.trim()
@@ -421,7 +447,7 @@ export function CheckoutPage() {
                   placeholder="01XXXXXXXXX"
                 />
               </Field>
-              <Field label="Email" required error={errors.email} htmlFor="email">
+              <Field label="Email (optional)" error={errors.email} htmlFor="email">
                 <input
                   id="email"
                   type="email"
@@ -704,9 +730,26 @@ export function CheckoutPage() {
               <span>I agree to the terms and refund policy, and I am 18 or older.</span>
             </label>
 
-            <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={submitting}>
-              {submitting ? 'Placing order...' : `Confirm order · ${taka(totals.total)}`}
-            </Button>
+            {/* Above the order limit the order goes through WhatsApp instead of the website */}
+            {isOverLimit ? (
+              <>
+                <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+                  Orders above {taka(ORDER_LIMIT)} are taken on WhatsApp. Tap below to send your order details.
+                </p>
+                <a
+                  href={whatsappOrderHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-12 w-full items-center justify-center rounded-full bg-[#25D366] text-base font-semibold text-white hover:opacity-90"
+                >
+                  Order on WhatsApp
+                </a>
+              </>
+            ) : (
+              <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={submitting}>
+                {submitting ? 'Placing order...' : `Confirm order · ${taka(totals.total)}`}
+              </Button>
+            )}
           </aside>
         </div>
       </form>

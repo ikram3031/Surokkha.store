@@ -25,6 +25,21 @@ import { markCheckoutLeadConverted } from '../../storefront/controllers/Checkout
 
 const { Types } = mongoose;
 
+const escapeRegex = (s) => String(s).replace(/[^0-9]/g, "");
+
+// Spam list lookup by phone (last 10 digits) or email; never by IP
+const findSpamEntry = async ({ phone, email } = {}) => {
+  const or = [];
+  const corePhone = String(phone || '').replace(/\D/g, '').slice(-10);
+  if (corePhone.length === 10) or.push({ phone: { $regex: escapeRegex(corePhone) } });
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  if (cleanEmail) or.push({ email: cleanEmail });
+  if (!or.length) return null;
+  return SpamListModel.findOne({ $or: or }).lean();
+};
+
+const TURNSTILE_ON_CHECKOUT = false;
+
 // Create a new order from checkout payload and sync related payment/member data
 export const createOrder = async (req, res, next) => {
   try {
@@ -34,14 +49,9 @@ export const createOrder = async (req, res, next) => {
     const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;
     const clientPhone = payload.billingInfo?.phone || payload.phone || payload.customerInfo?.phone || null;
 
-    // Check if IP, email or phone is in the spam list
-    const spamQuery = { $or: [{ ip: clientIp }] };
-    if (clientEmail) spamQuery.$or.push({ email: clientEmail.toLowerCase() });
-    if (clientPhone) {
-      const coreSpamPhone = clientPhone.replace(/\D/g, '').slice(-10);
-      if (coreSpamPhone) spamQuery.$or.push({ phone: { $regex: coreSpamPhone } });
-    }
-    const isSpammer = await SpamListModel.findOne(spamQuery).lean();
+    // Spam list is matched on phone / email only. Mobile operators put many customers behind one
+    // shared IP, so an IP match would block genuine buyers.
+    const isSpammer = await findSpamEntry({ phone: clientPhone, email: clientEmail });
     if (isSpammer) {
       return res.status(403).json({
         success: false,
@@ -54,7 +64,8 @@ export const createOrder = async (req, res, next) => {
     // Offer page orders must pass Cloudflare Turnstile once a secret key is configured.
     // The offer checkout is served from offer.surokkha.shop and, in launch mode, from the store root itself;
     // TURNSTILE_HOSTNAMES (comma separated) overrides this list.
-    if (String(payload.orderPrefix || '').toUpperCase() === 'OS' && isTurnstileConfigured()) {
+    // Turnstile is off on checkout for now (it blocked real buyers); flip TURNSTILE_ON_CHECKOUT to re-enable
+    if (TURNSTILE_ON_CHECKOUT && String(payload.orderPrefix || '').toUpperCase() === 'OS' && isTurnstileConfigured()) {
       const human = await verifyTurnstile(payload.turnstileToken, clientIp, {
         action: 'checkout',
         hostnames: ['offer.surokkha.shop', 'surokkha.store', 'www.surokkha.store'],
@@ -116,7 +127,7 @@ export const createOrder = async (req, res, next) => {
     const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
     const overItem = items.find((item) => Number(item.quantity || 1) > MAX_QTY_PER_ITEM);
     // Orders above this amount must be placed by contacting support
-    const MAX_ORDER_AMOUNT = 3000;
+    const MAX_ORDER_AMOUNT = 3000; // above this, order on WhatsApp
     const itemsSubtotal = items.reduce(
       (sum, item) => sum + Number(item.unitPrice ?? item.price ?? 0) * Number(item.quantity || 1),
       0
@@ -439,6 +450,15 @@ export const checkPhoneStatus = async (req, res, next) => {
 
     if (!corePhone && !rawEmail) {
       return res.json({ status: 'success', isFake: false });
+    }
+
+    if (await findSpamEntry({ phone: corePhone, email: rawEmail })) {
+      return res.json({
+        status: 'success',
+        isFake: true,
+        isSpam: true,
+        message: 'দুঃখিত, এই নম্বর/ইমেইল দিয়ে অর্ডার করা যাবে না। আমাদের সাথে যোগাযোগ করুন।',
+      });
     }
 
     const fakeQueryConditions = [];

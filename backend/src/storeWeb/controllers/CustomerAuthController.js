@@ -73,6 +73,9 @@ export const register = async (req, res, next) => {
 
     if (name.length < 2) return res.status(400).json({ status: "error", message: "Please enter your name" });
     if (!EMAIL_RE.test(email)) return res.status(400).json({ status: "error", message: "Please enter a valid email address" });
+    if (!/^1[3-9]\d{8}$/.test(phone.replace(/\D/g, "").slice(-10))) {
+      return res.status(400).json({ status: "error", message: "Please enter a valid mobile number" });
+    }
     if (password.length < MIN_PASSWORD_LENGTH) {
       return res.status(400).json({ status: "error", message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
     }
