@@ -562,10 +562,13 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       event_time: Math.floor(Date.now() / 1000),
       event_id: resolvedOrderNumber,
       action_source: "website",
-      ...(isOfferOrder(order, req) ? { event_source_url: OFFER_SITE_URL } : {}),
+      event_source_url: isOfferOrder(order, req)
+        ? OFFER_SITE_URL
+        : (req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || undefined),
       user_data: userData,
       custom_data: customData,
     };
+    if (!eventPayload.event_source_url) delete eventPayload.event_source_url;
 
     const requestBody = {
       data: [eventPayload],
@@ -574,24 +577,29 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
 
     const endpoint = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
 
-    fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const errData = await res.text();
-          console.warn("[Meta CAPI Server] Response error:", errData);
+    // Retry transient failures (network / 5xx / rate limit) so the server copy isn't silently lost
+    const send = async (attempt = 1) => {
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        });
+        if (res.ok) {
+          console.log(`[Meta CAPI Server] Purchase sent: order=${resolvedOrderNumber} pixel=${pixelId} value=${orderTotalAmount}`);
           return;
         }
-        console.log(`[Meta CAPI Server] Purchase sent: order=${resolvedOrderNumber} pixel=${pixelId} value=${orderTotalAmount}`);
-      })
-      .catch((err) => {
-        console.warn("[Meta CAPI Server] Network error:", err.message);
-      });
+        const errData = await res.text();
+        console.warn(`[Meta CAPI Server] Purchase response error (attempt ${attempt}):`, errData);
+        if ((res.status >= 500 || res.status === 429) && attempt < 3) {
+          setTimeout(() => send(attempt + 1), attempt * 3000);
+        }
+      } catch (err) {
+        console.warn(`[Meta CAPI Server] Purchase network error (attempt ${attempt}):`, err.message);
+        if (attempt < 3) setTimeout(() => send(attempt + 1), attempt * 3000);
+      }
+    };
+    send();
   } catch (err) {
     console.warn("[Meta CAPI Server] Request builder exception:", err.message);
   }
