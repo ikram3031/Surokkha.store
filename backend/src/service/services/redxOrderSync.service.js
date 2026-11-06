@@ -1,7 +1,7 @@
 import { OrderModel } from "../../common/models/order.model.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { getRedxConfig, getRedxParcelInfo } from "../../common/services/redx.service.js";
-import { applyRedxUpdate } from "./redxCourierEvents.service.js";
+import { applyRedxParcel } from "./redxCourierEvents.service.js";
 import { logger } from "../../common/config/logger.js";
 
 const OPEN_STATUSES = ["pending", "processing", "shipped"];
@@ -37,12 +37,7 @@ export const syncRedxOrders = async (trigger = "SCHEDULER") => {
       try {
         const parcel = await getRedxParcelInfo(order.courier.consignmentId);
         if (!parcel?.status) continue;
-        const result = await applyRedxUpdate(order, {
-          status: parcel.status,
-          deliveryType: parcel.delivery_type,
-          charge: parcel.charge,
-          source: trigger,
-        });
+        const result = await applyRedxParcel(order, parcel, trigger);
         if (result !== "no change" && result !== "stale event, status skipped") updated += 1;
       } catch (err) {
         failed += 1;

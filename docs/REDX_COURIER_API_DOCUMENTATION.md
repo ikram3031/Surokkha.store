@@ -96,7 +96,16 @@ The charge is used in two places:
 
   The settlement and the pending **RedX delivery charge** bill then use RedX's own quote from the dispatch day. The 1% COD estimate used for Pathao is not applied.
 
-When parcel info later reports `charge` (RedX's delivery charge), the saved `codCharge` is added to it, and the total replaces `courier.actualDeliveryFee`.
+On every sync or **Sync Live Status**, the backend calls the charge calculator again. It uses the parcel's current values from `/parcel/info`:
+
+| Calculator param | Taken from `/parcel/info` |
+| :--- | :--- |
+| `delivery_area_id` | `parcel.delivery_area_id` |
+| `pickup_area_id` | `parcel.pickup_location.area_id` |
+| `cash_collection_amount` | `parcel.cash_collection_amount` |
+| `weight` | `parcel.parcel_weight` |
+
+The new `deliveryCharge` and `codCharge` are saved to the order. Their sum becomes `courier.actualDeliveryFee`, which drives the settlement and the bill. If the area or cash changes (area change, partial delivery), the charge follows RedX's own rules. If the calculator call fails, the dispatch-day quote is kept. `redxChargeForParcel()` / `applyRedxParcel()` in `redxCourierEvents.service.js` do this.
 
 ---
 
@@ -144,7 +153,7 @@ Response: `{ "success": true, "message": "Request Accepted" }`. After a cancel, 
 | `GET /parcel/track/<tracking_id>` | `tracking[]` of `{ message_en, message_bn, time }` |
 | `GET /parcel/info/<tracking_id>` | `parcel` with `status`, `charge`, `cash_collection_amount`, `delivery_type`, `pickup_location`, … |
 
-**Sync Live Status** in the RedX card calls both endpoints and applies `parcel.status` to the order. The scheduled sync calls only `/parcel/info`.
+**Sync Live Status** in the RedX card calls both endpoints, recalculates the charge (section 5), and applies `parcel.status` to the order. The scheduled sync calls `/parcel/info` and the charge calculator.
 
 ---
 
@@ -240,7 +249,7 @@ graph TD
 
 **Data model**
 - `StoreSettings.redxCourier`: `environment`, `accessToken`, `pickupStoreId`, `pickupStoreName`, `pickupAreaId`, `defaultParcelWeight` (g), `isClosedBox`, `webhookToken`, `lastWebhookAt`, `lastTest*`, `lastOrderSync*`.
-- `Order.courier`: `provider: "redx"`, `consignmentId` / `trackingCode` = RedX tracking id, `merchantOrderId` = `merchant_invoice_id`, `recipientAreaId`, `deliveryAreaName`, `deliveryFee` (calculator `deliveryCharge`), `codCharge` (calculator `codCharge`), `actualDeliveryFee` (delivery + COD; refreshed from `parcel.charge` + `codCharge`), `amountToCollect`, `itemWeight` (kg), `history[]`.
+- `Order.courier`: `provider: "redx"`, `consignmentId` / `trackingCode` = RedX tracking id, `merchantOrderId` = `merchant_invoice_id`, `recipientAreaId`, `deliveryAreaName`, `deliveryFee` (calculator `deliveryCharge`), `codCharge` (calculator `codCharge`), `actualDeliveryFee` (delivery + COD; recalculated on each sync from `/parcel/info` values), `amountToCollect`, `itemWeight` (kg), `history[]`.
 - Bills: one auto bill per parcel with `billingMethod: "redx"` and title "RedX delivery charge – Order #…". Pathao bills keep `billingMethod: "pathao"`, so the Pathao bills page is not affected.
 
 **Isolation from Pathao.** The Pathao sync, parcels list and parcel summary now filter on `courier.provider ∈ {pathao, null}`. Because of this, RedX parcels are never polled against Pathao and never listed on the Pathao pages.

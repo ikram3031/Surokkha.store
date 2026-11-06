@@ -5,7 +5,7 @@ import { LogModel } from "../../common/models/log.model.js";
 import { ensurePaymentOnShip } from "../../common/helper/orderControllerHelper.js";
 import { syncCourierBill } from "../services/pathaoBill.service.js";
 import { syncRedxOrders } from "../services/redxOrderSync.service.js";
-import { applyRedxUpdate, redxLabelFor, redxSlugFor } from "../services/redxCourierEvents.service.js";
+import { applyRedxParcel, applyRedxUpdate, redxLabelFor, redxSlugFor } from "../services/redxCourierEvents.service.js";
 import {
   getRedxConfig,
   testRedxConnection,
@@ -323,7 +323,7 @@ export const trackRedxParcelController = async (req, res, next) => {
     const order = await OrderModel.findOne({ "courier.provider": "redx", "courier.consignmentId": trackingId });
     let result = null;
     if (order && parcel?.status) {
-      result = await applyRedxUpdate(order, { status: parcel.status, deliveryType: parcel.delivery_type, charge: parcel.charge, source: "TRACK" });
+      result = await applyRedxParcel(order, parcel, "TRACK");
     }
     return res.json({ status: "success", data: { parcel, tracking, result } });
   } catch (error) {
