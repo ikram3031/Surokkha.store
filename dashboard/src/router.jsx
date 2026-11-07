@@ -38,6 +38,7 @@ import CouriersSettingsPage from './pages/dashboard/settings/couriers';
 import RedxCourierSettingsPage from './pages/dashboard/settings/redxCourier';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import R2StorageSettingsPage from './pages/dashboard/settings/r2StorageSettings';
+import PlexiviaSyncSettingsPage from './pages/dashboard/settings/plexiviaSyncSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
 import AllMedia from './pages/dashboard/allMedia';
 import AdminStylesPage from './pages/dashboard/settings/adminStyles';
@@ -932,6 +933,14 @@ const settingsRoutes = [
     element: (
       <RoleGuard menuKey="settings.r2-storage">
         <R2StorageSettingsPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'plexivia-sync',
+    element: (
+      <RoleGuard menuKey="settings.r2-storage">
+        <PlexiviaSyncSettingsPage />
       </RoleGuard>
     ),
   },

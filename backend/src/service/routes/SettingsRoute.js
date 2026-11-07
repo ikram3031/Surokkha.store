@@ -26,6 +26,7 @@ import {
   resetTemplateSettings,
 } from "../controllers/SettingsController.js";
 import { authenticateToken, authorizeRoles, OWNER_ONLY, MARKETERS } from "../../common/middlewares/auth.middleware.js";
+import { getPlexiviaSyncSettings, updatePlexiviaSyncSettings } from "../controllers/PlexiviaSyncController.js";
 import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
 import {
   getR2StorageSettings,
@@ -154,6 +155,10 @@ settingsRouter.put(
   authorizeRoles(OWNER_ONLY),
   updateImapSettings
 );
+
+// Plexivia dashboard sync key (Owner only)
+settingsRouter.get("/plexivia-sync", authenticateToken, authorizeRoles(OWNER_ONLY), getPlexiviaSyncSettings);
+settingsRouter.put("/plexivia-sync", authenticateToken, authorizeRoles(OWNER_ONLY), updatePlexiviaSyncSettings);
 
 // Protected Cloudflare R2 storage (backup) endpoints
 settingsRouter.get("/r2-storage", authenticateToken, authorizeRoles(OWNER_ONLY), getR2StorageSettings);

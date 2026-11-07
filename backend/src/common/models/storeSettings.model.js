@@ -398,6 +398,16 @@ const storeSettingsSchema = new Schema(
       lastOrderSyncAt: { type: Date, default: null },
       lastOrderSyncSummary: { type: String, default: "" },
     },
+    // Plexivia dashboard sync: only a SHA-256 hash of the shared key is kept, never the key itself
+    plexiviaSync: {
+      isEnabled: { type: Boolean, default: false },
+      keyHash: { type: String, default: "" },
+      keyHint: { type: String, default: "" },
+      keyUpdatedAt: { type: Date, default: null },
+      lastSeenAt: { type: Date, default: null },
+      lastSeenIp: { type: String, default: "" },
+      lastEndpoint: { type: String, default: "" },
+    },
     // Cloudflare R2 object storage used for automated backups (secret stored encrypted)
     r2Storage: {
       isEnabled: { type: Boolean, default: false },

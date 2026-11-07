@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import {
+import { Link2,
   GalleryHorizontal,
   HardDrive,
   Image as ImageIcon,
@@ -99,6 +99,7 @@ export const SettingsSidebar = (props) => {
           {can("settings.redx-courier") && <NavLink to="/settings/redx-courier" active={pathname.startsWith("/settings/redx")} icon={Truck} label={t("nav.redx_courier", "RedX Courier")} />}
           {can("settings.smtp") && renderGroup("smtp")}
           {can("settings.r2-storage") && <NavLink to="/settings/r2-storage" active={pathname.startsWith("/settings/r2-storage")} icon={HardDrive} label={t("nav.r2_storage", "R2 Storage")} />}
+          {can("settings.r2-storage") && <NavLink to="/settings/plexivia-sync" active={pathname.startsWith("/settings/plexivia-sync")} icon={Link2} label={t("nav.plexivia_sync", "Plexivia Sync")} />}
         </>
       )}
 
