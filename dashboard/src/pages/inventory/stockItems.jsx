@@ -23,11 +23,17 @@ const STATUS_FILTERS = [
   { key: 'all', label: 'All' },
 ];
 
+const ADJUST_MODES = [
+  { value: 'add', label: 'Add' },
+  { value: 'remove', label: 'Remove' },
+  { value: 'set', label: 'Set exact count' },
+];
+
 const money = (v) => `৳${Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
 // Shows pieces as the biggest pack plus loose pieces, e.g. 53 pcs → "5 Packet + 3 pcs"
 export const packBreakdown = (quantity, packs = [], unit = 'pcs') => {
-  const big = [...packs].filter((p) => p.unitsPerPack > 1).sort((a, b) => b.unitsPerPack - a.unitsPerPack)[0];
+  const big = [...packs].filter((p) => p.unitsPerPack > 1 && p.unitsPerPack <= quantity).sort((a, b) => b.unitsPerPack - a.unitsPerPack)[0];
   if (!big || quantity <= 0) return '';
   const full = Math.floor(quantity / big.unitsPerPack);
   const loose = quantity % big.unitsPerPack;
@@ -172,7 +178,7 @@ const AdjustDialog = ({ item, onOpenChange, onSave, saving }) => {
           <DialogDescription>Now in stock: {item?.quantity ?? 0} {unit}. Purchases come in from Plexivia automatically; use this for damage, loss or a recount.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
-          <Select value={mode} onValueChange={setMode}>
+          <Select value={mode} onValueChange={setMode} items={ADJUST_MODES}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="add">Add</SelectItem>
@@ -183,7 +189,7 @@ const AdjustDialog = ({ item, onOpenChange, onSave, saving }) => {
           <div className="flex gap-2">
             <Input type="number" min={0} value={qty} onChange={(e) => setQty(e.target.value)} placeholder="Quantity" className="flex-1" />
             {mode !== 'set' && item?.packs?.length > 0 && (
-              <Select value={packIdx} onValueChange={setPackIdx}>
+              <Select value={packIdx} onValueChange={setPackIdx} items={[{ value: 'unit', label: unit }, ...item.packs.map((p, i) => ({ value: String(i), label: `${p.label} (${p.unitsPerPack})` }))]}>
                 <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="unit">{unit}</SelectItem>
@@ -269,7 +275,7 @@ const StockItemsPage = () => {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input className="w-56 pl-8" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search short name / name" />
             </div>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={setStatus} items={STATUS_FILTERS.map((s) => ({ value: s.key, label: s.label }))}>
               <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
               <SelectContent>{STATUS_FILTERS.map((s) => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)}</SelectContent>
             </Select>

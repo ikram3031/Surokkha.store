@@ -18,6 +18,8 @@ const MOVEMENT_LABELS = {
   manual_set: { label: 'Recount', tone: 'text-sky-600' },
 };
 
+const TYPE_ITEMS = [{ value: 'all', label: 'All changes' }, ...Object.entries(MOVEMENT_LABELS).map(([value, v]) => ({ value, label: v.label }))];
+
 const fmt = (v) => (v ? new Date(v).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '-');
 
 // Every change to stock-item quantities, newest first
@@ -63,7 +65,7 @@ const StockMovementsPage = () => {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input className="w-56 pl-8" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Item, note or purchase ref" />
             </div>
-            <Select value={type} onValueChange={(v) => { setType(v); setPage(1); }}>
+            <Select value={type} onValueChange={(v) => { setType(v); setPage(1); }} items={TYPE_ITEMS}>
               <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All changes</SelectItem>
