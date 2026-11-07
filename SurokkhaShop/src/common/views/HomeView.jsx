@@ -408,7 +408,7 @@ export default function HomeView() {
       )}
 
       {/* RANDOMIZED NON-COMBO PRODUCT CAROUSEL (Max 10 Products) */}
-      <ProductCarousel maxItems={36} />
+      <ProductCarousel maxItems={12} />
 
       {/* WHY SUROKKHA / SERVICE STANDARDS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

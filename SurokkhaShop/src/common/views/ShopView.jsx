@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from '../components/ProductCard';
@@ -21,12 +21,16 @@ export default function ShopView() {
   // Follow category picks from the menu while the shop page is already open
   useEffect(() => { setCategory(shopCategory || 'all'); }, [shopCategory]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState('all'); // 'all' | 'under-500' | '500-800' | 'above-800'
+  // Price slider: [min, max] in taka; null means "no limit" on that side
+  const [priceSel, setPriceSel] = useState([null, null]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
 
   // 2. Default sorting: Newest first (latest products at top)
   const [sortBy, setSortBy] = useState('newest');
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [displayCount, setDisplayCount] = useState(24);
+  const PAGE_SIZE = 8; // two rows of four on desktop
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
+  const loadMoreRef = useRef(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Normalization helper for category slugs (handles singular, plural, and variations)
@@ -121,20 +125,35 @@ export default function ShopView() {
   // Dynamic counts for banner tabs
   const singleCount = contraceptiveCount;
 
-  // Derived Min/Max prices from priceRange filter
-  const minPrice = useMemo(() => {
-    if (priceRange === 'under-500') return 0;
-    if (priceRange === '500-800') return 500;
-    if (priceRange === 'above-800') return 800;
-    return undefined;
-  }, [priceRange]);
+  // Selling price used by the price filter
+  const sellingPrice = (p) => {
+    if (!p) return 0;
+    const reg = Number(p.price != null ? p.price : (p.regularPrice || 0));
+    const offer = Number(p.offerPrice);
+    return offer > 0 && offer < reg ? offer : reg;
+  };
 
-  const maxPrice = useMemo(() => {
-    if (priceRange === 'under-500') return 500;
-    if (priceRange === '500-800') return 800;
-    if (priceRange === 'above-800') return undefined;
-    return undefined;
-  }, [priceRange]);
+  // Slider bounds come from the catalog's cheapest and dearest products
+  const priceBounds = useMemo(() => {
+    const prices = activeProducts.map(sellingPrice).filter((n) => n > 0);
+    if (!prices.length) return [0, 0];
+    return [Math.floor(Math.min(...prices) / 10) * 10, Math.ceil(Math.max(...prices) / 10) * 10];
+  }, [activeProducts]);
+  const minPrice = priceSel[0] ?? undefined;
+  const maxPrice = priceSel[1] ?? undefined;
+  const priceFiltered = priceSel[0] != null || priceSel[1] != null;
+
+  // Brands with product counts (a product can list several brands, e.g. the Trial Pack)
+  const brandsOf = (p) => {
+    const names = Array.isArray(p?.brandNames) && p.brandNames.length ? p.brandNames : [p?.brandName || p?.brand].filter(Boolean);
+    return names.filter((n) => typeof n === 'string' && !/^[0-9a-f]{12,}$/i.test(n.trim())).map((n) => n.trim());
+  };
+  const brandOptions = useMemo(() => {
+    const counts = {};
+    activeProducts.forEach((p) => brandsOf(p).forEach((b) => { counts[b] = (counts[b] || 0) + 1; }));
+    return Object.entries(counts).sort((x, y) => y[1] - x[1]).map(([name, count]) => ({ name, count }));
+  }, [activeProducts]);
+  const toggleBrand = (name) => setSelectedBrands((prev) => (prev.includes(name) ? prev.filter((b) => b !== name) : [...prev, name]));
 
   // Filter and sort products pipeline
   const displayedKeys = useMemo(() => {
@@ -199,6 +218,9 @@ export default function ShopView() {
       if (minPrice !== undefined && price < minPrice) return false;
       if (maxPrice !== undefined && price > maxPrice) return false;
 
+      // Brand filter
+      if (selectedBrands.length && !brandsOf(prod).some((b) => selectedBrands.includes(b))) return false;
+
       // In stock check
       if (inStockOnly && prod.isOutOfStock) return false;
 
@@ -240,18 +262,33 @@ export default function ShopView() {
     });
 
     return list;
-  }, [productKeys, products, category, searchQuery, minPrice, maxPrice, inStockOnly, sortBy]);
+  }, [productKeys, products, category, searchQuery, minPrice, maxPrice, inStockOnly, sortBy, selectedBrands]);
 
   const paginatedKeys = displayedKeys.slice(0, displayCount);
   const hasMore = displayCount < displayedKeys.length;
 
+  // Start again from the first rows whenever the filters change
+  useEffect(() => { setDisplayCount(PAGE_SIZE); }, [category, searchQuery, minPrice, maxPrice, inStockOnly, sortBy, selectedBrands]);
+
+  // Infinite scroll: load the next rows when the sentinel below the grid comes into view
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || !hasMore) return undefined;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) setDisplayCount((prev) => prev + PAGE_SIZE);
+    }, { rootMargin: '400px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, displayCount]);
+
   const handleResetFilters = () => {
     setCategory('all');
     setSearchQuery('');
-    setPriceRange('all');
+    setPriceSel([null, null]);
+    setSelectedBrands([]);
     setSortBy('newest');
     setInStockOnly(false);
-    setDisplayCount(24);
+    setDisplayCount(PAGE_SIZE);
   };
 
   return (
@@ -278,36 +315,10 @@ export default function ShopView() {
 
           <p className="text-xs sm:text-sm md:text-base text-slate-300 max-w-2xl mx-auto mt-3 leading-relaxed">
             {isBn
-              ? 'আইএসও সার্টিফাইড আসল MO কন্ট্রাসেপ্টিভ ভ্যারিয়েন্ট ও পরিবার পরিকল্পনা কম্বো বান্ডেল। ১৮+ প্রাপ্তবয়স্কদের জন্য ক্যাশ অন ডেলিভারিতে।'
-              : '  certified authentic MO contraceptive variants and family planning bundles. Regulated barrier devices for 18+ adults with confidential Cash on Delivery nationwide.'}
+              ? 'MO, Durex, Skore সহ বিশ্বস্ত ব্র্যান্ডের ১০০% আসল প্রোডাক্ট ও কম্বো প্যাক। গোপনীয় প্যাকেজিং, সারা দেশে ক্যাশ অন ডেলিভারি।'
+              : '100% genuine products and combo packs from trusted brands like MO, Durex and Skore. Discreet packaging, cash on delivery nationwide.'}
           </p>
 
-          {/* Category Filter Tabs: Exclusively 2 options (All Products and Combo) */}
-          <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 flex-wrap">
-            {/* All Products Tab */}
-            <button
-              type="button"
-              onClick={() => setCategory('all')}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'all'
-                  ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
-                  : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/40 shadow-xs'
-                }`}
-            >
-              🌟 {isBn ? 'সকল প্রোডাক্ট' : 'All Products'} ({formatNumber(totalActiveCount)})
-            </button>
-
-            {/* Combo Tab */}
-            <button
-              type="button"
-              onClick={() => setCategory(category === 'combo' ? 'all' : 'combo')}
-              className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${category === 'combo'
-                  ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black border border-amber-300'
-                  : 'bg-rose-950/80 hover:bg-rose-900 text-amber-300 hover:text-amber-200 border border-amber-500/40 shadow-xs'
-                }`}
-            >
-              🔥 {isBn ? 'কম্বো' : 'Combos'} ({formatNumber(comboCount)})
-            </button>
-          </div>
         </div>
       </div>
 
@@ -390,7 +401,7 @@ export default function ShopView() {
           <aside
             className={`lg:block ${mobileFilterOpen
                 ? 'fixed inset-0 z-50 bg-[#FAF8F5] p-6 overflow-y-auto block'
-                : 'hidden'
+                : 'hidden lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto'
               } lg:relative lg:p-0 space-y-6`}
           >
             {mobileFilterOpen && (
@@ -407,6 +418,18 @@ export default function ShopView() {
                 </button>
               </div>
             )}
+
+            {/* Reset Filters CTA */}
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 transition-colors shadow-sm cursor-pointer"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>{isBn ? 'সকল ফিল্টার রিসেট' : 'Reset All Filters'}</span>
+            </button>
 
             {/* Dynamic Categories Box (Populated from API Products & Categories) */}
             <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs space-y-3">
@@ -470,52 +493,72 @@ export default function ShopView() {
               </label>
             </div>
 
-            {/* Price Range Filter Box */}
-            <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs space-y-3">
-              <h3 className="font-semibold text-xs uppercase tracking-wider text-slate-900 flex items-center justify-between">
-                <span>{isBn ? 'মূল্য সীমা' : 'Price'}</span>
-                {priceRange !== 'all' && (
-                  <button
-                    onClick={() => setPriceRange('all')}
-                    className="text-[11px] text-brand-700 font-medium lowercase hover:underline cursor-pointer"
-                  >
-                    {isBn ? 'মুছুন' : 'clear'}
-                  </button>
-                )}
-              </h3>
-              <div className="space-y-1.5 text-xs">
-                {[
-                  { id: 'all', label: isBn ? 'সকল দাম' : 'All Prices' },
-                  { id: 'under-500', label: isBn ? '৳৫০০ এর নিচে' : 'Under ৳500' },
-                  { id: '500-800', label: isBn ? '৳৫০০ — ৳৮০০' : '৳500 — ৳800' },
-                  { id: 'above-800', label: isBn ? '৳৮০০ ও বেশি' : '৳800 & Above' },
-                ].map((tier) => (
-                  <button
-                    key={tier.id}
-                    type="button"
-                    onClick={() => setPriceRange(tier.id)}
-                    className={`flex w-full items-center justify-between py-2 px-2.5 rounded-lg transition-colors text-left cursor-pointer ${priceRange === tier.id
-                        ? 'bg-rose-50 font-semibold text-brand-900 border border-rose-200'
-                        : 'text-slate-800 hover:bg-slate-50'
-                      }`}
-                  >
-                    <span>{tier.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Price Range Slider */}
+            {priceBounds[1] > priceBounds[0] && (() => {
+              const [lo, hi] = priceBounds;
+              const curMin = priceSel[0] ?? lo;
+              const curMax = priceSel[1] ?? hi;
+              const pct = (v) => ((v - lo) / (hi - lo)) * 100;
+              const setMin = (v) => setPriceSel([v <= lo ? null : Math.min(v, curMax - 10), priceSel[1]]);
+              const setMax = (v) => setPriceSel([priceSel[0], v >= hi ? null : Math.max(v, curMin + 10)]);
+              return (
+                <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs space-y-4">
+                  <h3 className="font-semibold text-xs uppercase tracking-wider text-black flex items-center justify-between">
+                    <span>{isBn ? 'মূল্য সীমা' : 'Price'}</span>
+                    {priceFiltered && (
+                      <button onClick={() => setPriceSel([null, null])} className="text-[11px] text-brand-700 font-medium lowercase hover:underline cursor-pointer">
+                        {isBn ? 'মুছুন' : 'clear'}
+                      </button>
+                    )}
+                  </h3>
+                  <div className="price-range relative h-5">
+                    <div className="absolute top-1/2 -translate-y-1/2 h-1.5 w-full rounded-full bg-rose-100" />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-rose-600"
+                      style={{ left: `${pct(curMin)}%`, right: `${100 - pct(curMax)}%` }}
+                    />
+                    <input type="range" min={lo} max={hi} step={10} value={curMin} aria-label="Minimum price"
+                      onChange={(e) => setMin(Number(e.target.value))} />
+                    <input type="range" min={lo} max={hi} step={10} value={curMax} aria-label="Maximum price"
+                      onChange={(e) => setMax(Number(e.target.value))} />
+                  </div>
+                  <div className="flex items-center justify-between text-xs font-bold text-black">
+                    <span className="rounded-lg border border-rose-200 px-2.5 py-1">৳{formatNumber(curMin)}</span>
+                    <span className="rounded-lg border border-rose-200 px-2.5 py-1">৳{formatNumber(curMax)}</span>
+                  </div>
+                </div>
+              );
+            })()}
 
-            {/* Reset Filters CTA */}
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-rose-200 text-xs font-semibold text-slate-700 bg-white hover:bg-rose-50 hover:text-brand-800 transition-colors shadow-2xs cursor-pointer"
-            >
-              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>{isBn ? 'সকল ফিল্টার রিসেট' : 'Reset All Filters'}</span>
-            </button>
+            {/* Brand Filter */}
+            {brandOptions.length > 0 && (
+              <div className="rounded-2xl bg-white p-5 border border-rose-200/60 shadow-2xs space-y-3">
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-black flex items-center justify-between">
+                  <span>{isBn ? 'ব্র্যান্ড' : 'Brand'}</span>
+                  {selectedBrands.length > 0 && (
+                    <button onClick={() => setSelectedBrands([])} className="text-[11px] text-brand-700 font-medium lowercase hover:underline cursor-pointer">
+                      {isBn ? 'মুছুন' : 'clear'}
+                    </button>
+                  )}
+                </h3>
+                <div className="space-y-1 text-xs">
+                  {brandOptions.map((b) => (
+                    <label key={b.name} className="flex items-center justify-between py-1.5 px-1 rounded-lg hover:bg-rose-50 cursor-pointer select-none">
+                      <span className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedBrands.includes(b.name)}
+                          onChange={() => toggleBrand(b.name)}
+                          className="w-4 h-4 rounded accent-rose-600 cursor-pointer"
+                        />
+                        <span className="font-semibold text-black">{b.name}</span>
+                      </span>
+                      <span className="text-black">{formatNumber(b.count)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </aside>
 
           {/* Product Grid Area (SoulCove lg:col-span-3) */}
@@ -557,21 +600,10 @@ export default function ShopView() {
                   ))}
                 </div>
 
-                {/* Load More Button Module */}
+                {/* Infinite scroll sentinel */}
                 {hasMore && (
-                  <div className="flex flex-col items-center justify-center pt-4">
-                    <p className="text-xs text-slate-800 mb-3 font-medium">
-                      {isBn
-                        ? `প্রদর্শিত হচ্ছে ${formatNumber(paginatedKeys.length)} / মোট ${formatNumber(displayedKeys.length)} টি প্রোডাক্ট`
-                        : `Showing ${paginatedKeys.length} of ${displayedKeys.length} products`}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setDisplayCount((prev) => prev + 4)}
-                      className="px-6 py-2.5 rounded-xl border border-rose-300 bg-white hover:bg-rose-50 text-brand-800 text-xs sm:text-sm font-bold shadow-2xs transition-colors cursor-pointer"
-                    >
-                      {isBn ? 'আরও প্রোডাক্ট দেখুন' : 'Load More Products'}
-                    </button>
+                  <div ref={loadMoreRef} className="flex justify-center py-6" aria-hidden="true">
+                    <span className="h-6 w-6 rounded-full border-2 border-rose-200 border-t-rose-600 animate-spin" />
                   </div>
                 )}
               </div>

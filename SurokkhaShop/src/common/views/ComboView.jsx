@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, TRIAL_PACK_SLUG } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
@@ -23,6 +23,11 @@ export default function ComboView() {
       if (!p) return false;
       const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
       if (isOutOfStock) return false;
+      // Items appear here only when they carry a real offer: a discount, or the Trial Pack's free delivery
+      if (p.itemType === 'item') {
+        const hasDiscount = Number(p.offerPrice) > 0 && Number(p.offerPrice) < Number(p.regularPrice);
+        if (!hasDiscount && p.slug !== TRIAL_PACK_SLUG) return false;
+      }
       const cat = (p.category || '').toLowerCase();
       const catBn = (p.category_bn || '');
       const name = (p.name || '').toLowerCase();

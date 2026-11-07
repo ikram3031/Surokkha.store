@@ -65,22 +65,6 @@ const SurokkhaNavbar = () => {
       title: isBn ? 'শপ' : 'Shop',
       items: shopCategories.map((c) => ({ view: 'shop', param: c.slug, label: c.label })),
     },
-    {
-      title: isBn ? 'সাহায্য' : 'Help',
-      items: [
-        { view: 'faq', label: isBn ? 'প্রশ্নোত্তর' : 'FAQ' },
-        { view: 'contact', label: isBn ? 'যোগাযোগ' : 'Contact' },
-        { view: 'account', label: isBn ? 'অর্ডার ট্র্যাক' : 'Track Order' },
-      ],
-    },
-    {
-      title: isBn ? 'নীতিমালা' : 'Policies',
-      items: [
-        { view: 'privacy', label: isBn ? 'প্রাইভেসি পলিসি' : 'Privacy Policy' },
-        { view: 'refund', label: isBn ? 'রিফান্ড পলিসি' : 'Refund Policy' },
-        { view: 'terms', label: isBn ? 'শর্তাবলী' : 'Terms' },
-      ],
-    },
   ];
 
   // Profile icon (thin outline)
@@ -116,6 +100,13 @@ const SurokkhaNavbar = () => {
 
           {/* Desktop nav */}
           <nav className="hidden items-stretch justify-center gap-1 self-stretch text-base font-semibold lg:flex">
+            <button
+              type="button"
+              onClick={() => go('home')}
+              className={`flex items-center px-3 cursor-pointer ${currentView === 'home' ? 'text-rose-400' : 'hover:text-rose-400'}`}
+            >
+              {isBn ? 'হোম' : 'Home'}
+            </button>
             {/* Mega trigger */}
             <div className="group flex items-stretch">
               <button
@@ -131,7 +122,7 @@ const SurokkhaNavbar = () => {
               <div className="invisible absolute inset-x-0 top-full translate-y-2 border-t border-white/10 bg-white text-black opacity-0 shadow-2xl transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="mx-auto grid max-w-7xl grid-cols-12 gap-8 px-8 py-8">
                   {megaColumns.map((col) => (
-                    <div key={col.title} className="col-span-2">
+                    <div key={col.title} className="col-span-4">
                       <p className="mb-3 text-sm font-extrabold uppercase tracking-wider text-black">{col.title}</p>
                       <ul className="space-y-2 text-base font-medium">
                         {col.items.map((it) => (
@@ -142,14 +133,14 @@ const SurokkhaNavbar = () => {
                       </ul>
                     </div>
                   ))}
-                  <div className="col-span-6">
+                  <div className="col-span-8">
                     <NavOfferCards onNavigate={() => setDrawerOpen(false)} />
                   </div>
                 </div>
               </div>
             </div>
 
-            {links.map((l) => (
+            {links.filter((l) => l.view !== 'home').map((l) => (
               <button
                 key={l.view}
                 type="button"
@@ -195,22 +186,38 @@ const SurokkhaNavbar = () => {
           className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${drawerOpen ? 'opacity-100' : 'opacity-0'}`}
         />
         <aside
-          className={`absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col bg-[var(--header-bg)] text-slate-100 shadow-xl transition-transform duration-300 ${
+          className={`drawer-scroll absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col bg-[var(--header-bg)] text-slate-100 shadow-xl transition-transform duration-300 ${
             drawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <img src={logoImg} alt="Surokkha Logo" className="h-8 w-auto object-contain" />
-            <button type="button" onClick={() => setDrawerOpen(false)} className="rounded-lg p-1.5 hover:bg-white/10 cursor-pointer" aria-label="Close">
+            <button type="button" onClick={() => setDrawerOpen(false)} className="rounded-lg bg-rose-600 p-1.5 text-white hover:bg-rose-700 cursor-pointer" aria-label="Close">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" /></svg>
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-2 py-3 text-base">
+          <nav className="drawer-scroll flex-1 overflow-y-auto px-2 py-3 text-base">
+            <button
+              type="button"
+              onClick={() => go('home')}
+              className={`block w-full rounded-lg px-3 py-3 text-left cursor-pointer hover:bg-white/5 ${currentView === 'home' ? 'text-rose-400' : ''}`}
+            >
+              {isBn ? 'হোম' : 'Home'}
+            </button>
             <details open className="rounded-lg [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg px-3 py-3 font-semibold text-rose-400 hover:bg-white/5">
-                {isBn ? 'শপ' : 'Shop'}
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+              <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg font-semibold text-rose-400 hover:bg-white/5">
+                {/* Tapping the label opens the shop; the arrow opens/closes the categories */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); go('shop'); }}
+                  className="flex-1 px-3 py-3 text-left cursor-pointer"
+                >
+                  {isBn ? 'শপ' : 'Shop'}
+                </button>
+                <span className="px-3 py-3" aria-label="Show categories">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                </span>
               </summary>
               <div className="pb-2 pl-3">
                 {shopCategories.map((c) => (
@@ -225,7 +232,7 @@ const SurokkhaNavbar = () => {
                 ))}
               </div>
             </details>
-            {[...links, { view: 'account', label: isBn ? 'অর্ডার ট্র্যাক' : 'Track Order' }].map((l) => (
+            {[...links.filter((l) => l.view !== 'home'), { view: 'account', label: isBn ? 'অর্ডার ট্র্যাক' : 'Track Order' }].map((l) => (
               <button
                 key={l.view + l.label}
                 type="button"

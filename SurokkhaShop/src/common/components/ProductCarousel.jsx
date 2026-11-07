@@ -193,7 +193,7 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
             <h2 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-slate-900 mt-2.5">
               {isComboMode
                 ? (isBn ? 'কম্বো প্যাক কালেকশন' : 'Combo Pack Collection')
-                : (isBn ? 'অন্যান্য ওয়েলনেস ও সুরক্ষা প্রোডাক্টস' : 'Explore Wellness & Care Products')}
+                : (isBn ? 'অন্যান্য প্রোডাক্টস' : 'Other Products')}
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
               {isComboMode
