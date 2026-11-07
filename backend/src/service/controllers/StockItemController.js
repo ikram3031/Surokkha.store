@@ -53,11 +53,26 @@ const cleanItem = (body = {}, partial = false) => {
 // Older items could have a number saved as the unit (e.g. "10"); those are counted in pieces
 const unitOf = (u) => (u && !/^\d+(\.\d+)?$/.test(String(u).trim()) ? u : "pcs");
 
-// Stock item as shown in the dashboard and sent to Plexivia
-export const toStockItemView = (d) => {
+// Units each item got from purchases still in force (received, not cancelled); Plexivia owns these
+const purchasedUnits = async (ids) => {
+  const match = { status: "received", version: { $gt: 0 } };
+  if (ids) match["lines.stockItemId"] = { $in: ids };
+  const rows = await StockReceiptModel.aggregate([
+    { $match: match },
+    { $unwind: "$lines" },
+    ...(ids ? [{ $match: { "lines.stockItemId": { $in: ids } } }] : []),
+    { $group: { _id: "$lines.stockItemId", units: { $sum: "$lines.units" } } },
+  ]);
+  return new Map(rows.map((r) => [String(r._id), Number(r.units) || 0]));
+};
+
+// Stock item as shown in the dashboard and sent to Plexivia; fromPurchases splits the count into purchased and added here
+export const toStockItemView = (d, fromPurchases) => {
   const quantity = Number(d.quantity) || 0;
   const reorderLevel = Number(d.reorderLevel) || 0;
+  const split = fromPurchases === undefined ? {} : { fromPurchases, byHand: quantity - fromPurchases };
   return {
+    ...split,
     id: String(d._id),
     shortName: d.shortName,
     name: d.name || "",
@@ -91,7 +106,8 @@ export const listStockItems = async (req, res, next) => {
       filter.$or = [{ shortName: rx }, { name: rx }];
     }
     const docs = await StockItemModel.find(filter).sort({ shortName: 1 }).lean();
-    let rows = docs.map(toStockItemView);
+    const bought = await purchasedUnits(docs.map((d) => d._id));
+    let rows = docs.map((d) => toStockItemView(d, bought.get(String(d._id)) || 0));
     if (status === "low") rows = rows.filter((r) => r.isActive && r.isLow);
     const active = rows.filter((r) => r.isActive);
     const summary = {
@@ -148,9 +164,37 @@ export const updateStockItem = async (req, res, next) => {
     if (clean.shortName && (await StockItemModel.exists({ shortName: clean.shortName, _id: { $ne: id } }))) {
       return fail(res, 409, `Short name ${clean.shortName} already exists.`);
     }
+    let handTarget = null;
+    if (req.body?.handQuantity !== undefined && req.body.handQuantity !== null && req.body.handQuantity !== "") {
+      handTarget = Math.round(Number(req.body.handQuantity));
+      if (!Number.isFinite(handTarget)) return fail(res, 400, "Enter a valid count for stock added here.");
+    }
     const doc = await StockItemModel.findByIdAndUpdate(id, { $set: { ...clean, updatedBy: actorOf(req) } }, { new: true }).lean();
     if (!doc) return fail(res, 404, "Stock item not found.");
-    return res.json({ status: "success", data: toStockItemView(doc) });
+
+    // Stock added here is edited to a new count; purchased stock is left to Plexivia
+    const bought = (await purchasedUnits([doc._id])).get(String(doc._id)) || 0;
+    if (handTarget !== null) {
+      const currentHand = (Number(doc.quantity) || 0) - bought;
+      const delta = handTarget - currentHand;
+      if (bought + handTarget < 0) return fail(res, 400, `Stock can't go below 0: ${bought} came from purchases.`);
+      if (delta !== 0) {
+        const result = await applyStockItemDelta(doc._id, delta, null);
+        await logStockMovement({
+          entity: "stockItem",
+          refId: doc._id,
+          name: doc.shortName,
+          type: delta > 0 ? "manual_add" : "manual_remove",
+          delta,
+          before: result.before,
+          after: result.after,
+          note: `Stock added here changed ${currentHand} → ${handTarget}`,
+          createdBy: actorOf(req),
+        });
+      }
+    }
+    const fresh = await StockItemModel.findById(doc._id).lean();
+    return res.json({ status: "success", data: toStockItemView(fresh, bought) });
   } catch (error) {
     if (error?.code === 11000) return fail(res, 409, "That short name already exists.");
     next(error);
@@ -240,6 +284,54 @@ export const listStockReceipts = async (req, res, next) => {
       data: rows.map(({ _id, lockedAt, ...r }) => ({ ...r, id: String(_id) })),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Manual changes that can be taken back; purchases are corrected from the Plexivia purchase instead
+const UNDOABLE_TYPES = ["manual_add", "manual_remove", "manual_set"];
+
+// POST /stock-items/movements/:movementId/undo — reverses one manual change by exactly what it moved
+export const undoStockItemMovement = async (req, res, next) => {
+  try {
+    const { movementId } = req.params;
+    if (!Types.ObjectId.isValid(movementId)) return fail(res, 400, "Invalid id.");
+    const original = await StockMovementModel.findOne({ _id: movementId, entity: "stockItem" }).lean();
+    if (!original) return fail(res, 404, "Stock change not found.");
+    if (!UNDOABLE_TYPES.includes(original.type)) return fail(res, 400, "Only hand adjustments can be undone. Purchases are corrected from the purchase in Plexivia.");
+    if (original.undoneAt) return fail(res, 409, "This change was already undone.");
+    const delta = -(Number(original.delta) || 0);
+
+    // Claim first so two clicks can't undo the same change twice
+    const claimed = await StockMovementModel.findOneAndUpdate(
+      { _id: movementId, undoneAt: null },
+      { $set: { undoneAt: new Date(), undoneBy: actorOf(req) } },
+      { new: true }
+    ).lean();
+    if (!claimed) return fail(res, 409, "This change was already undone.");
+
+    try {
+      const result = delta === 0 ? null : await applyStockItemDelta(original.refId, delta, null);
+      await logStockMovement({
+        entity: "stockItem",
+        refId: original.refId,
+        name: original.name,
+        type: "manual_undo",
+        delta,
+        before: result ? result.before : original.after,
+        after: result ? result.after : original.after,
+        note: `Undo of ${original.delta > 0 ? "+" : ""}${original.delta}${original.note ? ` (${original.note})` : ""}${req.body?.note ? ` · ${req.body.note}` : ""}`.slice(0, 300),
+        undoOf: original._id,
+        createdBy: actorOf(req),
+      });
+    } catch (err) {
+      await StockMovementModel.updateOne({ _id: movementId }, { $set: { undoneAt: null, undoneBy: "" } });
+      throw err;
+    }
+
+    const fresh = await StockItemModel.findById(original.refId).lean();
+    return res.json({ status: "success", data: fresh ? toStockItemView(fresh) : null });
   } catch (error) {
     next(error);
   }

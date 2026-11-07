@@ -16,6 +16,7 @@ import {
   updateStockItem,
   adjustStockItem,
   listStockItemMovements,
+  undoStockItemMovement,
   listStockReceipts,
 } from "../controllers/StockItemController.js";
 
@@ -37,6 +38,7 @@ plexiviaSyncRouter.post("/inventory/items", asPlexiviaStaff, createStockItem);
 plexiviaSyncRouter.put("/inventory/items/:id", asPlexiviaStaff, updateStockItem);
 plexiviaSyncRouter.post("/inventory/items/:id/adjust", asPlexiviaStaff, adjustStockItem);
 plexiviaSyncRouter.get("/inventory/movements", asPlexiviaStaff, listStockItemMovements);
+plexiviaSyncRouter.post("/inventory/movements/:movementId/undo", asPlexiviaStaff, undoStockItemMovement);
 plexiviaSyncRouter.get("/inventory/receipts", asPlexiviaStaff, listStockReceipts);
 
 export default plexiviaSyncRouter;

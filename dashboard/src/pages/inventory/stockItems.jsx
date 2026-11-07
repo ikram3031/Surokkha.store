@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Boxes, Package, AlertTriangle, Wallet, Plus, Pencil, SlidersHorizontal, Search, Trash2, History } from 'lucide-react';
 
-import { useStockItems, useStockItemMutations } from '@/hooks/use-stock-items';
+import { useStockItems, useStockItemMutations, useItemRecentChanges } from '@/hooks/use-stock-items';
+import { PackCountInput, RecentHandChanges } from '@/components/dashboard/inventory/stockCount';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -37,9 +38,9 @@ const UNIT_OPTIONS = [
 ];
 
 const ADJUST_MODES = [
+  { value: 'set', label: 'Count in hand (recount)' },
   { value: 'add', label: 'Add' },
   { value: 'remove', label: 'Remove' },
-  { value: 'set', label: 'Set exact count' },
 ];
 
 const money = (v) => `৳${Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
@@ -75,10 +76,12 @@ const EMPTY_FORM = { shortName: '', name: '', unit: 'pcs', reorderLevel: 0, note
 // Add / edit dialog for one stock item, including its pack sizes
 const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [handCount, setHandCount] = useState(null);
   const [lastKey, setLastKey] = useState(null);
   const key = open ? item?.id || 'new' : null;
   if (key !== lastKey) {
     setLastKey(key);
+    setHandCount(null);
     if (open) {
       setForm(
         item
@@ -107,6 +110,8 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
     if (!item) {
       body.openingQuantity = Number(form.openingQuantity) || 0;
       body.openingCost = Number(form.openingCost) || 0;
+    } else if (handCount !== null && handCount !== (item.byHand ?? 0)) {
+      body.handQuantity = handCount;
     }
     onSave(body);
   };
@@ -155,6 +160,28 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
             ))}
           </div>
 
+          {item && item.fromPurchases !== undefined && (
+            <div className="space-y-2 rounded-md border p-3">
+              <Label>In stock: {item.quantity} {item.unit}</Label>
+              <div className="flex items-start justify-between gap-3 text-sm">
+                <span className="text-muted-foreground">From purchases</span>
+                <span className="text-right">
+                  <span className="font-medium">{packBreakdown(item.fromPurchases, item.packs, item.unit) || `${item.fromPurchases} ${item.unit}`}</span>
+                  <span className="block text-xs text-muted-foreground">Change it by editing the purchase in Plexivia</span>
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                <span className="text-sm text-muted-foreground">Added here (opening stock, hand adds and removals)</span>
+                <PackCountInput key={key} initial={item.byHand ?? 0} packs={form.packs.filter((p) => p.label && Number(p.unitsPerPack) > 1).map((p) => ({ ...p, unitsPerPack: Number(p.unitsPerPack) }))} unit={item.unit} allowNegative onChange={setHandCount} />
+              </div>
+              {handCount !== null && handCount !== (item.byHand ?? 0) && (
+                <p className="text-xs">
+                  After save: {item.quantity} → <span className="font-semibold">{item.fromPurchases + handCount} {item.unit}</span>
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Low stock at ({form.unit || 'pcs'})</Label>
@@ -193,58 +220,80 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
   );
 };
 
-// Manual stock correction for one item (damage, found, recount)
-const AdjustDialog = ({ item, onOpenChange, onSave, saving }) => {
-  const [mode, setMode] = useState('add');
+// Manual stock correction for one item: recount in packs + loose units, add, remove, or undo a recent change
+const AdjustDialog = ({ item, onOpenChange, onSave, onUndo, saving }) => {
+  const [mode, setMode] = useState('set');
+  const [count, setCount] = useState(0);
   const [packIdx, setPackIdx] = useState('unit');
   const [qty, setQty] = useState('');
   const [note, setNote] = useState('');
+  const [lastId, setLastId] = useState(null);
+  const itemKey = item ? `${item.id}:${item.quantity}` : null;
+  if (itemKey !== lastId) {
+    setLastId(itemKey);
+    setMode('set');
+    setCount(item?.quantity ?? 0);
+    setPackIdx('unit');
+    setQty('');
+    setNote('');
+  }
+  const recent = useItemRecentChanges(item?.id);
   const unit = item?.unit || 'pcs';
+  const now = item?.quantity ?? 0;
   const per = packIdx === 'unit' ? 1 : Number(item?.packs?.[Number(packIdx)]?.unitsPerPack) || 1;
   const units = Math.round((Number(qty) || 0) * per);
-
-  const close = (v) => {
-    if (!v) { setMode('add'); setPackIdx('unit'); setQty(''); setNote(''); }
-    onOpenChange(v);
-  };
+  const next = mode === 'set' ? count : mode === 'add' ? now + units : now - units;
+  const change = next - now;
 
   return (
-    <Dialog open={Boolean(item)} onOpenChange={close}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={Boolean(item)} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Adjust {item?.shortName}</DialogTitle>
-          <DialogDescription>Now in stock: {item?.quantity ?? 0} {unit}. Purchases come in from Plexivia automatically; use this for damage, loss or a recount.</DialogDescription>
+          <DialogDescription>
+            Now in stock: {packBreakdown(now, item?.packs, unit) || `${now} ${unit}`}{packBreakdown(now, item?.packs, unit) ? ` (${now} ${unit})` : ''}. Wrong purchase quantity? Edit that purchase in Plexivia instead.
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           <Select value={mode} onValueChange={setMode} items={ADJUST_MODES}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="add">Add</SelectItem>
-              <SelectItem value="remove">Remove</SelectItem>
-              <SelectItem value="set">Set exact count</SelectItem>
-            </SelectContent>
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>{ADJUST_MODES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
           </Select>
-          <div className="flex gap-2">
-            <Input type="number" min={0} value={qty} onChange={(e) => setQty(e.target.value)} placeholder="Quantity" className="flex-1" />
-            {mode !== 'set' && item?.packs?.length > 0 && (
-              <Select value={packIdx} onValueChange={setPackIdx} items={[{ value: 'unit', label: unit }, ...item.packs.map((p, i) => ({ value: String(i), label: `${p.label} (${p.unitsPerPack})` }))]}>
-                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unit">{unit}</SelectItem>
-                  {item.packs.map((p, i) => <SelectItem key={i} value={String(i)}>{p.label} ({p.unitsPerPack})</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-          {mode !== 'set' && per > 1 && <p className="text-xs text-muted-foreground">= {units} {unit}</p>}
-          <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reason (optional)" maxLength={300} />
+          {mode === 'set' ? (
+            <div className="space-y-1.5">
+              <Label>What you have right now</Label>
+              <PackCountInput key={`${item?.id}-${now}`} initial={now} packs={item?.packs || []} unit={unit} onChange={setCount} />
+            </div>
+          ) : (
+            <>
+              <div className="flex gap-2">
+                <Input type="number" min={0} value={qty} onChange={(e) => setQty(e.target.value)} placeholder="Quantity" className="flex-1" />
+                {item?.packs?.length > 0 && (
+                  <Select value={packIdx} onValueChange={setPackIdx} items={[{ value: 'unit', label: unit }, ...item.packs.map((p, i) => ({ value: String(i), label: `${p.label} (${p.unitsPerPack})` }))]}>
+                    <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unit">{unit}</SelectItem>
+                      {item.packs.map((p, i) => <SelectItem key={i} value={String(i)}>{p.label} ({p.unitsPerPack})</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              {per > 1 && <p className="text-xs text-muted-foreground">= {units} {unit}</p>}
+            </>
+          )}
+          <p className="text-sm">
+            {now} → <span className="font-semibold">{next} {unit}</span>{' '}
+            {change !== 0 && <span className={change < 0 ? 'text-red-600' : 'text-emerald-600'}>({change > 0 ? '+' : ''}{change})</span>}
+          </p>
+          <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reason (optional), e.g. recount, damaged" maxLength={300} />
+          <RecentHandChanges rows={recent.data?.data || []} unit={unit} loading={recent.isLoading} onUndo={onUndo} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => close(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             className={ACTION_BTN}
-            disabled={saving || qty === '' || (mode !== 'set' && units <= 0)}
-            onClick={() => onSave({ id: item.id, mode, quantity: mode === 'set' ? Math.round(Number(qty) || 0) : units, note }, () => close(false))}
+            disabled={saving || change === 0 || next < 0}
+            onClick={() => onSave({ id: item.id, mode: 'set', quantity: next, note })}
           >
             {saving ? 'Saving…' : 'Save'}
           </Button>
@@ -275,7 +324,7 @@ const StockItemsPage = () => {
   const [adjusting, setAdjusting] = useState(null);
   const params = useMemo(() => ({ search: search.trim() || undefined, status }), [search, status]);
   const { data, isLoading, isError } = useStockItems(params);
-  const { create, update, adjust } = useStockItemMutations();
+  const { create, update, adjust, undo } = useStockItemMutations();
   const rows = data?.data || [];
   const summary = data?.summary || {};
 
@@ -382,7 +431,11 @@ const StockItemsPage = () => {
       <AdjustDialog
         item={adjusting}
         onOpenChange={(v) => !v && setAdjusting(null)}
-        onSave={(body, done) => adjust.mutate(body, { onSuccess: () => { done(); setAdjusting(null); } })}
+        onSave={(body) => adjust.mutate(body, { onSuccess: () => setAdjusting(null) })}
+        onUndo={async (m) => {
+          const res = await undo.mutateAsync(m.id);
+          if (res?.data) setAdjusting(res.data);
+        }}
         saving={adjust.isPending}
       />
     </div>

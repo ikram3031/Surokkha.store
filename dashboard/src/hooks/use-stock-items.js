@@ -22,6 +22,15 @@ export const useStockItemMovements = (params = {}) =>
     retry: 1,
   });
 
+// Latest changes of one stock item, for the adjust dialog
+export const useItemRecentChanges = (itemId) =>
+  useQuery({
+    queryKey: ['stock-item-movements', { refId: itemId, limit: 10 }],
+    queryFn: async () => (await apiClient.get('/api/v1/stock-items/movements', { params: { refId: itemId, limit: 10 } })).data,
+    enabled: Boolean(itemId),
+    staleTime: 5000,
+  });
+
 // Purchases received from Plexivia; params: { page, limit, status, q }
 export const useStockReceipts = (params = {}) =>
   useQuery({
@@ -53,5 +62,10 @@ export const useStockItemMutations = () => {
     onSuccess: () => { refresh(); toast.success('Stock updated'); },
     onError: (e) => toast.error(errText(e, 'Could not update the stock')),
   });
-  return { create, update, adjust };
+  const undo = useMutation({
+    mutationFn: async (movementId) => (await apiClient.post(`/api/v1/stock-items/movements/${movementId}/undo`)).data,
+    onSuccess: () => { refresh(); toast.success('Change undone'); },
+    onError: (e) => toast.error(errText(e, 'Could not undo that change')),
+  });
+  return { create, update, adjust, undo };
 };

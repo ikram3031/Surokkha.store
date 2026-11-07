@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 
-import { useStockItemMovements } from '@/hooks/use-stock-items';
+import { useStockItemMovements, useStockItemMutations } from '@/hooks/use-stock-items';
+import { UndoMovementButton } from '@/components/dashboard/inventory/stockCount';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ const MOVEMENT_LABELS = {
   manual_add: { label: 'Added by hand', tone: 'text-emerald-600' },
   manual_remove: { label: 'Removed by hand', tone: 'text-red-600' },
   manual_set: { label: 'Recount', tone: 'text-sky-600' },
+  manual_undo: { label: 'Undo', tone: 'text-muted-foreground' },
 };
 
 const TYPE_ITEMS = [{ value: 'all', label: 'All changes' }, ...Object.entries(MOVEMENT_LABELS).map(([value, v]) => ({ value, label: v.label }))];
@@ -37,6 +39,7 @@ const StockMovementsPage = () => {
   const { data, isLoading, isError } = useStockItemMovements(query);
   const rows = data?.data || [];
   const pg = data?.pagination;
+  const { undo } = useStockItemMutations();
 
   return (
     <div className="space-y-4">
@@ -85,19 +88,20 @@ const StockMovementsPage = () => {
                 <TableHead className="text-right">Before → After</TableHead>
                 <TableHead>Note</TableHead>
                 <TableHead>By</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading && <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Loading…</TableCell></TableRow>}
-              {isError && <TableRow><TableCell colSpan={7} className="py-8 text-center text-red-600">Could not load the history.</TableCell></TableRow>}
+              {isLoading && <TableRow><TableCell colSpan={8} className="py-8 text-center text-muted-foreground">Loading…</TableCell></TableRow>}
+              {isError && <TableRow><TableCell colSpan={8} className="py-8 text-center text-red-600">Could not load the history.</TableCell></TableRow>}
               {!isLoading && !isError && rows.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">No stock changes yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="py-8 text-center text-muted-foreground">No stock changes yet.</TableCell></TableRow>
               )}
               {rows.map((r) => {
                 const meta = MOVEMENT_LABELS[r.type] || { label: r.type, tone: '' };
                 const purchaseNo = (r.note || '').split(' · ')[0].replace(/ cancelled$/, '');
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} className={r.undoneAt ? 'opacity-60' : ''}>
                     <TableCell className="whitespace-nowrap text-sm">{fmt(r.createdAt)}</TableCell>
                     <TableCell className="font-medium">{r.name}</TableCell>
                     <TableCell className={meta.tone}>{meta.label}</TableCell>
@@ -114,7 +118,13 @@ const StockMovementsPage = () => {
                         r.note
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{r.createdBy}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {r.createdBy}
+                      {r.undoneAt && <div className="text-[11px]">Undone by {r.undoneBy || 'staff'}</div>}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <UndoMovementButton movement={r} onUndo={(m) => undo.mutateAsync(m.id)} />
+                    </TableCell>
                   </TableRow>
                 );
               })}
