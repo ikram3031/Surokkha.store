@@ -5,6 +5,10 @@ import { PaymentModel } from "../../common/models/payment.model.js";
 import "../../common/models/order.model.js";
 import { syncPathaoOrders } from "../services/pathaoOrderSync.service.js";
 import { logger } from "../../common/config/logger.js";
+import { StockItemModel } from "../../common/models/stockItem.model.js";
+import { StockReceiptModel } from "../../common/models/stockReceipt.model.js";
+import { applyReceipt, cancelReceipt, toReceiptView, ReceiptError } from "../services/stockReceipt.service.js";
+import { toStockItemView } from "./StockItemController.js";
 
 // Pathao's own auto bills (see pathaoBill.service.js)
 const PATHAO_BILLING_METHOD = "pathao";
@@ -179,5 +183,54 @@ export const getDailyPaymentSummary = async (req, res, next) => {
     return res.json({ success: true, data: { date: day, payments_count: orders.length, total, orders } });
   } catch (error) {
     return next(error);
+  }
+};
+
+// ---- Purchases from Plexivia → unit-level stock ----
+
+// GET /plexivia/stock-items — active stock items for Plexivia's purchase form
+export const plexiviaStockItems = async (_req, res, next) => {
+  try {
+    const docs = await StockItemModel.find({ isActive: true }).sort({ shortName: 1 }).lean();
+    return res.json({ success: true, data: docs.map(toStockItemView) });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Sends a receipt error back with its own status code
+const receiptFail = (res, next, error) => {
+  if (error instanceof ReceiptError) return res.status(error.status).json({ success: false, message: error.message });
+  return next(error);
+};
+
+// POST /plexivia/stock-receipts — adds (or corrects) the stock for one received purchase
+export const plexiviaApplyReceipt = async (req, res, next) => {
+  try {
+    const result = await applyReceipt(req.body || {}, "plexivia");
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    return receiptFail(res, next, error);
+  }
+};
+
+// GET /plexivia/stock-receipts/:ref — what Surokkha currently holds for a purchase
+export const plexiviaGetReceipt = async (req, res, next) => {
+  try {
+    const doc = await StockReceiptModel.findOne({ externalRef: req.params.ref, version: { $gt: 0 } }).lean();
+    if (!doc) return res.status(404).json({ success: false, message: "Receipt not found" });
+    return res.json({ success: true, data: toReceiptView(doc) });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /plexivia/stock-receipts/:ref/cancel — takes a cancelled purchase back out of stock
+export const plexiviaCancelReceipt = async (req, res, next) => {
+  try {
+    const result = await cancelReceipt(req.params.ref, "plexivia", String(req.body?.note || ""), req.body?.version);
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    return receiptFail(res, next, error);
   }
 };

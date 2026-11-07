@@ -35,6 +35,7 @@
         "orders.custom",
         "orders.custom-new",
         "orders.pathao",
+        "inventory",
         "products",
         "products.new",
         "products.list",

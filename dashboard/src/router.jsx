@@ -6,6 +6,7 @@ import AdminLayout from './layouts/adminLayout';
 import BlogLayout from './layouts/blogLayout';
 import AnalyticsLayout from './layouts/analyticsLayout';
 import FinanceLayout from './layouts/financeLayout';
+import InventoryLayout from './layouts/inventoryLayout';
 import SettingsLayout from './layouts/settingsLayout';
 
 // Auth & Onboarding
@@ -976,6 +977,14 @@ const analyticsRoutes = [
   { path: 'live', ...lazyPage(() => import('./pages/analytics/live')) },
 ];
 
+// Inventory workspace: unit-level stock items, their history and purchases received from Plexivia
+const inventoryRoutes = [
+  { index: true, ...lazyPage(() => import('./pages/inventory/stockItems')) },
+  { path: 'movements', ...lazyPage(() => import('./pages/inventory/movements')) },
+  { path: 'receipts', ...lazyPage(() => import('./pages/inventory/receipts')) },
+  { path: '*', element: <NotFound /> },
+];
+
 const blogRoutes = [
   { index: true, ...lazyPage(() => import('./pages/blog/overview')) },
   { path: 'posts', ...lazyPage(() => import('./pages/blog/posts')) },
@@ -1039,6 +1048,13 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorElement />,
     HydrateFallback: () => null,
     children: analyticsRoutes,
+  },
+  {
+    path: '/inventory',
+    element: <InventoryLayout />,
+    errorElement: <RouteErrorElement />,
+    HydrateFallback: () => null,
+    children: inventoryRoutes,
   },
   {
     path: '/blog',

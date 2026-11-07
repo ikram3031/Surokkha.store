@@ -53,6 +53,7 @@ import {
   GalleryHorizontal,
   Newspaper,
   Boxes,
+  Warehouse,
 } from "lucide-react"
 
 import {
@@ -236,6 +237,7 @@ export const AppSidebar = ({ ...props }) => {
   const showSystem = isAllowed("tools") || isAllowed("logs") || isAllowed("tools.logs") || isAllowed("analytics") || isAllowed("tools.analytics") || isAllowed("activity-logs") || isAllowed("tools.activity-logs") || isAllowed("cpanel") || showAdmin
   const showItems = isAllowed("items")
   const showBlog = isAllowed("blog")
+  const showInventory = isAllowed("inventory")
   const showAdminLayout = Boolean(features?.adminMenuLayout) && isAllowed("admin")
 
   // Pathao webhook log is Owner/Admin only, matching its API
@@ -525,6 +527,11 @@ export const AppSidebar = ({ ...props }) => {
           {(showProducts || showOrders) && <NavLabel>{t("nav.group_analytics", "Analytics")}</NavLabel>}
           {(showProducts || showOrders) && (
             <NavLink to="/analytics" active={pathname.startsWith("/analytics")} icon={TrendingUp} label={t("nav.analytics", "Analytics")} />
+          )}
+
+          {showInventory && <NavLabel>{t("nav.group_inventory", "Inventory")}</NavLabel>}
+          {showInventory && (
+            <NavLink to="/inventory" active={pathname.startsWith("/inventory")} icon={Warehouse} label={t("nav.inventory_workspace", "Inventory")} />
           )}
 
           {(showAccounts || showReports) && <NavLabel>{t("nav.group_finance", "Finance")}</NavLabel>}
