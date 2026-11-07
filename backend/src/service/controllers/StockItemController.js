@@ -8,6 +8,8 @@ import { applyStockItemDelta } from "../services/stockReceipt.service.js";
 const actorOf = (req) => req.user?.name || req.user?.did || "staff";
 const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+// Capitalizes the first letter of every word, leaving the rest as typed (KN95 stays KN95)
+const titleCase = (v) => v.replace(/(^|\s)(\S)/g, (m, sp, ch) => sp + ch.toUpperCase());
 const fail = (res, code, message) => res.status(code).json({ status: "error", message });
 
 // Validates the editable fields of a stock item; returns an error string or the clean values
@@ -19,7 +21,7 @@ const cleanItem = (body = {}, partial = false) => {
     if (shortName.length > 40) return "Short name must be 40 characters or less.";
     out.shortName = shortName;
   }
-  if (body.name !== undefined) out.name = String(body.name || "").trim().slice(0, 160);
+  if (body.name !== undefined) out.name = titleCase(String(body.name || "").trim().replace(/\s+/g, " ")).slice(0, 160);
   if (body.unit !== undefined) {
     const unit = String(body.unit || "pcs").trim().slice(0, 20) || "pcs";
     if (/^\d+(\.\d+)?$/.test(unit)) return "Unit must be a word like pcs. Put how many come in a packet under Pack sizes.";

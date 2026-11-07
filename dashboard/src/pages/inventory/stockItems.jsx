@@ -23,6 +23,9 @@ const STATUS_FILTERS = [
   { key: 'all', label: 'All' },
 ];
 
+// Capitalizes the first letter of every word, leaving the rest as typed (KN95 stays KN95)
+const titleCase = (v) => v.replace(/(^|\s)(\S)/g, (m, sp, ch) => sp + ch.toUpperCase());
+
 const UNIT_OPTIONS = [
   { value: 'pcs', label: 'pcs (single piece)' },
   { value: 'pair', label: 'pair' },
@@ -115,7 +118,7 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
             </div>
             <div className="col-span-2 space-y-1.5">
               <Label>Full name</Label>
-              <Input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Medicated oil 10ml" />
+              <Input value={form.name} onChange={(e) => set('name', titleCase(e.target.value))} placeholder="Medicated Oil 10ml" />
             </div>
           </div>
 
