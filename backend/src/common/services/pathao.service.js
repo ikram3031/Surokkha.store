@@ -346,3 +346,30 @@ export async function getPathaoOrderInfo(consignmentId) {
   });
   return result?.data || result;
 }
+
+/**
+ * Cancel a consignment that Pathao has not picked up yet (same call the merchant panel's "Cancel" makes).
+ * Pathao sometimes answers 200 with { error: true } or type "error", so the body is checked too.
+ */
+export async function cancelPathaoOrder(consignmentId) {
+  const cleanId = encodeURIComponent(String(consignmentId).trim());
+  const endpoint = `/aladdin/api/v1/orders/${cleanId}/cancel`;
+  let result;
+  try {
+    result = await pathaoRequest(endpoint, { method: "POST", body: JSON.stringify([]) });
+  } catch (err) {
+    if (err.status !== 404 && err.status !== 405) throw err;
+    result = await pathaoRequest(endpoint, { method: "PUT", body: JSON.stringify([]) });
+  }
+  const softFail =
+    result?.error === true ||
+    String(result?.type || "").toLowerCase() === "error" ||
+    (Number.isFinite(Number(result?.code)) && Number(result.code) >= 400);
+  if (softFail) {
+    const error = new Error(result?.message || "Pathao refused the cancel request.");
+    error.status = 422;
+    error.data = result;
+    throw error;
+  }
+  return result;
+}

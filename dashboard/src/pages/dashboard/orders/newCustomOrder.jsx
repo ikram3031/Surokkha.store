@@ -47,6 +47,7 @@ import {
   Mail,
   AlertTriangle,
   UserCheck,
+  RotateCcw,
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
@@ -384,6 +385,82 @@ const resolveLeadItem = async (leadItem) => {
   };
 };
 
+// Looks a previous order's line up by its id/did, in the catalogue it came from first
+const fetchOrderLineEntry = async (orderItem) => {
+  const ref = orderItem.itemType === "item" ? orderItem.itemId || orderItem.productDid : orderItem.productId || orderItem.productDid;
+  if (!ref) return null;
+  const order = orderItem.itemType === "item" ? [["items", "item"], ["products", "product"]] : [["products", "product"], ["items", "item"]];
+  for (const [path, itemType] of order) {
+    try {
+      const res = await apiClient.get(`/api/v1/${path}/${encodeURIComponent(ref)}`);
+      const entry = res.data?.data || res.data;
+      if (entry && (entry.id || entry._id)) return { entry, itemType };
+    } catch (_) {
+      // try the next catalogue
+    }
+  }
+  return null;
+};
+
+// Turns one line of a previous order into a cart line; out-of-stock lines are kept but flagged
+const resolveReorderItem = async (orderItem) => {
+  const quantity = Math.max(1, Number(orderItem.quantity) || 1);
+  const oldPrice = Number(orderItem.unitPrice) || 0;
+  const label = orderItem.size && !String(orderItem.name).includes(`(${orderItem.size})`) ? `${orderItem.name} (${orderItem.size})` : orderItem.name;
+
+  if (orderItem.itemType === "custom") {
+    return {
+      line: {
+        id: `custom-${String(orderItem.name).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${oldPrice}`,
+        name: orderItem.name,
+        price: oldPrice,
+        quantity,
+        image: orderItem.image || undefined,
+        itemType: "custom",
+        isCustom: true,
+        size: orderItem.size || "",
+        sku: orderItem.sku || "",
+      },
+    };
+  }
+
+  const found = await fetchOrderLineEntry(orderItem);
+  if (!found) return { unavailable: { name: label, reason: "not_found" } };
+  const { entry, itemType } = found;
+  if (entry.type === "group") return { unavailable: { name: label, reason: "bundle" } };
+  if (entry.isActive === false) return { unavailable: { name: label, reason: "inactive" } };
+
+  let variant = null;
+  if (entry.type === "variant" && (entry.variants?.length ?? 0) > 0) {
+    variant = entry.variants.find((v) => String(v.size).toLowerCase() === String(orderItem.size || "").toLowerCase());
+    if (!variant) return { unavailable: { name: label, reason: "variation_missing" } };
+  }
+
+  const source = variant || entry;
+  const price = effectivePrice(Number(source.price) || 0, source.offerPrice ?? null);
+  const rawId = entry.id || entry._id || "";
+  const isItem = itemType === "item";
+  const outOfStock = isOutOfStockStatus(entry.stockStatus) || (variant ? isOutOfStockStatus(variant.stockStatus) : false);
+
+  return {
+    line: {
+      id: variant ? `${rawId}__${variant.size}` : rawId,
+      name: variant ? `${entry.name} (${variant.size})` : entry.name,
+      price,
+      quantity,
+      image: resolveImageUrl(entry.imageUrl || entry.thumbnailUrl) || orderItem.image || undefined,
+      sku: (variant && variant.sku) || entry.sku || "",
+      size: variant ? variant.size : "",
+      productId: !isItem ? rawId : "",
+      itemId: isItem ? rawId : "",
+      itemType: isItem ? "item" : "product",
+      productDid: entry.did || entry.sku || "",
+      outOfStock,
+    },
+    priceChanged: oldPrice > 0 && oldPrice !== price ? { name: label, from: oldPrice, to: price } : null,
+  };
+};
+
 // Main container component for Creating Custom Orders
 const NewCustomOrderPage = () => {
   const { t } = useTranslation();
@@ -556,6 +633,96 @@ const NewCustomOrderPage = () => {
     loadLead();
   }, [leadId]);
 
+  // Opened with "Reorder": ?reorder=<orderId> copies that order's customer and products
+  const reorderId = searchParams.get("reorder");
+  const [reorderInfo, setReorderInfo] = useState(null);
+  const reorderLoadedRef = useRef(false);
+
+  useEffect(() => {
+    if (!reorderId || leadId || reorderLoadedRef.current) return;
+    reorderLoadedRef.current = true;
+    setReorderInfo({ loading: true, unavailable: [], priceChanged: [], outOfStock: [] });
+
+    const loadReorder = async () => {
+      try {
+        const res = await apiClient.get(`/api/v1/orders/${encodeURIComponent(reorderId)}`);
+        const source = res.data?.data || res.data;
+        if (!source?.items) throw new Error("missing");
+
+        const bill = source.billingInfo || {};
+        const ship = source.shippingInfo || {};
+        if (bill.fullName) setCustomerName(bill.fullName);
+        if (bill.phone) setCustomerPhone(formatPhoneForOrderInput(bill.phone, 11));
+        if (bill.email && !String(bill.email).includes("instore@")) setCustomerEmail(bill.email);
+        if (bill.address) setBillingAddress(bill.address);
+        if (bill.district) setBillingDistrict(bill.district);
+        if (bill.thana) setBillingThana(bill.thana);
+
+        const differentShipping =
+          ship.address &&
+          (String(ship.address).trim() !== String(bill.address || "").trim() ||
+            String(ship.phone || "").replace(/\D/g, "").slice(-10) !== String(bill.phone || "").replace(/\D/g, "").slice(-10) ||
+            String(ship.fullName || "").trim() !== String(bill.fullName || "").trim());
+        if (differentShipping) {
+          setShipToDifferent(true);
+          setShipRecipientName(ship.fullName || "");
+          setShipPhone(formatPhoneForOrderInput(ship.phone || "", 11));
+          setShipAddress(ship.address || "");
+          if (ship.district) setShipDistrict(ship.district);
+          setShipThana(ship.thana || "");
+        }
+
+        if (bill.phone) {
+          try {
+            const lookup = await apiClient.get("/api/v1/customers/lookup", { params: { phone: bill.phone } });
+            if (lookup.data?.data) setSelectedCustomer(lookup.data.data);
+          } catch (_) {
+            // a reorder works without a saved customer
+          }
+        }
+
+        const resolved = await Promise.all((source.items || []).map(resolveReorderItem));
+        const lines = [];
+        const merged = new Map();
+        resolved.forEach((r) => {
+          if (!r.line) return;
+          const existing = merged.get(r.line.id);
+          if (existing) existing.quantity += r.line.quantity;
+          else {
+            merged.set(r.line.id, r.line);
+            lines.push(r.line);
+          }
+        });
+        setCart(lines);
+
+        const unavailable = resolved.filter((r) => r.unavailable).map((r) => r.unavailable);
+        const priceChanged = resolved.map((r) => r.priceChanged).filter(Boolean);
+        const outOfStock = lines.filter((l) => l.outOfStock).map((l) => l.name);
+        setReorderInfo({
+          loading: false,
+          orderId: source.id || source._id || reorderId,
+          orderNumber: source.orderNumber,
+          customerName: bill.fullName || bill.phone || "",
+          total: lines.length,
+          unavailable,
+          priceChanged,
+          outOfStock,
+        });
+
+        if (outOfStock.length > 0 || unavailable.length > 0) {
+          toast.warning(`Order #${source.orderNumber} copied. Some products need attention.`);
+        } else {
+          toast.success(`Order #${source.orderNumber} copied into a new order`);
+        }
+      } catch (err) {
+        setReorderInfo({ loading: false, failed: true, unavailable: [], priceChanged: [], outOfStock: [] });
+        toast.error("Could not load the order to reorder.");
+      }
+    };
+
+    loadReorder();
+  }, [reorderId, leadId]);
+
   const addToCart = useCallback((item) => {
     setCart((prev) => {
       const existing = prev.find((c) => c.id === item.id);
@@ -654,6 +821,11 @@ const NewCustomOrderPage = () => {
   const handleSubmit = async () => {
     if (cart.length === 0) {
       toast.error(t("orders.cart_empty", "Cart is empty. Add at least one product."));
+      return;
+    }
+    const outOfStockLines = cart.filter((c) => c.outOfStock);
+    if (outOfStockLines.length > 0) {
+      toast.error(`Out of stock: ${outOfStockLines.map((c) => c.name).join(", ")}. Remove them or restock first.`);
       return;
     }
     if (!customerName.trim()) {
@@ -908,6 +1080,53 @@ const NewCustomOrderPage = () => {
           )}
           {leadInfo.total === 0 && leadInfo.unavailable.length > 0 && (
             <p className="text-xs text-muted-foreground">Pick other products from the catalogue below.</p>
+          )}
+        </div>
+      )}
+
+      {reorderInfo && !reorderInfo.loading && !reorderInfo.failed && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <RotateCcw className="h-4 w-4 text-primary" />
+            <span className="font-semibold">
+              Reorder of{" "}
+              <Link to={`/dashboard/orders/${reorderInfo.orderId}`} className="text-primary hover:underline">#{reorderInfo.orderNumber}</Link>
+              {reorderInfo.customerName ? ` · ${reorderInfo.customerName}` : ""}
+            </span>
+            <span className="text-xs text-muted-foreground">Prices are today's prices. Check quantities and delivery before placing it.</span>
+          </div>
+          {reorderInfo.outOfStock.length > 0 && (
+            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
+              <div className="flex items-center gap-1.5 font-semibold">
+                <AlertTriangle className="h-4 w-4" />
+                {reorderInfo.outOfStock.length} product(s) are out of stock right now
+              </div>
+              <p className="mt-1">{reorderInfo.outOfStock.join(", ")}. They are in the cart marked "Out of stock"; remove them or restock before placing the order.</p>
+            </div>
+          )}
+          {reorderInfo.unavailable.length > 0 && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 space-y-1">
+              <div className="flex items-center gap-1.5 font-semibold text-destructive">
+                <AlertTriangle className="h-4 w-4" />
+                {reorderInfo.unavailable.length} product(s) could not be added
+              </div>
+              <ul className="list-disc pl-6 text-xs text-destructive">
+                {reorderInfo.unavailable.map((u, idx) => (
+                  <li key={`${u.name}-${idx}`}>
+                    {u.name} — {LEAD_REASONS[u.reason] || "Not available"}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {reorderInfo.priceChanged.length > 0 && (
+            <ul className="list-disc pl-6 text-xs text-muted-foreground">
+              {reorderInfo.priceChanged.map((p, idx) => (
+                <li key={`${p.name}-${idx}`}>
+                  {p.name}: price is now {formatBDT(p.to)} (was {formatBDT(p.from)} in #{reorderInfo.orderNumber})
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       )}
@@ -1274,6 +1493,11 @@ const NewCustomOrderPage = () => {
                       {item.itemType === "item" && (
                         <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-normal">
                           Item
+                        </Badge>
+                      )}
+                      {item.outOfStock && (
+                        <Badge variant="destructive" className="text-[9px] px-1 py-0 h-3.5 font-normal">
+                          Out of stock
                         </Badge>
                       )}
                     </div>

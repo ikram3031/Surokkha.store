@@ -13,6 +13,7 @@ import {
   Pencil,
   Printer,
   RefreshCw,
+  RotateCcw,
   ShieldAlert,
   StickyNote,
   Trash2,
@@ -90,6 +91,11 @@ function RowActions({ order, list }) {
         {!isReadOnly && (
           <DropdownMenuItem onClick={() => orderActions.openQuickView(order)} className="cursor-pointer">
             <RefreshCw className="text-muted-foreground" /> {t('orders.change_status', 'Change Status')}
+          </DropdownMenuItem>
+        )}
+        {orderActions.reorder && (
+          <DropdownMenuItem onClick={() => orderActions.reorder(order)} className="cursor-pointer">
+            <RotateCcw className="text-muted-foreground" /> {t('orders.reorder', 'Reorder')}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={() => orderActions.openInvoice(order)} className="cursor-pointer">

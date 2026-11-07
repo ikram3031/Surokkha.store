@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatBDT } from "@/utils/orderHelper";
 import { formatDateTime } from '@/utils/dateHelper';
+import { PathaoPickupStore, CancelPathaoParcelButton } from './pathaoParcel';
 
 // Handles Pathao courier dispatch and consignment tracking for orders
 const PathaoCourierCardInner = ({
@@ -51,13 +52,13 @@ const PathaoCourierCardInner = ({
 }) => {
   const queryClient = useQueryClient();
   const [isDispatchOpen, setIsDispatchOpen] = useState(false);
+  const [isParcelOpen, setIsParcelOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isTrackingLoading, setIsTrackingLoading] = useState(false);
   const [trackingData, setTrackingData] = useState(null);
 
   // Dispatch Form State
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [stores, setStores] = useState([]);
   const [selectedStoreId, setSelectedStoreId] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -74,18 +75,6 @@ const PathaoCourierCardInner = ({
   const [estimatedPrice, setEstimatedPrice] = useState(null);
   const [isCalculatingRate, setIsCalculatingRate] = useState(false);
   const [pathaoConfig, setPathaoConfig] = useState(null);
-
-  // Memoized select items with human-readable labels for Base UI Select
-  const storeItems = useMemo(
-    () =>
-      stores.map((s) => ({
-        value: String(s.store_id),
-        label: s.store_name
-          ? `${s.store_name}${s.store_address ? ` (${s.store_address})` : ""}`
-          : String(s.store_id),
-      })),
-    [stores]
-  );
 
   const cityItems = useMemo(
     () =>
@@ -205,49 +194,20 @@ const PathaoCourierCardInner = ({
     const pending = Math.max(0, total - paid);
     setAmountToCollect(pending);
 
-    // Load Pathao stores, config, and cities
+    // Load Pathao config (the pickup store always comes from settings) and cities
     try {
-      const [configRes, storesRes, citiesRes] = await Promise.all([
+      const [configRes, citiesRes] = await Promise.all([
         apiClient.get("/api/v1/courier/pathao/config").catch(() => ({ data: {} })),
-        apiClient.get("/api/v1/courier/pathao/stores").catch(() => ({ data: {} })),
         apiClient.get("/api/v1/courier/pathao/cities").catch(() => ({ data: {} })),
       ]);
 
       const cfg = configRes.data?.data || {};
       setPathaoConfig(cfg);
-      let stList = storesRes.data?.data || [];
       const cityList = citiesRes.data?.data || [];
 
-      if (stList.length === 0 && cfg.storeId) {
-        stList = [
-          {
-            store_id: cfg.storeId,
-            store_name: cfg.storeName || "Primary Store",
-            store_address: cfg.storeAddress || "",
-          },
-        ];
-      } else {
-        stList = stList.map((s) => {
-          if (cfg.storeId && String(s.store_id) === String(cfg.storeId)) {
-            return {
-              ...s,
-              store_name: s.store_name || cfg.storeName || "Primary Store",
-              store_address: s.store_address || cfg.storeAddress || "",
-            };
-          }
-          return s;
-        });
-      }
-
-      setStores(stList);
       setCities(cityList);
 
-      let effectiveStoreId = "";
-      if (cfg.storeId) {
-        effectiveStoreId = String(cfg.storeId);
-      } else if (stList.length > 0) {
-        effectiveStoreId = String(stList[0].store_id);
-      }
+      const effectiveStoreId = cfg.storeId ? String(cfg.storeId) : "";
       setSelectedStoreId(effectiveStoreId);
 
       const effectiveWeight = cfg.defaultItemWeight ?? 0.5;
@@ -383,7 +343,7 @@ const PathaoCourierCardInner = ({
 
   const handleEstimateRate = async () => {
     if (!selectedStoreId || !selectedCity || !selectedZone) {
-      toast.error("Please select Pickup Store, City, and Zone to estimate rate.");
+      toast.error("Please select City and Zone to estimate rate.");
       return;
     }
     calculateRateAutomatically(selectedStoreId, selectedCity, selectedZone, itemWeight, deliveryType, itemType);
@@ -412,7 +372,7 @@ const PathaoCourierCardInner = ({
       return;
     }
     if (!selectedStoreId) {
-      toast.error("Please select a Pathao Pickup Store.");
+      toast.error("Set the default pickup store in Settings > Pathao Courier first.");
       return;
     }
 
@@ -487,46 +447,10 @@ const PathaoCourierCardInner = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmitDispatch} className="space-y-4 py-2">
-          {/* Store Selection */}
+          {/* Pickup store: fixed by Pathao settings */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold">Pickup Store <span className="text-destructive">*</span></label>
-            {stores.length > 0 ? (
-              <Select value={selectedStoreId} onValueChange={setSelectedStoreId} items={storeItems}>
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Select Pickup Store">
-                    {(val) => {
-                      if (!val) return null;
-                      const s = stores.find((st) => String(st.store_id) === String(val));
-                      if (s) {
-                        return s.store_address
-                          ? `${s.store_name} (${s.store_address})`
-                          : s.store_name;
-                      }
-                      if (pathaoConfig?.storeName && String(pathaoConfig.storeId) === String(val)) {
-                        return pathaoConfig.storeAddress
-                          ? `${pathaoConfig.storeName} (${pathaoConfig.storeAddress})`
-                          : pathaoConfig.storeName;
-                      }
-                      return `Store #${val}`;
-                    }}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {stores.map((s) => (
-                    <SelectItem key={s.store_id} value={String(s.store_id)}>
-                      {s.store_name} {s.store_address ? `(${s.store_address})` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                value={selectedStoreId}
-                onChange={(e) => setSelectedStoreId(e.target.value)}
-                placeholder="Enter Store ID"
-                className="h-9 text-xs font-mono"
-              />
-            )}
+            <label className="text-xs font-semibold">Pickup Store</label>
+            <PathaoPickupStore config={pathaoConfig} />
           </div>
 
           {/* Recipient Info */}
@@ -710,12 +634,90 @@ const PathaoCourierCardInner = ({
     </Dialog>
   );
 
+  // Already dispatched: show the parcel (status, sync, cancel) instead of a second dispatch form
+  const openFromTrigger = () => (hasConsignment ? setIsParcelOpen(true) : handleOpenDispatch());
+
+  const renderParcelStatus = () => (
+    <div className="space-y-3.5 text-sm">
+      <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border border-border/60">
+        <div>
+          <span className="text-[11px] text-muted-foreground block">Consignment ID</span>
+          <span className="font-mono font-bold text-foreground text-sm tracking-wide">{courier.consignmentId}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Button variant="ghost" size="icon" onClick={copyConsignment} className="h-7 w-7 text-muted-foreground hover:text-foreground" title="Copy ID">
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+          </Button>
+          <a
+            href={`https://merchant.pathao.com/tracking?consignment_id=${courier.consignmentId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center h-7 px-2 rounded-md text-xs font-medium text-primary hover:bg-primary/10 transition-colors gap-1"
+          >
+            Track on Pathao <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        <div>
+          <span className="text-xs text-muted-foreground block">Delivery Status</span>
+          <span className="font-semibold text-foreground capitalize flex items-center gap-1.5 mt-0.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+            {trackingData?.order_status || courier.orderStatus || "In Transit"}
+          </span>
+        </div>
+        <div>
+          <span className="text-xs text-muted-foreground block">Delivery Fee</span>
+          <span className="font-semibold text-foreground font-mono mt-0.5 block">
+            {formatBDT(courier.deliveryFee || trackingData?.delivery_fee || 0)}
+          </span>
+        </div>
+      </div>
+
+      {courier.dispatchedAt && (
+        <div className="text-xs text-muted-foreground flex items-center gap-1 pt-1 border-t border-border/60">
+          <Clock className="h-3 w-3" /> Dispatched on {formatDateTime(courier.dispatchedAt)}
+        </div>
+      )}
+
+      <div className="pt-2 flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" onClick={handleTrackLive} disabled={isTrackingLoading} className="flex-1 text-xs gap-1.5 h-8 cursor-pointer">
+          <RefreshCw className={`h-3.5 w-3.5 ${isTrackingLoading ? "animate-spin" : ""}`} />
+          {isTrackingLoading ? "Updating Tracking..." : "Sync Live Status"}
+        </Button>
+        <CancelPathaoParcelButton
+          order={order}
+          className="flex-1 h-8 text-xs"
+          onDone={() => {
+            setIsParcelOpen(false);
+            if (onOrderUpdated) onOrderUpdated();
+          }}
+        />
+      </div>
+    </div>
+  );
+
+  const renderParcelDialog = () => (
+    <Dialog open={isParcelOpen} onOpenChange={setIsParcelOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Truck className="h-5 w-5 text-primary" /> Pathao parcel · Order #{order?.orderNumber}
+          </DialogTitle>
+          <DialogDescription>Live status of this parcel. It can be cancelled until the rider picks it up.</DialogDescription>
+        </DialogHeader>
+        {renderParcelStatus()}
+      </DialogContent>
+    </Dialog>
+  );
+
   useEffect(() => {
-    if (openSignal > 0) handleOpenDispatch();
+    if (openSignal > 0) openFromTrigger();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openSignal]);
 
-  if (dialogOnly) return renderDispatchDialog();
+  if (dialogOnly) return hasConsignment ? renderParcelDialog() : renderDispatchDialog();
 
   if (triggerOnly) {
     return (
@@ -724,7 +726,7 @@ const PathaoCourierCardInner = ({
           type="button"
           variant={triggerButtonVariant}
           size={triggerButtonSize}
-          onClick={handleOpenDispatch}
+          onClick={openFromTrigger}
           className={`gap-1.5 cursor-pointer font-medium ${triggerButtonClassName}`}
           title={hasConsignment ? "Pathao Dispatched" : "Send with Pathao"}
         >
@@ -738,7 +740,7 @@ const PathaoCourierCardInner = ({
             !triggerIconOnly && (hasConsignment ? "Pathao Dispatched" : "Send with Pathao")
           )}
         </Button>
-        {renderDispatchDialog()}
+        {hasConsignment ? renderParcelDialog() : renderDispatchDialog()}
       </>
     );
   }
@@ -762,73 +764,7 @@ const PathaoCourierCardInner = ({
         </div>
 
         {hasConsignment ? (
-          <div className="space-y-3.5 text-sm">
-            {/* Consignment ID Row */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border border-border/60">
-              <div>
-                <span className="text-[11px] text-muted-foreground block">Consignment ID</span>
-                <span className="font-mono font-bold text-foreground text-sm tracking-wide">
-                  {courier.consignmentId}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={copyConsignment}
-                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                  title="Copy ID"
-                >
-                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                </Button>
-                <a
-                  href={`https://merchant.pathao.com/tracking?consignment_id=${courier.consignmentId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center h-7 px-2 rounded-md text-xs font-medium text-primary hover:bg-primary/10 transition-colors gap-1"
-                >
-                  Track on Pathao <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            </div>
-
-            {/* Courier status & fee */}
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <div>
-                <span className="text-xs text-muted-foreground block">Delivery Status</span>
-                <span className="font-semibold text-foreground capitalize flex items-center gap-1.5 mt-0.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-                  {trackingData?.order_status || courier.orderStatus || "In Transit"}
-                </span>
-              </div>
-              <div>
-                <span className="text-xs text-muted-foreground block">Delivery Fee</span>
-                <span className="font-semibold text-foreground font-mono mt-0.5 block">
-                  {formatBDT(courier.deliveryFee || trackingData?.delivery_fee || 0)}
-                </span>
-              </div>
-            </div>
-
-            {courier.dispatchedAt && (
-              <div className="text-xs text-muted-foreground flex items-center gap-1 pt-1 border-t border-border/60">
-                <Clock className="h-3 w-3" /> Dispatched on {formatDateTime(courier.dispatchedAt)}
-              </div>
-            )}
-
-            {/* Live Track Action */}
-            <div className="pt-2 flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleTrackLive}
-                disabled={isTrackingLoading}
-                className="w-full text-xs gap-1.5 h-8"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${isTrackingLoading ? "animate-spin" : ""}`} />
-                {isTrackingLoading ? "Updating Tracking..." : "Sync Live Status"}
-              </Button>
-            </div>
-          </div>
+          renderParcelStatus()
         ) : (
           <div className="space-y-3 text-sm">
             <p className="text-xs text-muted-foreground leading-relaxed">

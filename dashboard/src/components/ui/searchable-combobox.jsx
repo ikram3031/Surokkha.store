@@ -145,21 +145,21 @@ export function SearchableCombobox({
 
   return (
     <Popover open={open} onOpenChange={disabled ? undefined : setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          disabled={disabled}
-          aria-label={ariaLabel || placeholder}
-          className={cn(
-            "group relative flex w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-left text-xs transition-all outline-none select-none",
-            "hover:border-primary/60 hover:bg-muted/10",
-            "focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40",
-            "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-input disabled:hover:bg-background",
-            open && "border-primary ring-2 ring-primary/20",
-            triggerClassName,
-            className
-          )}
-        >
+      {/* Base UI renders the trigger itself through `render`; asChild would nest a button inside a button */}
+      <PopoverTrigger
+        render={<button type="button" />}
+        disabled={disabled}
+        aria-label={ariaLabel || placeholder}
+        className={cn(
+          "group relative flex w-full min-w-0 items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-left text-xs transition-all outline-none select-none",
+          "hover:border-primary/60 hover:bg-muted/10",
+          "focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40",
+          "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-input disabled:hover:bg-background",
+          open && "border-primary ring-2 ring-primary/20",
+          triggerClassName,
+          className
+        )}
+      >
           <div className="flex min-w-0 flex-1 items-center gap-2 pr-1">
             {Icon && (
               <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -215,7 +215,6 @@ export function SearchableCombobox({
               />
             )}
           </div>
-        </button>
       </PopoverTrigger>
 
       <PopoverContent

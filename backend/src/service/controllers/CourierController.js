@@ -20,7 +20,10 @@ import {
   createPathaoOrder,
   createPathaoBulkOrders,
   getPathaoOrderInfo,
+  cancelPathaoOrder,
 } from "../../common/services/pathao.service.js";
+import { normalizePathaoSlug } from "../services/pathaoCourierEvents.service.js";
+import { syncOrderStock } from "../../common/services/stock.service.js";
 import {
   syncLocationsFromPathaoAPI,
   seedBaselineDistrictsAndThanas,
@@ -319,11 +322,11 @@ export const calculatePriceController = async (req, res, next) => {
     }
 
     const config = await getPathaoConfig();
-    const effectiveStoreId = store_id || config.storeId;
+    const effectiveStoreId = config.storeId || store_id;
     if (!effectiveStoreId) {
       return res.status(400).json({
         status: "error",
-        message: "store_id is required. Please set a default store in Pathao Settings or select a store.",
+        message: "No Pathao pickup store is set. Choose the default store in Settings > Pathao Courier.",
       });
     }
 
@@ -340,6 +343,15 @@ export const calculatePriceController = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// Finds a store order by order number, did or Mongo id; null when no reference was given
+const orderLinkFilter = (orderId) => {
+  const ref = String(orderId || "").trim();
+  if (!ref) return null;
+  return {
+    $or: [{ orderNumber: ref }, { did: ref }, ...(/^[0-9a-fA-F]{24}$/.test(ref) ? [{ _id: ref }] : [])],
+  };
 };
 
 /**
@@ -370,12 +382,24 @@ export const createOrderConsignmentController = async (req, res, next) => {
     } = req.body;
 
     const config = await getPathaoConfig();
-    const effectiveStoreId = store_id || config.storeId;
+    const effectiveStoreId = config.storeId || store_id;
     if (!effectiveStoreId) {
       return res.status(400).json({
         status: "error",
-        message: "A Pathao Store ID is required to dispatch the order.",
+        message: "No Pathao pickup store is set. Choose the default store in Settings > Pathao Courier.",
       });
+    }
+
+    // A linked order that already has a live parcel must not get a second one
+    const linkFilter = orderLinkFilter(orderId);
+    if (linkFilter) {
+      const existing = await OrderModel.findOne(linkFilter).select("orderNumber courier.consignmentId courier.provider").lean();
+      if (existing?.courier?.consignmentId) {
+        return res.status(409).json({
+          status: "error",
+          message: `Order #${existing.orderNumber} is already sent to ${existing.courier.provider === "redx" ? "RedX" : "Pathao"} (consignment ${existing.courier.consignmentId}). Cancel that parcel first.`,
+        });
+      }
     }
 
     // Clean phone number (Pathao expects Bangladeshi 11-digit format e.g. 017XXXXXXXX)
@@ -453,14 +477,8 @@ export const createOrderConsignmentController = async (req, res, next) => {
 
     // If order exists in database, update it with courier information
     let updatedOrder = null;
-    if (orderId) {
-      const filter = {
-        $or: [
-          { orderNumber: orderId },
-          { did: orderId },
-          ...(orderId.match(/^[0-9a-fA-F]{24}$/) ? [{ _id: orderId }] : []),
-        ],
-      };
+    if (linkFilter) {
+      const filter = linkFilter;
 
       const courierData = {
         provider: "pathao",
@@ -535,6 +553,11 @@ export const createBulkOrderConsignmentsController = async (req, res, next) => {
     const { orders = [] } = req.body;
     if (!Array.isArray(orders) || orders.length === 0) {
       return res.status(400).json({ status: "error", message: "Array of orders is required." });
+    }
+
+    const config = await getPathaoConfig();
+    if (config.storeId) {
+      for (const order of orders) order.store_id = Number(config.storeId);
     }
 
     const clientKey = (process.env.CLIENT_NAME || "surokkha").toLowerCase().trim();
@@ -754,6 +777,151 @@ export const updateCourierProvidersController = async (req, res, next) => {
         enabledCouriers,
         couriers: COURIERS.map((c) => ({ ...c, enabled: enabledCouriers.includes(c.key) })),
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Order statuses that are still waiting to be sent out
+const UNDISPATCHED_STATUSES = ["pending", "processing", "hold"];
+// Pathao statuses after the rider has the parcel: these can no longer be cancelled
+const PICKED_UP_SLUG = /picked|transit|sorting|hub|assigned_for_delivery|delivered|delivery|partial|return|exchange|paid|invoice/;
+const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Orders not yet sent to any courier, for the Same Day page's "Select existing order" picker
+ */
+export const listUndispatchedOrdersController = async (req, res, next) => {
+  try {
+    const search = String(req.query.search || "").trim();
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "50", 10)));
+    const filter = {
+      active: { $ne: false },
+      status: { $in: UNDISPATCHED_STATUSES },
+      orderType: { $ne: "instore" },
+      "courier.consignmentId": { $in: [null, ""] },
+    };
+    if (search) {
+      const rx = new RegExp(escapeRegex(search.replace(/^#/, "")), "i");
+      const digits = search.replace(/\D/g, "").replace(/^(880|0)/, "");
+      filter.$or = [
+        { orderNumber: rx },
+        { "billingInfo.fullName": rx },
+        { "shippingInfo.fullName": rx },
+        ...(digits.length >= 4 ? [{ "billingInfo.phone": new RegExp(digits) }, { "shippingInfo.phone": new RegExp(digits) }] : []),
+      ];
+    }
+    const docs = await OrderModel.find(filter)
+      .select("orderNumber did status orderType billingInfo shippingInfo items totals paidAmount orderNotes createdAt")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const data = docs.map((o) => {
+      const ship = o.shippingInfo?.address ? o.shippingInfo : o.billingInfo || {};
+      const total = Number(o.totals?.total || 0);
+      const paid = Number(o.paidAmount || 0);
+      const items = (o.items || []).map((i) => ({ name: i.name, size: i.size || "", quantity: Number(i.quantity) || 1 }));
+      return {
+        id: String(o._id),
+        orderNumber: o.orderNumber,
+        status: o.status,
+        orderType: o.orderType,
+        createdAt: o.createdAt,
+        name: ship.fullName || o.billingInfo?.fullName || "",
+        phone: ship.phone || o.billingInfo?.phone || "",
+        address: [ship.address, ship.thana, ship.district].filter(Boolean).join(", "),
+        district: ship.district || "",
+        thana: ship.thana || "",
+        total,
+        paid,
+        amountToCollect: Math.max(0, Math.round((total - paid) * 100) / 100),
+        quantity: items.reduce((s, i) => s + i.quantity, 0) || 1,
+        items,
+        notes: o.orderNotes || "",
+      };
+    });
+    return res.json({ status: "success", data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Cancel a Pathao parcel that has not been picked up yet, then free the order so it can be sent again
+ */
+export const cancelPathaoConsignmentController = async (req, res, next) => {
+  try {
+    const consignmentId = String(req.params.consignmentId || "").trim();
+    if (!consignmentId) return res.status(400).json({ status: "error", message: "Consignment ID is required." });
+
+    // Live status first: once the rider has it, Pathao won't cancel and we shouldn't try
+    let live = null;
+    try {
+      live = await getPathaoOrderInfo(consignmentId);
+    } catch (err) {
+      console.warn("Pathao info before cancel failed:", err.message);
+    }
+    const liveSlug = normalizePathaoSlug(live?.order_status_slug || live?.order_status || "");
+    const alreadyCancelled = /pickup_cancel|cancelled/.test(liveSlug);
+    if (liveSlug && !alreadyCancelled && PICKED_UP_SLUG.test(liveSlug)) {
+      return res.status(409).json({
+        status: "error",
+        message: `Pathao shows this parcel as "${live.order_status}". It can only be cancelled before pickup.`,
+      });
+    }
+
+    if (!alreadyCancelled) {
+      try {
+        await cancelPathaoOrder(consignmentId);
+      } catch (err) {
+        return res.status(err.status && err.status < 500 ? 422 : 502).json({
+          status: "error",
+          message: `Pathao did not cancel it: ${err.message}. Parcels can only be cancelled before pickup.`,
+        });
+      }
+    }
+
+    const order = await OrderModel.findOne({ "courier.consignmentId": consignmentId });
+    const actorName = req.user?.name || "Staff";
+    if (order) {
+      const old = order.courier?.toObject ? order.courier.toObject() : order.courier || {};
+      order.courier = {
+        provider: old.provider || "pathao",
+        orderStatus: "Pickup Cancelled",
+        orderStatusSlug: "pickup_cancelled",
+        history: [
+          ...(old.history || []),
+          { status: "Pickup Cancelled", date: new Date(), note: `Consignment ${consignmentId} cancelled by ${actorName}`, consignmentId },
+        ],
+      };
+      const previousStatus = order.status;
+      if (order.status === "shipped") order.status = "processing";
+      order.updatedBy = req.user?.userId || null;
+      await order.save();
+      if (order.status !== previousStatus) await syncOrderStock(order, { actor: actorName });
+      await syncCourierBill(order).catch((err) => console.error("Failed to remove Pathao charge bill:", err));
+    }
+
+    try {
+      await LogModel.create({
+        type: "updated",
+        typeDid: "121",
+        description: `${actorName} cancelled Pathao consignment ${consignmentId}${order ? ` for order #${order.orderNumber}` : ""}.`,
+        readStatus: false,
+        active: true,
+        createdBy: req.user?.did || "staff",
+        updatedBy: req.user?.did || "staff",
+      });
+    } catch (logErr) {
+      console.error("Failed to log Pathao cancel:", logErr);
+    }
+
+    return res.json({
+      status: "success",
+      message: `Pathao parcel ${consignmentId} cancelled${order ? `. Order #${order.orderNumber} is back to ${order.status} and can be sent again.` : "."}`,
+      data: { consignmentId, order: order ? { id: String(order._id), orderNumber: order.orderNumber, status: order.status } : null },
     });
   } catch (error) {
     next(error);

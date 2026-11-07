@@ -24,6 +24,8 @@ import {
   createBulkOrderConsignmentsController,
   trackOrderController,
   syncPathaoOrdersController,
+  listUndispatchedOrdersController,
+  cancelPathaoConsignmentController,
   syncPathaoLocationsController,
   getDistrictsListController,
   getDistrictThanasListController,
@@ -200,6 +202,23 @@ courierRouter.post(
   pathaoOn,
   authorizeRoles(OPERATORS),
   createBulkOrderConsignmentsController
+);
+
+// Orders not sent to any courier yet (Same Day page "Select existing order")
+courierRouter.get(
+  "/pathao/orders/undispatched",
+  authenticateToken,
+  authorizeRoles(OPERATORS),
+  listUndispatchedOrdersController
+);
+
+// Cancel a parcel before Pathao picks it up
+courierRouter.post(
+  "/pathao/orders/:consignmentId/cancel",
+  authenticateToken,
+  pathaoOn,
+  authorizeRoles(OPERATORS),
+  cancelPathaoConsignmentController
 );
 
 // Manual bulk sync of order statuses & COD payments from Pathao

@@ -198,6 +198,9 @@ export const applyPathaoUpdate = async (order, update) => {
           order.status = "return";
           paymentUpdate = { paymentStatus: "returned", paidAmount: 0 };
         }
+      } else if (/pickup_cancel/.test(slug)) {
+        // Cancelled before pickup: the order goes back to waiting for dispatch
+        if (order.status === "shipped") order.status = "processing";
       } else if (["pending", "processing"].includes(order.status)) {
         order.status = "shipped";
       }

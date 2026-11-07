@@ -22,7 +22,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Tag, Truck, Mail, Eye, Pencil, RefreshCw, Trash2 } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Tag, Truck, Mail, Eye, Pencil, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+import { canReorder, reorderPath } from '@/utils/reorder';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { apiClient } from '@/lib/api-client';
 import styles from '@/styles/styles.json';
@@ -69,6 +71,8 @@ export const OrdersTable = ({
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const reorderAllowed = canReorder(user?.role);
 
   const { data: responseData, isLoading, isError, error } = useOrders({
     search: searchQuery,
@@ -452,6 +456,12 @@ export const OrdersTable = ({
                             <DropdownMenuItem onClick={() => handleOpenStatusModal(order)} className="cursor-pointer whitespace-nowrap">
                               <RefreshCw className="mr-2 h-4 w-4 text-muted-foreground" />
                               {t('orders.change_status', 'Change Status')}
+                            </DropdownMenuItem>
+                          )}
+                          {reorderAllowed && (
+                            <DropdownMenuItem onClick={() => navigate(reorderPath(order))} className="cursor-pointer whitespace-nowrap">
+                              <RotateCcw className="mr-2 h-4 w-4 text-muted-foreground" />
+                              {t('orders.reorder', 'Reorder')}
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem onClick={() => setSendInvoiceTarget(order)} className="cursor-pointer whitespace-nowrap">

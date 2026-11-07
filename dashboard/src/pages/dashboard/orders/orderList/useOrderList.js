@@ -12,6 +12,7 @@ import { getApiErrorMessage } from '@/lib/error-handler';
 import { clientConfig } from '@/clientConfig';
 import { exportToCsv } from '@/utils/exportCsv';
 import { formatDateTime } from '@/utils/dateHelper';
+import { canReorder, reorderPath } from '@/utils/reorder';
 import { getPaymentMethodLabel } from '@/utils/orderDetailsHelper';
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE_MOBILE, EXPORT_MAX_PAGES, PAGE_SIZE_OPTIONS, STATUS_ALL } from './constants';
 import { useIsWide } from './view2/useMediaQuery';
@@ -338,6 +339,9 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
 
   const viewDetails = (order) => navigate(`/dashboard/orders/${order.id}`);
   const editOrder = (order) => navigate(`/dashboard/orders/${order.id}?edit=true`);
+  // Copies the order into a new custom order
+  const reorder = (order) => navigate(reorderPath(order));
+  const reorderAllowed = canReorder(user?.role);
 
   // ---------------------------------------------------------------- bulk actions
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -574,6 +578,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       updateNotes: updateOrderNotes,
       viewDetails,
       edit: editOrder,
+      reorder: reorderAllowed ? reorder : null,
       openInvoice,
       markAsSpam,
       invoiceTarget,

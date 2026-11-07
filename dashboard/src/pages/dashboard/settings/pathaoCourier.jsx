@@ -102,6 +102,12 @@ export default function PathaoCourierSettingsPage() {
     }
   }, [configData]);
 
+  // Store names load on their own once Pathao is connected, so the default store shows by name
+  useEffect(() => {
+    if (configData?.clientId && configData?.hasPassword && stores.length === 0) fetchStores(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configData]);
+
   // Handle environment toggle
   const handleEnvChange = (newEnv) => {
     setEnvironment(newEnv);
@@ -138,6 +144,7 @@ export default function PathaoCourierSettingsPage() {
     onSuccess: () => {
       toast.success('Pathao Courier settings updated successfully');
       queryClient.invalidateQueries({ queryKey: ['pathao-courier-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['pathao-config-sync'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to save Pathao settings');
@@ -171,19 +178,20 @@ export default function PathaoCourierSettingsPage() {
   });
 
   // Fetch stores list
-  const fetchStores = async () => {
+  const fetchStores = async (quiet = false) => {
     try {
       setLoadingStores(true);
       const res = await apiClient.get('/api/v1/courier/pathao/stores');
       const storeList = res.data?.data || [];
       setStores(storeList);
+      if (quiet) return;
       if (storeList.length === 0) {
         toast.info('No stores found on your Pathao merchant account.');
       } else {
         toast.success(`Loaded ${storeList.length} store(s) from Pathao.`);
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to fetch Pathao stores.');
+      if (!quiet) toast.error(err.response?.data?.message || 'Failed to fetch Pathao stores.');
     } finally {
       setLoadingStores(false);
     }
@@ -489,13 +497,13 @@ export default function PathaoCourierSettingsPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label htmlFor="storeId" className="text-xs font-semibold">
-                    Default Pickup Store ID <span className="text-destructive">*</span>
+                    Default Pickup Store <span className="text-destructive">*</span>
                   </label>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={fetchStores}
+                    onClick={() => fetchStores()}
                     disabled={loadingStores}
                     className="h-7 px-2 text-xs text-primary gap-1"
                   >
@@ -507,6 +515,7 @@ export default function PathaoCourierSettingsPage() {
                 {stores.length > 0 ? (
                   <Select
                     value={storeId}
+                    items={stores.map((st) => ({ value: String(st.store_id), label: st.store_name || `Store #${st.store_id}` }))}
                     onValueChange={(val) => {
                       setStoreId(val);
                       const s = stores.find((st) => String(st.store_id) === String(val));
@@ -516,23 +525,22 @@ export default function PathaoCourierSettingsPage() {
                       }
                     }}
                   >
-                    <SelectTrigger className="h-9 text-xs">
+                    <SelectTrigger className="h-9 w-full min-w-0 text-xs">
                       <SelectValue placeholder="Select Pickup Store">
                         {(val) => {
                           if (!val) return null;
                           const s = stores.find((st) => String(st.store_id) === String(val));
-                          return s
-                            ? `${s.store_name} (${s.store_address || ''})`
-                            : storeName
-                            ? `${storeName} (${storeAddress || val})`
-                            : `Store #${val}`;
+                          return <span className="truncate">{s ? `${s.store_name} (ID: ${s.store_id})` : storeName ? `${storeName} (ID: ${val})` : `Store #${val}`}</span>;
                         }}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {stores.map((st) => (
                         <SelectItem key={st.store_id} value={String(st.store_id)}>
-                          {st.store_name} (ID: {st.store_id}) — {st.store_address}
+                          <span className="flex flex-col">
+                            <span>{st.store_name} (ID: {st.store_id}){st.is_active === 0 ? ' · inactive' : ''}</span>
+                            <span className="text-[11px] text-muted-foreground">{st.store_address}</span>
+                          </span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -553,6 +561,9 @@ export default function PathaoCourierSettingsPage() {
                     Selected: <strong className="text-foreground">{storeName}</strong> ({storeAddress || 'No address'})
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground">
+                  Every Pathao parcel, price check and Same Day order uses this store. There is no store picker anywhere else, so save here to change it.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">

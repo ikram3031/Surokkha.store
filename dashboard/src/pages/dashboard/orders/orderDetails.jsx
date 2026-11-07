@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useOrder } from "@/hooks/use-orders";
 import { useAuth } from "@/lib/auth-context";
+import { canReorder, reorderPath } from "@/utils/reorder";
 import { useProducts } from "@/hooks/use-products";
 import { useItems } from "@/hooks/use-items";
 import { useCategories, useBrands } from "@/lib/category-cache";
@@ -57,6 +58,7 @@ import {
   FileText,
   PhoneCall,
   Copy,
+  RotateCcw,
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
@@ -663,6 +665,11 @@ const OrderDetailsPage = () => {
                 buttonVariant="outline"
                 buttonClassName="h-9 text-xs bg-background shadow-sm"
               />
+              {canReorder(user?.role) && (
+                <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={() => navigate(reorderPath(order))}>
+                  <RotateCcw className="h-4 w-4 text-muted-foreground" /> Reorder
+                </Button>
+              )}
               <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={handleOpenInvoice}>
                 <FileText className="h-4 w-4 text-muted-foreground" /> Print Invoice
               </Button>
