@@ -26,6 +26,7 @@ export async function getPathaoConfig() {
     defaultItemWeight: pathao.defaultItemWeight ?? 0.5,
     defaultItemType: pathao.defaultItemType ?? 2, // 1: Document, 2: Parcel
     defaultDeliveryType: pathao.defaultDeliveryType ?? 48, // 48: Normal (48 hrs), 12: On Demand
+    sameDayDeliveryType: pathao.sameDayDeliveryType ?? (Number(process.env.PATHAO_SAME_DAY_DELIVERY_TYPE) || 12),
     isEnabled: pathao.isEnabled ?? true,
     accessToken: pathao.accessToken || "",
     refreshToken: pathao.refreshToken || "",

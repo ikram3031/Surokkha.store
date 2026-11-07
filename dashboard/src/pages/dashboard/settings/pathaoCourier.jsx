@@ -46,6 +46,7 @@ export default function PathaoCourierSettingsPage() {
   const [defaultItemWeight, setDefaultItemWeight] = useState(0.5);
   const [defaultItemType, setDefaultItemType] = useState(2); // 2 = Parcel
   const [defaultDeliveryType, setDefaultDeliveryType] = useState(48); // 48 = Normal
+  const [sameDayDeliveryType, setSameDayDeliveryType] = useState(12);
   const [isEnabled, setIsEnabled] = useState(true);
 
   // Available stores list
@@ -96,6 +97,7 @@ export default function PathaoCourierSettingsPage() {
       setDefaultItemWeight(configData.defaultItemWeight ?? 0.5);
       setDefaultItemType(configData.defaultItemType ?? 2);
       setDefaultDeliveryType(configData.defaultDeliveryType ?? 48);
+      setSameDayDeliveryType(configData.sameDayDeliveryType ?? 12);
       setIsEnabled(configData.isEnabled !== false);
     }
   }, [configData]);
@@ -127,6 +129,7 @@ export default function PathaoCourierSettingsPage() {
         defaultItemWeight: Number(defaultItemWeight) || 0.5,
         defaultItemType: Number(defaultItemType) || 2,
         defaultDeliveryType: Number(defaultDeliveryType) || 48,
+        sameDayDeliveryType: Number(sameDayDeliveryType) || 12,
         isEnabled,
       };
       const res = await apiClient.put('/api/v1/courier/pathao/config', payload);
@@ -606,6 +609,23 @@ export default function PathaoCourierSettingsPage() {
                       <SelectItem value="12">On Demand (Same / Next Day)</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="sameDayDeliveryType" className="text-xs font-semibold">
+                    Same Day delivery_type code
+                  </label>
+                  <Input
+                    id="sameDayDeliveryType"
+                    type="number"
+                    min="1"
+                    value={sameDayDeliveryType}
+                    onChange={(e) => setSameDayDeliveryType(e.target.value)}
+                    className="h-9 text-xs font-mono"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Used by Pathao → Same Day Order. Pathao documents only 48 (Normal) and 12 (On Demand).
+                  </p>
                 </div>
               </div>
             </CardContent>

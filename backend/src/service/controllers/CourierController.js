@@ -59,6 +59,7 @@ export const getPathaoSettings = async (req, res, next) => {
         defaultItemWeight: config.defaultItemWeight,
         defaultItemType: config.defaultItemType,
         defaultDeliveryType: config.defaultDeliveryType,
+        sameDayDeliveryType: config.sameDayDeliveryType,
         isEnabled: config.isEnabled,
         tokenExpiresAt: config.tokenExpiresAt,
         lastTestedAt: config.lastTestedAt,
@@ -92,6 +93,7 @@ export const updatePathaoSettings = async (req, res, next) => {
       defaultItemWeight = 0.5,
       defaultItemType = 2,
       defaultDeliveryType = 48,
+      sameDayDeliveryType,
       isEnabled = true,
     } = req.body || {};
 
@@ -116,6 +118,7 @@ export const updatePathaoSettings = async (req, res, next) => {
       "pathaoCourier.defaultItemType": Number(defaultItemType) || 2,
       "pathaoCourier.defaultDeliveryType": Number(defaultDeliveryType) || 48,
       "pathaoCourier.isEnabled": Boolean(isEnabled),
+      ...(Number(sameDayDeliveryType) > 0 ? { "pathaoCourier.sameDayDeliveryType": Number(sameDayDeliveryType) } : {}),
       updatedBy: req.user?.userId || null,
     };
 
@@ -350,6 +353,7 @@ export const createOrderConsignmentController = async (req, res, next) => {
       merchant_order_id,
       recipient_name,
       recipient_phone,
+      recipient_secondary_phone,
       recipient_address,
       recipient_city,
       recipient_zone,
@@ -362,6 +366,7 @@ export const createOrderConsignmentController = async (req, res, next) => {
       amount_to_collect = 0,
       item_description = "",
       updateOrderStatus = "shipped", // update status to 'shipped' by default
+      keepItemDescription = false, // manual create page sends the description the user typed
     } = req.body;
 
     const config = await getPathaoConfig();
@@ -396,9 +401,21 @@ export const createOrderConsignmentController = async (req, res, next) => {
       });
     }
 
+    let cleanSecondary = String(recipient_secondary_phone || "").replace(/\D/g, "");
+    if (cleanSecondary.startsWith("880")) cleanSecondary = cleanSecondary.slice(2);
+    if (cleanSecondary && !cleanSecondary.startsWith("0")) cleanSecondary = `0${cleanSecondary}`;
+    if (cleanSecondary && cleanSecondary.length !== 11) {
+      return res.status(400).json({
+        status: "error",
+        message: `Secondary phone number "${recipient_secondary_phone}" is invalid. Must be a valid 11-digit BD number.`,
+      });
+    }
+
+    const baseMerchantOrderId = String(merchant_order_id || orderId || "").trim();
+    const randomSuffix = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     const payload = {
       store_id: Number(effectiveStoreId),
-      merchant_order_id: `${String(merchant_order_id || orderId || "").trim()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+      merchant_order_id: baseMerchantOrderId ? `${baseMerchantOrderId}-${randomSuffix}` : `MAN-${Date.now()}`,
       recipient_name: String(recipient_name).trim(),
       recipient_phone: cleanPhone,
       recipient_address: String(recipient_address).trim(),
@@ -416,9 +433,12 @@ export const createOrderConsignmentController = async (req, res, next) => {
     if (recipient_area) {
       payload.recipient_area = Number(recipient_area);
     }
+    if (cleanSecondary && cleanSecondary !== cleanPhone) {
+      payload.recipient_secondary_phone = cleanSecondary;
+    }
 
     const clientKey = (process.env.CLIENT_NAME || "surokkha").toLowerCase().trim();
-    if (clientKey === "surokkha") {
+    if (clientKey === "surokkha" && !(keepItemDescription && String(item_description || "").trim())) {
       const randomNum = Math.floor(Math.random() * 10) + 1;
       payload.item_description = `Gift combo${randomNum}`;
     }

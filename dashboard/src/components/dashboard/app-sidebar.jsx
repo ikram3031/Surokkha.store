@@ -14,6 +14,7 @@ import {
   ListOrdered,
   PlusCircle,
   Package,
+  Zap,
   Receipt,
   Ticket,
   Tag,
@@ -407,6 +408,9 @@ export const AppSidebar = ({ ...props }) => {
               </NavSub>
               <NavSub to="/dashboard/pathao/parcels" active={pathname === "/dashboard/pathao/parcels"} icon={Package} iconClass="text-red-500">
                 {t("nav.pathao_parcels", "Parcels")}
+              </NavSub>
+              <NavSub to="/dashboard/pathao/same-day" active={pathname === "/dashboard/pathao/same-day"} icon={Zap} iconClass="text-red-500">
+                {t("nav.pathao_same_day", "Same Day Order")}
               </NavSub>
               {canManagePathaoWebhook && (
                 <NavSub to="/dashboard/pathao/webhook" active={pathname === "/dashboard/pathao/webhook"} icon={Webhook} iconClass="text-red-500">

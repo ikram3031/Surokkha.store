@@ -343,6 +343,11 @@ const storeSettingsSchema = new Schema(
         type: Number,
         default: 48,
       },
+      // Pathao's delivery_type for Same Day; only 48/12 are documented, so it stays editable
+      sameDayDeliveryType: {
+        type: Number,
+        default: 12,
+      },
       isEnabled: {
         type: Boolean,
         default: true,

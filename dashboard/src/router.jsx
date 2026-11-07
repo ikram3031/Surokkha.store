@@ -75,6 +75,7 @@ import SpamList from './pages/dashboard/orders/SpamList';
 import PathaoOverviewPage from './pages/dashboard/orders/pathao/PathaoOverviewPage';
 import PathaoParcelsPage from './pages/dashboard/orders/pathao/PathaoParcelsPage';
 import PathaoWebhookPage from './pages/dashboard/orders/pathao/PathaoWebhookPage';
+import PathaoSameDayPage from './pages/dashboard/orders/pathao/PathaoSameDayPage';
 
 // Accounts
 import BalanceOverview from './pages/dashboard/accounts/balanceOverview';
@@ -172,6 +173,14 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="orders.pathao">
                 <PathaoParcelsPage />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'same-day',
+            element: (
+              <RoleGuard menuKey="orders.pathao">
+                <PathaoSameDayPage />
               </RoleGuard>
             ),
           },
