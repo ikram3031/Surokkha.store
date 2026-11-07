@@ -234,3 +234,12 @@ export const plexiviaCancelReceipt = async (req, res, next) => {
     return receiptFail(res, next, error);
   }
 };
+
+// Lets the dashboard stock item handlers serve Plexivia: the actor is "Plexivia: <user>" and replies carry success
+export const asPlexiviaStaff = (req, res, next) => {
+  const who = String(req.headers["x-plexivia-actor"] || "").trim().slice(0, 80);
+  req.user = { name: who ? `Plexivia: ${who}` : "Plexivia", role: "Plexivia" };
+  const send = res.json.bind(res);
+  res.json = (body) => send(body && typeof body === "object" && body.status ? { ...body, success: body.status === "success" } : body);
+  return next();
+};

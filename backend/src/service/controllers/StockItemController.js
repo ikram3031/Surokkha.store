@@ -20,7 +20,11 @@ const cleanItem = (body = {}, partial = false) => {
     out.shortName = shortName;
   }
   if (body.name !== undefined) out.name = String(body.name || "").trim().slice(0, 160);
-  if (body.unit !== undefined) out.unit = String(body.unit || "pcs").trim().slice(0, 20) || "pcs";
+  if (body.unit !== undefined) {
+    const unit = String(body.unit || "pcs").trim().slice(0, 20) || "pcs";
+    if (/^\d+(\.\d+)?$/.test(unit)) return "Unit must be a word like pcs. Put how many come in a packet under Pack sizes.";
+    out.unit = unit;
+  }
   if (body.notes !== undefined) out.notes = String(body.notes || "").trim().slice(0, 500);
   if (body.reorderLevel !== undefined) {
     const r = Number(body.reorderLevel);

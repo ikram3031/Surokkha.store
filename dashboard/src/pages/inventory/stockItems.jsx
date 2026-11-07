@@ -23,6 +23,16 @@ const STATUS_FILTERS = [
   { key: 'all', label: 'All' },
 ];
 
+const UNIT_OPTIONS = [
+  { value: 'pcs', label: 'pcs (single piece)' },
+  { value: 'pair', label: 'pair' },
+  { value: 'ml', label: 'ml' },
+  { value: 'g', label: 'g' },
+  { value: 'kg', label: 'kg' },
+  { value: 'litre', label: 'litre' },
+  { value: 'meter', label: 'meter' },
+];
+
 const ADJUST_MODES = [
   { value: 'add', label: 'Add' },
   { value: 'remove', label: 'Remove' },
@@ -50,7 +60,13 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
   const key = open ? item?.id || 'new' : null;
   if (key !== lastKey) {
     setLastKey(key);
-    if (open) setForm(item ? { ...EMPTY_FORM, ...item, packs: item.packs?.length ? item.packs : [] } : EMPTY_FORM);
+    if (open) {
+      setForm(
+        item
+          ? { ...EMPTY_FORM, ...item, unit: UNIT_OPTIONS.some((u) => u.value === item.unit) ? item.unit : 'pcs', packs: item.packs?.length ? item.packs : [] }
+          : EMPTY_FORM
+      );
+    }
   }
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -91,8 +107,11 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
               <Input value={form.shortName} onChange={(e) => set('shortName', e.target.value.toUpperCase())} placeholder="MO" maxLength={40} required />
             </div>
             <div className="space-y-1.5">
-              <Label>Unit</Label>
-              <Input value={form.unit} onChange={(e) => set('unit', e.target.value)} placeholder="pcs" maxLength={20} />
+              <Label>Counted in</Label>
+              <Select value={UNIT_OPTIONS.some((u) => u.value === form.unit) ? form.unit : 'pcs'} onValueChange={(v) => set('unit', v)} items={UNIT_OPTIONS}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>{UNIT_OPTIONS.map((u) => <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div className="col-span-2 space-y-1.5">
               <Label>Full name</Label>
