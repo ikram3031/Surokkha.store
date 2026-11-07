@@ -52,7 +52,6 @@ import {
   HardDrive,
   GalleryHorizontal,
   Newspaper,
-  Boxes,
   Warehouse,
 } from "lucide-react"
 
@@ -449,11 +448,6 @@ export const AppSidebar = ({ ...props }) => {
               {showItems && isAllowed("items.list") && (
                 <NavSub to="/dashboard/items" active={pathname.startsWith("/dashboard/items")} icon={ListOrdered}>
                   {t("nav.item_list", "Item List")}
-                </NavSub>
-              )}
-              {isAllowed("products.list") && (
-                <NavSub to="/dashboard/products/inventory" active={pathname === "/dashboard/products/inventory"} icon={Boxes}>
-                  {t("nav.inventory", "Inventory")}
                 </NavSub>
               )}
               {isAllowed("products.on-sale") && (

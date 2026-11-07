@@ -44,6 +44,22 @@ const ADJUST_MODES = [
 
 const money = (v) => `৳${Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
+// Smallest pack an item is bought in (Packet = 3); costs are shown per this pack, like the purchase receipt
+const mainPack = (packs = []) => [...packs].filter((p) => p.unitsPerPack > 1).sort((a, b) => a.unitsPerPack - b.unitsPerPack)[0];
+
+// Cost per pack first (৳70 / Packet), cost per single piece under it (৳23.33 / pcs)
+const CostCell = ({ cost, packs = [], unit }) => {
+  const pack = mainPack(packs);
+  if (!cost) return money(0);
+  if (!pack) return <div>{money(cost)} <span className="text-xs text-muted-foreground">/ {unit}</span></div>;
+  return (
+    <>
+      <div className="font-medium">{money(cost * pack.unitsPerPack)} <span className="text-xs font-normal text-muted-foreground">/ {pack.label}</span></div>
+      <div className="text-xs text-muted-foreground">{money(cost)} / {unit}</div>
+    </>
+  );
+};
+
 // Shows pieces as the biggest pack plus loose pieces, e.g. 53 pcs → "5 Packet + 3 pcs"
 export const packBreakdown = (quantity, packs = [], unit = 'pcs') => {
   const big = [...packs].filter((p) => p.unitsPerPack > 1 && p.unitsPerPack <= quantity).sort((a, b) => b.unitsPerPack - a.unitsPerPack)[0];
@@ -308,11 +324,11 @@ const StockItemsPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Short name</TableHead>
-                <TableHead>Pack sizes</TableHead>
                 <TableHead className="text-right">In stock</TableHead>
-                <TableHead className="text-right">Avg cost</TableHead>
-                <TableHead className="text-right">Last cost</TableHead>
-                <TableHead className="text-right">Value</TableHead>
+                <TableHead>Pack size</TableHead>
+                <TableHead className="text-right">Avg cost per pack</TableHead>
+                <TableHead className="text-right">Last cost per pack</TableHead>
+                <TableHead className="text-right">Stock value</TableHead>
                 <TableHead className="w-28" />
               </TableRow>
             </TableHeader>
@@ -328,18 +344,19 @@ const StockItemsPage = () => {
                     <div className="font-semibold">{r.shortName}</div>
                     {r.name && <div className="text-xs text-muted-foreground">{r.name}</div>}
                   </TableCell>
-                  <TableCell className="text-sm">
-                    {r.packs.length ? r.packs.map((p) => `${p.label} = ${p.unitsPerPack}`).join(', ') : <span className="text-muted-foreground">units only</span>}
-                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {r.isActive && r.isLow && <Badge variant="outline" className="border-amber-500 text-amber-600">Low</Badge>}
-                      <span className={`font-semibold ${r.quantity < 0 ? 'text-red-600' : ''}`}>{r.quantity} {r.unit}</span>
+                      {r.isActive && r.isOut && <Badge variant="outline" className="border-red-500 text-red-600">Out</Badge>}
+                      {r.isActive && r.isLow && !r.isOut && <Badge variant="outline" className="border-amber-500 text-amber-600">Low</Badge>}
+                      <span className={`font-semibold ${r.quantity < 0 ? 'text-red-600' : ''}`}>{packBreakdown(r.quantity, r.packs, r.unit) || `${r.quantity} ${r.unit}`}</span>
                     </div>
-                    {packBreakdown(r.quantity, r.packs, r.unit) && <div className="text-xs text-muted-foreground">{packBreakdown(r.quantity, r.packs, r.unit)}</div>}
+                    {packBreakdown(r.quantity, r.packs, r.unit) && <div className="text-xs text-muted-foreground">{r.quantity} {r.unit}</div>}
                   </TableCell>
-                  <TableCell className="text-right">{money(r.avgCost)}</TableCell>
-                  <TableCell className="text-right">{money(r.lastCost)}</TableCell>
+                  <TableCell className="text-sm">
+                    {r.packs.length ? r.packs.map((p) => `1 ${p.label} = ${p.unitsPerPack} ${r.unit}`).join(', ') : <span className="text-muted-foreground">units only</span>}
+                  </TableCell>
+                  <TableCell className="text-right"><CostCell cost={r.avgCost} packs={r.packs} unit={r.unit} /></TableCell>
+                  <TableCell className="text-right"><CostCell cost={r.lastCost} packs={r.packs} unit={r.unit} /></TableCell>
                   <TableCell className="text-right">{money(r.stockValue)}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">

@@ -5,6 +5,8 @@ import { logStockMovement } from "../../common/services/stock.service.js";
 
 const LOCK_STALE_MS = 60 * 1000;
 const round2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
+// Per-unit costs keep 6 decimals so quantity × cost adds back up to the money paid (9 × 23.333333 = ৳210, not ৳209.97)
+const round6 = (n) => Math.round((Number(n) || 0) * 1e6) / 1e6;
 
 export class ReceiptError extends Error {
   constructor(message, status = 400) {
@@ -22,8 +24,8 @@ export const applyStockItemDelta = async (id, delta, unitCost = null) => {
   if (delta > 0 && unitCost !== null && Number.isFinite(unitCost)) {
     const base = Math.max(0, qtyBefore);
     const blended = base + delta > 0 ? (base * (Number(before.avgCost) || 0) + delta * unitCost) / (base + delta) : unitCost;
-    set.avgCost = round2(blended);
-    set.lastCost = round2(unitCost);
+    set.avgCost = round6(blended);
+    set.lastCost = round6(unitCost);
   }
   const doc = await StockItemModel.findByIdAndUpdate(
     id,
@@ -52,7 +54,7 @@ const normaliseLines = async (rawLines) => {
     const units = Math.round(packs * unitsPerPack);
     if (units <= 0) throw new ReceiptError("Each line must add at least one unit.");
     const total = round2(l.total ?? Number(l.unitCost || 0) * units);
-    const unitCost = round2(Number(l.unitCost) || (units ? total / units : 0));
+    const unitCost = round6(Number(l.unitCost) || (units ? total / units : 0));
     const item = byId.get(String(l.stockItemId));
     return {
       stockItemId: item._id,

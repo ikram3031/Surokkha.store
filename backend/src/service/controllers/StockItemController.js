@@ -50,24 +50,33 @@ const cleanItem = (body = {}, partial = false) => {
   return out;
 };
 
+// Older items could have a number saved as the unit (e.g. "10"); those are counted in pieces
+const unitOf = (u) => (u && !/^\d+(\.\d+)?$/.test(String(u).trim()) ? u : "pcs");
+
 // Stock item as shown in the dashboard and sent to Plexivia
-export const toStockItemView = (d) => ({
-  id: String(d._id),
-  shortName: d.shortName,
-  name: d.name || "",
-  unit: d.unit || "pcs",
-  packs: d.packs || [],
-  quantity: Number(d.quantity) || 0,
-  avgCost: Number(d.avgCost) || 0,
-  lastCost: Number(d.lastCost) || 0,
-  stockValue: round2(Math.max(0, Number(d.quantity) || 0) * (Number(d.avgCost) || 0)),
-  reorderLevel: Number(d.reorderLevel) || 0,
-  isLow: (Number(d.quantity) || 0) <= (Number(d.reorderLevel) || 0),
-  isActive: d.isActive !== false,
-  notes: d.notes || "",
-  updatedAt: d.updatedAt,
-  createdAt: d.createdAt,
-});
+export const toStockItemView = (d) => {
+  const quantity = Number(d.quantity) || 0;
+  const reorderLevel = Number(d.reorderLevel) || 0;
+  return {
+    id: String(d._id),
+    shortName: d.shortName,
+    name: d.name || "",
+    unit: unitOf(d.unit),
+    packs: d.packs || [],
+    quantity,
+    avgCost: Number(d.avgCost) || 0,
+    lastCost: Number(d.lastCost) || 0,
+    stockValue: round2(Math.max(0, quantity) * (Number(d.avgCost) || 0)),
+    reorderLevel,
+    isOut: quantity <= 0,
+    // Out of stock always counts as low; otherwise only when a reorder level is set
+    isLow: quantity <= 0 || (reorderLevel > 0 && quantity <= reorderLevel),
+    isActive: d.isActive !== false,
+    notes: d.notes || "",
+    updatedAt: d.updatedAt,
+    createdAt: d.createdAt,
+  };
+};
 
 // GET /stock-items — list with search, status filter and totals
 export const listStockItems = async (req, res, next) => {
