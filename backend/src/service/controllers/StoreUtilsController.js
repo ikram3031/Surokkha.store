@@ -1,144 +1,106 @@
 import { Types } from "mongoose";
 import { StoreUtilsModel } from "../../common/models/storeUtils.model.js";
 import { ProductModel } from "../../common/models/product.model.js";
+import { ItemModel } from "../../common/models/item.model.js";
 import { serializeProduct } from "../../common/utils/productUtils.js";
 
+const AVAILABLE_MATCH = {
+  isActive: true,
+  stockStatus: { $nin: ["outofstock", "out_of_stock"] },
+};
+
 /**
- * READ: Retrieves the store utility showcases (featured and best seller products).
+ * Showcase arrays hold ObjectIds that may point to either a Product or an Item.
+ * Loads both collections, keeps only active in-stock docs, and preserves the saved order.
+ */
+const resolveShowcase = async (ids) => {
+  const idList = (Array.isArray(ids) ? ids : []).map((id) => String(id?._id || id)).filter(Boolean);
+  if (idList.length === 0) return [];
+
+  const match = { _id: { $in: idList }, ...AVAILABLE_MATCH };
+  const [products, items] = await Promise.all([
+    ProductModel.find(match).populate("categories").lean(),
+    ItemModel.find(match).populate("categories").lean(),
+  ]);
+
+  const byId = new Map();
+  products.forEach((p) => byId.set(String(p._id), serializeProduct(p)));
+  items.forEach((i) => byId.set(String(i._id), serializeProduct(i, "en", "item")));
+
+  return idList.map((id) => byId.get(id)).filter(Boolean);
+};
+
+// Falls back to tag-matched products when a showcase is empty, and saves them as the new list
+const tagFallback = async (field, orConditions) => {
+  const tagged = await ProductModel.find({ ...AVAILABLE_MATCH, $or: orConditions })
+    .populate("categories")
+    .limit(30)
+    .lean();
+
+  if (tagged.length > 0) {
+    await StoreUtilsModel.updateOne(
+      { key: "default" },
+      { $set: { [field]: tagged.map((p) => p._id) } }
+    );
+  }
+  return tagged.map((p) => serializeProduct(p));
+};
+
+/**
+ * READ: Retrieves the store utility showcases (featured, best seller and on-sale).
  * Path: GET /api/v1/store-utils
  */
 export const getStoreUtils = async (req, res, next) => {
   try {
-    let storeUtils = await StoreUtilsModel.findOne({ key: "default" })
-      .populate({
-        path: "featured",
-        match: {
-          isActive: true,
-          stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        },
-        populate: { path: "categories" },
-      })
-      .populate({
-        path: "bestSeller",
-        match: {
-          isActive: true,
-          stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        },
-        populate: { path: "categories" },
-      })
-      .populate({
-        path: "onSale",
-        match: {
-          isActive: true,
-          stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        },
-        populate: { path: "categories" },
-      })
-      .lean();
+    let storeUtils = await StoreUtilsModel.findOne({ key: "default" }).lean();
 
     if (!storeUtils) {
-      storeUtils = await StoreUtilsModel.create({
+      const created = await StoreUtilsModel.create({
         key: "default",
         featured: [],
         bestSeller: [],
         onSale: [],
       });
-      storeUtils = storeUtils.toObject ? storeUtils.toObject() : storeUtils;
+      storeUtils = created.toObject();
     }
 
-    const isAvailableProduct = (p) => {
-      if (!p || typeof p !== "object") return false;
-      if (p.isActive === false) return false;
-      if (p.stockStatus === "outofstock" || p.stockStatus === "out_of_stock") return false;
-      return true;
-    };
-
-    let featuredList = Array.isArray(storeUtils.featured) ? storeUtils.featured.filter(isAvailableProduct) : [];
-    if (featuredList.length === 0) {
-      const taggedFeatured = await ProductModel.find({
-        isActive: true,
-        stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        $or: [
-          { tags: "featured" },
-          { tags: "Featured" },
-          { tags: { $regex: /^featured$/i } },
-        ],
-      })
-        .populate("categories")
-        .limit(30)
-        .lean();
-
-      if (taggedFeatured.length > 0) {
-        featuredList = taggedFeatured;
-        await StoreUtilsModel.updateOne(
-          { key: "default" },
-          { $set: { featured: taggedFeatured.map((p) => p._id) } }
-        );
-      }
+    let featured = await resolveShowcase(storeUtils.featured);
+    if (featured.length === 0) {
+      featured = await tagFallback("featured", [
+        { tags: "featured" },
+        { tags: "Featured" },
+        { tags: { $regex: /^featured$/i } },
+      ]);
     }
 
-    let bestSellerList = Array.isArray(storeUtils.bestSeller) ? storeUtils.bestSeller.filter(isAvailableProduct) : [];
-    if (bestSellerList.length === 0) {
-      const taggedBestSeller = await ProductModel.find({
-        isActive: true,
-        stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        $or: [
-          { tags: "best-seller" },
-          { tags: "bestseller" },
-          { tags: "Best Seller" },
-          { tags: { $regex: /^best-?seller$/i } },
-        ],
-      })
-        .populate("categories")
-        .limit(30)
-        .lean();
-
-      if (taggedBestSeller.length > 0) {
-        bestSellerList = taggedBestSeller;
-        await StoreUtilsModel.updateOne(
-          { key: "default" },
-          { $set: { bestSeller: taggedBestSeller.map((p) => p._id) } }
-        );
-      }
+    let bestSeller = await resolveShowcase(storeUtils.bestSeller);
+    if (bestSeller.length === 0) {
+      bestSeller = await tagFallback("bestSeller", [
+        { tags: "best-seller" },
+        { tags: "bestseller" },
+        { tags: "Best Seller" },
+        { tags: { $regex: /^best-?seller$/i } },
+      ]);
     }
 
-    let onSaleList = Array.isArray(storeUtils.onSale) ? storeUtils.onSale.filter(isAvailableProduct) : [];
-    if (onSaleList.length === 0) {
-      const taggedOnSale = await ProductModel.find({
-        isActive: true,
-        stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        $or: [
-          { salePrice: { $gt: 0 } },
-          { offerPrice: { $gt: 0 } },
-          { tags: "sale" },
-          { tags: "on-sale" },
-          { tags: "Sale" },
-          { tags: { $regex: /^on-?sale$/i } },
-        ],
-      })
-        .populate("categories")
-        .limit(30)
-        .lean();
-
-      if (taggedOnSale.length > 0) {
-        onSaleList = taggedOnSale;
-        await StoreUtilsModel.updateOne(
-          { key: "default" },
-          { $set: { onSale: taggedOnSale.map((p) => p._id) } }
-        );
-      }
+    let onSale = await resolveShowcase(storeUtils.onSale);
+    if (onSale.length === 0) {
+      onSale = await tagFallback("onSale", [
+        { salePrice: { $gt: 0 } },
+        { offerPrice: { $gt: 0 } },
+        { tags: "sale" },
+        { tags: "on-sale" },
+        { tags: "Sale" },
+        { tags: { $regex: /^on-?sale$/i } },
+      ]);
     }
-
-    const featuredProducts = featuredList.filter(isAvailableProduct).map(serializeProduct);
-    const bestSellerProducts = bestSellerList.filter(isAvailableProduct).map(serializeProduct);
-    const onSaleProducts = onSaleList.filter(isAvailableProduct).map(serializeProduct);
 
     res.json({
       status: "success",
       data: {
-        featured: featuredProducts,
-        bestSeller: bestSellerProducts,
-        onSale: onSaleProducts,
+        featured,
+        bestSeller,
+        onSale,
         updatedAt: storeUtils.updatedAt || null,
       },
     });
@@ -147,8 +109,29 @@ export const getStoreUtils = async (req, res, next) => {
   }
 };
 
+// Accepts ObjectIds, objects with id/_id/did, or bare did strings (looked up in Products, then Items)
+const resolveIds = async (raw) => {
+  const arr = Array.isArray(raw) ? raw : [raw];
+  const resolved = [];
+  for (const entry of arr) {
+    const val = typeof entry === "object" && entry !== null ? entry.id || entry._id || entry.did : entry;
+    if (!val) continue;
+
+    if (Types.ObjectId.isValid(val)) {
+      resolved.push(new Types.ObjectId(val));
+    } else if (typeof val === "string") {
+      const did = val.trim();
+      const doc =
+        (await ProductModel.findOne({ did }).select("_id").lean()) ||
+        (await ItemModel.findOne({ did }).select("_id").lean());
+      if (doc?._id) resolved.push(doc._id);
+    }
+  }
+  return resolved;
+};
+
 /**
- * UPDATE: Updates the store utility showcases with arrays of Product ObjectIDs.
+ * UPDATE: Updates the store utility showcases with arrays of Product or Item ObjectIDs.
  * Path: PUT /api/v1/store-utils
  */
 export const updateStoreUtils = async (req, res, next) => {
@@ -156,79 +139,14 @@ export const updateStoreUtils = async (req, res, next) => {
     const body = req.body || {};
     const updateData = {};
 
-    // Validate and sanitize featured product ObjectIDs (support ObjectId, id, and did)
     if (body.featured !== undefined) {
-      const rawFeatured = Array.isArray(body.featured)
-        ? body.featured
-        : [body.featured];
-
-      const resolvedFeaturedIds = [];
-      for (const item of rawFeatured) {
-        const val = typeof item === "object" && item !== null ? item.id || item._id || item.did : item;
-        if (!val) continue;
-
-        if (Types.ObjectId.isValid(val)) {
-          resolvedFeaturedIds.push(new Types.ObjectId(val));
-        } else if (typeof val === "string") {
-          const pDoc = await ProductModel.findOne({ did: val.trim() }).select("_id").lean();
-          if (pDoc?._id) {
-            resolvedFeaturedIds.push(pDoc._id);
-          }
-        }
-      }
-
-      updateData.featured = resolvedFeaturedIds;
+      updateData.featured = await resolveIds(body.featured);
     }
-
-    // Validate and sanitize bestSeller product ObjectIDs (support ObjectId, id, and did)
     if (body.bestSeller !== undefined || body.best_seller !== undefined) {
-      const rawBestSeller =
-        body.bestSeller !== undefined ? body.bestSeller : body.best_seller;
-      const rawBestSellerArr = Array.isArray(rawBestSeller)
-        ? rawBestSeller
-        : [rawBestSeller];
-
-      const resolvedBestSellerIds = [];
-      for (const item of rawBestSellerArr) {
-        const val = typeof item === "object" && item !== null ? item.id || item._id || item.did : item;
-        if (!val) continue;
-
-        if (Types.ObjectId.isValid(val)) {
-          resolvedBestSellerIds.push(new Types.ObjectId(val));
-        } else if (typeof val === "string") {
-          const pDoc = await ProductModel.findOne({ did: val.trim() }).select("_id").lean();
-          if (pDoc?._id) {
-            resolvedBestSellerIds.push(pDoc._id);
-          }
-        }
-      }
-
-      updateData.bestSeller = resolvedBestSellerIds;
+      updateData.bestSeller = await resolveIds(body.bestSeller !== undefined ? body.bestSeller : body.best_seller);
     }
-
     if (body.onSale !== undefined || body.on_sale !== undefined) {
-      const rawOnSale =
-        body.onSale !== undefined ? body.onSale : body.on_sale;
-      const rawOnSaleArr = Array.isArray(rawOnSale)
-        ? rawOnSale
-        : [rawOnSale];
-
-      const resolvedOnSaleIds = [];
-      for (const item of rawOnSaleArr) {
-        const val = typeof item === "object" && item !== null ? item.id || item._id || item.did : item;
-        if (!val) continue;
-
-        if (Types.ObjectId.isValid(val)) {
-          resolvedOnSaleIds.push(new Types.ObjectId(val));
-        } else if (typeof val === "string") {
-          const pDoc = await ProductModel.findOne({ did: val.trim() }).select("_id").lean();
-          if (pDoc?._id) {
-            resolvedOnSaleIds.push(pDoc._id);
-          }
-        }
-      }
-
-      updateData.onSale = resolvedOnSaleIds;
+      updateData.onSale = await resolveIds(body.onSale !== undefined ? body.onSale : body.on_sale);
     }
 
     if (req.user?.userId || req.user?.id) {
@@ -239,59 +157,21 @@ export const updateStoreUtils = async (req, res, next) => {
       { key: "default" },
       { $set: updateData },
       { new: true, upsert: true }
-    )
-      .populate({
-        path: "featured",
-        match: {
-          isActive: true,
-          stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        },
-        populate: { path: "categories" },
-      })
-      .populate({
-        path: "bestSeller",
-        match: {
-          isActive: true,
-          stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        },
-        populate: { path: "categories" },
-      })
-      .populate({
-        path: "onSale",
-        match: {
-          isActive: true,
-          stockStatus: { $nin: ["outofstock", "out_of_stock"] },
-        },
-        populate: { path: "categories" },
-      })
-      .lean();
+    ).lean();
 
-    const isAvailableProduct = (p) => {
-      if (!p || typeof p !== "object") return false;
-      if (p.isActive === false) return false;
-      if (p.stockStatus === "outofstock" || p.stockStatus === "out_of_stock") return false;
-      return true;
-    };
-
-    const featuredProducts = Array.isArray(updatedDoc.featured)
-      ? updatedDoc.featured.filter(isAvailableProduct).map(serializeProduct)
-      : [];
-
-    const bestSellerProducts = Array.isArray(updatedDoc.bestSeller)
-      ? updatedDoc.bestSeller.filter(isAvailableProduct).map(serializeProduct)
-      : [];
-
-    const onSaleProducts = Array.isArray(updatedDoc.onSale)
-      ? updatedDoc.onSale.filter(isAvailableProduct).map(serializeProduct)
-      : [];
+    const [featured, bestSeller, onSale] = await Promise.all([
+      resolveShowcase(updatedDoc.featured),
+      resolveShowcase(updatedDoc.bestSeller),
+      resolveShowcase(updatedDoc.onSale),
+    ]);
 
     res.json({
       status: "success",
       message: "Store utilities updated successfully",
       data: {
-        featured: featuredProducts,
-        bestSeller: bestSellerProducts,
-        onSale: onSaleProducts,
+        featured,
+        bestSeller,
+        onSale,
         updatedAt: updatedDoc.updatedAt || null,
       },
     });

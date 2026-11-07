@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SmartPackHero from './SmartPackHero';
 import UltimateComboHero from './UltimateComboHero';
+import ProtectionComboHero from './ProtectionComboHero';
 import CmsHeroSlide from './CmsHeroSlide';
+import SurokkhaTrialPackHero from './SurokkhaTrialPackHero';
 import { SITE_CONFIG } from '../config/siteConfig';
 
 const API_BASE_URL = SITE_CONFIG.apiBaseUrl.replace(/\/$/, '');
@@ -26,9 +28,9 @@ const SPECIAL_COMBO_SLIDE = {
 
 // Built-in coded banners, shown only when the dashboard has no slider saved (or the API is unreachable).
 const FALLBACK_SLIDES = [
-  { key: 'smart-pack', Component: SmartPackHero },
-  { key: 'special-combo-30', Component: CmsHeroSlide, props: { slide: SPECIAL_COMBO_SLIDE } },
+  { key: 'surokkha-trial-pack', Component: SurokkhaTrialPackHero },
   { key: 'ultimate-combo', Component: UltimateComboHero },
+  { key: 'protection-combo', Component: ProtectionComboHero },
 ];
 
 // Reads the last CMS slider from localStorage so repeat visits render instantly
@@ -50,7 +52,7 @@ const writeCache = (value) => {
 const SWIPE_THRESHOLD_PX = 50;
 
 // Home hero slider. Slides, speed and display options come from the dashboard (CMSContent type "slider").
-export default function HeroBannerSlider() {
+export default function HeroBannerSlider({ useCms = true }) {
   // pos runs 0..slideCount; slideCount is a clone of slide 0 so the last slide keeps sliding forward
   const [pos, setPos] = useState(0);
   const [animate, setAnimate] = useState(true);
@@ -75,7 +77,7 @@ export default function HeroBannerSlider() {
   }, []);
 
   const settings = { ...DEFAULT_SETTINGS, ...(cms?.settings || {}) };
-  const slides = cms
+  const slides = useCms && cms
     ? cms.items.map((item, i) => ({ key: item._id || `cms-${i}`, render: () => <CmsHeroSlide slide={item} /> }))
     : FALLBACK_SLIDES.map(({ key, Component, props }) => ({ key, render: () => <Component {...props} /> }));
 

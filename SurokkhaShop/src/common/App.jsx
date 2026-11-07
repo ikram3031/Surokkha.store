@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useStore, parseRouteFromLocation } from './store/useStore';
-import Navbar from './components/Navbar';
+import Navbar from './components/SurokkhaNavbar';
 import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
 import Toast from './components/Toast';

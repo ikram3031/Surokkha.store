@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore, isSingleQtyItem } from '../store/useStore';
+import { useStore, isSingleQtyItem, TRIAL_PACK_SLUG } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
@@ -50,7 +50,10 @@ export default function ProductDetailView() {
     (Object.values(products).length > 0 && Object.values(products)[0]) ||
     null;
 
-  const product = detailedProduct ? { ...baseProduct, ...detailedProduct } : baseProduct;
+  // The raw detail response can carry brand IDs instead of names; keep the brand already resolved in the store
+  const product = detailedProduct
+    ? { ...baseProduct, ...detailedProduct, brand: baseProduct ? ((baseProduct.brandNames || []).join(', ') || baseProduct.brand) : '' }
+    : baseProduct;
 
   const hasVariants = Boolean(product?.type === 'variant' || product?.type === 'variable' || (Array.isArray(product?.variants) && product.variants.length > 0));
 
@@ -125,9 +128,16 @@ export default function ProductDetailView() {
   const localizedDescription = getLocalizedDescription(product);
   const localizedShortDescription = getLocalizedShortDescription ? getLocalizedShortDescription(product) : '';
   const localizedLongDescription = getLocalizedLongDescription ? getLocalizedLongDescription(product) : localizedDescription;
-  const cleanShort = (localizedShortDescription || '').trim();
-  const cleanLong = (localizedLongDescription || '').replace(/<[^>]*>/g, '').trim();
-  const hasDistinctShortDesc = cleanShort.length > 0 && cleanShort !== cleanLong;
+  // Plain text for comparison: drop tags, decode &amp;, collapse whitespace
+  const toPlain = (html) => (html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+  const cleanShort = toPlain(localizedShortDescription);
+  const cleanLong = toPlain(localizedLongDescription);
+  // Hide the short text when it repeats (or is part of) the full description shown below
+  const hasDistinctShortDesc = cleanShort.length > 0 && cleanShort !== cleanLong && !cleanLong.includes(cleanShort);
   const localizedFeatures = getLocalizedFeatures(product);
 
   // Slug whose detail was already fetched; the effect re-runs when isLoadingProducts toggles, so this stops a refetch loop
@@ -307,7 +317,7 @@ export default function ProductDetailView() {
         <h2 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900">
           {isBn ? 'পণ্যটি বর্তমানে স্টকে নেই' : 'Product Currently Out of Stock'}
         </h2>
-        <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-black max-w-md mx-auto leading-relaxed">
           {isBn
             ? 'দুঃখিত, আপনি যে পণ্যটি দেখছেন তা বর্তমানে আউট অব স্টক রয়েছে। আমাদের স্টকে থাকা অন্যান্য প্রিমিয়াম সামগ্রী দেখতে শপ ভিজিট করুন।'
             : 'Sorry, the product you are looking for is currently out of stock. Please browse our active in-stock collection.'}
@@ -329,8 +339,23 @@ export default function ProductDetailView() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
 
+      {/* Surokkha Trial Pack offer notice: ordering it makes delivery free */}
+      {(product.slug === TRIAL_PACK_SLUG || selectedSlug === TRIAL_PACK_SLUG) && (
+        <div className="flex items-start gap-3 rounded-2xl border-2 border-emerald-500 bg-emerald-50 px-4 py-3">
+          <span className="text-2xl leading-none">🚚</span>
+          <div>
+            <div className="text-sm sm:text-base font-extrabold text-emerald-900">
+              {isBn ? 'এই প্রোডাক্টের সাথে পাবেন ফ্রি হোম ডেলিভারি!' : 'Free home delivery with this product!'}
+            </div>
+            <div className="text-xs sm:text-sm text-black mt-0.5">
+              {isBn ? 'সুরক্ষা ট্রায়াল প্যাক অর্ডার করলে আপনার পুরো অর্ডারে কোনো ডেলিভারি চার্জ লাগবে না।' : 'Order the Surokkha Trial Pack and pay no delivery charge on your whole order.'}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
+      <div className="flex items-center gap-2 !mt-3 text-xs font-medium text-black">
         <button onClick={() => navigateTo('home')} className="hover:text-brand-700 cursor-pointer">
           {t('product_detail.breadcrumb_home', 'Home')}
         </button>
@@ -445,9 +470,9 @@ export default function ProductDetailView() {
         {/* Product Purchase & Info Column */}
         <div className="lg:col-span-6 space-y-6">
           <div>
-            {product.brand && (
+            {product.brand && !/^[0-9a-f]{12,}$/i.test(String(product.brand).trim()) && (
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+                <span className="text-xs font-bold text-black uppercase tracking-wide">
                   {t('brand', 'Brand')}: {product.brand}
                 </span>
               </div>
@@ -456,8 +481,8 @@ export default function ProductDetailView() {
               {localizedName}
             </h1>
             {hasDistinctShortDesc && (
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2.5">
-                {localizedShortDescription}
+              <p className="text-xs sm:text-sm text-black leading-relaxed mt-2.5">
+                {cleanShort}
               </p>
             )}
           </div>
@@ -467,7 +492,7 @@ export default function ProductDetailView() {
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
                 <div>
-                  <span className={`text-3xl sm:text-4xl font-extrabold font-heading ${isOutOfStock ? 'text-slate-500' : 'text-slate-900'}`}>
+                  <span className={`text-3xl sm:text-4xl font-extrabold font-heading ${isOutOfStock ? 'text-black' : 'text-slate-900'}`}>
                     {hasVariants && !anySelected && isRange ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` : (hasVariants && !anySelected && !isRange ? formatPrice(minPrice) : formatPrice(displayOfferPrice))}
                   </span>
                 </div>
@@ -523,11 +548,11 @@ export default function ProductDetailView() {
 
           {/* Detailed Description */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-black mb-2">
               {t('productDescriptionHeading', 'Product Description')}
             </h3>
             <div
-              className="text-xs sm:text-sm text-slate-600 leading-relaxed"
+              className="text-xs sm:text-sm text-black leading-relaxed"
               dangerouslySetInnerHTML={{ __html: localizedLongDescription || localizedDescription }}
             />
           </div>
@@ -589,7 +614,7 @@ export default function ProductDetailView() {
                                 if (resolved) setSelectedImage(resolved);
                               }
                             }}
-                            className={`w-7 h-7 flex items-center justify-center rounded-md font-bold text-base transition-colors ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 hover:text-brand-700'}`}
+                            className={`w-7 h-7 flex items-center justify-center rounded-md font-bold text-base transition-colors ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-black hover:bg-slate-100 hover:text-brand-700'}`}
                           >
                             -
                           </button>
@@ -610,7 +635,7 @@ export default function ProductDetailView() {
                                 if (resolved) setSelectedImage(resolved);
                               }
                             }}
-                            className={`w-7 h-7 flex items-center justify-center rounded-md font-bold text-base transition-colors ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100 hover:text-brand-700'}`}
+                            className={`w-7 h-7 flex items-center justify-center rounded-md font-bold text-base transition-colors ${isOutOfStock ? 'text-slate-400 cursor-not-allowed' : 'text-black hover:bg-slate-100 hover:text-brand-700'}`}
                           >
                             +
                           </button>
@@ -691,7 +716,7 @@ export default function ProductDetailView() {
           </div>
 
           {/* Discreet Packaging Box */}
-          <div className="bg-brand-50/50 border border-brand-100 p-3.5 rounded-xl flex items-center gap-3 text-xs text-slate-700">
+          <div className="bg-brand-50/50 border border-brand-100 p-3.5 rounded-xl flex items-center gap-3 text-xs text-black">
             <svg className="w-5 h-5 text-brand-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
@@ -712,8 +737,8 @@ export default function ProductDetailView() {
             if (activeCombos.length === 0) return null;
 
             return (
-              <div className="pt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
-                <span className="font-medium text-slate-500">
+              <div className="pt-1 text-xs text-black flex flex-wrap items-center gap-2">
+                <span className="font-medium text-black">
                   {isBn ? '💡 বেশি সাশ্রয়ে কম্বো প্যাক খুঁজছেন?' : '💡 Looking for value combo packs?'}
                 </span>
                 {activeCombos.map((cProd, idx) => {
@@ -771,7 +796,7 @@ export default function ProductDetailView() {
               <h2 className="text-lg sm:text-xl font-heading font-extrabold text-slate-900">
                 {isBn ? 'পণ্যের বিস্তারিত স্পেসিফিকেশন' : 'Product Details & Specifications'}
               </h2>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <p className="text-xs text-black mt-0.5">
                 {isBn ? 'পণ্যের গুণগত বৈশিষ্ট্য ও বিস্তারিত বিবরণ' : 'Detailed product characteristics and quality specifications'}
               </p>
             </div>
@@ -790,7 +815,7 @@ export default function ProductDetailView() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                     {entries.map(([label, val], idx) => (
                       <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/70 shadow-2xs">
-                        <span className="text-[11px] text-slate-600 block font-semibold">{label}:</span>
+                        <span className="text-[11px] text-black block font-semibold">{label}:</span>
                         <span className="font-bold text-slate-900 mt-0.5 block">{String(val)}</span>
                       </div>
                     ))}
@@ -817,7 +842,7 @@ export default function ProductDetailView() {
                               <span className="text-brand-700">✓</span>
                               <span>{title}</span>
                             </div>
-                            {desc && <p className="text-[11px] text-slate-700 mt-1 leading-relaxed font-normal">{desc}</p>}
+                            {desc && <p className="text-[11px] text-black mt-1 leading-relaxed font-normal">{desc}</p>}
                           </div>
                         );
                       })}
@@ -866,7 +891,7 @@ export default function ProductDetailView() {
                         </h3>
                       )}
                       {content && (
-                        <div className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                        <div className="text-xs sm:text-sm text-black leading-relaxed whitespace-pre-line">
                           {content}
                         </div>
                       )}
@@ -899,7 +924,7 @@ export default function ProductDetailView() {
                           </h4>
                         )}
                         {a && (
-                          <p className="text-xs text-slate-600 pl-5 leading-relaxed">
+                          <p className="text-xs text-black pl-5 leading-relaxed">
                             {a}
                           </p>
                         )}
@@ -921,7 +946,7 @@ export default function ProductDetailView() {
               <h3 className="text-lg font-heading font-bold text-slate-900">
                 {t('addComplementaryHeading', 'Add Complementary Products')}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-black">
                 {t('addComplementarySubtitle', 'Combine multiple products together in one discreet shipment.')}
               </p>
             </div>

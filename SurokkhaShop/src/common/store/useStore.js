@@ -105,6 +105,9 @@ export const isSingleQtyItem = (prod) => {
   return isItem && !hasVariants;
 };
 
+// Surokkha Trial Pack: orders that include it get free delivery
+export const TRIAL_PACK_SLUG = 'surokkha-trial-pack';
+
 // Site-wide featured combo (announcement bar, promo banner, cart upsell): the Ultimate 3-in-1 30 pcs combo.
 // Falls back to any in-stock 30-pcs combo, then any in-stock combo, while it's unavailable.
 export const FEATURED_COMBO_SLUG = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
@@ -763,6 +766,8 @@ export const useStore = create((set, get) => ({
 
     set((state) => {
       const updates = { currentView: view };
+      // Shop can open on a category picked from the menu
+      if (view === 'shop') updates.shopCategory = param || 'all';
       if (view === 'product' && param) {
         updates.selectedProductSlug = param;
       }
@@ -1030,6 +1035,9 @@ export const useStore = create((set, get) => ({
       deliveryFee = getDeliveryCharge(activeDistrict, activeThana);
     }
 
+    // Surokkha Trial Pack offer: delivery is free whenever the trial pack is in the cart
+    const isTrialPackFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && k.split(':::')[0] === TRIAL_PACK_SLUG);
+
     // Dynamic Coupon Discount Calculation
     let discountAmount = 0;
     let isFreeShippingCoupon = false;
@@ -1054,9 +1062,12 @@ export const useStore = create((set, get) => ({
       }
     }
 
+    if (isTrialPackFreeDelivery) deliveryFee = 0;
+
     const grandTotal = Math.max(0, subtotal + deliveryFee - discountAmount);
 
     return {
+      isTrialPackFreeDelivery,
       subtotal,
       deliveryFee,
       originalDeliveryFee,

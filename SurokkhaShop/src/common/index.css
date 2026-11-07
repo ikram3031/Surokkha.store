@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --header-bg: #0b0a0e;
+  /* Former header tone (rosy-dark), used for cards on dark sections */
+  --muted-bg: #3b2a31;
+}
+
 /* Smooth scroll and mobile touch refinement */
 html {
   scroll-behavior: smooth;

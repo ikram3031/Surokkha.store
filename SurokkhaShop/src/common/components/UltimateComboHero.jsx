@@ -16,6 +16,14 @@ export default function UltimateComboHero() {
   const products = useStore((state) => state.products);
   const { isBn } = useTranslation();
 
+  const prod = products[ULTIMATE_COMBO_SLUG];
+  // Old price shown is the full 3-box price (৳1350); offer price comes live from the product
+  const oldPrice = Math.max(1350, Number(prod?.price || 0), Number(prod?.regularPrice || 0));
+  const offerPrice = Number(prod?.offerPrice || 950);
+  const savings = oldPrice > offerPrice ? oldPrice - offerPrice : 0;
+  const pct = savings ? Math.round((savings / oldPrice) * 100) : 0;
+  const bn = (n) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d]);
+
   const imagePath = products[ULTIMATE_COMBO_SLUG]?.imageUrl || FALLBACK_IMAGE;
   const imageUrl = imagePath.startsWith('http') ? imagePath : `${API_BASE_URL}${imagePath}`;
 
@@ -37,15 +45,27 @@ export default function UltimateComboHero() {
 
         {/* Copy */}
         <div className="text-center md:text-left md:col-start-1 md:row-start-1 md:self-end">
-          <span className="inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-white/80 border border-rose-200 shadow-xs text-[11px] md:text-xs lg:text-sm font-bold tracking-[0.2em] text-[#b0213f] uppercase font-['Plus_Jakarta_Sans']">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e05578]" />
-            Best Value Combo
+          <span className="inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-[#b0213f] text-white shadow-md text-[11px] md:text-xs lg:text-sm font-extrabold tracking-[0.15em] uppercase font-['Plus_Jakarta_Sans']">
+            🔥 {pct > 0 ? (isBn ? `${bn(pct)}% ছাড়` : `${pct}% OFF`) : 'Mega Combo'}
           </span>
 
           <h1 className="mt-4 md:mt-5 font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[0.95] text-[2.5rem] sm:text-6xl lg:text-7xl xl:text-8xl">
-            <span className="text-[#4a0f1f]">Ultimate </span>
-            <span className="text-[#b0213f] whitespace-nowrap">3<span className="text-[0.7em] align-middle">-</span>in<span className="text-[0.7em] align-middle">-</span>1</span>
+            <span className="text-[#4a0f1f]">30 Pieces </span>
+            <span className="text-[#b0213f] whitespace-nowrap">Mega Combo</span>
           </h1>
+
+          {/* Price focus */}
+          <div className="mt-4 md:mt-5 flex flex-wrap items-baseline justify-center md:justify-start gap-3">
+            <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#b0213f] font-['Plus_Jakarta_Sans']">৳{offerPrice}</span>
+            {savings > 0 && (
+              <>
+                <span className="text-xl sm:text-2xl font-bold text-black/50 line-through">৳{oldPrice}</span>
+                <span className="px-3 py-1 rounded-full bg-emerald-600 text-white text-xs sm:text-sm font-extrabold">
+                  {isBn ? `৳${bn(savings)} সাশ্রয়` : `Save ৳${savings}`}
+                </span>
+              </>
+            )}
+          </div>
 
           <p className="mt-4 md:mt-6 font-['Plus_Jakarta_Sans'] font-bold text-[11px] sm:text-sm lg:text-base tracking-[0.25em] md:tracking-[0.3em] text-[#3d0c18] uppercase flex items-center justify-center md:justify-start gap-2 md:gap-3">
             <span>Ultra Thin</span>
@@ -102,12 +122,12 @@ export default function UltimateComboHero() {
 
             <div className="text-sm font-semibold text-[#5a2a35] leading-snug">
               {isBn
-                ? 'মোট ৩০ পিস — ৩ ধরনের, প্রতিটা ১০ পিস করে'
-                : '30 pieces in total — 3 types, 10 of each'}
+                ? `৩০ পিসের মেগা কম্বো — ৳${bn(oldPrice)} এর বদলে মাত্র ৳${bn(offerPrice)}`
+                : `30-piece Mega Combo — only ৳${offerPrice} instead of ৳${oldPrice}`}
             </div>
           </div>
 
-          <p className="mt-4 md:mt-6 text-xs text-slate-500">
+          <p className="mt-4 md:mt-6 text-xs text-black">
             {isBn ? 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)' : 'For adults only (18+)'}
           </p>
         </div>

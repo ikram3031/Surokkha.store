@@ -39,6 +39,10 @@ export default function ComboView() {
       );
     })
     .sort((a, b) => {
+      // Products collection first, then Items
+      const aItem = a.itemType === 'item' ? 1 : 0;
+      const bItem = b.itemType === 'item' ? 1 : 0;
+      if (aItem !== bItem) return aItem - bItem;
       const aKey = (a.slug || a.id || '').toLowerCase();
       const bKey = (b.slug || b.id || '').toLowerCase();
       if (aKey.includes('30') || aKey.includes('ultimate')) return -1;
@@ -57,6 +61,7 @@ export default function ComboView() {
   const comboVariants = productKeys
     .map((k) => products[k])
     .filter((p) => p && !p.isOutOfStock && p.categorySlug !== 'combo' && !p.slug?.includes('combo') && !p.name?.toLowerCase().includes('combo'))
+    .sort((a, b) => (a.itemType === 'item' ? 1 : 0) - (b.itemType === 'item' ? 1 : 0))
     .slice(0, 3)
     .map((p) => ({
       key: p.slug || p.id,

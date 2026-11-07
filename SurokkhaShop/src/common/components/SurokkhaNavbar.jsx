@@ -1,0 +1,245 @@
+import React, { useEffect, useState } from 'react';
+import { useStore } from '../store/useStore';
+import { useTranslation } from '../i18n/useTranslation';
+import logoImg from '../asset/logo_v2.png';
+import AnnouncementMarquee from './AnnouncementMarquee';
+import NavOfferCards from './NavOfferCards';
+
+// Mega-menu style navbar (dark). Mobile: hamburger on the left opens a left drawer.
+const SurokkhaNavbar = () => {
+  const currentView = useStore((state) => state.currentView);
+  const navigateTo = useStore((state) => state.navigateTo);
+  const toggleCartDrawer = useStore((state) => state.toggleCartDrawer);
+  const cart = useStore((state) => state.cart);
+  const { isBn } = useTranslation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const itemCount = Object.values(cart).reduce((sum, q) => sum + q, 0);
+
+  // Lock page scroll while the drawer is open; close it with Escape
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? 'hidden' : '';
+    const onKey = (e) => e.key === 'Escape' && setDrawerOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [drawerOpen]);
+
+  const go = (view, param = null) => {
+    setDrawerOpen(false);
+    navigateTo(view, param);
+  };
+
+  // Shop categories (same slugs the shop page filters by)
+  const shopCategories = [
+    { slug: 'all', label: isBn ? 'সব প্রোডাক্ট' : 'All Products' },
+    { slug: 'contraceptive', label: isBn ? 'কনট্রাসেপটিভ' : 'Contraceptive' },
+    { slug: 'combo', label: isBn ? 'কম্বো প্যাক' : 'Combo Packs' },
+    { slug: 'lubricant', label: isBn ? 'লুব্রিকেন্ট' : 'Lubricants' },
+    { slug: 'performance-booster', label: isBn ? 'পারফরম্যান্স বুস্টার' : 'Performance Booster' },
+  ];
+
+  const links = [
+    { view: 'home', label: isBn ? 'হোম' : 'Home' },
+    { view: 'combo', label: isBn ? 'অফার' : 'Offers' },
+    { view: 'faq', label: isBn ? 'প্রশ্নোত্তর' : 'FAQ' },
+    { view: 'contact', label: isBn ? 'যোগাযোগ' : 'Contact' },
+  ];
+
+  const megaColumns = [
+    {
+      title: isBn ? 'শপ' : 'Shop',
+      items: shopCategories.map((c) => ({ view: 'shop', param: c.slug, label: c.label })),
+    },
+    {
+      title: isBn ? 'সাহায্য' : 'Help',
+      items: [
+        { view: 'faq', label: isBn ? 'প্রশ্নোত্তর' : 'FAQ' },
+        { view: 'contact', label: isBn ? 'যোগাযোগ' : 'Contact' },
+        { view: 'account', label: isBn ? 'অর্ডার ট্র্যাক' : 'Track Order' },
+      ],
+    },
+    {
+      title: isBn ? 'নীতিমালা' : 'Policies',
+      items: [
+        { view: 'privacy', label: isBn ? 'প্রাইভেসি পলিসি' : 'Privacy Policy' },
+        { view: 'refund', label: isBn ? 'রিফান্ড পলিসি' : 'Refund Policy' },
+        { view: 'terms', label: isBn ? 'শর্তাবলী' : 'Terms' },
+      ],
+    },
+  ];
+
+  // Profile icon (thin outline)
+  const ProfileIcon = () => (
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="4" />
+      <path strokeLinecap="round" d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+    </svg>
+  );
+
+  return (
+    <>
+      {/* Offer ticker above the header */}
+      <AnnouncementMarquee />
+      <header className="sticky top-0 z-40 bg-[var(--header-bg)] text-slate-100 border-b border-white/10">
+        <div className="relative mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:gap-8 lg:px-8 lg:py-0">
+          {/* Hamburger (mobile, left) */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="-ml-1 rounded-lg p-2 hover:bg-white/10 lg:hidden cursor-pointer"
+            aria-label="Open menu"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </button>
+
+          {/* Logo */}
+          <div className="shrink-0 lg:flex-1 lg:basis-0">
+            <button type="button" onClick={() => go('home')} className="cursor-pointer lg:py-3">
+              <img src={logoImg} alt="Surokkha Logo" className="h-8 w-auto object-contain sm:h-9 md:h-11" />
+            </button>
+          </div>
+
+          {/* Desktop nav */}
+          <nav className="hidden items-stretch justify-center gap-1 self-stretch text-base font-semibold lg:flex">
+            {/* Mega trigger */}
+            <div className="group flex items-stretch">
+              <button
+                type="button"
+                onClick={() => go('shop')}
+                className={`flex items-center gap-1 px-3 cursor-pointer ${currentView === 'shop' ? 'text-rose-400' : 'hover:text-rose-400'}`}
+              >
+                {isBn ? 'শপ' : 'Shop'}
+                <svg className="h-4 w-4 transition group-hover:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+              </button>
+
+              {/* Mega panel */}
+              <div className="invisible absolute inset-x-0 top-full translate-y-2 border-t border-white/10 bg-white text-black opacity-0 shadow-2xl transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                <div className="mx-auto grid max-w-7xl grid-cols-12 gap-8 px-8 py-8">
+                  {megaColumns.map((col) => (
+                    <div key={col.title} className="col-span-2">
+                      <p className="mb-3 text-sm font-extrabold uppercase tracking-wider text-black">{col.title}</p>
+                      <ul className="space-y-2 text-base font-medium">
+                        {col.items.map((it) => (
+                          <li key={it.label}>
+                            <button type="button" onClick={() => go(it.view, it.param)} className="hover:text-rose-600 cursor-pointer text-left">{it.label}</button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                  <div className="col-span-6">
+                    <NavOfferCards onNavigate={() => setDrawerOpen(false)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {links.map((l) => (
+              <button
+                key={l.view}
+                type="button"
+                onClick={() => go(l.view)}
+                className={`flex items-center px-3 cursor-pointer ${currentView === l.view ? 'text-rose-400' : 'hover:text-rose-400'}`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div className="ml-auto flex items-center justify-end gap-1 sm:gap-2 lg:ml-0 lg:flex-1 lg:basis-0">
+            <button
+              type="button"
+              onClick={() => go('account')}
+              className="rounded-lg p-2 hover:bg-white/10 cursor-pointer"
+              aria-label="Account"
+            >
+              <ProfileIcon />
+            </button>
+            <button
+              type="button"
+              onClick={toggleCartDrawer}
+              className="relative flex items-center gap-2 rounded-lg p-2 hover:bg-white/10 cursor-pointer"
+              aria-label="Cart"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6" />
+                <circle cx="10" cy="20" r="1.3" />
+                <circle cx="17" cy="20" r="1.3" />
+              </svg>
+              <span className="absolute left-6 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white">{itemCount}</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Left drawer (mobile) */}
+      <div className={`fixed inset-0 z-50 lg:hidden ${drawerOpen ? 'visible' : 'invisible'}`}>
+        <div
+          onClick={() => setDrawerOpen(false)}
+          className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${drawerOpen ? 'opacity-100' : 'opacity-0'}`}
+        />
+        <aside
+          className={`absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col bg-[var(--header-bg)] text-slate-100 shadow-xl transition-transform duration-300 ${
+            drawerOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+            <img src={logoImg} alt="Surokkha Logo" className="h-8 w-auto object-contain" />
+            <button type="button" onClick={() => setDrawerOpen(false)} className="rounded-lg p-1.5 hover:bg-white/10 cursor-pointer" aria-label="Close">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto px-2 py-3 text-base">
+            <details open className="rounded-lg [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg px-3 py-3 font-semibold text-rose-400 hover:bg-white/5">
+                {isBn ? 'শপ' : 'Shop'}
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+              </summary>
+              <div className="pb-2 pl-3">
+                {shopCategories.map((c) => (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    onClick={() => go('shop', c.slug)}
+                    className="block w-full rounded-lg px-3 py-2.5 text-left cursor-pointer hover:bg-white/5"
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </details>
+            {[...links, { view: 'account', label: isBn ? 'অর্ডার ট্র্যাক' : 'Track Order' }].map((l) => (
+              <button
+                key={l.view + l.label}
+                type="button"
+                onClick={() => go(l.view)}
+                className={`block w-full rounded-lg px-3 py-3 text-left cursor-pointer hover:bg-white/5 ${currentView === l.view ? 'text-rose-400' : ''}`}
+              >
+                {l.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="border-t border-white/10 p-4 space-y-3">
+            <NavOfferCards compact onNavigate={() => setDrawerOpen(false)} />
+            <button
+              type="button"
+              onClick={() => go('account')}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 py-2.5 text-sm font-semibold cursor-pointer"
+            >
+              <ProfileIcon />
+              {isBn ? 'আমার অ্যাকাউন্ট' : 'My Account'}
+            </button>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+};
+
+export default SurokkhaNavbar;

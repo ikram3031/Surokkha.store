@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, getFeaturedCombo } from '../store/useStore';
+import { useStore, getFeaturedCombo, TRIAL_PACK_SLUG } from '../store/useStore';
+import TrialPackOfferCard from './TrialPackOfferCard';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
@@ -217,6 +218,10 @@ export default function CartDrawer() {
                   </p>
                 </div>
 
+                <div className="max-w-xs mx-auto">
+                  <TrialPackOfferCard />
+                </div>
+
                 <div className="pt-2 flex flex-col gap-2.5 max-w-xs mx-auto">
                   <button
                     type="button"
@@ -368,6 +373,16 @@ export default function CartDrawer() {
                   </button>
                 </div>
 
+                {/* Surokkha Trial Pack: free delivery note when present, offer card when not */}
+                {cartKeys.some((k) => k.split(':::')[0] === TRIAL_PACK_SLUG) ? (
+                  <div className="bg-emerald-50 border border-emerald-300 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-emerald-900 flex items-center gap-2">
+                    <span>🚚</span>
+                    <span>{isBn ? 'সুরক্ষা ট্রায়াল প্যাক থাকায় আপনার পুরো অর্ডারে ডেলিভারি ফ্রি!' : 'Surokkha Trial Pack in cart: free delivery on your whole order!'}</span>
+                  </div>
+                ) : (
+                  <TrialPackOfferCard compact />
+                )}
+
                 {/* Optional Combo Nudge if combo is not in cart and in stock */}
                 {!hasComboInCart && isComboInStock && (
                   <div className="bg-amber-50/90 border border-amber-300/80 rounded-2xl p-3.5 space-y-2 text-left">
@@ -471,7 +486,7 @@ export default function CartDrawer() {
                 <div className="flex justify-between text-slate-700 font-medium">
                   <span>{isBn ? 'ডেলিভারি চার্জ' : 'Delivery Charge'}</span>
                   <span>
-                    {totals.isFreeShippingCoupon ? (
+                    {(totals.isFreeShippingCoupon || totals.isTrialPackFreeDelivery) ? (
                       <strong className="text-emerald-700 font-bold uppercase">{isBn ? 'ফ্রি' : 'FREE'}</strong>
                     ) : (
                       <span className="font-bold text-slate-900 font-mono">{formatPrice(totals.deliveryFee)}</span>

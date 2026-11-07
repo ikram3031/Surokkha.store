@@ -122,26 +122,39 @@ export const ProductShowcaseManager = ({ showcaseKey, title, icon: TagIcon, icon
     staleTime: 1000 * 30,
   });
 
-  // 4. Query active in-stock products for the Browse Catalog modal using aggregation
+  // 4. Browse Catalog modal: every active product AND every active item
   const { data: allCatalogProducts = [], isLoading: isCatalogLoading } = useQuery({
     queryKey: ['catalog-browse-products', browseSearchQuery],
     queryFn: async () => {
-      const payload = {
-        limit: 60,
+      const q = browseSearchQuery.trim();
+      const productPayload = {
+        limit: 1000,
         isActive: true,
-        stockStatus: 'instock',
         sort: 'createdAt',
         order: 'desc',
       };
-      if (browseSearchQuery.trim()) {
-        payload.q = browseSearchQuery.trim();
-      }
-      const res = await apiClient.post('/api/v1/dash/products', payload);
-      const raw = res.data?.data || [];
+      if (q) productPayload.q = q;
 
-      return raw
-        .map(normalizeProduct)
-        .filter((p) => p && p.isActive !== false && !p.isOutOfStock);
+      const itemParams = { skip: 0, limit: 1000 };
+      if (q) itemParams.q = q;
+
+      const [prodRes, itemRes] = await Promise.all([
+        apiClient.post('/api/v1/dash/products', productPayload),
+        apiClient.get('/api/v1/items', { params: itemParams }).catch(() => ({ data: { data: [] } })),
+      ]);
+
+      const rawProducts = prodRes.data?.data || [];
+      const itemBody = itemRes.data;
+      const rawItems = Array.isArray(itemBody) ? itemBody : (itemBody?.data || []);
+
+      const products = rawProducts
+        .map((p) => normalizeProduct({ ...p, itemType: 'product' }))
+        .filter((p) => p && p.isActive !== false);
+      const items = rawItems
+        .map((i) => normalizeProduct({ ...i, itemType: 'item' }))
+        .filter((p) => p && p.isActive !== false);
+
+      return [...products, ...items];
     },
     enabled: browseModalOpen,
     staleTime: 1000 * 60,
@@ -506,7 +519,8 @@ export const ProductShowcaseManager = ({ showcaseKey, title, icon: TagIcon, icon
                       <div className="truncate">
                         <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
                         <p className="text-[11px] text-muted-foreground truncate font-mono">
-                          {p.sku || 'No SKU'} • ৳{p.price.toLocaleString()}
+                          {p.itemType === 'item' ? 'Item' : 'Product'} • {p.sku || 'No SKU'} • ৳{p.price.toLocaleString()}
+                          {p.isOutOfStock ? ' • Out of stock' : ''}
                         </p>
                       </div>
                     </div>

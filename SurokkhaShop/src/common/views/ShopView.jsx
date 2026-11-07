@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from '../components/ProductCard';
@@ -16,7 +16,10 @@ export default function ShopView() {
   const { t, isBn, formatNumber } = useTranslation();
 
   // 1. Dynamic category filter ('all' or specific slug like 'combo', 'contraceptive', 'lubricant', etc.)
-  const [category, setCategory] = useState('all');
+  const shopCategory = useStore((state) => state.shopCategory);
+  const [category, setCategory] = useState(shopCategory || 'all');
+  // Follow category picks from the menu while the shop page is already open
+  useEffect(() => { setCategory(shopCategory || 'all'); }, [shopCategory]);
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState('all'); // 'all' | 'under-500' | '500-800' | 'above-800'
 

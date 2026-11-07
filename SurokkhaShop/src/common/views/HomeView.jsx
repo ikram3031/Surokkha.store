@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import HeroSlider from '../components/HeroSlider';
 import HeroBannerSlider from '../components/HeroBannerSlider';
+import BannerCarousel from '../components/BannerCarousel';
 import PromoComboBanner from '../components/PromoComboBanner';
 import ProductCarousel from '../components/ProductCarousel';
 import MoLineupCarousel from '../components/MoLineupCarousel';
@@ -76,8 +77,11 @@ export default function HomeView() {
           To restore it, change `false` to `true` below. */}
       {false && <HeroSlider />}
 
-      {/* HERO SLIDER: coded banners (Trial Pack first) */}
-      <HeroBannerSlider />
+      {/* HERO SLIDER: coded banners — hidden for now. Change `false` to `true` to restore. */}
+      <HeroBannerSlider useCms={false} />
+
+      {/* CONTAINER-WIDTH BANNER CAROUSEL (campaign images) */}
+      {false && <BannerCarousel />}
 
       {/* 3 DEDICATED FEATURE CARDS (Directly Under Hero Slider, White Theme) */}
       {/* SPECIAL OFFERS (products with a dashboard offer price) */}
@@ -87,7 +91,7 @@ export default function HomeView() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           
           {/* Feature 1: 100% Private Packaging */}
-          <div className="bg-white/5 border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
+          <div className="bg-[var(--muted-bg)] border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
               🔒
             </div>
@@ -102,7 +106,7 @@ export default function HomeView() {
           </div>
 
           {/* Feature 2: Cash on Delivery */}
-          <div className="bg-white/5 border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
+          <div className="bg-[var(--muted-bg)] border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
               🚚
             </div>
@@ -117,7 +121,7 @@ export default function HomeView() {
           </div>
 
           {/* Feature 3: 100% Authentic Quality */}
-          <div className="bg-white/5 border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
+          <div className="bg-[var(--muted-bg)] border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
               ✨
             </div>

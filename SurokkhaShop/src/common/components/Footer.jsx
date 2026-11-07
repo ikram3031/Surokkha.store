@@ -15,7 +15,7 @@ export default function Footer() {
   const whatsappUrl = `https://wa.me/88${SITE_CONFIG?.whatsappNumber || '01600905774'}`;
 
   return (
-    <footer className="block bg-gradient-to-b from-[#18050e] via-[#12040b] to-[#0a0206] text-white pt-12 pb-12 border-t border-rose-950/80 mt-16 text-sm text-left">
+    <footer className="block bg-gradient-to-b from-[#0b0a0e] via-[#18050e] to-[#0b0a0e] text-white pt-12 pb-12 border-t border-rose-950/80 mt-16 text-sm text-left">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Top 18+ Age Notice Strip */}

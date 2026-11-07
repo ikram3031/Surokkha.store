@@ -1,23 +1,51 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
+import { SITE_CONFIG } from '../config/siteConfig';
 import ProductCard from './ProductCard';
 
-// "Special Offers" strip on the home page: products that currently have an offer price set from the dashboard.
+const API_BASE_URL = SITE_CONFIG.apiBaseUrl.replace(/\/$/, '');
+
+// "Best Offers Right Now" strip on the home page.
+// Shows the products picked in the dashboard (Settings → Product Showcase → Featured), in that order.
+// When nothing is picked it falls back to every product with an offer price.
 export default function SpecialOffersStrip() {
   const products = useStore((s) => s.products);
   const productKeys = useStore((s) => s.productKeys);
   const { isBn } = useTranslation();
+  const [featuredIds, setFeaturedIds] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${API_BASE_URL}/api/v1/store-utils`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('store-utils failed'))))
+      .then((json) => {
+        const list = (json?.data || json)?.featured;
+        setFeaturedIds(Array.isArray(list) ? list.map((f) => String(typeof f === 'object' ? (f._id || f.id || f.did || f.slug) : f)) : []);
+      })
+      .catch((err) => { if (err.name !== 'AbortError') setFeaturedIds([]); });
+    return () => controller.abort();
+  }, []);
 
   const keys = useMemo(() => {
-    return (productKeys || []).filter((key) => {
+    const all = productKeys || [];
+    if (featuredIds && featuredIds.length) {
+      const idOf = (key) => {
+        const p = products[key] || {};
+        return [key, p.slug, p._id, p.mongoId, p.did].filter(Boolean).map(String);
+      };
+      return featuredIds
+        .map((id) => all.find((key) => idOf(key).includes(id)))
+        .filter(Boolean);
+    }
+    return all.filter((key) => {
       const p = products[key];
       if (!p) return false;
       const offer = Number(p.offerPrice);
       const regular = Number(p.regularPrice);
       return offer > 0 && regular > 0 && offer < regular;
     });
-  }, [products, productKeys]);
+  }, [products, productKeys, featuredIds]);
 
   if (keys.length === 0) return null;
 
@@ -31,7 +59,7 @@ export default function SpecialOffersStrip() {
         <h2 className="text-2xl sm:text-3xl font-heading font-bold text-slate-900 mt-3">
           {isBn ? 'এই মুহূর্তের সেরা অফার' : 'Best Offers Right Now'}
         </h2>
-        <p className="text-xs sm:text-sm text-slate-600 mt-1.5">
+        <p className="text-xs sm:text-sm text-black mt-1.5">
           {isBn ? 'সবচেয়ে কম দামে সীমিত সময়ের অফার।' : 'Our lowest prices, for a limited time.'}
         </p>
       </div>

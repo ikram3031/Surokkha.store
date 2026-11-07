@@ -142,6 +142,13 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
     });
   };
 
+  // Re-check arrow state whenever content or viewport size changes
+  React.useEffect(() => {
+    checkScrollability();
+    window.addEventListener('resize', checkScrollability);
+    return () => window.removeEventListener('resize', checkScrollability);
+  }, [displayKeys.length, isLoadingProducts]);
+
   React.useEffect(() => {
     if (!isComboMode || isPaused || displayKeys.length <= 1) return;
 
@@ -207,7 +214,8 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
             >
               {isComboMode ? (isBn ? 'সকল কম্বো দেখুন →' : 'View All Combos →') : (isBn ? 'সব প্রোডাক্ট দেখুন →' : 'View All →')}
             </button>
-            
+
+            {isComboMode && (canScrollLeft || canScrollRight) && (<>
             <button
               type="button"
               onClick={() => handleScroll('left')}
@@ -239,6 +247,7 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
               </svg>
             </button>
+            </>)}
           </div>
         </div>
 
