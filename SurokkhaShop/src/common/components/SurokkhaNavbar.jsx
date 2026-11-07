@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
-import logoImg from '../asset/logo_v2.png';
+import logoImg from '../asset/logo_white.png';
 import AnnouncementMarquee from './AnnouncementMarquee';
 import NavOfferCards from './NavOfferCards';
 import { getCustomerToken, SESSION_EVENT } from '../utils/customerAuth';

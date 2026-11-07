@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import { SITE_CONFIG } from '../config/siteConfig';
-import logoV2 from '../asset/logo_v2.png';
+import logoV2 from '../asset/logo_white.png';
 
 export default function Footer() {
   const navigateTo = useStore((state) => state.navigateTo);

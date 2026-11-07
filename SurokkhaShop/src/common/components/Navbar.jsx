@@ -3,7 +3,7 @@ import { useStore, getFeaturedCombo } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import AccountMenu from './AccountMenu';
 import logoLight from '../asset/logo.png';
-import logoDark from '../asset/logo_v2.png';
+import logoDark from '../asset/logo_white.png';
 
 // Header and navigation bar component
 const Navbar = () => {
