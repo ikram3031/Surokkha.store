@@ -153,12 +153,12 @@ export default function HeroBannerSlider({ useCms = true }) {
         style={{ transform: `translateX(-${pos * 100}%)`, transitionProperty: 'transform', transitionDuration: animate ? `${settings.transitionMs}ms` : '0ms' }}
       >
         {slides.map(({ key, render }, i) => (
-          <div key={key} className="w-full flex-shrink-0 flex" inert={current !== i}>
+          <div key={key} className="w-full min-w-0 flex-shrink-0 flex overflow-hidden" inert={current !== i}>
             {render()}
           </div>
         ))}
         {slideCount > 1 && (
-          <div key={`${slides[0].key}-clone`} className="w-full flex-shrink-0 flex" inert aria-hidden="true">
+          <div key={`${slides[0].key}-clone`} className="w-full min-w-0 flex-shrink-0 flex overflow-hidden" inert aria-hidden="true">
             {slides[0].render()}
           </div>
         )}

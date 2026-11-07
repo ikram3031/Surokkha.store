@@ -101,7 +101,12 @@ export default function AccountView() {
   const navigateTo = useStore((state) => state.navigateTo);
   const showToast = useStore((state) => state.showToast);
 
-  const [view, setView] = useState('login'); // login | signup | forgot | reset | account
+  const accountTab = useStore((state) => state.accountTab);
+  const [view, setView] = useState(accountTab === 'signup' ? 'signup' : 'login'); // login | signup | forgot | reset | account
+  // Menu "Login" / "Register" buttons pick the tab while signed out
+  useEffect(() => {
+    setView((v) => (v === 'login' || v === 'signup' ? (accountTab === 'signup' ? 'signup' : 'login') : v));
+  }, [accountTab]);
   const [customer, setCustomer] = useState(null);
   const [checking, setChecking] = useState(true);
   const [busy, setBusy] = useState(false);

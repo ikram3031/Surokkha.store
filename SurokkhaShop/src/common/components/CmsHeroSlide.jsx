@@ -33,30 +33,30 @@ export default function CmsHeroSlide({ slide }) {
   };
 
   return (
-    <section className="w-full flex flex-col justify-center relative overflow-hidden bg-gradient-to-br from-[#fdf8f6] via-[#faf0ea] to-[#f6dfe3] border-b border-rose-100 select-none">
+    <section className="w-full md:max-h-[70vh] flex flex-col justify-center relative overflow-hidden bg-gradient-to-br from-[#fdf8f6] via-[#faf0ea] to-[#f6dfe3] border-b border-rose-100 select-none">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-24 right-[-6rem] w-[28rem] h-[28rem] rounded-full bg-rose-200/40 blur-3xl" />
         <div className="absolute -bottom-32 left-[-8rem] w-[30rem] h-[30rem] rounded-full bg-pink-200/40 blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 md:py-10 lg:py-14 grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_auto] gap-y-5 md:gap-y-8 md:gap-x-10 lg:gap-x-12">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12 md:py-4 lg:py-5 grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_auto] gap-y-5 md:gap-y-4 md:gap-x-10 lg:gap-x-12">
         <div className="text-center md:text-left md:col-start-1 md:row-start-1 md:self-end">
           {slide.badge && (
-            <span className="inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-white/80 border border-rose-200 shadow-xs text-[11px] md:text-xs lg:text-sm font-bold tracking-[0.2em] text-[#b0213f] uppercase font-['Plus_Jakarta_Sans']">
+            <span className="hidden md:inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-white/80 border border-rose-200 shadow-xs text-[11px] md:text-xs lg:text-sm font-bold tracking-[0.2em] text-[#b0213f] uppercase font-['Plus_Jakarta_Sans']">
               <span className="w-1.5 h-1.5 rounded-full bg-[#e05578]" />
               {slide.badge}
             </span>
           )}
 
           {(slide.titleDark || slide.titleAccent) && (
-            <h1 className="mt-4 md:mt-5 font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[0.95] text-[2.5rem] sm:text-6xl lg:text-7xl xl:text-8xl">
+            <h1 className="mt-0 md:mt-5 font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[0.95] whitespace-nowrap md:whitespace-normal text-[clamp(1.25rem,7.2vw,1.9rem)] sm:text-5xl lg:text-6xl">
               {slide.titleDark && <span className="text-[#4a0f1f]">{slide.titleDark} </span>}
               {slide.titleAccent && <span className="text-[#b0213f]">{slide.titleAccent}</span>}
             </h1>
           )}
 
           {tagline.length > 0 && (
-            <p className="mt-4 md:mt-6 font-['Plus_Jakarta_Sans'] font-bold text-[11px] sm:text-sm lg:text-base tracking-[0.25em] md:tracking-[0.3em] text-[#3d0c18] uppercase flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3">
+            <p className="mt-4 md:mt-6 font-['Plus_Jakarta_Sans'] font-bold text-[11px] sm:text-sm lg:text-base tracking-[0.25em] md:tracking-[0.3em] text-[#3d0c18] uppercase hidden md:flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3">
               {tagline.map((word, i) => (
                 <React.Fragment key={`${word}-${i}`}>
                   {i > 0 && <span className="w-1.5 h-1.5 rounded-full bg-[#e05578]" />}
@@ -73,7 +73,7 @@ export default function CmsHeroSlide({ slide }) {
           )}
 
           {chips.length > 0 && (
-            <div className="mt-4 md:mt-6 flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-2.5">
+            <div className="mt-4 md:mt-6 hidden md:flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-2.5">
               {chips.map((chip, i) => (
                 <span key={`${chip.label}-${i}`} className="inline-flex items-center gap-2 px-3 md:px-3.5 py-1 md:py-1.5 rounded-full bg-white/80 border border-rose-100 text-xs lg:text-sm font-semibold text-slate-700 shadow-2xs">
                   <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: chip.color || '#e05578' }} />
@@ -85,12 +85,12 @@ export default function CmsHeroSlide({ slide }) {
         </div>
 
         {imageUrl && (
-          <div className="flex justify-center items-center md:col-start-2 md:row-start-1 md:row-span-2">
+          <div className="order-first md:order-none flex justify-center items-center md:col-start-2 md:row-start-1 md:row-span-2">
             <img
               src={imageUrl}
               alt={slide.imageAlt || slide.titleDark || 'Hero banner'}
               onClick={handleCta}
-              className={`w-full max-w-[340px] md:max-w-[480px] aspect-square object-cover rounded-3xl ring-4 ring-rose-200/70 shadow-2xl shadow-rose-900/20 ${link ? 'cursor-pointer' : ''}`}
+              className={`w-full max-w-[340px] md:max-w-[min(380px,52vh)] aspect-square object-cover rounded-3xl ring-4 ring-rose-200/70 shadow-2xl shadow-rose-900/20 ${link ? 'cursor-pointer' : ''}`}
               loading="eager"
               draggable="false"
             />

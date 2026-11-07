@@ -4,6 +4,7 @@ import { useTranslation } from '../i18n/useTranslation';
 import logoImg from '../asset/logo_v2.png';
 import AnnouncementMarquee from './AnnouncementMarquee';
 import NavOfferCards from './NavOfferCards';
+import { getCustomerToken, SESSION_EVENT } from '../utils/customerAuth';
 
 // Mega-menu style navbar (dark). Mobile: hamburger on the left opens a left drawer.
 const SurokkhaNavbar = () => {
@@ -13,6 +14,17 @@ const SurokkhaNavbar = () => {
   const cart = useStore((state) => state.cart);
   const { isBn } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getCustomerToken()));
+  // Keep the drawer's account buttons in sync with sign-in / sign-out
+  useEffect(() => {
+    const sync = () => setIsLoggedIn(Boolean(getCustomerToken()));
+    window.addEventListener(SESSION_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(SESSION_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
 
   const itemCount = Object.values(cart).reduce((sum, q) => sum + q, 0);
 
@@ -227,14 +239,34 @@ const SurokkhaNavbar = () => {
 
           <div className="border-t border-white/10 p-4 space-y-3">
             <NavOfferCards compact onNavigate={() => setDrawerOpen(false)} />
-            <button
-              type="button"
-              onClick={() => go('account')}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 py-2.5 text-sm font-semibold cursor-pointer"
-            >
-              <ProfileIcon />
-              {isBn ? 'আমার অ্যাকাউন্ট' : 'My Account'}
-            </button>
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => go('account')}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 py-2.5 text-sm font-semibold cursor-pointer"
+              >
+                <ProfileIcon />
+                My Account
+              </button>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => go('account', 'login')}
+                  className="flex items-center justify-center gap-2 rounded-lg border border-white/30 py-2.5 text-sm font-semibold text-white hover:bg-white/10 cursor-pointer"
+                >
+                  <ProfileIcon />
+                  Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go('account', 'signup')}
+                  className="rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 py-2.5 text-sm font-semibold text-white cursor-pointer"
+                >
+                  Register
+                </button>
+              </div>
+            )}
           </div>
         </aside>
       </div>

@@ -768,6 +768,7 @@ export const useStore = create((set, get) => ({
       const updates = { currentView: view };
       // Shop can open on a category picked from the menu
       if (view === 'shop') updates.shopCategory = param || 'all';
+      if (view === 'account') updates.accountTab = param === 'signup' ? 'signup' : 'login';
       if (view === 'product' && param) {
         updates.selectedProductSlug = param;
       }

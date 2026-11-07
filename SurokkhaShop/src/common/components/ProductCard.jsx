@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, TRIAL_PACK_SLUG } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
@@ -145,6 +145,16 @@ export default function ProductCard({ productKey, className = '' }) {
             </span>
           </div>
         ) : null}
+
+        {/* Surokkha Trial Pack: free home delivery badge */}
+        {(productKey === TRIAL_PACK_SLUG || prod?.slug === TRIAL_PACK_SLUG) && (
+          <div className="absolute bottom-2 left-2 z-20 pointer-events-none select-none">
+            <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] sm:text-xs font-extrabold px-2.5 py-1 rounded-full shadow-lg border border-white/70">
+              <span>🚚</span>
+              <span>{isBn ? 'ফ্রি হোম ডেলিভারি' : 'Free Home Delivery'}</span>
+            </span>
+          </div>
+        )}
 
         {/* Out of Stock Visual Overlay */}
         {isOutOfStock ? (

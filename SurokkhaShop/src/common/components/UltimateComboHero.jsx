@@ -34,29 +34,29 @@ export default function UltimateComboHero() {
   ];
 
   return (
-    <section className="w-full flex flex-col justify-center relative overflow-hidden bg-gradient-to-br from-[#fdf8f6] via-[#faf0ea] to-[#f6dfe3] border-b border-rose-100 select-none">
+    <section className="w-full md:max-h-[70vh] min-w-0 flex flex-col justify-center relative overflow-hidden bg-gradient-to-br from-[#fdf8f6] via-[#faf0ea] to-[#f6dfe3] border-b border-rose-100 select-none">
       {/* Soft ambient glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-24 right-[-6rem] w-[28rem] h-[28rem] rounded-full bg-rose-200/40 blur-3xl" />
         <div className="absolute -bottom-32 left-[-8rem] w-[30rem] h-[30rem] rounded-full bg-pink-200/40 blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 md:py-10 lg:py-14 grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_auto] gap-y-5 md:gap-y-8 md:gap-x-10 lg:gap-x-12">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12 md:py-4 lg:py-5 grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_auto] gap-y-5 md:gap-y-4 md:gap-x-10 lg:gap-x-12">
 
         {/* Copy */}
         <div className="text-center md:text-left md:col-start-1 md:row-start-1 md:self-end">
-          <span className="inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-[#b0213f] text-white shadow-md text-[11px] md:text-xs lg:text-sm font-extrabold tracking-[0.15em] uppercase font-['Plus_Jakarta_Sans']">
+          <span className="hidden md:inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-[#b0213f] text-white shadow-md text-[11px] md:text-xs lg:text-sm font-extrabold tracking-[0.15em] uppercase font-['Plus_Jakarta_Sans']">
             🔥 {pct > 0 ? (isBn ? `${bn(pct)}% ছাড়` : `${pct}% OFF`) : 'Mega Combo'}
           </span>
 
-          <h1 className="mt-4 md:mt-5 font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[0.95] text-[2.5rem] sm:text-6xl lg:text-7xl xl:text-8xl">
+          <h1 className="mt-0 md:mt-5 font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[0.95] whitespace-nowrap md:whitespace-normal text-[clamp(1.25rem,7.2vw,1.9rem)] sm:text-5xl lg:text-6xl">
             <span className="text-[#4a0f1f]">30 Pieces </span>
-            <span className="text-[#b0213f] whitespace-nowrap">Mega Combo</span>
+            <span className="text-[#b0213f]">Mega Combo</span>
           </h1>
 
           {/* Price focus */}
-          <div className="mt-4 md:mt-5 flex flex-wrap items-baseline justify-center md:justify-start gap-3">
-            <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#b0213f] font-['Plus_Jakarta_Sans']">৳{offerPrice}</span>
+          <div className="mt-3 flex flex-wrap items-baseline justify-center md:justify-start gap-3">
+            <span className="text-4xl lg:text-5xl font-black text-[#b0213f] font-['Plus_Jakarta_Sans']">৳{offerPrice}</span>
             {savings > 0 && (
               <>
                 <span className="text-xl sm:text-2xl font-bold text-black/50 line-through">৳{oldPrice}</span>
@@ -67,7 +67,7 @@ export default function UltimateComboHero() {
             )}
           </div>
 
-          <p className="mt-4 md:mt-6 font-['Plus_Jakarta_Sans'] font-bold text-[11px] sm:text-sm lg:text-base tracking-[0.25em] md:tracking-[0.3em] text-[#3d0c18] uppercase flex items-center justify-center md:justify-start gap-2 md:gap-3">
+          <p className="mt-4 md:mt-6 font-['Plus_Jakarta_Sans'] font-bold text-[11px] sm:text-sm lg:text-base tracking-[0.25em] md:tracking-[0.3em] text-[#3d0c18] uppercase hidden">
             <span>Ultra Thin</span>
             <span className="w-1.5 h-1.5 rounded-full bg-[#e05578]" />
             <span>Dotted</span>
@@ -75,12 +75,12 @@ export default function UltimateComboHero() {
             <span>Ribbed</span>
           </p>
 
-          <p className="mt-2 md:mt-3 text-base sm:text-lg lg:text-xl font-semibold text-[#5a2a35] font-bengali">
+          <p className="mt-2 text-base sm:text-lg font-semibold text-[#5a2a35] font-bengali">
             তিন ধরনের ৩টি পূর্ণ বক্স — সব একসাথে এক প্যাকেজে
           </p>
 
           {/* Boxes included */}
-          <div className="mt-4 md:mt-6 flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-2.5">
+          <div className="mt-3 hidden md:flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-2.5">
             {boxChips.map((chip) => (
               <span key={chip.label} className="inline-flex items-center gap-2 px-3 md:px-3.5 py-1 md:py-1.5 rounded-full bg-white/80 border border-rose-100 text-xs lg:text-sm font-semibold text-slate-700 shadow-2xs">
                 <span className={`w-2.5 h-2.5 rounded-full ${chip.dot}`} />
@@ -91,12 +91,12 @@ export default function UltimateComboHero() {
         </div>
 
         {/* Product visual */}
-        <div className="flex justify-center items-center md:col-start-2 md:row-start-1 md:row-span-2">
+        <div className="order-first md:order-none flex justify-center items-center md:col-start-2 md:row-start-1 md:row-span-2">
           <img
             src={imageUrl}
             alt="MO Ultimate 3-in-1 Combo — Ultra Thin, Dotted and Ribbed"
             onClick={() => openProduct(ULTIMATE_COMBO_SLUG)}
-            className="w-full max-w-[340px] md:max-w-[480px] aspect-square object-cover rounded-3xl ring-4 ring-rose-200/70 shadow-2xl shadow-rose-900/20 cursor-pointer"
+            className="w-full max-w-[340px] md:max-w-[min(380px,52vh)] aspect-square object-cover rounded-3xl ring-4 ring-rose-200/70 shadow-2xl shadow-rose-900/20 cursor-pointer"
             loading="eager"
             draggable="false"
           />
