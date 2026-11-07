@@ -330,6 +330,16 @@ export const ItemsTable = ({
                       )}
                       {!isReadOnly && (
                         <DropdownMenuItem
+                          className="cursor-pointer text-xs flex items-center gap-2"
+                          onClick={() => handleDuplicate(item)}
+                          disabled={duplicatingId === item.id}
+                        >
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                          {duplicatingId === item.id ? t('items.duplicating', 'Duplicating...') : t('items.duplicate_item', 'Duplicate Item')}
+                        </DropdownMenuItem>
+                      )}
+                      {!isReadOnly && (
+                        <DropdownMenuItem
                           className="cursor-pointer text-xs flex items-center gap-2 text-destructive focus:text-destructive"
                           onClick={() => setDeleteTarget(item)}
                         >

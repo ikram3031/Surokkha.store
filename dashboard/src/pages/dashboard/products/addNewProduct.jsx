@@ -138,12 +138,15 @@ const AddNewProduct = () => {
     if (!duplicateDraft) return;
 
     const p = duplicateDraft;
+    // The copy gets its own name and slug (slug follows the name until edited) and no SKU, so it saves without clashing
     if (p.name) {
-      setName(p.name);
+      const copyName = `${p.name} (Copy)`;
+      setName(copyName);
+      setSlug(slugify(copyName));
+      setSlugManual(false);
       setDraftSourceName(p.name);
     }
-    if (p.slug) setSlug(p.slug);
-    if (p.sku) setSku(p.sku);
+    setSku("");
     if (p.description) setDescription(p.description);
     if (p.longDescription) setLongDescription(p.longDescription);
     if (p.bn) setBnContent(bnFormFromProduct(p.bn));
