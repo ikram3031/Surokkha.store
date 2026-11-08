@@ -322,9 +322,10 @@ const StockItemsPage = () => {
   const [status, setStatus] = useState('active');
   const [editing, setEditing] = useState(null);
   const [adjusting, setAdjusting] = useState(null);
+  const [deleting, setDeleting] = useState(null);
   const params = useMemo(() => ({ search: search.trim() || undefined, status }), [search, status]);
   const { data, isLoading, isError } = useStockItems(params);
-  const { create, update, adjust, undo } = useStockItemMutations();
+  const { create, update, adjust, undo, remove } = useStockItemMutations();
   const rows = data?.data || [];
   const summary = data?.summary || {};
 
@@ -412,6 +413,7 @@ const StockItemsPage = () => {
                       <Button size="icon" variant="ghost" title="Adjust stock" onClick={() => setAdjusting(r)}><SlidersHorizontal className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="History" render={<Link to={`/inventory/movements?refId=${r.id}&name=${encodeURIComponent(r.shortName)}`} />}><History className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="Edit" onClick={() => setEditing({ item: r })}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" title="Delete" className="text-destructive hover:text-destructive" onClick={() => setDeleting(r)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -438,6 +440,22 @@ const StockItemsPage = () => {
         }}
         saving={adjust.isPending}
       />
+      <Dialog open={Boolean(deleting)} onOpenChange={(v) => !v && setDeleting(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete {deleting?.shortName}?</DialogTitle>
+            <DialogDescription>
+              It is removed from inventory and unlinked from any product using it; those products stop tracking stock. Stock history stays. This can't be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button variant="destructive" disabled={remove.isPending} onClick={() => remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}>
+              {remove.isPending ? 'Deleting…' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

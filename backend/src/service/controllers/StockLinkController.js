@@ -91,3 +91,31 @@ export const updateStockLink = async (req, res, next) => {
     next(error);
   }
 };
+
+// DELETE /stock-items/:id — removes an inventory item and unlinks it from products/items.
+// Refused while a group product uses it as a piece, since removing that piece would change the group's price.
+export const deleteStockItem = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ status: "error", message: "Invalid id." });
+    const item = await StockItemModel.findById(id).select("shortName").lean();
+    if (!item) return res.status(404).json({ status: "error", message: "Not found." });
+
+    const groups = await ItemModel.find({ type: "combo", "combo.pieces": { $elemMatch: { source: "stock", refId: id } } }).select("name").limit(5).lean();
+    if (groups.length) {
+      return res.status(409).json({ status: "error", message: `${item.shortName} is a piece in: ${groups.map((g) => g.name).join(", ")}. Remove it from those group products first.` });
+    }
+
+    const oid = new mongoose.Types.ObjectId(id);
+    const unlink = async (Model) => {
+      const a = await Model.updateMany({ stockItem: oid }, { $set: { stockItem: null } });
+      const b = await Model.updateMany({ "variants.stockItem": oid }, { $set: { "variants.$[v].stockItem": null } }, { arrayFilters: [{ "v.stockItem": oid }] });
+      return (a.modifiedCount || 0) + (b.modifiedCount || 0);
+    };
+    const unlinked = (await unlink(ProductModel)) + (await unlink(ItemModel));
+    await StockItemModel.deleteOne({ _id: id });
+    return res.json({ status: "success", message: `${item.shortName} deleted${unlinked ? `, unlinked from ${unlinked} product${unlinked === 1 ? "" : "s"}` : ""}.` });
+  } catch (error) {
+    next(error);
+  }
+};

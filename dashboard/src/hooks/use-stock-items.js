@@ -67,5 +67,10 @@ export const useStockItemMutations = () => {
     onSuccess: () => { refresh(); toast.success('Change undone'); },
     onError: (e) => toast.error(errText(e, 'Could not undo that change')),
   });
-  return { create, update, adjust, undo };
+  const remove = useMutation({
+    mutationFn: async (id) => (await apiClient.delete(`/api/v1/stock-items/${id}`)).data,
+    onSuccess: (res) => { refresh(); qc.invalidateQueries({ queryKey: ['stock-links'] }); toast.success(res?.message || 'Stock item deleted'); },
+    onError: (e) => toast.error(errText(e, 'Could not delete the stock item')),
+  });
+  return { create, update, adjust, undo, remove };
 };
