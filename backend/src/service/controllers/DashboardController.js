@@ -265,4 +265,29 @@ export const getTopProducts = async (req, res, next) => {
   }
 };
 
-export default { dailyOrders, getKpiStats, getOrderStatusDistribution, getTopProducts };
+// All-time sold counts per product/item from completed orders only.
+// Computed live, so an order moved out of completed (cancelled, return, fake) drops out on its own.
+export const getSoldCounts = async (req, res, next) => {
+  try {
+    const rows = await OrderModel.aggregate([
+      { $match: { active: { $ne: false }, status: 'completed' } },
+      { $unwind: '$items' },
+      // Product lines carry productId, item lines carry itemId
+      { $addFields: { refId: { $cond: [{ $gt: [{ $strLenCP: { $ifNull: ['$items.productId', ''] } }, 0] }, '$items.productId', { $ifNull: ['$items.itemId', ''] }] } } },
+      { $match: { refId: { $ne: '' } } },
+      {
+        $group: {
+          _id: { order: '$_id', product: '$refId' },
+          units: { $sum: '$items.quantity' },
+        },
+      },
+      { $group: { _id: '$_id.product', orderCount: { $sum: 1 }, unitsSold: { $sum: '$units' } } },
+    ]);
+    const counts = Object.fromEntries(rows.map((r) => [String(r._id), { orderCount: r.orderCount, unitsSold: r.unitsSold }]));
+    return res.json({ status: 'success', data: { counts } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export default { dailyOrders, getKpiStats, getOrderStatusDistribution, getTopProducts, getSoldCounts };

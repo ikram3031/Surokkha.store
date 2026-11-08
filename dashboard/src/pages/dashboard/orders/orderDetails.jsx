@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { isCourierDeliveredLocked } from '@/lib/order-lock';
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useOrder } from "@/hooks/use-orders";
 import { useAuth } from "@/lib/auth-context";
@@ -404,7 +405,7 @@ const OrderDetailsPage = () => {
       setPaymentTransactionId(order.paymentTransactionId || order.paymentDetails?.transactionId || "");
       setCart(mapOrderItemsToCart(order.items));
 
-      if (startInEditMode) {
+      if (startInEditMode && !isCourierDeliveredLocked(order)) {
         setIsEditMode(true);
       }
     }
@@ -676,9 +677,15 @@ const OrderDetailsPage = () => {
               <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={() => setSendEmailModalOpen(true)}>
                 <Mail className="h-4 w-4 text-muted-foreground" /> Send via Email
               </Button>
-              <Button className="gap-1.5 shadow-sm cursor-pointer" onClick={() => setIsEditMode(true)}>
-                <Edit className="h-4 w-4" /> Edit Order
-              </Button>
+              {isCourierDeliveredLocked(order) ? (
+                <span className="text-xs text-muted-foreground border rounded-md px-2.5 py-1.5" title="Delivered by the courier and completed; editing is turned off">
+                  Delivered by courier · view only
+                </span>
+              ) : (
+                <Button className="gap-1.5 shadow-sm cursor-pointer" onClick={() => setIsEditMode(true)}>
+                  <Edit className="h-4 w-4" /> Edit Order
+                </Button>
+              )}
             </div>
           )}
         </div>

@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts } from '@/hooks/use-products';
+import { useSoldCounts } from '@/hooks/use-sold-counts';
 import { getCategoryName, getBrandName } from '@/lib/category-cache';
 import {
   DropdownMenu,
@@ -83,6 +84,8 @@ export const ProductsTable = ({
     }
   };
 
+  // Completed-order counts replace the SKU column (cancelled, fake and returned orders never count)
+  const { data: soldCounts = {} } = useSoldCounts();
   const { data: responseData, isLoading, isError, error } = useProducts({
     search: searchQuery,
     category: categoryFilter !== 'All' && categoryFilter !== 'LowStock' ? categoryFilter : undefined,
@@ -216,7 +219,7 @@ export const ProductsTable = ({
               />
             </TableHead>
             <TableHead className="w-[280px] min-w-[180px]">{t('products.product_name')}</TableHead>
-            <TableHead className="w-[120px]">{t('products.sku')}</TableHead>
+            <TableHead className="w-[90px] text-center">{t('products.sold', 'Sold')}</TableHead>
             <TableHead className="w-[140px]">{t('products.category')}</TableHead>
             {hasBrand && <TableHead className="w-[120px]">{t('products.brand')}</TableHead>}
             <TableHead className="w-[100px]">{t('common.price')}</TableHead>
@@ -279,8 +282,15 @@ export const ProductsTable = ({
                   </Link>
                 </TableCell>
 
-                <TableCell className="max-w-[120px]">
-                  <span className="text-muted-foreground truncate block" title={product.sku}>{product.sku}</span>
+                <TableCell className="text-center">
+                  {(() => {
+                    const sold = soldCounts[product.id];
+                    return sold?.orderCount ? (
+                      <span className="font-semibold tabular-nums" title={`${sold.orderCount} completed orders · ${sold.unitsSold} units`}>{sold.orderCount}</span>
+                    ) : (
+                      <span className="text-muted-foreground">0</span>
+                    );
+                  })()}
                 </TableCell>
 
                 <TableCell className="max-w-[140px]">

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isCourierDeliveredLocked } from '@/lib/order-lock';
 import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
@@ -83,7 +84,7 @@ function RowActions({ order, list }) {
         <DropdownMenuItem onClick={() => orderActions.viewDetails(order)} className="cursor-pointer">
           <Eye className="text-muted-foreground" /> {t('common.details', 'View Details')}
         </DropdownMenuItem>
-        {!isReadOnly && (
+        {!isReadOnly && !isCourierDeliveredLocked(order) && (
           <DropdownMenuItem onClick={() => orderActions.edit(order)} className="cursor-pointer">
             <Pencil className="text-muted-foreground" /> {t('common.edit', 'Edit Order')}
           </DropdownMenuItem>

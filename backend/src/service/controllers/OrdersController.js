@@ -481,6 +481,13 @@ export const getOrderById = async (req, res, next) => {
 };
 
 // Update an existing order while keeping member references and payment sync consistent.
+// Completed orders the courier reported delivered cannot be edited from the dashboard
+export const isCourierDeliveredLocked = (order) => {
+  if (String(order?.status || '').toLowerCase() !== 'completed') return false;
+  const c = order?.courier || {};
+  return Boolean(c.consignmentId) && Boolean(c.deliveredAt || String(c.category || '').toLowerCase() === 'delivered');
+};
+
 export const updateOrder = async (req, res, next) => {
   try {
     const { orderId } = req.params;
@@ -496,6 +503,14 @@ export const updateOrder = async (req, res, next) => {
     const existingOrder = await OrderModel.findOne(query).lean();
     if (!existingOrder) {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
+    }
+
+    // Delivered by the courier (Pathao sync) and completed: view only, notes may still change
+    if (isCourierDeliveredLocked(existingOrder)) {
+      const keys = Object.keys(payload).filter((k) => !['orderNotes', 'updatedBy'].includes(k));
+      if (keys.length) {
+        return res.status(409).json({ status: 'error', message: 'This order was delivered by the courier and is locked. It can only be viewed.' });
+      }
     }
 
     const allowedUpdates = await buildAllowedOrderUpdates(payload, existingOrder);

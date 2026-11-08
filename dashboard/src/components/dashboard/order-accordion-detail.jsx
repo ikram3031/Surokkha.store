@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isCourierDeliveredLocked } from '@/lib/order-lock';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -199,10 +200,12 @@ export const OrderAccordionDetail = ({ order }) => {
             <Mail className="h-3.5 w-3.5" />
             <span className="hidden md:inline text-xs font-medium">{t('orders.send_invoice_email', 'Email Invoice')}</span>
           </Button>
-          <Button variant="outline" size="icon" className={EDIT_BTN_CLASS} onClick={handleEditOrder} title={t('common.edit', 'Edit')}>
-            <Edit3 className="h-3.5 w-3.5" />
-            <span className="hidden md:inline text-xs font-medium">{t('common.edit', 'Edit')}</span>
-          </Button>
+          {!isCourierDeliveredLocked(order) && (
+            <Button variant="outline" size="icon" className={EDIT_BTN_CLASS} onClick={handleEditOrder} title={t('common.edit', 'Edit')}>
+              <Edit3 className="h-3.5 w-3.5" />
+              <span className="hidden md:inline text-xs font-medium">{t('common.edit', 'Edit')}</span>
+            </Button>
+          )}
           <Button variant="outline" size="icon" className={VIEW_BTN_CLASS} onClick={handleViewFullPage} title={t('common.details', 'Details')}>
             <ExternalLink className="h-3.5 w-3.5" />
             <span className="hidden md:inline text-xs font-medium">{t('common.details', 'Details')}</span>

@@ -1,4 +1,5 @@
 import { Fragment, useState, useEffect } from 'react';
+import { isCourierDeliveredLocked } from '@/lib/order-lock';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -446,13 +447,13 @@ export const OrdersTable = ({
                             <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
                             {t('common.details', 'View Details')}
                           </DropdownMenuItem>
-                          {!isReadOnly && (
+                          {!isReadOnly && !isCourierDeliveredLocked(order) && (
                             <DropdownMenuItem onClick={() => handleEditOrderClick(order)} className="cursor-pointer whitespace-nowrap">
                               <Pencil className="mr-2 h-4 w-4 text-muted-foreground" />
                               {t('common.edit', 'Edit Order')}
                             </DropdownMenuItem>
                           )}
-                          {!isReadOnly && (
+                          {!isReadOnly && !isCourierDeliveredLocked(order) && (
                             <DropdownMenuItem onClick={() => handleOpenStatusModal(order)} className="cursor-pointer whitespace-nowrap">
                               <RefreshCw className="mr-2 h-4 w-4 text-muted-foreground" />
                               {t('orders.change_status', 'Change Status')}
