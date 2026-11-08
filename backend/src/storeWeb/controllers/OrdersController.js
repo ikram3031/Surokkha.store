@@ -68,7 +68,7 @@ export const createOrder = async (req, res, next) => {
     if (TURNSTILE_ON_CHECKOUT && String(payload.orderPrefix || '').toUpperCase() === 'OS' && isTurnstileConfigured()) {
       const human = await verifyTurnstile(payload.turnstileToken, clientIp, {
         action: 'checkout',
-        hostnames: ['offer.surokkha.shop', 'surokkha.store', 'www.surokkha.store'],
+        hostnames: ['offer.surokkha.shop', 'surokkhastore.shop', 'www.surokkhastore.shop', 'surokkha.store', 'www.surokkha.store'],
       });
       if (!human) {
         return res.status(400).json({

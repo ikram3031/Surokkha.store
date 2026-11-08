@@ -117,7 +117,7 @@ export const getMetaCatalogCsv = async (req, res, next) => {
     }
 
     const siteConfig = config.sites?.[targetSite] || (targetSite === 'store' ? config.sites?.store : config.sites?.shop);
-    const defaultSiteUrl = targetSite === 'store' ? 'https://surokkha.store' : 'https://surokkha.shop';
+    const defaultSiteUrl = targetSite === 'store' ? 'https://surokkhastore.shop' : 'https://surokkha.shop';
     const defaultBrandName = targetSite === 'store' ? 'Surokkha Store' : 'Surokkha Shop';
     const baseSiteUrl = (siteConfig?.url || siteConfig?.storefrontUrl || (siteConfig?.domain ? `https://${siteConfig.domain}` : defaultSiteUrl)).replace(/\/$/, '');
     const brandName = siteConfig?.name || defaultBrandName;

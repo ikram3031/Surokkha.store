@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 const SEO_SITES = {
   shop: { domain: 'surokkha.shop', label: 'Shop', apiBase: '/api/v1/settings/seo' },
-  store: { domain: 'surokkha.store', label: 'Store', apiBase: '/store/v2/settings/seo' },
+  store: { domain: 'surokkhastore.shop', label: 'Store', apiBase: '/store/v2/settings/seo' },
 };
 
 // Manages Search Engine Optimization, OpenGraph metadata, and crawler indexing for one site

@@ -23,7 +23,8 @@ const trimSlash = (u) => String(u || "").replace(/\/+$/, "");
 const pickSiteKey = ({ site, clientDomain, orderId } = {}) => {
   const sites = config.sites || {};
   if (site && sites[site]) return site;
-  const id = String(orderId || "").toUpperCase();
+  // Store numbers lead with a batch digit (0ST2601), so ignore leading digits before matching the prefix
+  const id = String(orderId || "").toUpperCase().replace(/^\d+/, "");
   const byPrefix = Object.keys(sites).find((k) => sites[k].orderPrefix && id.startsWith(String(sites[k].orderPrefix).toUpperCase()));
   if (byPrefix) return byPrefix;
   const domain = String(clientDomain || "").toLowerCase();

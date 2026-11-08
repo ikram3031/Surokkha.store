@@ -282,11 +282,11 @@ const CMSContentPage = ({ site = 'shop' }) => {
               CMS Content & Assets
             </h1>
             <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
-              {site === 'store' ? 'surokkha.store' : (clientConfig?.brandName || 'Store')} Assets
+              {site === 'store' ? 'surokkhastore.shop' : (clientConfig?.brandName || 'Store')} Assets
             </Badge>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">
-            Manage {site === 'store' ? 'surokkha.store' : 'storefront'} banners, hero slider carousel, and brand assets stored in{' '}
+            Manage {site === 'store' ? 'surokkhastore.shop' : 'storefront'} banners, hero slider carousel, and brand assets stored in{' '}
             <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">
               {assetsBasePath}
             </code>

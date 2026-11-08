@@ -16,7 +16,7 @@ export const getStoreSeoSettings = async (req, res, next) => {
       ogImage: dbSeo.ogImage || "",
       siteName: dbSeo.siteName || "Surokkha Store",
       twitterHandle: dbSeo.twitterHandle || "",
-      canonicalBaseUrl: dbSeo.canonicalBaseUrl || "https://surokkha.store",
+      canonicalBaseUrl: dbSeo.canonicalBaseUrl || "https://surokkhastore.shop",
       robotsTxt: dbSeo.robotsTxt || "User-agent: *\nAllow: /\nDisallow: /dashboard/\nDisallow: /store/",
       gscVerificationCode: dbSeo.gscVerificationCode || "",
       isPersistedInDb: Boolean(doc?.seo?.metaTitle),

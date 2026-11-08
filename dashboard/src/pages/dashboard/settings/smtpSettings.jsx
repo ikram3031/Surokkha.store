@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SMTP_SITES = {
   shop: { domain: 'surokkha.shop', label: 'Shop', apiBase: '/api/v1/settings/smtp', testApiBase: '/api/v1/settings/smtp/test' },
-  store: { domain: 'surokkha.store', label: 'Store', apiBase: '/store/v2/settings/smtp', testApiBase: '/store/v2/settings/smtp/test' },
+  store: { domain: 'surokkhastore.shop', label: 'Store', apiBase: '/store/v2/settings/smtp', testApiBase: '/store/v2/settings/smtp/test' },
 };
 
 // Manages SMTP (and, for the shop, IMAP Webmail) configuration for one site

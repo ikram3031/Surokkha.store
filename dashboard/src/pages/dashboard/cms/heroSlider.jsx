@@ -212,7 +212,7 @@ const HeroSliderPage = ({ site = 'shop' }) => {
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Hero Slider</h1>
             <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
-              {site === 'store' ? 'surokkha.store' : 'Shop'} · {activeCount}/{slides.length} active
+              {site === 'store' ? 'surokkhastore.shop' : 'Shop'} · {activeCount}/{slides.length} active
             </Badge>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">

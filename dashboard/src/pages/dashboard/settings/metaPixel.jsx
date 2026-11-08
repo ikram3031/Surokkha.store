@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 // Shop and store each keep their own pixel data behind their own API
 const SITES = {
   shop: { domain: 'surokkha.shop', label: 'Shop', badge: 'SH', apiBase: '/api/v2/settings/meta-pixel' },
-  store: { domain: 'surokkha.store', label: 'Store', badge: 'ST', apiBase: '/store/v2/settings/meta-pixel' },
+  store: { domain: 'surokkhastore.shop', label: 'Store', badge: 'ST', apiBase: '/store/v2/settings/meta-pixel' },
 };
 
 // Manages one site's Meta Pixel and Conversions API configuration and verification

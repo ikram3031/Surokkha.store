@@ -145,8 +145,35 @@ export const buildCustomOrderNumber = async () => {
   return `${indexToLetters(letterIndex)}C${String(serial).padStart(3, '0')}`;
 };
 
+// Store (surokkhastore.shop) orders: <batch>ST<YY><NN>, e.g. 0ST2601 … 0ST2699, then 1ST2601.
+// NN runs 01–99 inside a batch; the batch starts at 0 and the whole count restarts each year.
+const STORE_SERIALS_PER_BATCH = 99;
+const buildStoreOrderNumber = async () => {
+  const yy = String(new Date().getFullYear()).slice(-2);
+  const pattern = new RegExp(`^(\\d+)ST${yy}(\\d{2})$`);
+  const existing = await OrderModel.find({ orderNumber: { $regex: `^\\d+ST${yy}\\d{2}$` } })
+    .select('orderNumber')
+    .lean();
+
+  let last = 0;
+  for (const { orderNumber } of existing) {
+    const m = pattern.exec(orderNumber);
+    if (!m) continue;
+    const position = Number(m[1]) * STORE_SERIALS_PER_BATCH + Number(m[2]);
+    if (position > last) last = position;
+  }
+
+  const next = last + 1;
+  const batch = Math.floor((next - 1) / STORE_SERIALS_PER_BATCH);
+  const serial = ((next - 1) % STORE_SERIALS_PER_BATCH) + 1;
+  return `${batch}ST${yy}${String(serial).padStart(2, '0')}`;
+};
+
 export const buildOrderNumber = async (orderTypeParam = false, siteOrDomain = null, customPrefix = null) => {
   if (orderTypeParam === 'custom' || orderTypeParam === 'co') return buildCustomOrderNumber();
+  if (String(customPrefix || '').trim().toUpperCase() === 'ST' && orderTypeParam !== 'instore' && orderTypeParam !== true) {
+    return buildStoreOrderNumber();
+  }
 
   const now = new Date();
   const shortYear = String(now.getFullYear()).slice(-2);

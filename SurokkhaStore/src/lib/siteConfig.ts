@@ -6,9 +6,11 @@ export interface SiteConfig {
     /** section key → image path, e.g. { categories: "/uploads/cms/categories.webp?v=…" } */
     sectionBackgrounds: Record<string, string>
   }
+  /** Store browser pixel from the dashboard (Settings > Meta Pixel > Store); null when the API could not resolve it. */
+  metaPixel: { pixelId: string; enabled: boolean } | null
 }
 
-const EMPTY: SiteConfig = { cms: { sectionBackgrounds: {} } }
+const EMPTY: SiteConfig = { cms: { sectionBackgrounds: {} }, metaPixel: null }
 
 let current: SiteConfig = EMPTY
 let loading: Promise<SiteConfig> | null = null
@@ -19,7 +21,10 @@ export function loadSiteConfig(): Promise<SiteConfig> {
   loading ??= api
     .get<{ data?: Partial<SiteConfig> }>('/site-config')
     .then((res) => {
-      current = { cms: { sectionBackgrounds: res.data?.cms?.sectionBackgrounds ?? {} } }
+      current = {
+        cms: { sectionBackgrounds: res.data?.cms?.sectionBackgrounds ?? {} },
+        metaPixel: res.data?.metaPixel ?? null,
+      }
       listeners.forEach((fn) => fn())
       return current
     })

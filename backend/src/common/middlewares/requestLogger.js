@@ -37,7 +37,7 @@ const getFrontendLabel = (req, layer) => {
   if (from.includes("offer.")) return "OFFER";
   if (from.includes("admin.") || from.includes("dashboard")) return "DASH";
   if (from.includes("surokkha.shop")) return "SHOP";
-  if (from.includes("surokkha.store")) return "STORE";
+  if (from.includes("surokkha.store") || from.includes("surokkhastore.shop")) return "STORE";
   return FALLBACK_BY_LAYER[layer] || String(layer).toUpperCase();
 };
 

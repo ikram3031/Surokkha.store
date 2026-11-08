@@ -222,13 +222,13 @@ const MetaCatalogGenerator = () => {
   const [customLabel0, setCustomLabel0] = useState(initialSettings.customLabel0);
   const [includeVariants, setIncludeVariants] = useState(initialSettings.includeVariants);
 
-  // Multi-site configuration detection (Store: surokkha.store, Shop: surokkha.shop)
+  // Multi-site configuration detection (Store: surokkhastore.shop, Shop: surokkha.shop)
   const configuredSites = useMemo(() => {
     if (clientConfig?.sites && typeof clientConfig.sites === 'object') {
       return Object.entries(clientConfig.sites).map(([key, site]) => ({
         key,
         name: site.name || (key === 'store' ? 'Surokkha Store' : key === 'shop' ? 'Surokkha Shop' : key),
-        domain: site.domain || (key === 'store' ? 'surokkha.store' : 'surokkha.shop'),
+        domain: site.domain || (key === 'store' ? 'surokkhastore.shop' : 'surokkha.shop'),
         url: (site.url || site.storefrontUrl || (site.domain ? `https://${site.domain}` : '')).replace(/\/$/, ''),
         pixelId: site.metaPixel?.pixelId || '',
       }));
@@ -237,8 +237,8 @@ const MetaCatalogGenerator = () => {
       {
         key: 'store',
         name: 'Surokkha Store',
-        domain: 'surokkha.store',
-        url: 'https://surokkha.store',
+        domain: 'surokkhastore.shop',
+        url: 'https://surokkhastore.shop',
         pixelId: '',
       },
       {
@@ -259,8 +259,8 @@ const MetaCatalogGenerator = () => {
     return configuredSites.find((s) => s.key === activeSiteKey) || configuredSites[0] || {
       key: 'store',
       name: clientConfig?.brandName || 'Store',
-      domain: clientConfig?.domain || 'surokkha.store',
-      url: siteUrl || 'https://surokkha.store',
+      domain: clientConfig?.domain || 'surokkhastore.shop',
+      url: siteUrl || 'https://surokkhastore.shop',
       pixelId: '',
     };
   }, [configuredSites, activeSiteKey, siteUrl]);
@@ -269,8 +269,8 @@ const MetaCatalogGenerator = () => {
     return configuredSites.find((s) => s.key === 'store') || {
       key: 'store',
       name: 'Surokkha Store',
-      domain: 'surokkha.store',
-      url: 'https://surokkha.store',
+      domain: 'surokkhastore.shop',
+      url: 'https://surokkhastore.shop',
       pixelId: '',
     };
   }, [configuredSites]);

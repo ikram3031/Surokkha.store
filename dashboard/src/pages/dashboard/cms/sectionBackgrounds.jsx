@@ -126,7 +126,7 @@ const SectionBackgroundsPage = ({ site = 'store' }) => {
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Section Backgrounds</h1>
             <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
-              {site === 'store' ? 'surokkha.store' : 'Shop'}
+              {site === 'store' ? 'surokkhastore.shop' : 'Shop'}
             </Badge>
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">
