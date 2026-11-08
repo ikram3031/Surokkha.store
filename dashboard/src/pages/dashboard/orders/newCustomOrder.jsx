@@ -2296,14 +2296,8 @@ const NewCustomOrderPage = () => {
                 )}
               </div>
 
-              <div className="flex flex-col gap-2.5 sm:flex-row">
-                <Button
-                  variant="default"
-                  className="w-full cursor-pointer text-xs font-semibold"
-                  onClick={handleDownloadInvoice}
-                >
-                  Download / Print Invoice
-                </Button>
+              {/* Stacked so both buttons always fit inside the dialog */}
+              <div className="flex flex-col gap-2.5">
                 <Button
                   variant="outline"
                   className="w-full cursor-pointer text-xs font-semibold gap-1.5"
@@ -2311,7 +2305,14 @@ const NewCustomOrderPage = () => {
                   onClick={handleSendWhatsApp}
                 >
                   {sendingWhatsApp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />}
-                  Send by WhatsApp
+                  Send via WhatsApp (Invoice Image)
+                </Button>
+                <Button
+                  variant="default"
+                  className="w-full cursor-pointer text-xs font-semibold"
+                  onClick={handleDownloadInvoice}
+                >
+                  Download / Print Invoice
                 </Button>
               </div>
             </div>

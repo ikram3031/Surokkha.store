@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { WhatsAppInvoiceButton } from '@/components/dashboard/orders/WhatsAppInvoiceButton';
 import { isCourierDeliveredLocked } from '@/lib/order-lock';
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useOrder } from "@/hooks/use-orders";
@@ -674,9 +675,7 @@ const OrderDetailsPage = () => {
               <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={handleOpenInvoice}>
                 <FileText className="h-4 w-4 text-muted-foreground" /> Print Invoice
               </Button>
-              <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={() => setSendEmailModalOpen(true)}>
-                <Mail className="h-4 w-4 text-muted-foreground" /> Send via Email
-              </Button>
+              <WhatsAppInvoiceButton order={order} className="gap-1.5 shadow-sm bg-background cursor-pointer" />
               {isCourierDeliveredLocked(order) ? (
                 <span className="text-xs text-muted-foreground border rounded-md px-2.5 py-1.5" title="Delivered by the courier and completed; editing is turned off">
                   Delivered by courier · view only

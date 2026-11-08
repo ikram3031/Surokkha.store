@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { WhatsAppInvoiceButton } from '@/components/dashboard/orders/WhatsAppInvoiceButton';
 import { isCourierDeliveredLocked } from '@/lib/order-lock';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -196,10 +197,7 @@ export const OrderAccordionDetail = ({ order }) => {
             <FileText className="h-3.5 w-3.5" />
             <span className="hidden md:inline text-xs font-medium">{t('orders.print_invoice', 'Print Invoice')}</span>
           </Button>
-          <Button variant="outline" size="icon" className={EMAIL_BTN_CLASS} onClick={() => setSendEmailModalOpen(true)} title={t('orders.send_invoice_email', 'Email Invoice')}>
-            <Mail className="h-3.5 w-3.5" />
-            <span className="hidden md:inline text-xs font-medium">{t('orders.send_invoice_email', 'Email Invoice')}</span>
-          </Button>
+          <WhatsAppInvoiceButton order={order} size="icon" iconClass="h-3.5 w-3.5" className={EMAIL_BTN_CLASS} label={t('orders.send_whatsapp', 'WhatsApp')} showLabelClass="hidden md:inline text-xs font-medium" />
           {!isCourierDeliveredLocked(order) && (
             <Button variant="outline" size="icon" className={EDIT_BTN_CLASS} onClick={handleEditOrder} title={t('common.edit', 'Edit')}>
               <Edit3 className="h-3.5 w-3.5" />

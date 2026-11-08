@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { WhatsAppInvoiceButton } from '@/components/dashboard/orders/WhatsAppInvoiceButton';
 import { isCourierDeliveredLocked } from '@/lib/order-lock';
 import { useTranslation } from 'react-i18next';
 import { Check, Copy, ExternalLink, Loader2, Mail, MapPin, Package, Pencil, Phone, Printer, ShieldAlert, Tag } from 'lucide-react';
@@ -163,9 +164,7 @@ export function OrderQuickView({ list }) {
                 <Button variant="outline" onClick={() => orderActions.openInvoice(order)} className={cn(actionTile, LIGHT_BUTTON_CLASS)}>
                   <Printer className="size-3.5" /> {t('orders.print_invoice', 'Print Invoice')}
                 </Button>
-                <Button variant="outline" onClick={() => setEmailOpen(true)} className={cn(actionTile, LIGHT_BUTTON_CLASS)}>
-                  <Mail className="size-3.5" /> {t('orders.send_mail', 'Send Mail')}
-                </Button>
+                <WhatsAppInvoiceButton order={order} iconClass="size-3.5" className={cn(actionTile, LIGHT_BUTTON_CLASS)} />
                 {!isReadOnly && !isCourierDeliveredLocked(order) && (
                   <Button onClick={() => orderActions.edit(order)} className={cn(actionTile, PRIMARY_BUTTON_CLASS)}>
                     <Pencil className="size-3.5" /> {t('common.edit', 'Edit')}
