@@ -58,7 +58,7 @@ function IntroProductCard({ product }: { product: Product }) {
 
       <div className="mt-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs text-white/60">{catLabel[product.cat]}</p>
+          <p className="text-xs text-muted-foreground">{catLabel[product.cat]}</p>
           <h3 className="mt-0.5 text-[15px] font-semibold leading-snug">{product.name}</h3>
           <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
             <span className="font-display text-lg font-bold text-price">{taka(product.price)}</span>
@@ -68,7 +68,7 @@ function IntroProductCard({ product }: { product: Product }) {
         <Button
           size="icon"
           variant="outline"
-          className="size-9 shrink-0 rounded-full"
+          className="size-9 shrink-0 rounded-full border-success bg-success-bg text-success hover:bg-success/15 hover:text-success"
           onClick={() => add(product)}
           aria-label={`Add ${product.name} to cart`}
         >
@@ -155,7 +155,7 @@ export function IntroProducts() {
           <SectionHeading invert title="On sale now" subtitle="Our best offers right now, delivered discreetly." />
           <Button
             size="lg"
-            className="h-11 rounded-full bg-background px-7 text-foreground hover:bg-accent"
+            className="h-11 rounded-full border border-gold bg-transparent px-7 text-gold-text hover:bg-gold/10"
             onClick={() => navigate('/category/combo')}
           >
             See all offers
@@ -192,7 +192,7 @@ export function IntroProducts() {
                   onClick={() => goTo(i)}
                   aria-label={`Show slide ${i + 1}`}
                   aria-current={i === current}
-                  className={`h-2 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-accent' : 'w-2 bg-white/30 hover:bg-white/50'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-brand-accent' : 'w-2 bg-white/30 hover:bg-white/50'}`}
                 />
               ))}
             </div>

@@ -76,42 +76,59 @@
 
 :root,
 .dark {
-  --background: #202529;
-  --foreground: var(--brand-cream-light);
+  /* Surokkha Crimson design system (claude.ai design system artifact) */
+  --background: #110d0f; /* page */
+  --foreground: #fbf5ec; /* text */
 
-  --card: #202529;
-  --card-foreground: var(--brand-cream-light);
+  --card: #1c1416; /* surface */
+  --card-foreground: #fbf5ec;
 
-  --popover: #202529;
-  --popover-foreground: var(--brand-cream-light);
+  --popover: #1c1416;
+  --popover-foreground: #fbf5ec;
 
-  --primary: var(--brand-blush);
-  --primary-foreground: #241f1c;
+  --primary: #e11d48;
+  --primary-hover: #be123c;
+  --primary-foreground: #ffffff;
 
-  --secondary: #3a322f;
-  --secondary-foreground: var(--brand-cream-light);
+  --secondary: #261b1e; /* surface-raised */
+  --secondary-foreground: #fbf5ec;
 
-  --muted: #3a322f;
-  --muted-foreground: #c8c2bf;
+  --muted: #261b1e;
+  --muted-foreground: #bdb2b5; /* text-muted */
+  --text-secondary: #d9cfd2;
 
-  --accent: #4a3f3a;
-  --accent-foreground: var(--brand-cream-light);
+  /* shadcn hover fill; the brand accent lives in --brand-accent */
+  --accent: #261b1e;
+  --accent-foreground: #fbf5ec;
+  --brand-accent: #fb5072;
 
-  --destructive: #e4677d;
-  --destructive-foreground: #241f1c;
+  --destructive: #ff8a5c; /* error: orange-red, never crimson */
+  --destructive-foreground: #110d0f;
 
-  --success: #3ec97b;
-  --success-foreground: #241f1c;
+  --success: #4ade80;
+  --success-foreground: #110d0f;
+  --success-bg: #0e2418;
 
-  --price: #ff8da0;
+  --price: #fda4af;
 
-  --link: #ff2d6f;
-  --link-hover: #ff5c8d;
-  --link-foreground: #241f1c;
+  --badge: #9f1239;
+  --badge-foreground: #ffe4e9;
 
-  --border: #3a322f;
-  --input: #3a322f;
-  --ring: var(--brand-blush);
+  --gold: #e6c27a;
+  --gold-text: #f3d9a4;
+  --wine: #2a0e16;
+
+  --link: #ffb3c1; /* outline-text */
+  --link-hover: #fb7185; /* outline */
+  --link-foreground: #110d0f;
+
+  --border: #3a2a2e;
+  --input: #3a2a2e;
+  --ring: #fb7185;
+
+  --font-display: "Marcellus", "Noto Serif Bengali", Georgia, serif;
+  --font-body: "Manrope", "Hind Siliguri", system-ui, sans-serif;
+  --font-product: "Jost", "Hind Siliguri", system-ui, sans-serif;
 }
 
 @theme inline {
@@ -140,80 +157,90 @@
   --color-link: var(--link);
   --color-link-hover: var(--link-hover);
   --color-link-foreground: var(--link-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-text-secondary: var(--text-secondary);
+  --color-brand-accent: var(--brand-accent);
+  --color-success-bg: var(--success-bg);
+  --color-badge: var(--badge);
+  --color-badge-foreground: var(--badge-foreground);
+  --color-gold: var(--gold);
+  --color-gold-text: var(--gold-text);
+  --color-wine: var(--wine);
 
   /* Accent orange for the mobile bottom-nav icons and the hamburger menu icon */
-  --color-nav-accent: #fcd077;
+  --color-nav-accent: #fb7185;
 
   /* Every rounded-* utility lands on 4px or 8px; rounded-full still gives pills. */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.5rem;
-  --radius-2xl: 0.5rem;
-  --radius-3xl: 0.5rem;
-  --radius-4xl: 0.5rem;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 14px;
+  --radius-2xl: 14px;
+  --radius-3xl: 14px;
+  --radius-4xl: 14px;
 
   /* Neutral ramp inverted for the dark theme: 50 is the darkest surface,
      950 the lightest text — so components written with raw gray/zinc/slate
      (light bg / dark text) still read correctly on the dark background. */
-  --color-gray-50: #23282d;
-  --color-gray-100: #282e33;
-  --color-gray-200: #303740;
-  --color-gray-300: #3d444c;
-  --color-gray-400: #5a626b;
-  --color-gray-500: #868e97;
-  --color-gray-600: #a6adb4;
-  --color-gray-700: #c4c9ce;
-  --color-gray-800: #dde1e4;
-  --color-gray-900: #edeff1;
-  --color-gray-950: #f8f9fa;
-  --color-slate-50: #23282d;
-  --color-slate-100: #282e33;
-  --color-slate-200: #303740;
-  --color-slate-300: #3d444c;
-  --color-slate-400: #5a626b;
-  --color-slate-500: #868e97;
-  --color-slate-600: #a6adb4;
-  --color-slate-700: #c4c9ce;
-  --color-slate-800: #dde1e4;
-  --color-slate-900: #edeff1;
-  --color-slate-950: #f8f9fa;
-  --color-zinc-50: #23282d;
-  --color-zinc-100: #282e33;
-  --color-zinc-200: #303740;
-  --color-zinc-300: #3d444c;
-  --color-zinc-400: #5a626b;
-  --color-zinc-500: #868e97;
-  --color-zinc-600: #a6adb4;
-  --color-zinc-700: #c4c9ce;
-  --color-zinc-800: #dde1e4;
-  --color-zinc-900: #edeff1;
-  --color-zinc-950: #f8f9fa;
-  --color-neutral-50: #23282d;
-  --color-neutral-100: #282e33;
-  --color-neutral-200: #303740;
-  --color-neutral-300: #3d444c;
-  --color-neutral-400: #5a626b;
-  --color-neutral-500: #868e97;
-  --color-neutral-600: #a6adb4;
-  --color-neutral-700: #c4c9ce;
-  --color-neutral-800: #dde1e4;
-  --color-neutral-900: #edeff1;
-  --color-neutral-950: #f8f9fa;
-  --color-stone-50: #23282d;
-  --color-stone-100: #282e33;
-  --color-stone-200: #303740;
-  --color-stone-300: #3d444c;
-  --color-stone-400: #5a626b;
-  --color-stone-500: #868e97;
-  --color-stone-600: #a6adb4;
-  --color-stone-700: #c4c9ce;
-  --color-stone-800: #dde1e4;
-  --color-stone-900: #edeff1;
-  --color-stone-950: #f8f9fa;
+  --color-gray-50: #1c1416;
+  --color-gray-100: #211719;
+  --color-gray-200: #261b1e;
+  --color-gray-300: #3a2a2e;
+  --color-gray-400: #5c4a4f;
+  --color-gray-500: #8a7b7f;
+  --color-gray-600: #a99da0;
+  --color-gray-700: #bdb2b5;
+  --color-gray-800: #d9cfd2;
+  --color-gray-900: #ece4e2;
+  --color-gray-950: #fbf5ec;
+  --color-slate-50: #1c1416;
+  --color-slate-100: #211719;
+  --color-slate-200: #261b1e;
+  --color-slate-300: #3a2a2e;
+  --color-slate-400: #5c4a4f;
+  --color-slate-500: #8a7b7f;
+  --color-slate-600: #a99da0;
+  --color-slate-700: #bdb2b5;
+  --color-slate-800: #d9cfd2;
+  --color-slate-900: #ece4e2;
+  --color-slate-950: #fbf5ec;
+  --color-zinc-50: #1c1416;
+  --color-zinc-100: #211719;
+  --color-zinc-200: #261b1e;
+  --color-zinc-300: #3a2a2e;
+  --color-zinc-400: #5c4a4f;
+  --color-zinc-500: #8a7b7f;
+  --color-zinc-600: #a99da0;
+  --color-zinc-700: #bdb2b5;
+  --color-zinc-800: #d9cfd2;
+  --color-zinc-900: #ece4e2;
+  --color-zinc-950: #fbf5ec;
+  --color-neutral-50: #1c1416;
+  --color-neutral-100: #211719;
+  --color-neutral-200: #261b1e;
+  --color-neutral-300: #3a2a2e;
+  --color-neutral-400: #5c4a4f;
+  --color-neutral-500: #8a7b7f;
+  --color-neutral-600: #a99da0;
+  --color-neutral-700: #bdb2b5;
+  --color-neutral-800: #d9cfd2;
+  --color-neutral-900: #ece4e2;
+  --color-neutral-950: #fbf5ec;
+  --color-stone-50: #1c1416;
+  --color-stone-100: #211719;
+  --color-stone-200: #261b1e;
+  --color-stone-300: #3a2a2e;
+  --color-stone-400: #5c4a4f;
+  --color-stone-500: #8a7b7f;
+  --color-stone-600: #a99da0;
+  --color-stone-700: #bdb2b5;
+  --color-stone-800: #d9cfd2;
+  --color-stone-900: #ece4e2;
+  --color-stone-950: #fbf5ec;
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-product: var(--font-product);
 
   --animate-marquee: marquee 16s linear infinite;
 }
@@ -233,6 +260,10 @@
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
+  }
+  /* Prices always use lining, tabular numerals */
+  .text-price {
+    font-variant-numeric: lining-nums tabular-nums;
   }
 }
 

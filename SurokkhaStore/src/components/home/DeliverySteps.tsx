@@ -29,7 +29,7 @@ export function DeliverySteps() {
         <ol className="mt-12 grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => (
             <li key={step.title} className="border-t border-white/20 pt-6">
-              <span className="text-sm font-semibold text-accent">Step {i + 1}</span>
+              <span className="text-sm font-semibold text-brand-accent">Step {i + 1}</span>
               <h3 className="mt-2 font-display text-xl font-bold">{step.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/70">{step.text}</p>
             </li>

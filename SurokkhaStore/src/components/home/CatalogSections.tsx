@@ -34,7 +34,7 @@ export function ComboProducts() {
   const { combos } = useCatalogGroups()
   if (combos.length === 0) return null
   return (
-    <div className="bg-accent/40">
+    <div className="bg-wine">
       <ProductCarousel id="combo-packs" title="Combo packs" subtitle="Buy more, save more" products={combos} />
     </div>
   )
