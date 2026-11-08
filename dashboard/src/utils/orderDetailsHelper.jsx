@@ -260,6 +260,7 @@ export const mapOrderItemsToCart = (items = []) =>
       productId: item.productId || "",
       itemId: item.itemId || "",
       itemType: item.itemType || (item.itemId ? "item" : "product"),
+      ...(item.pieces?.length ? { pieces: item.pieces.map((p) => ({ ...p, refId: String(p.refId) })) } : {}),
     };
   });
 
@@ -367,6 +368,7 @@ export const buildUpdatePayload = ({
       itemType: item.itemType || "product",
       sku: item.sku || "",
       image: item.image || "",
+      ...(item.pieces?.length ? { pieces: item.pieces } : {}),
     })),
     totals: {
       subtotal,

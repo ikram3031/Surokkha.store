@@ -1646,6 +1646,11 @@ const OrderDetailsPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 flex-wrap">
                           <p className="text-[11px] font-semibold text-foreground truncate max-w-[160px]">{item.name}</p>
+                          {item.pieces?.length > 0 && (
+                            <p className="basis-full text-[10px] text-muted-foreground truncate" title={item.pieces.map((p) => `${p.quantity} × ${p.name}`).join(", ")}>
+                              From stock: {item.pieces.map((p) => `${p.quantity}× ${p.name}`).join(", ")}
+                            </p>
+                          )}
                           {item.itemType === "item" && (
                             <Badge variant="outline" className="text-[8px] border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 py-0 px-1 h-3.5 flex items-center font-medium">
                               Item

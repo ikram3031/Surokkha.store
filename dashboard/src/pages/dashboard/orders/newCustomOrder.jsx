@@ -933,6 +933,7 @@ const NewCustomOrderPage = () => {
           productDid: item.productDid || "",
           sku: item.sku || "",
           image: item.image || "",
+          ...(item.pieces?.length ? { pieces: item.pieces } : {}),
         })),
         subtotal,
         discountTotalAmount: discountAmount,
@@ -1589,6 +1590,11 @@ const NewCustomOrderPage = () => {
                         <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 font-normal">
                           Custom
                         </Badge>
+                      )}
+                      {item.pieces?.length > 0 && (
+                        <p className="basis-full text-[10px] text-muted-foreground truncate" title={item.pieces.map((p) => `${p.quantity} × ${p.name}`).join(", ")}>
+                          From stock: {item.pieces.map((p) => `${p.quantity}× ${p.name}`).join(", ")}
+                        </p>
                       )}
                       {item.itemType === "item" && (
                         <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-normal">

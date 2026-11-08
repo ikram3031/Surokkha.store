@@ -57,6 +57,19 @@ export const resolveUserIdFromReference = async (reference) => {
   return foundUser?._id ?? null;
 };
 
+// Keeps only valid inventory pieces on a custom line; returns {} when there are none
+const normalizeCustomPieces = (pieces) => {
+  const clean = (Array.isArray(pieces) ? pieces : [])
+    .filter((p) => p && Types.ObjectId.isValid(String(p.refId)) && Number(p.quantity) >= 1)
+    .map((p) => ({
+      entity: p.entity === 'item' ? 'item' : 'product',
+      refId: String(p.refId),
+      name: String(p.name || '').slice(0, 200),
+      quantity: Math.floor(Number(p.quantity)),
+    }));
+  return clean.length > 0 ? { pieces: clean } : {};
+};
+
 // Normalize checkout items into the order schema shape expected by the database.
 // Supports both 'Product' and 'Item' collections, variant sizes, skus, and IDs seamlessly.
 export const normalizeOrderItems = async (items = []) => {
@@ -75,10 +88,12 @@ export const normalizeOrderItems = async (items = []) => {
       itemType: itemType,
       sku: item.sku || '',
       image: item.image || item.imageUrl || '',
+      ...(itemType === 'custom' ? normalizeCustomPieces(item.pieces) : {}),
     };
   });
 
-  const needsResolution = normalized.filter((item) => !item.productDid || item.productDid.length !== 16);
+  // Custom lines with picked inventory pieces stay custom, even when their name matches a catalog product
+  const needsResolution = normalized.filter((item) => !item.pieces && (!item.productDid || item.productDid.length !== 16));
   if (needsResolution.length > 0) {
     const refs = needsResolution.map((i) => i.productId || i.itemId || i.productDid).filter(Boolean);
     const objectIds = refs.filter((id) => Types.ObjectId.isValid(id)).map((id) => new Types.ObjectId(id));

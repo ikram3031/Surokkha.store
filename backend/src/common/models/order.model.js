@@ -17,6 +17,21 @@ const orderItemSchema = new Schema(
     itemType: { type: String, trim: true, default: "product" }, // 'product' | 'item' | 'custom'
     sku: { type: String, trim: true, default: "" },
     image: { type: String, trim: true, default: "" },
+    // Custom lines can name catalog pieces (per one unit of the line) that leave stock with the order
+    pieces: {
+      type: [
+        new Schema(
+          {
+            entity: { type: String, enum: ["product", "item"], required: true },
+            refId: { type: Schema.Types.ObjectId, required: true },
+            name: { type: String, trim: true, default: "" },
+            quantity: { type: Number, required: true, min: 1 },
+          },
+          { _id: false },
+        ),
+      ],
+      default: undefined,
+    },
   },
   { _id: false },
 );

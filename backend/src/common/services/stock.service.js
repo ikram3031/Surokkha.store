@@ -81,8 +81,20 @@ const deductForOrder = async (order, actor) => {
   const lines = Array.isArray(order.items) ? order.items : [];
 
   for (const line of lines) {
-    if (line.itemType === "custom") continue;
     const qty = Number(line.quantity) || 0;
+    if (line.itemType === "custom") {
+      // A custom line takes out only the inventory pieces picked for it, times the lines ordered
+      for (const piece of line.pieces || []) {
+        const pieceQty = (Number(piece.quantity) || 0) * qty;
+        if (!piece.refId || pieceQty <= 0) continue;
+        try {
+          await takeOut({ entity: piece.entity === "item" ? "item" : "product", filter: { _id: piece.refId }, qty: pieceQty, name: piece.name, order, actor, note: `Custom: ${line.name}` }, ledger);
+        } catch (error) {
+          console.error(`Stock deduct failed for order ${order.orderNumber}:`, error);
+        }
+      }
+      continue;
+    }
     const filter = buildRefFilter(line);
     if (qty <= 0 || !filter) continue;
 
