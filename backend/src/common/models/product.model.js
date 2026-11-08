@@ -53,6 +53,8 @@ const productSchema = new Schema(
         sku: { type: String, trim: true },
         sortOrder: { type: Number, default: 0 },
         imageUrl: { type: String, default: null, trim: true },
+        // Inventory piece this variant sells; no link means no stock is tracked for it
+        stockItem: { type: Schema.Types.ObjectId, ref: "StockItem", default: null },
         stockStatus: {
           type: String,
           enum: ["instock", "outofstock", "preorder"],
@@ -100,6 +102,9 @@ const productSchema = new Schema(
       default: 0,
       index: true
     },
+
+    // Inventory piece this product sells (simple products); no link means no stock is tracked for it
+    stockItem: { type: Schema.Types.ObjectId, ref: "StockItem", default: null, index: true },
 
     // Rich Specifications & Details
     origin: { type: String, default: "China Imported", trim: true },

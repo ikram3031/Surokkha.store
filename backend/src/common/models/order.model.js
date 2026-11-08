@@ -176,7 +176,7 @@ const orderSchema = new Schema(
       type: [
         {
           _id: false,
-          entity: { type: String, enum: ["product", "item"] },
+          entity: { type: String, enum: ["product", "item", "stockItem"] },
           refId: { type: Schema.Types.ObjectId },
           name: { type: String, default: "" },
           quantity: { type: Number, default: 0 },

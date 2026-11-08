@@ -5,6 +5,7 @@ import { OrderModel } from "../models/order.model.js";
 import { StockMovementModel } from "../models/stockMovement.model.js";
 import { config } from "../config/index.js";
 import { comboStockPieces } from "../utils/combo.js";
+import { applyStockItemDelta } from "../../service/services/stockReceipt.service.js";
 
 const RELEASE_STATUSES = ["cancelled", "canceled", "fake", "return"];
 const SHIPPED_STATUSES = ["shipped", "completed"];
@@ -53,21 +54,38 @@ export const applyStockDelta = async (entity, filter, delta) => {
   return { doc, before, after: Math.max(0, before + delta) };
 };
 
-// Takes one stock line out and records it in the ledger; returns nothing when the product doesn't track stock
-const takeOut = async ({ entity, filter, qty, name, order, actor, note = "" }, ledger) => {
-  const res = await applyStockDelta(entity, filter, -qty);
+// A stock item id from a form/payload value, or null when the value isn't one
+export const toStockItemId = (value) => {
+  const id = value && typeof value === "object" ? value._id || value.id : value;
+  return id && mongoose.Types.ObjectId.isValid(String(id)) ? String(id) : null;
+};
+
+// The inventory piece a catalog product/item sells: the matching variant's link, else the product's own
+const linkedStockItem = async (entity, filter, size = "") => {
+  const doc = await modelFor(entity).findOne(filter).select("name type stockItem variants.size variants.stockItem combo").lean();
+  if (!doc) return { doc: null, stockItemId: null };
+  if (doc.type === "variant") {
+    const variant = (doc.variants || []).find((v) => v.size === size);
+    return { doc, stockItemId: variant?.stockItem ? String(variant.stockItem) : null };
+  }
+  return { doc, stockItemId: doc.stockItem ? String(doc.stockItem) : null };
+};
+
+// Takes pieces out of one inventory item and records it in the ledger and the stock history
+const takeOutStockItem = async ({ stockItemId, qty, order, actor, note = "" }, ledger) => {
+  if (!stockItemId || !(qty > 0)) return;
+  const res = await applyStockItemDelta(stockItemId, -qty);
   if (!res) return;
-  const taken = Math.min(res.before, qty);
-  if (taken <= 0) return;
-  ledger.push({ entity, refId: res.doc._id, name: res.doc.name || name || "", quantity: taken });
+  const name = res.doc.shortName || res.doc.name || "";
+  ledger.push({ entity: "stockItem", refId: res.doc._id, name, quantity: qty });
   await logStockMovement({
-    entity,
+    entity: "stockItem",
     refId: res.doc._id,
-    name: res.doc.name || name || "",
+    name,
     type: "order_deduct",
-    delta: -taken,
+    delta: -qty,
     before: res.before,
-    after: res.before - taken,
+    after: res.after,
     orderId: order._id,
     orderNumber: order.orderNumber,
     note,
@@ -75,58 +93,45 @@ const takeOut = async ({ entity, filter, qty, name, order, actor, note = "" }, l
   });
 };
 
-// Takes the order's quantities out of stock and returns the ledger of what was actually taken
+// Takes one catalog product/item out through its inventory link; nothing happens when it has none
+const takeOutLinked = async ({ entity, filter, size, qty, order, actor, note = "" }, ledger) => {
+  const { stockItemId } = await linkedStockItem(entity, filter, size);
+  await takeOutStockItem({ stockItemId, qty, order, actor, note }, ledger);
+};
+
+// Takes the order's pieces out of the linked inventory items and returns the ledger of what was taken.
+// Only products/variants linked to an inventory item are tracked; everything else is left alone.
 const deductForOrder = async (order, actor) => {
   const ledger = [];
   const lines = Array.isArray(order.items) ? order.items : [];
 
   for (const line of lines) {
     const qty = Number(line.quantity) || 0;
-    if (line.itemType === "custom") {
-      // A custom line takes out only the inventory pieces picked for it, times the lines ordered
-      for (const piece of line.pieces || []) {
-        const pieceQty = (Number(piece.quantity) || 0) * qty;
-        if (!piece.refId || pieceQty <= 0) continue;
-        try {
-          await takeOut({ entity: piece.entity === "item" ? "item" : "product", filter: { _id: piece.refId }, qty: pieceQty, name: piece.name, order, actor, note: `Custom: ${line.name}` }, ledger);
-        } catch (error) {
-          console.error(`Stock deduct failed for order ${order.orderNumber}:`, error);
-        }
-      }
-      continue;
-    }
-    const filter = buildRefFilter(line);
-    if (qty <= 0 || !filter) continue;
-
-    const entity = lineEntity(line);
+    if (qty <= 0) continue;
     try {
-      // A group product (combo) takes its catalog pieces out instead of itself
-      if (entity === "item") {
-        const combo = await ItemModel.findOne({ ...filter, type: "combo" }).select("name combo").lean();
-        if (combo) {
-          for (const piece of comboStockPieces(combo, qty)) {
-            if (piece.quantity > 0) await takeOut({ entity: piece.entity, filter: { _id: piece.refId }, qty: piece.quantity, name: piece.name, order, actor, note: `Combo: ${combo.name}` }, ledger);
-          }
-          continue;
+      if (line.itemType === "custom") {
+        // A custom line takes out only the catalog pieces picked for it, times the lines ordered
+        for (const piece of line.pieces || []) {
+          const pieceQty = (Number(piece.quantity) || 0) * qty;
+          if (!piece.refId || pieceQty <= 0) continue;
+          await takeOutLinked({ entity: piece.entity === "item" ? "item" : "product", filter: { _id: piece.refId }, qty: pieceQty, order, actor, note: `Custom: ${line.name}` }, ledger);
         }
+        continue;
       }
-      const res = await applyStockDelta(entity, filter, -qty);
-      if (!res) continue;
-      const taken = Math.min(res.before, qty);
-      if (taken <= 0) continue;
-      ledger.push({ entity, refId: res.doc._id, name: res.doc.name || line.name || "", quantity: taken });
-      await logStockMovement({
-        entity,
-        refId: res.doc._id,
-        name: res.doc.name || line.name || "",
-        type: "order_deduct",
-        delta: -taken,
-        before: res.before,
-        after: res.before - taken,
-        orderId: order._id,
-        orderNumber: order.orderNumber,
-        createdBy: actor,
-      });
+      const filter = buildRefFilter(line);
+      if (!filter) continue;
+      const entity = lineEntity(line);
+      const { doc, stockItemId } = await linkedStockItem(entity, filter, line.size || "");
+      if (!doc) continue;
+
+      // A group product (combo) takes its pieces out through their own links
+      if (entity === "item" && doc.type === "combo") {
+        for (const piece of comboStockPieces(doc, qty)) {
+          if (piece.quantity > 0) await takeOutLinked({ entity: piece.entity, filter: { _id: piece.refId }, size: piece.size || "", qty: piece.quantity, order, actor, note: `Combo: ${doc.name}` }, ledger);
+        }
+        continue;
+      }
+      await takeOutStockItem({ stockItemId, qty, order, actor, note: line.size ? `${doc.name} (${line.size})` : "" }, ledger);
     } catch (error) {
       console.error(`Stock deduct failed for order ${order.orderNumber}:`, error);
     }
@@ -139,12 +144,15 @@ const restoreLedger = async (order, type, actor, note = "") => {
   for (const row of order.stockLedger || []) {
     if (!row.refId || !(row.quantity > 0)) continue;
     try {
-      const res = await applyStockDelta(row.entity, { _id: row.refId }, row.quantity);
+      // Older orders took stock from the product itself; newer ones from the linked inventory item
+      const res = row.entity === "stockItem"
+        ? await applyStockItemDelta(row.refId, row.quantity)
+        : await applyStockDelta(row.entity, { _id: row.refId }, row.quantity);
       if (!res) continue;
       await logStockMovement({
         entity: row.entity,
         refId: row.refId,
-        name: res.doc.name || row.name,
+        name: res.doc.shortName || res.doc.name || row.name,
         type,
         delta: row.quantity,
         before: res.before,

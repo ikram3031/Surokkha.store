@@ -74,7 +74,7 @@ const AddNewItem = () => {
   const [chargeTax, setChargeTax] = useState(false);
   const [taxRate, setTaxRate] = useState("");
   const [stockStatus, setStockStatus] = useState("instock");
-  const [stockAmount, setStockAmount] = useState("");
+  const [stockItem, setStockItem] = useState(null);
 
   // 4. Variant product fields
   const [variants, setVariants] = useState([emptyVariant()]);
@@ -157,7 +157,7 @@ const AddNewItem = () => {
     }
     if (typeof p.isActive === "boolean") setIsActive(p.isActive);
     if (p.stockStatus) setStockStatus(p.stockStatus);
-    if (p.stockAmount !== undefined) setStockAmount(String(p.stockAmount));
+    if (p.stockItem) setStockItem(String(p.stockItem._id || p.stockItem));
 
     // Tags
     if (Array.isArray(p.tags) && p.tags.length > 0) {
@@ -233,6 +233,7 @@ const AddNewItem = () => {
           imageFile: null,
           imageError: "",
           stockStatus: v.stockStatus || "instock",
+          stockItem: v.stockItem ? String(v.stockItem) : null,
         }))
       );
     }
@@ -512,18 +513,6 @@ const AddNewItem = () => {
         toast.error("Base price must be greater than 0.");
         return;
       }
-      if (stockStatus === "instock") {
-        if (
-          stockAmount === "" ||
-          stockAmount === null ||
-          stockAmount === undefined ||
-          isNaN(Number(stockAmount)) ||
-          Number(stockAmount) <= 0
-        ) {
-          toast.error("Stock quantity is mandatory for in-stock simple product (must be at least 1).");
-          return;
-        }
-      }
     } else {
       const validVariants = variants.filter((v) => v.size.trim() && v.price);
       if (validVariants.length === 0) {
@@ -601,6 +590,7 @@ const AddNewItem = () => {
           sortOrder: i,
           imageUrl: varImageUrl || null,
           stockStatus: v.stockStatus || "instock",
+          stockItem: v.stockItem ? String(v.stockItem) : null,
         });
       }
 
@@ -647,10 +637,7 @@ const AddNewItem = () => {
         taxRate: chargeTax && taxRate ? parseFloat(taxRate) : null,
         isActive: Boolean(isActive),
         stockStatus: stockStatus || "instock",
-        stockAmount:
-          productType === "simple" && stockStatus === "instock"
-            ? Math.max(0, parseInt(stockAmount, 10))
-            : 0,
+        stockItem: productType === "simple" ? stockItem : null,
         tags: Array.isArray(tags) ? tags : [],
         images: uploadedGalleryImages,
         metaData: {
@@ -799,10 +786,9 @@ const AddNewItem = () => {
               setChargeTax={setChargeTax}
               taxRate={taxRate}
               setTaxRate={setTaxRate}
-              stockStatus={stockStatus}
-              setStockStatus={setStockStatus}
-              stockAmount={stockAmount}
-              setStockAmount={setStockAmount}
+              stockItem={stockItem}
+              setStockItem={setStockItem}
+              onPickStockItem={(piece) => { if (!name.trim()) handleNameChange(piece.name || piece.shortName); }}
               variants={variants}
               attributeGroups={attributeGroups}
               selectedAttributeGroup={selectedAttributeGroup}

@@ -223,4 +223,4 @@ export const serializeCombo = (doc, refs = new Map()) => {
 export const comboStockPieces = (comboDoc, linesOrdered) =>
   (comboDoc?.combo?.pieces || [])
     .filter((p) => p.source !== "custom" && p.refId && mongoose.Types.ObjectId.isValid(String(p.refId)))
-    .map((p) => ({ entity: p.source === "item" ? "item" : "product", refId: p.refId, name: p.name, quantity: (Number(p.quantity) || 0) * (Number(linesOrdered) || 0) }));
+    .map((p) => ({ entity: p.source === "item" ? "item" : "product", refId: p.refId, name: p.name, size: p.size || "", quantity: (Number(p.quantity) || 0) * (Number(linesOrdered) || 0) }));

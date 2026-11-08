@@ -3,7 +3,7 @@ import { ItemModel } from "../../common/models/item.model.js";
 import { CategoryModel } from "../../common/models/category.model.js";
 import { BrandModel } from "../../common/models/brand.model.js";
 import { UserModel } from "../../common/models/user.model.js";
-import { logStockMovement } from "../../common/services/stock.service.js";
+import { logStockMovement, toStockItemId } from "../../common/services/stock.service.js";
 import {
   PLACEHOLDER_IMAGE_URL,
   serializeProduct,
@@ -124,6 +124,7 @@ export const createItem = async (req, res, next) => {
       thumbnailUrl,
       gallery,
       stockStatus: body.stockStatus || "instock",
+      stockItem: body.type === "variant" ? null : toStockItemId(body.stockItem),
       stockAmount:
         body.stockAmount !== undefined &&
         body.stockAmount !== null &&
@@ -153,6 +154,7 @@ export const createItem = async (req, res, next) => {
             sku: v.sku || "",
             sortOrder: v.sortOrder !== undefined ? Number(v.sortOrder) : i,
             imageUrl: v.imageUrl || null,
+            stockItem: toStockItemId(v.stockItem),
             stockStatus: v.stockStatus || "instock",
           }))
         : [];
@@ -298,6 +300,7 @@ export const updateItem = async (req, res, next) => {
 
     const stockBefore = Number(item.stockAmount) || 0;
     if (body.stockStatus !== undefined) item.stockStatus = body.stockStatus;
+    if (body.stockItem !== undefined) item.stockItem = toStockItemId(body.stockItem);
     if (body.stockAmount !== undefined && body.stockAmount !== null && body.stockAmount !== "") {
       item.stockAmount = Math.max(0, Number(body.stockAmount));
     }
@@ -393,6 +396,7 @@ export const updateItem = async (req, res, next) => {
                 sku: v.sku !== undefined ? (v.sku || "") : (existing.sku || ""),
                 sortOrder: v.sortOrder !== undefined ? Number(v.sortOrder) : (existing.sortOrder ?? i),
                 imageUrl: v.imageUrl !== undefined ? (v.imageUrl || null) : (existing.imageUrl ?? null),
+                stockItem: v.stockItem !== undefined ? toStockItemId(v.stockItem) : (existing.stockItem ?? null),
                 stockStatus: v.stockStatus || existing.stockStatus || "instock",
               };
             })

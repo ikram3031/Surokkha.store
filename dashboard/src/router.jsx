@@ -1006,6 +1006,8 @@ const analyticsRoutes = [
 // Inventory workspace: unit-level stock items, their history and purchases received from Plexivia
 const inventoryRoutes = [
   { index: true, ...lazyPage(() => import('./pages/inventory/stockItems')) },
+  { path: 'products', ...lazyPage(() => import('./pages/inventory/inventoryProducts')) },
+  { path: 'items', ...lazyPage(() => import('./pages/inventory/inventoryItems')) },
   { path: 'movements', ...lazyPage(() => import('./pages/inventory/movements')) },
   { path: 'receipts', ...lazyPage(() => import('./pages/inventory/receipts')) },
   { path: '*', element: <NotFound /> },
