@@ -200,6 +200,8 @@ export const listItems = async (req, res, next) => {
 
     const queryOptions = method === "POST" ? req.body : req.query;
     const filter = await buildProductFilter(queryOptions);
+    // Group products have their own list; ask for them with ?type=combo
+    if (filter.type === undefined) filter.type = { $ne: "combo" };
     const sort = buildProductSort(queryOptions);
     const { limit, skip } = parsePagination(queryOptions);
 

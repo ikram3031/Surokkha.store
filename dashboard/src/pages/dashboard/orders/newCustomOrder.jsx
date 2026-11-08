@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useProducts } from "@/hooks/use-products";
 import { useItems } from "@/hooks/use-items";
@@ -456,6 +457,7 @@ const resolveReorderItem = async (orderItem) => {
       itemType: isItem ? "item" : "product",
       productDid: entry.did || entry.sku || "",
       outOfStock,
+      isCombo: entry.type === "combo",
     },
     priceChanged: oldPrice > 0 && oldPrice !== price ? { name: label, from: oldPrice, to: price } : null,
   };
@@ -492,6 +494,13 @@ const NewCustomOrderPage = () => {
     brand: brandFilter !== "All" ? brandFilter : undefined,
     limit: 50,
   });
+  // Group products (combos) are sold as one line; their catalog pieces leave stock when the order is placed
+  const { data: combos = [], isLoading: combosLoading } = useQuery({
+    queryKey: ["combos", { status: "active", search: searchQuery || undefined, forOrder: true }],
+    queryFn: async () => (await apiClient.get("/api/v1/combos", { params: { status: "active", search: searchQuery || undefined } })).data?.data || [],
+    staleTime: 15000,
+  });
+
   const items = Array.isArray(itemsResponse?.data)
     ? itemsResponse.data.filter(isInStock)
     : [];
@@ -1141,12 +1150,16 @@ const NewCustomOrderPage = () => {
             <div className="flex items-center gap-2">
               {catalogType === "products" ? (
                 <Package className="h-4 w-4 text-primary" />
+              ) : catalogType === "combos" ? (
+                <Layers className="h-4 w-4 text-primary" />
               ) : (
                 <Boxes className="h-4 w-4 text-primary" />
               )}
               <h3 className="font-semibold text-base">
                 {catalogType === "products"
                   ? t("nav.products", "Product Catalogue")
+                  : catalogType === "combos"
+                  ? "Group Products"
                   : t("nav.items", "Item Catalogue")}
               </h3>
             </div>
@@ -1182,6 +1195,22 @@ const NewCustomOrderPage = () => {
                   {items.length > 0 && (
                     <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 ml-0.5">
                       {items.length}
+                    </Badge>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCatalogType("combos")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${catalogType === "combos"
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>Combos</span>
+                  {combos.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 ml-0.5">
+                      {combos.length}
                     </Badge>
                   )}
                 </button>
@@ -1327,7 +1356,7 @@ const NewCustomOrderPage = () => {
                   })}
                 </div>
               )
-            ) : (
+            ) : catalogType === "items" ? (
               itemsLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {[...Array(6)].map((_, i) => (
@@ -1433,6 +1462,77 @@ const NewCustomOrderPage = () => {
                   })}
                 </div>
               )
+            ) : combosLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+                ))}
+              </div>
+            ) : combos.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12">
+                <Layers className="h-10 w-10 mb-2 opacity-30" />
+                <p className="text-xs">No active group products</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {combos.map((combo) => {
+                  const cartQty = cart.filter((c) => c.id === combo.id).reduce((s, c) => s + c.quantity, 0);
+                  const problem = combo.pieces.find((p) => p.problem);
+                  return (
+                    <div
+                      key={combo.id}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-xl border bg-background transition-all ${problem ? "opacity-50" : "hover:border-primary/40 hover:shadow-xs"} ${cartQty > 0 ? "border-primary/50 bg-primary/[0.02]" : "border-border"}`}
+                    >
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border/50">
+                        {combo.imageUrl ? (
+                          <img src={resolveImageUrl(combo.imageUrl)} alt={combo.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Layers className="h-5 w-5 text-muted-foreground/30" /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-xs leading-tight truncate">{combo.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate" title={combo.pieces.map((p) => `${p.quantity} × ${p.name}`).join(", ")}>
+                          {combo.pieces.map((p) => `${p.quantity}× ${p.name}`).join(", ")}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-xs font-bold text-primary">{formatBDT(combo.price)}</span>
+                          {combo.discount > 0 && <span className="text-[10px] text-muted-foreground line-through">{formatBDT(combo.total)}</span>}
+                          {problem && <span className="text-[10px] text-red-600 truncate">{problem.name}: {problem.problem}</span>}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-center gap-0.5">
+                        {cartQty > 0 && <span className="text-[10px] font-bold text-primary">×{cartQty}</span>}
+                        <button
+                          type="button"
+                          disabled={Boolean(problem)}
+                          onClick={() =>
+                            !problem &&
+                            addToCart({
+                              id: combo.id,
+                              name: combo.name,
+                              price: combo.price,
+                              quantity: 1,
+                              image: resolveImageUrl(combo.imageUrl),
+                              sku: combo.sku || "",
+                              size: "",
+                              productId: "",
+                              itemId: combo.id,
+                              itemType: "item",
+                              productDid: combo.did || "",
+                              isCombo: true,
+                            })
+                          }
+                          className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all cursor-pointer ${problem ? "bg-muted cursor-not-allowed text-muted-foreground" : "bg-primary text-primary-foreground hover:bg-primary/80 active:scale-95 shadow-xs"}`}
+                          title={problem ? `${problem.name}: ${problem.problem}` : t("orders.add_to_cart", "Add to cart")}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -1493,6 +1593,11 @@ const NewCustomOrderPage = () => {
                       {item.itemType === "item" && (
                         <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-normal">
                           Item
+                        </Badge>
+                      )}
+                      {item.isCombo && (
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 border-primary/30 bg-primary/10 text-primary font-normal">
+                          Combo
                         </Badge>
                       )}
                       {item.outOfStock && (

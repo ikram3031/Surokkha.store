@@ -4,6 +4,7 @@ import { ItemModel } from "../models/item.model.js";
 import { OrderModel } from "../models/order.model.js";
 import { StockMovementModel } from "../models/stockMovement.model.js";
 import { config } from "../config/index.js";
+import { comboStockPieces } from "../utils/combo.js";
 
 const RELEASE_STATUSES = ["cancelled", "canceled", "fake", "return"];
 const SHIPPED_STATUSES = ["shipped", "completed"];
@@ -52,6 +53,28 @@ export const applyStockDelta = async (entity, filter, delta) => {
   return { doc, before, after: Math.max(0, before + delta) };
 };
 
+// Takes one stock line out and records it in the ledger; returns nothing when the product doesn't track stock
+const takeOut = async ({ entity, filter, qty, name, order, actor, note = "" }, ledger) => {
+  const res = await applyStockDelta(entity, filter, -qty);
+  if (!res) return;
+  const taken = Math.min(res.before, qty);
+  if (taken <= 0) return;
+  ledger.push({ entity, refId: res.doc._id, name: res.doc.name || name || "", quantity: taken });
+  await logStockMovement({
+    entity,
+    refId: res.doc._id,
+    name: res.doc.name || name || "",
+    type: "order_deduct",
+    delta: -taken,
+    before: res.before,
+    after: res.before - taken,
+    orderId: order._id,
+    orderNumber: order.orderNumber,
+    note,
+    createdBy: actor,
+  });
+};
+
 // Takes the order's quantities out of stock and returns the ledger of what was actually taken
 const deductForOrder = async (order, actor) => {
   const ledger = [];
@@ -65,6 +88,16 @@ const deductForOrder = async (order, actor) => {
 
     const entity = lineEntity(line);
     try {
+      // A group product (combo) takes its catalog pieces out instead of itself
+      if (entity === "item") {
+        const combo = await ItemModel.findOne({ ...filter, type: "combo" }).select("name combo").lean();
+        if (combo) {
+          for (const piece of comboStockPieces(combo, qty)) {
+            if (piece.quantity > 0) await takeOut({ entity: piece.entity, filter: { _id: piece.refId }, qty: piece.quantity, name: piece.name, order, actor, note: `Combo: ${combo.name}` }, ledger);
+          }
+          continue;
+        }
+      }
       const res = await applyStockDelta(entity, filter, -qty);
       if (!res) continue;
       const taken = Math.min(res.before, qty);

@@ -3,6 +3,7 @@ import { resolveImageUrl } from "@/lib/api-client"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
+  Layers,
   LayoutDashboard,
   ShoppingCart,
   ShoppingBag,
@@ -448,6 +449,11 @@ export const AppSidebar = ({ ...props }) => {
               {showItems && isAllowed("items.list") && (
                 <NavSub to="/dashboard/items" active={pathname.startsWith("/dashboard/items")} icon={ListOrdered}>
                   {t("nav.item_list", "Item List")}
+                </NavSub>
+              )}
+              {isAllowed("products.list") && (
+                <NavSub to="/dashboard/products/combos" active={pathname.startsWith("/dashboard/products/combos")} icon={Layers}>
+                  {t("nav.group_products", "Group Products")}
                 </NavSub>
               )}
               {isAllowed("products.on-sale") && (

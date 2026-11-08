@@ -53,6 +53,8 @@ import AddNewProduct from './pages/dashboard/products/addNewProduct';
 import Inventory from './pages/dashboard/products/inventory';
 import Coupons from './pages/dashboard/products/coupons';
 import GroupOffers from './pages/dashboard/products/groupOffers';
+import Combos from './pages/dashboard/products/combos';
+import ComboEditor from './pages/dashboard/products/comboEditor';
 import SizeCharts from './pages/dashboard/products/sizeCharts';
 import Categories from './pages/dashboard/products/categories';
 import Brands from './pages/dashboard/products/brands';
@@ -416,6 +418,30 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="products.list">
                 <Inventory />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'combos',
+            element: (
+              <RoleGuard menuKey="products.list">
+                <Combos />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'combos/new',
+            element: (
+              <RoleGuard menuKey="products.list">
+                <ComboEditor />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'combos/:id',
+            element: (
+              <RoleGuard menuKey="products.list">
+                <ComboEditor key="edit" />
               </RoleGuard>
             ),
           },

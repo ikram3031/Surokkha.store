@@ -15,6 +15,8 @@ export const listItems = async (req, res, next) => {
 
     const queryOptions = method === "POST" ? req.body : req.query;
     const filter = await buildProductFilter(queryOptions);
+    // Group products (combos) are dashboard-only for now
+    filter.$and = [...(filter.$and || []), { type: { $ne: "combo" } }];
     const sort = buildProductSort(queryOptions);
     const { limit, skip } = parsePagination(queryOptions);
 
@@ -53,6 +55,7 @@ export const getSingleItem = async (req, res, next) => {
     const filter = isObjectId
       ? { $or: [{ _id: identifier }, { slug: identifier }, { did: identifier }] }
       : { $or: [{ slug: identifier }, { did: identifier }] };
+    filter.type = { $ne: "combo" };
 
     const item = await ItemModel.findOne(filter)
       .populate("categories")
@@ -81,7 +84,8 @@ export const getMetaCatalogCsv = async (req, res, next) => {
   try {
     const items = await ItemModel.find({
       isActive: true,
-      excludeFromMetaCatalog: { $ne: true }
+      excludeFromMetaCatalog: { $ne: true },
+      type: { $ne: "combo" }
     })
       .populate("categories")
       .lean();

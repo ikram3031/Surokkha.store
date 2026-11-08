@@ -7,7 +7,7 @@ const itemSchema = new Schema(
     name: { type: String, required: true, trim: true, index: true },
     slug: { type: String, required: true, trim: true, unique: true, index: true },
     did: { type: String, default: () => generateDid(), unique: true, index: true },
-    description: { type: String, trim: true, default: "", required: function () { return this.type !== "group"; } },
+    description: { type: String, trim: true, default: "", required: function () { return !["group", "combo"].includes(this.type); } },
     longDescription: { type: String, trim: true },
 
     isActive: { type: Boolean, default: true, index: true },
@@ -22,7 +22,7 @@ const itemSchema = new Schema(
     // Item Type (Simple or Variant)
     type: {
       type: String,
-      enum: ["simple", "variant", "group"],
+      enum: ["simple", "variant", "group", "combo"],
       default: "simple",
       required: true,
       index: true
@@ -92,6 +92,27 @@ const itemSchema = new Schema(
       ],
     },
 
+    // Group product / combo (Type = "combo"): fixed pieces sold together, one discount on the whole set.
+    // price = pieces total, offerPrice = total after the discount, so every price reader keeps working.
+    combo: {
+      _id: false,
+      pieces: [
+        {
+          _id: false,
+          // product / item: taken from the catalog and its stock moves with the combo; custom: typed in by hand
+          source: { type: String, enum: ["product", "item", "custom"], default: "custom" },
+          refId: { type: Schema.Types.ObjectId, default: null },
+          name: { type: String, required: true, trim: true },
+          size: { type: String, default: "", trim: true },
+          quantity: { type: Number, required: true, min: 1 },
+          unitPrice: { type: Number, required: true, min: 0 },
+          imageUrl: { type: String, default: "", trim: true },
+        },
+      ],
+      discountType: { type: String, enum: ["none", "percentage", "fixed"], default: "none" },
+      discountValue: { type: Number, min: 0, default: 0 },
+    },
+
     tags: [{ type: String, trim: true, lowercase: true }],
 
     // SEO Meta Data
@@ -113,7 +134,7 @@ const itemSchema = new Schema(
     ],
 
     // Images
-    imageUrl: { type: String, trim: true, default: "", required: function () { return this.type !== "group"; } },
+    imageUrl: { type: String, trim: true, default: "", required: function () { return !["group", "combo"].includes(this.type); } },
     thumbnailUrl: { type: String, trim: true },
     gallery: [{ type: String, trim: true }],
 

@@ -20,7 +20,7 @@ const resolveShowcase = async (ids) => {
   const match = { _id: { $in: idList }, ...AVAILABLE_MATCH };
   const [products, items] = await Promise.all([
     ProductModel.find(match).populate("categories").lean(),
-    ItemModel.find(match).populate("categories").lean(),
+    ItemModel.find({ ...match, type: { $ne: "combo" } }).populate("categories").lean(),
   ]);
 
   const byId = new Map();

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { loadComboPieceRefs, pieceProblem } from "../../common/utils/combo.js";
 import { BillingModel } from '../../common/models/billing.model.js';
 import { BillTypeModel } from '../../common/models/billType.model.js';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
@@ -108,34 +109,41 @@ export const createOrder = async (req, res, next) => {
         let productDoc = null;
         if (productRef) {
           if (mongoose.Types.ObjectId.isValid(productRef)) {
-            productDoc = await ProductModel.findById(productRef).select('name stockStatus isActive').lean();
+            productDoc = await ProductModel.findById(productRef).select('name stockStatus isActive type combo').lean();
             if (!productDoc) {
-              productDoc = await ItemModel.findById(productRef).select('name stockStatus isActive').lean();
+              productDoc = await ItemModel.findById(productRef).select('name stockStatus isActive type combo').lean();
             }
           }
           if (!productDoc) {
-            productDoc = await ProductModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
+            productDoc = await ProductModel.findOne({ did: productRef }).select('name stockStatus isActive type combo').lean();
           }
           if (!productDoc) {
-            productDoc = await ItemModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
+            productDoc = await ItemModel.findOne({ did: productRef }).select('name stockStatus isActive type combo').lean();
           }
           if (!productDoc) {
-            productDoc = await ProductModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
+            productDoc = await ProductModel.findOne({ slug: productRef }).select('name stockStatus isActive type combo').lean();
           }
           if (!productDoc) {
-            productDoc = await ItemModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
+            productDoc = await ItemModel.findOne({ slug: productRef }).select('name stockStatus isActive type combo').lean();
           }
         }
         if (!productDoc && productName) {
-          productDoc = await ProductModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
+          productDoc = await ProductModel.findOne({ name: productName }).select('name stockStatus isActive type combo').lean();
           if (!productDoc) {
-            productDoc = await ItemModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
+            productDoc = await ItemModel.findOne({ name: productName }).select('name stockStatus isActive type combo').lean();
           }
         }
 
         if (productDoc) {
           if (productDoc.isActive === false) {
             validationErrors.push(`"${productDoc.name || productName}" is currently unavailable.`);
+          } else if (productDoc.type === 'combo') {
+            // A group product is sellable only while every catalog piece inside it is
+            const refs = await loadComboPieceRefs([productDoc]);
+            for (const piece of productDoc.combo?.pieces || []) {
+              const problem = pieceProblem(piece, piece.refId ? refs.get(`${piece.source}:${piece.refId}`) : null);
+              if (problem) validationErrors.push(`"${productDoc.name}": ${piece.name} is ${problem}.`);
+            }
           } else if (String(productDoc.stockStatus || '').toLowerCase().trim() === 'outofstock') {
             validationErrors.push(`"${productDoc.name || productName}" is currently out of stock.`);
           }
