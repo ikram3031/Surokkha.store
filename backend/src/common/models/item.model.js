@@ -101,8 +101,8 @@ const itemSchema = new Schema(
       pieces: [
         {
           _id: false,
-          // product / item: taken from the catalog and its stock moves with the combo; custom: typed in by hand
-          source: { type: String, enum: ["product", "item", "custom"], default: "custom" },
+          // stock: an inventory piece taken out directly; product / item: catalog pieces taken out through their inventory link; custom: typed in by hand
+          source: { type: String, enum: ["stock", "product", "item", "custom"], default: "custom" },
           refId: { type: Schema.Types.ObjectId, default: null },
           name: { type: String, required: true, trim: true },
           size: { type: String, default: "", trim: true },

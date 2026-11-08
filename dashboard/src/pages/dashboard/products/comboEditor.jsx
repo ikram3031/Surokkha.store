@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, Layers, Plus, Trash2, Search, Loader2, PenLine, Package, Boxes, ImageIcon, X, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Layers, Plus, Trash2, Search, Loader2, PenLine, Package, Boxes, Warehouse, Check, ImageIcon, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import { isReadOnlyRole } from '@/lib/rbac';
 import { clientConfig } from '@/clientConfig';
 import { effectivePrice } from '@/utils/orderHelper';
 import { taka } from './combos';
+import { useStockItems } from '@/hooks/use-stock-items';
 
 const ACTION_BTN = 'cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
 const API_BASE = (baseURL || '').replace(/\/$/, '');
@@ -58,7 +59,7 @@ const pieceFromEntry = (entry, source) => {
     quantity: 1,
     unitPrice: effectivePrice(Number(src.price) || 0, src.offerPrice ?? null),
     imageUrl: entry.imageUrl || entry.thumbnailUrl || '',
-    stockAmount: entry.type === 'simple' ? Number(entry.stockAmount) || 0 : null,
+    stockAmount: null,
     problem: entry.isActive === false ? 'not active' : entry.stockStatus === 'outofstock' ? 'out of stock' : null,
   };
 };
@@ -86,7 +87,7 @@ const CatalogPicker = ({ open, onOpenChange, onPick }) => {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Add a piece from the catalog</DialogTitle>
-          <DialogDescription>Its stock goes down when the group sells. The price per piece starts at today's price and can be changed.</DialogDescription>
+          <DialogDescription>Stock goes down through the product's inventory link when the group sells. The price per piece starts at today's price and can be changed.</DialogDescription>
         </DialogHeader>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -109,13 +110,76 @@ const CatalogPicker = ({ open, onOpenChange, onPick }) => {
                   <span className="block truncate text-sm font-medium">{e.name}</span>
                   <span className="block text-xs text-muted-foreground">
                     {source === 'item' ? 'Item' : 'Product'} · {e.type === 'variant' ? `${e.variants?.length || 0} sizes` : taka(effectivePrice(Number(e.price) || 0, e.offerPrice ?? null))}
-                    {e.type === 'simple' ? ` · ${Number(e.stockAmount) || 0} in stock` : ''}
                   </span>
                 </span>
                 {out && <Badge variant="outline" className="border-red-500 text-[10px] text-red-600">{e.isActive === false ? 'Inactive' : 'Out of stock'}</Badge>}
               </button>
             );
           })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Inventory item -> piece; the price per piece is typed in
+const pieceFromStock = (s) => ({
+  key: `stock-${s.id}-${Date.now()}`,
+  source: 'stock',
+  refId: s.id,
+  name: s.name || s.shortName,
+  size: '',
+  variants: [],
+  quantity: 1,
+  unitPrice: '',
+  imageUrl: '',
+  stockAmount: Number(s.quantity) || 0,
+  problem: Number(s.quantity) <= 0 ? 'out of stock' : null,
+});
+
+// Tick several inventory items and add them to the group at once
+const InventoryPicker = ({ open, onOpenChange, onPick }) => {
+  const [q, setQ] = useState('');
+  const [picked, setPicked] = useState([]);
+  const { data, isFetching } = useStockItems({ status: 'active', search: q.trim() });
+  const rows = data?.data || [];
+  const toggle = (s) => setPicked((cur) => (cur.some((x) => x.id === s.id) ? cur.filter((x) => x.id !== s.id) : [...cur, s]));
+  const close = (v) => {
+    if (!v) { setPicked([]); setQ(''); }
+    onOpenChange(v);
+  };
+  return (
+    <Dialog open={open} onOpenChange={close}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add pieces from inventory</DialogTitle>
+          <DialogDescription>Tick every piece in the group. Their stock goes down when the group sells.</DialogDescription>
+        </DialogHeader>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input autoFocus className="pl-8" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search inventory" />
+        </div>
+        <div className="max-h-80 min-w-0 divide-y overflow-y-auto rounded-md border">
+          {isFetching && rows.length === 0 && <p className="p-3 text-sm text-muted-foreground">Searching…</p>}
+          {!isFetching && rows.length === 0 && <p className="p-3 text-sm text-muted-foreground">Nothing found.</p>}
+          {rows.map((s) => {
+            const on = picked.some((x) => x.id === s.id);
+            const qty = Number(s.quantity) || 0;
+            return (
+              <button key={s.id} type="button" onClick={() => toggle(s)} className={`flex w-full min-w-0 cursor-pointer items-center gap-2.5 px-3 py-2 text-left hover:bg-muted ${on ? 'bg-primary/5' : ''}`}>
+                <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${on ? 'border-primary bg-primary text-primary-foreground' : ''}`}>{on && <Check className="h-3 w-3" />}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{s.shortName}{s.name ? ` · ${s.name}` : ''}</span>
+                  <span className={`block text-xs ${qty <= 0 ? 'text-red-600' : 'text-muted-foreground'}`}>{qty} {s.unit || 'pcs'} in stock</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex justify-end">
+          <Button type="button" className={ACTION_BTN} disabled={picked.length === 0} onClick={() => { onPick(picked.map(pieceFromStock)); close(false); }}>
+            Add {picked.length || ''} piece{picked.length === 1 ? '' : 's'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -156,6 +220,7 @@ const ComboEditor = () => {
   const [form, setForm] = useState(EMPTY);
   const [slugTouched, setSlugTouched] = useState(false);
   const [picker, setPicker] = useState(false);
+  const [stockPicker, setStockPicker] = useState(false);
   const [media, setMedia] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadedFor, setLoadedFor] = useState(null);
@@ -225,6 +290,18 @@ const ComboEditor = () => {
       return { ...f, pieces: [...f.pieces, piece] };
     });
     setPicker(false);
+  };
+
+  // Adds inventory pieces; one already in the group just gets one more
+  const pickStock = (pieces) => {
+    setForm((f) => {
+      let next = f.pieces;
+      for (const piece of pieces) {
+        const same = next.find((p) => p.source === 'stock' && p.refId === piece.refId);
+        next = same ? next.map((p) => (p === same ? { ...p, quantity: Number(p.quantity) + 1 } : p)) : [...next, piece];
+      }
+      return { ...f, pieces: next };
+    });
   };
 
   // Typed-in piece that is not in the catalog (no stock)
@@ -310,18 +387,19 @@ const ComboEditor = () => {
                 <CardDescription>How many of each, and the price of one piece.</CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setStockPicker(true)}><Warehouse className="mr-1 h-3.5 w-3.5" /> From inventory</Button>
                 <Button type="button" size="sm" variant="outline" onClick={() => setPicker(true)}><Plus className="mr-1 h-3.5 w-3.5" /> From products / items</Button>
                 <Button type="button" size="sm" variant="outline" onClick={addCustom}><PenLine className="mr-1 h-3.5 w-3.5" /> Custom piece</Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              {form.pieces.length === 0 && <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">No pieces yet. Add from your products and items, or type a custom piece.</p>}
+              {form.pieces.length === 0 && <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">No pieces yet. Add from inventory, from your products and items, or type a custom piece.</p>}
               {form.pieces.map((p) => {
                 const lineTotal = round2((Number(p.quantity) || 0) * (Number(p.unitPrice) || 0));
                 const short = p.source !== 'custom' && p.stockAmount !== null && p.stockAmount !== undefined && p.stockAmount < Number(p.quantity);
                 return (
                   <div key={p.key} className="flex min-w-0 flex-wrap items-center gap-2 rounded-lg border p-2">
-                    {p.imageUrl ? <img src={fullUrl(p.imageUrl)} alt="" className="h-10 w-10 shrink-0 rounded border object-cover" /> : <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border bg-muted">{p.source === 'custom' ? <PenLine className="h-4 w-4 text-muted-foreground" /> : p.source === 'item' ? <Boxes className="h-4 w-4 text-muted-foreground" /> : <Package className="h-4 w-4 text-muted-foreground" />}</div>}
+                    {p.imageUrl ? <img src={fullUrl(p.imageUrl)} alt="" className="h-10 w-10 shrink-0 rounded border object-cover" /> : <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border bg-muted">{p.source === 'custom' ? <PenLine className="h-4 w-4 text-muted-foreground" /> : p.source === 'stock' ? <Warehouse className="h-4 w-4 text-muted-foreground" /> : p.source === 'item' ? <Boxes className="h-4 w-4 text-muted-foreground" /> : <Package className="h-4 w-4 text-muted-foreground" />}</div>}
                     <div className="min-w-[10rem] flex-1">
                       {p.source === 'custom' ? (
                         <Input value={p.name} onChange={(e) => setPiece(p.key, { name: e.target.value })} placeholder="Piece name" className="h-8" />
@@ -329,7 +407,7 @@ const ComboEditor = () => {
                         <div className="truncate text-sm font-medium" title={p.name}>{p.name}</div>
                       )}
                       <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <Badge variant="outline" className="h-4 px-1 text-[10px] font-normal">{p.source === 'custom' ? 'Custom · no stock' : p.source === 'item' ? 'Item' : 'Product'}</Badge>
+                        <Badge variant="outline" className="h-4 px-1 text-[10px] font-normal">{p.source === 'custom' ? 'Custom · no stock' : p.source === 'stock' ? 'Inventory' : p.source === 'item' ? 'Item' : 'Product'}</Badge>
                         {p.variants?.length > 0 && (
                           <select className="h-6 rounded border bg-background px-1 text-[11px]" value={p.size} onChange={(e) => chooseSize(p, e.target.value)}>
                             {p.variants.map((v) => <option key={v.size} value={v.size}>{v.size}</option>)}
@@ -421,6 +499,7 @@ const ComboEditor = () => {
       </div>
 
       <CatalogPicker open={picker} onOpenChange={setPicker} onPick={pick} />
+      <InventoryPicker open={stockPicker} onOpenChange={setStockPicker} onPick={pickStock} />
       <MediaPickerModal open={media} onOpenChange={setMedia} onSelect={(url) => url && set({ imageUrl: Array.isArray(url) ? url[0] : url })} multiple={false} initialSelected={form.imageUrl} title="Group product picture" productSlug={form.slug} />
     </form>
   );

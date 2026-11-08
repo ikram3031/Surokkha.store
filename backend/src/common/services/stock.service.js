@@ -127,7 +127,9 @@ const deductForOrder = async (order, actor) => {
       // A group product (combo) takes its pieces out through their own links
       if (entity === "item" && doc.type === "combo") {
         for (const piece of comboStockPieces(doc, qty)) {
-          if (piece.quantity > 0) await takeOutLinked({ entity: piece.entity, filter: { _id: piece.refId }, size: piece.size || "", qty: piece.quantity, order, actor, note: `Combo: ${doc.name}` }, ledger);
+          if (!(piece.quantity > 0)) continue;
+          if (piece.entity === "stockItem") await takeOutStockItem({ stockItemId: String(piece.refId), qty: piece.quantity, order, actor, note: `Combo: ${doc.name}` }, ledger);
+          else await takeOutLinked({ entity: piece.entity, filter: { _id: piece.refId }, size: piece.size || "", qty: piece.quantity, order, actor, note: `Combo: ${doc.name}` }, ledger);
         }
         continue;
       }

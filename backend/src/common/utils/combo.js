@@ -3,6 +3,7 @@ import { ProductModel } from "../models/product.model.js";
 import { ItemModel } from "../models/item.model.js";
 import { CategoryModel } from "../models/category.model.js";
 import { BrandModel } from "../models/brand.model.js";
+import { StockItemModel } from "../models/stockItem.model.js";
 
 // Group products (combos): fixed pieces sold together with one discount on the whole set
 
@@ -39,7 +40,7 @@ export const normalizeComboPayload = (body = {}) => {
   for (const raw of Array.isArray(body.pieces) ? body.pieces : []) {
     const pieceName = String(raw?.name || "").trim();
     if (!pieceName) continue;
-    const source = ["product", "item"].includes(raw?.source) && isObjectId(String(raw?.refId || "")) ? raw.source : "custom";
+    const source = ["stock", "product", "item"].includes(raw?.source) && isObjectId(String(raw?.refId || "")) ? raw.source : "custom";
     const quantity = Math.round(Number(raw?.quantity));
     const unitPrice = Number(raw?.unitPrice);
     if (!(quantity >= 1)) errors.push(`"${pieceName}" needs at least 1 piece.`);
@@ -137,25 +138,34 @@ export const toComboItemFields = (n, categories, brand) => ({
 export const loadComboPieceRefs = async (combos = []) => {
   const productIds = new Set();
   const itemIds = new Set();
+  const stockIds = new Set();
   combos.forEach((c) => (c?.combo?.pieces || []).forEach((p) => {
     if (!p.refId) return;
     if (p.source === "product") productIds.add(String(p.refId));
     if (p.source === "item") itemIds.add(String(p.refId));
+    if (p.source === "stock") stockIds.add(String(p.refId));
   }));
   const fields = "name type stockStatus stockAmount isActive variants.size variants.stockStatus";
-  const [products, items] = await Promise.all([
+  const [products, items, stock] = await Promise.all([
     productIds.size ? ProductModel.find({ _id: { $in: [...productIds] } }).select(fields).lean() : [],
     itemIds.size ? ItemModel.find({ _id: { $in: [...itemIds] } }).select(fields).lean() : [],
+    stockIds.size ? StockItemModel.find({ _id: { $in: [...stockIds] } }).select("shortName name unit quantity isActive").lean() : [],
   ]);
   const map = new Map();
   products.forEach((d) => map.set(`product:${d._id}`, d));
   items.forEach((d) => map.set(`item:${d._id}`, d));
+  stock.forEach((d) => map.set(`stock:${d._id}`, d));
   return map;
 };
 
 // Why a catalog piece can't be sold right now, or null when it can
 export const pieceProblem = (piece, ref) => {
   if (piece.source === "custom" || !piece.refId) return null;
+  if (piece.source === "stock") {
+    if (!ref) return "removed from inventory";
+    if (ref.isActive === false) return "not active";
+    return Number(ref.quantity) <= 0 ? "out of stock" : null;
+  }
   if (!ref) return "removed from the catalog";
   if (ref.isActive === false) return "not active";
   if (ref.type === "variant" && piece.size) {
@@ -165,14 +175,13 @@ export const pieceProblem = (piece, ref) => {
     return null;
   }
   if (ref.stockStatus === "outofstock") return "out of stock";
-  if (ref.type === "simple" && ref.stockStatus !== "preorder" && Number(ref.stockAmount) <= 0) return "out of stock";
   return null;
 };
 
 // Soft warning when fewer pieces are left than one combo needs
 export const pieceWarning = (piece, ref) => {
-  if (piece.source === "custom" || !ref || ref.type !== "simple" || ref.stockStatus === "preorder") return null;
-  const left = Number(ref.stockAmount) || 0;
+  if (piece.source !== "stock" || !ref) return null;
+  const left = Number(ref.quantity) || 0;
   return left > 0 && left < Number(piece.quantity) ? `only ${left} left` : null;
 };
 
@@ -191,7 +200,7 @@ export const serializeCombo = (doc, refs = new Map()) => {
       unitPrice: p.unitPrice,
       imageUrl: p.imageUrl || "",
       lineTotal: round2(p.quantity * p.unitPrice),
-      stockAmount: ref?.type === "simple" ? Number(ref.stockAmount) || 0 : null,
+      stockAmount: p.source === "stock" && ref ? Number(ref.quantity) || 0 : null,
       problem: pieceProblem(p, ref),
       warning: pieceWarning(p, ref),
     };
@@ -219,8 +228,8 @@ export const serializeCombo = (doc, refs = new Map()) => {
   };
 };
 
-// Pieces a combo order line takes out of stock: catalog pieces only, quantity × lines ordered
+// Pieces a combo order line takes out of stock: inventory and catalog pieces (not custom), quantity × lines ordered
 export const comboStockPieces = (comboDoc, linesOrdered) =>
   (comboDoc?.combo?.pieces || [])
     .filter((p) => p.source !== "custom" && p.refId && mongoose.Types.ObjectId.isValid(String(p.refId)))
-    .map((p) => ({ entity: p.source === "item" ? "item" : "product", refId: p.refId, name: p.name, size: p.size || "", quantity: (Number(p.quantity) || 0) * (Number(linesOrdered) || 0) }));
+    .map((p) => ({ entity: p.source === "stock" ? "stockItem" : p.source === "item" ? "item" : "product", refId: p.refId, name: p.name, size: p.size || "", quantity: (Number(p.quantity) || 0) * (Number(linesOrdered) || 0) }));
