@@ -32,8 +32,6 @@ export function parseRoute(pathname: string): Route {
   if (parts[0] === 'privacy-policy') return { name: 'policy', page: 'privacy' }
   if (parts[0] === 'return-and-refund-policy') return { name: 'policy', page: 'refund' }
   if (parts[0] === 'order-confirmed') return { name: 'confirmation' }
-  // offer.surokkha.shop serves the offer page at its root
-  if (parts.length === 0 && typeof window !== 'undefined' && window.location.hostname.startsWith('offer.')) return { name: 'offer' }
   return { name: 'home' }
 }
 

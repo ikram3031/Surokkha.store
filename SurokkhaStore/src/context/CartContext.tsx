@@ -4,7 +4,7 @@ import { FREE_SHIP_AT, SHIP_FEE, type Product } from '@/data/products'
 import { groupOfferTotals } from '@/lib/checkout'
 import type { GroupOfferProduct, GroupOfferRule } from '@/lib/api/groupOffers'
 import { taka } from '@/lib/bn'
-import { trackAddToCart } from '@/lib/api/events'
+import { newEventId, trackAddToCart } from '@/lib/api/events'
 import { productKeyOf, trackProductEvents } from '@/lib/api/productEvents'
 import { pixelTrack } from '@/lib/pixel'
 
@@ -44,15 +44,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return { ...prev, [product.id]: { product, qty: (existing?.qty ?? 0) + qty } }
     })
     toast.success('Added to cart')
-    trackAddToCart({ productId: product.apiId ?? product.id, qty, price: product.price })
+    const contentId = product.did ?? product.slug ?? String(product.id)
+    const eventId = newEventId('atc')
+    trackAddToCart({ productDid: contentId, productName: product.apiName ?? product.name, price: product.price, qty, eventId })
     trackProductEvents([{ eventType: 'add_to_cart', productKey: productKeyOf(product), productName: product.apiName ?? product.name, quantity: qty, value: product.price * qty }])
     pixelTrack('AddToCart', {
-      content_ids: [product.did ?? product.slug ?? String(product.id)],
+      content_ids: [contentId],
       content_name: product.apiName ?? product.name,
       content_type: 'product',
       value: product.price * qty,
       currency: 'BDT',
-    })
+    }, eventId)
   }
   const addGroup = (rule: GroupOfferRule, picks: { product: GroupOfferProduct; qty: number }[]) => {
     setCart((prev) => {

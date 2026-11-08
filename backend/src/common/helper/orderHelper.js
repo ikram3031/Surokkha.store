@@ -27,8 +27,8 @@ export const validateOrderPayload = (body) => {
 
   const isInstore = body.orderType === 'instore';
   const isCustom = body.orderType === 'custom';
-  // offer.surokkha.shop (OS) is a normal online order, but its checkout has no required email
-  const isOfferPage = String(body.orderPrefix || '').trim().toUpperCase() === 'OS';
+  // Store (surokkhastore.shop) checkouts mark email optional, so ST orders may arrive without one
+  const isEmailOptional = String(body.orderPrefix || '').trim().toUpperCase() === 'ST';
 
   // 1. Validate billingInfo (Mandatory for online and custom orders)
   const billing = body.billingInfo || {};
@@ -51,7 +51,7 @@ export const validateOrderPayload = (body) => {
   if (!isInstore && !isCustom) {
     // Online customer storefront orders require email, address, district
     if (typeof email !== 'string' || email.trim() === '') {
-      if (!isOfferPage) errors.push('billingInfo.email is required');
+      if (!isEmailOptional) errors.push('billingInfo.email is required');
     } else if (!isValidEmail(email)) {
       errors.push('billingInfo.email must be a valid email address');
     }

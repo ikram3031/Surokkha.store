@@ -6,7 +6,7 @@ import { catBg, catLabel, type Product } from '@/data/products'
 import { useCart } from '@/context/CartContext'
 import { getProduct } from '@/lib/api/products'
 import { getItem } from '@/lib/api/items'
-import { trackViewContent } from '@/lib/api/events'
+import { newEventId, trackViewContent } from '@/lib/api/events'
 import { productKeyOf, trackProductView } from '@/lib/api/productEvents'
 import { mapApiProduct, type ApiProduct } from '@/lib/api/mappers'
 import { bn, taka } from '@/lib/bn'
@@ -42,15 +42,17 @@ export function ProductPage({ slug }: { slug: string }) {
         const mapped = mapApiProduct(raw)
         if (cancelled) return
         setProduct(mapped)
-        trackViewContent({ productId: mapped.apiId ?? mapped.id })
+        const contentId = mapped.did ?? mapped.slug ?? String(mapped.id)
+        const eventId = newEventId('vc')
+        trackViewContent({ productDid: contentId, productName: mapped.apiName ?? mapped.name, price: mapped.price, eventId })
         trackProductView(productKeyOf(mapped), mapped.apiName ?? mapped.name)
         pixelTrack('ViewContent', {
-          content_ids: [mapped.did ?? mapped.slug ?? String(mapped.id)],
+          content_ids: [contentId],
           content_name: mapped.apiName ?? mapped.name,
           content_type: 'product',
           value: mapped.price,
           currency: 'BDT',
-        })
+        }, eventId)
       })
       .catch(() => !cancelled && setFailed(true))
       .finally(() => !cancelled && setLoading(false))

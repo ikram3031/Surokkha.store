@@ -30,11 +30,10 @@ const getRequestSource = (req, config = {}) => {
   return "EXTERNAL";
 };
 
-// Which frontend a request came from (SHOP, STORE, OFFER, DASH), by Origin/Referer; falls back to the handling backend
+// Which frontend a request came from (SHOP, STORE, DASH), by Origin/Referer; falls back to the handling backend
 const FALLBACK_BY_LAYER = { storefront: "SHOP", storeweb: "STORE", dashboard: "DASH" };
 const getFrontendLabel = (req, layer) => {
   const from = String(req.headers["origin"] || req.headers["referer"] || "").toLowerCase();
-  if (from.includes("offer.")) return "OFFER";
   if (from.includes("admin.") || from.includes("dashboard")) return "DASH";
   if (from.includes("surokkha.shop")) return "SHOP";
   if (from.includes("surokkha.store") || from.includes("surokkhastore.shop")) return "STORE";

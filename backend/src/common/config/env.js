@@ -53,11 +53,7 @@ const envSchema = z.object({
   FB_PIXEL_ID_SHOP: z.string().optional().default(""),
   FB_ACCESS_TOKEN_SHOP: z.string().optional().default(""),
   FB_TEST_EVENT_CODE_SHOP: z.string().optional().default(""),
-  // Optional own pixel for offer.surokkha.shop (SC orders); by default they use the shop pixel
-  FB_PIXEL_ID_OFFER: z.string().optional().default("1840805450442709"),
-  FB_ACCESS_TOKEN_OFFER: z.string().optional().default(""),
-  FB_TEST_EVENT_CODE_OFFER: z.string().optional().default(""),
-  // Cloudflare Turnstile secret (offer checkout + dashboard login); checks are skipped while unset
+  // Cloudflare Turnstile secret (dashboard login); checks are skipped while unset
   TURNSTILE_SECRET_KEY: z.string().optional().default(""),
   // Emergency switch: "true" turns the Turnstile check off on dashboard login only
   TURNSTILE_LOGIN_DISABLED: z.string().optional().default(""),

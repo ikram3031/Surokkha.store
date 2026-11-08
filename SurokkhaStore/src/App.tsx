@@ -35,7 +35,7 @@ import { categoryPath, navigate, useRoute, type Route } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
 import type { ShopFilter } from '@/components/shop/FilterBar'
 
-// Ads launch mode: the whole storefront is the single offer page (same UI as offer.surokkha.shop),
+// Ads launch mode: the whole storefront is the single offer page (the /offer page),
 // with no header, footer, announcement bar or home page. The catalog, Meta pixel and cart storage all keep
 // working. Set to false to bring the full home page, header and footer back.
 const OFFER_ONLY_MODE = false

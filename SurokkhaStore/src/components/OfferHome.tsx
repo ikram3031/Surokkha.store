@@ -422,10 +422,9 @@ export function OfferHome() {
     setSubmitting(true)
     try {
       const res = await api.post<{ data?: { orderNumber?: string } }>('/orders/new-order', {
-        // A normal online order (main Orders list) with its own OS prefix
+        // A normal store order (main Orders list), same as the regular checkout
         orderType: 'online',
-        orderPrefix: 'OS',
-        clientDomain: 'offer.surokkha.shop',
+        orderPrefix: 'ST',
         paymentMethod: 'Cash on Delivery',
         fbp: cookie('_fbp'),
         fbc: cookie('_fbc'),

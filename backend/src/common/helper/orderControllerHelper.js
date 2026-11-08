@@ -198,7 +198,7 @@ export const buildOrderDocument = async (payload, req = null) => {
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
   const resolvedSiteKey = 'shop';
   const resolvedDomain = payload.clientDomain || 'surokkha.shop';
-  // A custom order may carry its own prefix (e.g. SC from offer.surokkha.store); dashboard custom orders stay CO
+  // A custom order may carry its own two-letter prefix; dashboard custom orders stay CO
   const explicitCustomPrefix = isCustom && /^[A-Z]{2}$/.test(String(payload.orderPrefix || '').trim().toUpperCase())
     ? String(payload.orderPrefix).trim().toUpperCase()
     : null;

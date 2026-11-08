@@ -1,4 +1,3 @@
-import { isTurnstileConfigured, verifyTurnstile } from '../../common/utils/turnstile.js';
 import mongoose from 'mongoose';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
@@ -16,7 +15,7 @@ import {
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { config } from '../../common/config/index.js';
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
-import { isOfferOrder, sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
+import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { LogModel } from '../../common/models/log.model.js';
 import { broadcastLiveNotification } from '../../common/websocket.js';
@@ -38,8 +37,6 @@ const findSpamEntry = async ({ phone, email } = {}) => {
   return SpamListModel.findOne({ $or: or }).lean();
 };
 
-const TURNSTILE_ON_CHECKOUT = false;
-
 // Create a new order from checkout payload and sync related payment/member data
 export const createOrder = async (req, res, next) => {
   try {
@@ -59,24 +56,6 @@ export const createOrder = async (req, res, next) => {
         reason: 'spam',
         message: 'Sorry, you cannot place this order. Please contact us.',
       });
-    }
-
-    // Offer page orders must pass Cloudflare Turnstile once a secret key is configured.
-    // The offer checkout is served from offer.surokkha.shop and, in launch mode, from the store root itself;
-    // TURNSTILE_HOSTNAMES (comma separated) overrides this list.
-    // Turnstile is off on checkout for now (it blocked real buyers); flip TURNSTILE_ON_CHECKOUT to re-enable
-    if (TURNSTILE_ON_CHECKOUT && String(payload.orderPrefix || '').toUpperCase() === 'OS' && isTurnstileConfigured()) {
-      const human = await verifyTurnstile(payload.turnstileToken, clientIp, {
-        action: 'checkout',
-        hostnames: ['offer.surokkha.shop', 'surokkhastore.shop', 'www.surokkhastore.shop', 'surokkha.store', 'www.surokkha.store'],
-      });
-      if (!human) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'CAPTCHA_FAILED',
-          message: 'নিরাপত্তা যাচাই সম্পন্ন হয়নি। "আমি রোবট নই" বক্সটি আবার চেক করে অর্ডার করুন।',
-        });
-      }
     }
 
     const validationErrors = validateOrderPayload(payload);
@@ -278,10 +257,6 @@ export const createOrder = async (req, res, next) => {
     if (!isInstoreOrder && !isCustomOrder) {
       sendServerPurchaseEvent(createdOrder, req);
       sendTikTokServerPurchaseEvent(createdOrder, req);
-    }
-    // Offer landing page orders are custom orders but still real web purchases for its own pixel
-    if (isCustomOrder && isOfferOrder(createdOrder, req)) {
-      sendServerPurchaseEvent(createdOrder, req);
     }
 
     // Automatically record newOrder activity log and broadcast live notification

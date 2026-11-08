@@ -2,12 +2,8 @@ import { loadSiteConfig } from '@/lib/siteConfig'
 
 // Meta (Facebook) browser pixel. Purchase uses the order number as eventID so it
 // de-duplicates against the server-side CAPI Purchase the backend sends with the same id.
-//
-// Which pixel fires:
-// - offer.surokkha.shop keeps the offer page pixel (the backend sends OS orders' CAPI events there too).
-// - The store uses the pixel saved in the dashboard (Settings > Meta Pixel > Store), served by
-//   GET /store/v1/site-config, the same settings the backend's store CAPI events use.
-const OFFER_PIXEL_ID = '1840805450442709'
+// The pixel id is the one saved in the dashboard (Settings > Meta Pixel > Store), served by
+// GET /store/v1/site-config: the same settings the backend's store CAPI events use.
 // Used only when the site-config API cannot be reached, so tracking keeps working during an API outage
 const STORE_FALLBACK_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || '2642398762860982'
 
@@ -20,11 +16,8 @@ declare global {
   }
 }
 
-const isOfferHost = () => typeof window !== 'undefined' && window.location.hostname.startsWith('offer.')
-
 /** Resolves the pixel id for this site, or '' when the dashboard has the browser pixel turned off. */
 async function resolvePixelId(): Promise<string> {
-  if (isOfferHost()) return OFFER_PIXEL_ID
   const { metaPixel } = await loadSiteConfig()
   if (!metaPixel) return STORE_FALLBACK_PIXEL_ID
   return metaPixel.enabled ? metaPixel.pixelId : ''
@@ -57,7 +50,7 @@ export function initPixel() {
   if (starting || typeof window === 'undefined') return
   starting = true
   resolvePixelId()
-    .catch(() => (isOfferHost() ? OFFER_PIXEL_ID : STORE_FALLBACK_PIXEL_ID))
+    .catch(() => STORE_FALLBACK_PIXEL_ID)
     .then((pixelId) => {
       const queued = pending ?? []
       pending = null

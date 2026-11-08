@@ -46,38 +46,6 @@ export const STORE_META_PIXEL_KEY = "store-meta-pixel";
 const isStoreRequest = (...sources) =>
   sources.some((s) => s === "store" || String(s?.originalUrl || s?.baseUrl || "").startsWith("/store/"));
 
-// Orders from the offer landing page (offer.surokkha.shop) carry the OS prefix
-export const OFFER_ORDER_PREFIX = "OS";
-export const OFFER_SITE_URL = "https://offer.surokkha.shop/";
-export const isOfferOrder = (order, req = null) =>
-  String(order?.orderNumber || "").toUpperCase().startsWith(OFFER_ORDER_PREFIX) ||
-  String(req?.body?.orderPrefix || "").toUpperCase() === OFFER_ORDER_PREFIX;
-
-// Optional env override for the offer page pixel (FB_PIXEL_ID_OFFER / FB_ACCESS_TOKEN_OFFER)
-// Offer page pixel: env override (FB_PIXEL_ID_OFFER / FB_ACCESS_TOKEN_OFFER) first, otherwise the
-// top-level metaPixel of the default settings document (pixel 1840805450442709 and its saved token)
-const getOfferMetaPixelConfig = async () => {
-  let meta = {};
-  if (!env.FB_ACCESS_TOKEN_OFFER && mongoose.connection?.readyState === 1) {
-    const doc = await StoreSettingsModel.findOne({ key: "default" }).lean().catch(() => null);
-    meta = doc?.metaPixel || {};
-  }
-  const pixelId = env.FB_ACCESS_TOKEN_OFFER ? env.FB_PIXEL_ID_OFFER : meta.pixelId || env.FB_PIXEL_ID_OFFER || "";
-  const accessToken = env.FB_ACCESS_TOKEN_OFFER || meta.accessToken || "";
-  if (!pixelId || !accessToken) {
-    console.warn("[Meta CAPI Config] Warning: Offer Meta Pixel / CAPI credentials not configured. Event skipped.");
-  }
-  return {
-    pixelId,
-    accessToken,
-    testEventCode: env.FB_TEST_EVENT_CODE_OFFER || meta.testEventCode || "",
-    isEnabled: !!(pixelId && accessToken) && meta.isEnabled !== false,
-    enableCapi: !!(pixelId && accessToken) && meta.enableCapi !== false,
-    enableBrowserPixel: true,
-    advancedMatching: meta.advancedMatching ?? true,
-  };
-};
-
 // Resolves the store's Meta Pixel configuration from its own settings document
 export const getStoreMetaPixelConfig = async () => {
   let meta = {};
@@ -106,15 +74,7 @@ export const getStoreMetaPixelConfig = async () => {
 
 // Resolves active Meta Pixel configuration: store requests use the store's own settings, everything else the shop's
 export const getMetaPixelConfig = async (source = null, req = null) => {
-  // offer.surokkha.shop orders (SC) go to the offer pixel, not the store or shop one
-  const offer = isOfferOrder(source, req);
-  if (offer) {
-    return getOfferMetaPixelConfig().catch((error) => {
-      console.error("[Meta CAPI Config] Error resolving offer Meta Pixel config:", error.message);
-      return { pixelId: "", accessToken: "", testEventCode: "", isEnabled: false, enableCapi: false };
-    });
-  }
-  if (!offer && isStoreRequest(source, req)) {
+  if (isStoreRequest(source, req)) {
     return getStoreMetaPixelConfig().catch((error) => {
       console.error("[Meta CAPI Config] Error resolving store Meta Pixel config:", error.message);
       return { pixelId: "", accessToken: "", testEventCode: "", isEnabled: false, enableCapi: false };
@@ -501,9 +461,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       }
     }
 
-    let items = Array.isArray(order.items) ? order.items : [];
-    // Offer page sells some Items as real offer products, so only drop generic Items for other orders
-    if (!isOfferOrder(order, req)) items = items.filter(i => i.itemType !== 'item');
+    const items = (Array.isArray(order.items) ? order.items : []).filter(i => i.itemType !== 'item');
 
     if (items.length === 0) return;
     const productDids = items.map((i) => i.productDid).filter(Boolean);
@@ -562,9 +520,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       event_time: Math.floor(Date.now() / 1000),
       event_id: resolvedOrderNumber,
       action_source: "website",
-      event_source_url: isOfferOrder(order, req)
-        ? OFFER_SITE_URL
-        : (req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || undefined),
+      event_source_url: req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || undefined,
       user_data: userData,
       custom_data: customData,
     };
