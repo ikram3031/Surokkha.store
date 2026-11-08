@@ -117,7 +117,37 @@ export const validateOrderPayload = (body) => {
   return errors;
 };
 
+// Custom order numbers: AC001…AC999, BC001…BC999, …, ZC999, AAC001… (letters count like spreadsheet columns).
+const lettersToIndex = (letters) => [...letters].reduce((n, ch) => n * 26 + (ch.charCodeAt(0) - 64), 0);
+const indexToLetters = (index) => {
+  let out = '';
+  for (let n = index; n > 0; n = Math.floor((n - 1) / 26)) out = String.fromCharCode(65 + ((n - 1) % 26)) + out;
+  return out;
+};
+
+export const buildCustomOrderNumber = async () => {
+  const existing = await OrderModel.find({ orderNumber: { $regex: '^[A-Z]+C\\d{3}$' } })
+    .select('orderNumber')
+    .lean();
+
+  let last = 0; // position in the overall sequence: (letterIndex - 1) * 999 + serial
+  for (const { orderNumber } of existing) {
+    const letters = orderNumber.slice(0, -4);
+    const serial = parseInt(orderNumber.slice(-3), 10);
+    if (!serial) continue;
+    const position = (lettersToIndex(letters) - 1) * 999 + serial;
+    if (position > last) last = position;
+  }
+
+  const next = last + 1;
+  const letterIndex = Math.floor((next - 1) / 999) + 1;
+  const serial = ((next - 1) % 999) + 1;
+  return `${indexToLetters(letterIndex)}C${String(serial).padStart(3, '0')}`;
+};
+
 export const buildOrderNumber = async (orderTypeParam = false, siteOrDomain = null, customPrefix = null) => {
+  if (orderTypeParam === 'custom' || orderTypeParam === 'co') return buildCustomOrderNumber();
+
   const now = new Date();
   const shortYear = String(now.getFullYear()).slice(-2);
   const month = String(now.getMonth() + 1).padStart(2, '0');

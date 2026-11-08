@@ -1,3 +1,4 @@
+import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
 import crypto from "crypto";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
@@ -304,9 +305,11 @@ export const createRedxParcelController = async (req, res, next) => {
       rawResponse: result,
       history: [{ status: "Pickup Pending", date: new Date(), note: "Dispatched to RedX" }],
     };
+    const statusBeforeDispatch = order.status;
     if (updateOrderStatus) order.status = updateOrderStatus;
     order.updatedBy = req.user?.userId || null;
     await order.save();
+    notifyOrderStatusChange(order, statusBeforeDispatch);
 
     await ensurePaymentOnShip(order.toObject());
     await syncCourierBill(order).catch((err) => console.error("Failed to sync RedX charge bill:", err));

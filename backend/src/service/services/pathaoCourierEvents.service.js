@@ -1,3 +1,4 @@
+import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
 import { ensurePaymentOnShip, syncPaymentDocument } from "../../common/helper/orderControllerHelper.js";
 import { syncCourierBill } from "./pathaoBill.service.js";
 import { syncOrderStock } from "../../common/services/stock.service.js";
@@ -227,6 +228,8 @@ export const applyPathaoUpdate = async (order, update) => {
   const statusChanged = order.status !== previousStatus;
   if (order.isModified()) await order.save();
   if (statusChanged) await syncOrderStock(order, { actor: courier.provider || "pathao" });
+  // Pickup cancelled (shipped -> processing) is internal; don't email the customer about it
+  if (statusChanged && !/pickup_cancel/.test(slug)) notifyOrderStatusChange(order, previousStatus);
 
   if (paymentUpdate) {
     await syncPaymentDocument(order.toObject(), paymentUpdate);

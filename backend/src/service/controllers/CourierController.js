@@ -1,3 +1,4 @@
+import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
 import { COURIERS, AVAILABLE_COURIER_KEYS } from "../../common/config/couriers.js";
 import { getEnabledCouriers } from "../../common/services/courierProviders.service.js";
 import { syncPathaoOrders } from "../services/pathaoOrderSync.service.js";
@@ -507,7 +508,9 @@ export const createOrderConsignmentController = async (req, res, next) => {
         },
       };
 
+      const beforeDispatch = await OrderModel.findOne(filter).select("status").lean();
       updatedOrder = await OrderModel.findOneAndUpdate(filter, updateQuery, { new: true });
+      if (updatedOrder) notifyOrderStatusChange(updatedOrder, beforeDispatch?.status);
       // First ship opens payment collection for the order and books Pathao's estimated charge as a pending bill
       if (updatedOrder) {
         await ensurePaymentOnShip(updatedOrder);

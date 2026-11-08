@@ -25,6 +25,8 @@ import { config } from '../../common/config/index.js';
 const { Types } = mongoose;
 
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
+import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
+
 import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
 import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
 import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
@@ -523,6 +525,8 @@ export const updateOrder = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Order not found' });
     }
 
+    notifyOrderStatusChange(order, existingOrder.status);
+
     await syncOrderStock(order, {
       rebuild: Boolean(allowedUpdates.items),
       actor: req.user?.name || req.user?.did || 'staff',
@@ -797,6 +801,7 @@ export const bulkUpdateOrders = async (req, res, next) => {
       await OrderModel.updateMany(query, { $set: updateFields });
       if (updateFields.status) {
         for (const ord of orders) {
+          notifyOrderStatusChange({ ...ord, ...updateFields }, ord.status);
           await syncOrderStock(ord, { actor: req.user?.name || req.user?.did || 'staff' });
         }
       }
