@@ -51,7 +51,8 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
   const currentPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
   const categoryFilter = fixedCategory || searchParams.get('category') || 'All';
   const brandFilter = searchParams.get('brand') || 'All';
-  const stockStatusFilter = searchParams.get('stock') || 'all';
+  // The list opens on In Stock; All and Out of Stock stay in the URL once picked
+  const stockStatusFilter = searchParams.get('stock') || 'instock';
   const urlSearch = searchParams.get('q') || '';
 
   const [searchInput, setSearchInput] = useState(urlSearch);
@@ -77,7 +78,7 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
           val === null ||
           val === '' ||
           val === 'All' ||
-          val === 'all' ||
+          (val === 'all' && key !== 'stock') ||
           (key === 'page' && Number(val) === 1)
         ) {
           next.delete(key);
@@ -131,7 +132,7 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
   };
 
   const handleStockStatus = (v) => {
-    updateParams({ stock: v ?? 'all', page: 1 });
+    updateParams({ stock: !v || v === 'instock' ? '' : v, page: 1 });
     setSelectedIds([]);
   };
 
