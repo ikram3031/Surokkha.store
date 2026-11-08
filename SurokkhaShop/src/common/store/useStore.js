@@ -29,7 +29,7 @@ export const parseRouteFromLocation = () => {
     return { view: 'combo', slug: 'mo-micro-thin-latex-contraceptive-20-pcs-combo' };
   }
   if (pathname === '/shop' || pathname === '/products' || pathname === '/store') {
-    return { view: 'shop', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'shop', slug: 'all' };
   }
   if (pathname === '/cart') {
     return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs', openCart: true };
@@ -106,6 +106,46 @@ export const isSingleQtyItem = (prod) => {
 };
 
 // Surokkha Trial Pack slugs: orders that include any trial pack get free delivery
+// Category slugs a product belongs to, using the dashboard categories; a parent category also holds its sub-categories' products
+export const productCategorySlugs = (p, allCategories = []) => {
+  const byId = new Map();
+  allCategories.forEach((c) => byId.set(String(c._id || c.id), c));
+  const slugs = new Set();
+  const own = Array.isArray(p?.categories) && p.categories.length > 0 ? p.categories : [{ slug: p?.categorySlug }];
+  own.forEach((c) => {
+    let cur = c && (byId.get(String(c._id || c.id)) || c);
+    for (let depth = 0; cur && depth < 5; depth += 1) {
+      if (cur.slug) slugs.add(cur.slug);
+      cur = cur.parent ? byId.get(String(cur.parent?._id || cur.parent)) : null;
+    }
+  });
+  return slugs;
+};
+
+// The real store categories that have at least one product, parents followed by their sub-categories, biggest first
+export const buildShopCategories = (allCategories = [], productList = []) => {
+  const counts = new Map();
+  productList.forEach((p) => productCategorySlugs(p, allCategories).forEach((s) => counts.set(s, (counts.get(s) || 0) + 1)));
+  const withCount = allCategories
+    .map((c) => ({ id: String(c._id || c.id), parent: c.parent ? String(c.parent?._id || c.parent) : null, slug: c.slug, name: c.name, name_bn: c.name_bn || c.name, count: counts.get(c.slug) || 0 }))
+    .filter((c) => c.slug && c.count > 0);
+  const ids = new Set(withCount.map((c) => c.id));
+  const byCount = (a, b) => b.count - a.count || a.name.localeCompare(b.name);
+  const tops = withCount.filter((c) => !c.parent || !ids.has(c.parent)).sort(byCount);
+  return tops.flatMap((top) => [{ ...top, depth: 0 }, ...withCount.filter((c) => c.parent === top.id).sort(byCount).map((c) => ({ ...c, depth: 1 }))]);
+};
+
+// How many live orders contain this product (from /store-utils/popularity); 0 when unknown
+export const popularityOf = (p, popularity = {}) => {
+  if (!p) return 0;
+  const hit = popularity[String(p.mongoId || p._id || '')] || popularity[String(p.did || '')];
+  return hit ? Number(hit.orders) || 0 : 0;
+};
+
+// Most-ordered first; equal counts keep their current order
+const sortKeysByPopularity = (keys, products, popularity) =>
+  [...keys].sort((a, b) => popularityOf(products[b], popularity) - popularityOf(products[a], popularity));
+
 export const TRIAL_PACK_SLUG = 'surokkha-trial-pack';
 export const TRIAL_PACK_2_SLUG = 'surokkha-trial-pack-2';
 export const TRIAL_PACK_SLUGS = [TRIAL_PACK_SLUG, TRIAL_PACK_2_SLUG];
@@ -134,6 +174,7 @@ const missingSingleSlugs = new Set();
 
 export const useStore = create((set, get) => ({
   currentView: initialRoute.view,
+  shopCategory: 'all',
   selectedProductSlug: initialRoute.slug,
   currentSlide: 0,
   cart: {},
@@ -300,6 +341,21 @@ export const useStore = create((set, get) => ({
   productsError: null,
   categories: [],
   isLoadingCategories: false,
+  popularity: {},
+
+  // Order counts per product; once loaded, every listing follows most-ordered first
+  fetchPopularity: async () => {
+    try {
+      const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
+      const res = await fetch(`${cleanBase}/api/v1/store-utils/popularity`, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return;
+      const json = await res.json();
+      const popularity = json?.data && typeof json.data === 'object' ? json.data : {};
+      set((state) => ({ popularity, productKeys: sortKeysByPopularity(state.productKeys, state.products, popularity) }));
+    } catch {
+      // No counts: listings keep the catalog order
+    }
+  },
 
   fetchCategories: async () => {
     set({ isLoadingCategories: true });
@@ -745,7 +801,7 @@ export const useStore = create((set, get) => ({
           // Out-of-stock products stay in `products` (direct links/cart) but are hidden from every listing
           const isOut = (p) => !p || p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0;
           const allKeys = singleSlug ? Array.from(new Set([...state.productKeys, ...keys])) : keys;
-          const newKeys = allKeys.filter((k) => !isOut(newProducts[k]));
+          const newKeys = sortKeysByPopularity(allKeys.filter((k) => !isOut(newProducts[k])), newProducts, state.popularity);
           return {
             products: newProducts,
             productKeys: newKeys,

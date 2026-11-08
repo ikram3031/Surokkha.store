@@ -45,14 +45,7 @@ export default function ComboView() {
       // Products collection first, then Items
       const aItem = a.itemType === 'item' ? 1 : 0;
       const bItem = b.itemType === 'item' ? 1 : 0;
-      if (aItem !== bItem) return aItem - bItem;
-      const aKey = (a.slug || a.id || '').toLowerCase();
-      const bKey = (b.slug || b.id || '').toLowerCase();
-      if (aKey.includes('30') || aKey.includes('ultimate')) return -1;
-      if (bKey.includes('30') || bKey.includes('ultimate')) return 1;
-      if (aKey.includes('ribbed')) return -1;
-      if (bKey.includes('ribbed')) return 1;
-      return 0;
+      return aItem - bItem; // otherwise keep the store's most-ordered-first order
     });
 
   useEffect(() => {

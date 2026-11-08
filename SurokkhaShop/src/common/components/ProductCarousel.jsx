@@ -103,13 +103,8 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
       }
     }
 
-    const shuffled = [...collected];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    return shuffled.slice(0, maxItems);
+    // productKeys are most-ordered first, so the carousel opens with the best sellers
+    return collected.slice(0, maxItems);
   }, [productKeys, products, maxItems, isComboMode]);
 
   const checkScrollability = () => {

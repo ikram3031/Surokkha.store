@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useStore } from '../store/useStore';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useStore, buildShopCategories } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import logoImg from '../asset/logo_white.png';
 import AnnouncementMarquee from './AnnouncementMarquee';
@@ -12,6 +12,9 @@ const SurokkhaNavbar = () => {
   const navigateTo = useStore((state) => state.navigateTo);
   const toggleCartDrawer = useStore((state) => state.toggleCartDrawer);
   const cart = useStore((state) => state.cart);
+  const allCategories = useStore((state) => state.categories);
+  const products = useStore((state) => state.products);
+  const productKeys = useStore((state) => state.productKeys);
   const { isBn } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(getCustomerToken()));
@@ -44,14 +47,14 @@ const SurokkhaNavbar = () => {
     navigateTo(view, param);
   };
 
-  // Shop categories (same slugs the shop page filters by)
-  const shopCategories = [
-    { slug: 'all', label: isBn ? 'সব প্রোডাক্ট' : 'All Products' },
-    { slug: 'contraceptive', label: isBn ? 'কনট্রাসেপটিভ' : 'Contraceptive' },
-    { slug: 'combo', label: isBn ? 'কম্বো প্যাক' : 'Combo Packs' },
-    { slug: 'lubricant', label: isBn ? 'লুব্রিকেন্ট' : 'Lubricants' },
-    { slug: 'performance-booster', label: isBn ? 'পারফরম্যান্স বুস্টার' : 'Performance Booster' },
-  ];
+  // Shop categories: the real dashboard categories that have products (same list as the shop page filter)
+  const shopCategories = useMemo(() => {
+    const active = (productKeys || []).map((k) => products[k]).filter((p) => p && p.isActive !== false && p.status !== 'inactive');
+    return [
+      { slug: 'all', label: isBn ? 'সব প্রোডাক্ট' : 'All Products', depth: 0 },
+      ...buildShopCategories(allCategories || [], active).map((c) => ({ slug: c.slug, label: isBn ? c.name_bn : c.name, depth: c.depth })),
+    ];
+  }, [allCategories, products, productKeys, isBn]);
 
   const links = [
     { view: 'home', label: isBn ? 'হোম' : 'Home' },
@@ -63,7 +66,7 @@ const SurokkhaNavbar = () => {
   const megaColumns = [
     {
       title: isBn ? 'শপ' : 'Shop',
-      items: shopCategories.map((c) => ({ view: 'shop', param: c.slug, label: c.label })),
+      items: shopCategories.map((c) => ({ view: 'shop', param: c.slug, label: c.label, depth: c.depth })),
     },
   ];
 
@@ -126,7 +129,7 @@ const SurokkhaNavbar = () => {
                       <p className="mb-3 text-sm font-extrabold uppercase tracking-wider text-black">{col.title}</p>
                       <ul className="space-y-2 text-base font-medium">
                         {col.items.map((it) => (
-                          <li key={it.label}>
+                          <li key={it.param || it.label} className={it.depth ? 'pl-4 text-[15px]' : ''}>
                             <button type="button" onClick={() => go(it.view, it.param)} className="hover:text-rose-600 cursor-pointer text-left">{it.label}</button>
                           </li>
                         ))}
@@ -225,7 +228,7 @@ const SurokkhaNavbar = () => {
                     key={c.slug}
                     type="button"
                     onClick={() => go('shop', c.slug)}
-                    className="block w-full rounded-lg px-3 py-2.5 text-left cursor-pointer hover:bg-white/5"
+                    className={`block w-full rounded-lg py-2.5 text-left cursor-pointer hover:bg-white/5 ${c.depth ? 'pl-7 pr-3 text-white/80' : 'px-3'}`}
                   >
                     {c.label}
                   </button>

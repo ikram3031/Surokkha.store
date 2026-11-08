@@ -26,11 +26,13 @@ export default function App() {
   const currentView = useStore((state) => state.currentView);
   const fetchProducts = useStore((state) => state.fetchProducts);
   const fetchCategories = useStore((state) => state.fetchCategories);
+  const fetchPopularity = useStore((state) => state.fetchPopularity);
   const navigateTo = useStore((state) => state.navigateTo);
   const openCartDrawer = useStore((state) => state.openCartDrawer);
 
   useEffect(() => {
     if (fetchCategories) fetchCategories();
+    if (fetchPopularity) fetchPopularity();
     const initial = parseRouteFromLocation();
     if (initial.openCart) {
       openCartDrawer();

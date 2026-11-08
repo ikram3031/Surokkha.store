@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, buildShopCategories, productCategorySlugs } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
@@ -26,28 +26,12 @@ export default function ShopView() {
   const [selectedBrands, setSelectedBrands] = useState([]);
 
   // 2. Default sorting: Newest first (latest products at top)
-  const [sortBy, setSortBy] = useState('newest');
+  const [sortBy, setSortBy] = useState('popular');
   const [inStockOnly, setInStockOnly] = useState(false);
   const PAGE_SIZE = 8; // two rows of four on desktop
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   const loadMoreRef = useRef(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-
-  // Normalization helper for category slugs (handles singular, plural, and variations)
-  const normalizeCatSlug = (slug, name = '') => {
-    const s = String(slug || name || '').toLowerCase().trim().replace(/s$/, '').replace(/\s+/g, '-');
-    if (s.includes('contraceptive') || s.includes('condom') || s.includes('কনট্রাসেপটিভ') || s.includes('কনডম')) return 'contraceptive';
-    if (s.includes('combo') || s.includes('কম্বো')) return 'combo';
-    if (s.includes('lubricant') || s.includes('jelly') || s.includes('gel') || s.includes('লুব্রিকেন্ট')) return 'lubricant';
-    if (s.includes('booster') || s.includes('spray') || s.includes('delay') || s.includes('performance') || s.includes('বুস্টার')) return 'performance-booster';
-    return s || 'other';
-  };
-
-  // Combo is decided only by the product's own category, not by "combo" in its name or slug
-  const isComboCategory = (p) => {
-    const catName = typeof p?.category === 'object' ? p?.category?.name : p?.category;
-    return normalizeCatSlug(p?.categorySlug, catName || '') === 'combo';
-  };
 
   // Base list of active (and optionally in-stock) products
   const activeProducts = useMemo(() => {
@@ -61,69 +45,11 @@ export default function ShopView() {
 
   const totalActiveCount = activeProducts.length;
 
-  const contraceptiveCount = useMemo(() => {
-    return activeProducts.filter((p) => {
-      if (isComboCategory(p)) return false;
-      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'contraceptive';
-    }).length;
-  }, [activeProducts]);
-
-  const comboCount = useMemo(() => {
-    return activeProducts.filter((p) => {
-      return isComboCategory(p);
-    }).length;
-  }, [activeProducts]);
-
-  const lubricantCount = useMemo(() => {
-    return activeProducts.filter((p) => {
-      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'lubricant';
-    }).length;
-  }, [activeProducts]);
-
-  const boosterCount = useMemo(() => {
-    return activeProducts.filter((p) => {
-      return normalizeCatSlug(p.categorySlug, (typeof p.category === 'object' ? p.category?.name : p.category) || p.slug) === 'performance-booster';
-    }).length;
-  }, [activeProducts]);
-
-  // Dynamic Category Extraction from products & categories (including any custom store categories)
-  const dynamicCategories = useMemo(() => {
-    const list = [
-      { slug: 'contraceptive', name: 'Contraceptive', name_bn: 'কনট্রাসেপটিভ', count: contraceptiveCount },
-      { slug: 'combo', name: 'Combo', name_bn: 'কম্বো', count: comboCount },
-      { slug: 'lubricant', name: 'Lubricants', name_bn: 'লুব্রিকেন্ট', count: lubricantCount },
-      { slug: 'performance-booster', name: 'Performance Booster', name_bn: 'পারফরম্যান্স বুস্টার', count: boosterCount },
-    ];
-
-    // Also include any extra custom categories found in active products
-    const knownSlugs = new Set(list.map((c) => c.slug));
-    const extraMap = {};
-    activeProducts.forEach((p) => {
-      const rawCatName = (typeof p.category === 'object' ? p.category?.name : p.category) || '';
-      const rawCatBn = (typeof p.category === 'object' && p.category?.name_bn) ? p.category.name_bn : (p.category_bn || rawCatName);
-      const norm = normalizeCatSlug(p.categorySlug, rawCatName || p.slug);
-      if (!knownSlugs.has(norm) && norm !== 'other' && norm) {
-        if (!extraMap[norm]) {
-          extraMap[norm] = {
-            slug: norm,
-            name: rawCatName || norm,
-            name_bn: rawCatBn || rawCatName || norm,
-            count: 0,
-          };
-        }
-        extraMap[norm].count += 1;
-      }
-    });
-
-    Object.values(extraMap).forEach((extraCat) => {
-      list.push(extraCat);
-    });
-
-    return list.filter((c) => c.count > 0);
-  }, [contraceptiveCount, comboCount, lubricantCount, boosterCount, activeProducts]);
-
-  // Dynamic counts for banner tabs
-  const singleCount = contraceptiveCount;
+  // Real dashboard categories that have products; a parent (e.g. Personal Care) also counts its sub-categories
+  const dynamicCategories = useMemo(
+    () => buildShopCategories(storeCategories || [], activeProducts),
+    [storeCategories, activeProducts]
+  );
 
   // Selling price used by the price filter
   const sellingPrice = (p) => {
@@ -188,21 +114,8 @@ export default function ShopView() {
         if (!matches) return false;
       }
 
-      const isCombo = isComboCategory(prod);
-
       // Category filter
-      if (category !== 'all') {
-        if (category === 'single') {
-          if (isCombo) return false;
-        } else if (category === 'combo') {
-          if (!isCombo) return false;
-        } else {
-          const prodCatNorm = normalizeCatSlug(prod.categorySlug, (typeof prod.category === 'object' ? prod.category?.name : prod.category) || k);
-          const targetCatNorm = normalizeCatSlug(category);
-          if (targetCatNorm === 'contraceptive' && isCombo) return false;
-          if (prodCatNorm !== targetCatNorm) return false;
-        }
-      }
+      if (category !== 'all' && !productCategorySlugs(prod, storeCategories || []).has(category)) return false;
 
       // Price filter helper to get effective selling price
       const getSellingPrice = (p) => {
@@ -255,14 +168,14 @@ export default function ShopView() {
           return priceA - priceB;
         case 'price-desc':
           return priceB - priceA;
-        case 'featured':
+        case 'popular':
         default:
-          return 0;
+          return 0; // productKeys already arrive most-ordered first
       }
     });
 
     return list;
-  }, [productKeys, products, category, searchQuery, minPrice, maxPrice, inStockOnly, sortBy, selectedBrands]);
+  }, [productKeys, products, category, searchQuery, minPrice, maxPrice, inStockOnly, sortBy, selectedBrands, storeCategories]);
 
   const paginatedKeys = displayedKeys.slice(0, displayCount);
   const hasMore = displayCount < displayedKeys.length;
@@ -384,11 +297,11 @@ export default function ShopView() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="h-10 text-xs bg-white border border-rose-200 rounded-xl px-3 text-slate-800 font-semibold shadow-2xs focus:outline-none focus:border-brand-600 cursor-pointer"
               >
-                <option value="newest">{isBn ? 'নতুন পণ্য প্রথমে (ডিফল্ট)' : 'Newest First (Default)'}</option>
+                <option value="popular">{isBn ? 'জনপ্রিয়তা অনুযায়ী (ডিফল্ট)' : 'Most Popular (Default)'}</option>
+                <option value="newest">{isBn ? 'নতুন পণ্য প্রথমে' : 'Newest First'}</option>
                 <option value="oldest">{isBn ? 'আগের পণ্য প্রথমে' : 'Oldest First'}</option>
                 <option value="price-asc">{isBn ? 'দাম: কম থেকে বেশি' : 'Price: Low to High'}</option>
                 <option value="price-desc">{isBn ? 'দাম: বেশি থেকে কম' : 'Price: High to Low'}</option>
-                <option value="featured">{isBn ? 'জনপ্রিয়তা অনুযায়ী' : 'Featured'}</option>
               </select>
             </div>
           </div>
@@ -470,7 +383,7 @@ export default function ShopView() {
                         : 'text-slate-800 hover:bg-slate-50'
                       }`}
                   >
-                    <span>{isBn ? cat.name_bn : cat.name}</span>
+                    <span className={cat.depth ? 'pl-3' : ''}>{cat.depth ? '└ ' : ''}{isBn ? cat.name_bn : cat.name}</span>
                     <span>{formatNumber(cat.count)}</span>
                   </button>
                 ))}
