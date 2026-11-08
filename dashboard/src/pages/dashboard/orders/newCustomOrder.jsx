@@ -49,6 +49,8 @@ import {
   AlertTriangle,
   UserCheck,
   RotateCcw,
+  MessageCircle,
+  Loader2,
 } from "lucide-react";
 
 import { effectivePrice, formatBDT } from "@/utils/orderHelper";
@@ -62,6 +64,7 @@ import {
 } from "@/components/orders/CustomerLookup";
 import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 import { CartPriceInput, CustomItemCard } from "@/components/orders/CartLineEditors";
+import { shareInvoiceOnWhatsApp } from "@/utils/invoiceImage";
 
 // Modal dialog for selecting product variation & quantity
 const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
@@ -1005,6 +1008,27 @@ const NewCustomOrderPage = () => {
     const apiBase = (baseURL || getApiBaseUrl() || 'https://admin.surokkha.store').replace(/\/$/, '');
     const orderIdentifier = completedOrder?.order?._id || completedOrder?.order?.id || completedOrder?.order?.did || completedOrder?.orderNumber;
     window.open(`${apiBase}/api/v1/orders/${orderIdentifier}/invoice`, '_blank', 'noopener,noreferrer');
+  };
+
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+  const handleSendWhatsApp = async () => {
+    if (!completedOrder || sendingWhatsApp) return;
+    const apiBase = (baseURL || getApiBaseUrl() || 'https://admin.surokkha.store').replace(/\/$/, '');
+    const orderIdentifier = completedOrder?.order?._id || completedOrder?.order?.id || completedOrder?.order?.did || completedOrder?.orderNumber;
+    setSendingWhatsApp(true);
+    try {
+      const result = await shareInvoiceOnWhatsApp({
+        invoiceUrl: `${apiBase}/api/v1/orders/${orderIdentifier}/invoice`,
+        phone: completedOrder.customerPhone,
+        orderNumber: completedOrder.orderNumber,
+        message: `Invoice for order #${completedOrder.orderNumber}`,
+      });
+      if (result === "downloaded") toast.success("Invoice image downloaded — attach it in the WhatsApp chat.");
+    } catch (err) {
+      toast.error(err?.message || "Could not create invoice image.");
+    } finally {
+      setSendingWhatsApp(false);
+    }
   };
 
   const closeCompletedDialog = () => {
@@ -2283,10 +2307,11 @@ const NewCustomOrderPage = () => {
                 <Button
                   variant="outline"
                   className="w-full cursor-pointer text-xs font-semibold gap-1.5"
-                  onClick={() => setSendEmailModalOpen(true)}
+                  disabled={sendingWhatsApp}
+                  onClick={handleSendWhatsApp}
                 >
-                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                  Send via Email
+                  {sendingWhatsApp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />}
+                  Send by WhatsApp
                 </Button>
               </div>
             </div>
