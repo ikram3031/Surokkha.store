@@ -61,13 +61,14 @@ function IntroProductCard({ product }: { product: Product }) {
           <p className="text-xs text-white/60">{catLabel[product.cat]}</p>
           <h3 className="mt-0.5 text-[15px] font-semibold leading-snug">{product.name}</h3>
           <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
-            <span className="font-display text-lg font-bold text-accent">{taka(product.price)}</span>
-            {onSale && <s className="text-sm text-white/50">{taka(product.regularPrice!)}</s>}
+            <span className="font-display text-lg font-bold text-price">{taka(product.price)}</span>
+            {onSale && <s className="text-sm text-muted-foreground">{taka(product.regularPrice!)}</s>}
           </p>
         </div>
         <Button
           size="icon"
-          className="shrink-0 rounded-full bg-accent text-foreground hover:bg-background"
+          variant="outline"
+          className="size-9 shrink-0 rounded-full"
           onClick={() => add(product)}
           aria-label={`Add ${product.name} to cart`}
         >
