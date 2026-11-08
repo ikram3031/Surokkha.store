@@ -1,83 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Eye, ShoppingCart } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ProductArtIcon } from '@/components/icons/ArtIcons'
-import { catLabel, type Product } from '@/data/products'
-import { useCart } from '@/context/CartContext'
+import { type Product } from '@/data/products'
 import { useProducts } from '@/hooks/useProducts'
 import { useShowcaseProducts } from '@/hooks/useShowcaseProducts'
-import { taka } from '@/lib/bn'
-import { navigate, productPath } from '@/lib/router'
+import { navigate } from '@/lib/router'
 import { SectionHeading } from '@/components/SectionHeading'
+import { ProductCard } from '@/components/shop/ProductCard'
 
 const AUTOPLAY_MS = 3500
 const GAP_PX = 24
 
-function IntroProductCard({ product }: { product: Product }) {
-  const { add } = useCart()
-  const onSale = !!product.regularPrice && product.regularPrice > product.price
-  const discount = onSale ? Math.round((1 - product.price / product.regularPrice!) * 100) : 0
-  const open = () => product.slug && navigate(productPath(product.slug))
-
-  return (
-    <article className="group">
-      <div
-        role={product.slug ? 'link' : undefined}
-        tabIndex={product.slug ? 0 : undefined}
-        onClick={open}
-        onKeyDown={(e) => e.key === 'Enter' && open()}
-        className={`relative aspect-[4/5] overflow-hidden rounded-2xl bg-secondary ${product.slug ? 'cursor-pointer' : ''}`}
-      >
-        {discount > 0 && (
-          <Badge className="absolute left-3 top-3 z-10 bg-primary text-primary-foreground hover:bg-primary">-{discount}%</Badge>
-        )}
-        {product.image ? (
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <div className="h-3/5 w-3/5">
-              <ProductArtIcon art={product.art} c1={product.c1} c2={product.c2} />
-            </div>
-          </div>
-        )}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-foreground shadow-lg">
-            <Eye className="h-5 w-5" />
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">{catLabel[product.cat]}</p>
-          <h3 className="mt-0.5 text-[15px] font-semibold leading-snug">{product.name}</h3>
-          <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
-            <span className="font-display text-lg font-bold text-price">{taka(product.price)}</span>
-            {onSale && <s className="text-sm text-muted-foreground">{taka(product.regularPrice!)}</s>}
-          </p>
-        </div>
-        <Button
-          size="icon"
-          variant="outline"
-          className="size-9 shrink-0 rounded-full border-success bg-success-bg text-success hover:bg-success/15 hover:text-success"
-          onClick={() => add(product)}
-          aria-label={`Add ${product.name} to cart`}
-        >
-          <ShoppingCart className="h-4 w-4" />
-        </Button>
-      </div>
-    </article>
-  )
-}
 
 /** Dark band right under the trust strip: the products on sale now, four at a time, moving on their own. */
 export function IntroProducts() {
@@ -178,7 +110,7 @@ export function IntroProducts() {
           >
             {picks.map((product) => (
               <div key={product.id} className="w-[calc(50%-0.75rem)] shrink-0 snap-start lg:w-[calc(25%-1.125rem)]">
-                <IntroProductCard product={product} />
+                <ProductCard product={product} />
               </div>
             ))}
           </div>

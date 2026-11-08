@@ -83,3 +83,13 @@ Every git commit must strictly adhere to the format:
 ## 7. Infrastructure, VPS Servers & Deployment Inventory (From Inventory Sheet)
 *Reference: `J:\My Drive\assets.docs.plexivia\Plexivia_VPS_Containers_and_Domains_Inventory.xlsx`*
 
+---
+
+## 8. Storefront UI Design System (Surokkha Crimson)
+- **Source of truth**: `docs/18_Storefront_Design_System_Surokkha_Crimson.md`. Read it before any storefront UI, CSS or theme change.
+- **Tokens only**: Use the CSS variables from that doc (`--page`, `--primary`, `--gold`, `--price`, ...). Never hardcode hex values in components.
+- **Fonts**: `Marcellus` for headings, `Manrope` for body and buttons, `Jost` for product names and prices. Keep `Hind Siliguri` in the stack for the ৳ sign.
+- **Prices**: Always `font-variant-numeric: lining-nums tabular-nums` in `--price` color.
+- **Buttons**: One crimson primary per group; secondary actions use the gold outline. Add to cart is green by default and turns rose with a check icon once added.
+- **Status colors**: success / error / warning / info tokens only, always with an icon. Error is orange-red, never crimson; gold is never used in alerts.
+- **Theme**: Dark only. All storefront copy is English, sentence case.

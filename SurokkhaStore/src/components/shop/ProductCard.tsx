@@ -60,7 +60,7 @@ export function ProductCard({ product }: { product: Product }) {
       {/* Fixed-height title block + mt-auto footer keeps every card the same height, whatever the name length */}
       <CardContent className="flex flex-1 flex-col p-3 sm:p-4">
         <p className="truncate text-xs text-muted-foreground">{catLabel[product.cat]}</p>
-        <h3 className="mt-1 line-clamp-2 min-h-[2.75em] text-base font-semibold leading-snug sm:text-lg" title={product.name}>
+        <h3 className="mt-1 line-clamp-2 min-h-[2.5em] font-product text-sm font-medium leading-tight sm:text-[15px]" title={product.name}>
           {product.name}
         </h3>
         <div className="mt-auto flex items-center justify-between gap-2 pt-3">
