@@ -114,8 +114,8 @@
     "store": {
       "key": "store",
       "domain": "surokkha.store",
-      "url": "https://surokkha.store",
-      "storefrontUrl": "https://surokkha.store",
+      "url": "https://surokkhastore.shop",
+      "storefrontUrl": "https://surokkhastore.shop",
       "name": "Surokkha Store",
       "orderPrefix": "ST",
       "supportEmail": "support@surokkha.store",

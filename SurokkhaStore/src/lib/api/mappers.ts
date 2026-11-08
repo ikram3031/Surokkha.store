@@ -81,8 +81,9 @@ export function mapApiProduct(raw: ApiProduct): Product {
   const categoryName = categoryNameOf(raw.category) || raw.categoryName || ''
   const cat = normalizeCategory(categoryName)
   const visual = DEFAULT_ART_BY_CATEGORY[cat]
-  // Same rule as SurokkhaShop: a sale exists when offerPrice is positive and below the regular price
-  const regular = Number(raw.regularPrice || raw.price || 0)
+  // Same rule as the backend: a sale exists when offerPrice is positive and below price. `price` comes first
+  // because some products carry a stale imported `regularPrice` that hid the real offer.
+  const regular = Number(raw.price || raw.regularPrice || 0)
   const offer = Number(raw.offerPrice) > 0 && Number(raw.offerPrice) < regular ? Number(raw.offerPrice) : 0
 
   return {

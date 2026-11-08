@@ -19,3 +19,8 @@ export function getSizeChart<T = unknown>(id: string) {
 export function getStoreUtils<T = unknown>() {
   return api.get<T>('/store-utils')
 }
+
+/** GET /store/v1/store-utils/popularity — completed-order count per product, keyed by _id, did and slug. */
+export function getPopularity() {
+  return api.get<{ data?: Record<string, { orders?: number; units?: number }> }>('/store-utils/popularity')
+}

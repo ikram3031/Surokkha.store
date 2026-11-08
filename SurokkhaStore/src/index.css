@@ -242,7 +242,7 @@
   --font-body: var(--font-body);
   --font-product: var(--font-product);
 
-  --animate-marquee: marquee 16s linear infinite;
+  --animate-marquee: marquee 70s linear infinite;
 }
 
 @keyframes marquee {

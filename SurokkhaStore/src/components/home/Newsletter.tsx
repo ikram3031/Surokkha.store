@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { subscribe } from '@/lib/api/contact'
 import { isValidEmail } from '@/lib/checkout'
 
-/** Email signup card on a soft band, just above the footer. */
+/** Email signup card on the page background, just above the footer. */
 export function Newsletter() {
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
@@ -29,9 +29,9 @@ export function Newsletter() {
   }
 
   return (
-    <section className="bg-secondary py-16 md:py-20">
+    <section className="py-16 md:py-20">
       <div className="mx-auto max-w-4xl px-4">
-        <div className="grid items-center gap-8 rounded-2xl bg-card px-6 py-10 shadow-xs md:grid-cols-2 md:px-14 md:py-14">
+        <div className="grid items-center gap-8 rounded-2xl border border-border bg-card bg-[radial-gradient(ellipse_at_top_left,rgba(225,29,72,0.14),transparent_60%)] px-6 py-10 md:grid-cols-2 md:px-14 md:py-14">
           <div>
             <h2 className="font-display text-3xl font-bold leading-tight">Get health tips and offers by email</h2>
             <p className="mt-2 text-sm text-muted-foreground">No spam, just the useful stuff.</p>

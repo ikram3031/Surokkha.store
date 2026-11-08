@@ -36,7 +36,7 @@ export function HomeHero() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg" className="h-12 rounded-full px-8 text-base" onClick={() => scrollToId('on-sale')}>
+            <Button size="lg" className="h-12 rounded-full px-8 text-base" onClick={() => scrollToId('featured')}>
               Shop products
             </Button>
             <Button

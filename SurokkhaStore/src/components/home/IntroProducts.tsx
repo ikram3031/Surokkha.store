@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { type Product } from '@/data/products'
-import { useProducts } from '@/hooks/useProducts'
+import { useBestSellers } from '@/hooks/useBestSellers'
 import { useShowcaseProducts } from '@/hooks/useShowcaseProducts'
 import { navigate } from '@/lib/router'
 import { SectionHeading } from '@/components/SectionHeading'
@@ -11,15 +11,14 @@ const AUTOPLAY_MS = 3500
 const GAP_PX = 24
 
 
-/** Dark band right under the trust strip: the products on sale now, four at a time, moving on their own. */
+/** Band right under the trust strip: "Featured products", the best sellers by completed-order count, moving on their own. */
 export function IntroProducts() {
-  const { products: showcase, loading } = useShowcaseProducts('onSale')
-  const { products: all } = useProducts()
+  const { products: bestSellers, loading } = useBestSellers(8)
+  const { products: featured } = useShowcaseProducts('featured')
 
-  // Dashboard "On Sale" picks first, then anything else with a sale price, so at least four are always shown
-  const onSale = all.filter((p) => p.inStock !== false && !!p.regularPrice && p.regularPrice > p.price)
+  // Best sellers first, then the dashboard "Featured" picks, so the row is never short
   const seen = new Set<string>()
-  const picks: Product[] = [...showcase, ...onSale].filter((p) => {
+  const picks: Product[] = [...bestSellers, ...featured].filter((p) => {
     const key = p.slug ?? String(p.id)
     if (seen.has(key)) return false
     seen.add(key)
@@ -81,10 +80,10 @@ export function IntroProducts() {
   if (picks.length === 0) return null
 
   return (
-    <section id="on-sale" className="bg-background py-14 text-white md:py-20">
+    <section id="featured" className="bg-background py-14 text-white md:py-20">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHeading invert title="On sale now" subtitle="Our best offers right now, delivered discreetly." />
+          <SectionHeading invert title="Featured products" subtitle="Our best sellers, the packs customers order most." />
           <Button
             size="lg"
             className="h-11 rounded-full border border-gold bg-transparent px-7 text-gold-text hover:bg-gold/10"
