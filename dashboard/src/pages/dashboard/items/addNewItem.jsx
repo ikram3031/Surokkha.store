@@ -75,6 +75,7 @@ const AddNewItem = () => {
   const [taxRate, setTaxRate] = useState("");
   const [stockStatus, setStockStatus] = useState("instock");
   const [stockItem, setStockItem] = useState(null);
+  const [stockQty, setStockQty] = useState(1);
 
   // 4. Variant product fields
   const [variants, setVariants] = useState([emptyVariant()]);
@@ -158,6 +159,7 @@ const AddNewItem = () => {
     if (typeof p.isActive === "boolean") setIsActive(p.isActive);
     if (p.stockStatus) setStockStatus(p.stockStatus);
     if (p.stockItem) setStockItem(String(p.stockItem._id || p.stockItem));
+    if (p.stockQty) setStockQty(Number(p.stockQty) || 1);
 
     // Tags
     if (Array.isArray(p.tags) && p.tags.length > 0) {
@@ -234,6 +236,7 @@ const AddNewItem = () => {
           imageError: "",
           stockStatus: v.stockStatus || "instock",
           stockItem: v.stockItem ? String(v.stockItem) : null,
+          stockQty: Number(v.stockQty) || 1,
         }))
       );
     }
@@ -591,6 +594,7 @@ const AddNewItem = () => {
           imageUrl: varImageUrl || null,
           stockStatus: v.stockStatus || "instock",
           stockItem: v.stockItem ? String(v.stockItem) : null,
+          stockQty: Number(v.stockQty) || 1,
         });
       }
 
@@ -638,6 +642,7 @@ const AddNewItem = () => {
         isActive: Boolean(isActive),
         stockStatus: stockStatus || "instock",
         stockItem: productType === "simple" ? stockItem : null,
+        stockQty: productType === "simple" ? stockQty : 1,
         tags: Array.isArray(tags) ? tags : [],
         images: uploadedGalleryImages,
         metaData: {
@@ -788,6 +793,8 @@ const AddNewItem = () => {
               setTaxRate={setTaxRate}
               stockItem={stockItem}
               setStockItem={setStockItem}
+              stockQty={stockQty}
+              setStockQty={setStockQty}
               onPickStockItem={(piece) => { if (!name.trim()) handleNameChange(piece.name || piece.shortName); }}
               variants={variants}
               attributeGroups={attributeGroups}

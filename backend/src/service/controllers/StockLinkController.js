@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { ProductModel } from "../../common/models/product.model.js";
 import { ItemModel } from "../../common/models/item.model.js";
 import { StockItemModel } from "../../common/models/stockItem.model.js";
-import { toStockItemId } from "../../common/services/stock.service.js";
+import { toStockItemId, toStockQty } from "../../common/services/stock.service.js";
 
 // Links catalog products/items (and their variants) to the inventory pieces they sell
 
@@ -27,7 +27,7 @@ export const listStockLinks = async (req, res, next) => {
 
     let docs = await modelFor(entity)
       .find(filter)
-      .select("name type imageUrl thumbnailUrl isActive stockStatus price offerPrice stockItem variants.size variants.price variants.offerPrice variants.stockItem")
+      .select("name type imageUrl thumbnailUrl isActive stockStatus price offerPrice stockItem stockQty variants.size variants.price variants.offerPrice variants.stockItem variants.stockQty")
       .sort({ name: 1 })
       .lean();
     if (link === "linked") docs = docs.filter(isLinked);
@@ -51,7 +51,8 @@ export const listStockLinks = async (req, res, next) => {
       stockStatus: d.stockStatus,
       price: d.offerPrice ?? d.price ?? null,
       stockItem: d.type === "variant" ? null : pieceView(d.stockItem, byId),
-      variants: d.type === "variant" ? (d.variants || []).map((v) => ({ size: v.size, price: v.offerPrice ?? v.price, stockItem: pieceView(v.stockItem, byId) })) : [],
+      stockQty: d.stockQty || 1,
+      variants: d.type === "variant" ? (d.variants || []).map((v) => ({ size: v.size, price: v.offerPrice ?? v.price, stockItem: pieceView(v.stockItem, byId), stockQty: v.stockQty || 1 })) : [],
     }));
     const summary = { total: rows.length, linked: docs.filter(isLinked).length };
     return res.json({ status: "success", data: rows, summary });
@@ -60,7 +61,7 @@ export const listStockLinks = async (req, res, next) => {
   }
 };
 
-// PUT /stock-items/catalog/:entity/:id — body { stockItem } for simple, { variants: [{ size, stockItem }] } for variant
+// PUT /stock-items/catalog/:entity/:id — body { stockItem, stockQty } for simple, { variants: [{ size, stockItem, stockQty }] } for variant
 export const updateStockLink = async (req, res, next) => {
   try {
     const entity = req.params.entity === "item" ? "item" : "product";
@@ -71,14 +72,17 @@ export const updateStockLink = async (req, res, next) => {
     const body = req.body || {};
     const wanted = new Set();
     if (doc.type === "variant") {
-      const bySize = new Map((Array.isArray(body.variants) ? body.variants : []).map((v) => [String(v?.size || ""), toStockItemId(v?.stockItem)]));
+      const bySize = new Map((Array.isArray(body.variants) ? body.variants : []).map((v) => [String(v?.size || ""), v || {}]));
       for (const v of doc.variants || []) {
-        if (bySize.has(v.size)) v.stockItem = bySize.get(v.size);
+        const next = bySize.get(v.size);
+        if (next && next.stockItem !== undefined) v.stockItem = toStockItemId(next.stockItem);
+        if (next && next.stockQty !== undefined) v.stockQty = toStockQty(next.stockQty);
         if (v.stockItem) wanted.add(String(v.stockItem));
       }
       doc.markModified("variants");
     } else {
-      doc.stockItem = toStockItemId(body.stockItem);
+      if (body.stockItem !== undefined) doc.stockItem = toStockItemId(body.stockItem);
+      if (body.stockQty !== undefined) doc.stockQty = toStockQty(body.stockQty);
       if (doc.stockItem) wanted.add(String(doc.stockItem));
     }
     if (wanted.size) {

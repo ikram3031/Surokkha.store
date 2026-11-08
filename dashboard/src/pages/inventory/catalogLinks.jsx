@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Search, Plus, Link2, Pencil } from 'lucide-react';
 
 import { apiClient } from '@/lib/api-client';
-import { StockItemPicker } from '@/components/dashboard/inventory/StockItemPicker';
+import { StockItemPicker, StockQtyInput } from '@/components/dashboard/inventory/StockItemPicker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -63,6 +63,7 @@ const LinkRow = ({ row, entity, onSave, saving }) => (
                 onChange={(id) => onSave(row, { variants: [{ size: v.size, stockItem: id }] })}
               />
               <StockHint piece={v.stockItem} />
+              <StockQtyInput stockItemId={v.stockItem?.id || null} value={v.stockQty} disabled={saving} onCommit={(n) => onSave(row, { variants: [{ size: v.size, stockQty: n }] })} />
             </div>
           ))}
         </div>
@@ -70,6 +71,7 @@ const LinkRow = ({ row, entity, onSave, saving }) => (
         <div className="flex flex-wrap items-center gap-2">
           <StockItemPicker className="w-72" value={row.stockItem?.id || null} disabled={saving} onChange={(id) => onSave(row, { stockItem: id })} />
           <StockHint piece={row.stockItem} />
+          <StockQtyInput stockItemId={row.stockItem?.id || null} value={row.stockQty} disabled={saving} onCommit={(n) => onSave(row, { stockQty: n })} />
         </div>
       )}
     </TableCell>

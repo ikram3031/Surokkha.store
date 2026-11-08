@@ -60,15 +60,18 @@ export const toStockItemId = (value) => {
   return id && mongoose.Types.ObjectId.isValid(String(id)) ? String(id) : null;
 };
 
+// Pieces per sale from a form value: a whole number, at least 1
+export const toStockQty = (value) => {
+  const n = Math.round(Number(value));
+  return Number.isFinite(n) && n >= 1 ? n : 1;
+};
+
 // The inventory piece a catalog product/item sells: the matching variant's link, else the product's own
 const linkedStockItem = async (entity, filter, size = "") => {
-  const doc = await modelFor(entity).findOne(filter).select("name type stockItem variants.size variants.stockItem combo").lean();
-  if (!doc) return { doc: null, stockItemId: null };
-  if (doc.type === "variant") {
-    const variant = (doc.variants || []).find((v) => v.size === size);
-    return { doc, stockItemId: variant?.stockItem ? String(variant.stockItem) : null };
-  }
-  return { doc, stockItemId: doc.stockItem ? String(doc.stockItem) : null };
+  const doc = await modelFor(entity).findOne(filter).select("name type stockItem stockQty variants.size variants.stockItem variants.stockQty combo").lean();
+  if (!doc) return { doc: null, stockItemId: null, perSale: 1 };
+  const src = doc.type === "variant" ? (doc.variants || []).find((v) => v.size === size) : doc;
+  return { doc, stockItemId: src?.stockItem ? String(src.stockItem) : null, perSale: toStockQty(src?.stockQty) };
 };
 
 // Takes pieces out of one inventory item and records it in the ledger and the stock history
@@ -95,8 +98,8 @@ const takeOutStockItem = async ({ stockItemId, qty, order, actor, note = "" }, l
 
 // Takes one catalog product/item out through its inventory link; nothing happens when it has none
 const takeOutLinked = async ({ entity, filter, size, qty, order, actor, note = "" }, ledger) => {
-  const { stockItemId } = await linkedStockItem(entity, filter, size);
-  await takeOutStockItem({ stockItemId, qty, order, actor, note }, ledger);
+  const { stockItemId, perSale } = await linkedStockItem(entity, filter, size);
+  await takeOutStockItem({ stockItemId, qty: qty * perSale, order, actor, note }, ledger);
 };
 
 // Takes the order's pieces out of the linked inventory items and returns the ledger of what was taken.
@@ -121,7 +124,7 @@ const deductForOrder = async (order, actor) => {
       const filter = buildRefFilter(line);
       if (!filter) continue;
       const entity = lineEntity(line);
-      const { doc, stockItemId } = await linkedStockItem(entity, filter, line.size || "");
+      const { doc, stockItemId, perSale } = await linkedStockItem(entity, filter, line.size || "");
       if (!doc) continue;
 
       // A group product (combo) takes its pieces out through their own links
@@ -133,7 +136,7 @@ const deductForOrder = async (order, actor) => {
         }
         continue;
       }
-      await takeOutStockItem({ stockItemId, qty, order, actor, note: line.size ? `${doc.name} (${line.size})` : "" }, ledger);
+      await takeOutStockItem({ stockItemId, qty: qty * perSale, order, actor, note: line.size ? `${doc.name} (${line.size})` : "" }, ledger);
     } catch (error) {
       console.error(`Stock deduct failed for order ${order.orderNumber}:`, error);
     }

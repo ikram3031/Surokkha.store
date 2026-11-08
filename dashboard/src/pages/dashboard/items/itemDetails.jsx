@@ -69,6 +69,7 @@ const EditProductPage = () => {
   const [taxRate, setTaxRate] = useState("");
   const [stockStatus, setStockStatus] = useState("instock");
   const [stockItem, setStockItem] = useState(null);
+  const [stockQty, setStockQty] = useState(1);
 
   // 4. Variant product fields
   const [variants, setVariants] = useState([emptyVariant()]);
@@ -217,6 +218,7 @@ const EditProductPage = () => {
           setProductType(product.type || "simple");
           setStockStatus(product.stockStatus || "instock");
           setStockItem(product.stockItem ? String(product.stockItem._id || product.stockItem) : null);
+          setStockQty(Number(product.stockQty) || 1);
           const mainImg = product.imageUrl || product.image_url || "";
           setUploadedImageUrl(mainImg);
           setImagePreview(mainImg);
@@ -284,6 +286,7 @@ const EditProductPage = () => {
                 imageError: "",
                 stockStatus: v.stockStatus || "instock",
                 stockItem: v.stockItem ? String(v.stockItem) : null,
+                stockQty: Number(v.stockQty) || 1,
               }))
             );
           }
@@ -601,6 +604,7 @@ const EditProductPage = () => {
           imageUrl: varImageUrl || null,
           stockStatus: v.stockStatus || "instock",
           stockItem: v.stockItem ? String(v.stockItem) : null,
+          stockQty: Number(v.stockQty) || 1,
         });
       }
 
@@ -648,6 +652,7 @@ const EditProductPage = () => {
         isActive: Boolean(isActive),
         stockStatus: stockStatus || "instock",
         stockItem: productType === "simple" ? stockItem : null,
+        stockQty: productType === "simple" ? stockQty : 1,
         tags: Array.isArray(tags) ? tags : [],
         images: uploadedGalleryImages,
         metaData: {
@@ -792,6 +797,8 @@ const EditProductPage = () => {
               setTaxRate={setTaxRate}
               stockItem={stockItem}
               setStockItem={setStockItem}
+              stockQty={stockQty}
+              setStockQty={setStockQty}
               onPickStockItem={(piece) => { if (!name.trim()) handleNameChange(piece.name || piece.shortName); }}
               variants={variants}
               attributeGroups={attributeGroups}

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, UploadCloud, X, Layers, Lock, Package, Image as ImageIcon } from "lucide-react";
 import { MediaPickerModal } from "@/components/dashboard/media-picker-modal";
-import { StockItemPicker } from "@/components/dashboard/inventory/StockItemPicker";
+import { StockItemPicker, StockQtyInput } from "@/components/dashboard/inventory/StockItemPicker";
 
 export const ProductDataCard = ({
   productType,
@@ -26,6 +26,8 @@ export const ProductDataCard = ({
   setTaxRate,
   stockItem = null,
   setStockItem,
+  stockQty = 1,
+  setStockQty,
   onPickStockItem,
   variants = [],
   attributeGroups = [],
@@ -236,9 +238,7 @@ export const ProductDataCard = ({
                     if (piece) onPickStockItem?.(piece);
                   }}
                 />
-                <p className="text-[10px] text-muted-foreground">
-                  Each order takes pieces from this inventory item.
-                </p>
+                <StockQtyInput stockItemId={stockItem} value={stockQty} onChange={(n) => setStockQty?.(n)} />
               </div>
             ) : (
               <p className="text-[11px] text-muted-foreground">
@@ -472,6 +472,7 @@ export const ProductDataCard = ({
                     onChange={(id) => updateVariant(i, "stockItem", id)}
                     noneLabel="Custom (stock not tracked)"
                   />
+                  <StockQtyInput stockItemId={v.stockItem || null} value={v.stockQty || 1} onChange={(n) => updateVariant(i, "stockQty", n)} />
                 </div>
 
                 {/* Row 4: Image Thumbnail (Conditional on clientConfig) */}
