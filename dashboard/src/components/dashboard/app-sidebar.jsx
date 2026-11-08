@@ -106,7 +106,7 @@ const TikTokIcon = ({ className = "h-3.5 w-3.5", ...props }) => (
   </svg>
 );
 
-const navItemClass = "relative h-10 gap-3 rounded-lg px-3 font-medium text-white hover:bg-white/5 hover:text-primary data-active:bg-primary/12 data-active:font-medium data-active:text-primary data-active:[&>svg]:text-primary"
+const navItemClass = "relative h-10 gap-3 rounded-lg px-3 font-medium text-white hover:bg-white/5 hover:text-primary data-active:bg-primary/12 data-active:font-medium data-active:text-primary data-active:[&>svg]:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center"
 
 // Section caption rendered above a navigation group, collapsing to a divider in rail mode
 export const NavLabel = ({ children }) => (
@@ -127,7 +127,7 @@ export const NavGroup = ({ id, icon: Icon, label, active, open, onToggle, childr
       onClick={() => onToggle(id)}
       aria-expanded={open}
       data-has-active={active ? "true" : "false"}
-      className="relative h-10 cursor-pointer justify-between rounded-lg px-3 font-medium text-white hover:bg-white/5 hover:text-primary data-[has-active=true]:bg-primary/12 data-[has-active=true]:text-primary data-[has-active=true]:[&>div>svg]:text-primary"
+      className="relative h-10 cursor-pointer justify-between rounded-lg px-3 font-medium text-white hover:bg-white/5 hover:text-primary data-[has-active=true]:bg-primary/12 data-[has-active=true]:text-primary data-[has-active=true]:[&>div>svg]:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center"
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <Icon className="h-4 w-4" />

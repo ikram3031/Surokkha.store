@@ -36,6 +36,11 @@ export const errorHandler = (err, req, res, next) => {
     }
   }
 
+  if (err.name === "ValidationError" && err.errors) {
+    status = 400;
+    message = Object.values(err.errors).map((e) => e.message).join(", ");
+  }
+
   status = status ?? 500;
 
   res.status(status).json({

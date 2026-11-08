@@ -190,6 +190,19 @@ const itemSchema = new Schema(
   }
 );
 
+// An offer price must be lower than the regular price, or the store charges more than the listed price
+function rejectOfferAbovePrice(next) {
+  const check = (price, offer, path) => {
+    if (offer != null && price != null && Number(offer) >= Number(price)) {
+      this.invalidate(path, `Offer price (${offer}) must be lower than the price (${price})`, offer);
+    }
+  };
+  check(this.price, this.offerPrice, "offerPrice");
+  (this.variants || []).forEach((v, i) => check(v.price, v.offerPrice, `variants.${i}.offerPrice`));
+  next();
+}
+itemSchema.pre("validate", rejectOfferAbovePrice);
+
 // Indexes
 itemSchema.index({ price: 1, offerPrice: 1 });
 itemSchema.index({ "variants.price": 1, "variants.offerPrice": 1 });

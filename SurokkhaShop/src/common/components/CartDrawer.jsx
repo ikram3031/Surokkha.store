@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, getFeaturedCombo, TRIAL_PACK_SLUG } from '../store/useStore';
+import { useStore, getFeaturedCombo, isTrialPackSlug } from '../store/useStore';
 import TrialPackOfferCard from './TrialPackOfferCard';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
@@ -373,8 +373,7 @@ export default function CartDrawer() {
                   </button>
                 </div>
 
-                {/* Surokkha Trial Pack: free delivery note when present, offer card when not */}
-                {cartKeys.some((k) => k.split(':::')[0] === TRIAL_PACK_SLUG) ? (
+                {cartKeys.some((k) => isTrialPackSlug(k.split(':::')[0])) ? (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-emerald-900 flex items-center gap-2">
                     <span>🚚</span>
                     <span>{isBn ? 'সুরক্ষা ট্রায়াল প্যাক থাকায় আপনার পুরো অর্ডারে ডেলিভারি ফ্রি!' : 'Surokkha Trial Pack in cart: free delivery on your whole order!'}</span>

@@ -105,8 +105,13 @@ export const isSingleQtyItem = (prod) => {
   return isItem && !hasVariants;
 };
 
-// Surokkha Trial Pack: orders that include it get free delivery
+// Surokkha Trial Pack slugs: orders that include any trial pack get free delivery
 export const TRIAL_PACK_SLUG = 'surokkha-trial-pack';
+export const TRIAL_PACK_2_SLUG = 'surokkha-trial-pack-2';
+export const TRIAL_PACK_SLUGS = [TRIAL_PACK_SLUG, TRIAL_PACK_2_SLUG];
+
+// Checks whether a given product slug belongs to a Surokkha Trial Pack
+export const isTrialPackSlug = (slug) => Boolean(slug) && (TRIAL_PACK_SLUGS.includes(slug) || String(slug).startsWith('surokkha-trial-pack'));
 
 // Site-wide featured combo (announcement bar, promo banner, cart upsell): the Ultimate 3-in-1 30 pcs combo.
 // Falls back to any in-stock 30-pcs combo, then any in-stock combo, while it's unavailable.
@@ -486,7 +491,9 @@ export const useStore = create((set, get) => ({
           }
 
           let resolvedRegularPrice = basePrice;
-          let resolvedOfferPrice = offerPriceVal;
+          // An offer price at or above the regular price is a data-entry mistake, not an offer: ignore it
+          // everywhere (cards, cart, checkout), so the customer is always charged the price they saw.
+          let resolvedOfferPrice = (offerPriceVal != null && basePrice > 0 && offerPriceVal >= basePrice) ? null : offerPriceVal;
 
           // If offerPrice is set and lower than base price, it is a discounted price
           let resolvedPrice = (resolvedOfferPrice != null && resolvedOfferPrice > 0 && resolvedOfferPrice < resolvedRegularPrice)
@@ -1036,8 +1043,7 @@ export const useStore = create((set, get) => ({
       deliveryFee = getDeliveryCharge(activeDistrict, activeThana);
     }
 
-    // Surokkha Trial Pack offer: delivery is free whenever the trial pack is in the cart
-    const isTrialPackFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && k.split(':::')[0] === TRIAL_PACK_SLUG);
+    const isTrialPackFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && isTrialPackSlug(k.split(':::')[0]));
 
     // Dynamic Coupon Discount Calculation
     let discountAmount = 0;

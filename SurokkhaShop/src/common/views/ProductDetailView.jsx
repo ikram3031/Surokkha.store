@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore, isSingleQtyItem, TRIAL_PACK_SLUG } from '../store/useStore';
+import { useStore, isSingleQtyItem, isTrialPackSlug } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
@@ -52,7 +52,13 @@ export default function ProductDetailView() {
 
   // The raw detail response can carry brand IDs instead of names; keep the brand already resolved in the store
   const product = detailedProduct
-    ? { ...baseProduct, ...detailedProduct, brand: baseProduct ? ((baseProduct.brandNames || []).join(', ') || baseProduct.brand) : '' }
+    ? {
+        ...baseProduct,
+        ...detailedProduct,
+        brand: baseProduct ? ((baseProduct.brandNames || []).join(', ') || baseProduct.brand) : '',
+        // Prices stay as the store resolved them (bad offer prices dropped), so the page matches the cart
+        ...(baseProduct ? { price: baseProduct.price, regularPrice: baseProduct.regularPrice, offerPrice: baseProduct.offerPrice } : {}),
+      }
     : baseProduct;
 
   const hasVariants = Boolean(product?.type === 'variant' || product?.type === 'variable' || (Array.isArray(product?.variants) && product.variants.length > 0));
@@ -339,8 +345,7 @@ export default function ProductDetailView() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
 
-      {/* Surokkha Trial Pack offer notice: ordering it makes delivery free */}
-      {(product.slug === TRIAL_PACK_SLUG || selectedSlug === TRIAL_PACK_SLUG) && (
+      {(isTrialPackSlug(product.slug) || isTrialPackSlug(selectedSlug)) && (
         <div className="flex items-start gap-3 rounded-2xl border-2 border-emerald-500 bg-emerald-50 px-4 py-3">
           <span className="text-2xl leading-none">🚚</span>
           <div>
