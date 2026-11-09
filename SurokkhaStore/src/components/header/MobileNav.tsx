@@ -20,7 +20,7 @@ export function MobileNav({
   }
 
   return (
-    <nav className="flex h-full flex-col" aria-label="Mobile menu">
+    <nav className="dark flex h-full flex-col bg-background text-foreground" aria-label="Mobile menu">
       {/* Logo — the sheet's own close (X) button sits on the right */}
       <div className="flex h-16 shrink-0 items-center px-4 pr-14">
         <a

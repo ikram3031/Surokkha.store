@@ -223,7 +223,7 @@ export function AccountPage() {
       {/* One light-tinted card (theme "secondary") on the white page: the image runs edge to edge, no inner padding */}
       <div className="mb-10 mt-4 grid overflow-hidden rounded-3xl bg-secondary/40 lg:mb-14 lg:mt-5 lg:grid-cols-2">
       {/* Left: CMS image (Dashboard → CMS → Section Backgrounds → "login"), brand panel until one is set */}
-      <aside className="relative hidden min-h-[640px] overflow-hidden bg-background text-white lg:block">
+      <aside className="dark relative hidden min-h-[640px] overflow-hidden bg-background text-white lg:block">
         {image ? (
           <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         ) : (

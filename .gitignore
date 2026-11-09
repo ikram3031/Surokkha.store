@@ -17,7 +17,7 @@ node_modules/
 **/build/
 frontend/store/
 frontend/shop/
-/marketing
+*/marketing/
 /invoice-test
 
 # Logs
@@ -73,3 +73,6 @@ configs/secrets/
 
 # Resized upload copies generated at runtime
 .cache/
+
+
+/marketing

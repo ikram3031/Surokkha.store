@@ -74,7 +74,47 @@
   --font-body: "Hind Siliguri", sans-serif;
 }
 
-:root,
+:root {
+  /* Light page (#fffcfd); the header, footer and bottom nav keep the dark tokens via class="dark" */
+  --background: #fffcfd;
+  --foreground: #1f1a1c;
+  --card: #ffffff;
+  --card-foreground: #1f1a1c;
+  --popover: #ffffff;
+  --popover-foreground: #1f1a1c;
+  --primary: #e11d48;
+  --primary-hover: #be123c;
+  --primary-foreground: #ffffff;
+  --secondary: #f8f1f3;
+  --secondary-foreground: #1f1a1c;
+  --muted: #f8f1f3;
+  --muted-foreground: #6b5f63;
+  --text-secondary: #4a3f43;
+  --accent: #f8f1f3;
+  --accent-foreground: #1f1a1c;
+  --brand-accent: #e11d48;
+  --destructive: #d9480f;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --success-bg: #ecfdf3;
+  --price: #1f1a1c;
+  --badge: #9f1239;
+  --badge-foreground: #ffe4e9;
+  --gold: #b7862f;
+  --gold-text: #8a6420;
+  --wine: #fdf2f4;
+  --link: #be123c;
+  --link-hover: #e11d48;
+  --link-foreground: #ffffff;
+  --border: #ecdfe3;
+  --input: #ecdfe3;
+  --ring: #e11d48;
+  --font-display: "Marcellus", "Noto Serif Bengali", Georgia, serif;
+  --font-body: "Manrope", "Hind Siliguri", system-ui, sans-serif;
+  --font-product: "Jost", "Hind Siliguri", system-ui, sans-serif;
+}
+
 .dark {
   /* Surokkha Crimson design system (claude.ai design system artifact) */
   --background: #110d0f; /* page */
@@ -182,6 +222,25 @@
   /* Neutral ramp inverted for the dark theme: 50 is the darkest surface,
      950 the lightest text — so components written with raw gray/zinc/slate
      (light bg / dark text) still read correctly on the dark background. */
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-product: var(--font-product);
+
+  --animate-marquee: marquee 70s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Inverted neutral ramp only inside dark areas (header, footer, bottom nav) */
+.dark {
   --color-gray-50: #1c1416;
   --color-gray-100: #211719;
   --color-gray-200: #261b1e;
@@ -237,21 +296,6 @@
   --color-stone-800: #d9cfd2;
   --color-stone-900: #ece4e2;
   --color-stone-950: #fbf5ec;
-
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
-  --font-product: var(--font-product);
-
-  --animate-marquee: marquee 70s linear infinite;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 @layer base {

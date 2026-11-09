@@ -103,7 +103,7 @@ const buildCustomLine = (name, price, quantity, pieces = []) => {
 };
 
 
-// Searches stock-tracked products and items so a custom line can take real pieces out of inventory
+// Searches stock items (products are already pickable above) so a custom line can take real pieces out of inventory
 const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
@@ -122,8 +122,7 @@ const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
         const res = await apiClient.get(`/api/v1/inventory?${params.toString()}`);
         return res.data?.data || [];
       };
-      const [products, items] = await Promise.all([fetchEntity("product"), fetchEntity("item")]);
-      return [...products, ...items];
+      return fetchEntity("item");
     },
   });
 
@@ -157,7 +156,7 @@ const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
 
       <div className="relative">
         <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search products or items by name or SKU" className="h-9 text-sm pl-8" />
+        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search stock items by name or SKU" className="h-9 text-sm pl-8" />
         {q && (
           <div className="absolute z-30 left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-lg border bg-popover shadow-lg">
             {isFetching && results.length === 0 ? (

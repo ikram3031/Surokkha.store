@@ -24,7 +24,7 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
   return (
     <nav
       aria-label="Quick navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-background text-white pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="dark fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-background text-white pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <div className="mx-auto flex max-w-md items-stretch">
         <button type="button" onClick={() => navigate('/')} className={`${itemBase} ${isHome ? on : off}`}>

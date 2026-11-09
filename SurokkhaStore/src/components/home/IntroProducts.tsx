@@ -80,13 +80,13 @@ export function IntroProducts() {
   if (picks.length === 0) return null
 
   return (
-    <section id="featured" className="bg-background py-14 text-white md:py-20">
+    <section id="featured" className="bg-background py-14 text-foreground md:py-20">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionHeading invert title="Featured products" subtitle="Our best sellers, the packs customers order most." />
           <Button
             size="lg"
-            className="h-11 rounded-full border border-white/15 bg-transparent px-7 text-foreground hover:bg-white/10"
+            className="h-11 rounded-full border border-foreground/15 bg-transparent px-7 text-foreground hover:bg-foreground/10"
             onClick={() => navigate('/category/combo')}
           >
             See all offers
@@ -123,7 +123,7 @@ export function IntroProducts() {
                   onClick={() => goTo(i)}
                   aria-label={`Show slide ${i + 1}`}
                   aria-current={i === current}
-                  className={`h-2 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-brand-accent' : 'w-2 bg-white/30 hover:bg-white/50'}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-brand-accent' : 'w-2 bg-foreground/30 hover:bg-foreground/50'}`}
                 />
               ))}
             </div>

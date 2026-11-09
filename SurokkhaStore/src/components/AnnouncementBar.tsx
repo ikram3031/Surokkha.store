@@ -9,7 +9,7 @@ const REPEAT = 4
 
 export function AnnouncementBar() {
   return (
-    <div className="group overflow-hidden border-b border-border bg-wine text-text-secondary [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+    <div className="dark group overflow-hidden border-b border-border bg-wine text-text-secondary [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
       <div className="animate-marquee flex w-max py-2 group-hover:[animation-play-state:paused] motion-reduce:animate-none">
         {[0, 1].map((i) => (
           <p key={i} aria-hidden={i === 1} className="flex shrink-0 items-center text-[13px] tracking-wide whitespace-nowrap">

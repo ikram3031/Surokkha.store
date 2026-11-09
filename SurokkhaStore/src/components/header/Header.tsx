@@ -20,7 +20,7 @@ export function Header({
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background text-white">
+    <header className="dark sticky top-0 z-40 border-b border-border bg-background text-white">
       {/* Left: menu icon + search, centre: logo, right: account and cart */}
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
