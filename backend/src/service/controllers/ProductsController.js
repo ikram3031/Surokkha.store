@@ -493,7 +493,7 @@ export const updateProduct = async (req, res, next) => {
   }
 };
 
-// Deletes a product by ID, DID, or slug
+// Deletes a product by ID, DID, or slug: moves it to the Trash (isActive false); ?permanent=true removes it for good
 export const deleteProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -501,12 +501,15 @@ export const deleteProduct = async (req, res, next) => {
     const filter = isObjectId
       ? { $or: [{ _id: id }, { slug: id }, { did: id }] }
       : { $or: [{ slug: id }, { did: id }] };
-    const result = await ProductModel.deleteOne(filter);
-    if (result.deletedCount === 0) {
+    const permanent = String(req.query.permanent) === "true";
+    const result = permanent
+      ? await ProductModel.deleteOne(filter)
+      : await ProductModel.updateOne(filter, { $set: { isActive: false, updatedBy: req.user?._id || req.user?.id || null } });
+    if ((permanent ? result.deletedCount : result.matchedCount) === 0) {
       res.status(404).json({ status: "error", message: "Product not found" });
       return;
     }
-    res.json({ status: "success", message: "Product deleted successfully" });
+    res.json({ status: "success", message: permanent ? "Product permanently deleted" : "Product moved to Trash" });
   } catch (err) {
     next(err);
   }

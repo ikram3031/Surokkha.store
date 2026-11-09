@@ -92,6 +92,8 @@ export const ProductsTable = ({
     brand: brandFilter !== 'All' ? brandFilter : undefined,
     stockStatus: stockStatusFilter !== 'all' ? stockStatusFilter : undefined,
     onSale: fixedOnSale ? true : undefined,
+    // Deleted (inactive) products live in the Trash
+    isActive: true,
     page,
     limit: 15,
   });
@@ -113,7 +115,7 @@ export const ProductsTable = ({
     setIsDeleting(true);
     try {
       await apiClient.delete(`/api/v1/products/${deleteTarget.id}`);
-      toast.success(t('products.product_deleted', { name: deleteTarget.name, defaultValue: `Product "${deleteTarget.name}" deleted.` }));
+      toast.success(`"${deleteTarget.name}" moved to Trash.`);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onSelectedIdsChange(selectedIds.filter(id => id !== deleteTarget.id));
       setDeleteTarget(null);
@@ -279,6 +281,11 @@ export const ProductsTable = ({
                       </div>
                     )}
                     <span className="font-medium truncate" title={product.name}>{product.name}</span>
+                    {product.inventoryLinked && (
+                      <Badge variant="outline" className="shrink-0 border-sky-500/30 bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400" title="Linked to inventory">
+                        Inventory
+                      </Badge>
+                    )}
                   </Link>
                 </TableCell>
 
@@ -516,7 +523,7 @@ export const ProductsTable = ({
         onConfirm={handleDeleteProduct}
         isDeleting={isDeleting}
         title={t('products.delete_product', 'Delete Product')}
-        description={t('products.delete_confirm_desc', { name: deleteTarget?.name ?? '', defaultValue: `Are you sure you want to delete "${deleteTarget?.name ?? ''}"? This cannot be undone.` })}
+        description={`Delete "${deleteTarget?.name ?? ''}"? It moves to the Trash (hidden from the store) and can be restored from there.`}
       />
     </>
   );

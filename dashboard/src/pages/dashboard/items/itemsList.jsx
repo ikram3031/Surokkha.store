@@ -439,10 +439,7 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
         open={bulkDeleteOpen}
         onOpenChange={setBulkDeleteOpen}
         title={t('items.bulk_delete_title', 'Delete Selected Items')}
-        description={t('items.bulk_delete_desc', {
-          count: selectedIds.length,
-          defaultValue: `Are you sure you want to delete ${selectedIds.length} selected items? This action cannot be undone.`
-        })}
+        description={`Delete ${selectedIds.length} selected items? They move to the Trash and can be restored from there.`}
         onConfirm={handleBulkDelete}
         isDeleting={isBulkDeleting}
       />

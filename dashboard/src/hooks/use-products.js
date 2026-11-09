@@ -23,6 +23,7 @@ const fetchProducts = async (params) => {
   if (params?.brand) queryParams.brand = params.brand;
   if (params?.stockStatus && params.stockStatus !== 'all') queryParams.stockStatus = params.stockStatus;
   if (params?.onSale) queryParams.onSale = true;
+  if (params?.isActive !== undefined) queryParams.isActive = params.isActive;
 
   const response = await apiClient.get('/api/v1/products', { params: queryParams });
 
@@ -98,6 +99,8 @@ const fetchProducts = async (params) => {
       stock: typeof p.stockAmount === "number" ? p.stockAmount : (typeof p.stock === "number" ? p.stock : Number(p.stockQuantity ?? 10)),
       stockAmount: typeof p.stockAmount === "number" ? p.stockAmount : 0,
       stockStatus: p.stockStatus || "instock",
+      // Linked to at least one inventory item (main or extra link, on the product or any variant)
+      inventoryLinked: [p, ...(Array.isArray(p.variants) ? p.variants : [])].some((s) => s?.stockItem || (s?.extraStock || []).length > 0),
       status: (p.stockStatus || "instock") === "instock" ? "In Stock" : "Out of Stock",
       image: resolveImageUrl(p.imageUrl || p.thumbnailUrl || p.image_url || p.thumbnail_url),
       type: productType,

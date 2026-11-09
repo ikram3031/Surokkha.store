@@ -53,6 +53,10 @@ const TrashPage = () => {
 
   // Mode: 'products' | 'orders'
   const [trashType, setTrashType] = useState('products');
+  // Products and items share the catalog code path; deleted ones are simply inactive
+  const isCatalog = trashType === 'products' || trashType === 'items';
+  const catalogPath = trashType === 'items' ? 'items' : 'products';
+  const catalogNoun = trashType === 'items' ? 'Item' : 'Product';
 
   // Common Filter / Pagination state
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,7 +95,7 @@ const TrashPage = () => {
   } = useQuery({
     queryKey: [
       'trash-products',
-      { search: searchQuery, category: categoryFilter, brand: brandFilter, page: currentPage },
+      { type: catalogPath, search: searchQuery, category: categoryFilter, brand: brandFilter, page: currentPage },
     ],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -102,10 +106,10 @@ const TrashPage = () => {
       if (categoryFilter !== 'All') params.append('category', categoryFilter);
       if (brandFilter !== 'All') params.append('brand', brandFilter);
 
-      const res = await apiClient.get(`/api/v1/products?${params.toString()}`);
+      const res = await apiClient.get(`/api/v1/${catalogPath}?${params.toString()}`);
       return res.data;
     },
-    enabled: trashType === 'products',
+    enabled: isCatalog,
   });
 
   // 2. Fetch Inactive / Deleted Orders
@@ -138,16 +142,16 @@ const TrashPage = () => {
   const orders = ordersData?.data ?? [];
   const orderTotalPages = ordersData?.meta?.totalPages ?? ordersData?.pagination?.pages ?? 1;
 
-  const totalPages = trashType === 'products' ? productTotalPages : orderTotalPages;
+  const totalPages = isCatalog ? productTotalPages : orderTotalPages;
 
   // Single Actions
   const handleRestoreProduct = async (product) => {
     setIsProcessing(true);
     try {
-      await apiClient.put(`/api/v1/products/${product.id || product._id}`, { isActive: true });
-      toast.success(`Product "${product.name}" restored successfully!`);
+      await apiClient.put(`/api/v1/${catalogPath}/${product.id || product._id}`, { isActive: true });
+      toast.success(`${catalogNoun} "${product.name}" restored successfully!`);
       queryClient.invalidateQueries({ queryKey: ['trash-products'] });
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: [catalogPath] });
       setRestoreTarget(null);
     } catch {
       toast.error('Failed to restore product.');
@@ -159,8 +163,8 @@ const TrashPage = () => {
   const handlePermanentDeleteProduct = async (product) => {
     setIsProcessing(true);
     try {
-      await apiClient.delete(`/api/v1/products/${product.id || product._id}`);
-      toast.success(`Product "${product.name}" permanently deleted.`);
+      await apiClient.delete(`/api/v1/${catalogPath}/${product.id || product._id}?permanent=true`);
+      toast.success(`${catalogNoun} "${product.name}" permanently deleted.`);
       queryClient.invalidateQueries({ queryKey: ['trash-products'] });
       setDeleteTarget(null);
     } catch {
@@ -189,13 +193,13 @@ const TrashPage = () => {
   const handleBulkRestore = async () => {
     setIsProcessing(true);
     try {
-      if (trashType === 'products') {
+      if (isCatalog) {
         await Promise.all(
-          selectedIds.map((id) => apiClient.put(`/api/v1/products/${id}`, { isActive: true }))
+          selectedIds.map((id) => apiClient.put(`/api/v1/${catalogPath}/${id}`, { isActive: true }))
         );
-        toast.success(`${selectedIds.length} products restored successfully!`);
+        toast.success(`${selectedIds.length} ${catalogPath} restored successfully!`);
         queryClient.invalidateQueries({ queryKey: ['trash-products'] });
-        queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: [catalogPath] });
       } else {
         await Promise.all(
           selectedIds.map((id) => apiClient.put(`/api/v1/orders/${id}`, { active: true }))
@@ -216,11 +220,11 @@ const TrashPage = () => {
   const handleBulkDelete = async () => {
     setIsProcessing(true);
     try {
-      if (trashType === 'products') {
+      if (isCatalog) {
         await Promise.all(
-          selectedIds.map((id) => apiClient.delete(`/api/v1/products/${id}`))
+          selectedIds.map((id) => apiClient.delete(`/api/v1/${catalogPath}/${id}?permanent=true`))
         );
-        toast.success(`${selectedIds.length} products permanently deleted.`);
+        toast.success(`${selectedIds.length} ${catalogPath} permanently deleted.`);
         queryClient.invalidateQueries({ queryKey: ['trash-products'] });
       } else {
         await apiClient.post('/api/v1/orders/bulk-delete', { ids: selectedIds });
@@ -262,7 +266,7 @@ const TrashPage = () => {
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Trash & Inactive Archive</h2>
             <p className="text-xs text-muted-foreground">
-              Manage, restore, or permanently remove inactive products and soft-deleted orders.
+              Restore or permanently remove deleted (inactive) products, items and orders.
             </p>
           </div>
         </div>
@@ -286,7 +290,27 @@ const TrashPage = () => {
               className="sr-only"
             />
             <Package className="h-3.5 w-3.5 text-primary" />
-            <span>Inactive Products</span>
+            <span>Deleted Products</span>
+          </label>
+
+          <label
+            onClick={() => handleTypeSwitch('items')}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+              trashType === 'items'
+                ? 'bg-background text-foreground shadow-xs border border-border'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <input
+              type="radio"
+              name="trashType"
+              value="items"
+              checked={trashType === 'items'}
+              onChange={() => handleTypeSwitch('items')}
+              className="sr-only"
+            />
+            <Package className="h-3.5 w-3.5 text-primary" />
+            <span>Deleted Items</span>
           </label>
 
           <label
@@ -318,8 +342,8 @@ const TrashPage = () => {
           <Input
             type="search"
             placeholder={
-              trashType === 'products'
-                ? 'Search inactive products by name, SKU...'
+              isCatalog
+                ? `Search deleted ${catalogPath} by name, SKU...`
                 : 'Search deleted orders by number, phone...'
             }
             className="pl-8 h-9 text-xs"
@@ -333,7 +357,7 @@ const TrashPage = () => {
         </div>
 
         {/* Product Filters */}
-        {trashType === 'products' && (
+        {isCatalog && (
           <div className="flex items-center gap-2 w-full sm:w-auto ml-auto justify-end flex-wrap">
             <Select
               value={categoryFilter}
@@ -437,7 +461,7 @@ const TrashPage = () => {
       )}
 
       {/* 1. PRODUCTS TABLE VIEW */}
-      {trashType === 'products' && (
+      {isCatalog && (
         <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
@@ -451,7 +475,7 @@ const TrashPage = () => {
                   />
                 </TableHead>
                 <TableHead className="w-16">Image</TableHead>
-                <TableHead>Product Name</TableHead>
+                <TableHead>{catalogNoun} Name</TableHead>
                 <TableHead className="hidden md:table-cell">SKU</TableHead>
                 <TableHead className="hidden sm:table-cell">Type</TableHead>
                 <TableHead>Price</TableHead>
@@ -479,7 +503,7 @@ const TrashPage = () => {
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-12 text-destructive">
                     <AlertCircle className="h-6 w-6 mx-auto mb-2" />
-                    Failed to load inactive products.
+                    Failed to load deleted {catalogPath}.
                   </TableCell>
                 </TableRow>
               ) : products.length === 0 ? (
@@ -488,7 +512,7 @@ const TrashPage = () => {
                     <div className="flex flex-col items-center justify-center gap-2">
                       <CheckCircle2 className="h-8 w-8 text-emerald-500/70" />
                       <p className="font-semibold text-sm">Trash is empty</p>
-                      <p className="text-xs">There are no inactive or deleted products right now.</p>
+                      <p className="text-xs">There are no deleted {catalogPath} right now.</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -564,7 +588,7 @@ const TrashPage = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => setRestoreTarget(product)}
-                            title="Restore Product (Set Active)"
+                            title={`Restore ${catalogNoun} (Set Active)`}
                             className="h-8 px-2.5 text-xs text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 cursor-pointer"
                           >
                             <RotateCcw className="h-3.5 w-3.5 mr-1" />
@@ -574,7 +598,7 @@ const TrashPage = () => {
                             size="sm"
                             variant="ghost"
                             onClick={() => setDeleteTarget(product)}
-                            title="Permanently Delete Product"
+                            title={`Permanently Delete ${catalogNoun}`}
                             className="h-8 px-2 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -765,12 +789,12 @@ const TrashPage = () => {
         open={Boolean(restoreTarget)}
         onOpenChange={(open) => !open && setRestoreTarget(null)}
         onConfirm={() => {
-          if (trashType === 'products') handleRestoreProduct(restoreTarget);
+          if (isCatalog) handleRestoreProduct(restoreTarget);
           else handleRestoreOrder(restoreTarget);
         }}
-        title={`Restore ${trashType === 'products' ? 'Product' : 'Order'}?`}
+        title={`Restore ${isCatalog ? catalogNoun : 'Order'}?`}
         description={`Are you sure you want to restore "${
-          trashType === 'products'
+          isCatalog
             ? restoreTarget?.name
             : '#' + (restoreTarget?.orderNumber || restoreTarget?.id)
         }" back to active status?`}
@@ -783,7 +807,7 @@ const TrashPage = () => {
         open={Boolean(deleteTarget)}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         onConfirm={() => handlePermanentDeleteProduct(deleteTarget)}
-        title="Permanently Delete Product?"
+        title={`Permanently Delete ${catalogNoun}?`}
         description={`This action CANNOT be undone. "${deleteTarget?.name}" will be completely removed from the database.`}
         confirmText="Delete Forever"
         variant="destructive"

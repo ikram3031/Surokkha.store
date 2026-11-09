@@ -324,7 +324,7 @@
     "confirm_stock_change": "Confirm Stock Status Change",
     "confirm_stock_change_desc": "Are you sure you want to mark the {{count}} selected products as {{status}}?",
     "delete_selected_products": "Delete Selected Products",
-    "delete_selected_desc": "Are you sure you want to delete the {{count}} selected products? This action cannot be undone.",
+    "delete_selected_desc": "Delete the {{count}} selected products? They move to the Trash and can be restored from there.",
     "duplicate_product": "Duplicate Product",
     "duplicating": "Duplicating...",
     "view_edit_product": "View / Edit Product",

@@ -324,7 +324,7 @@
     "confirm_stock_change": "স্টক পরিবর্তনের নিশ্চিতকরণ",
     "confirm_stock_change_desc": "আপনি কি নিশ্চিতভাবে নির্বাচিত {{count}}টি পণ্য {{status}} হিসেবে চিহ্নিত করতে চান?",
     "delete_selected_products": "নির্বাচিত পণ্যসমূহ মুছে ফেলুন",
-    "delete_selected_desc": "আপনি কি নিশ্চিতভাবে নির্বাচিত {{count}}টি পণ্য মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।",
+    "delete_selected_desc": "নির্বাচিত {{count}}টি পণ্য মুছে ফেলবেন? এগুলো Trash-এ যাবে, সেখান থেকে আবার ফিরিয়ে আনা যাবে।",
     "duplicate_product": "পণ্য ডুপ্লিকেট করুন",
     "duplicating": "ডুপ্লিকেট হচ্ছে...",
     "view_edit_product": "পণ্য দেখুন / সম্পাদনা",
