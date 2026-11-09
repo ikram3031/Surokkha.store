@@ -86,7 +86,7 @@ export function IntroProducts() {
           <SectionHeading invert title="Featured products" subtitle="Our best sellers, the packs customers order most." />
           <Button
             size="lg"
-            className="h-11 rounded-full border border-gold bg-transparent px-7 text-gold-text hover:bg-gold/10"
+            className="h-11 rounded-full border border-white/15 bg-transparent px-7 text-foreground hover:bg-white/10"
             onClick={() => navigate('/category/combo')}
           >
             See all offers

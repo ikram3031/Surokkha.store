@@ -26,7 +26,7 @@ export function Header({
         <div className="flex min-w-0 items-center gap-2">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-lg border-2 border-[#FCD077] bg-transparent text-[#FCD077] hover:bg-[#FCD077]/10 hover:text-[#FCD077]" aria-label="Open menu">
+              <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-lg border border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white" aria-label="Open menu">
                 {/* Font Awesome "bars" (fa-solid fa-bars) */}
                 <svg viewBox="0 0 448 512" className="h-5 w-5" fill="currentColor" aria-hidden="true">
                   <path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z" />

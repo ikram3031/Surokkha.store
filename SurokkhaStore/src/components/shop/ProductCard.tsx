@@ -71,7 +71,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Button
             size="icon"
             variant="outline"
-            className="size-9 shrink-0 rounded-full border-success bg-success-bg text-success hover:bg-success/15 hover:text-success"
+            className="size-9 shrink-0 rounded-full border-primary/50 bg-transparent text-primary hover:bg-primary/15 hover:text-primary"
             disabled={soldOut}
             onClick={(e) => {
               e.stopPropagation()

@@ -16,9 +16,9 @@ export function CartButton({ onClick }: { onClick: () => void }) {
       aria-label={`Open cart${count ? `, ${count} items` : ''}`}
     >
       <ShoppingBag className="size-6" strokeWidth={1.6} />
-      <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-ring px-1 text-[11px] font-bold leading-none text-foreground">
+      {count > 0 && (<span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-ring px-1 text-[11px] font-bold leading-none text-foreground">
         {bn(count)}
-      </span>
+      </span>)}
     </Button>
   )
 }

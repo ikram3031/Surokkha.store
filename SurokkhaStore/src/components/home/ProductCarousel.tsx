@@ -60,10 +60,10 @@ export function ProductCarousel({
       <div className="flex items-end justify-between gap-4">
         <SectionHeading title={title} subtitle={subtitle} />
         <div className="hidden gap-2 sm:flex">
-          <Button variant="outline" size="icon" className="rounded-full border-gold/60 bg-transparent text-gold hover:bg-gold hover:text-wine" aria-label="Previous" onClick={() => step(-1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-white/15 bg-transparent text-foreground hover:bg-white/10 hover:text-foreground" aria-label="Previous" onClick={() => step(-1)}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon" className="rounded-full border-gold/60 bg-transparent text-gold hover:bg-gold hover:text-wine" aria-label="Next" onClick={() => step(1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-white/15 bg-transparent text-foreground hover:bg-white/10 hover:text-foreground" aria-label="Next" onClick={() => step(1)}>
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import { Check, PackageCheck } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSectionBackground } from '@/hooks/useSectionBackground'
 
@@ -17,14 +17,10 @@ export function HomeHero() {
 
   return (
     <section className="relative overflow-hidden [background:radial-gradient(circle_at_78%_28%,var(--accent)_0%,var(--secondary)_38%,var(--background)_72%)]">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 pb-16 pt-10 md:pt-16 lg:grid-cols-[1.25fr_1fr] lg:pb-24 lg:pt-20">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-10 pt-8 md:pt-12 lg:grid-cols-[1.25fr_1fr] lg:pb-14 lg:pt-14">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Safe today, tomorrow too
-          </p>
 
-          <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
             Safe love,
             <br />
             <span className="text-primary">without hesitation.</span>
@@ -60,24 +56,12 @@ export function HomeHero() {
         </div>
 
         <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-          <div className="relative aspect-[4/5] max-h-[560px] w-full overflow-hidden rounded-[28px] bg-accent shadow-xl shadow-primary/10 ring-1 ring-border">
+          <div className="relative aspect-[4/5] max-h-[460px] w-full overflow-hidden rounded-[28px]">
             {cmsImage ? (
               <img src={image} alt="" className="h-full w-full object-cover" fetchPriority="high" />
             ) : (
-              <img src={image} alt="" className="h-full w-full object-contain p-6" fetchPriority="high" />
+              <img src={image} alt="" className="h-full w-full object-contain" fetchPriority="high" />
             )}
-          </div>
-
-          <div className="absolute -bottom-5 left-3 flex max-w-[250px] items-start gap-3 rounded-2xl bg-card p-4 shadow-lg ring-1 ring-border sm:-left-6 sm:bottom-10">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
-              <PackageCheck className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold">Plain packaging</p>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                Nothing on the box gives away what is inside.
-              </p>
-            </div>
           </div>
         </div>
       </div>
