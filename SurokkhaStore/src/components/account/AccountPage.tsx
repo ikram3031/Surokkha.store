@@ -231,7 +231,7 @@ export function AccountPage() {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
         <div className="relative flex h-full flex-col justify-between p-10">
-          <img src="/logo_2.png" alt="Surokkha" className="h-12 w-auto self-start" />
+          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-12 w-auto self-start" />
           <div>
             <p className="font-display text-3xl font-bold leading-snug">Safe today, tomorrow too.</p>
             <p className="mt-2 max-w-sm text-white/80">Discreet packaging, genuine products and cash on delivery.</p>

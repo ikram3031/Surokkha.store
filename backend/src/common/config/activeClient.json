@@ -105,7 +105,9 @@
       },
       "supportEmail": "support@surokkha.shop",
       "apiBaseUrl": "https://api.surokkha.store",
-      "invoicePath": "/api/v1/orders"
+      "invoicePath": "/api/v1/orders",
+      "logo": "surokkha_logo.png",
+      "logoDark": "surokkha_logo_dark.png"
     },
     "store": {
       "key": "store",
@@ -116,8 +118,14 @@
       "orderPrefix": "ST",
       "supportEmail": "support@surokkha.store",
       "apiBaseUrl": "https://web.surokkha.store",
-      "invoicePath": "/store/v1/orders"
+      "invoicePath": "/store/v1/orders",
+      "logo": "surokkha_store_logo.png",
+      "logoDark": "surokkha_store_logo_dark.png"
     }
+  },
+  "checkout": {
+    "requireArea": true,
+    "minAddressLength": 10
   },
   "cloudflare": {
     "isEnabled": true,

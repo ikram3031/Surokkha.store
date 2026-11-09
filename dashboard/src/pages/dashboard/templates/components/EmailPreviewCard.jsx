@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Smartphone, Monitor, Mail, ExternalLink, PackageCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import invoiceLogo from '@/assets/invoice_logo.png';
+import invoiceLogo from '@/assets/surokkha_logo.png';
 
 // Interpolate template tokens in string
 const interpolate = (templateStr, data) => {

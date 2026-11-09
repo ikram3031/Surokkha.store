@@ -67,7 +67,8 @@
       "variantImage": false,
       "sizeChart": false,
       "webmail": true,
-      "inStoreOrder": false
+      "inStoreOrder": false,
+      "templates": true
     },
     "stockManagement": {
       "simpleProduct": true,
@@ -353,11 +354,34 @@
           "enableBrowserPixel": true,
           "enableCapi": true,
           "advancedMatching": true
-        }
+        },
+        "supportEmail": "support@surokkha.shop",
+        "apiBaseUrl": "https://api.surokkha.store",
+        "invoicePath": "/api/v1/orders",
+        "logo": "surokkha_logo.png",
+        "logoDark": "surokkha_logo_dark.png"
+      },
+      "store": {
+        "key": "store",
+        "domain": "surokkha.store",
+        "url": "https://surokkhastore.shop",
+        "storefrontUrl": "https://surokkhastore.shop",
+        "name": "Surokkha Store",
+        "orderPrefix": "ST",
+        "supportEmail": "support@surokkha.store",
+        "apiBaseUrl": "https://web.surokkha.store",
+        "invoicePath": "/store/v1/orders",
+        "logo": "surokkha_store_logo.png",
+        "logoDark": "surokkha_store_logo_dark.png"
       }
     },
+    "checkout": {
+      "requireArea": true,
+      "minAddressLength": 10
+    },
     "cloudflare": {
-      "isEnabled": true
+      "isEnabled": true,
+      "turnstileSiteKey": "0x4AAAAAAFgNwrn1AkNRO5-A"
     },
     "logoUrl": "/uploads/assets/logo.png?v=4",
     "siteIconUrl": "/uploads/assets/favicon.ico",

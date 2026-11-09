@@ -31,8 +31,8 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import plexiviaLogo from '@/assets/plexivia.png';
 import { apiClient } from '@/lib/api-client';
 // Bundled so the login card never depends on the API serving the logo: maroon on light, cream on dark
-import surokkhaLogoLight from '@/assets/invoice_logo.png';
-import surokkhaLogoDark from '@/assets/surokkha_logo.png';
+import surokkhaLogoLight from '@/assets/surokkha_logo.png';
+import surokkhaLogoDark from '@/assets/surokkha_logo_dark.png';
 
 const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
 

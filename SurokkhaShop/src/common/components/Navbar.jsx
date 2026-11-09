@@ -2,8 +2,8 @@ import React from 'react';
 import { useStore, getFeaturedCombo } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import AccountMenu from './AccountMenu';
-import logoLight from '../asset/logo.png';
-import logoDark from '../asset/logo_white.png';
+import logoLight from '../asset/surokkha_logo.png';
+import logoDark from '../asset/surokkha_logo_dark.png';
 
 // Header and navigation bar component
 const Navbar = () => {

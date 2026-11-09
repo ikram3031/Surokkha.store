@@ -13,7 +13,7 @@ export function Footer() {
     <footer className="bg-background text-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
         <div>
-          <img src="/logo_2.png" alt="Surokkha" className="h-10 w-auto" />
+          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-10 w-auto" />
           <p className="mt-3 text-sm text-white/70">Safe today, tomorrow too.</p>
         </div>
         <div id="contact" className="scroll-mt-24 text-sm">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
-import logoDark from '../asset/logo_white.png';
+import logoDark from '../asset/surokkha_logo_dark.png';
 import {
   fetchCurrentCustomer,
   forgotPassword,

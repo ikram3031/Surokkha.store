@@ -36,7 +36,7 @@ import { DynamicTokenChips } from './components/DynamicTokenChips';
 import { InvoicePaperPreview } from './components/InvoicePaperPreview';
 import { EmailPreviewCard } from './components/EmailPreviewCard';
 import { SendTestEmailModal } from './components/SendTestEmailModal';
-import invoiceLogo from '@/assets/invoice_logo.png';
+import invoiceLogo from '@/assets/surokkha_logo.png';
 
 // Built-in presets matching backend defaults
 const TEMPLATE_PRESETS = {

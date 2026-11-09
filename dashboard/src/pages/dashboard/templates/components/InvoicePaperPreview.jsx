@@ -2,7 +2,7 @@ import React from 'react';
 import { PrintablePaper } from '@/lib/print-engine/PrintablePaper';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, QrCode, ShieldCheck } from 'lucide-react';
-import invoiceLogo from '@/assets/invoice_logo.png';
+import invoiceLogo from '@/assets/surokkha_logo.png';
 
 // Interpolate template tokens in string
 const interpolate = (templateStr, data) => {

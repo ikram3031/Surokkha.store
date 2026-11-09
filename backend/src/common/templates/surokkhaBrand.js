@@ -48,8 +48,18 @@ export const resolveSite = (opts = {}) => {
     helpline: s.whatsappNumber || config.whatsappNumber || config.supportPhone || config.phone || "",
     invoiceBase: apiBase ? `${apiBase}${s.invoicePath || "/api/v1/orders"}` : "",
     tagline: config.tagline || "Safe today · Tomorrow",
-    logo: dashboardUrl ? `${dashboardUrl}/invoice_logo.png` : "",
+    // Each site has its own logo file (served from the dashboard's public folder); an absolute URL is used as is
+    logo: siteLogoUrl(s.logo, dashboardUrl),
+    logoDark: siteLogoUrl(s.logoDark, dashboardUrl),
   };
+};
+
+// Logo URL for a site: absolute URLs as they are, file names under the dashboard host
+const siteLogoUrl = (file, dashboardUrl) => {
+  const name = String(file || "").trim();
+  if (/^https?:\/\//.test(name)) return name;
+  if (!dashboardUrl) return "";
+  return `${dashboardUrl}/${(name || "surokkha_logo.png").replace(/^\/+/, "")}`;
 };
 
 // Always the brand's own logo; a caller-supplied absolute URL is only a fallback

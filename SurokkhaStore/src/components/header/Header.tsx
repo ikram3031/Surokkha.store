@@ -53,7 +53,7 @@ export function Header({
         </div>
 
         <a href="/" className="flex items-center justify-center" aria-label="Surokkha home">
-          <img src="/logo_2.png" alt="Surokkha" className="h-10 w-auto" />
+          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-10 w-auto" />
         </a>
 
         <div className="flex items-center justify-end gap-2">

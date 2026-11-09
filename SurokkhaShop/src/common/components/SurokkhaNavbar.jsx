@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useStore, buildShopCategories } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
-import logoImg from '../asset/logo_white.png';
+import logoImg from '../asset/surokkha_logo_dark.png';
 import AnnouncementMarquee from './AnnouncementMarquee';
 import NavOfferCards from './NavOfferCards';
 import { getCustomerToken, SESSION_EVENT } from '../utils/customerAuth';

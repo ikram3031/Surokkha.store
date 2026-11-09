@@ -31,7 +31,7 @@ export function MobileNav({
           }}
           aria-label="Surokkha home"
         >
-          <img src="/logo_2.png" alt="Surokkha" className="h-9 w-auto" />
+          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-9 w-auto" />
         </a>
       </div>
 
