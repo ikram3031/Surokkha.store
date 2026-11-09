@@ -451,11 +451,7 @@ export const AppSidebar = ({ ...props }) => {
                   {t("nav.item_list", "Item List")}
                 </NavSub>
               )}
-              {isAllowed("products.list") && (
-                <NavSub to="/dashboard/products/combos" active={pathname.startsWith("/dashboard/products/combos")} icon={Layers}>
-                  {t("nav.group_products", "Group Products")}
-                </NavSub>
-              )}
+
               {isAllowed("products.on-sale") && (
                 <NavSub to="/dashboard/products/on-sale" active={pathname === "/dashboard/products/on-sale"} icon={Tag}>
                   {t("nav.on_sale", "On Sale")}

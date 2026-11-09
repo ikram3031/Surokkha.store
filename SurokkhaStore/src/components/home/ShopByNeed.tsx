@@ -10,6 +10,15 @@ const PREFERRED = ['condoms', 'lubricants', 'feminine-care', 'combo', 'wellness'
 // Three equal columns filled top to bottom: the first tile is tall, then two stacked tiles in each other column
 const SPANS = ['md:row-span-2', '', '', '', '']
 
+// Designed tile art (dark slate theme) for the main categories; others fall back to a product photo
+const TILE_IMAGES: Record<string, string> = {
+  condoms: '/categories/condoms.webp',
+  lubricants: '/categories/lubricants.webp',
+  'feminine-care': '/categories/feminine-care.webp',
+  combo: '/categories/combo.webp',
+  wellness: '/categories/wellness.webp',
+}
+
 /** "Shop by need": a mosaic of category tiles, each using the photo of a product from that category. */
 export function ShopByNeed() {
   const categories = useCategories()
@@ -22,7 +31,8 @@ export function ShopByNeed() {
 
   if (ordered.length < 2) return null
 
-  const imageFor = (slug: string) => products.find((p) => p.categorySlugs?.includes(slug) && p.image)?.image
+  const imageFor = (slug: string) =>
+    TILE_IMAGES[slug] ?? products.find((p) => p.categorySlugs?.includes(slug) && p.image)?.image
 
   return (
     <section id="categories" className="relative overflow-hidden">
