@@ -3,7 +3,7 @@ import { ProductModel } from "../../common/models/product.model.js";
 import { CategoryModel } from "../../common/models/category.model.js";
 import { BrandModel } from "../../common/models/brand.model.js";
 import { UserModel } from "../../common/models/user.model.js";
-import { logStockMovement, toStockItemId, toStockQty } from "../../common/services/stock.service.js";
+import { logStockMovement, toExtraStock, toStockItemId, toStockQty } from "../../common/services/stock.service.js";
 import {
   PLACEHOLDER_IMAGE_URL,
   serializeProduct,
@@ -126,6 +126,7 @@ export const createProduct = async (req, res, next) => {
       stockStatus: body.stockStatus || "instock",
       stockItem: body.type === "variant" ? null : toStockItemId(body.stockItem),
       stockQty: toStockQty(body.stockQty),
+      extraStock: body.type === "variant" ? [] : toExtraStock(body.extraStock),
       stockAmount:
         body.stockAmount !== undefined &&
         body.stockAmount !== null &&
@@ -157,6 +158,7 @@ export const createProduct = async (req, res, next) => {
             imageUrl: v.imageUrl || null,
             stockItem: toStockItemId(v.stockItem),
             stockQty: toStockQty(v.stockQty),
+            extraStock: toExtraStock(v.extraStock),
             stockStatus: v.stockStatus || "instock",
           }))
         : [];
@@ -322,6 +324,7 @@ export const updateProduct = async (req, res, next) => {
     if (body.stockStatus !== undefined) product.stockStatus = body.stockStatus;
     if (body.stockItem !== undefined) product.stockItem = toStockItemId(body.stockItem);
     if (body.stockQty !== undefined) product.stockQty = toStockQty(body.stockQty);
+    if (body.extraStock !== undefined) product.extraStock = toExtraStock(body.extraStock);
     if (body.stockAmount !== undefined) {
       product.stockAmount =
         body.stockAmount !== null && body.stockAmount !== ""
@@ -433,6 +436,7 @@ export const updateProduct = async (req, res, next) => {
                 imageUrl: v.imageUrl !== undefined ? (v.imageUrl || null) : (existing.imageUrl ?? null),
                 stockItem: v.stockItem !== undefined ? toStockItemId(v.stockItem) : (existing.stockItem ?? null),
                 stockQty: v.stockQty !== undefined ? toStockQty(v.stockQty) : (existing.stockQty || 1),
+                extraStock: v.extraStock !== undefined ? toExtraStock(v.extraStock) : (existing.extraStock || []),
                 stockStatus: v.stockStatus || existing.stockStatus || "instock",
               };
             })

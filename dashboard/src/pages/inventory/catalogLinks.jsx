@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Search, Plus, Link2, Pencil } from 'lucide-react';
 
 import { apiClient } from '@/lib/api-client';
-import { StockItemPicker, StockQtyInput } from '@/components/dashboard/inventory/StockItemPicker';
+import { ExtraStockRows, StockItemPicker, StockQtyInput, toExtraStockForm } from '@/components/dashboard/inventory/StockItemPicker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,20 @@ const StockHint = ({ piece }) => {
   return <span className={`text-xs ${qty <= 0 ? 'text-red-600' : 'text-muted-foreground'}`}>{qty} {piece.unit || 'pcs'} in stock</span>;
 };
 
+// Extra inventory pieces under a main link; saves as soon as a row is complete (an empty new row stays local until an item is picked)
+const ExtraLinks = ({ saved, onSave, disabled }) => {
+  const savedForm = toExtraStockForm(saved);
+  const savedKey = JSON.stringify(savedForm);
+  const [draft, setDraft] = useState(savedForm);
+  useEffect(() => setDraft(JSON.parse(savedKey)), [savedKey]);
+  const change = (list) => {
+    setDraft(list);
+    const clean = toExtraStockForm(list);
+    if (JSON.stringify(clean) !== savedKey) onSave(clean);
+  };
+  return <ExtraStockRows value={draft} onChange={change} disabled={disabled} qtyOnCommit pickerClassName="w-72" />;
+};
+
 // One catalog row: a picker for a simple product, one picker per variation for a variable product
 const LinkRow = ({ row, entity, onSave, saving }) => (
   <TableRow>
@@ -54,24 +68,36 @@ const LinkRow = ({ row, entity, onSave, saving }) => (
         <div className="space-y-2">
           {row.variants.length === 0 && <span className="text-xs text-muted-foreground">No variations</span>}
           {row.variants.map((v) => (
-            <div key={v.size} className="flex flex-wrap items-center gap-2">
-              <span className="w-24 shrink-0 truncate text-sm">{v.size}</span>
-              <StockItemPicker
-                className="w-72"
-                value={v.stockItem?.id || null}
-                disabled={saving}
-                onChange={(id) => onSave(row, { variants: [{ size: v.size, stockItem: id }] })}
-              />
-              <StockHint piece={v.stockItem} />
-              <StockQtyInput stockItemId={v.stockItem?.id || null} value={v.stockQty} disabled={saving} onCommit={(n) => onSave(row, { variants: [{ size: v.size, stockQty: n }] })} />
+            <div key={v.size} className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="w-24 shrink-0 truncate text-sm">{v.size}</span>
+                <StockItemPicker
+                  className="w-72"
+                  value={v.stockItem?.id || null}
+                  disabled={saving}
+                  onChange={(id) => onSave(row, { variants: [{ size: v.size, stockItem: id }] })}
+                />
+                <StockHint piece={v.stockItem} />
+                <StockQtyInput stockItemId={v.stockItem?.id || null} value={v.stockQty} disabled={saving} onCommit={(n) => onSave(row, { variants: [{ size: v.size, stockQty: n }] })} />
+              </div>
+              {(v.stockItem || (v.extraStock || []).length > 0) && (
+                <div className="pl-[6.5rem]">
+                  <ExtraLinks saved={v.extraStock} disabled={saving} onSave={(list) => onSave(row, { variants: [{ size: v.size, extraStock: list }] })} />
+                </div>
+              )}
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex flex-wrap items-center gap-2">
-          <StockItemPicker className="w-72" value={row.stockItem?.id || null} disabled={saving} onChange={(id) => onSave(row, { stockItem: id })} />
-          <StockHint piece={row.stockItem} />
-          <StockQtyInput stockItemId={row.stockItem?.id || null} value={row.stockQty} disabled={saving} onCommit={(n) => onSave(row, { stockQty: n })} />
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <StockItemPicker className="w-72" value={row.stockItem?.id || null} disabled={saving} onChange={(id) => onSave(row, { stockItem: id })} />
+            <StockHint piece={row.stockItem} />
+            <StockQtyInput stockItemId={row.stockItem?.id || null} value={row.stockQty} disabled={saving} onCommit={(n) => onSave(row, { stockQty: n })} />
+          </div>
+          {(row.stockItem || (row.extraStock || []).length > 0) && (
+            <ExtraLinks saved={row.extraStock} disabled={saving} onSave={(list) => onSave(row, { extraStock: list })} />
+          )}
         </div>
       )}
     </TableCell>

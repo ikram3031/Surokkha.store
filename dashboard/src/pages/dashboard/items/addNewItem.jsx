@@ -1,3 +1,4 @@
+import { toExtraStockForm } from "@/components/dashboard/inventory/StockItemPicker";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, Link, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ const AddNewItem = () => {
   const [stockStatus, setStockStatus] = useState("instock");
   const [stockItem, setStockItem] = useState(null);
   const [stockQty, setStockQty] = useState(1);
+  const [extraStock, setExtraStock] = useState([]);
 
   // 4. Variant product fields
   const [variants, setVariants] = useState([emptyVariant()]);
@@ -160,6 +162,7 @@ const AddNewItem = () => {
     if (p.stockStatus) setStockStatus(p.stockStatus);
     if (p.stockItem) setStockItem(String(p.stockItem._id || p.stockItem));
     if (p.stockQty) setStockQty(Number(p.stockQty) || 1);
+    setExtraStock(toExtraStockForm(p.extraStock));
 
     // Tags
     if (Array.isArray(p.tags) && p.tags.length > 0) {
@@ -237,6 +240,7 @@ const AddNewItem = () => {
           stockStatus: v.stockStatus || "instock",
           stockItem: v.stockItem ? String(v.stockItem) : null,
           stockQty: Number(v.stockQty) || 1,
+          extraStock: toExtraStockForm(v.extraStock),
         }))
       );
     }
@@ -595,6 +599,7 @@ const AddNewItem = () => {
           stockStatus: v.stockStatus || "instock",
           stockItem: v.stockItem ? String(v.stockItem) : null,
           stockQty: Number(v.stockQty) || 1,
+          extraStock: toExtraStockForm(v.extraStock),
         });
       }
 
@@ -643,6 +648,7 @@ const AddNewItem = () => {
         stockStatus: stockStatus || "instock",
         stockItem: productType === "simple" ? stockItem : null,
         stockQty: productType === "simple" ? stockQty : 1,
+        extraStock: productType === "simple" ? toExtraStockForm(extraStock) : [],
         tags: Array.isArray(tags) ? tags : [],
         images: uploadedGalleryImages,
         metaData: {
@@ -795,6 +801,8 @@ const AddNewItem = () => {
               setStockItem={setStockItem}
               stockQty={stockQty}
               setStockQty={setStockQty}
+              extraStock={extraStock}
+              setExtraStock={setExtraStock}
               onPickStockItem={(piece) => { if (!name.trim()) handleNameChange(piece.name || piece.shortName); }}
               variants={variants}
               attributeGroups={attributeGroups}

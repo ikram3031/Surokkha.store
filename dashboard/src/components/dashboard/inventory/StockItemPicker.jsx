@@ -1,7 +1,17 @@
 import { useStockItems } from '@/hooks/use-stock-items';
 import { useEffect, useState } from 'react';
+import { Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// API/form extra links -> [{ stockItem: id, stockQty }], rows without an inventory item dropped
+export const toExtraStockForm = (list) =>
+  (Array.isArray(list) ? list : [])
+    .map((l) => {
+      const s = l?.stockItem;
+      return { stockItem: s ? String(s._id || s.id || s) : null, stockQty: Math.max(1, Math.round(Number(l?.stockQty) || 1)) };
+    })
+    .filter((l) => l.stockItem);
 
 const NONE = 'none';
 
@@ -68,6 +78,57 @@ export const StockQtyInput = ({ stockItemId, value, onChange, onCommit, disabled
           1 {p.label} = {p.unitsPerPack}
         </button>
       ))}
+    </div>
+  );
+};
+
+// More inventory pieces one sale also takes, under the main link; the green + adds another row.
+// qtyOnCommit: report piece counts only when the input is left (for pages that save on every change).
+export const ExtraStockRows = ({ value = [], onChange, disabled = false, qtyOnCommit = false, pickerClassName = 'h-9 w-full bg-background sm:w-96' }) => {
+  const rows = Array.isArray(value) ? value : [];
+  const setRow = (i, patch) => onChange?.(rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  const removeRow = (i) => onChange?.(rows.filter((_, idx) => idx !== i));
+  const addRow = () => onChange?.([...rows, { stockItem: null, stockQty: 1 }]);
+
+  return (
+    <div className="space-y-2">
+      {rows.map((r, i) => (
+        <div key={i} className="space-y-1.5 rounded-lg border border-dashed border-border p-2">
+          <div className="flex items-center gap-2">
+            <StockItemPicker
+              className={pickerClassName}
+              value={r.stockItem || null}
+              noneLabel="Select inventory item"
+              disabled={disabled}
+              onChange={(id) => setRow(i, { stockItem: id })}
+            />
+            <button
+              type="button"
+              aria-label="Remove inventory item"
+              title="Remove"
+              disabled={disabled}
+              onClick={() => removeRow(i)}
+              className="shrink-0 cursor-pointer rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <StockQtyInput
+            stockItemId={r.stockItem || null}
+            value={r.stockQty || 1}
+            disabled={disabled}
+            {...(qtyOnCommit ? { onCommit: (n) => setRow(i, { stockQty: n }) } : { onChange: (n) => setRow(i, { stockQty: n }) })}
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={addRow}
+        className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+      >
+        <Plus className="h-3.5 w-3.5" /> Add inventory item
+      </button>
     </div>
   );
 };

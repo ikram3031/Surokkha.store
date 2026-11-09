@@ -66,12 +66,31 @@ export const toStockQty = (value) => {
   return Number.isFinite(n) && n >= 1 ? n : 1;
 };
 
-// The inventory piece a catalog product/item sells: the matching variant's link, else the product's own
-const linkedStockItem = async (entity, filter, size = "") => {
-  const doc = await modelFor(entity).findOne(filter).select("name type stockItem stockQty variants.size variants.stockItem variants.stockQty combo").lean();
-  if (!doc) return { doc: null, stockItemId: null, perSale: 1 };
+// Extra inventory links from a form/payload value: [{ stockItem, stockQty }], invalid and repeated pieces dropped
+export const toExtraStock = (value) => {
+  const out = [];
+  for (const raw of Array.isArray(value) ? value : []) {
+    const stockItem = toStockItemId(raw?.stockItem);
+    if (!stockItem || out.some((l) => l.stockItem === stockItem)) continue;
+    out.push({ stockItem, stockQty: toStockQty(raw?.stockQty) });
+  }
+  return out;
+};
+
+// Every inventory piece a catalog product/item sells (its main link plus extra links), from the matching variant or the product itself
+const linkedStockItems = async (entity, filter, size = "") => {
+  const doc = await modelFor(entity)
+    .findOne(filter)
+    .select("name type stockItem stockQty extraStock variants.size variants.stockItem variants.stockQty variants.extraStock combo")
+    .lean();
+  if (!doc) return { doc: null, links: [] };
   const src = doc.type === "variant" ? (doc.variants || []).find((v) => v.size === size) : doc;
-  return { doc, stockItemId: src?.stockItem ? String(src.stockItem) : null, perSale: toStockQty(src?.stockQty) };
+  const links = [];
+  if (src?.stockItem) links.push({ stockItemId: String(src.stockItem), perSale: toStockQty(src.stockQty) });
+  for (const l of src?.extraStock || []) {
+    if (l?.stockItem && !links.some((x) => x.stockItemId === String(l.stockItem))) links.push({ stockItemId: String(l.stockItem), perSale: toStockQty(l.stockQty) });
+  }
+  return { doc, links };
 };
 
 // Takes pieces out of one inventory item and records it in the ledger and the stock history
@@ -96,10 +115,10 @@ const takeOutStockItem = async ({ stockItemId, qty, order, actor, note = "" }, l
   });
 };
 
-// Takes one catalog product/item out through its inventory link; nothing happens when it has none
+// Takes one catalog product/item out through all its inventory links; nothing happens when it has none
 const takeOutLinked = async ({ entity, filter, size, qty, order, actor, note = "" }, ledger) => {
-  const { stockItemId, perSale } = await linkedStockItem(entity, filter, size);
-  await takeOutStockItem({ stockItemId, qty: qty * perSale, order, actor, note }, ledger);
+  const { links } = await linkedStockItems(entity, filter, size);
+  for (const { stockItemId, perSale } of links) await takeOutStockItem({ stockItemId, qty: qty * perSale, order, actor, note }, ledger);
 };
 
 // Takes the order's pieces out of the linked inventory items and returns the ledger of what was taken.
@@ -124,7 +143,7 @@ const deductForOrder = async (order, actor) => {
       const filter = buildRefFilter(line);
       if (!filter) continue;
       const entity = lineEntity(line);
-      const { doc, stockItemId, perSale } = await linkedStockItem(entity, filter, line.size || "");
+      const { doc, links } = await linkedStockItems(entity, filter, line.size || "");
       if (!doc) continue;
 
       // A group product (combo) takes its pieces out through their own links
@@ -136,7 +155,9 @@ const deductForOrder = async (order, actor) => {
         }
         continue;
       }
-      await takeOutStockItem({ stockItemId, qty: qty * perSale, order, actor, note: line.size ? `${doc.name} (${line.size})` : "" }, ledger);
+      for (const { stockItemId, perSale } of links) {
+        await takeOutStockItem({ stockItemId, qty: qty * perSale, order, actor, note: line.size ? `${doc.name} (${line.size})` : "" }, ledger);
+      }
     } catch (error) {
       console.error(`Stock deduct failed for order ${order.orderNumber}:`, error);
     }

@@ -57,6 +57,14 @@ const productSchema = new Schema(
         stockItem: { type: Schema.Types.ObjectId, ref: "StockItem", default: null },
         // Pieces of the linked inventory item one sale of this variant takes (a packet of 10 = 10)
         stockQty: { type: Number, min: 1, default: 1 },
+        // More inventory pieces one sale also takes (a product made of several inventory items)
+        extraStock: [
+          {
+            _id: false,
+            stockItem: { type: Schema.Types.ObjectId, ref: "StockItem", required: true },
+            stockQty: { type: Number, min: 1, default: 1 },
+          },
+        ],
         stockStatus: {
           type: String,
           enum: ["instock", "outofstock", "preorder"],
@@ -109,6 +117,14 @@ const productSchema = new Schema(
     stockItem: { type: Schema.Types.ObjectId, ref: "StockItem", default: null, index: true },
     // Pieces of the linked inventory item one sale takes (a packet of 10 = 10)
     stockQty: { type: Number, min: 1, default: 1 },
+    // More inventory pieces one sale also takes (a product made of several inventory items)
+    extraStock: [
+      {
+        _id: false,
+        stockItem: { type: Schema.Types.ObjectId, ref: "StockItem", required: true },
+        stockQty: { type: Number, min: 1, default: 1 },
+      },
+    ],
 
     // Rich Specifications & Details
     origin: { type: String, default: "China Imported", trim: true },

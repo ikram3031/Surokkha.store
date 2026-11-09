@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, UploadCloud, X, Layers, Lock, Package, Image as ImageIcon } from "lucide-react";
 import { MediaPickerModal } from "@/components/dashboard/media-picker-modal";
-import { StockItemPicker, StockQtyInput } from "@/components/dashboard/inventory/StockItemPicker";
+import { ExtraStockRows, StockItemPicker, StockQtyInput } from "@/components/dashboard/inventory/StockItemPicker";
 
 export const ProductDataCard = ({
   productType,
@@ -28,6 +28,8 @@ export const ProductDataCard = ({
   setStockItem,
   stockQty = 1,
   setStockQty,
+  extraStock = [],
+  setExtraStock,
   onPickStockItem,
   variants = [],
   attributeGroups = [],
@@ -216,7 +218,10 @@ export const ProductDataCard = ({
                     type="button"
                     onClick={() => {
                       setSimpleSource(key);
-                      if (key === "custom") setStockItem?.(null);
+                      if (key === "custom") {
+                        setStockItem?.(null);
+                        setExtraStock?.([]);
+                      }
                     }}
                     className={`rounded-md px-3 py-1 transition-colors cursor-pointer ${
                       source === key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -239,6 +244,11 @@ export const ProductDataCard = ({
                   }}
                 />
                 <StockQtyInput stockItemId={stockItem} value={stockQty} onChange={(n) => setStockQty?.(n)} />
+                {(stockItem || extraStock.length > 0) && (
+                  <div className="pt-1">
+                    <ExtraStockRows value={extraStock} onChange={(list) => setExtraStock?.(list)} />
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-[11px] text-muted-foreground">
@@ -473,6 +483,11 @@ export const ProductDataCard = ({
                     noneLabel="Custom (stock not tracked)"
                   />
                   <StockQtyInput stockItemId={v.stockItem || null} value={v.stockQty || 1} onChange={(n) => updateVariant(i, "stockQty", n)} />
+                  {(v.stockItem || (v.extraStock || []).length > 0) && (
+                    <div className="pt-1">
+                      <ExtraStockRows value={v.extraStock || []} onChange={(list) => updateVariant(i, "extraStock", list)} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Row 4: Image Thumbnail (Conditional on clientConfig) */}
