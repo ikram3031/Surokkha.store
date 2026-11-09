@@ -69,7 +69,9 @@ export const normalizeComboPayload = (body = {}) => {
       name,
       slug,
       description: String(body.description || "").trim(),
+      longDescription: String(body.longDescription || "").trim(),
       imageUrl: String(body.imageUrl || "").trim(),
+      gallery: [...new Set((Array.isArray(body.gallery) ? body.gallery : []).map((g) => String(g || "").trim()).filter(Boolean))],
       isActive: body.isActive !== false,
       sku: String(body.sku || "").trim(),
       categories: body.categories,
@@ -116,12 +118,14 @@ export const resolveComboBrands = async (input) => {
   return [...new Set(dids)];
 };
 
-// Normalized payload -> Item fields; combos stay off the website and the Meta catalog for now
+// Normalized payload -> Item fields; combos show on the website under their categories, but stay off the Meta catalog
 export const toComboItemFields = (n, categories, brand) => ({
   name: n.name,
   slug: n.slug,
   description: n.description,
+  longDescription: n.longDescription,
   imageUrl: n.imageUrl || n.pieces.find((p) => p.imageUrl)?.imageUrl || "",
+  gallery: n.gallery,
   isActive: n.isActive,
   sku: n.sku || undefined,
   type: "combo",
@@ -214,7 +218,9 @@ export const serializeCombo = (doc, refs = new Map()) => {
     slug: o.slug,
     sku: o.sku || "",
     description: o.description || "",
+    longDescription: o.longDescription || "",
     imageUrl: o.imageUrl || "",
+    gallery: o.gallery || [],
     isActive: o.isActive !== false,
     categories,
     brand: o.brand || [],

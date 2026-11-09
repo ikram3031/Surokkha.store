@@ -20,6 +20,7 @@ import { clientConfig } from '@/clientConfig';
 import { effectivePrice } from '@/utils/orderHelper';
 import { taka } from './combos';
 import { useStockItems } from '@/hooks/use-stock-items';
+import { RichTextEditor } from '@/components/dashboard/rich-text-editor';
 
 const ACTION_BTN = 'cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
 const API_BASE = (baseURL || '').replace(/\/$/, '');
@@ -28,7 +29,7 @@ const DISCOUNTS = [
   { value: 'percentage', label: '% off' },
   { value: 'fixed', label: '৳ off' },
 ];
-const EMPTY = { name: '', slug: '', sku: '', description: '', imageUrl: '', isActive: true, categories: [], brand: [], pieces: [], discountType: 'none', discountValue: '' };
+const EMPTY = { name: '', slug: '', sku: '', description: '', longDescription: '', imageUrl: '', gallery: [], isActive: true, categories: [], brand: [], pieces: [], discountType: 'none', discountValue: '' };
 
 // Relative upload paths need the API host to show
 const fullUrl = (url) => (!url ? '' : /^https?:\/\//.test(url) ? url : `${API_BASE}${url.startsWith('/') ? '' : '/'}${url}`);
@@ -222,6 +223,7 @@ const ComboEditor = () => {
   const [picker, setPicker] = useState(false);
   const [stockPicker, setStockPicker] = useState(false);
   const [media, setMedia] = useState(false);
+  const [galleryMedia, setGalleryMedia] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadedFor, setLoadedFor] = useState(null);
   const { data: categories = [] } = useCategories();
@@ -243,7 +245,9 @@ const ComboEditor = () => {
       slug: copying ? slugify(`${source.name} (Copy)`) : source.slug,
       sku: copying ? '' : source.sku,
       description: source.description,
+      longDescription: source.longDescription || '',
       imageUrl: source.imageUrl,
+      gallery: source.gallery || [],
       isActive: source.isActive,
       categories: (source.categories || []).map((c) => c.slug || c.did || c.id).filter(Boolean),
       brand: source.brand || [],
@@ -374,8 +378,16 @@ const ComboEditor = () => {
                 <Input id="combo-sku" value={form.sku} onChange={(e) => set({ sku: e.target.value })} />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold" htmlFor="combo-desc">Description</label>
+                <label className="text-xs font-semibold" htmlFor="combo-desc">Short description</label>
                 <Textarea id="combo-desc" rows={3} value={form.description} onChange={(e) => set({ description: e.target.value })} />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-semibold">Long description (optional)</label>
+                <RichTextEditor
+                  placeholder="Write a detailed description for the product page..."
+                  value={form.longDescription}
+                  onChange={(val) => set({ longDescription: val })}
+                />
               </div>
             </CardContent>
           </Card>
@@ -460,7 +472,7 @@ const ComboEditor = () => {
           </Card>
 
           <Card>
-            <CardHeader className="pb-3"><CardTitle className="text-base">Status &amp; picture</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-base">Status &amp; feature image</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <label className="flex items-center gap-2 text-sm"><Switch checked={form.isActive} onCheckedChange={(v) => set({ isActive: v })} /> Active</label>
               <div className="flex items-center gap-3">
@@ -477,6 +489,26 @@ const ComboEditor = () => {
                   <p className="text-[11px] text-muted-foreground">Empty uses the first piece's picture.</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Gallery images</CardTitle>
+              <CardDescription>Extra pictures on the product page.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {form.gallery.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {form.gallery.map((url) => (
+                    <div key={url} className="relative">
+                      <img src={fullUrl(url)} alt="" className="h-16 w-16 rounded-md border object-cover" />
+                      <button type="button" aria-label="Remove image" onClick={() => set({ gallery: form.gallery.filter((g) => g !== url) })} className="absolute -right-1.5 -top-1.5 cursor-pointer rounded-full border bg-background p-0.5"><X className="h-3 w-3" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Button type="button" size="sm" variant="outline" onClick={() => setGalleryMedia(true)}>{form.gallery.length ? 'Change gallery' : 'Add gallery images'}</Button>
             </CardContent>
           </Card>
 
@@ -501,6 +533,7 @@ const ComboEditor = () => {
       <CatalogPicker open={picker} onOpenChange={setPicker} onPick={pick} />
       <InventoryPicker open={stockPicker} onOpenChange={setStockPicker} onPick={pickStock} />
       <MediaPickerModal open={media} onOpenChange={setMedia} onSelect={(url) => url && set({ imageUrl: Array.isArray(url) ? url[0] : url })} multiple={false} initialSelected={form.imageUrl} title="Group product picture" productSlug={form.slug} />
+      <MediaPickerModal open={galleryMedia} onOpenChange={setGalleryMedia} onSelect={(urls) => set({ gallery: [...new Set((Array.isArray(urls) ? urls : urls ? [urls] : []).filter(Boolean))] })} multiple initialSelected={form.gallery} title="Gallery images" productSlug={form.slug} />
     </form>
   );
 };
