@@ -80,8 +80,8 @@ export const getMetaCatalogCsv = async (req, res, next) => {
   try {
     const items = await ItemModel.find({
       isActive: true,
+      // Group products (combos) are included only when their Meta catalog switch is on
       excludeFromMetaCatalog: { $ne: true },
-      type: { $ne: "combo" }
     })
       .populate("categories")
       .lean();

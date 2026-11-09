@@ -73,6 +73,8 @@ export const normalizeComboPayload = (body = {}) => {
       imageUrl: String(body.imageUrl || "").trim(),
       gallery: [...new Set((Array.isArray(body.gallery) ? body.gallery : []).map((g) => String(g || "").trim()).filter(Boolean))],
       isActive: body.isActive !== false,
+      // Off unless switched on per group product in the dashboard
+      showInMetaCatalog: body.showInMetaCatalog === true,
       sku: String(body.sku || "").trim(),
       categories: body.categories,
       brand: body.brand ?? body.brands,
@@ -118,7 +120,7 @@ export const resolveComboBrands = async (input) => {
   return [...new Set(dids)];
 };
 
-// Normalized payload -> Item fields; combos show on the website under their categories, but stay off the Meta catalog
+// Normalized payload -> Item fields; combos show on the website under their categories, and in the Meta catalog only when switched on
 export const toComboItemFields = (n, categories, brand) => ({
   name: n.name,
   slug: n.slug,
@@ -129,7 +131,7 @@ export const toComboItemFields = (n, categories, brand) => ({
   isActive: n.isActive,
   sku: n.sku || undefined,
   type: "combo",
-  excludeFromMetaCatalog: true,
+  excludeFromMetaCatalog: !n.showInMetaCatalog,
   stockStatus: "instock",
   price: n.totals.total,
   offerPrice: n.totals.discount > 0 ? n.totals.price : null,
@@ -222,6 +224,7 @@ export const serializeCombo = (doc, refs = new Map()) => {
     imageUrl: o.imageUrl || "",
     gallery: o.gallery || [],
     isActive: o.isActive !== false,
+    showInMetaCatalog: o.excludeFromMetaCatalog === false,
     categories,
     brand: o.brand || [],
     discountType: c.discountType || "none",

@@ -29,7 +29,7 @@ const DISCOUNTS = [
   { value: 'percentage', label: '% off' },
   { value: 'fixed', label: '৳ off' },
 ];
-const EMPTY = { name: '', slug: '', sku: '', description: '', longDescription: '', imageUrl: '', gallery: [], isActive: true, categories: [], brand: [], pieces: [], discountType: 'none', discountValue: '' };
+const EMPTY = { name: '', slug: '', sku: '', description: '', longDescription: '', imageUrl: '', gallery: [], isActive: true, showInMetaCatalog: false, categories: [], brand: [], pieces: [], discountType: 'none', discountValue: '' };
 
 // Relative upload paths need the API host to show
 const fullUrl = (url) => (!url ? '' : /^https?:\/\//.test(url) ? url : `${API_BASE}${url.startsWith('/') ? '' : '/'}${url}`);
@@ -249,6 +249,7 @@ const ComboEditor = () => {
       imageUrl: source.imageUrl,
       gallery: source.gallery || [],
       isActive: source.isActive,
+      showInMetaCatalog: source.showInMetaCatalog === true,
       categories: (source.categories || []).map((c) => c.slug || c.did || c.id).filter(Boolean),
       brand: source.brand || [],
       discountType: source.discountType,
@@ -475,6 +476,7 @@ const ComboEditor = () => {
             <CardHeader className="pb-3"><CardTitle className="text-base">Status &amp; feature image</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <label className="flex items-center gap-2 text-sm"><Switch checked={form.isActive} onCheckedChange={(v) => set({ isActive: v })} /> Active</label>
+              <label className="flex items-center gap-2 text-sm"><Switch checked={form.showInMetaCatalog} onCheckedChange={(v) => set({ showInMetaCatalog: v })} /> Show in Meta catalog</label>
               <div className="flex items-center gap-3">
                 {form.imageUrl ? (
                   <div className="relative">
