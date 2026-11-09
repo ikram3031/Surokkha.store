@@ -12,6 +12,9 @@ export default function AnnouncementMarquee() {
   const { isBn, formatPrice } = useTranslation();
 
   const trial = products[TRIAL_PACK_SLUG];
+  // The free-delivery message only runs while the Trial Pack exists and can be bought
+  const trialOnSale = Boolean(trial) && trial.isActive !== false && !trial.isOutOfStock &&
+    trial.stockStatus !== 'outofstock' && trial.stockStatus !== 'out_of_stock' && trial.stockAmount !== 0;
   const trialPrice = trial ? Number(trial.offerPrice || trial.price || 0) : 0;
   const mega = products[MEGA_COMBO_SLUG];
   const megaPrice = Number(mega?.offerPrice || 950);
@@ -19,7 +22,7 @@ export default function AnnouncementMarquee() {
   const megaPct = megaOld > megaPrice ? Math.round(((megaOld - megaPrice) / megaOld) * 100) : 0;
 
   const messages = [
-    {
+    trialOnSale && {
       lead: isBn ? '🚚 ফ্রি ডেলিভারি!' : '🚚 Free Delivery!',
       text: isBn
         ? `সুরক্ষা ট্রায়াল প্যাক: ৬ ভ্যারিয়েন্টের ১২ পিস${trialPrice ? ` মাত্র ${formatPrice(trialPrice)}` : ''}, সাথে ফ্রি হোম ডেলিভারি`
@@ -41,7 +44,7 @@ export default function AnnouncementMarquee() {
       action: isBn ? 'শপ দেখুন →' : 'Shop now →',
       onClick: () => navigateTo('shop'),
     },
-  ];
+  ].filter(Boolean);
 
   const renderSet = (hidden) => (
     <div className="flex items-center shrink-0" aria-hidden={hidden || undefined}>

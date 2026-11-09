@@ -5,6 +5,7 @@ import ProtectionComboHero from './ProtectionComboHero';
 import CmsHeroSlide from './CmsHeroSlide';
 import SurokkhaTrialPackHero from './SurokkhaTrialPackHero';
 import { SITE_CONFIG } from '../config/siteConfig';
+import { useStore, TRIAL_PACK_SLUG } from '../store/useStore';
 
 const API_BASE_URL = SITE_CONFIG.apiBaseUrl.replace(/\/$/, '');
 const CACHE_KEY = 'cms_hero_slider_v1';
@@ -58,6 +59,7 @@ export default function HeroBannerSlider({ useCms = true }) {
   const [animate, setAnimate] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [cms, setCms] = useState(() => readCache());
+  const trialPack = useStore((state) => state.products[TRIAL_PACK_SLUG]);
   const [loaded, setLoaded] = useState(() => readCache() !== null);
 
   useEffect(() => {
@@ -79,7 +81,10 @@ export default function HeroBannerSlider({ useCms = true }) {
   const settings = { ...DEFAULT_SETTINGS, ...(cms?.settings || {}) };
   const slides = useCms && cms
     ? cms.items.map((item, i) => ({ key: item._id || `cms-${i}`, render: () => <CmsHeroSlide slide={item} /> }))
-    : FALLBACK_SLIDES.map(({ key, Component, props }) => ({ key, render: () => <Component {...props} /> }));
+    : FALLBACK_SLIDES
+        // The Trial Pack slide (free delivery) only while that product exists
+        .filter(({ key }) => key !== TRIAL_PACK_SLUG || (trialPack && trialPack.isActive !== false))
+        .map(({ key, Component, props }) => ({ key, render: () => <Component {...props} /> }));
 
   const slideCount = slides.length;
   const current = pos % slideCount;

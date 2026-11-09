@@ -46,8 +46,9 @@ export default function ProductDetailView() {
     (selectedSlug && products[selectedSlug.replace(/-condom/, '')]) ||
     (selectedSlug && products[`-condom`]) ||
     (selectedSlug && Object.values(products).find(p => p.slug === selectedSlug || p.did === selectedSlug || p.id === selectedSlug || p._id === selectedSlug)) ||
-    (productKeys.length > 0 && products[productKeys[0]]) ||
-    (Object.values(products).length > 0 && Object.values(products)[0]) ||
+    // Only with no product asked for: a missing slug shows "not found", never some other product
+    (!selectedSlug && productKeys.length > 0 && products[productKeys[0]]) ||
+    (!selectedSlug && Object.values(products).length > 0 && Object.values(products)[0]) ||
     null;
 
   // The raw detail response can carry brand IDs instead of names; keep the brand already resolved in the store
@@ -291,6 +292,11 @@ export default function ProductDetailView() {
     return <ProductDetailSkeleton />;
   }
 
+  // Not in the loaded list yet: wait for the single-product lookup before saying "not found"
+  if (!product && selectedSlug && (isFetchingDetail || fetchedDetailSlugRef.current !== selectedSlug)) {
+    return <ProductDetailSkeleton />;
+  }
+
   if (!product) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-6">
@@ -345,7 +351,7 @@ export default function ProductDetailView() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
 
-      {(isTrialPackSlug(product.slug) || isTrialPackSlug(selectedSlug)) && (
+      {isTrialPackSlug(product.slug) && (
         <div className="flex items-start gap-3 rounded-2xl border-2 border-emerald-500 bg-emerald-50 px-4 py-3">
           <span className="text-2xl leading-none">🚚</span>
           <div>
