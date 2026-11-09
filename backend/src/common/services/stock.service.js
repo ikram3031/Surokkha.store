@@ -196,9 +196,11 @@ const restoreLedger = async (order, type, actor, note = "") => {
 
 /**
  * Brings stock in line with the order's current status.
- * - active statuses (pending, processing, hold, shipped, completed): quantities are taken out of stock
+ * - in-store orders: quantities are taken out of stock right away (the goods leave over the counter)
+ * - online / custom orders: taken out only once dispatched (shipped, completed); pending, processing and hold keep stock
  * - cancelled / fake / return: whatever the order took is put back
- * Orders that existed before inventory tracking (no stockStage) are left alone unless `init` is set.
+ * Orders with no stockStage (made before tracking, or by a checkout that doesn't init) are picked up at the
+ * dispatch moment (status "shipped"); otherwise they are left alone unless `init` is set.
  */
 export const syncOrderStock = async (orderRef, options = {}) => {
   if (!isStockTrackingOn()) return;
@@ -209,7 +211,8 @@ export const syncOrderStock = async (orderRef, options = {}) => {
     if (!order) return;
 
     let stage = order.stockStage;
-    if (!stage && !init) return;
+    // A completed order with no stage left the warehouse before tracking, so only "shipped" takes it out
+    if (!stage && !init && order.status !== "shipped") return;
 
     let working = order;
     if (rebuild && stage === "deducted") {
@@ -221,7 +224,8 @@ export const syncOrderStock = async (orderRef, options = {}) => {
 
     let target;
     if (forceRelease || RELEASE_STATUSES.includes(order.status)) target = "released";
-    else target = "deducted";
+    else if (order.orderType === "instore" || SHIPPED_STATUSES.includes(order.status)) target = "deducted";
+    else target = "released"; // online order waiting for dispatch
 
     if (stage === target) return;
 
