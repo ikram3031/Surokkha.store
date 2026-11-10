@@ -28,6 +28,11 @@
   /* Dominant maroon sampled from the logo wordmark. */
   --brand-maroon: #4d1224;
 
+  /* Site header and footer (near-black with a maroon tint); the announcement bar above the header is light */
+  --header: #18060e;
+  --header-bar: #fdf2f4;
+  --header-bar-foreground: #4d1224;
+
   /* ---- Dark brand theme (Brand Color Palette) ----
      #202529 background · #E8A0AD pink · #F2B8C6 light pink
      #FCD077 gold · #FFF8F0 cream · #FFFFFF white */
@@ -206,6 +211,9 @@
   --color-gold: var(--gold);
   --color-gold-text: var(--gold-text);
   --color-wine: var(--wine);
+  --color-header: var(--header);
+  --color-header-bar: var(--header-bar);
+  --color-header-bar-foreground: var(--header-bar-foreground);
 
   /* Accent orange for the mobile bottom-nav icons and the hamburger menu icon */
   --color-nav-accent: #fb7185;
@@ -411,6 +419,32 @@ input[type='search']::-webkit-search-results-decoration {
   font-family: "Noto Sans Bengali", "Hind Siliguri", sans-serif;
 }
 
+/* Login / sign-up card is dark, so its fields are plain white (Chrome autofill blue included) */
+.auth-card input {
+  background-color: #ffffff;
+  color: #1f1a1c;
+  border-color: transparent;
+}
+.auth-card input::placeholder {
+  color: #8a7b7f;
+}
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1f1a1c;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #1f1a1c;
+}
+
+/* Text fields never get the thick global outline: only a light 1px ring on focus */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: color-mix(in oklab, var(--ring) 55%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--ring) 30%, transparent);
+}
+
 /* Checkout fields draw their own red focus border/ring, so drop the global pink outline there */
 #checkout input:focus-visible,
 #checkout textarea:focus-visible,
@@ -548,3 +582,13 @@ input[type='search']::-webkit-search-results-decoration {
 @media (prefers-reduced-motion: reduce) {
   .blog-rise, .blog-floaty, .blog-pulse-ring { animation: none; }
 }
+
+/* Combo offer price: a short wobble every couple of seconds to pull the eye */
+@keyframes price-tremble {
+  0%, 60%, 100% { transform: scale(1) rotate(0deg); }
+  15% { transform: scale(1.08) rotate(-2deg); }
+  30% { transform: scale(1.08) rotate(2deg); }
+  45% { transform: scale(1.08) rotate(-1.5deg); }
+}
+.animate-price-shake { display: inline-block; animation: price-tremble 2.2s ease-in-out infinite; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) { .animate-price-shake { animation: none; } }

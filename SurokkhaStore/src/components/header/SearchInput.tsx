@@ -28,7 +28,7 @@ export function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         className={
           inverted
-            ? 'rounded-full border-white/20 bg-white/10 pl-10 pr-9 text-white placeholder:text-white/60'
+            ? 'rounded-full border-white/30 bg-white/15 pl-10 pr-9 text-white placeholder:text-white/60'
             : 'rounded-full bg-background pl-10 pr-9 text-foreground'
         }
       />

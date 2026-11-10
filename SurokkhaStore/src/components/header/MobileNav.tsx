@@ -84,8 +84,8 @@ export function MobileNav({
           onClick={() => go('/account')}
           className="flex w-full items-center gap-3 rounded-2xl bg-white/10 p-3 text-left transition-colors hover:bg-white/20"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background text-foreground">
-            <User className="h-5 w-5" />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary">
+            <User className="h-5 w-5 !text-primary-foreground" />
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-semibold leading-tight">My Account</span>

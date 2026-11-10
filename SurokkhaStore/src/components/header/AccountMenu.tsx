@@ -56,12 +56,14 @@ export function AccountMenu() {
     <div ref={ref} className="relative">
       <Button
         size="icon"
-        className="rounded-full bg-white/10 text-white hover:bg-white/20"
+        variant="ghost"
+        className="size-10 rounded-full text-white hover:bg-white/10 hover:text-white"
         aria-label={customer ? 'My account menu' : 'Log in or sign up'}
         aria-expanded={customer ? open : undefined}
         onClick={() => (customer ? setOpen((o) => !o) : navigate('/account'))}
       >
-        <User className="h-5 w-5" />
+        {/* Same look as the cart icon next to it */}
+        <User className="size-6" strokeWidth={1.8} />
       </Button>
 
       {customer && open && (

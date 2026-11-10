@@ -80,10 +80,10 @@ export function IntroProducts() {
   if (picks.length === 0) return null
 
   return (
-    <section id="featured" className="bg-background py-14 text-foreground md:py-20">
+    <section id="featured" className="bg-background py-10 text-foreground md:py-14">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHeading invert title="Featured products" subtitle="Our best sellers, the packs customers order most." />
+          <SectionHeading title="Featured products" subtitle="Our best sellers, the packs customers order most." />
           <Button
             size="lg"
             className="h-11 rounded-full border border-foreground/15 bg-transparent px-7 text-foreground hover:bg-foreground/10"

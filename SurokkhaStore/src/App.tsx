@@ -8,7 +8,7 @@ import { HomeClassic } from '@/components/home/HomeClassic'
 import { IntroProducts } from '@/components/home/IntroProducts'
 import { ShopByNeed } from '@/components/home/ShopByNeed'
 import { CategoryPage } from '@/components/category/CategoryPage'
-import { MoProducts, ComboProducts, WellnessProducts } from '@/components/home/CatalogSections'
+import { MoProducts, WellnessProducts } from '@/components/home/CatalogSections'
 import { SearchResults } from '@/components/shop/SearchResults'
 import { FaqPage } from '@/components/pages/FaqPage'
 import { PolicyPage } from '@/components/pages/PolicyPage'
@@ -17,6 +17,7 @@ import { Testimonial } from '@/components/home/Testimonial'
 import { Newsletter } from '@/components/home/Newsletter'
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp'
 import { BottomNav } from '@/components/BottomNav'
+import { ComboOffers } from '@/components/home/ComboOffers'
 import { DeliverySteps } from '@/components/home/DeliverySteps'
 import { TrustStrip } from '@/components/TrustStrip'
 import { Shop } from '@/components/Shop'
@@ -95,10 +96,11 @@ function AppShell() {
             <HomeHero />
             <TrustStrip />
             <IntroProducts />
-            <MoProducts />
-            <ComboProducts />
-            <DeliverySteps />
+            {/* Categories right after the best sellers */}
             <ShopByNeed />
+            <MoProducts />
+            <ComboOffers />
+            <DeliverySteps />
             <WellnessProducts />
             {SHOW_ALL_PRODUCTS && <Shop ref={shopRef} query={query} filter={filter} onFilterChange={setFilter} />}
             <LearnCards />

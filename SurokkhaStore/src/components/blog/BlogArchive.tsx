@@ -42,9 +42,10 @@ export function BlogArchive() {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-4 pt-8 sm:px-6 sm:pt-12">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-secondary px-5 py-8 sm:px-10 sm:py-12">
-        <span className="blog-floaty pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-accent" />
-        <span className="pointer-events-none absolute -bottom-20 right-1/4 h-48 w-48 rounded-full bg-ring/25" />
+      {/* Dark photo banner: the text side of the overlay is darkest so the heading stays readable */}
+      <section className="dark relative overflow-hidden rounded-3xl bg-header px-5 py-8 text-foreground sm:px-10 sm:py-12">
+        <img src="/banners/blog-hero.webp" alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
+        <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/25" aria-hidden="true" />
         <div className="relative max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">সুরক্ষা ব্লগ</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold leading-snug sm:text-4xl md:text-5xl md:leading-tight">জানুন, বুঝুন, নিরাপদ থাকুন</h1>

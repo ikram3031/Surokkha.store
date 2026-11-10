@@ -56,7 +56,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={() => setShown((s) => !s)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5f63] hover:text-[#1f1a1c]"
         aria-label={shown ? 'Hide password' : 'Show password'}
       >
         {shown ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -87,7 +87,8 @@ function Breadcrumb({ current, onDark = false }: { current: string; onDark?: boo
 }
 
 export function AccountPage() {
-  const image = useSectionBackground('login')
+  // CMS image (Dashboard → CMS → Section Backgrounds → "login") wins; otherwise the bundled default photo
+  const image = useSectionBackground('login') || '/auth/login.webp'
   const [view, setView] = useState<View>('login')
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [checking, setChecking] = useState(true)
@@ -220,8 +221,8 @@ export function AccountPage() {
       <div className="hidden lg:block">
         <Breadcrumb current={crumb[view]} />
       </div>
-      {/* One light-tinted card (theme "secondary") on the white page: the image runs edge to edge, no inner padding */}
-      <div className="mb-10 mt-4 grid overflow-hidden rounded-3xl bg-secondary/40 lg:mb-14 lg:mt-5 lg:grid-cols-2">
+      {/* One dark card (header colour) on the white page: the image runs edge to edge, no inner padding */}
+      <div className="auth-card dark mb-10 mt-4 grid overflow-hidden rounded-3xl bg-header/90 text-foreground lg:mb-14 lg:mt-5 lg:grid-cols-2">
       {/* Left: CMS image (Dashboard → CMS → Section Backgrounds → "login"), brand panel until one is set */}
       <aside className="dark relative hidden min-h-[640px] overflow-hidden bg-background text-white lg:block">
         {image ? (
@@ -229,9 +230,12 @@ export function AccountPage() {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-foreground via-[#4d1224] to-[#241f1c]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
+        {/* Dark overlay: heaviest at the bottom behind the tagline */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/25" />
+        {/* Soft dark glow in the top-left corner so the logo stands out from the photo */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.35)_28%,transparent_55%)]" />
         <div className="relative flex h-full flex-col justify-between p-10">
-          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-12 w-auto self-start" />
+          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-12 w-auto self-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]" />
           <div>
             <p className="font-display text-3xl font-bold leading-snug">Safe today, tomorrow too.</p>
             <p className="mt-2 max-w-sm text-white/80">Discreet packaging, genuine products and cash on delivery.</p>
@@ -242,7 +246,7 @@ export function AccountPage() {
       {/* Mobile: slim banner using the same image */}
       <div className="relative h-36 overflow-hidden bg-background lg:hidden">
         {image && <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/60" />
         <div className="relative flex h-full flex-col justify-end gap-1.5 p-5">
           <Breadcrumb current={crumb[view]} onDark />
           <p className="font-display text-2xl font-bold text-white">Safe today, tomorrow too.</p>

@@ -85,7 +85,8 @@ export function ProductPage({ slug }: { slug: string }) {
     )
   }
 
-  const images = [product.image, ...(product.gallery ?? [])].filter(
+  // The detail page shows the full-size image, not the card thumbnail
+  const images = [product.largeImage ?? product.image, ...(product.gallery ?? [])].filter(
     (src, i, all): src is string => !!src && all.indexOf(src) === i,
   )
   const soldOut = product.inStock === false
@@ -142,7 +143,7 @@ export function ProductPage({ slug }: { slug: string }) {
               onClick={() => setQty((q) => Math.max(1, q - 1))}
               aria-label="Decrease quantity"
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-4 w-4 text-primary" strokeWidth={2.5} />
             </Button>
             <span className="w-8 text-center font-semibold">{bn(qty)}</span>
             <Button
@@ -152,16 +153,17 @@ export function ProductPage({ slug }: { slug: string }) {
               onClick={() => setQty((q) => Math.min(10, q + 1))}
               aria-label="Increase quantity"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 text-primary" strokeWidth={2.5} />
             </Button>
           </div>
           <span className="text-sm text-muted-foreground">Total {taka(product.price * qty)}</span>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        {/* Side by side on every screen; in a column, flex-1 would collapse the buttons' height */}
+        <div className="mt-6 flex gap-3">
           <Button
             size="lg"
-            className="h-12 flex-1 rounded-full text-base"
+            className="h-12 min-w-0 flex-1 rounded-full px-3 text-sm sm:text-base"
             disabled={soldOut}
             onClick={() => {
               add(product, qty)
@@ -172,8 +174,7 @@ export function ProductPage({ slug }: { slug: string }) {
           </Button>
           <Button
             size="lg"
-            variant="outline"
-            className="h-12 flex-1 rounded-full text-base"
+            className="h-12 min-w-0 flex-1 rounded-full bg-[#1f1a1c] px-3 text-sm text-white hover:bg-[#3a3134] sm:text-base"
             disabled={soldOut}
             onClick={() => add(product, qty)}
           >

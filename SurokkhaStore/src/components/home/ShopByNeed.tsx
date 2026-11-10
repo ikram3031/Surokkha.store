@@ -10,13 +10,14 @@ const PREFERRED = ['condoms', 'lubricants', 'feminine-care', 'combo', 'wellness'
 // Three equal columns filled top to bottom: the first tile is tall, then two stacked tiles in each other column
 const SPANS = ['md:row-span-2', '', '', '', '']
 
-// Designed tile art (dark slate theme) for the main categories; others fall back to a product photo
+// Generated mood photos (dark slate + maroon silk, no brand packs) for the main categories;
+// others fall back to a product photo
 const TILE_IMAGES: Record<string, string> = {
-  condoms: '/categories/condoms.webp',
-  lubricants: '/categories/lubricants.webp',
-  'feminine-care': '/categories/feminine-care.webp',
-  combo: '/categories/combo.webp',
-  wellness: '/categories/wellness.webp',
+  condoms: '/categories/condoms-ai.webp',
+  lubricants: '/categories/lubricants-ai.webp',
+  'feminine-care': '/categories/feminine-care-ai.webp',
+  combo: '/categories/combo-ai.webp',
+  wellness: '/categories/wellness-ai.webp',
 }
 
 /** "Shop by need": a mosaic of category tiles, each using the photo of a product from that category. */
@@ -37,7 +38,7 @@ export function ShopByNeed() {
   return (
     <section id="categories" className="relative overflow-hidden">
       <SectionBackground name="categories" />
-      <div className="relative mx-auto max-w-7xl px-4 py-16 md:py-24">
+      <div className="relative mx-auto max-w-7xl px-4 py-10 md:py-14">
         <SectionHeading title="Shop by need" subtitle="Pick the category you came for — every tile opens its full range." />
 
         <div className="mt-10 grid gap-5 md:h-[560px] md:grid-flow-col md:grid-cols-3 md:grid-rows-2">
@@ -61,9 +62,11 @@ export function ShopByNeed() {
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 )}
-                <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/10" aria-hidden="true" />
-                <span className="absolute bottom-5 left-5 rounded bg-card px-4 py-2 text-sm font-semibold transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                {/* Dark at the bottom, fading out towards the middle, so the label reads on any photo */}
+                <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/45 to-transparent" aria-hidden="true" />
+                <span className="absolute inset-x-5 bottom-5 flex items-center gap-3 text-sm font-semibold tracking-[0.25em] text-white uppercase md:text-base">
                   {category.label}
+                  <span className="h-px w-8 bg-primary transition-all duration-500 group-hover:w-16" aria-hidden="true" />
                 </span>
               </a>
             )

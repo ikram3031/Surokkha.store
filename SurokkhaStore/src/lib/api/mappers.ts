@@ -109,6 +109,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
     c2: visual.c2,
     badge: raw.badge ?? (raw.isNew ? 'New' : raw.isBestSeller ? 'Best Seller' : undefined),
     image: resolveMediaUrl(raw.thumbnailUrl || raw.featuredImage || raw.imageUrl || raw.gallery?.[0]),
+    largeImage: resolveMediaUrl(raw.featuredImage || raw.imageUrl || raw.gallery?.[0] || raw.thumbnailUrl),
   }
 }
 

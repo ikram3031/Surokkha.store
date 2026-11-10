@@ -13,7 +13,10 @@ export interface Product {
   c1?: string
   c2?: string
   badge?: string
+  /** Small thumbnail, for cards and lists */
   image?: string
+  /** Full-size image for the product detail page (falls back to `image`) */
+  largeImage?: string
   /** Set for products loaded from the API; needed for the product page and order payload. */
   slug?: string
   /** Slugs of every API category the product belongs to (drives the dynamic category menu/filter). */

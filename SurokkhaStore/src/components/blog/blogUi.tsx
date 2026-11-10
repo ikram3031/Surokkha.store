@@ -97,8 +97,10 @@ export function BlogCta({ variant = 'end', context }: { variant?: 'inline' | 'en
 
   if (variant === 'inline') {
     return (
-      <aside className="my-10 rounded-3xl border border-ring/60 bg-accent/60 p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <aside className="dark relative my-10 overflow-hidden rounded-3xl bg-header p-5 text-foreground sm:p-6">
+        <img src="/auth/login.webp" alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
+        <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/45" aria-hidden="true" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-primary">সুরক্ষা শপ</p>
             <p className="mt-1 font-display text-xl font-bold leading-snug">নিরাপদ থাকতে ঠিক পণ্যটা হাতের কাছে রাখুন</p>

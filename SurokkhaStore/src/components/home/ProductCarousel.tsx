@@ -48,7 +48,7 @@ export function ProductCarousel({
   return (
     <section
       id={id}
-      className={`mx-auto max-w-7xl px-4 py-12 md:py-16 ${className}`}
+      className={`mx-auto max-w-7xl px-4 py-8 md:py-10 ${className}`}
       aria-label={title}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -60,10 +60,10 @@ export function ProductCarousel({
       <div className="flex items-end justify-between gap-4">
         <SectionHeading title={title} subtitle={subtitle} />
         <div className="hidden gap-2 sm:flex">
-          <Button variant="outline" size="icon" className="rounded-full border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground" aria-label="Previous" onClick={() => step(-1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-transparent bg-secondary text-secondary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" aria-label="Previous" onClick={() => step(-1)}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon" className="rounded-full border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground" aria-label="Next" onClick={() => step(1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-transparent bg-secondary text-secondary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" aria-label="Next" onClick={() => step(1)}>
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
