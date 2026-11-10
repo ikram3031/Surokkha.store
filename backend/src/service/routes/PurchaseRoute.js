@@ -6,6 +6,7 @@ import {
   deleteVendor,
   listPurchases,
   getPurchase,
+  getPurchaseReceipt,
   createPurchase,
   updatePurchase,
   receivePurchase,
@@ -29,6 +30,7 @@ purchaseRouter.delete("/vendors/:id", deleteVendor);
 purchaseRouter.get("/", listPurchases);
 purchaseRouter.post("/", createPurchase);
 purchaseRouter.get("/:id", getPurchase);
+purchaseRouter.get("/:id/receipt", getPurchaseReceipt);
 purchaseRouter.put("/:id", updatePurchase);
 purchaseRouter.post("/:id/receive", receivePurchase);
 purchaseRouter.post("/:id/payments", addPurchasePayment);

@@ -7,6 +7,7 @@ import { PaymentTypeModel } from "../../common/models/paymentType.model.js";
 import { BillingModel } from "../../common/models/billing.model.js";
 import { BillTypeModel } from "../../common/models/billType.model.js";
 import { applyReceipt, cancelReceipt, ReceiptError } from "../services/stockReceipt.service.js";
+import { buildSurokkhaPurchaseReceiptHtml } from "../../common/templates/invoices/surokkhaPurchaseReceipt.js";
 
 const PURCHASE_BILL_TYPE = "Product Purchase";
 const OPEN_STATUSES = ["draft", "ordered", "received"];
@@ -388,6 +389,19 @@ export const getPurchase = async (req, res, next) => {
       status: "success",
       data: { ...p.toJSON(), stock: receipt ? { status: receipt.status, version: receipt.version, totalUnits: receipt.totalUnits, updatedAt: receipt.updatedAt } : null, bill },
     });
+  } catch (error) {
+    return handle(res, next, error);
+  }
+};
+
+// GET /purchases/:id/receipt — A4 purchase receipt page (same design as the order invoice) to print or save as PDF
+export const getPurchaseReceipt = async (req, res, next) => {
+  try {
+    const p = await findPurchase(req.params.id);
+    const bill = p.billingId ? await BillingModel.findById(p.billingId).select("did status").lean() : null;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    return res.send(buildSurokkhaPurchaseReceiptHtml({ purchase: p.toObject(), bill }));
   } catch (error) {
     return handle(res, next, error);
   }
