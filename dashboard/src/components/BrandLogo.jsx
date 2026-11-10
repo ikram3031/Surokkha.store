@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { clientConfig } from '@/clientConfig';
 import { resolveImageUrl } from '@/lib/api-client';
 import plexiviaLogo from '@/assets/plexivia.png';
+import surokkhaLogoDark from '@/assets/surokkha_logo_dark.png';
 
 // Renders the tenant branding logo with fixed proportional width and dynamic height
 export const BrandLogo = ({
@@ -72,6 +73,16 @@ export const BrandLogo = ({
   };
 
   const isCentered = centered || className.includes('mx-auto') || className.includes('justify-center');
+
+  // Default dashboard branding: bundled Surokkha logo (light text, for dark sidebar/header)
+  if (!src) {
+    const imgCls = `w-full h-full object-contain ${isCentered ? 'object-center mx-auto' : 'object-left'} ${imgClassName}`;
+    return (
+      <div className={`relative flex items-center shrink-0 ${isCentered ? 'justify-center' : 'justify-start'} ${className}`}>
+        <img src={surokkhaLogoDark} alt={alt || brandName} className={imgCls} />
+      </div>
+    );
+  }
 
   if (currentSrc && !imageError) {
     return (
