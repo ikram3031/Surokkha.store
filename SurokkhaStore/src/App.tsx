@@ -66,6 +66,17 @@ function AppShell() {
     setQuery('')
   }, [routeKey])
 
+  // Tells search engines the one URL for this page: the main domain, without query strings
+  useEffect(() => {
+    let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (!link) {
+      link = document.createElement('link')
+      link.rel = 'canonical'
+      document.head.appendChild(link)
+    }
+    link.href = `https://surokkhastore.shop${window.location.pathname}`
+  }, [routeKey])
+
   // Menu and category tiles open that category's own page
   const selectCategory = (cat: ShopFilter) => {
     setFilter(cat)

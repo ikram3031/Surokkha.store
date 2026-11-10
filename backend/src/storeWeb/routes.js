@@ -23,6 +23,7 @@ import cmsContentRouter from "./routes/CmsContentRoute.js";
 import siteConfigRouter from "./routes/SiteConfigRoute.js";
 import customerAuthRouter from "./routes/CustomerAuthRoute.js";
 import blogRouter from "./routes/BlogRoute.js";
+import seoRouter from "./routes/SeoRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
 const storefrontRouter = Router();
@@ -51,6 +52,7 @@ storefrontRouter.use("/cms-content", cmsContentRouter);
 storefrontRouter.use("/site-config", siteConfigRouter);
 storefrontRouter.use("/customer-auth", customerAuthRouter);
 storefrontRouter.use("/blog", blogRouter);
+storefrontRouter.use("/seo", seoRouter);
 storefrontRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket
