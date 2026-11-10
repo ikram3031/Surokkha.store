@@ -133,4 +133,14 @@ export const getClientPolicy = (policyPath, defaultValue = null) => {
   return current !== undefined ? current : defaultValue;
 };
 
+// Snapshot of the file/env config; Site Config overrides saved from the dashboard are merged on top
+export const baseConfig = structuredClone(config);
+
+// Rebuilds `config` in place so every module that imported it sees the overrides
+export const applyConfigOverrides = (overrides = {}) => {
+  const merged = structuredClone(deepMerge(baseConfig, overrides));
+  for (const key of Object.keys(config)) delete config[key];
+  Object.assign(config, merged);
+};
+
 export { getDynamicCorsConfig } from "./corsOrigins.js";

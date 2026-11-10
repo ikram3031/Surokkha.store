@@ -2,6 +2,7 @@ import * as React from "react"
 import { useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Link2,
+  SlidersHorizontal,
   Building2,
   GalleryHorizontal,
   HardDrive,
@@ -87,6 +88,7 @@ export const SettingsSidebar = (props) => {
             <>
               <NavLabel>{t("nav.business", "Business")}</NavLabel>
               <NavLink to="/settings/business" active={pathname.startsWith("/settings/business")} icon={Building2} label={t("nav.business_settings", "Business Settings")} />
+              <NavLink to="/settings/site-config" active={pathname.startsWith("/settings/site-config")} icon={SlidersHorizontal} label={t("nav.site_config", "Site Config")} />
             </>
           )}
 

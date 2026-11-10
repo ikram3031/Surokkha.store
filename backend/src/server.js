@@ -8,6 +8,7 @@ import { createShutdownHandler } from "./common/helper/sutdownHelper.js";
 import { initWebSocketServer } from "./common/websocket.js";
 import { initMediaSchedulers, stopMediaSchedulers } from "./common/schedulers/mediaScheduler.js";
 import { initHeartbeatScheduler, stopHeartbeatScheduler } from "./common/schedulers/heartbeat.scheduler.js";
+import { loadSiteConfigOverrides, startSiteConfigRefresh } from "./common/services/siteConfig.service.js";
 import { initBackupScheduler, stopBackupScheduler } from "./common/schedulers/backupScheduler.js";
 
 // Bootstraps backend server instances (Storefront on 4001, Service on 4002, or both in dual mode)
@@ -15,6 +16,8 @@ const bootstrap = async () => {
   try {
     await connectDatabase();
     await StyleModel.initializeStyles();
+    await loadSiteConfigOverrides();
+    startSiteConfigRefresh();
   } catch (err) {
     logger.warn({ err: err.message }, "⚠️ MongoDB connection failed. Starting HTTP servers in offline/fallback mode...");
   }

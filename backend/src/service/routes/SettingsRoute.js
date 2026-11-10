@@ -28,6 +28,7 @@ import {
   resetTemplateSettings,
 } from "../controllers/SettingsController.js";
 import { authenticateToken, authorizeRoles, OWNER_ONLY, MARKETERS } from "../../common/middlewares/auth.middleware.js";
+import { getSiteConfig, updateSiteConfig, getPublicSiteConfig } from "../controllers/SiteConfigController.js";
 import { getPlexiviaSyncSettings, updatePlexiviaSyncSettings } from "../controllers/PlexiviaSyncController.js";
 import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
 import {
@@ -43,6 +44,7 @@ const settingsRouter = Router();
 
 // Public sanitized Meta Pixel configuration for customer storefront
 settingsRouter.get("/public/meta-pixel", getPublicMetaPixelConfig);
+settingsRouter.get("/public/site-config", getPublicSiteConfig);
 
 // Public sanitized TikTok Pixel configuration for customer storefront
 settingsRouter.get("/public/tiktok-pixel", getPublicTikTokPixelConfig);
@@ -161,6 +163,10 @@ settingsRouter.put(
 // Business settings, e.g. where incoming webmail is forwarded (Owner only)
 settingsRouter.get("/business", authenticateToken, authorizeRoles(OWNER_ONLY), getBusinessSettings);
 settingsRouter.put("/business", authenticateToken, authorizeRoles(OWNER_ONLY), updateBusinessSettings);
+
+// Site Config: config.json values editable from the dashboard (Owner only)
+settingsRouter.get("/site-config", authenticateToken, authorizeRoles(OWNER_ONLY), getSiteConfig);
+settingsRouter.put("/site-config", authenticateToken, authorizeRoles(OWNER_ONLY), updateSiteConfig);
 
 // Plexivia dashboard sync key (Owner only)
 settingsRouter.get("/plexivia-sync", authenticateToken, authorizeRoles(OWNER_ONLY), getPlexiviaSyncSettings);

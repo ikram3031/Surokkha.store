@@ -558,6 +558,11 @@ const storeSettingsSchema = new Schema(
       },
       customCss: { type: String, default: "", trim: true },
     },
+    // Site Config: only the values changed from config.json; config.json fills in everything else
+    siteConfig: {
+      type: Schema.Types.Mixed,
+      default: () => ({}),
+    },
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

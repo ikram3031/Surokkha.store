@@ -4,8 +4,8 @@ import './index.css';
 import '@/lib/print-engine/printStyles.css';
 import './i18n';
 import App from './App.jsx';
-import { clientConfig } from './clientConfig';
-import { resolveImageUrl } from './lib/api-client';
+import { clientConfig, applyConfigOverrides } from './clientConfig';
+import { apiClient, resolveImageUrl } from './lib/api-client';
 
 // Automatically recovers from stale chunk errors when a new deployment occurs
 if (typeof window !== 'undefined') {
@@ -15,8 +15,18 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Initialize dynamic page title and favicon immediately per client tenant
-if (typeof document !== 'undefined') {
+// Fetches the Site Config overrides saved from the dashboard; the cached copy is used if this fails
+const loadSiteConfig = async () => {
+  try {
+    const res = await apiClient.get('/api/v1/settings/public/site-config', { timeout: 3000 });
+    const overrides = res.data?.data?.overrides;
+    if (overrides && typeof overrides === 'object') applyConfigOverrides(overrides);
+  } catch {}
+};
+
+// Initialize dynamic page title and favicon per client tenant
+const applyBranding = () => {
+  if (typeof document === 'undefined') return;
   const brandName = clientConfig?.brandName || '';
   document.title = `Dashboard - ${brandName}`;
 
@@ -30,10 +40,13 @@ if (typeof document !== 'undefined') {
       link.href = version ? `${resolvedFavicon}${resolvedFavicon.includes('?') ? '&' : '?'}v=${version}` : resolvedFavicon;
     }
   }
-}
+};
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+loadSiteConfig().finally(() => {
+  applyBranding();
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+});
