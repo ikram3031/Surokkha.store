@@ -802,7 +802,7 @@ const financeRoutes = [
 ];
 
 const settingsRoutes = [
-  { path: '', element: <Navigate to="cms-content/shop" replace /> },
+  { path: '', element: <Navigate to="business" replace /> },
   {
     path: 'users',
     element: (
