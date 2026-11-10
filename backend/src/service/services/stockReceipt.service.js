@@ -160,7 +160,7 @@ export const toReceiptView = (r) =>
   };
 
 // Creates or updates the stock for one received purchase. Sending the same payload again changes nothing.
-export const applyReceipt = async (payload, actor = "plexivia") => {
+export const applyReceipt = async (payload, actor = "plexivia", source = "plexivia") => {
   const externalRef = String(payload?.externalRef || "").trim();
   if (!externalRef) throw new ReceiptError("externalRef is required.");
   const version = Number(payload?.version) || 0;
@@ -180,6 +180,7 @@ export const applyReceipt = async (payload, actor = "plexivia") => {
       { externalRef },
       {
         $set: {
+          source,
           purchaseNumber: String(payload.purchaseNumber || "").slice(0, 60),
           vendorName: String(payload.vendorName || "").slice(0, 120),
           vendorPhone: String(payload.vendorPhone || "").slice(0, 30),

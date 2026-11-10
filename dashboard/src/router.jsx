@@ -1030,13 +1030,25 @@ const analyticsRoutes = [
   { path: 'live', ...lazyPage(() => import('./pages/analytics/live')) },
 ];
 
-// Inventory workspace: unit-level stock items, their history and purchases received from Plexivia
+// Lazy page wrapped in a RoleGuard for its own menu key
+const guardedLazyPage = (menuKey, loader) => ({
+  lazy: async () => {
+    const Page = (await loader()).default;
+    return { Component: () => <RoleGuard menuKey={menuKey}><Page /></RoleGuard> };
+  },
+});
+
+// Inventory workspace: unit-level stock items, their history, purchases and vendors
 const inventoryRoutes = [
   { index: true, ...lazyPage(() => import('./pages/inventory/stockItems')) },
   { path: 'products', ...lazyPage(() => import('./pages/inventory/inventoryProducts')) },
   { path: 'items', ...lazyPage(() => import('./pages/inventory/inventoryItems')) },
   { path: 'movements', ...lazyPage(() => import('./pages/inventory/movements')) },
   { path: 'receipts', ...lazyPage(() => import('./pages/inventory/receipts')) },
+  { path: 'purchases', ...guardedLazyPage('inventory.purchases', () => import('./pages/inventory/purchases')) },
+  { path: 'purchases/new', ...guardedLazyPage('inventory.purchases', () => import('./pages/inventory/purchaseEditor')) },
+  { path: 'purchases/:id/edit', ...guardedLazyPage('inventory.purchases', () => import('./pages/inventory/purchaseEditor')) },
+  { path: 'vendors', ...guardedLazyPage('inventory.purchases', () => import('./pages/inventory/vendors')) },
   { path: '*', element: <NotFound /> },
 ];
 

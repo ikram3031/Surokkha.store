@@ -45,7 +45,7 @@ const StockMovementsPage = () => {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-semibold">Stock History</h1>
-        <p className="text-sm text-muted-foreground">Purchases from Plexivia and manual corrections, one line per change.</p>
+        <p className="text-sm text-muted-foreground">Purchases and manual corrections, one line per change.</p>
       </div>
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">

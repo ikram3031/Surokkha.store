@@ -42,7 +42,7 @@ const ReceiptLines = ({ receipt }) => (
   </>
 );
 
-// Purchases recorded and received in Plexivia, as applied to stock here (read-only)
+// Received purchases (from Purchases here or from Plexivia), as applied to stock (read-only)
 const StockReceiptsPage = () => {
   const [params] = useSearchParams();
   const [q, setQ] = useState(params.get('q') || '');
@@ -58,7 +58,7 @@ const StockReceiptsPage = () => {
       <div>
         <h1 className="text-2xl font-semibold">Received Purchases</h1>
         <p className="text-sm text-muted-foreground">
-          Purchases are created, paid and billed in Plexivia. When one is received its units are added here; edits and cancellations there update this list and the stock.
+          Every received purchase as applied to stock, whether recorded here under Purchases or in Plexivia. Edits and cancellations of a purchase update this list and the stock.
         </p>
       </div>
       <Card>
@@ -90,14 +90,17 @@ const StockReceiptsPage = () => {
               {isError && <TableRow><TableCell colSpan={7} className="py-8 text-center text-red-600">Could not load purchases.</TableCell></TableRow>}
               {!isLoading && !isError && rows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">No purchases received yet. Record one in Plexivia under Purchases.</TableCell>
+                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">No purchases received yet. Record one under Purchases.</TableCell>
                 </TableRow>
               )}
               {rows.map((r) => (
                 <Fragment key={r.id}>
                   <TableRow className="cursor-pointer" onClick={() => setOpen(open === r.id ? null : r.id)}>
                     <TableCell>{open === r.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</TableCell>
-                    <TableCell className="font-medium">{r.purchaseNumber || r.externalRef}</TableCell>
+                    <TableCell>
+                      <div className="font-medium">{r.purchaseNumber || r.externalRef}</div>
+                      <div className="text-xs text-muted-foreground">{r.source === 'surokkha' ? 'Purchases' : 'Plexivia'}</div>
+                    </TableCell>
                     <TableCell>{r.vendorName || '-'}</TableCell>
                     <TableCell className="whitespace-nowrap">{fmtDate(r.receivedAt)}</TableCell>
                     <TableCell className="text-right">{r.totalUnits}</TableCell>

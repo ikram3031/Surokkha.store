@@ -167,7 +167,7 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
                 <span className="text-muted-foreground">From purchases</span>
                 <span className="text-right">
                   <span className="font-medium">{packBreakdown(item.fromPurchases, item.packs, item.unit) || `${item.fromPurchases} ${item.unit}`}</span>
-                  <span className="block text-xs text-muted-foreground">Change it by editing the purchase in Plexivia</span>
+                  <span className="block text-xs text-muted-foreground">Change it by editing the purchase</span>
                 </span>
               </div>
               <div className="space-y-1.5">
@@ -251,7 +251,7 @@ const AdjustDialog = ({ item, onOpenChange, onSave, onUndo, saving }) => {
         <DialogHeader>
           <DialogTitle>Adjust {item?.shortName}</DialogTitle>
           <DialogDescription>
-            Now in stock: {packBreakdown(now, item?.packs, unit) || `${now} ${unit}`}{packBreakdown(now, item?.packs, unit) ? ` (${now} ${unit})` : ''}. Wrong purchase quantity? Edit that purchase in Plexivia instead.
+            Now in stock: {packBreakdown(now, item?.packs, unit) || `${now} ${unit}`}{packBreakdown(now, item?.packs, unit) ? ` (${now} ${unit})` : ''}. Wrong purchase quantity? Edit that purchase instead.
           </DialogDescription>
         </DialogHeader>
         <div className="min-w-0 space-y-3">
@@ -340,7 +340,7 @@ const StockItemsPage = () => {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Stock Items</h1>
-          <p className="text-sm text-muted-foreground">What you actually hold, counted in single units. Purchases recorded in Plexivia add here automatically.</p>
+          <p className="text-sm text-muted-foreground">What you actually hold, counted in single units. Received purchases add here automatically.</p>
         </div>
         <Button className={ACTION_BTN} onClick={() => setEditing({ item: null })}><Plus className="mr-1.5 h-4 w-4" />New stock item</Button>
       </div>

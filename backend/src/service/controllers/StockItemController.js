@@ -299,7 +299,7 @@ export const undoStockItemMovement = async (req, res, next) => {
     if (!Types.ObjectId.isValid(movementId)) return fail(res, 400, "Invalid id.");
     const original = await StockMovementModel.findOne({ _id: movementId, entity: "stockItem" }).lean();
     if (!original) return fail(res, 404, "Stock change not found.");
-    if (!UNDOABLE_TYPES.includes(original.type)) return fail(res, 400, "Only hand adjustments can be undone. Purchases are corrected from the purchase in Plexivia.");
+    if (!UNDOABLE_TYPES.includes(original.type)) return fail(res, 400, "Only hand adjustments can be undone. Purchases are corrected by editing the purchase (under Purchases, or in Plexivia).");
     if (original.undoneAt) return fail(res, 409, "This change was already undone.");
     const delta = -(Number(original.delta) || 0);
 
