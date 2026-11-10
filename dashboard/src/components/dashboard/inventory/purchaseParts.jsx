@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Ban, PackageCheck, Pencil, Trash2, Wallet } from 'lucide-react';
+import { Ban, MessageCircle, PackageCheck, Pencil, Printer, Trash2, Wallet } from 'lucide-react';
+import { printDocument } from '@/lib/print-engine/printEngine';
+import { PurchasePrintSlip, sendPurchaseOnWhatsApp } from './purchaseShare';
 
 import { usePurchase, usePurchaseMutations, lineText, taka } from '@/hooks/use-purchases';
 import { usePaymentMethods } from '@/hooks/use-payment-methods';
@@ -79,6 +81,7 @@ export const PurchaseDetailDialog = ({ purchaseId, onOpenChange }) => {
   const { paymentMethods } = usePaymentMethods({ status: 'Active' });
   const [payForm, setPayForm] = useState(null);
   const [cancelReason, setCancelReason] = useState(null);
+  const slipRef = useRef(null);
   const busy = receive.isPending || addPayment.isPending || removePayment.isPending || cancel.isPending;
 
   const close = (open) => {
@@ -108,6 +111,14 @@ export const PurchaseDetailDialog = ({ purchaseId, onOpenChange }) => {
 
         {p && (
           <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => printDocument({ element: slipRef.current, docId: p.purchaseNumber, docType: 'Purchase', clientName: p.vendorName })}>
+                <Printer className="mr-1 h-4 w-4" /> Print
+              </Button>
+              <Button variant="outline" title={p.vendorPhone ? `Send to ${p.vendorPhone}` : 'No vendor phone saved: WhatsApp will ask for a contact'} onClick={() => sendPurchaseOnWhatsApp(p)}>
+                <MessageCircle className="mr-1 h-4 w-4" /> WhatsApp
+              </Button>
+            </div>
             {open && (
               <div className="flex flex-wrap gap-2">
                 {(p.status === 'draft' || p.status === 'ordered') && (
@@ -203,6 +214,8 @@ export const PurchaseDetailDialog = ({ purchaseId, onOpenChange }) => {
               <Line label="Created by" value={p.createdBy || '-'} />
               {p.notes && <Line label="Notes" value={<span className="whitespace-pre-line">{p.notes}</span>} />}
             </Section>
+
+            <PurchasePrintSlip p={p} slipRef={slipRef} />
           </div>
         )}
       </DialogContent>
