@@ -13,7 +13,7 @@ export const BrandLogo = ({
   iconOnly = false,
   centered = false,
 }) => {
-  const { clientKey = 'demo', brandName = 'Flexivia', logoUrl } = clientConfig || {};
+  const { brandName = 'Flexivia' } = clientConfig || {};
 
   const [logoVersion, setLogoVersion] = useState(() => {
     try {
@@ -23,7 +23,9 @@ export const BrandLogo = ({
     }
   });
 
-  const defaultLogo = logoUrl && !logoUrl.includes('demo_logo') ? logoUrl : plexiviaLogo;
+  // Dashboard logo uploaded from Business Settings; falls back to the bundled Surokkha logo
+  const defaultLogo = '/uploads/assets/dashboard-logo.webp';
+  const fallbackLogo = src ? plexiviaLogo : surokkhaLogoDark;
   const rawUrl = src || defaultLogo;
 
   // Resolves image paths and appends version query string for real-time asset invalidation
@@ -40,7 +42,7 @@ export const BrandLogo = ({
   };
 
   const primaryUrl = resolveLogoUrl(rawUrl, logoVersion);
-  const [currentSrc, setCurrentSrc] = useState(primaryUrl || plexiviaLogo);
+  const [currentSrc, setCurrentSrc] = useState(primaryUrl || fallbackLogo);
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -59,30 +61,20 @@ export const BrandLogo = ({
   }, []);
 
   useEffect(() => {
-    setCurrentSrc(primaryUrl || plexiviaLogo);
+    setCurrentSrc(primaryUrl || fallbackLogo);
     setImageError(false);
   }, [primaryUrl]);
 
   // Handles image load failures and falls back gracefully
   const handleImageError = () => {
-    if (currentSrc !== plexiviaLogo) {
-      setCurrentSrc(plexiviaLogo);
+    if (currentSrc !== fallbackLogo) {
+      setCurrentSrc(fallbackLogo);
     } else {
       setImageError(true);
     }
   };
 
   const isCentered = centered || className.includes('mx-auto') || className.includes('justify-center');
-
-  // Default dashboard branding: bundled Surokkha logo (light text, for dark sidebar/header)
-  if (!src) {
-    const imgCls = `w-full h-full object-contain ${isCentered ? 'object-center mx-auto' : 'object-left'} ${imgClassName}`;
-    return (
-      <div className={`relative flex items-center shrink-0 ${isCentered ? 'justify-center' : 'justify-start'} ${className}`}>
-        <img src={surokkhaLogoDark} alt={alt || brandName} className={imgCls} />
-      </div>
-    );
-  }
 
   if (currentSrc && !imageError) {
     return (

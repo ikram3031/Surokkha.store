@@ -31,7 +31,7 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import plexiviaLogo from '@/assets/plexivia.png';
 import { apiClient } from '@/lib/api-client';
 // Bundled so the login card never depends on the API serving the logo: maroon on light, cream on dark
-import surokkhaLogoDark from '@/assets/surokkha_logo_dark.png';
+import { BrandLogo } from '@/components/BrandLogo';
 
 const isEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
 
@@ -293,7 +293,7 @@ const LoginPage = () => {
             {/* Brand */}
             <div className="relative px-6 pb-1 pt-6 text-center">
               <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
-              <img src={surokkhaLogoDark} alt="Surokkha" className="mx-auto h-9 w-auto object-contain" />
+              <BrandLogo alt="Surokkha" className="mx-auto h-9 w-[135px]" centered />
               <p className="mt-2 text-xs text-muted-foreground">
                 {t('auth.sign_in_desc', 'Enter your credentials to manage your store.')}
               </p>

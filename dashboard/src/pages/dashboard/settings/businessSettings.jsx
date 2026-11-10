@@ -4,8 +4,13 @@ import { Building2, Save } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import SlotCard from '@/components/cms/SlotCard';
 import { apiClient } from '@/lib/api-client';
+import { useCmsAssets } from '@/lib/use-cms-assets';
 import { toast } from 'sonner';
+
+const DASHBOARD_LOGO_SLOT = { key: 'dashboard-logo', label: 'Dashboard Logo', filename: 'dashboard-logo.webp', recommendedSize: '500x200' };
 
 const API = '/api/v1/settings/business';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -13,6 +18,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Owner-only business settings: where new incoming webmail is forwarded
 const BusinessSettingsPage = () => {
   const queryClient = useQueryClient();
+  const cms = useCmsAssets();
   const [forwardEmails, setForwardEmails] = useState('');
 
   const { data, isLoading } = useQuery({
@@ -53,6 +59,34 @@ const BusinessSettingsPage = () => {
         </h2>
         <p className="text-sm text-muted-foreground mt-1">Settings only the store Owner can change.</p>
       </div>
+
+      <Card className="border-border/60 shadow-xs">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-semibold">Dashboard Logo</CardTitle>
+          <CardDescription className="text-xs">
+            Shown in the dashboard sidebar, header and login page. Leave empty to use the default Surokkha logo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="max-w-sm">
+            <SlotCard slot={DASHBOARD_LOGO_SLOT} currentAsset={cms.findAsset(DASHBOARD_LOGO_SLOT)} cms={cms} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <ConfirmDeleteDialog
+        open={Boolean(cms.deleteTarget)}
+        onOpenChange={(open) => { if (!open) cms.setDeleteTarget(null); }}
+        title="Delete the dashboard logo?"
+        description="The dashboard will go back to the default Surokkha logo."
+        isDeleting={cms.deleteMutation.isPending}
+        onConfirm={() => {
+          if (!cms.deleteTarget) return;
+          cms.deleteMutation.mutate(cms.deleteTarget, {
+            onSuccess: () => window.dispatchEvent(new CustomEvent('brand-logo-updated', { detail: { timestamp: Date.now() } })),
+          });
+        }}
+      />
 
       <form onSubmit={handleSave} className="space-y-6">
         <Card className="border-border/60 shadow-xs">

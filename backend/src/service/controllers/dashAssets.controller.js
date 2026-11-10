@@ -269,7 +269,8 @@ export const uploadSlotAsset = async (req, res, next) => {
       }
     } else if (!isIco && !isSvg) {
       if (isLogo) {
-        targetFilename = "logo.webp";
+        // Dashboard logo is kept apart from the storefront logo so each can change on its own
+        targetFilename = req.body.slotKey === "dashboard-logo" ? "dashboard-logo.webp" : "logo.webp";
       } else if (!cleanBaseName.toLowerCase().endsWith(".webp")) {
         cleanBaseName = cleanBaseName.replace(/\.[^/.]+$/, "");
         targetFilename = `${cleanBaseName}.webp`;
