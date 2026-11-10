@@ -132,7 +132,15 @@ export function ProductPage({ slug }: { slug: string }) {
           )}
         </div>
 
-        {product.desc && <p className="mt-4 leading-relaxed text-muted-foreground">{product.desc}</p>}
+        {product.descHtml ? (
+          <div
+            className="mt-4 leading-relaxed text-muted-foreground [&_li]:mb-1 [&_p:empty]:hidden [&_p]:mb-2 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
+            // Admin-authored HTML from our own StoreWeb API, same as longDescription below
+            dangerouslySetInnerHTML={{ __html: product.descHtml }}
+          />
+        ) : (
+          product.desc && <p className="mt-4 leading-relaxed text-muted-foreground">{product.desc}</p>
+        )}
 
         <div className="mt-6 flex items-center gap-4">
           <div className="inline-flex items-center rounded-full border border-border">

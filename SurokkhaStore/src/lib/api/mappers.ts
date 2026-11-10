@@ -76,6 +76,24 @@ function categorySlugsOf(raw: ApiProduct): string[] {
   return [...new Set(list.map((c) => c.slug).filter((s): s is string => !!s))]
 }
 
+const HTML_TAG_RX = /<\/?[a-z][\s\S]*?>/i
+
+// The dashboard's rich-text editor saves the short description as HTML; cards, dialogs and search need plain text
+function htmlToText(html: string): string {
+  if (!HTML_TAG_RX.test(html)) return html
+  return html
+    .replace(/<(br|\/p|\/li|\/div)\s*\/?>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 /** Maps a loosely-typed API product into the shape the UI (ProductCard, cart, filters) expects. */
 export function mapApiProduct(raw: ApiProduct): Product {
   const categoryName = categoryNameOf(raw.category) || raw.categoryName || ''
@@ -86,11 +104,14 @@ export function mapApiProduct(raw: ApiProduct): Product {
   const regular = Number(raw.price || raw.regularPrice || 0)
   const offer = Number(raw.offerPrice) > 0 && Number(raw.offerPrice) < regular ? Number(raw.offerPrice) : 0
 
+  const rawDesc = raw.description || raw.shortDescription || ''
+
   return {
     id: toNumericId(raw),
     cat,
     name: raw.name || raw.title || 'Product',
-    desc: raw.description || raw.shortDescription || '',
+    desc: htmlToText(rawDesc),
+    descHtml: HTML_TAG_RX.test(rawDesc) ? rawDesc : undefined,
     // Same precedence as SurokkhaShop: active offer price, else list price
     price: offer || (raw.price ?? raw.salePrice ?? raw.regularPrice ?? 0),
     slug: raw.slug,

@@ -28,6 +28,8 @@ export interface Product {
   itemType?: 'product' | 'item'
   did?: string
   gallery?: string[]
+  /** Short description as admin-authored HTML (the product page renders it; `desc` is its plain text). */
+  descHtml?: string
   longDescription?: string
   regularPrice?: number
   inStock?: boolean
