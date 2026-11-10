@@ -974,11 +974,20 @@ const settingsRoutes = [
       </RoleGuard>
     ),
   },
+  { path: 'site-config', element: <Navigate to="shop" replace /> },
   {
-    path: 'site-config',
+    path: 'site-config/shop',
     element: (
       <RoleGuard menuKey="settings.business">
-        <SiteConfigPage />
+        <SiteConfigPage key="shop" site="shop" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'site-config/store',
+    element: (
+      <RoleGuard menuKey="settings.business">
+        <SiteConfigPage key="store" site="store" />
       </RoleGuard>
     ),
   },

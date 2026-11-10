@@ -44,6 +44,7 @@ export const SettingsSidebar = (props) => {
   const showUsers = can("users")
 
   const groups = [
+    { id: "site-config", icon: SlidersHorizontal, label: t("nav.site_config", "Site Config"), subs: sitePair("/settings/site-config") },
     { id: "cms", icon: ImageIcon, label: t("nav.cms_content", "CMS Content"), subs: sitePair("/settings/cms-content") },
     { id: "slider", icon: GalleryHorizontal, label: t("nav.hero_slider", "Hero Slider"), subs: sitePair("/settings/cms-content/slider") },
     { id: "seo", icon: Search, label: t("nav.general_seo", "General & SEO"), subs: sitePair("/settings/seo") },
@@ -88,7 +89,7 @@ export const SettingsSidebar = (props) => {
             <>
               <NavLabel>{t("nav.business", "Business")}</NavLabel>
               <NavLink to="/settings/business" active={pathname.startsWith("/settings/business")} icon={Building2} label={t("nav.business_settings", "Business Settings")} />
-              <NavLink to="/settings/site-config" active={pathname.startsWith("/settings/site-config")} icon={SlidersHorizontal} label={t("nav.site_config", "Site Config")} />
+              {renderGroup("site-config")}
             </>
           )}
 

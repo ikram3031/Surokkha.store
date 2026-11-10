@@ -147,7 +147,10 @@ const Section = ({ title, path, value, baseValue, onChange, defaultOpen = false 
 };
 
 // Owner-only: edit config.json values from the dashboard; anything not changed here comes from config.json
-const SiteConfigPage = () => {
+const SITE_LABELS = { shop: 'Shop', store: 'Store' };
+
+const SiteConfigPage = ({ site = 'shop' }) => {
+  const siteLabel = SITE_LABELS[site] || 'Shop';
   const queryClient = useQueryClient();
   const [values, setValues] = useState(null);
   const [resetOpen, setResetOpen] = useState(false);
@@ -175,13 +178,15 @@ const SiteConfigPage = () => {
 
   const handleChange = (path, value) => setValues((prev) => setAt(prev || {}, path, value));
 
-  const { generalBase, sections } = useMemo(() => {
-    const entries = Object.entries(base);
+  // This site's own block (sites.shop / sites.store) first; everything else is shared by both sites
+  const { siteBase, generalBase, sections } = useMemo(() => {
+    const entries = Object.entries(base).filter(([key]) => key !== 'sites');
     return {
+      siteBase: base.sites?.[site] || null,
       generalBase: Object.fromEntries(entries.filter(([, v]) => !isPlainObject(v))),
       sections: entries.filter(([, v]) => isPlainObject(v)),
     };
-  }, [base]);
+  }, [base, site]);
 
   const totalChanges = values ? countChanges(values, base) : 0;
   const savedChanges = data ? countChanges(deepMerge(base, data.overrides || {}), base) : 0;
@@ -193,7 +198,7 @@ const SiteConfigPage = () => {
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <SlidersHorizontal className="h-7 w-7 text-primary" />
-            Site Config
+            Site Config — {siteLabel}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
             Change the values from config.json. Anything you don&apos;t change here keeps using config.json.
@@ -223,7 +228,14 @@ const SiteConfigPage = () => {
           <p className="text-xs text-muted-foreground">
             {totalChanges} value{totalChanges === 1 ? '' : 's'} differ from config.json{dirty ? ' (unsaved changes)' : ''}.
           </p>
-          <Section title="General" path={[]} value={values} baseValue={generalBase} onChange={handleChange} defaultOpen />
+          {siteBase && (
+            <Section title={`${siteLabel} Site`} path={['sites', site]} value={values.sites?.[site]} baseValue={siteBase} onChange={handleChange} defaultOpen />
+          )}
+          <div className="pt-2">
+            <h3 className="text-sm font-semibold text-foreground">Shared by Shop and Store</h3>
+            <p className="text-xs text-muted-foreground">These values are the same on both sites; changing them here changes both.</p>
+          </div>
+          <Section title="General" path={[]} value={values} baseValue={generalBase} onChange={handleChange} />
           {sections.map(([key, sectionBase]) => (
             <Section key={key} title={humanize(key)} path={[key]} value={values[key]} baseValue={sectionBase} onChange={handleChange} />
           ))}
