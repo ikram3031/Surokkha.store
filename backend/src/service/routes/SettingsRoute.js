@@ -28,6 +28,8 @@ import {
   resetTemplateSettings,
 } from "../controllers/SettingsController.js";
 import { authenticateToken, authorizeRoles, OWNER_ONLY, MARKETERS } from "../../common/middlewares/auth.middleware.js";
+import { limitPublicReads } from "../../common/middlewares/rateLimit.middleware.js";
+import { requireAllowedOrigin } from "../../common/middlewares/allowedOrigin.middleware.js";
 import { getSiteConfig, updateSiteConfig, getPublicSiteConfig } from "../controllers/SiteConfigController.js";
 import { getPlexiviaSyncSettings, updatePlexiviaSyncSettings } from "../controllers/PlexiviaSyncController.js";
 import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
@@ -44,7 +46,7 @@ const settingsRouter = Router();
 
 // Public sanitized Meta Pixel configuration for customer storefront
 settingsRouter.get("/public/meta-pixel", getPublicMetaPixelConfig);
-settingsRouter.get("/public/site-config", getPublicSiteConfig);
+settingsRouter.get("/public/site-config", limitPublicReads, requireAllowedOrigin, getPublicSiteConfig);
 
 // Public sanitized TikTok Pixel configuration for customer storefront
 settingsRouter.get("/public/tiktok-pixel", getPublicTikTokPixelConfig);
