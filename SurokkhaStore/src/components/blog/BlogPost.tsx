@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChevronDown, Link2, MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { ChevronDown, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { blogPath } from '@/lib/router'
 import { POSTS, type BlogPost as Post } from '@/components/blog/blogData'
 import { BlogLayout } from '@/components/blog/BlogLayout'
 import { BlogCover, BlogCta, BlogLink, PostCard } from '@/components/blog/blogUi'
+import { BlogShare } from '@/components/blog/BlogShare'
 import { blogUrl, bnNum, DEFAULT_FILTERS, formatDate, getCategory, getPost, getTag, processBody, relatedPosts, whatsappLink } from '@/components/blog/blogUtils'
-
-const shareBtn = 'grid h-10 w-10 place-items-center rounded-full border border-border bg-card transition-colors hover:border-primary hover:text-primary'
 
 export function BlogPost({ slug }: { slug: string }) {
   const post = getPost(slug)
@@ -42,7 +41,6 @@ function Article({ post }: { post: Post }) {
   const articleRef = useRef<HTMLElement>(null)
   const barRef = useRef<HTMLDivElement>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
   const fbKey = `blog-feedback-${post.slug}`
   const [feedback, setFeedback] = useState<'yes' | 'no' | null>(() => {
     try {
@@ -100,17 +98,6 @@ function Article({ post }: { post: Post }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [toc])
 
-  const copyLink = async () => {
-    try {
-      if (navigator.share && window.matchMedia('(pointer:coarse)').matches) await navigator.share({ title: post.title, url })
-      else await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1800)
-    } catch {
-      /* the reader cancelled the share sheet */
-    }
-  }
-
   const vote = (v: 'yes' | 'no') => {
     setFeedback(v)
     try {
@@ -148,17 +135,7 @@ function Article({ post }: { post: Post }) {
               <time dateTime={post.date}>{formatDate(post.date)}</time> · {bnNum(post.read)} মিনিট পড়া
             </p>
           </div>
-          <div className="flex items-center gap-2" role="group" aria-label="শেয়ার করুন">
-            <a className={shareBtn} aria-label="WhatsApp-এ শেয়ার" target="_blank" rel="noopener noreferrer" href={`https://wa.me/?text=${encodeURIComponent(`${post.title} ${url}`)}`}>
-              <MessageCircle className="h-5 w-5" />
-            </a>
-            <a className={shareBtn} aria-label="Facebook-এ শেয়ার" target="_blank" rel="noopener noreferrer" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}>
-              <span className="font-display text-lg font-extrabold leading-none">f</span>
-            </a>
-            <button type="button" className={shareBtn} aria-label={copied ? 'কপি হয়েছে' : 'লিংক কপি করুন'} onClick={copyLink}>
-              {copied ? <Check className="h-5 w-5" /> : <Link2 className="h-5 w-5" />}
-            </button>
-          </div>
+          <BlogShare title={post.title} url={url} className="w-full sm:w-auto" />
         </div>
 
         <figure className="mt-6 overflow-hidden rounded-3xl shadow-sm">
@@ -225,6 +202,11 @@ function Article({ post }: { post: Post }) {
               )}
             </p>
           )}
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
+          <p className="font-semibold">লেখাটি বন্ধুদের সাথে শেয়ার করুন</p>
+          <BlogShare title={post.title} url={url} />
         </div>
 
         <div className="mt-10">

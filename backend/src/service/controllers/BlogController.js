@@ -29,6 +29,14 @@ const httpError = (statusCode, message) => Object.assign(new Error(message), { s
 const fail = (res, err, fallback) => {
   if (err?.statusCode) return res.status(err.statusCode).json({ status: "error", message: err.message });
   logger.error({ err }, fallback);
+  if (err?.code === 11000) {
+    const field = Object.keys(err.keyValue || err.keyPattern || {})[0] || "value";
+    return res.status(409).json({ status: "error", message: `${fallback}: this ${field} is already in use` });
+  }
+  if (err?.name === "ValidationError" || err?.name === "CastError") {
+    const detail = err.name === "ValidationError" ? Object.values(err.errors || {}).map((e) => e.message).join(", ") : `invalid ${err.path}`;
+    return res.status(400).json({ status: "error", message: `${fallback}: ${detail || err.message}` });
+  }
   return res.status(500).json({ status: "error", message: fallback });
 };
 

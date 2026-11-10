@@ -39,16 +39,12 @@ export const cleanTagNames = (tags) => {
 export const syncTags = async (names) => {
   const list = cleanTagNames(names);
   if (!list.length) return;
-  await BlogTagModel.bulkWrite(
-    list.map((name) => ({
-      updateOne: {
-        filter: { name },
-        update: { $setOnInsert: { name, slug: slugify(name) || name } },
-        upsert: true,
-      },
-    })),
-    { ordered: false }
-  );
+  const existing = new Set((await BlogTagModel.find({ name: { $in: list } }).select("name").lean()).map((tag) => tag.name));
+  // New tags get a unique slug, so "safe sex" and "safe-sex" can both exist without a duplicate-key error
+  for (const name of list.filter((tagName) => !existing.has(tagName))) {
+    const slug = await ensureUniqueSlug(BlogTagModel, slugify(name) || name);
+    await BlogTagModel.updateOne({ name }, { $setOnInsert: { name, slug } }, { upsert: true });
+  }
 };
 
 // Resolves category ids, slugs or dids into ObjectIds, skipping unknown values

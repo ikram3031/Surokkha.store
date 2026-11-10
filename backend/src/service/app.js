@@ -47,7 +47,8 @@ export const createServiceApp = async () => {
   app.use(cors(corsOptions));
   app.options(/(.*)/, cors(corsOptions));
 
-  app.use(express.json());
+  // Blog post bodies (rich HTML) can pass the 100kb default
+  app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: false }));
 
   // Feeds the dashboard's live System Logs page
