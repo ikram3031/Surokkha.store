@@ -19,6 +19,8 @@ import {
   updateImapSettings,
   getCloudflareSettings,
   updateCloudflareSettings,
+  getBusinessSettings,
+  updateBusinessSettings,
   getTemplateSettings,
   updateTemplateSettings,
   previewTemplateHtml,
@@ -155,6 +157,10 @@ settingsRouter.put(
   authorizeRoles(OWNER_ONLY),
   updateImapSettings
 );
+
+// Business settings, e.g. where incoming webmail is forwarded (Owner only)
+settingsRouter.get("/business", authenticateToken, authorizeRoles(OWNER_ONLY), getBusinessSettings);
+settingsRouter.put("/business", authenticateToken, authorizeRoles(OWNER_ONLY), updateBusinessSettings);
 
 // Plexivia dashboard sync key (Owner only)
 settingsRouter.get("/plexivia-sync", authenticateToken, authorizeRoles(OWNER_ONLY), getPlexiviaSyncSettings);

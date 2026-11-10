@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
 import { env } from "../config/env.js";
@@ -7,6 +6,7 @@ import { logger } from "../config/logger.js";
 import { EmailMessageModel } from "../models/emailMessage.model.js";
 import { LogModel } from "../models/log.model.js";
 import { broadcastLiveNotification } from "../websocket.js";
+import { getSmtpTransport } from "./smtpConfig.service.js";
 
 let isSyncing = false;
 let idleClient = null;
@@ -148,59 +148,36 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
           logger.error({ wsErr }, "WebSocket broadcast error on incoming webmail");
         });
 
-        const forwardTarget = process.env.SUPPORT_FORWARD_EMAIL || process.env.ADMIN_NOTIFY_EMAIL || "";
+        const { transport: forwardTransport, config: smtp } = await getSmtpTransport();
+        const mailbox = smtp.fromEmail || smtp.user;
 
-        // Never forward our own mail or a forward target that lands back in this mailbox, or it loops forever
+        // Never forward our own mail, and never forward back into this mailbox, or it loops forever
         const ownAddresses = new Set(
-          [env.SMTP_USER, env.SMTP_FROM, env.IMAP_USER, config.supportEmail]
+          [smtp.user, smtp.fromEmail, env.SMTP_USER, env.SMTP_FROM, env.IMAP_USER]
             .filter(Boolean)
             .map((addr) => String(addr).toLowerCase().trim())
         );
-        const targetsOwnMailbox = String(forwardTarget)
-          .split(",")
-          .some((addr) => ownAddresses.has(addr.toLowerCase().trim()));
+        // Forward targets come from the "Forward incoming mail to" field in the IMAP settings
+        const settingsDoc = await StoreSettingsModel.findOne({ key: "default" }).select("imap").lean();
+        if (settingsDoc?.imap?.user) ownAddresses.add(String(settingsDoc.imap.user).toLowerCase().trim());
+        const forwardTarget = [...new Set(settingsDoc?.imap?.forwardEmails || [])]
+          .map((addr) => String(addr).toLowerCase().trim())
+          .filter((addr) => addr && !ownAddresses.has(addr));
         const isOwnOrForwarded =
-          ownAddresses.has(from.address) ||
+          ownAddresses.has(String(from.address || "").toLowerCase()) ||
           /^\s*\[fwd:/i.test(subject) ||
           parsed.headers?.has("x-support-forwarded");
 
-        if (targetsOwnMailbox) {
-          logger.warn({ forwardTarget }, "Support email forward skipped: target is this mailbox itself");
-        }
-
-        if (forwardTarget && env.SMTP_USER && !targetsOwnMailbox && !isOwnOrForwarded) {
-          const isSecure =
-            Number(env.SMTP_PORT) === 465 ||
-            String(env.SMTP_ENCRYPTION).toLowerCase() === "ssl";
-
-          const isLocalhost = env.SMTP_HOST === "127.0.0.1" || env.SMTP_HOST === "localhost";
-          const hasAuth = !isLocalhost && env.SMTP_PASSWORD && env.SMTP_PASSWORD !== "none" && env.SMTP_USER;
-
-          const transportConfig = {
-            host: env.SMTP_HOST,
-            port: Number(env.SMTP_PORT),
-            secure: isSecure,
-            tls: { rejectUnauthorized: false },
-          };
-
-          if (hasAuth) {
-            transportConfig.auth = { user: env.SMTP_USER, pass: env.SMTP_PASSWORD };
-          }
-
-          const forwardTransport = nodemailer.createTransport(transportConfig);
-
+        if (forwardTarget.length && smtp.isConfigured && !isOwnOrForwarded) {
           forwardTransport.sendMail({
-            from: {
-              name: env.SMTP_FROM_NAME || config.brandName || "Surokkha Support",
-              address: env.SMTP_FROM || env.SMTP_USER,
-            },
+            from: smtp.fromAddress,
             to: forwardTarget,
             replyTo: from.address,
             headers: { "X-Support-Forwarded": "1" },
-            subject: `[Fwd: ${config.supportEmail || "support@surokkha.store"}] ${subject}`,
+            subject: `[Fwd: ${mailbox}] ${subject}`,
             html: `
               <div style="font-family: -apple-system, sans-serif; padding: 15px; border-left: 4px solid #e11d48; background: #f8fafc; margin-bottom: 20px;">
-                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from ${config.supportEmail || "support@surokkha.store"}</strong></p>
+                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from ${mailbox}</strong></p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>From:</strong> ${from.name ? `${from.name} &lt;${from.address}&gt;` : from.address}</p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Subject:</strong> ${subject}</p>
                 <p style="margin: 0; font-size: 14px;"><strong>Date:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' })}</p>

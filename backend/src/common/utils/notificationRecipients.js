@@ -6,6 +6,19 @@ export const getNotificationRecipientEmails = async () => {
   return rows.map((row) => row.email).filter(Boolean);
 };
 
+// Admin alert targets: only the dashboard recipient list, never the sending mailbox itself.
+// The public support email is for customers to write to, so it is not an alert target.
+export const resolveAlertRecipients = async (smtpConfig = {}, extraExcluded = []) => {
+  const normalize = (addr) => String(addr || "").toLowerCase().trim();
+  const senders = new Set(
+    [smtpConfig.user, smtpConfig.fromEmail, process.env.SMTP_USER, process.env.SMTP_FROM, ...extraExcluded]
+      .map(normalize)
+      .filter(Boolean)
+  );
+  const set = new Set((await getNotificationRecipientEmails()).map(normalize));
+  return [...set].filter((addr) => addr && !senders.has(addr));
+};
+
 // Returns the set of user ids (as strings) currently on the recipient list
 export const getNotificationRecipientUserIds = async () => {
   const rows = await EmailNotificationRecipientModel.find({ userId: { $ne: null } }).select("userId").lean();

@@ -684,6 +684,63 @@ export const updateImapSettings = async (req, res, next) => {
   }
 };
 
+// Business settings: where new incoming webmail is forwarded (Owner only)
+export const getBusinessSettings = async (req, res, next) => {
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap").lean();
+    return res.json({
+      status: "success",
+      data: {
+        webmailForwardEmails: Array.isArray(doc?.imap?.forwardEmails) ? doc.imap.forwardEmails : [],
+        webmailMailbox: doc?.imap?.isEnabled ? doc.imap.user || "" : process.env.IMAP_USER || process.env.SMTP_USER || "",
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateBusinessSettings = async (req, res, next) => {
+  try {
+    const raw = req.body?.webmailForwardEmails ?? [];
+    const forwardList = [
+      ...new Set(
+        (Array.isArray(raw) ? raw : String(raw).split(","))
+          .map((addr) => String(addr).toLowerCase().trim())
+          .filter(Boolean)
+      ),
+    ];
+    const invalid = forwardList.filter((addr) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr));
+    if (invalid.length) {
+      return res.status(400).json({ status: "error", message: `Invalid email: ${invalid.join(", ")}` });
+    }
+
+    // Forwarding into the mailbox that is being synced (or that sends) would loop, so it is refused
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap smtp").lean();
+    const ownMailboxes = [doc?.imap?.user, doc?.smtp?.user, doc?.smtp?.senderEmail, process.env.IMAP_USER, process.env.SMTP_USER, process.env.SMTP_FROM]
+      .filter(Boolean)
+      .map((addr) => String(addr).toLowerCase().trim());
+    const looping = forwardList.filter((addr) => ownMailboxes.includes(addr));
+    if (looping.length) {
+      return res.status(400).json({ status: "error", message: `${looping.join(", ")} is the webmail mailbox itself and cannot receive forwards.` });
+    }
+
+    await StoreSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $set: { "imap.forwardEmails": forwardList, updatedBy: req.user?.userId || null } },
+      { upsert: true, setDefaultsOnInsert: true }
+    );
+
+    return res.json({
+      status: "success",
+      message: "Business settings saved.",
+      data: { webmailForwardEmails: forwardList },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Retrieves Cloudflare settings from database with fallback to tenant client config
 export const getCloudflareSettings = async (req, res, next) => {
   try {

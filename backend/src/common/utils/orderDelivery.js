@@ -1,6 +1,5 @@
-import { getNotificationRecipientEmails } from "./notificationRecipients.js";
+import { resolveAlertRecipients } from "./notificationRecipients.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
-import { EmailMessageModel } from "../models/emailMessage.model.js";
 import { getClientInvoiceHtml } from "../templates/invoices/index.js";
 import { buildOrderInvoiceEmailHtml } from "../templates/orderInvoiceEmailTemplate.js";
 import { buildAdminOrderEmailHtml } from "../templates/adminOrderEmailTemplate.js";
@@ -184,24 +183,12 @@ export const sendOrderEmailsAsynchronously = (order) => {
         String(orderId).startsWith("CO");
 
       if (!isCustomOrder) {
-        const adminRecipientsSet = new Set();
-        if (process.env.ADMIN_NOTIFY_EMAIL) {
-          adminRecipientsSet.add(process.env.ADMIN_NOTIFY_EMAIL.toLowerCase().trim());
-        }
-        if (config.supportEmail) {
-          adminRecipientsSet.add(config.supportEmail.toLowerCase().trim());
-        }
-
+        let adminRecipients = [];
         try {
-          const recipientEmails = await getNotificationRecipientEmails();
-          for (const email of recipientEmails) {
-            adminRecipientsSet.add(email.toLowerCase().trim());
-          }
+          adminRecipients = await resolveAlertRecipients(smtpConfig);
         } catch (dbErr) {
-          console.error("[Email Notification] Loading alert email recipients failed, falling back to default admins:", dbErr.message);
+          console.error("[Email Notification] Loading alert email recipients failed:", dbErr.message);
         }
-
-        const adminRecipients = Array.from(adminRecipientsSet);
         console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
 
         if (smtpConfig.isConfigured && adminRecipients.length > 0) {
@@ -229,48 +216,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
         }
       }
 
-      try {
-        const existingOrderEmail = await EmailMessageModel.findOne({
-          subject: { $regex: `#${orderId}`, $options: "i" },
-          folder: "INBOX",
-        });
-
-        if (!existingOrderEmail) {
-          const customerSenderAddress = isValidCustomerEmail(customerEmail)
-            ? customerEmail
-            : `orders@${config.domain || "surokkha.store"}`;
-
-          await EmailMessageModel.create({
-            messageId: `order-${orderId}-${Date.now()}@${config.domain || "surokkha.store"}`,
-            folder: "INBOX",
-            from: {
-              name: customerName || "Online Store Customer",
-              address: customerSenderAddress,
-            },
-            to: [{
-              name: brandDisplayName,
-              address: fromEmail,
-            }],
-            replyTo: [{
-              name: customerName || "Online Store Customer",
-              address: customerSenderAddress,
-            }],
-            subject: `🛒 New Order Placed: #${orderId} (${customerName}) - ৳${totalAmount}`,
-            snippet: `New order #${orderId} placed by ${customerName}. Total: ৳${totalAmount}. Phone: ${customerPhone}. Payment: ${paymentMethod}`,
-            bodyHtml: invoiceHtml,
-            bodyText: `New order #${orderId} placed by ${customerName}.\nTotal: ৳${totalAmount}\nPhone: ${customerPhone}\nAddress: ${billingAddress?.fullAddress || ""}\nPayment: ${paymentMethod}`,
-            date: new Date(),
-            isRead: false,
-            // Order notifications land unstarred; starring is left to the user
-            isStarred: false,
-            active: true,
-          });
-          console.log(`[Email Notification] Successfully ingested order #${orderId} into Dashboard Webmail INBOX.`);
-        }
-      } catch (inboxErr) {
-        console.error(`[Email Notification] Failed to ingest order #${orderId} into Dashboard INBOX:`, inboxErr.message);
-      }
-
+      // The webmail inbox only mirrors what IMAP actually receives, so orders are not written into it here
     } catch (globalErr) {
       console.error("[Email Notification] Unexpected error in async email handler:", globalErr.message);
     }

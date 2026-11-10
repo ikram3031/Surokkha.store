@@ -38,6 +38,7 @@ import PathaoCourierPage from './pages/dashboard/settings/pathaoCourier';
 import CouriersSettingsPage from './pages/dashboard/settings/couriers';
 import RedxCourierSettingsPage from './pages/dashboard/settings/redxCourier';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
+import BusinessSettingsPage from './pages/dashboard/settings/businessSettings';
 import R2StorageSettingsPage from './pages/dashboard/settings/r2StorageSettings';
 import PlexiviaSyncSettingsPage from './pages/dashboard/settings/plexiviaSyncSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
@@ -961,6 +962,14 @@ const settingsRoutes = [
     element: (
       <RoleGuard menuKey="settings.smtp">
         <SmtpSettingsPage key="store" site="store" />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'business',
+    element: (
+      <RoleGuard menuKey="settings.business">
+        <BusinessSettingsPage />
       </RoleGuard>
     ),
   },

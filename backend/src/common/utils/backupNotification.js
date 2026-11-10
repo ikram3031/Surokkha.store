@@ -1,5 +1,5 @@
 import { LogModel } from "../models/log.model.js";
-import { getNotificationRecipientEmails } from "./notificationRecipients.js";
+import { resolveAlertRecipients } from "./notificationRecipients.js";
 import { getSmtpTransport } from "../services/smtpConfig.service.js";
 import { broadcastLiveNotification } from "../websocket.js";
 import { config } from "../config/index.js";
@@ -18,19 +18,14 @@ const TRIGGER_LABELS = {
 const formatWhen = (date, timeZone) =>
   new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: timeZone || "Asia/Dhaka" }).format(date);
 
-// Everyone who should hear about a backup: the alert-recipient list plus the store admin addresses
-const resolveRecipients = async () => {
-  const set = new Set();
-  if (env.ADMIN_NOTIFY_EMAIL || process.env.ADMIN_NOTIFY_EMAIL) {
-    set.add(String(env.ADMIN_NOTIFY_EMAIL || process.env.ADMIN_NOTIFY_EMAIL).toLowerCase().trim());
-  }
-  if (config.supportEmail) set.add(String(config.supportEmail).toLowerCase().trim());
+// Everyone who should hear about a backup: the dashboard alert-recipient list, minus the sender
+const resolveRecipients = async (smtp) => {
   try {
-    (await getNotificationRecipientEmails()).forEach((email) => set.add(String(email).toLowerCase().trim()));
+    return await resolveAlertRecipients(smtp);
   } catch (error) {
     logger.warn({ err: error.message }, "[BackupNotification] Could not load alert recipients");
+    return [];
   }
-  return [...set].filter(Boolean);
 };
 
 const buildEmailHtml = ({ ok, brand, rows, errorMessage }) => {
@@ -90,7 +85,7 @@ export const notifyBackupResult = async (result) => {
       logger.warn("[BackupNotification] SMTP is not configured; backup email skipped");
       return;
     }
-    const recipients = await resolveRecipients();
+    const recipients = await resolveRecipients(smtp);
     if (!recipients.length) {
       logger.warn("[BackupNotification] No recipients for the backup email");
       return;

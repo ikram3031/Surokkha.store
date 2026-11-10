@@ -2,6 +2,7 @@ import * as React from "react"
 import { useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Link2,
+  Building2,
   GalleryHorizontal,
   HardDrive,
   Image as ImageIcon,
@@ -82,6 +83,13 @@ export const SettingsSidebar = (props) => {
     <WorkspaceSidebar title={t("settings.workspace", "Settings")} {...props}>
       {showSettings && (
         <>
+          {can("settings.business") && (
+            <>
+              <NavLabel>{t("nav.business", "Business")}</NavLabel>
+              <NavLink to="/settings/business" active={pathname.startsWith("/settings/business")} icon={Building2} label={t("nav.business_settings", "Business Settings")} />
+            </>
+          )}
+
           <NavLabel>{t("nav.store_content", "Store & Content")}</NavLabel>
           {can("settings.cms-content") && renderGroup("cms")}
           {can("settings.cms-content") && renderGroup("slider")}

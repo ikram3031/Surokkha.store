@@ -59,6 +59,36 @@ export const getSmtpConfig = async () => {
   };
 };
 
+const addressOf = (entry) => {
+  const raw = typeof entry === "object" && entry ? entry.address : String(entry || "");
+  const match = String(raw).match(/<([^>]+)>/);
+  return (match ? match[1] : raw).toLowerCase().trim();
+};
+
+const toList = (field) =>
+  (Array.isArray(field) ? field : field ? [field] : []).flatMap((entry) =>
+    typeof entry === "string" ? entry.split(",").map((part) => part.trim()).filter(Boolean) : [entry]
+  );
+
+// Outgoing guard: the mailbox that sends a message is never one of its recipients, so it never mails itself
+export const guardSelfSend = (transport, senderAddresses) => {
+  const senders = new Set(senderAddresses.map(addressOf).filter(Boolean));
+  const send = transport.sendMail.bind(transport);
+  transport.sendMail = (options = {}, callback) => {
+    const filtered = { ...options };
+    for (const field of ["to", "cc", "bcc"]) {
+      if (filtered[field]) filtered[field] = toList(filtered[field]).filter((entry) => !senders.has(addressOf(entry)));
+    }
+    if (![filtered.to, filtered.cc, filtered.bcc].some((list) => list?.length)) {
+      const skipped = { skipped: true, accepted: [], rejected: [], reason: "only recipient was the sending mailbox" };
+      if (callback) return callback(null, skipped);
+      return Promise.resolve(skipped);
+    }
+    return send(filtered, callback);
+  };
+  return transport;
+};
+
 // Creates and returns a Nodemailer transport instance with current active SMTP settings
 export const getSmtpTransport = async () => {
   const config = await getSmtpConfig();
@@ -85,7 +115,7 @@ export const getSmtpTransport = async () => {
     };
   }
 
-  const transport = nodemailer.createTransport(transportConfig);
+  const transport = guardSelfSend(nodemailer.createTransport(transportConfig), [config.user, config.fromEmail]);
 
   return {
     transport,

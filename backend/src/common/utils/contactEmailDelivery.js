@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
 import { config } from "../config/index.js";
-import { getNotificationRecipientEmails } from "./notificationRecipients.js";
+import { resolveAlertRecipients } from "./notificationRecipients.js";
 import { getSmtpTransport } from "../services/smtpConfig.service.js";
 
 const lightThemeHtml = (title, body) => `
@@ -125,22 +125,12 @@ export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject
 
     const fromName = smtpConfig.fromName || config.brandName || "Surokkha";
     const fromAddress = smtpConfig.fromAddress;
-    const recipientsSet = new Set();
-    const defaultNotifyEmail = process.env.ADMIN_NOTIFY_EMAIL || config.supportEmail || config.contact?.supportEmail;
-    if (defaultNotifyEmail) {
-      recipientsSet.add(defaultNotifyEmail.toLowerCase().trim());
-    }
-
+    let recipients = [];
     try {
-      const recipientEmails = await getNotificationRecipientEmails();
-      for (const email of recipientEmails) {
-        recipientsSet.add(email.toLowerCase().trim());
-      }
+      recipients = await resolveAlertRecipients(smtpConfig);
     } catch (dbErr) {
       console.error("[Contact Email] Loading alert email recipients failed:", dbErr.message);
     }
-
-    const recipients = Array.from(recipientsSet);
     if (recipients.length === 0) return;
 
     const forwardSubject = `📩 [New Inquiry for ${config.brandName || "Store"}] ${subject || "Contact Form"}`;

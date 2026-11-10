@@ -280,6 +280,11 @@ const storeSettingsSchema = new Schema(
         type: Boolean,
         default: false,
       },
+      // Where new incoming webmail is forwarded; empty means no forwarding
+      forwardEmails: {
+        type: [{ type: String, trim: true, lowercase: true }],
+        default: [],
+      },
     },
     // Couriers switched on by the Owner (keys from common/config/couriers.js)
     enabledCouriers: {
