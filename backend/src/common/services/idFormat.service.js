@@ -24,11 +24,15 @@ export const ID_TOKENS = [
   { token: "{MX}", label: "Month in hex (1-9, A, B, C)" },
   { token: "{DD}", label: "Day (01-31)" },
   { token: "{SEQ:3}", label: "Serial (digits)" },
-  { token: "{SEQX:3}", label: "Serial in hex (0-9, A-F)" },
+  { token: "{SEQX:3}", label: "Number in hex (0-9, A-F)" },
+  { token: "{SER:1}", label: "Serial (1-9), steps up when the number runs out" },
+  { token: "{SERX:1}", label: "Serial in hex (1-F), steps up when the number runs out" },
 ];
 
 const SEQ_RE = /\{SEQ(X)?(?::(\d{1,2}))?\}/i;
-const TOKEN_RE = /\{(YYYY|YY|MM|MX|DD|SEQX?(?::\d{1,2})?)\}/gi;
+// Optional serial in front of the number: when the number is full (999, FFF) it restarts at 1 and the serial steps up
+const SER_RE = /\{SER(X)?(?::(\d{1,2}))?\}/i;
+const TOKEN_RE = /\{(YYYY|YY|MM|MX|DD|SEQX?(?::\d{1,2})?|SERX?(?::\d{1,2})?)\}/gi;
 const MAX_FORMAT_LENGTH = 40;
 
 // Checks a format: allowed characters only, known tokens, exactly one serial
@@ -42,7 +46,13 @@ export const validateIdFormat = (format) => {
   const serials = value.match(/\{SEQX?(?::\d{1,2})?\}/gi) || [];
   if (serials.length !== 1) return "Format needs exactly one {SEQ} or {SEQX}";
   const width = Number(SEQ_RE.exec(value)[2] || 1);
-  if (width < 1 || width > 10) return "Serial width must be 1-10";
+  if (width < 1 || width > 10) return "Number digits must be 1-10";
+  const serialTokens = value.match(/\{SERX?(?::\d{1,2})?\}/gi) || [];
+  if (serialTokens.length > 1) return "Format can have only one {SER} or {SERX}";
+  if (serialTokens.length) {
+    const serWidth = Number(SER_RE.exec(value)[2] || 1);
+    if (serWidth < 1 || serWidth > 2) return "Serial digits must be 1 or 2";
+  }
   return null;
 };
 
@@ -70,11 +80,32 @@ const renderScope = (format, date) => {
   });
 };
 
-const renderSerial = (scope, seq) =>
-  scope.replace(SEQ_RE, (_, hex, width) => {
-    const text = hex ? seq.toString(16).toUpperCase() : String(seq);
-    return text.padStart(Number(width || 1), "0");
-  });
+const readToken = (re, text) => {
+  const m = re.exec(text);
+  return m ? { hex: Boolean(m[1]), width: Number(m[2] || 1) } : null;
+};
+const capacity = ({ hex, width }) => (hex ? 16 : 10) ** width - 1;
+const pad = (value, hex, width) => (hex ? value.toString(16).toUpperCase() : String(value)).padStart(Number(width || 1), "0");
+
+// Splits the running count into serial + number. Without {SER} the number just keeps growing.
+// With it, 3 digits run 001-999, then the serial steps 1 -> 2 and the number restarts at 001.
+export const splitCount = (format, count) => {
+  const ser = readToken(SER_RE, format);
+  if (!ser) return { serial: null, number: count };
+  const perSerial = capacity(readToken(SEQ_RE, format) || { hex: false, width: 1 });
+  const serial = Math.floor((count - 1) / perSerial) + 1;
+  if (serial > capacity(ser)) {
+    throw Object.assign(new Error("ID range is full: add a serial digit or a number digit to the format"), { statusCode: 409 });
+  }
+  return { serial, number: ((count - 1) % perSerial) + 1 };
+};
+
+const renderSerial = (scope, count) => {
+  const { serial, number } = splitCount(scope, count);
+  return scope
+    .replace(SEQ_RE, (_, hex, width) => pad(number, hex, width))
+    .replace(SER_RE, (_, hex, width) => pad(serial, hex, width));
+};
 
 // Preview of the ID a format makes, for the settings page
 export const previewIdFormat = (format, seq = 1, date = new Date()) =>

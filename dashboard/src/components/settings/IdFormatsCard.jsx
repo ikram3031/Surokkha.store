@@ -10,7 +10,23 @@ import { toast } from 'sonner';
 const API = '/api/v1/settings/business';
 
 const SEQ_RE = /\{SEQ(X)?(?::(\d{1,2}))?\}/i;
-const TOKEN_RE = /\{(YYYY|YY|MM|MX|DD|SEQX?(?::\d{1,2})?)\}/gi;
+const SER_RE = /\{SER(X)?(?::(\d{1,2}))?\}/i;
+const TOKEN_RE = /\{(YYYY|YY|MM|MX|DD|SEQX?(?::\d{1,2})?|SERX?(?::\d{1,2})?)\}/gi;
+
+const readToken = (re, text) => {
+  const m = re.exec(text || '');
+  return m ? { hex: Boolean(m[1]), width: Number(m[2] || 1) } : null;
+};
+const capacity = ({ hex, width }) => (hex ? 16 : 10) ** width - 1;
+const pad = (value, hex, width) => (hex ? value.toString(16).toUpperCase() : String(value)).padStart(Number(width || 1), '0');
+
+// Same split as the backend: with a serial, the number runs to its last value (999 / FFF) then the serial steps up
+const splitCount = (format, count) => {
+  const ser = readToken(SER_RE, format);
+  if (!ser) return { serial: null, number: count };
+  const perSerial = capacity(readToken(SEQ_RE, format) || { hex: false, width: 1 });
+  return { serial: Math.floor((count - 1) / perSerial) + 1, number: ((count - 1) % perSerial) + 1 };
+};
 
 // Same rules the backend applies, so mistakes show before saving
 const validateFormat = (format) => {
@@ -21,11 +37,17 @@ const validateFormat = (format) => {
   if (/[{}]/.test(literal)) return 'Unknown token';
   if (!/^[A-Za-z0-9\-_/.]*$/.test(literal)) return 'Only letters, digits and - _ / .';
   if ((value.match(/\{SEQX?(?::\d{1,2})?\}/gi) || []).length !== 1) return 'Needs exactly one {SEQ} or {SEQX}';
+  const seqWidth = readToken(SEQ_RE, value).width;
+  if (seqWidth < 1 || seqWidth > 10) return 'Number digits must be 1-10';
+  const serials = value.match(/\{SERX?(?::\d{1,2})?\}/gi) || [];
+  if (serials.length > 1) return 'Only one {SER} or {SERX}';
+  if (serials.length && ![1, 2].includes(readToken(SER_RE, value).width)) return 'Serial digits must be 1 or 2';
   return null;
 };
 
 // Preview in Bangladesh time, matching the backend
-const previewFormat = (format, seq = 1) => {
+const previewFormat = (format, count = 1) => {
+  const { serial, number } = splitCount(format, count);
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dhaka', year: 'numeric', month: '2-digit', day: '2-digit' })
       .formatToParts(new Date())
@@ -40,7 +62,71 @@ const previewFormat = (format, seq = 1) => {
       MX: Number(parts.month).toString(16).toUpperCase(),
       DD: parts.day,
     })[t.toUpperCase()])
-    .replace(SEQ_RE, (_, hex, width) => (hex ? seq.toString(16).toUpperCase() : String(seq)).padStart(Number(width || 1), '0'));
+    .replace(SEQ_RE, (_, hex, width) => pad(number, hex, width))
+    .replace(SER_RE, (_, hex, width) => pad(serial ?? 1, hex, width));
+};
+
+const selectClass =
+  'h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground cursor-pointer disabled:cursor-not-allowed disabled:opacity-50';
+
+// Digit / type pickers that rewrite the {SEQ} and {SER} tokens, so nobody has to type ":3" by hand
+const SerialControls = ({ value, onChange }) => {
+  const seq = readToken(SEQ_RE, value);
+  const ser = readToken(SER_RE, value);
+  if (!seq) return null;
+
+  const setSeq = (next) => onChange(value.replace(SEQ_RE, `{SEQ${next.hex ? 'X' : ''}:${next.width}}`));
+  const setSer = (next) => {
+    if (!next) return onChange(value.replace(SER_RE, ''));
+    const token = `{SER${next.hex ? 'X' : ''}:${next.width}}`;
+    // A new serial goes right in front of the number
+    return onChange(ser ? value.replace(SER_RE, token) : value.replace(SEQ_RE, (m) => token + m));
+  };
+
+  const lastNumber = pad(capacity(seq), seq.hex, seq.width);
+  return (
+    <div className="flex flex-wrap items-end gap-3 rounded-md bg-muted/30 px-2.5 py-2">
+      <label className="space-y-1">
+        <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Number</span>
+        <select className={selectClass} value={seq.hex ? 'hex' : 'dec'} onChange={(e) => setSeq({ ...seq, hex: e.target.value === 'hex' })}>
+          <option value="dec">Decimal</option>
+          <option value="hex">Hex</option>
+        </select>
+      </label>
+      <label className="space-y-1">
+        <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Digits</span>
+        <select className={selectClass} value={seq.width} onChange={(e) => setSeq({ ...seq, width: Number(e.target.value) })}>
+          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </label>
+      <label className="space-y-1">
+        <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Serial</span>
+        <select
+          className={selectClass}
+          value={ser ? (ser.hex ? 'hex' : 'dec') : 'none'}
+          onChange={(e) => setSer(e.target.value === 'none' ? null : { hex: e.target.value === 'hex', width: ser?.width || 1 })}
+        >
+          <option value="none">None</option>
+          <option value="dec">Decimal (1-9)</option>
+          <option value="hex">Hex (1-F)</option>
+        </select>
+      </label>
+      <label className="space-y-1">
+        <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Serial digits</span>
+        <select className={selectClass} disabled={!ser} value={ser?.width || 1} onChange={(e) => setSer({ ...ser, width: Number(e.target.value) })}>
+          <option value={1}>1</option>
+          <option value={2}>2</option>
+        </select>
+      </label>
+      <span className="pb-1.5 text-[11px] text-muted-foreground">
+        {ser ? (
+          <>After <span className="font-mono">{previewFormat(value, capacity(seq))}</span> comes <span className="font-mono text-foreground">{previewFormat(value, capacity(seq) + 1)}</span></>
+        ) : (
+          <>After {lastNumber} the number grows a digit</>
+        )}
+      </span>
+    </div>
+  );
 };
 
 // One row: format input, token buttons that insert at the cursor, and a preview of the next IDs
@@ -79,6 +165,7 @@ const FormatRow = ({ type, value, tokens, onChange }) => {
         onChange={(e) => onChange(e.target.value)}
         className="font-mono"
       />
+      {!error && <SerialControls value={value} onChange={onChange} />}
       <div className="flex flex-wrap gap-1.5">
         {tokens.map((t) => (
           <button
@@ -135,7 +222,8 @@ const IdFormatsCard = ({ data, isLoading }) => {
         <CardDescription className="text-xs">
           How new IDs are numbered. Click a token to add it. The serial restarts whenever the date part changes
           (daily with {'{DD}'}, monthly with {'{MM}'}/{'{MX}'}, yearly with {'{YY}'}). {'{MX}'} writes the month in hex
-          (Oct = A, Nov = B, Dec = C) and {'{SEQX}'} counts the serial in hex (… 9, A … F, 10). Leave a field empty to keep the
+          (Oct = A, Nov = B, Dec = C) and {'{SEQX}'} counts the number in hex. Pick the number's digits below; add a serial
+          ({'{SER}'} 1-9 or {'{SERX}'} 1-F) and when the number is full (999) the serial steps up and the number restarts at 001. Leave a field empty to keep the
           built-in numbering. Existing IDs never change.
         </CardDescription>
       </CardHeader>
