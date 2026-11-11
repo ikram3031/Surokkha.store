@@ -19,12 +19,51 @@ import { LogModel } from "../../common/models/log.model.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 import { sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 import { canManageRole } from "../../common/middlewares/auth.middleware.js";
+import { grantedGroupsFor, sanitizeAccessGroups } from "../../common/config/accessGroups.js";
 import {
   getNotificationRecipientUserIds,
   setUserEmailNotification,
   syncUserNotificationRecipient,
   removeUserNotificationRecipient,
 } from "../../common/utils/notificationRecipients.js";
+
+// Plain YYYY-MM-DD is the start of that Bangladesh day
+const parseAccessDate = (value) => {
+  const text = String(value);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(text) ? new Date(`${text}T00:00:00.000+06:00`) : new Date(text);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+/**
+ * Menu grants (extraMenus) and the Accounts data date are Owner-only. The date is stamped
+ * the first time a user gets Accounts access, so they only see records from that day on.
+ */
+const accessUpdatesFor = (actorRole, payload, current = {}) => {
+  if ((payload.extraMenus !== undefined || payload.dataAccessFrom !== undefined) && actorRole !== "Owner") {
+    return { status: 403, error: "Only the Owner can change menu access" };
+  }
+  const updates = {};
+  if (payload.extraMenus !== undefined) {
+    if (!Array.isArray(payload.extraMenus)) return { status: 400, error: "extraMenus must be an array" };
+    updates.extraMenus = sanitizeAccessGroups(payload.extraMenus);
+  }
+  if (payload.dataAccessFrom !== undefined) {
+    if (payload.dataAccessFrom === null || payload.dataAccessFrom === "") {
+      updates.dataAccessFrom = null;
+    } else {
+      const date = parseAccessDate(payload.dataAccessFrom);
+      if (!date) return { status: 400, error: "dataAccessFrom must be a valid date" };
+      updates.dataAccessFrom = date;
+    }
+  }
+  const role = payload.role ?? current.role;
+  const extraMenus = updates.extraMenus ?? current.extraMenus ?? [];
+  const getsAccounts = grantedGroupsFor({ role, extraMenus }).has("accounts");
+  if (getsAccounts && !current.dataAccessFrom && updates.dataAccessFrom === undefined) {
+    updates.dataAccessFrom = new Date();
+  }
+  return { updates };
+};
 
 // Dispatches user invitation email via active SMTP configuration
 export const sendInvitationEmail = async ({ user, inviteUrl }) => {
@@ -99,6 +138,8 @@ export const createUser = async (req, res, next) => {
 
     const email = payload.email.toLowerCase().trim();
     const existing = await UserModel.findOne({ email });
+    const access = accessUpdatesFor(creatorRole, payload, existing && !existing.isActive ? existing : {});
+    if (access.error) return res.status(access.status).json({ status: "error", message: access.error });
     if (existing) {
       if (!canManageRole(creatorRole, existing.role)) {
         return res.status(403).json({ status: "error", message: "Insufficient permissions to modify this user" });
@@ -123,6 +164,7 @@ export const createUser = async (req, res, next) => {
       existing.inviteToken = inviteToken;
       existing.inviteTokenExpiresAt = inviteTokenExpiresAt;
       if (passwordHash) existing.passwordHash = passwordHash;
+      Object.assign(existing, access.updates);
       await existing.save();
       user = existing;
     } else {
@@ -136,6 +178,7 @@ export const createUser = async (req, res, next) => {
         inviteTokenExpiresAt,
         isActive: Boolean(passwordHash),
         createdBy: mongoose.isValidObjectId(req.user?.userId) ? req.user.userId : null,
+        ...access.updates,
       });
     }
 
@@ -276,6 +319,10 @@ export const updateUser = async (req, res, next) => {
     if (payload.phone !== undefined) updates.phone = payload.phone.trim();
     if (payload.role !== undefined) updates.role = payload.role;
     if (payload.isActive !== undefined) updates.isActive = Boolean(payload.isActive);
+
+    const access = accessUpdatesFor(updaterRole, payload, user);
+    if (access.error) return res.status(access.status).json({ status: "error", message: access.error });
+    Object.assign(updates, access.updates);
 
     if (payload.password) {
       updates.passwordHash = await hashPassword(payload.password);

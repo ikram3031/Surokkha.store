@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { PaymentModel } from "../../common/models/payment.model.js";
+import { accountsDataFloor } from "../../common/middlewares/auth.middleware.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { logger } from "../../common/config/logger.js";
 import { LogModel } from "../../common/models/log.model.js";
@@ -171,6 +172,10 @@ export const listPayments = async (req, res, next) => {
       }
     }
 
+    // Users given Accounts access later only see records added since that day
+    const floor = accountsDataFloor(req.user);
+    if (floor) filter.$and = [...(filter.$and || []), { createdAt: { $gte: floor } }];
+
     const total = await PaymentModel.countDocuments(filter);
     const payments = await PaymentModel.find(filter)
       .populate("orderId")
@@ -220,6 +225,8 @@ export const getPaymentById = async (req, res, next) => {
     const { paymentId, id } = req.params;
     const targetId = paymentId || id;
     const query = Types.ObjectId.isValid(targetId) ? { _id: targetId } : { did: targetId };
+    const floor = accountsDataFloor(req.user);
+    if (floor) query.createdAt = { $gte: floor };
 
     const payment = await PaymentModel.findOne(query).populate("orderId").lean();
     if (!payment) {

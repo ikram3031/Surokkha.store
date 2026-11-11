@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Mail, KeyRound, Pencil } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Mail, KeyRound, Pencil, ShieldCheck } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
@@ -32,6 +32,7 @@ import { useAuth } from '@/lib/auth-context';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { ResetPasswordDialog } from '@/components/dashboard/reset-password-dialog';
 import { EditUserDialog } from '@/components/dashboard/edit-user-dialog';
+import { UserAccessDialog } from '@/components/dashboard/user-access-dialog';
 import { formatDateTime } from '@/utils/dateHelper';
 
 // Mirrors the backend hierarchy: Owner manages anyone, Admin only roles below Admin
@@ -70,6 +71,7 @@ export function SystemUsersTable({
   const [resendingInvite, setResendingInvite] = useState(null);
   const [resetPasswordTarget, setResetPasswordTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
+  const [accessTarget, setAccessTarget] = useState(null);
   const { user: currentUser } = useAuth();
 
   const handleToggleStatus = async (id, currentStatus) => {
@@ -142,6 +144,8 @@ export function SystemUsersTable({
         return <Badge variant="default">{role}</Badge>;
       case 'Manager':
         return <Badge variant="secondary">{role}</Badge>;
+      case 'Accountant':
+        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25">{role}</Badge>;
       case 'Marketing Expert':
         return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25">{role}</Badge>;
       default:
@@ -306,6 +310,12 @@ export function SystemUsersTable({
                         <Pencil className="h-4 w-4 mr-2 text-primary" />
                         Edit User
                       </DropdownMenuItem>
+                      {currentUser?.role === 'Owner' && !['Owner', 'Admin'].includes(user.role) && (
+                        <DropdownMenuItem onClick={() => setAccessTarget(user)} className="cursor-pointer font-medium">
+                          <ShieldCheck className="h-4 w-4 mr-2 text-primary" />
+                          Menu Access
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onClick={() => setResetPasswordTarget(user)}
                         className="cursor-pointer font-medium"
@@ -355,6 +365,12 @@ export function SystemUsersTable({
         onOpenChange={(open) => !open && setEditTarget(null)}
         user={editTarget}
         currentUser={currentUser}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['system-users'] })}
+      />
+      <UserAccessDialog
+        open={!!accessTarget}
+        onOpenChange={(open) => !open && setAccessTarget(null)}
+        user={accessTarget}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['system-users'] })}
       />
       <ResetPasswordDialog

@@ -4,7 +4,7 @@ import { generateDid } from "../utils/generateDid.js";
 const { models } = mongoose;
 
 // Roles that can be assigned; "Marketing-Expert" stays valid only for accounts not yet migrated
-export const USER_ROLES = ["Owner", "Admin", "Manager", "Marketing Expert", "Investor"];
+export const USER_ROLES = ["Owner", "Admin", "Manager", "Marketing Expert", "Investor", "Accountant"];
 
 const userSchema = new Schema(
   {
@@ -52,6 +52,10 @@ const userSchema = new Schema(
     twoFactorSecret: { type: String, select: false },
     twoFactorEnabled: { type: Boolean, default: true },
     role: { type: String, required: true, enum: [...USER_ROLES, "Marketing-Expert"], default: "Marketing Expert" },
+    // Main menus granted on top of the role (keys from common/config/accessGroups.js); only the Owner edits these
+    extraMenus: { type: [String], default: [] },
+    // Accounts data before this day stays hidden from this user; set when Accounts access is first given
+    dataAccessFrom: { type: Date, default: null },
     inviteToken: { type: String, select: false },
     inviteTokenExpiresAt: { type: Date, select: false },
     assets: {

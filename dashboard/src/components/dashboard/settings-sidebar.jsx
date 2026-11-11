@@ -36,8 +36,7 @@ export const SettingsSidebar = (props) => {
   const { pathname } = useLocation()
   const { user } = useAuth()
   const { state, setOpen, isMobile, setOpenMobile } = useSidebar()
-  const role = user?.role
-  const can = (key) => hasMenuAccess(role, key)
+  const can = (key) => hasMenuAccess(user, key)
 
   const showSettings = can("settings")
   const showTemplates = clientConfig?.features?.templates !== false && can("settings.templates")

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { BillingModel } from "../../common/models/billing.model.js";
+import { accountsDataFloor } from "../../common/middlewares/auth.middleware.js";
 import { BillTypeModel } from "../../common/models/billType.model.js";
 import { logger } from "../../common/config/logger.js";
 import { normalizeAttachments } from "../../common/utils/accountAttachments.js";
@@ -201,6 +202,10 @@ export const listBilling = async (req, res, next) => {
       }
     }
 
+    // Users given Accounts access later only see records added since that day
+    const floor = accountsDataFloor(req.user);
+    if (floor) filter.$and = [...(filter.$and || []), { createdAt: { $gte: floor } }];
+
     const total = await BillingModel.countDocuments(filter);
     const billings = await BillingModel.find(filter)
       .populate("orderId")
@@ -253,6 +258,8 @@ export const getBillingById = async (req, res, next) => {
     const { billingId, id } = req.params;
     const targetId = billingId || id;
     const query = Types.ObjectId.isValid(targetId) ? { _id: targetId } : { did: targetId };
+    const floor = accountsDataFloor(req.user);
+    if (floor) query.createdAt = { $gte: floor };
 
     const billing = await BillingModel.findOne(query)
       .populate("orderId")

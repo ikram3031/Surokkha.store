@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { UserModel } from "../models/user.model.js";
 import { MemberModel } from "../models/member.model.js";
+import { FULL_ACCESS_ROLES, grantedGroupsFor } from "../config/accessGroups.js";
 
 // Staff role groups shared by every dashboard route
 export const OWNER_ONLY = ["Owner"];
@@ -62,6 +63,8 @@ export const authenticateToken = async (req, res, next) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      extraMenus: user.extraMenus || [],
+      dataAccessFrom: user.dataAccessFrom || null,
     };
     return next();
   } catch (error) {
@@ -113,6 +116,41 @@ export const optionalAuthenticate = (req, res, next) => {
   return authenticateToken(req, fakeRes, next);
 };
 
+// What a menu grant unlocks inside its area:
+//  read     - only endpoints every staff member may read (role groups that include Investor)
+//  operator - endpoints open to any non-admin role (Manager / Marketing Expert level)
+//  admin    - everything except Owner-only endpoints
+const ADMIN_ROLES = ADMINS.map(normalizeRole);
+const levelAllows = (level, allowed) => {
+  if (allowed.length === 1 && allowed[0] === "owner") return false;
+  if (level === "admin") return true;
+  if (level === "operator") return allowed.some((role) => !ADMIN_ROLES.includes(role));
+  return allowed.includes("investor");
+};
+
+/**
+ * Tags the routes mounted after it with the dashboard menus that unlock them, e.g.
+ * accessArea({ accounts: "admin" }). A user granted one of those menus (by role default or
+ * a per-user extra) passes that area's authorizeRoles checks up to the given level.
+ */
+export const accessArea = (areas) => (req, res, next) => {
+  req.accessArea = areas;
+  return next();
+};
+
+// Clears the tag when a request falls through a router, so it never carries into the next one
+export const clearAccessArea = (req, res, next) => {
+  req.accessArea = null;
+  return next();
+};
+
+const hasAreaGrant = (req, allowed) => {
+  const areas = req.accessArea;
+  if (!areas) return false;
+  const granted = grantedGroupsFor(req.user);
+  return Object.entries(areas).some(([group, level]) => granted.has(group) && levelAllows(level, allowed));
+};
+
 // Accepts role names or role groups, e.g. authorizeRoles(ADMINS) or authorizeRoles("Owner")
 export const authorizeRoles = (...allowedRoles) => {
   const normalizedAllowedRoles = allowedRoles.flat().map(normalizeRole);
@@ -122,10 +160,16 @@ export const authorizeRoles = (...allowedRoles) => {
       return res.status(401).json({ status: "error", message: "Authentication required" });
     }
 
-    if (!normalizedAllowedRoles.includes(normalizeRole(req.user.role))) {
-      return res.status(403).json({ status: "error", message: "Forbidden" });
-    }
+    if (normalizedAllowedRoles.includes(normalizeRole(req.user.role))) return next();
+    if (hasAreaGrant(req, normalizedAllowedRoles)) return next();
 
-    return next();
+    return res.status(403).json({ status: "error", message: "Forbidden" });
   };
+};
+
+// Earliest record date this user may see in Accounts (null = no limit, e.g. Owner/Admin)
+export const accountsDataFloor = (user) => {
+  if (!user || FULL_ACCESS_ROLES.includes(user.role) || !user.dataAccessFrom) return null;
+  const floor = new Date(user.dataAccessFrom);
+  return Number.isNaN(floor.getTime()) ? null : floor;
 };

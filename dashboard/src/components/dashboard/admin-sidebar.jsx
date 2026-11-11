@@ -140,7 +140,6 @@ export const AdminSidebar = ({ ...props }) => {
     }
   }
 
-  const userRole = user?.role
 
   // Evaluates menu visibility based on tenant feature flags and role access
   const isAllowed = (menuKey) => {
@@ -154,7 +153,7 @@ export const AdminSidebar = ({ ...props }) => {
     if ((menuKey === "orders.custom" || menuKey === "orders.custom-new") && !features?.customOrders) return false
     if (menuKey === "cpanel" && (clientConfig?.modules?.cpanelAccess === false || features?.cpanelAccess === false)) return false
 
-    return hasMenuAccess(userRole, menuKey)
+    return hasMenuAccess(user, menuKey)
   }
 
   return (

@@ -218,7 +218,7 @@ export const AppSidebar = ({ ...props }) => {
     if (menuKey === "templates" && features?.templates === false) return false
     if ((menuKey === "items" || menuKey.startsWith("items.")) && features?.items === false) return false
 
-    return hasMenuAccess(userRole, menuKey)
+    return hasMenuAccess(user, menuKey)
   }
 
   const showOverview = isAllowed("overview")

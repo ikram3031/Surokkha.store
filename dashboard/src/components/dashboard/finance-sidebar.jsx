@@ -12,8 +12,7 @@ export const FinanceSidebar = (props) => {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const { user } = useAuth()
-  const role = user?.role
-  const can = (key) => hasMenuAccess(role, key)
+  const can = (key) => hasMenuAccess(user, key)
 
   const paymentMethodsActive =
     pathname === "/finance/payments/methods" ||

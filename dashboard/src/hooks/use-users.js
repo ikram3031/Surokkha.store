@@ -26,6 +26,8 @@ const fetchSystemUsers = async (params) => {
       role: u.role || 'Admin',
       status: u.isActive !== false ? 'Active' : 'Inactive',
       receiveEmailNotifications: u.receiveEmailNotifications === true,
+      extraMenus: Array.isArray(u.extraMenus) ? u.extraMenus : [],
+      dataAccessFrom: u.dataAccessFrom || null,
       lastLogin: u.updatedAt || u.createdAt || new Date().toISOString(),
       avatar: u.avatar || undefined,
     }));

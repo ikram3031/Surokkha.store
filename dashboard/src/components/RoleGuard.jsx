@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { hasMenuAccess } from '@/lib/rbac';
+import { Navigate } from 'react-router-dom';
+import { getDefaultRedirect, hasMenuAccess } from '@/lib/rbac';
 import NotFound from '@/components/NotFound';
 
 import { clientConfig } from '@/clientConfig';
@@ -38,10 +39,12 @@ const RoleGuard = ({ menuKey, children }) => {
     return <NotFound />;
   }
 
-  const userRole = user?.role;
-  const isAllowed = hasMenuAccess(userRole, menuKey);
+  const isAllowed = hasMenuAccess(user, menuKey);
 
   if (!isAllowed) {
+    // Users without the Overview (e.g. Accountant) land on the first page they can open instead
+    const home = menuKey === 'overview' ? getDefaultRedirect(user) : null;
+    if (home && home !== '/dashboard') return <Navigate to={home} replace />;
     return <NotFound />;
   }
 

@@ -72,7 +72,8 @@ export function EditUserDialog({ open, onOpenChange, user, currentUser, onSucces
                 {isOwner && <SelectItem value="Admin">Admin</SelectItem>}
                 <SelectItem value="Manager">Manager</SelectItem>
                 <SelectItem value="Marketing Expert">Marketing Expert</SelectItem>
-                {!['Owner', 'Admin', 'Manager', 'Marketing Expert'].includes(user?.role) && user?.role && (
+                <SelectItem value="Accountant">Accountant</SelectItem>
+                {!['Owner', 'Admin', 'Manager', 'Marketing Expert', 'Accountant'].includes(user?.role) && user?.role && (
                   <SelectItem value={user.role}>{user.role}</SelectItem>
                 )}
               </SelectContent>

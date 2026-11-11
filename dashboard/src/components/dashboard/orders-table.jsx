@@ -73,7 +73,7 @@ export const OrdersTable = ({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const reorderAllowed = canReorder(user?.role);
+  const reorderAllowed = canReorder(user);
 
   const { data: responseData, isLoading, isError, error } = useOrders({
     search: searchQuery,

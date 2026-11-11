@@ -667,7 +667,7 @@ const OrderDetailsPage = () => {
                 buttonVariant="outline"
                 buttonClassName="h-9 text-xs bg-background shadow-sm"
               />
-              {canReorder(user?.role) && (
+              {canReorder(user) && (
                 <Button variant="outline" className="gap-1.5 shadow-sm bg-background cursor-pointer" onClick={() => navigate(reorderPath(order))}>
                   <RotateCcw className="h-4 w-4 text-muted-foreground" /> Reorder
                 </Button>

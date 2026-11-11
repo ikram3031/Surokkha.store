@@ -20,7 +20,7 @@ import { clientConfig } from '@/clientConfig';
 const DashboardPage = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const showMails = clientConfig.features?.webmail !== false && (hasMenuAccess(user?.role || 'Marketing Expert', 'webmail') || hasMenuAccess(user?.role || 'Marketing Expert', 'tools.messages'));
+  const showMails = clientConfig.features?.webmail !== false && (hasMenuAccess(user, 'webmail') || hasMenuAccess(user, 'tools.messages'));
   const [filter, setFilter] = useState(DEFAULT_RANGE_FILTER);
   const { data: stats, isLoading } = useDashboardKpi(filter);
 

@@ -12,7 +12,7 @@ export const InventorySidebar = (props) => {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const { user } = useAuth()
-  const showPurchases = hasMenuAccess(user?.role, "inventory.purchases")
+  const showPurchases = hasMenuAccess(user, "inventory.purchases")
 
   return (
     <WorkspaceSidebar title={t("inventory.workspace", "Inventory")} {...props}>

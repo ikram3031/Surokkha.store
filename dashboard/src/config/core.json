@@ -120,6 +120,15 @@
         "products",
         "products.list"
       ]
+    },
+    "Accountant": {
+      "name": "Accountant",
+      "allowedMenus": [
+        "accounts.*",
+        "tools.support",
+        "tools.messages",
+        "webmail"
+      ]
     }
   }
 }
