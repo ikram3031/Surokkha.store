@@ -3,11 +3,35 @@ import nodemailer from "nodemailer";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { decryptText } from "../utils/crypto.util.js";
 import { env } from "../config/env.js";
+import { resolveSite } from "../templates/surokkhaBrand.js";
 
-// Resolves active SMTP configuration from database with environment fallback
-export const getSmtpConfig = async () => {
-  let dbSmtp = {};
-  if (mongoose.connection.readyState === 1) {
+// Store (surokkha.store) SMTP lives in its own settings document; the shop uses "default"
+export const STORE_SMTP_KEY = "store-smtp";
+const SITE_SMTP_KEYS = { store: STORE_SMTP_KEY };
+
+// Site an order's emails belong to: its saved site, then (for older orders) the number prefix and domain
+export const siteOfOrder = (order) =>
+  order?.siteKey === "store" ? "store" : resolveSite({ orderId: order?.orderNumber, clientDomain: order?.clientDomain }).key;
+
+// A site's own SMTP, only when it is switched on and complete; otherwise the caller falls back to the shop's
+const readSiteSmtp = async (site) => {
+  const key = SITE_SMTP_KEYS[site];
+  if (!key || mongoose.connection.readyState !== 1) return null;
+  try {
+    const doc = await StoreSettingsModel.findOne({ key }).lean();
+    const smtp = doc?.smtp || {};
+    return smtp.isEnabled && smtp.host && smtp.user && smtp.password ? smtp : null;
+  } catch (err) {
+    console.warn(`[SMTP Config] Failed to fetch ${key} settings, using shop SMTP:`, err.message);
+    return null;
+  }
+};
+
+// Resolves active SMTP configuration from database with environment fallback; a site with its own SMTP uses that
+export const getSmtpConfig = async (site) => {
+  const siteSmtp = await readSiteSmtp(site);
+  let dbSmtp = siteSmtp || {};
+  if (!siteSmtp && mongoose.connection.readyState === 1) {
     try {
       const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
       dbSmtp = doc?.smtp || {};
@@ -55,7 +79,7 @@ export const getSmtpConfig = async () => {
     fromEmail,
     fromAddress: { name: fromName, address: fromEmail },
     isConfigured,
-    source: useDb ? "database" : (hasDbCredentials ? "database-fallback" : "env"),
+    source: siteSmtp ? SITE_SMTP_KEYS[site] : useDb ? "database" : (hasDbCredentials ? "database-fallback" : "env"),
   };
 };
 
@@ -89,9 +113,9 @@ export const guardSelfSend = (transport, senderAddresses) => {
   return transport;
 };
 
-// Creates and returns a Nodemailer transport instance with current active SMTP settings
-export const getSmtpTransport = async () => {
-  const config = await getSmtpConfig();
+// Creates and returns a Nodemailer transport instance with current active SMTP settings for a site ("shop" by default)
+export const getSmtpTransport = async (site) => {
+  const config = await getSmtpConfig(site);
 
   const isLocalhost = config.host === "127.0.0.1" || config.host === "localhost";
   const hasAuth = !isLocalhost && config.user && config.password;

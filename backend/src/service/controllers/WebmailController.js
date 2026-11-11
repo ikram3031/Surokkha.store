@@ -138,7 +138,7 @@ export const sendWebmailMessage = async (req, res, next) => {
       });
     }
 
-    const { transport, fromName, fromAddress } = await getSmtpTransport();
+    const { transport, fromName, fromEmail: fromAddress } = await getSmtpTransport();
 
     const toAddresses = Array.isArray(to)
       ? to.map((t) => (typeof t === "string" ? t : t.address)).filter(Boolean)

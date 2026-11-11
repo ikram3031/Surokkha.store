@@ -1,4 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
+import { nextFormattedId } from "../services/idFormat.service.js";
 
 const { models } = mongoose;
 
@@ -84,6 +85,9 @@ const PurchaseCounterModel = models.PurchaseCounter || model("PurchaseCounter", 
 
 // Purchase numbers like PO-2611-0001: year + month + serial, numbered per month
 export const nextPurchaseNumber = async (date = new Date()) => {
+  // A format set in Business Settings wins; otherwise the built-in PO-YYMM-NNNN
+  const formatted = await nextFormattedId("purchase", (id) => PurchaseModel.exists({ purchaseNumber: id }), date);
+  if (formatted) return formatted;
   const ym = `${String(date.getFullYear()).slice(-2)}${String(date.getMonth() + 1).padStart(2, "0")}`;
   const counter = await PurchaseCounterModel.findOneAndUpdate({ _id: `purchase:${ym}` }, { $inc: { seq: 1 } }, { new: true, upsert: true }).lean();
   return `PO-${ym}-${String(counter.seq).padStart(4, "0")}`;

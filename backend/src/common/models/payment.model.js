@@ -1,5 +1,6 @@
 import mongoose, { Schema, model } from "mongoose";
 import { generateDid } from "../utils/generateDid.js";
+import { nextFormattedId } from "../services/idFormat.service.js";
 
 const { models } = mongoose;
 
@@ -53,5 +54,12 @@ const paymentSchema = new Schema(
     },
   }
 );
+
+// A new payment takes its ID from the Business Settings format when one is set
+paymentSchema.pre("validate", async function () {
+  if (!this.isNew || !this.$isDefault("did")) return;
+  const id = await nextFormattedId("payment", (candidate) => this.constructor.exists({ did: candidate }));
+  if (id) this.did = id;
+});
 
 export const PaymentModel = models.Payment || model("Payment", paymentSchema);

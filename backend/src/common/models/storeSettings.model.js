@@ -563,6 +563,11 @@ const storeSettingsSchema = new Schema(
       type: Schema.Types.Mixed,
       default: () => ({}),
     },
+    // ID formats from Business Settings, e.g. { orderShop: "SH{YY}{MM}{SEQ:3}" }; empty keeps built-in numbering
+    idFormats: {
+      type: Schema.Types.Mixed,
+      default: () => ({}),
+    },
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

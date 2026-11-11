@@ -196,7 +196,8 @@ export const buildOrderDocument = async (payload, req = null) => {
   // Every new order (online, custom, in-store) starts as pending regardless of input
   const initialStatus = 'pending';
   const resolvedOrderType = isCustom ? 'custom' : isInstore ? 'instore' : 'online';
-  const resolvedSiteKey = 'shop';
+  // Store checkouts send the ST prefix; the order keeps its site so its emails go through that site's SMTP
+  const resolvedSiteKey = !isCustom && !isInstore && String(payload.orderPrefix || '').trim().toUpperCase() === 'ST' ? 'store' : 'shop';
   const resolvedDomain = payload.clientDomain || 'surokkha.shop';
   // A custom order may carry its own two-letter prefix; dashboard custom orders stay CO
   const explicitCustomPrefix = isCustom && /^[A-Z]{2}$/.test(String(payload.orderPrefix || '').trim().toUpperCase())

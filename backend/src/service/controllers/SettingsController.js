@@ -16,6 +16,7 @@ import {
   compileTransactionalEmailHtml,
 } from "../../common/templates/invoices/templateEngine.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
+import { ID_TYPES, ID_TOKENS, saveIdFormats } from "../../common/services/idFormat.service.js";
 
 // Retrieves full Meta Pixel and Conversions API settings for Dashboard administration
 export const getMetaPixelSettings = async (req, res, next) => {
@@ -687,12 +688,15 @@ export const updateImapSettings = async (req, res, next) => {
 // Business settings: where new incoming webmail is forwarded (Owner only)
 export const getBusinessSettings = async (req, res, next) => {
   try {
-    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap").lean();
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap idFormats").lean();
     return res.json({
       status: "success",
       data: {
         webmailForwardEmails: Array.isArray(doc?.imap?.forwardEmails) ? doc.imap.forwardEmails : [],
         webmailMailbox: doc?.imap?.isEnabled ? doc.imap.user || "" : process.env.IMAP_USER || process.env.SMTP_USER || "",
+        idFormats: doc?.idFormats || {},
+        idTypes: ID_TYPES,
+        idTokens: ID_TOKENS,
       },
     });
   } catch (error) {
@@ -702,6 +706,20 @@ export const getBusinessSettings = async (req, res, next) => {
 
 export const updateBusinessSettings = async (req, res, next) => {
   try {
+    // ID formats save on their own; a request without forward emails leaves forwarding as it is
+    let idFormats;
+    if (req.body?.idFormats && typeof req.body.idFormats === "object") {
+      try {
+        idFormats = await saveIdFormats(req.body.idFormats, req.user?.userId || null);
+      } catch (err) {
+        if (err.statusCode === 400) return res.status(400).json({ status: "error", message: err.message });
+        throw err;
+      }
+      if (req.body.webmailForwardEmails === undefined) {
+        return res.json({ status: "success", message: "ID formats saved.", data: { idFormats } });
+      }
+    }
+
     const raw = req.body?.webmailForwardEmails ?? [];
     const forwardList = [
       ...new Set(
@@ -734,7 +752,7 @@ export const updateBusinessSettings = async (req, res, next) => {
     return res.json({
       status: "success",
       message: "Business settings saved.",
-      data: { webmailForwardEmails: forwardList },
+      data: { webmailForwardEmails: forwardList, ...(idFormats ? { idFormats } : {}) },
     });
   } catch (error) {
     next(error);

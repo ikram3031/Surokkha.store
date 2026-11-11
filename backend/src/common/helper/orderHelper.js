@@ -1,6 +1,7 @@
 // Generic order domain utilities: validation and number generation.
 import { OrderModel } from '../models/order.model.js';
 import { config, getClientPolicy } from '../config/index.js';
+import { nextFormattedId } from '../services/idFormat.service.js';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -169,7 +170,23 @@ const buildStoreOrderNumber = async () => {
   return `${batch}ST${yy}${String(serial).padStart(2, '0')}`;
 };
 
+// Which Business Settings ID format an order uses; null for a dashboard-chosen prefix, which keeps its own numbering
+const orderIdType = (orderTypeParam, customPrefix) => {
+  const prefix = String(customPrefix || '').trim().toUpperCase();
+  if (orderTypeParam === 'custom' || orderTypeParam === 'co') return 'orderCustom';
+  if (orderTypeParam === true || orderTypeParam === 'instore' || orderTypeParam === 'is') return 'orderInstore';
+  if (prefix === 'ST') return 'orderStore';
+  if (!prefix || prefix === 'SH' || prefix === String(config.sites?.shop?.orderPrefix || '').toUpperCase()) return 'orderShop';
+  return null;
+};
+
 export const buildOrderNumber = async (orderTypeParam = false, siteOrDomain = null, customPrefix = null) => {
+  const idType = orderIdType(orderTypeParam, customPrefix);
+  if (idType) {
+    const formatted = await nextFormattedId(idType, (id) => OrderModel.exists({ orderNumber: id }));
+    if (formatted) return formatted;
+  }
+
   if (orderTypeParam === 'custom' || orderTypeParam === 'co') return buildCustomOrderNumber();
   if (String(customPrefix || '').trim().toUpperCase() === 'ST' && orderTypeParam !== 'instore' && orderTypeParam !== true) {
     return buildStoreOrderNumber();

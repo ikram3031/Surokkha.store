@@ -1,9 +1,10 @@
 import nodemailer from "nodemailer";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { encryptText, decryptText } from "../../common/utils/crypto.util.js";
+import { STORE_SMTP_KEY } from "../../common/services/smtpConfig.service.js";
 
 // Store (surokkha.store) SMTP settings: kept in their own document, separate from the shop's
-export const STORE_SMTP_KEY = "store-smtp";
+export { STORE_SMTP_KEY };
 
 // Retrieves the store's SMTP settings
 export const getStoreSmtpSettings = async (req, res, next) => {

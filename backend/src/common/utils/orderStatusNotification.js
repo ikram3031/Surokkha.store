@@ -1,6 +1,6 @@
 import { config } from "../config/index.js";
 import { PaymentModel } from "../models/payment.model.js";
-import { getSmtpTransport } from "../services/smtpConfig.service.js";
+import { getSmtpTransport, siteOfOrder } from "../services/smtpConfig.service.js";
 import { buildOrderStatusEmail, STATUS_EMAILS } from "../templates/orderStatusEmailTemplate.js";
 
 const isRealEmail = (email) => {
@@ -76,7 +76,7 @@ export const notifyOrderStatusChange = (order, previousStatus) => {
 
   setImmediate(async () => {
     try {
-      const { transport, config: smtp } = await getSmtpTransport();
+      const { transport, config: smtp } = await getSmtpTransport(siteOfOrder(raw));
       if (!smtp.isConfigured || !transport) return;
       const email = buildOrderStatusEmail({ status, order: await formatOrder(raw) });
       if (!email) return;

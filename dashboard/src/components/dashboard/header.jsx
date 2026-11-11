@@ -47,7 +47,7 @@ export const Header = () => {
           <RotateCw className={`h-4 w-4 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
         <div className="md:hidden flex items-center">
-          <BrandLogo className="w-[85px] sm:w-[110px] h-auto" />
+          <BrandLogo className="w-[85px] sm:w-[110px] h-8" />
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import mongoose, { Schema, model } from "mongoose";
 import { generateDid } from "../utils/generateDid.js";
+import { nextFormattedId } from "../services/idFormat.service.js";
 
 const { models } = mongoose;
 
@@ -70,5 +71,12 @@ const billingSchema = new Schema(
     },
   }
 );
+
+// A new bill takes its ID from the Business Settings format when one is set
+billingSchema.pre("validate", async function () {
+  if (!this.isNew || !this.$isDefault("did")) return;
+  const id = await nextFormattedId("bill", (candidate) => this.constructor.exists({ did: candidate }));
+  if (id) this.did = id;
+});
 
 export const BillingModel = models.Billing || model("Billing", billingSchema);

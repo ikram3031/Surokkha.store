@@ -60,7 +60,7 @@ export const WorkspaceSidebar = ({ title, children, ...props }) => {
           {state === "expanded" || isMobile ? (
             <>
               <div className="flex flex-col items-start gap-1 overflow-hidden">
-                <BrandLogo className="w-24 h-auto" />
+                <BrandLogo className="w-28 h-9" />
                 <span className="text-[10px] font-mono font-medium text-slate-400 tracking-wider uppercase ml-1">
                   {title} · v{pkg.version}
                 </span>

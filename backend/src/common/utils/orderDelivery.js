@@ -5,7 +5,7 @@ import { buildOrderInvoiceEmailHtml } from "../templates/orderInvoiceEmailTempla
 import { buildAdminOrderEmailHtml } from "../templates/adminOrderEmailTemplate.js";
 import { env } from "../config/env.js";
 import { config } from "../config/index.js";
-import { getSmtpTransport } from "../services/smtpConfig.service.js";
+import { getSmtpTransport, siteOfOrder } from "../services/smtpConfig.service.js";
 
 // Validates whether the given email address is deliverable rather than dummy or system-generated
 const isValidCustomerEmail = (email) => {
@@ -26,7 +26,11 @@ const isValidCustomerEmail = (email) => {
 export const sendOrderEmailsAsynchronously = (order) => {
   setImmediate(async () => {
     try {
-      const { transport: activeTransport, config: smtpConfig } = await getSmtpTransport();
+      // The customer's confirmation goes out through the order's own site SMTP (store orders use the store's);
+      // the admin notification always uses the shop's main SMTP
+      const { transport: activeTransport, config: smtpConfig } = await getSmtpTransport(siteOfOrder(order));
+      const { transport: adminTransport, config: adminSmtpConfig } = await getSmtpTransport();
+      const adminFromAddress = adminSmtpConfig.fromAddress;
 
       if (!smtpConfig.isConfigured) {
         console.warn(`[Email Notification] SMTP credentials not fully configured (host: ${smtpConfig.host}, user: ${smtpConfig.user || 'none'}). Skipping SMTP dispatch, but proceeding with Dashboard INBOX ingestion.`);
@@ -185,25 +189,25 @@ export const sendOrderEmailsAsynchronously = (order) => {
       if (!isCustomOrder) {
         let adminRecipients = [];
         try {
-          adminRecipients = await resolveAlertRecipients(smtpConfig);
+          adminRecipients = await resolveAlertRecipients(adminSmtpConfig);
         } catch (dbErr) {
           console.error("[Email Notification] Loading alert email recipients failed:", dbErr.message);
         }
         console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
 
-        if (smtpConfig.isConfigured && adminRecipients.length > 0) {
+        if (adminSmtpConfig.isConfigured && adminRecipients.length > 0) {
           try {
             const adminEmailHtml = buildAdminOrderEmailHtml({
               order: formattedOrderData,
               logoUrl: emailLogoUrl,
             });
 
-            await activeTransport.sendMail({
-              from: fromAddress,
+            await adminTransport.sendMail({
+              from: adminFromAddress,
               to: adminRecipients,
               replyTo: isValidCustomerEmail(customerEmail)
                 ? { name: customerName, address: customerEmail }
-                : { name: brandDisplayName, address: fromEmail },
+                : adminFromAddress,
               subject: `🛒 ${brandDisplayName}: New Order Received - #${orderId} (৳${totalAmount})`,
               html: adminEmailHtml || invoiceHtml
             });
@@ -211,7 +215,7 @@ export const sendOrderEmailsAsynchronously = (order) => {
           } catch (adminErr) {
             console.error(`[Email Notification] Failed sending admin email to ${adminRecipients.join(", ")}:`, adminErr.message);
           }
-        } else if (!smtpConfig.isConfigured) {
+        } else if (!adminSmtpConfig.isConfigured) {
           console.warn(`[Email Notification] SMTP is not configured. Admin notification skipped.`);
         }
       }
