@@ -93,3 +93,12 @@ Every git commit must strictly adhere to the format:
 - **Buttons**: One crimson primary per group; secondary actions use the gold outline. Add to cart is green by default and turns rose with a check icon once added.
 - **Status colors**: success / error / warning / info tokens only, always with an icon. Error is orange-red, never crimson; gold is never used in alerts.
 - **Theme**: Dark only. All storefront copy is English, sentence case.
+
+---
+
+## 9. Marketing Assets Location (STRICT)
+- **Marketing root**: `G:\My Drive\Surokkha\marketing\`
+- All marketing work (ad banners, product photos, thumbnails, ad videos, social posts, ad copy files and the scripts/HTML that generate them) must be created and edited **only** in that Drive folder.
+- **Never** create or keep marketing files inside the codebase repository (`D:\Surokkha.store`). `/marketing` is git-ignored and must never be committed.
+- One subfolder per campaign or product (e.g. `trial-pack-2\`, `smart-pack\`, `website-video\`). Shared brand logos live in `G:\My Drive\Surokkha\marketing\logos\`.
+- Meta ad copy rule: no explicit product-type words (condom, lubricant, gel, ...) in ad copy and banner text.
