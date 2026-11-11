@@ -7,6 +7,7 @@ import {
   buildProductSort,
   parsePagination,
 } from "../../common/utils/productUtils.js";
+import { applyDirectOffers } from "../../common/utils/directOffer.js";
 
 // Lists products matching filter, pagination, and sorting criteria for storefront customers
 export const listProducts = async (req, res, next) => {
@@ -34,7 +35,7 @@ export const listProducts = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: await attachBrandNames(products.map((p) => serializeProduct(p, lang, "product"))),
+      data: await applyDirectOffers(await attachBrandNames(products.map((p) => serializeProduct(p, lang, "product")))),
       pagination: {
         total: count,
         limit,
@@ -71,7 +72,7 @@ export const getSingleProduct = async (req, res, next) => {
 
     res.json({
       status: "success",
-      data: await attachBrandNames(serializeProduct(product, lang, "product")),
+      data: await applyDirectOffers(await attachBrandNames(serializeProduct(product, lang, "product"))),
     });
   } catch (err) {
     next(err);

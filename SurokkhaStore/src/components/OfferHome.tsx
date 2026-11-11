@@ -240,8 +240,8 @@ export function OfferHome() {
   const zone = deliveryZone(form.district, form.thana)
   // No delivery charge until the customer has told us where it goes (Dhaka also needs the thana for the suburb rate)
   const addressKnown = !!form.district && (form.district.trim().toLowerCase() !== 'dhaka' || !!form.thana)
-  // Any Trial Pack piece in the order makes delivery free (same rule as SurokkhaShop)
-  const trialFree = trialCount > 0
+  // A Trial Pack piece, or a product with a Direct Offer's free delivery, makes the whole order ship free
+  const trialFree = trialCount > 0 || lines.some((l) => l.product.freeDelivery)
   const shipping = count === 0 || !addressKnown || trialFree ? 0 : DELIVERY[zone]
   const total = subtotal - discount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]

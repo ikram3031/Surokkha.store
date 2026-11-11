@@ -33,6 +33,8 @@ export interface Product {
   longDescription?: string
   regularPrice?: number
   inStock?: boolean
+  /** A dashboard Direct Offer gives this product free delivery: an order containing it ships free. */
+  freeDelivery?: boolean
   /** Set on cart lines that came from a Group Offer: they are priced together by the offer's rules. */
   groupOffer?: GroupOfferRule
 }

@@ -35,6 +35,7 @@ export interface ApiProduct {
   name_bn?: string
   description_bn?: string
   stockStatus?: string
+  freeDelivery?: boolean
   bn?: { name?: string; description?: string }
   [key: string]: unknown
 }
@@ -125,6 +126,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
     // Only set when there is a real sale, so the UI can show the strike-through price and discount %
     regularPrice: offer ? regular : undefined,
     inStock: String(raw.stockStatus ?? 'instock').toLowerCase() !== 'outofstock',
+    freeDelivery: raw.freeDelivery === true || undefined,
     art: visual.art,
     c1: visual.c1,
     c2: visual.c2,

@@ -33,6 +33,8 @@ export interface OfferProduct {
   regularPrice?: number
   /** Shown in the "Or choose our combos" section */
   readyCombo?: boolean
+  /** A dashboard Direct Offer gives this product free delivery */
+  freeDelivery?: boolean
 }
 
 export const READY_COMBOS_TITLE = 'Or choose from our combos'

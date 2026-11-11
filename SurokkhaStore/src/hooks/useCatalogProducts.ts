@@ -22,6 +22,7 @@ interface ApiProduct {
   featuredImage?: string | null
   gallery?: string[]
   slug?: string
+  freeDelivery?: boolean
   categories?: ({ slug?: string; name?: string } | string)[]
   category?: { slug?: string; name?: string } | string
   variants?: { size?: string; price?: number | null; sku?: string; imageUrl?: string; stockStatus?: string }[] | null
@@ -59,6 +60,7 @@ function toOfferProduct(p: ApiProduct, entity: 'product' | 'item' = 'product'): 
     // A single-variant product (e.g. "Pack One") is just sold as itself
     variants: variants.length > 1 ? variants : undefined,
     variantLabel: variants.length > 1 ? 'Option' : undefined,
+    freeDelivery: p.freeDelivery === true || undefined,
   }
 }
 

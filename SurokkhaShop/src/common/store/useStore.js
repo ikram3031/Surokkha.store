@@ -698,6 +698,8 @@ export const useStore = create((set, get) => ({
             regularPrice: resolvedRegularPrice,
             offerPrice: resolvedOfferPrice,
             salePrice: resolvedPrice < resolvedRegularPrice ? resolvedPrice : null,
+            freeDelivery: p.freeDelivery === true,
+            directOffer: p.directOffer || null,
             stockStatus: (p.stockStatus === 'instock' || p.stockStatus === 'in_stock')
               ? 'instock'
               : (p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.isOutOfStock === true || p.availability === 'out of stock' || (p.stockAmount === 0 && p.stock === 0 && p.stockStatus !== 'instock'))
@@ -1100,6 +1102,7 @@ export const useStore = create((set, get) => ({
     }
 
     const isTrialPackFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && isTrialPackSlug(k.split(':::')[0]));
+    const isDirectOfferFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && products[k.split(':::')[0]]?.freeDelivery === true);
 
     // Dynamic Coupon Discount Calculation
     let discountAmount = 0;
@@ -1125,12 +1128,14 @@ export const useStore = create((set, get) => ({
       }
     }
 
-    if (isTrialPackFreeDelivery) deliveryFee = 0;
+    if (isTrialPackFreeDelivery || isDirectOfferFreeDelivery) deliveryFee = 0;
 
     const grandTotal = Math.max(0, subtotal + deliveryFee - discountAmount);
 
     return {
       isTrialPackFreeDelivery,
+      isDirectOfferFreeDelivery,
+      isFreeDelivery: isFreeShippingCoupon || isTrialPackFreeDelivery || isDirectOfferFreeDelivery,
       subtotal,
       deliveryFee,
       originalDeliveryFee,

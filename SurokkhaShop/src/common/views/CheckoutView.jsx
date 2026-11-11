@@ -743,7 +743,7 @@ export default function CheckoutView() {
                     <span className="text-xs font-bold block">{t('checkout.inside_dhaka')}</span>
                     <span className="text-[10px] text-zinc-500">{t('checkout.inside_dhaka_time')}</span>
                   </div>
-                  {(totals.isFreeShippingCoupon || totals.isTrialPackFreeDelivery) && (totals.originalDeliveryFee ?? totals.deliveryFee) === 70 ? (
+                  {totals.isFreeDelivery && (totals.originalDeliveryFee ?? totals.deliveryFee) === 70 ? (
                     <span className="text-xs font-mono font-bold text-emerald-700">
                       <span className="line-through text-zinc-400 font-normal text-[10px] mr-1">৳70</span>
                       {isBn ? 'ফ্রি' : 'FREE'}
@@ -763,7 +763,7 @@ export default function CheckoutView() {
                     <span className="text-xs font-bold block">{t('checkout.dhaka_suburbs')}</span>
                     <span className="text-[10px] text-zinc-500">{t('checkout.dhaka_suburbs_time')}</span>
                   </div>
-                  {(totals.isFreeShippingCoupon || totals.isTrialPackFreeDelivery) && (totals.originalDeliveryFee ?? totals.deliveryFee) === 90 ? (
+                  {totals.isFreeDelivery && (totals.originalDeliveryFee ?? totals.deliveryFee) === 90 ? (
                     <span className="text-xs font-mono font-bold text-emerald-700">
                       <span className="line-through text-zinc-400 font-normal text-[10px] mr-1">৳90</span>
                       {isBn ? 'ফ্রি' : 'FREE'}
@@ -783,7 +783,7 @@ export default function CheckoutView() {
                     <span className="text-xs font-bold block">{t('checkout.outside_dhaka')}</span>
                     <span className="text-[10px] text-zinc-500">{t('checkout.outside_dhaka_time')}</span>
                   </div>
-                  {(totals.isFreeShippingCoupon || totals.isTrialPackFreeDelivery) && (totals.originalDeliveryFee ?? totals.deliveryFee) === 120 ? (
+                  {totals.isFreeDelivery && (totals.originalDeliveryFee ?? totals.deliveryFee) === 120 ? (
                     <span className="text-xs font-mono font-bold text-emerald-700">
                       <span className="line-through text-zinc-400 font-normal text-[10px] mr-1">৳120</span>
                       {isBn ? 'ফ্রি' : 'FREE'}
@@ -1000,7 +1000,7 @@ export default function CheckoutView() {
 
                 <div className="flex justify-between text-zinc-700 font-medium">
                   <span>{t('checkout.delivery_charge', { area: activeDistrict ? activeDistrict.toUpperCase() : 'STANDARD' })}</span>
-                  {(totals.isFreeShippingCoupon || totals.isTrialPackFreeDelivery) ? (
+                  {totals.isFreeDelivery ? (
                     <span className="font-bold text-emerald-700 font-mono flex items-center gap-1">
                       <span className="line-through text-zinc-400 font-normal text-[11px]">৳{totals.originalDeliveryFee}</span>
                       <span>{isBn ? 'ফ্রি' : 'FREE'}</span>

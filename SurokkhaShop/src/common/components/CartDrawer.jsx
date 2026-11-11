@@ -485,7 +485,7 @@ export default function CartDrawer() {
                 <div className="flex justify-between text-slate-700 font-medium">
                   <span>{isBn ? 'ডেলিভারি চার্জ' : 'Delivery Charge'}</span>
                   <span>
-                    {(totals.isFreeShippingCoupon || totals.isTrialPackFreeDelivery) ? (
+                    {totals.isFreeDelivery ? (
                       <strong className="text-emerald-700 font-bold uppercase">{isBn ? 'ফ্রি' : 'FREE'}</strong>
                     ) : (
                       <span className="font-bold text-slate-900 font-mono">{formatPrice(totals.deliveryFee)}</span>

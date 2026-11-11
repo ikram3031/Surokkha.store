@@ -14,7 +14,7 @@ import {
   comboSubtotal,
   couponDiscount,
   groupOfferTotals,
-  hasTrialPack,
+  hasFreeDelivery,
   isComboOnlyCoupon,
   deliveryFee,
   isValidEmail,
@@ -221,15 +221,14 @@ export function CheckoutPage() {
     const dest = sameAsBilling ? form : ship
     const baseFee = count > 0 ? deliveryFee(dest.district, dest.thana) : 0
     const { discount: couponOff, fee: couponFee } = couponDiscount(coupon, subtotal, baseFee, lines)
-    // A Surokkha Trial Pack in the order makes delivery free (same rule as SurokkhaShop)
-    const trialFree = hasTrialPack(lines)
-    const fee = trialFree ? 0 : couponFee
+    const offerFree = hasFreeDelivery(lines)
+    const fee = offerFree ? 0 : couponFee
     const group = groupOfferTotals(lines)
     const discount = couponOff + group.discount
-    return { fee, baseFee, trialFree, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
+    return { fee, baseFee, offerFree, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
   }, [count, sameAsBilling, form, ship, coupon, subtotal, cart])
 
-  const freeShipping = coupon?.discountType === 'free_shipping' || totals.trialFree
+  const freeShipping = coupon?.discountType === 'free_shipping' || totals.offerFree
   const destDistrict = (sameAsBilling ? form.district : ship.district).trim()
 
   const applyCoupon = async () => {

@@ -2,6 +2,7 @@ import { ProductModel } from "../../common/models/product.model.js";
 import { RecentSearchModel } from "../../common/models/recentSearch.model.js";
 import { PopularSearchModel } from "../../common/models/popularSearch.model.js";
 import { serializeProduct } from "../../common/utils/productUtils.js";
+import { applyDirectOffers } from "../../common/utils/directOffer.js";
 
 // Search products
 export const searchProducts = async (req, res, next) => {
@@ -34,7 +35,7 @@ export const searchProducts = async (req, res, next) => {
       { upsert: true }
     ).catch(() => {});
 
-    return res.json({ status: "success", data: products.map(serializeProduct) });
+    return res.json({ status: "success", data: await applyDirectOffers(products.map((p) => serializeProduct(p))) });
   } catch (err) {
     next(err);
   }
