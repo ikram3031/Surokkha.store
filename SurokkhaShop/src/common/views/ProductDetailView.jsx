@@ -498,6 +498,23 @@ export default function ProductDetailView() {
             )}
           </div>
 
+          {/* Active dashboard Direct Offer on this product */}
+          {product?.directOffer && (
+            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+              <span className="font-bold text-slate-900">{product.directOffer.name}:</span>
+              {product.directOffer.discountPercent > 0 && (
+                <span className="rounded-full bg-rose-100 px-2.5 py-0.5 font-bold text-rose-700">
+                  {isBn ? `${formatNumber(product.directOffer.discountPercent)}% ছাড়` : `${product.directOffer.discountPercent}% OFF`}
+                </span>
+              )}
+              {product.directOffer.freeDelivery && (
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-bold text-emerald-700">
+                  {isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Price display with Offer Price, Regular Price and Right-aligned Savings Badge */}
           <div className="border-y border-slate-200/80 py-4">
             <div className="flex items-center justify-between gap-4">

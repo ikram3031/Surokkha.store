@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useStore, isTrialPackSlug } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductCard from '../components/ProductCard';
+import GroupOfferCard from '../components/GroupOfferCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import ProductArtwork from '../components/ProductArtwork';
 import TestimonialCarousel from '../components/TestimonialCarousel';
@@ -14,6 +15,9 @@ export default function ComboView() {
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
   const products = useStore((state) => state.products);
   const productKeys = useStore((state) => state.productKeys);
+  const groupOffers = useStore((state) => state.groupOffers);
+  const fetchGroupOffers = useStore((state) => state.fetchGroupOffers);
+  useEffect(() => { fetchGroupOffers(); }, [fetchGroupOffers]);
   const { t, isBn, formatPrice, getLocalizedName, getLocalizedTagline, getLocalizedDescription } = useTranslation();
 
   const comboList = productKeys
@@ -22,24 +26,9 @@ export default function ComboView() {
       if (!p) return false;
       const isOutOfStock = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
       if (isOutOfStock) return false;
-      if (p.itemType === 'item') {
-        const hasDiscount = Number(p.offerPrice) > 0 && Number(p.offerPrice) < Number(p.regularPrice);
-        if (!hasDiscount && !isTrialPackSlug(p.slug)) return false;
-      }
-      const cat = (p.category || '').toLowerCase();
-      const catBn = (p.category_bn || '');
-      const name = (p.name || '').toLowerCase();
-      const nameBn = (p.name_bn || '');
-      const id = (p.id || '').toLowerCase();
-      const slug = (p.slug || '').toLowerCase();
-      return (
-        cat.includes('combo') ||
-        catBn.includes('কম্বো') ||
-        name.includes('combo') ||
-        nameBn.includes('কম্বো') ||
-        id.includes('combo') ||
-        slug.includes('combo')
-      );
+      // Only dashboard offers belong here: products in an active Direct Offer, and the Trial Pack (Group Offer).
+      // A product that merely has its own discount price is not an offer.
+      return Boolean(p.directOffer) || isTrialPackSlug(p.slug);
     })
     .sort((a, b) => {
       // Products collection first, then Items
@@ -123,13 +112,24 @@ export default function ComboView() {
         </div>
       </div>
 
-      {/* 2. DYNAMIC COMBO PRODUCTS GRID */}
+      {/* 2a. GROUP OFFERS from the dashboard */}
+      {groupOffers.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14">
+          <h2 className="text-xl sm:text-2xl font-heading font-bold text-slate-900 mb-5">{isBn ? 'গ্রুপ অফার' : 'Group Offers'}</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {groupOffers.map((o) => <GroupOfferCard key={o.id} offer={o} />)}
+          </div>
+        </section>
+      )}
+
+      {/* 2b. DIRECT OFFERS: products in an active dashboard Direct Offer */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-12">
+        <h2 className="text-xl sm:text-2xl font-heading font-bold text-slate-900 mb-5">{isBn ? 'ডিরেক্ট অফার' : 'Direct Offers'}</h2>
         {/* Results Counter & Quick Reassurance */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200/80 text-xs sm:text-sm text-slate-700 font-semibold">
           <div>
             <span>{isBn ? 'প্রদর্শিত হচ্ছে:' : 'Showing:'} </span>
-            <span className="font-bold text-slate-900">{comboList.length} {isBn ? 'টি কম্বো প্যাক' : 'Combo Packs'}</span>
+            <span className="font-bold text-slate-900">{comboList.length} {isBn ? 'টি অফার প্রোডাক্ট' : 'offer products'}</span>
           </div>
           <div className="flex items-center gap-4 text-xs">
             <span className="text-emerald-600 font-bold">✓ {isBn ? '১০০% নামহীন গোপনীয় ডেলিভারি' : '100% Discreet Unmarked Parcel'}</span>

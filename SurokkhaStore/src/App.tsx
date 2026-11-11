@@ -25,6 +25,7 @@ import { Footer } from '@/components/Footer'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { OfferHome } from '@/components/OfferHome'
 import { GroupOfferPage } from '@/components/offer/GroupOfferPage'
+import { OffersPage } from '@/components/offer/OffersPage'
 import { ProductPage } from '@/components/product/ProductPage'
 import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/components/checkout/ConfirmationPage'
@@ -122,6 +123,7 @@ function AppShell() {
           </>
         )}
         {route.name === 'offer' && <OfferHome />}
+        {route.name === 'offers' && <OffersPage />}
         {route.name === 'group-offer' && <GroupOfferPage slug={route.slug} />}
         {route.name === 'category' && <CategoryPage slug={route.slug} />}
         {route.name === 'product' && <ProductPage slug={route.slug} />}

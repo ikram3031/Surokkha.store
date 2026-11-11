@@ -17,9 +17,16 @@ export const normalizeDirectOfferPayload = (body = {}) => {
   const products = [...new Set((Array.isArray(body.products) ? body.products : []).map((id) => String(id || "").trim()).filter(Boolean))];
   if (products.length === 0) errors.push("Select at least one product");
 
-  const toDate = (v) => (v ? new Date(v) : null);
-  const validFrom = toDate(body.validFrom);
-  const validTo = toDate(body.validTo);
+  // A date-only value (from the dashboard date picker) means the whole day in Bangladesh time,
+  // so an offer ending on the 15th still runs through the 15th instead of stopping at its midnight
+  const DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+  const toDate = (v, endOfDay) => {
+    if (!v) return null;
+    const s = String(v).trim();
+    return new Date(DAY_ONLY.test(s) ? `${s}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}+06:00` : s);
+  };
+  const validFrom = toDate(body.validFrom, false);
+  const validTo = toDate(body.validTo, true);
   if ((validFrom && isNaN(validFrom)) || (validTo && isNaN(validTo))) errors.push("Invalid date");
   else if (validFrom && validTo && validTo < validFrom) errors.push("End date must be after the start date");
 
@@ -62,16 +69,15 @@ const offerFor = (offers, keys) => {
   };
 };
 
-// Lowest valid sale price after a percentage discount on the regular price
-const discounted = (price, offerPrice, percent) => {
+// Direct Offer price: the percentage comes off the regular price, and the product's own offer price is
+// ignored, so a Direct Offer always shows the real price struck through. No percentage means no sale price.
+const discounted = (price, percent) => {
   const regular = Number(price) || 0;
-  if (!(regular > 0) || !(percent > 0)) return offerPrice;
-  const next = Math.round(regular * (1 - percent / 100));
-  const current = Number(offerPrice) > 0 && Number(offerPrice) < regular ? Number(offerPrice) : null;
-  return current != null && current <= next ? current : next;
+  if (!(regular > 0) || !(percent > 0)) return null;
+  return Math.round(regular * (1 - percent / 100));
 };
 
-// Applies active Direct Offers to serialized storefront products: lowers offerPrice and flags free delivery
+// Applies active Direct Offers to serialized storefront products: replaces offerPrice and flags free delivery
 export const applyDirectOffers = async (products) => {
   const list = (Array.isArray(products) ? products : [products]).filter(Boolean);
   if (list.length === 0) return products;
@@ -84,11 +90,9 @@ export const applyDirectOffers = async (products) => {
     if (!offer) continue;
     p.directOffer = offer;
     if (offer.freeDelivery) p.freeDelivery = true;
-    if (offer.discountPercent > 0) {
-      p.offerPrice = discounted(p.price, p.offerPrice, offer.discountPercent);
-      if (Array.isArray(p.variants)) {
-        p.variants = p.variants.map((v) => ({ ...v, offerPrice: discounted(v.price, v.offerPrice, offer.discountPercent) }));
-      }
+    p.offerPrice = discounted(p.price, offer.discountPercent);
+    if (Array.isArray(p.variants)) {
+      p.variants = p.variants.map((v) => ({ ...v, offerPrice: discounted(v.price, offer.discountPercent) }));
     }
   }
   return products;

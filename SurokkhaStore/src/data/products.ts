@@ -35,6 +35,8 @@ export interface Product {
   inStock?: boolean
   /** A dashboard Direct Offer gives this product free delivery: an order containing it ships free. */
   freeDelivery?: boolean
+  /** Active dashboard Direct Offer on this product (shown on the product page) */
+  directOffer?: { name: string; discountPercent: number; freeDelivery: boolean }
   /** Set on cart lines that came from a Group Offer: they are priced together by the offer's rules. */
   groupOffer?: GroupOfferRule
 }

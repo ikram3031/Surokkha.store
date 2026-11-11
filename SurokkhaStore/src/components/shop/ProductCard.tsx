@@ -25,6 +25,9 @@ export function ProductCard({ product }: { product: Product }) {
             {product.badge}
           </Badge>
         )}
+        {product.freeDelivery && !soldOut && (
+          <Badge className="absolute bottom-3 left-3 z-10 bg-emerald-600 text-white hover:bg-emerald-600">Free Delivery</Badge>
+        )}
         {soldOut && (
           <Badge className="absolute bottom-3 left-3 z-10 bg-background text-white hover:bg-background">Out of stock</Badge>
         )}

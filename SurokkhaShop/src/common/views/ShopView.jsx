@@ -25,8 +25,8 @@ export default function ShopView() {
   const [priceSel, setPriceSel] = useState([null, null]);
   const [selectedBrands, setSelectedBrands] = useState([]);
 
-  // 2. Default sorting: Newest first (latest products at top)
-  const [sortBy, setSortBy] = useState('popular');
+  // Default sorting: Products collection first, then Items (each keeps the store's most-ordered order)
+  const [sortBy, setSortBy] = useState('default');
   const [inStockOnly, setInStockOnly] = useState(false);
   const PAGE_SIZE = 8; // two rows of four on desktop
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
@@ -139,8 +139,7 @@ export default function ShopView() {
 
       return true;
     });
-    // Sorting (Default: Newest first, latest products at top)
-    // Sorting (Default: Oldest to Newest, original lineup at top, new arrivals at bottom)
+    // Sorting (Default: Products collection first, then Items)
     list.sort((a, b) => {
       const pA = products[a];
       const pB = products[b];
@@ -154,23 +153,18 @@ export default function ShopView() {
       };
       const priceA = getSellingPrice(pA);
       const priceB = getSellingPrice(pB);
-      const timeA = pA?.createdTimestamp || (pA?.createdAt ? new Date(pA.createdAt).getTime() : 0);
-      const timeB = pB?.createdTimestamp || (pB?.createdAt ? new Date(pB.createdAt).getTime() : 0);
-
       switch (sortBy) {
-        case 'oldest':
-          if (!timeA && timeB) return -1;
-          if (timeA && !timeB) return 1;
-          return (timeA || 0) - (timeB || 0); // Oldest first
-        case 'newest':
-          return (timeB || 0) - (timeA || 0); // Newest first
         case 'price-asc':
           return priceA - priceB;
         case 'price-desc':
           return priceB - priceA;
-        case 'popular':
-        default:
-          return 0; // productKeys already arrive most-ordered first
+        case 'default':
+        default: {
+          // Products first, then Items; within each, productKeys already arrive most-ordered first
+          const itemA = pA?.itemType === 'item' ? 1 : 0;
+          const itemB = pB?.itemType === 'item' ? 1 : 0;
+          return itemA - itemB;
+        }
       }
     });
 
@@ -199,7 +193,7 @@ export default function ShopView() {
     setSearchQuery('');
     setPriceSel([null, null]);
     setSelectedBrands([]);
-    setSortBy('newest');
+    setSortBy('default');
     setInStockOnly(false);
     setDisplayCount(PAGE_SIZE);
   };
@@ -287,7 +281,7 @@ export default function ShopView() {
               <span>{isBn ? 'ফিল্টার' : 'Filters'}</span>
             </button>
 
-            {/* Sort Dropdown (Default: Old to New) */}
+            {/* Sort Dropdown (Default: Products first, then Items) */}
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-slate-800 font-semibold hidden sm:inline whitespace-nowrap">
                 {isBn ? 'সাজান:' : 'Sort:'}
@@ -297,9 +291,7 @@ export default function ShopView() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="h-10 text-xs bg-white border border-rose-200 rounded-xl px-3 text-slate-800 font-semibold shadow-2xs focus:outline-none focus:border-brand-600 cursor-pointer"
               >
-                <option value="popular">{isBn ? 'জনপ্রিয়তা অনুযায়ী (ডিফল্ট)' : 'Most Popular (Default)'}</option>
-                <option value="newest">{isBn ? 'নতুন পণ্য প্রথমে' : 'Newest First'}</option>
-                <option value="oldest">{isBn ? 'আগের পণ্য প্রথমে' : 'Oldest First'}</option>
+                <option value="default">{isBn ? 'ডিফল্ট' : 'Default'}</option>
                 <option value="price-asc">{isBn ? 'দাম: কম থেকে বেশি' : 'Price: Low to High'}</option>
                 <option value="price-desc">{isBn ? 'দাম: বেশি থেকে কম' : 'Price: High to Low'}</option>
               </select>
@@ -324,19 +316,19 @@ export default function ShopView() {
                 </h3>
                 <button
                   type="button"
-                  onClick={() => setMobileFilterOpen(false)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700"
+                  onClick={handleResetFilters}
+                  className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-xs font-bold text-white cursor-pointer"
                 >
-                  {isBn ? 'প্রয়োগ' : 'Apply'}
+                  {isBn ? 'রিসেট' : 'Reset'}
                 </button>
               </div>
             )}
 
-            {/* Reset Filters CTA */}
+            {/* Reset Filters CTA (desktop; mobile has the small red Reset in the filter header) */}
             <button
               type="button"
               onClick={handleResetFilters}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 transition-colors shadow-sm cursor-pointer"
+              className="hidden lg:flex w-full items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 transition-colors shadow-sm cursor-pointer"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -470,6 +462,19 @@ export default function ShopView() {
                     </label>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Mobile: green Apply button pinned to the bottom of the filter screen */}
+            {mobileFilterOpen && (
+              <div className="lg:hidden sticky bottom-0 -mx-6 -mb-6 px-6 py-4 bg-[#FAF8F5] border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-sm font-bold text-white shadow-sm cursor-pointer"
+                >
+                  {isBn ? 'প্রয়োগ করুন' : 'Apply'}
+                </button>
               </div>
             )}
           </aside>

@@ -151,6 +151,24 @@ export const TRIAL_PACK_2_SLUG = 'surokkha-trial-pack-2';
 export const TRIAL_PACK_SLUGS = [TRIAL_PACK_SLUG, TRIAL_PACK_2_SLUG];
 
 // Checks whether a given product slug belongs to a Surokkha Trial Pack
+// Group Offer pieces live in the products map under their own keys (they are not catalog products)
+export const GROUP_PIECE_PREFIX = 'go--';
+export const isGroupPieceKey = (key) => String(key || '').startsWith(GROUP_PIECE_PREFIX);
+const groupPieceKey = (offerSlug, pieceKey) => `${GROUP_PIECE_PREFIX}${offerSlug}--${pieceKey}`;
+
+const applyGroupDiscount = (d, amount) =>
+  Math.min(amount, Math.max(0, d.discountType === 'percentage' ? Math.round((amount * Number(d.discountValue || 0)) / 100) : Number(d.discountValue || 0)));
+
+// Discount for one Group Offer's pieces total (same rules as SurokkhaStore): nothing below the minimum order amount
+export const groupOfferDiscount = (rule, amount) => {
+  if (!(amount > 0) || amount < Number(rule.minOrderAmount || 0)) return { discount: 0, eligible: false, next: undefined };
+  if (rule.pricingMode === 'fixed') return { discount: rule.fixedDiscount ? applyGroupDiscount(rule.fixedDiscount, amount) : 0, eligible: true, next: undefined };
+  const sorted = [...(rule.conditions || [])].sort((a, b) => a.minOrderAmount - b.minOrderAmount);
+  const hit = [...sorted].reverse().find((c) => amount >= c.minOrderAmount);
+  const next = sorted.find((c) => amount < c.minOrderAmount);
+  return { discount: hit ? applyGroupDiscount(hit, amount) : 0, eligible: true, next };
+};
+
 export const isTrialPackSlug = (slug) => Boolean(slug) && (TRIAL_PACK_SLUGS.includes(slug) || String(slug).startsWith('surokkha-trial-pack'));
 
 // Site-wide featured combo (announcement bar, promo banner, cart upsell): the Ultimate 3-in-1 30 pcs combo.
@@ -178,6 +196,9 @@ export const useStore = create((set, get) => ({
   selectedProductSlug: initialRoute.slug,
   currentSlide: 0,
   cart: {},
+  // Active dashboard Group Offers (shown on the Offers page)
+  groupOffers: [],
+  isLoadingGroupOffers: false,
   lastOrder: null,
   toast: { show: false, message: '' },
 
@@ -1041,6 +1062,53 @@ export const useStore = create((set, get) => ({
     get().navigateTo('checkout');
   },
 
+  fetchGroupOffers: async () => {
+    if (get().isLoadingGroupOffers) return;
+    set({ isLoadingGroupOffers: true });
+    try {
+      const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
+      const res = await fetch(`${cleanBase}/api/v1/group-offers`);
+      const json = res.ok ? await res.json() : null;
+      set({ groupOffers: Array.isArray(json?.data) ? json.data : [] });
+    } catch {
+      set({ groupOffers: [] });
+    } finally {
+      set({ isLoadingGroupOffers: false });
+    }
+  },
+
+  // Replaces this Group Offer's pieces in the cart with the picked ones ({ pieceKey: qty })
+  addGroupOfferToCart: (offer, picks) => {
+    const rule = {
+      id: offer.id, name: offer.name, slug: offer.slug,
+      minOrderAmount: Number(offer.minOrderAmount || 0), minPerProduct: Number(offer.minPerProduct || 1),
+      pricingMode: offer.pricingMode, fixedDiscount: offer.fixedDiscount, conditions: offer.conditions || [],
+    };
+    set((state) => {
+      const products = { ...state.products };
+      const cart = {};
+      for (const [k, q] of Object.entries(state.cart)) if (products[k.split(':::')[0]]?.groupOffer?.id !== offer.id) cart[k] = q;
+      for (const p of offer.products || []) {
+        const qty = Number(picks[p.id] || 0);
+        if (qty <= 0) continue;
+        const key = groupPieceKey(offer.slug, p.id);
+        const price = Number(p.unitPrice || 0);
+        products[key] = {
+          id: key, slug: key, did: p.did || key, name: p.name, name_bn: p.name,
+          itemType: 'product', entityType: 'product', type: 'product', variants: null,
+          price, regularPrice: price, offerPrice: null,
+          imageUrl: p.image || offer.imageUrl || '', image: p.image || offer.imageUrl || '',
+          category: offer.name, category_bn: offer.name, categorySlug: 'group-offer',
+          isActive: true, isOutOfStock: false, groupOffer: rule,
+        };
+        cart[key] = qty;
+      }
+      return { products, cart };
+    });
+    const isBn = get().language === 'bn';
+    get().showToast(isBn ? `${offer.name} কার্টে যোগ হয়েছে` : `${offer.name} added to cart`);
+  },
+
   setProductQty: (slug, qty) => {
     const prod = get().products[slug.split(':::')[0]];
     if (qty > 1 && isSingleQtyItem(prod)) {
@@ -1101,7 +1169,21 @@ export const useStore = create((set, get) => ({
       deliveryFee = getDeliveryCharge(activeDistrict, activeThana);
     }
 
-    const isTrialPackFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && isTrialPackSlug(k.split(':::')[0]));
+    const isTrialPackFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && (isTrialPackSlug(k.split(':::')[0]) || isTrialPackSlug(products[k.split(':::')[0]]?.groupOffer?.slug)));
+
+    // Group Offers: each group is discounted on its own pieces total
+    const groupMap = new Map();
+    Object.entries(cart).forEach(([k, q]) => {
+      const prod = products[k.split(':::')[0]];
+      if (!(q > 0) || !prod?.groupOffer) return;
+      const g = groupMap.get(prod.groupOffer.id) || { rule: prod.groupOffer, subtotal: 0 };
+      g.subtotal += Number(prod.price || 0) * q;
+      groupMap.set(prod.groupOffer.id, g);
+    });
+    const groups = [...groupMap.values()].map((g) => ({ ...g, ...groupOfferDiscount(g.rule, g.subtotal) }));
+    const groupDiscount = groups.reduce((s, g) => s + g.discount, 0);
+    // First group still under its minimum order amount (checkout should not go ahead)
+    const groupBlocked = groups.find((g) => !g.eligible) || null;
     const isDirectOfferFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && products[k.split(':::')[0]]?.freeDelivery === true);
 
     // Dynamic Coupon Discount Calculation
@@ -1130,6 +1212,8 @@ export const useStore = create((set, get) => ({
 
     if (isTrialPackFreeDelivery || isDirectOfferFreeDelivery) deliveryFee = 0;
 
+    const couponDiscount = discountAmount;
+    discountAmount = Math.min(subtotal, couponDiscount + groupDiscount);
     const grandTotal = Math.max(0, subtotal + deliveryFee - discountAmount);
 
     return {
@@ -1141,6 +1225,10 @@ export const useStore = create((set, get) => ({
       originalDeliveryFee,
       isFreeShippingCoupon,
       discountAmount,
+      couponDiscount,
+      groupDiscount,
+      groups,
+      groupBlocked,
       grandTotal,
       itemCount: totalItemCount,
       appliedCoupon: effectiveCoupon
@@ -1220,7 +1308,7 @@ export const useStore = create((set, get) => ({
             image: variant?.imageUrl || prod?.imageUrl || prod?.image || '',
             quantity: qty,
             unitPrice: variant?.price || prod?.price || (cartKey.includes('combo') ? 900 : 0),
-            size: variant?.size || variantSize || prod?.size || 'Standard Pack'
+            size: prod?.groupOffer ? `Group Offer: ${prod.groupOffer.name}` : (variant?.size || variantSize || prod?.size || 'Standard Pack')
           };
         }),
       paymentDetails: null,

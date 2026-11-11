@@ -36,6 +36,7 @@ export interface ApiProduct {
   description_bn?: string
   stockStatus?: string
   freeDelivery?: boolean
+  directOffer?: { name: string; discountPercent: number; freeDelivery: boolean } | null
   bn?: { name?: string; description?: string }
   [key: string]: unknown
 }
@@ -127,6 +128,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
     regularPrice: offer ? regular : undefined,
     inStock: String(raw.stockStatus ?? 'instock').toLowerCase() !== 'outofstock',
     freeDelivery: raw.freeDelivery === true || undefined,
+    directOffer: raw.directOffer || undefined,
     art: visual.art,
     c1: visual.c1,
     c2: visual.c2,

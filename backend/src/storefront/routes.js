@@ -9,6 +9,8 @@ import paymentsRouter from "./routes/PaymentsRoute.js";
 import categoriesRouter from "./routes/CategoryRoute.js";
 import brandRouter from "./routes/BrandRoute.js";
 import couponRouter from "./routes/CouponRoute.js";
+// Group Offers are read-only and identical for both storefronts, so SurokkhaShop reuses the storeWeb router
+import groupOfferRouter from "../storeWeb/routes/GroupOfferRoute.js";
 import searchRouter from "./routes/SearchRoute.js";
 import subscriberRouter from "./routes/SubscriberRoute.js";
 import contactRouter from "./routes/ContactRoute.js";
@@ -35,6 +37,7 @@ storefrontRouter.use("/payments", paymentsRouter);
 storefrontRouter.use("/categories", categoriesRouter);
 storefrontRouter.use("/brands", brandRouter);
 storefrontRouter.use("/coupons", couponRouter);
+storefrontRouter.use("/group-offers", groupOfferRouter);
 storefrontRouter.use("/size-charts", sizeChartRouter);
 storefrontRouter.use("/cms-content", cmsContentRouter);
 storefrontRouter.use("/subscribers", subscriberRouter);

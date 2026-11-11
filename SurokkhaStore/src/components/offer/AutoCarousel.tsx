@@ -78,13 +78,14 @@ export function AutoCarousel({
         ref={trackRef}
         onScroll={(e) => {
           const { step, count } = measure()
-          setActive(Math.min(count - 1, Math.round(e.currentTarget.scrollLeft / step)))
-        }}
-        onPointerEnter={pause}
-        onPointerLeave={resumeLater}
+          setActive(Math.min(count - 1, Math.round(e.currentTarget.scrollLeft / step)))        }}
+        // Mouse only: on Android a touch swipe fires pointercancel/pointerleave at its start
+        onPointerEnter={(e) => e.pointerType === 'mouse' && pause()}
+        onPointerLeave={(e) => e.pointerType === 'mouse' && resumeLater()}
         onTouchStart={pause}
         onTouchEnd={resumeLater}
-        className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] sm:gap-5 [&::-webkit-scrollbar]:hidden"
+        onTouchCancel={resumeLater}
+        className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-1 [scrollbar-width:none] [touch-action:pan-x_pan-y] sm:gap-5 [&::-webkit-scrollbar]:hidden"
       >
         {slides.map((slide, i) => (
           <div key={i} className={`flex shrink-0 grow-0 snap-start ${slideClassName}`}>

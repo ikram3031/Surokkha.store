@@ -60,8 +60,15 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
-        {product.badge && (
-          <Badge className="mb-0.5 w-fit bg-rose-100 text-[11px] text-rose-700 hover:bg-rose-100">{product.badge}</Badge>
+        {(product.badge || product.freeDelivery) && (
+          <div className="mb-0.5 flex flex-wrap gap-1">
+            {product.badge && (
+              <Badge className="w-fit bg-rose-100 text-[11px] text-rose-700 hover:bg-rose-100">{product.badge}</Badge>
+            )}
+            {product.freeDelivery && (
+              <Badge className="w-fit bg-emerald-100 text-[11px] text-emerald-700 hover:bg-emerald-100">Free Delivery</Badge>
+            )}
+          </div>
         )}
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug sm:text-base">{product.name}</h3>
         {product.desc && <p className="line-clamp-1 text-xs text-gray-600 sm:text-sm">{product.desc}</p>}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, getFeaturedCombo, isTrialPackSlug } from '../store/useStore';
+import { useStore, getFeaturedCombo, isTrialPackSlug, isGroupPieceKey } from '../store/useStore';
 import TrialPackOfferCard from './TrialPackOfferCard';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
@@ -32,7 +32,7 @@ export default function CartDrawer() {
     if (isCartDrawerOpen) {
       Object.keys(cart).forEach((cartKey) => {
         const baseSlug = cartKey.split(':::')[0];
-        if (!products[baseSlug]) {
+        if (!products[baseSlug] && !isGroupPieceKey(baseSlug)) {
           fetchProducts(baseSlug);
         }
       });
@@ -475,10 +475,16 @@ export default function CartDrawer() {
                   <span className="font-bold text-slate-900 font-mono">৳{totals.subtotal}</span>
                 </div>
 
-                {totals.discountAmount > 0 && (
+                {totals.groupDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-bold">
+                    <span>{isBn ? 'গ্রুপ অফার ডিসকাউন্ট' : 'Group Offer Discount'}</span>
+                    <span className="font-mono">-৳{totals.groupDiscount}</span>
+                  </div>
+                )}
+                {totals.couponDiscount > 0 && (
                   <div className="flex justify-between text-emerald-700 font-bold">
                     <span>{isBn ? 'কুপন ডিসকাউন্ট' : 'Coupon Discount'}</span>
-                    <span className="font-mono">-৳{totals.discountAmount}</span>
+                    <span className="font-mono">-৳{totals.couponDiscount}</span>
                   </div>
                 )}
 

@@ -19,7 +19,7 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
   const off = 'text-white/60 hover:text-white'
 
   const isHome = route.name === 'home' || route.name === 'home-classic'
-  const isOffer = route.name === 'offer' || route.name === 'group-offer'
+  const isOffer = route.name === 'offers' || route.name === 'offer' || route.name === 'group-offer'
 
   return (
     <nav
@@ -31,7 +31,7 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
           <Home className="h-5 w-5 text-nav-accent" />
           Home
         </button>
-        <button type="button" onClick={() => navigate('/offer')} className={`${itemBase} ${isOffer ? on : off}`}>
+        <button type="button" onClick={() => navigate('/offers')} className={`${itemBase} ${isOffer ? on : off}`}>
           <Sparkles className="h-5 w-5 text-nav-accent" />
           Offers
         </button>

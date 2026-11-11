@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useStore } from '../store/useStore';
+import { useStore, isGroupPieceKey } from '../store/useStore';
 import { DISTRICTS } from '../data/districts';
 import LocationSelect, { useThanas } from '../components/LocationSelect';
 import { trackInitiateCheckout, trackAddPaymentInfo, saveCheckoutLead } from '../utils/analytics';
@@ -138,7 +138,7 @@ export default function CheckoutView() {
   useEffect(() => {
     cartKeys.forEach((cartKey) => {
       const baseSlug = cartKey.split(':::')[0];
-      if (!products[baseSlug]) {
+      if (!products[baseSlug] && !isGroupPieceKey(baseSlug)) {
         fetchProducts(baseSlug);
       }
     });
@@ -392,6 +392,13 @@ export default function CheckoutView() {
         showToast(t('checkout.error_ship_phone_invalid'));
         return;
       }
+    }
+
+    // A Group Offer below its minimum order amount gets no discount: ask the customer to add more first
+    if (totals.groupBlocked) {
+      const need = Math.max(0, Number(totals.groupBlocked.rule.minOrderAmount || 0) - totals.groupBlocked.subtotal);
+      showToast(isBn ? `${totals.groupBlocked.rule.name}: আরও ৳${need} এর পণ্য যোগ করুন` : `${totals.groupBlocked.rule.name}: add ৳${need} more`);
+      return;
     }
 
     isSubmittingRef.current = true;
@@ -988,13 +995,19 @@ export default function CheckoutView() {
                   <span className="font-bold text-zinc-900 font-mono">৳{totals.subtotal}</span>
                 </div>
 
-                {totals.discountAmount > 0 && (
+                {totals.groupDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200">
+                    <span>{isBn ? 'গ্রুপ অফার ডিসকাউন্ট' : 'Group Offer Discount'}</span>
+                    <span className="font-mono text-emerald-800 font-bold">-৳{totals.groupDiscount}</span>
+                  </div>
+                )}
+                {totals.couponDiscount > 0 && (
                   <div className="flex justify-between text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200">
                     <span className="flex items-center gap-1.5">
                       <span>🏷️</span>
                       <span>{t('checkout.coupon_discount', 'কুপন ডিসকাউন্ট')} {appliedCoupon?.code ? `(${appliedCoupon.code})` : ''}</span>
                     </span>
-                    <span className="font-mono text-emerald-800 font-bold">-৳{totals.discountAmount}</span>
+                    <span className="font-mono text-emerald-800 font-bold">-৳{totals.couponDiscount}</span>
                   </div>
                 )}
 

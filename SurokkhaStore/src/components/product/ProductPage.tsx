@@ -132,6 +132,22 @@ export function ProductPage({ slug }: { slug: string }) {
           )}
         </div>
 
+        {product.directOffer && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <span className="font-semibold">{product.directOffer.name}:</span>
+            {product.directOffer.discountPercent > 0 && (
+              <span className="rounded-full bg-rose-100 px-2.5 py-0.5 font-semibold text-rose-700">
+                {product.directOffer.discountPercent}% off
+              </span>
+            )}
+            {product.directOffer.freeDelivery && (
+              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-semibold text-emerald-700">
+                Free Delivery
+              </span>
+            )}
+          </div>
+        )}
+
         {product.descHtml ? (
           <div
             className="mt-4 leading-relaxed text-muted-foreground [&_li]:mb-1 [&_p:empty]:hidden [&_p]:mb-2 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
