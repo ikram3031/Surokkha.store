@@ -1,6 +1,14 @@
 {
   "top": [
     {
+      "path": "/items/d4e5bb9933b56966",
+      "entity": "item"
+    },
+    {
+      "path": "/items/8c5e84fa18642aa8",
+      "entity": "item"
+    },
+    {
       "path": "/products/788b855254ac89fa",
       "entity": "product"
     },

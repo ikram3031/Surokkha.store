@@ -37,7 +37,7 @@ export interface OfferProduct {
   freeDelivery?: boolean
 }
 
-export const READY_COMBOS_TITLE = 'Or choose from our combos'
+export const READY_COMBOS_TITLE = 'অথবা আমাদের কম্বো থেকে বেছে নিন'
 
 export const variantPrice = (p: OfferProduct, v?: OfferVariant) => v?.price ?? p.price
 

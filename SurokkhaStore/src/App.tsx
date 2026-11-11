@@ -53,7 +53,9 @@ function AppShell() {
   // In offer-only mode the site root (and the old home URLs) show the offer page
   const route: Route =
     OFFER_ONLY_MODE && (urlRoute.name === 'home' || urlRoute.name === 'home-classic') ? { name: 'offer' } : urlRoute
-  const bare = OFFER_ONLY_MODE && route.name === 'offer'
+  // The offer page is a standalone ad landing page: no announcement bar, header, footer or bottom nav
+  // (it has its own sticky order bar and cart), so it can run its own campaigns
+  const bare = route.name === 'offer'
   // While something is typed in the header search, results replace the page (except during checkout)
   const searching = query.trim().length > 0 && route.name !== 'checkout' && route.name !== 'confirmation'
   const routeKey =

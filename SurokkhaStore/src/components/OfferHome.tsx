@@ -6,6 +6,7 @@ import { TrialPackSection } from '@/components/offer/TrialPackSection'
 import { OfferCart, type CartLine } from '@/components/offer/OfferCart'
 import { getTrialPack, type GroupOffer } from '@/lib/api/groupOffers'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
+import { AutoCarousel } from '@/components/offer/AutoCarousel'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
 import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from '@/components/offer/Turnstile'
@@ -30,7 +31,10 @@ import {
 } from '@/data/offerProducts'
 
 import { api, ApiError } from '@/lib/api/client'
-import { pixelTrack as track } from '@/lib/pixel'
+import { checkPhone } from '@/lib/api/orders'
+import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
+import { normalizePhone, toEnDigits } from '@/lib/checkout'
+import { getFbIdentifiers, pixelTrack as track } from '@/lib/pixel'
 import { bn, taka } from '@/lib/bn'
 
 // value: Pathao spelling the thana API and orders use; label: Bangla name from the store DB
@@ -101,7 +105,7 @@ const DISTRICTS: SelectOption[] = [
   { value: 'Habiganj', label: 'Habiganj · হবিগঞ্জ' },
 ]
 
-type FieldKey = 'name' | 'phone' | 'email' | 'district' | 'thana' | 'area' | 'address'
+type FieldKey = 'name' | 'phone' | 'email' | 'district' | 'thana' | 'address'
 type CheckoutForm = Record<FieldKey | 'note', string>
 
 const RULES: Record<FieldKey, (v: string) => string | true> = {
@@ -109,9 +113,9 @@ const RULES: Record<FieldKey, (v: string) => string | true> = {
   phone: (v) => /^01[3-9]\d{8}$/.test(v) || 'Enter a valid mobile number (01XXXXXXXXX, 11 digits)',
   email: (v) => !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Enter a valid email, or leave it empty',
   district: (v) => !!v || 'Select a district',
-  thana: (v) => !!v || 'Select a thana',
-  area: (v) => v.trim().length >= 2 || 'Enter your area name',
-  address: (v) => v.trim().length >= 10 || 'Enter your full address (house, road, landmark)',
+  // Thana is optional, same as the email
+  thana: () => true,
+  address: (v) => v.trim().length >= 5 || 'Enter your full address (house, road, area)',
 }
 
 const inputCls = (bad: boolean) =>
@@ -131,14 +135,15 @@ const TRIAL_MIN_PIECES = 6
 
 const trackedOrders = new Set<string>()
 
-// Pixel browser ids, passed to the backend so its Conversions API event matches this visitor
-const cookie = (name: string) => document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1] ?? ''
-
-const toIntlPhone = (p: string) => (p.startsWith('0') ? `+88${p}` : p)
 
 export function OfferHome() {
   const { products: catalogProducts, loading: catalogLoading } = useCatalogProducts()
-  const { products: comboProducts, loading: combosLoading } = useComboProducts()
+  const { products: allComboProducts, loading: combosLoading } = useComboProducts()
+  // A product already in the top carousel (e.g. Trial Pack 2 is also a combo) is not listed twice
+  const comboProducts = useMemo(
+    () => allComboProducts.filter((c) => !catalogProducts.some((p) => p.id === c.id)),
+    [allComboProducts, catalogProducts],
+  )
   const products = useMemo(
     () => [...catalogProducts, ...comboProducts],
     [catalogProducts, comboProducts],
@@ -151,7 +156,7 @@ export function OfferHome() {
   const [variantFor, setVariantFor] = useState<OfferProduct | null>(null)
   const [quickView, setQuickView] = useState<OfferProduct | null>(null)
   const [form, setForm] = useState<CheckoutForm>({
-    name: '', phone: '', email: '', district: '', thana: '', area: '', address: '', note: '',
+    name: '', phone: '', email: '', district: '', thana: '', address: '', note: '',
   })
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({})
   const [thanas, setThanas] = useState<SelectOption[]>([])
@@ -238,8 +243,8 @@ export function OfferHome() {
   const next = nextTier(comboSubtotal)
   const discount = tier ? Math.round((comboSubtotal * tier.off) / 100) : 0
   const zone = deliveryZone(form.district, form.thana)
-  // No delivery charge until the customer has told us where it goes (Dhaka also needs the thana for the suburb rate)
-  const addressKnown = !!form.district && (form.district.trim().toLowerCase() !== 'dhaka' || !!form.thana)
+  // No delivery charge until the customer has chosen a district (Dhaka without a thana is charged the city rate)
+  const addressKnown = !!form.district
   // A Trial Pack piece, or a product with a Direct Offer's free delivery, makes the whole order ship free
   const trialFree = trialCount > 0 || lines.some((l) => l.product.freeDelivery)
   const shipping = count === 0 || !addressKnown || trialFree ? 0 : DELIVERY[zone]
@@ -283,7 +288,8 @@ export function OfferHome() {
 
   const goCheckout = () => {
     if (!count) return toast.error('Please select at least one product first')
-    track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count })
+    // Same event id as the main checkout, so the server's CAPI InitiateCheckout merges with this one
+    track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count }, `ic_${getCheckoutSessionId()}`)
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -397,6 +403,46 @@ export function OfferHome() {
     })),
   ]
 
+  // Abandoned-checkout capture, same as the main checkout: what the customer typed so far, debounced and flushed on leave
+  const leadRef = useRef<() => CheckoutLeadPayload>(null!)
+  leadRef.current = () => ({
+    fullName: form.name,
+    phone: form.phone,
+    email: form.email,
+    address: form.address,
+    district: form.district,
+    thana: form.thana,
+    cartTotal: Math.max(0, subtotal - discount),
+    items: [
+      ...lines.map((l) => ({
+        slug: l.product.did,
+        name: l.variant ? `${l.product.name} (${l.variant.label})` : l.product.name,
+        quantity: l.qty,
+        unitPrice: l.unitPrice,
+      })),
+      ...trialLines.map(({ product: p, qty: q }) => ({ slug: p.did, name: p.name, quantity: q, unitPrice: p.unitPrice })),
+    ],
+    ...getFbIdentifiers(),
+  })
+  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, form.thana, subtotal, count])
+  useEffect(() => {
+    if (submitLock.current || !count || (!form.phone && !form.name && !form.email)) return
+    const timer = setTimeout(() => {
+      if (!submitLock.current) saveCheckoutLead(leadRef.current())
+    }, 1200)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leadSig])
+  useEffect(() => {
+    const flush = () => {
+      if (submitLock.current) return
+      const lead = leadRef.current()
+      if (lead.items.length > 0 && (lead.phone || lead.fullName || lead.email)) saveCheckoutLead(lead, true)
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [])
+
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!count) return toast.error('Please select at least one product first')
@@ -409,13 +455,17 @@ export function OfferHome() {
     }
     if (CHECKOUT_CAPTCHA && !captcha) return toast.error('Please complete the "I am not a robot" check before ordering')
 
+    const phone = normalizePhone(form.phone)
     const info = {
       fullName: form.name.trim(),
-      phone: toIntlPhone(form.phone),
+      phone,
       email: form.email.trim(),
-      address: `${form.address.trim()}, ${form.area.trim()}`,
+      address: form.address.trim(),
+      city: form.district,
       thana: form.thana,
       district: form.district,
+      state: form.district,
+      division: form.district,
       zip: '',
     }
     // Ref guard: state-based `disabled` lags a render, so a double tap could place (and track) the order twice
@@ -423,13 +473,30 @@ export function OfferHome() {
     submitLock.current = true
     setSubmitting(true)
     try {
+      // Same spam / fake-order check as the main checkout: blocked by phone or email, never by IP
+      const flagged = await checkPhone(phone.slice(-10)).catch(() => null)
+      if (flagged?.isFake) {
+        const msg = flagged.message || 'Please use a different valid phone number.'
+        setErrors({ phone: msg })
+        throw new Error(msg)
+      }
+      const email = form.email.trim().toLowerCase()
+      if (email) {
+        const flaggedEmail = await checkPhone('', email).catch(() => null)
+        if (flaggedEmail?.isFake) {
+          const msg = flaggedEmail.message || 'Please use a different email.'
+          setErrors({ email: msg })
+          throw new Error(msg)
+        }
+      }
+
       const res = await api.post<{ data?: { orderNumber?: string } }>('/orders/new-order', {
         // A normal store order (main Orders list), same as the regular checkout
         orderType: 'online',
         orderPrefix: 'ST',
         paymentMethod: 'Cash on Delivery',
-        fbp: cookie('_fbp'),
-        fbc: cookie('_fbc'),
+        ...getFbIdentifiers(),
+        checkoutSessionId: getCheckoutSessionId(),
         turnstileToken: captcha,
         billingInfo: info,
         shippingInfo: info,
@@ -488,12 +555,18 @@ export function OfferHome() {
         orderNumber || undefined,
       )
       if (orderNumber) trackedOrders.add(orderNumber)
+      resetCheckoutSession()
       setPlaced(orderNumber)
       setQty({})
       setTrialQty({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : 'Could not place the order, please try again')
+      const body = err instanceof ApiError ? (err.body as { code?: string } | null) : null
+      toast.error(
+        body?.code === 'CONTACT_REQUIRED'
+          ? 'Sorry, this order cannot be placed online. Please contact us.'
+          : err instanceof Error ? err.message : 'Could not place the order, please try again',
+      )
       // A Turnstile token is single-use, so ask for a fresh one before the next try
       captchaRef.current?.reset()
     } finally {
@@ -543,11 +616,15 @@ export function OfferHome() {
               })}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
-            {catalogLoading &&
-              TOP_PRODUCTS.map((t) => (
-                <div key={t.path} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
+          {catalogLoading ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+              {TOP_PRODUCTS.slice(0, 4).map((t, i) => (
+                <div key={t.path} className={`aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100 ${i >= 2 ? 'hidden sm:block' : ''} ${i >= 3 ? 'sm:hidden lg:block' : ''}`} />
               ))}
+            </div>
+          ) : (
+          // Trial Packs first, then the top products: swipeable, moves on its own, dots below
+          <AutoCarousel>
             {catalogProducts.map((p) => (
               <OfferProductCard
                 key={p.id}
@@ -560,7 +637,8 @@ export function OfferHome() {
                 onMediaClick={() => addFromPhoto(p)}
               />
             ))}
-          </div>
+          </AutoCarousel>
+          )}
         </section>
 
         {trial && (
@@ -598,11 +676,11 @@ export function OfferHome() {
             <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
               <div className="mx-auto mb-6 max-w-2xl text-center">
                 <h2 className="text-2xl font-bold text-black sm:text-3xl">{READY_COMBOS_TITLE}</h2>
-                <p className="mt-2 text-sm text-gray-600 sm:text-base">Our hand-picked value combo packs — add in one click.</p>
+                <p className="mt-2 text-sm text-gray-600 sm:text-base">বাছাই করা কম্বো প্যাক — এক ক্লিকেই যোগ করুন।</p>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
                 {combosLoading &&
-                  [0, 1, 2].map((i) => (
+                  [0, 1, 2, 3].map((i) => (
                     <div key={i} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
                   ))}
                 {comboProducts.map((p) => (
@@ -644,7 +722,7 @@ export function OfferHome() {
                         errors.phone ? 'border-[#dc143c]' : 'border-gray-300'}`}>
                         <span className="flex items-center border-r border-gray-300 px-3 text-sm text-gray-500">+88</span>
                         <input type="tel" inputMode="numeric" maxLength={11} autoComplete="tel-national" placeholder="01XXXXXXXXX"
-                          value={form.phone} onChange={(e) => setField('phone', e.target.value.replace(/\D/g, '').slice(0, 11))}
+                          value={form.phone} onChange={(e) => setField('phone', toEnDigits(e.target.value).replace(/\D/g, '').slice(0, 11))}
                           onBlur={() => validate('phone')}
                           className="w-full min-w-0 bg-transparent px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400" />
                       </div>
@@ -665,21 +743,19 @@ export function OfferHome() {
                         onChange={(v) => {
                           setForm((f) => ({ ...f, district: v, thana: '' }))
                           setErrors((e) => ({ ...e, district: undefined, thana: undefined }))
-                        }} />
+                        }}
+                        onClear={() => setForm((f) => ({ ...f, district: '', thana: '' }))} />
                     </Field>
-                    <Field label="Thana / Upazila" required error={errors.thana}>
+                    <Field label="Thana / Upazila" optional error={errors.thana}>
                       <SearchableSelect value={form.thana} options={thanas} invalid={!!errors.thana}
                         disabled={!form.district || thanasLoading}
                         placeholder={!form.district ? 'Select a district first' : thanasLoading ? 'Loading…' : 'Select a thana'}
                         emptyText={thanas.length ? undefined : 'No thanas found for this district'}
-                        onChange={(v) => setField('thana', v)} />
-                    </Field>
-                    <Field label="Area" required error={errors.area} className="sm:col-span-2">
-                      <input value={form.area} placeholder="e.g. Mirpur 10, Dhanmondi 27" onChange={(e) => setField('area', e.target.value)}
-                        onBlur={() => validate('area')} className={inputCls(!!errors.area)} />
+                        onChange={(v) => setField('thana', v)}
+                        onClear={() => setField('thana', '')} />
                     </Field>
                     <Field label="Full address" required error={errors.address} className="sm:col-span-2">
-                      <textarea rows={3} autoComplete="street-address" placeholder="House no., road no., building, floor, landmark…"
+                      <textarea rows={3} autoComplete="street-address" placeholder="House no., road no., area, landmark…"
                         value={form.address} onChange={(e) => setField('address', e.target.value)} onBlur={() => validate('address')}
                         className={`${inputCls(!!errors.address)} resize-none`} />
                     </Field>
@@ -802,7 +878,7 @@ export function OfferHome() {
                         Delivery charge{' '}
                         {form.district && <span className="text-xs text-gray-400">({ZONE_LABEL[zone]})</span>}
                       </dt>
-                      <dd>{count ? (trialFree ? <span className="font-semibold text-emerald-600">Free</span> : addressKnown ? taka(shipping) : <span className="text-gray-500">Added after you choose your area</span>) : '—'}</dd>
+                      <dd>{count ? (trialFree ? <span className="font-semibold text-emerald-600">Free</span> : addressKnown ? taka(shipping) : <span className="text-gray-500">Added after you choose your district</span>) : '—'}</dd>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold">
                       <dt>Grand total</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
@@ -858,14 +934,14 @@ export function OfferHome() {
                 {taka(subtotal - discount)}
                 {discount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(subtotal)}</s>}
                 {count > 0 && (
-                  <span className="ml-2 text-xs font-normal text-gray-600">
+                  <span className="ml-2 hidden text-xs font-normal text-gray-600 sm:inline">
                     {trialFree ? '+ free delivery' : addressKnown ? `+ ${taka(shipping)} delivery` : '+ delivery (added at checkout)'}
                   </span>
                 )}
               </p>
             </div>
-            <Button onClick={goCheckout} className="h-11 rounded-full px-6">
-              Checkout <ArrowRight />
+            <Button onClick={goCheckout} disabled={count === 0} className="h-11 rounded-full px-6">
+              অর্ডার করুন <ArrowRight />
             </Button>
           </div>
         </div>

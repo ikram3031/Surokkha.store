@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { Check, ChevronDown, Search } from 'lucide-react'
+import { Check, ChevronDown, Search, X } from 'lucide-react'
 
 export interface SelectOption {
   value: string
@@ -17,10 +17,12 @@ interface Props {
   emptyText?: string
   id?: string
   onClose?: () => void
+  /** Shows a red clear (×) button once something is selected; called when it is pressed */
+  onClear?: () => void
 }
 
 /** Dropdown with a search box, keyboard navigation and outside-click close */
-export function SearchableSelect({ value, options, onChange, placeholder, disabled, invalid, emptyText, id, onClose }: Props) {
+export function SearchableSelect({ value, options, onChange, placeholder, disabled, invalid, emptyText, id, onClose, onClear }: Props) {
   const autoId = useId()
   const triggerId = id ?? autoId
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -33,6 +35,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
   const q = query.trim().toLowerCase()
   const filtered = options.filter((o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q))
   const current = options.find((o) => o.value === value)
+  const clearable = !!onClear && !!value && !disabled
 
   const close = () => {
     setOpen(false)
@@ -88,11 +91,25 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
         }}
         className={`flex h-11 w-full items-center justify-between gap-2 rounded-lg border bg-white px-3.5 text-left text-sm outline-none transition focus:border-[#dc143c] disabled:cursor-not-allowed disabled:opacity-50 ${
           invalid ? 'border-[#dc143c]' : 'border-gray-300'
-        }`}
+        } ${clearable ? 'pr-16' : ''}`}
       >
         <span className={`truncate ${value ? 'text-gray-900' : 'text-gray-400'}`}>{current?.label || value || placeholder}</span>
-        <ChevronDown className={`size-4 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`size-4 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''} ${clearable ? 'absolute right-3.5' : ''}`} />
       </button>
+      {clearable && (
+        // Sibling of the trigger (a button can't hold a button); sits just left of the chevron
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false)
+            onClear?.()
+          }}
+          aria-label="Clear selection"
+          className="absolute right-9 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#dc143c] transition hover:bg-[#dc143c]/10"
+        >
+          <X className="size-4" strokeWidth={2.5} />
+        </button>
+      )}
 
       {open && (
         <div className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">

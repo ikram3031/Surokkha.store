@@ -65,7 +65,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         )}
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug sm:text-base">{product.name}</h3>
         {product.desc && <p className="line-clamp-1 text-xs text-gray-600 sm:text-sm">{product.desc}</p>}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+        <div className="mt-auto flex flex-col gap-2 pt-1 sm:flex-row sm:items-end sm:justify-between">
           <p className="leading-tight">
             <span className="text-base font-bold text-rose-600 sm:text-lg">{taka(fromPrice(product))}</span>
             {isVariable && <span className="ml-1 text-[11px] font-normal text-gray-600">from</span>}
@@ -75,14 +75,14 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
           </p>
           {qty > 0 && !isVariable ? (
             // Already in the order: a compact stepper in the same spot as "Add"
-            <div className="flex shrink-0 items-center gap-1 rounded-full bg-primary p-0.5 text-primary-foreground">
+            <div className="flex h-9 w-full shrink-0 items-center justify-between gap-1 rounded-full bg-primary p-0.5 text-primary-foreground sm:h-8 sm:w-auto">
               <button type="button" onClick={onDec} aria-label={`${product.name} decrease quantity`}
-                className="flex size-7 items-center justify-center rounded-full hover:bg-white/15">
+                className="flex size-8 items-center justify-center rounded-full hover:bg-white/15 sm:size-7">
                 <Minus className="size-3.5" />
               </button>
               <span className="min-w-4 text-center text-sm font-semibold tabular-nums">{bn(qty)}</span>
               <button type="button" onClick={onInc} aria-label={`${product.name} increase quantity`}
-                className="flex size-7 items-center justify-center rounded-full hover:bg-white/15">
+                className="flex size-8 items-center justify-center rounded-full hover:bg-white/15 sm:size-7">
                 <Plus className="size-3.5" />
               </button>
             </div>
@@ -92,7 +92,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
               onClick={isVariable ? onChooseOptions : onInc}
               disabled={!product.inStock}
               aria-label={`${product.name} increase quantity`}
-              className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
+              className="flex h-9 w-full shrink-0 items-center justify-center gap-1 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40 sm:h-8 sm:w-auto"
             >
               {isVariable && qty > 0 ? bn(qty) : 'Add'} <Plus className="size-4" />
             </button>

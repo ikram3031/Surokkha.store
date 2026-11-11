@@ -130,7 +130,7 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Delivery</dt>
                   <dd className={freeDelivery ? 'font-semibold text-emerald-600' : addressKnown ? '' : 'text-gray-500'}>
-                    {freeDelivery ? 'Free' : addressKnown ? taka(shipping) : 'Added after you choose your area'}
+                    {freeDelivery ? 'Free' : addressKnown ? taka(shipping) : 'Added after you choose your district'}
                   </dd>
                 </div>
                 <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-semibold">
@@ -146,7 +146,7 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
                   setTimeout(onCheckout, 250)
                 }}
               >
-                Checkout
+                অর্ডার করুন
               </Button>
             </div>
           )}
