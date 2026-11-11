@@ -12,6 +12,7 @@ import ProductCarousel from '../components/ProductCarousel';
 import MoLineupCarousel from '../components/MoLineupCarousel';
 import SpecialOffersStrip from '../components/SpecialOffersStrip';
 import TestimonialCarousel from '../components/TestimonialCarousel';
+import PromoBanner from '../components/PromoBanner';
 
 export default function HomeView() {
   const navigateTo = useStore((state) => state.navigateTo);
@@ -74,6 +75,7 @@ export default function HomeView() {
 
   return (
     <div className="space-y-6 sm:space-y-8 bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 pb-4">
+      <PromoBanner />
       
       {/* PURE HERO BANNER SLIDER (Dashboard CMS Uploaded) — hidden for now.
           To restore it, change `false` to `true` below. */}

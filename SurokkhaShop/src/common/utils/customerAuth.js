@@ -46,6 +46,7 @@ async function request(path, { method = 'GET', body, token } = {}) {
   if (!res.ok) {
     const err = new Error(data?.message || 'Something went wrong. Please try again.');
     err.status = res.status;
+    err.code = data?.code;
     throw err;
   }
   return data;
@@ -56,7 +57,21 @@ const startSession = (res) => {
   return res.data.customer;
 };
 
-export const registerCustomer = async (payload) => startSession(await request('/register', { method: 'POST', body: payload }));
+// Sign-up emails a 6-digit code; the account opens after verifyEmail
+export const registerCustomer = (payload) => request('/register', { method: 'POST', body: payload });
+export const verifyEmail = async (payload) => startSession(await request('/verify-email', { method: 'POST', body: payload }));
+export const resendVerification = (email) => request('/resend-verification', { method: 'POST', body: { email } });
+
+/** Preset offers the logged-in customer can use right now (null when logged out or on error). */
+export const fetchMyPromo = async () => {
+  const token = getCustomerToken();
+  if (!token) return null;
+  try {
+    return (await request('/promo', { token })).data;
+  } catch {
+    return null;
+  }
+};
 export const loginCustomer = async (payload) => startSession(await request('/login', { method: 'POST', body: payload }));
 export const forgotPassword = (email) => request('/forgot-password', { method: 'POST', body: { email } });
 export const resetPassword = async (payload) => startSession(await request('/reset-password', { method: 'POST', body: payload }));

@@ -39,9 +39,31 @@ async function startSession(res: SessionResponse): Promise<Customer> {
   return res.data.customer
 }
 
-/** POST /store/v1/customer-auth/register */
-export async function register(payload: { name: string; email: string; password: string; phone?: string }) {
-  return startSession(await api.post<SessionResponse>('/customer-auth/register', payload))
+/** POST /store/v1/customer-auth/register — emails a 6-digit code; the account opens after verifyEmail. */
+export function register(payload: { name: string; email: string; password: string; phone: string }) {
+  return api.post<{ data: { verificationRequired: boolean; email: string }; message?: string }>('/customer-auth/register', payload)
+}
+
+/** POST /store/v1/customer-auth/verify-email — finishes sign-up and logs the customer in. */
+export async function verifyEmail(payload: { email: string; otp: string }) {
+  return startSession(await api.post<SessionResponse>('/customer-auth/verify-email', payload))
+}
+
+/** POST /store/v1/customer-auth/resend-verification */
+export function resendVerification(email: string) {
+  return api.post<{ message: string }>('/customer-auth/resend-verification', { email })
+}
+
+/** GET /store/v1/customer-auth/promo — preset offers the logged-in customer can use (null when logged out). */
+export async function fetchMyPromo(): Promise<{ newUserFreeDelivery: { minOrderAmount: number } | null } | null> {
+  const token = getCustomerToken()
+  if (!token) return null
+  try {
+    const res = await api.get<{ data: { newUserFreeDelivery: { minOrderAmount: number } | null } }>('/customer-auth/promo', undefined, { token })
+    return res.data
+  } catch {
+    return null
+  }
 }
 
 /** POST /store/v1/customer-auth/login */

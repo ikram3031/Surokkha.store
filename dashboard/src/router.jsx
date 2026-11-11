@@ -56,6 +56,7 @@ import Inventory from './pages/dashboard/products/inventory';
 import Coupons from './pages/dashboard/products/coupons';
 import GroupOffers from './pages/dashboard/products/groupOffers';
 import DirectOffers from './pages/dashboard/products/directOffers';
+import PromoPage from './pages/dashboard/products/promo';
 import Combos from './pages/dashboard/products/combos';
 import ComboEditor from './pages/dashboard/products/comboEditor';
 import SizeCharts from './pages/dashboard/products/sizeCharts';
@@ -445,6 +446,14 @@ const dashboardRoutes = [
             element: (
               <RoleGuard menuKey="products.list">
                 <ComboEditor key="edit" />
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'promo',
+            element: (
+              <RoleGuard menuKey="products.coupons">
+                <PromoPage />
               </RoleGuard>
             ),
           },

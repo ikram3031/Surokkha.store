@@ -15,6 +15,12 @@ export function normalizePhone(value: string): string {
   return raw.startsWith('+') ? '+' + digits : digits
 }
 
+/** Local display form 01XXXXXXXXX for any pasted/typed BD number (+880 1..., 8801..., 1...); unchanged when not a BD mobile. */
+export function localPhone(value: string): string {
+  const n = normalizePhone(value)
+  return /^\+8801\d{9}$/.test(n) ? '0' + n.slice(4) : toEnDigits(value).replace(/[^\d+]/g, '')
+}
+
 export const isValidPhone = (value: string) => /^\+8801[3-9]\d{8}$/.test(normalizePhone(value))
 
 export const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())

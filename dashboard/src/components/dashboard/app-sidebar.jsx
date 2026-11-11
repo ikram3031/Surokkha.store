@@ -18,6 +18,7 @@ import {
   Zap,
   Receipt,
   Ticket,
+  Megaphone,
   Tag,
   X,
   Menu,
@@ -253,7 +254,7 @@ export const AppSidebar = ({ ...props }) => {
     : (pathname.startsWith("/dashboard/members") || pathname.startsWith("/dashboard/registered-members") || pathname.startsWith("/dashboard/customers")) ? "customers"
     : pathname.startsWith("/dashboard/orders") ? "orders"
     : pathname.startsWith("/dashboard/items") ? "products"
-    : (pathname.startsWith("/dashboard/products/coupons") || pathname.startsWith("/dashboard/products/group-offers") || pathname.startsWith("/dashboard/products/direct-offers") || pathname === "/dashboard/settings/products") ? "promotions"
+    : (pathname.startsWith("/dashboard/products/coupons") || pathname.startsWith("/dashboard/products/group-offers") || pathname.startsWith("/dashboard/products/direct-offers") || pathname.startsWith("/dashboard/products/promo") || pathname === "/dashboard/settings/products") ? "promotions"
     : (pathname.startsWith("/dashboard/products/categories") || pathname.startsWith("/dashboard/products/brands") || pathname.startsWith("/dashboard/products/attributes") || pathname.startsWith("/dashboard/products/size-charts")) ? "metadata"
     : pathname.startsWith("/dashboard/products") ? "products"
     : (pathname.startsWith("/dashboard/media") || pathname.startsWith("/dashboard/tools/bulk-image-resize")) ? "media"
@@ -485,6 +486,11 @@ export const AppSidebar = ({ ...props }) => {
           )}
           {showProducts && (isAllowed("products.showcases") || isAllowed("settings") || isAllowed("products.coupons")) && (
             <NavGroup id="promotions" icon={Ticket} label={t("nav.promotions", "Promotions")} active={activeGroup === "promotions"} open={openMenu === "promotions"} onToggle={toggleMenu}>
+              {isAllowed("products.coupons") && (
+                <NavSub to="/dashboard/products/promo" active={pathname === "/dashboard/products/promo"} icon={Megaphone}>
+                  {t("nav.promo", "Promo")}
+                </NavSub>
+              )}
               {isAllowed("products.showcases") && (
                 <NavSub to="/dashboard/settings/products" active={settingsProductsActive} icon={Sparkles}>
                   {t("nav.showcases", "Showcases")}

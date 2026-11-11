@@ -10,6 +10,7 @@ import { ApiError } from '@/lib/api/client'
 import { getCoupon } from '@/lib/api/catalog'
 import { getThanasByDistrict } from '@/lib/api/locations'
 import { checkPhone, createOrder, type NewOrderPayload, type OrderAddress } from '@/lib/api/orders'
+import { fetchMyPromo, getCustomerToken } from '@/lib/api/customer-auth'
 import {
   comboSubtotal,
   couponDiscount,
@@ -120,6 +121,15 @@ export function CheckoutPage() {
   const [coupon, setCoupon] = useState<Coupon | null>(null)
   const [couponError, setCouponError] = useState('')
   const [applying, setApplying] = useState(false)
+  // New customer free delivery (dashboard Promo): the minimum order when this logged-in customer qualifies
+  const [newUserFreeMin, setNewUserFreeMin] = useState<number | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    fetchMyPromo().then((p) => !cancelled && setNewUserFreeMin(p?.newUserFreeDelivery ? p.newUserFreeDelivery.minOrderAmount : null))
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const thanas = useThanas(form.district)
   const shipThanas = useThanas(sameAsBilling ? '' : ship.district)
@@ -221,12 +231,13 @@ export function CheckoutPage() {
     const dest = sameAsBilling ? form : ship
     const baseFee = count > 0 ? deliveryFee(dest.district, dest.thana) : 0
     const { discount: couponOff, fee: couponFee } = couponDiscount(coupon, subtotal, baseFee, lines)
-    const offerFree = hasFreeDelivery(lines)
+    const newUserFree = newUserFreeMin != null && subtotal >= newUserFreeMin && count > 0
+    const offerFree = hasFreeDelivery(lines) || newUserFree
     const fee = offerFree ? 0 : couponFee
     const group = groupOfferTotals(lines)
     const discount = couponOff + group.discount
-    return { fee, baseFee, offerFree, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
-  }, [count, sameAsBilling, form, ship, coupon, subtotal, cart])
+    return { fee, baseFee, offerFree, newUserFree, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
+  }, [count, sameAsBilling, form, ship, coupon, subtotal, cart, newUserFreeMin])
 
   const freeShipping = coupon?.discountType === 'free_shipping' || totals.offerFree
   const destDistrict = (sameAsBilling ? form.district : ship.district).trim()
@@ -349,6 +360,8 @@ export function CheckoutPage() {
         tax: 0,
         discountTotalAmount: totals.discount,
         couponCode: coupon ? coupon.code : null,
+        // Only claimed when no other offer already made delivery free
+        promo: totals.newUserFree && !hasFreeDelivery(lines) ? 'new-user-free-delivery' : undefined,
         total: totals.total,
         items: lines.map(({ product, qty }) => ({
           productId: product.itemType === 'item' ? undefined : product.apiId,
@@ -367,7 +380,7 @@ export function CheckoutPage() {
         ...getFbIdentifiers(),
       }
 
-      const res = await createOrder(payload)
+      const res = await createOrder(payload, payload.promo ? getCustomerToken() : null)
       saveLastOrder({
         orderNumber: String(res.data?.orderNumber ?? ''),
         name: sameAsBilling ? billing.fullName : ship.fullName.trim(),
@@ -692,7 +705,13 @@ export function CheckoutPage() {
                 <dd>{taka(subtotal)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Delivery charge{destDistrict ? ` · ${destDistrict}` : ''}</dt>
+                <dt className="text-muted-foreground">
+                  Delivery charge{destDistrict ? ` · ${destDistrict}` : ''}
+                  {totals.newUserFree && !hasFreeDelivery(lines) && <span className="block text-xs text-emerald-600">New customer offer</span>}
+                  {newUserFreeMin != null && !totals.newUserFree && (
+                    <span className="block text-xs text-emerald-600">Add {taka(newUserFreeMin - subtotal)} more for free delivery</span>
+                  )}
+                </dt>
                 <dd>
                   {freeShipping ? (
                     <span className="flex items-center gap-1.5">

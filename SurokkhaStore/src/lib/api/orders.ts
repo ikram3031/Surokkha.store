@@ -44,6 +44,8 @@ export interface NewOrderPayload {
   items: OrderItemInput[]
   paymentDetails: null
   timestamp: string
+  /** Dashboard Promo preset used on this order (checked by the server against the logged-in customer) */
+  promo?: 'new-user-free-delivery'
   /** Ties the order to the checkout lead saved while the customer was typing. */
   checkoutSessionId?: string
   /** Meta cookies so the server-side CAPI event matches this browser. */
@@ -62,8 +64,8 @@ export interface CreateOrderResponse {
 }
 
 /** POST /store/v1/orders/new-order */
-export function createOrder(payload: NewOrderPayload) {
-  return api.post<CreateOrderResponse>('/orders/new-order', payload)
+export function createOrder(payload: NewOrderPayload, token?: string | null) {
+  return api.post<CreateOrderResponse>('/orders/new-order', payload, token ? { token } : undefined)
 }
 
 /** GET /store/v1/orders/check-phone — flags numbers / emails on the fake-order or spam list. */

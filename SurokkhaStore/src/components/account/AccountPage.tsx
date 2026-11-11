@@ -10,13 +10,16 @@ import {
   login,
   logout,
   register,
+  resendVerification,
+  verifyEmail,
   resetPassword,
   type Customer,
 } from '@/lib/api/customer-auth'
-import { isValidEmail, normalizePhone, toEnDigits } from '@/lib/checkout'
+import { isValidEmail, isValidPhone, localPhone, normalizePhone, toEnDigits } from '@/lib/checkout'
+import { ApiError } from '@/lib/api/client'
 import { navigate } from '@/lib/router'
 
-type View = 'login' | 'signup' | 'forgot' | 'reset' | 'account'
+type View = 'login' | 'signup' | 'verify' | 'forgot' | 'reset' | 'account'
 
 const MIN_PASSWORD = 8
 
@@ -145,24 +148,49 @@ export function AccountPage() {
 
   const submitLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    run(async () => enter(await login({ email: email.trim(), password })))
+    run(async () => {
+      try {
+        enter(await login({ email: email.trim(), password }))
+      } catch (err) {
+        // Signed up but never entered the emailed code: the server has sent a new one
+        if (err instanceof ApiError && (err.body as { code?: string } | null)?.code === 'EMAIL_NOT_VERIFIED') {
+          setView('verify')
+          setCode('')
+          setNotice(err.message)
+          return
+        }
+        throw err
+      }
+    })
   }
+
+  const submitVerify = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!/^\d{6}$/.test(code)) return toast.error('Enter the 6-digit code from your email')
+    run(async () => {
+      enter(await verifyEmail({ email: email.trim(), otp: code }))
+      toast.success('Email verified. Your account is ready.')
+    })
+  }
+
+  const resendSignupCode = () =>
+    run(async () => {
+      const res = await resendVerification(email.trim())
+      setNotice(res.message)
+    })
 
   const submitSignup = (e: React.FormEvent) => {
     e.preventDefault()
     if (name.trim().length < 2) return toast.error('Please enter your name')
+    if (!isValidPhone(phone)) return toast.error('Please enter a valid Bangladeshi mobile number (01XXXXXXXXX)')
     if (!isValidEmail(email)) return toast.error('Please enter a valid email address')
     if (password.length < MIN_PASSWORD) return toast.error(`Password must be at least ${MIN_PASSWORD} characters`)
-    run(async () =>
-      enter(
-        await register({
-          name: name.trim(),
-          email: email.trim(),
-          password,
-          phone: phone.trim() ? normalizePhone(phone) : undefined,
-        }),
-      ),
-    )
+    run(async () => {
+      const res = await register({ name: name.trim(), email: email.trim(), password, phone: normalizePhone(phone) })
+      setView('verify')
+      setCode('')
+      setNotice(res.message || 'We have emailed you a 6-digit code. Enter it to finish creating your account.')
+    })
   }
 
   const submitForgot = (e: React.FormEvent) => {
@@ -200,6 +228,7 @@ export function AccountPage() {
   const heading: Record<View, { title: string; sub: string }> = {
     login: { title: 'Welcome back', sub: 'Log in to your Surokkha account.' },
     signup: { title: 'Create your account', sub: 'Quick to set up, and your details stay private.' },
+    verify: { title: 'Verify your email', sub: 'Enter the 6-digit code we sent to your email.' },
     forgot: { title: 'Forgot your password?', sub: "Enter your email and we'll send you a 6-digit code." },
     reset: { title: 'Reset your password', sub: 'Enter the code we emailed you and choose a new password.' },
     account: { title: customer ? `Hello, ${customer.name.split(' ')[0]}` : 'My Account', sub: 'You are logged in.' },
@@ -208,6 +237,7 @@ export function AccountPage() {
   const crumb: Record<View, string> = {
     login: 'Log in',
     signup: 'Sign up',
+    verify: 'Verify email',
     forgot: 'Forgot password',
     reset: 'Reset password',
     account: 'My Account',
@@ -313,14 +343,21 @@ export function AccountPage() {
                   <Field label="Full name">
                     <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="h-11" required />
                   </Field>
-                  <Field label="Mobile number (optional)">
+                  <Field label="Mobile number" hint={phone && !isValidPhone(phone) ? 'Enter a valid Bangladeshi number, e.g. 01712345678' : undefined}>
                     <Input
                       value={phone}
-                      onChange={(e) => setPhone(toEnDigits(e.target.value))}
+                      onChange={(e) => setPhone(toEnDigits(e.target.value).replace(/[^\d+]/g, '').slice(0, 14))}
+                      // Pasting +8801..., 8801... or 1... becomes the local 01XXXXXXXXX form
+                      onPaste={(e) => {
+                        e.preventDefault()
+                        setPhone(localPhone(e.clipboardData.getData('text')))
+                      }}
+                      onBlur={() => phone && setPhone(localPhone(phone))}
                       inputMode="tel"
                       autoComplete="tel"
                       placeholder="01XXXXXXXXX"
                       className="h-11"
+                      required
                     />
                   </Field>
                   <Field label="Email">
@@ -336,6 +373,36 @@ export function AccountPage() {
                     Already have an account?{' '}
                     <button type="button" className={link} onClick={() => go('login')}>
                       Log in
+                    </button>
+                  </p>
+                </form>
+              )}
+
+              {view === 'verify' && (
+                <form onSubmit={submitVerify} className="mt-6 space-y-4">
+                  <Field label="Email">
+                    <Input type="email" value={email} readOnly className="h-11 bg-muted/40" />
+                  </Field>
+                  <Field label="6-digit code">
+                    <Input
+                      value={code}
+                      onChange={(e) => setCode(toEnDigits(e.target.value).replace(/\D/g, '').slice(0, 6))}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      placeholder="123456"
+                      className="h-11 tracking-[0.4em]"
+                      required
+                    />
+                  </Field>
+                  <Button type="submit" className={primary} disabled={busy}>
+                    {busy ? 'Please wait...' : 'Verify and continue'}
+                  </Button>
+                  <p className="flex justify-between text-sm">
+                    <button type="button" className={link} onClick={resendSignupCode} disabled={busy}>
+                      Resend code
+                    </button>
+                    <button type="button" className={link} onClick={() => go('login')}>
+                      Back to log in
                     </button>
                   </p>
                 </form>

@@ -30,6 +30,7 @@ import dashboardRouter from "./routes/DashboardRoute.js";
 import couponRouter from "./routes/CouponRoute.js";
 import groupOfferRouter from "./routes/GroupOfferRoute.js";
 import directOfferRouter from "./routes/DirectOfferRoute.js";
+import promoRouter from "./routes/PromoRoute.js";
 import comboRouter from "./routes/ComboRoute.js";
 import systemRouter from "./routes/SystemRoute.js";
 import searchRouter from "./routes/SearchRoute.js";
@@ -104,6 +105,7 @@ serviceRouter.use("/dashboard", accessArea({ overview: "read", analytics: "read"
 serviceRouter.use("/coupons", accessArea({ catalog: "operator" }), couponRouter, clearAccessArea);
 serviceRouter.use("/group-offers", accessArea({ catalog: "operator" }), groupOfferRouter, clearAccessArea);
 serviceRouter.use("/direct-offers", accessArea({ catalog: "operator" }), directOfferRouter, clearAccessArea);
+serviceRouter.use("/promo", accessArea({ catalog: "operator" }), promoRouter, clearAccessArea);
 serviceRouter.use("/combos", accessArea({ catalog: "operator" }), comboRouter, clearAccessArea);
 serviceRouter.use("/size-charts", accessArea({ catalog: "operator" }), sizeChartRouter, clearAccessArea);
 serviceRouter.use("/cms-content", cmsContentRouter);

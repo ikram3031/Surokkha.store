@@ -93,7 +93,8 @@ export function ProductPage({ slug }: { slug: string }) {
   const hasDiscount = !!product.regularPrice && product.regularPrice > product.price
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 md:grid-cols-2 md:gap-12 md:py-12">
+    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
+    <div className="grid gap-8 md:grid-cols-2 md:gap-12">
       <div>
         <div className={`flex h-80 w-full items-center justify-center overflow-hidden rounded-xl border border-border sm:h-[28rem] ${catBg[product.cat]}`}>
           {images.length > 0 ? (
@@ -217,14 +218,17 @@ export function ProductPage({ slug }: { slug: string }) {
           </li>
         </ul>
 
-        {product.longDescription && (
-          <div
-            className="prose-sm mt-8 border-t border-border pt-6 leading-relaxed text-muted-foreground [&_p]:mb-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
-            // Admin-authored HTML from our own StoreWeb API
-            dangerouslySetInnerHTML={{ __html: product.longDescription }}
-          />
-        )}
       </div>
+    </div>
+
+    {/* Full description below the gallery and buy box, full width */}
+    {product.longDescription && (
+      <div
+        className="prose-sm mt-10 border-t border-border pt-8 leading-relaxed text-muted-foreground [&_p]:mb-3 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
+        // Admin-authored HTML from our own StoreWeb API
+        dangerouslySetInnerHTML={{ __html: product.longDescription }}
+      />
+    )}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { logger } from "../../common/config/logger.js";
 import { comparePassword, hashPassword } from "../../common/utils/password.js";
 import { allowHit, clearHits } from "../../common/utils/rateLimit.js";
 import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
+import { newUserFreeDeliveryFor } from "../../common/utils/promo.js";
 
 // Customer tokens use a secret derived from the staff one, so a customer token can never
 // authenticate against the dashboard/staff APIs (and vice versa).
@@ -38,6 +39,20 @@ const publicCustomer = (member) => ({
 
 const tooMany = (res) =>
   res.status(429).json({ status: "error", message: "Too many attempts. Please wait a few minutes and try again." });
+
+// The logged-in customer from a "Bearer <customer token>" header, or null (never throws)
+export const customerFromRequest = async (req) => {
+  try {
+    const [scheme, token] = String(req.headers.authorization || "").split(" ");
+    if (scheme !== "Bearer" || !token) return null;
+    const payload = jwt.verify(token, CUSTOMER_TOKEN_SECRET);
+    if (payload.typ !== "customer" || !payload.customerId) return null;
+    const member = await MemberModel.findById(payload.customerId);
+    return member && member.isActive !== false ? member : null;
+  } catch {
+    return null;
+  }
+};
 
 // Middleware: resolves the logged-in customer from a "Bearer <customer token>" header
 export const authenticateCustomer = async (req, res, next) => {
@@ -80,15 +95,98 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
     }
 
-    if (await MemberModel.exists({ email })) {
+    const existing = await MemberModel.findOne({ email });
+    if (existing && !existing.registrationPending) {
       return res.status(409).json({
         status: "error",
         message: "An account with this email already exists. Log in, or use Forgot password to set a password.",
       });
     }
 
-    const member = await MemberModel.create({ name, email, phone, passwordHash: await hashPassword(password) });
-    res.status(201).json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member) } });
+    // Signing up again before verifying just refreshes the details and sends a new code
+    const member = existing || new MemberModel({ email, registrationPending: true, isEmailVerified: false });
+    member.name = name;
+    member.phone = phone;
+    member.passwordHash = await hashPassword(password);
+    member.registrationPending = true;
+    await member.save();
+
+    const sent = await sendVerificationCode(member);
+    if (!sent) return res.status(503).json({ status: "error", message: "We could not send the verification email. Please try again in a moment." });
+    res.status(201).json({
+      status: "success",
+      data: { verificationRequired: true, email },
+      message: "We have emailed you a 6-digit code. Enter it to finish creating your account.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Emails a fresh 6-digit sign-up code; false when the email could not be sent
+const sendVerificationCode = async (member) => {
+  const otp = String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+  member.emailOtp = otpHash(member.email, otp);
+  member.emailOtpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
+  await member.save();
+  clearHits(`verify:${member.email}`);
+  const sent = await sendOtpEmail({ toEmail: member.email, otp, name: member.name, type: "registration", log: logger });
+  if (!sent.delivered) logger.warn({ email: member.email, reason: sent.reason }, "Customer sign-up code email was not delivered");
+  return sent.delivered;
+};
+
+// POST /store/v1/customer-auth/verify-email — { email, otp }: finishes sign-up and logs the customer in
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const email = cleanEmail(req.body?.email);
+    const otp = cleanText(req.body?.otp, 12);
+    if (!EMAIL_RE.test(email) || !/^\d{6}$/.test(otp)) {
+      return res.status(400).json({ status: "error", message: "Enter the 6-digit code from your email" });
+    }
+    if (!allowHit(`verify:${email}`, { max: MAX_OTP_ATTEMPTS, windowMs: OTP_TTL_MS })) return tooMany(res);
+
+    const member = await MemberModel.findOne({ email }).select("+emailOtp +emailOtpExpiresAt");
+    const expected = member?.emailOtp && /^[0-9a-f]{64}$/.test(member.emailOtp) ? Buffer.from(member.emailOtp, "hex") : null;
+    const given = Buffer.from(otpHash(email, otp), "hex");
+    const matches = !!expected && expected.length === given.length && crypto.timingSafeEqual(expected, given);
+    if (!member || member.isActive === false || !matches || !member.emailOtpExpiresAt || member.emailOtpExpiresAt < new Date()) {
+      return res.status(400).json({ status: "error", message: "That code is invalid or has expired. Request a new one." });
+    }
+
+    member.isEmailVerified = true;
+    member.emailVerifiedAt = new Date();
+    member.registrationPending = false;
+    member.emailOtp = undefined;
+    member.emailOtpExpiresAt = undefined;
+    await member.save();
+    clearHits(`verify:${email}`);
+    res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member) } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /store/v1/customer-auth/resend-verification — { email }; same answer whether or not a sign-up is pending
+export const resendVerification = async (req, res, next) => {
+  try {
+    const email = cleanEmail(req.body?.email);
+    if (!EMAIL_RE.test(email)) return res.status(400).json({ status: "error", message: "Please enter a valid email address" });
+    if (!allowHit(`resend:${clientIp(req)}`, { max: 5, windowMs: 15 * 60 * 1000 })) return tooMany(res);
+    const member = await MemberModel.findOne({ email });
+    if (member?.registrationPending && allowHit(`resend-email:${email}`, { max: 3, windowMs: 15 * 60 * 1000 })) {
+      await sendVerificationCode(member);
+    }
+    res.json({ status: "success", message: "If a sign-up is waiting for that email, we have sent a new code." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /store/v1/customer-auth/promo — which preset offers the logged-in customer can use right now
+export const myPromo = async (req, res, next) => {
+  try {
+    const nufd = await newUserFreeDeliveryFor(req.customer);
+    res.json({ status: "success", data: { newUserFreeDelivery: nufd.eligible ? { minOrderAmount: nufd.minOrderAmount } : null } });
   } catch (error) {
     next(error);
   }
@@ -108,6 +206,14 @@ export const login = async (req, res, next) => {
     const valid = member?.passwordHash ? await comparePassword(password, member.passwordHash) : false;
     if (!member || !valid) return res.status(401).json({ status: "error", message: "Invalid email or password" });
     if (member.isActive === false) return res.status(403).json({ status: "error", message: "This account is deactivated" });
+    if (member.registrationPending) {
+      if (allowHit(`resend-email:${email}`, { max: 3, windowMs: 15 * 60 * 1000 })) await sendVerificationCode(member);
+      return res.status(403).json({
+        status: "error",
+        code: "EMAIL_NOT_VERIFIED",
+        message: "Please verify your email first. We have sent a 6-digit code to your inbox.",
+      });
+    }
 
     clearHits(limitKey);
     res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member) } });

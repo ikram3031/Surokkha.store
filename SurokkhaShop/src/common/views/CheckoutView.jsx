@@ -14,6 +14,9 @@ export default function CheckoutView() {
   const navigateTo = useStore((state) => state.navigateTo);
   const openCartDrawer = useStore((state) => state.openCartDrawer);
   const getCartTotals = useStore((state) => state.getCartTotals);
+  const loadMyPromo = useStore((state) => state.loadMyPromo);
+  // Is the logged-in customer still eligible for the new customer free delivery?
+  useEffect(() => { loadMyPromo(); }, [loadMyPromo]);
   const submitOrder = useStore((state) => state.submitOrder);
   const [contactModal, setContactModal] = useState(null);
   const showToast = useStore((state) => state.showToast);

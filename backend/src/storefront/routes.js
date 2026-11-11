@@ -22,6 +22,7 @@ import locationsRouter from "./routes/LocationsRoute.js";
 import checkoutLeadRouter from "./routes/CheckoutLeadRoute.js";
 import productEventRouter from "./routes/ProductEventRoute.js";
 // Same customer accounts (members collection, same token) as the StoreWeb API
+import promoRouter from "../storeWeb/routes/PromoRoute.js";
 import customerAuthRouter from "../storeWeb/routes/CustomerAuthRoute.js";
 import { searchProducts } from "./controllers/SearchController.js";
 
@@ -49,6 +50,7 @@ storefrontRouter.use("/locations", locationsRouter);
 storefrontRouter.use("/checkout-leads", checkoutLeadRouter);
 storefrontRouter.use("/product-events", productEventRouter);
 storefrontRouter.use("/customer-auth", customerAuthRouter);
+storefrontRouter.use("/promo", promoRouter);
 storefrontRouter.get("/search-products", searchProducts);
 
 // Resolves client IP from request headers or socket

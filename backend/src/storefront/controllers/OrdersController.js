@@ -1,3 +1,5 @@
+import { customerFromRequest } from "../../storeWeb/controllers/CustomerAuthController.js";
+import { checkNewUserFreeDelivery } from "../../common/utils/promo.js";
 import mongoose from 'mongoose';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
@@ -42,6 +44,12 @@ const findSpamEntry = async ({ phone, email } = {}) => {
 export const createOrder = async (req, res, next) => {
   try {
     const payload = req.body ?? {};
+
+    // New customer free delivery (dashboard Promo preset): only for an eligible, logged-in customer
+    if (payload.promo) {
+      const promoError = await checkNewUserFreeDelivery(payload, await customerFromRequest(req));
+      if (promoError) return res.status(400).json({ status: "error", message: promoError });
+    }
     
     const clientIp = extractClientIp(req) || 'unknown';
     const clientEmail = payload.billingInfo?.email || payload.email || payload.customerInfo?.email || null;

@@ -1,3 +1,4 @@
+import { fetchMyPromo, getCustomerToken } from '../utils/customerAuth';
 import { create } from 'zustand';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { getDeliveryCharge } from '../utils/deliveryCharge';
@@ -199,6 +200,8 @@ export const useStore = create((set, get) => ({
   // Active dashboard Group Offers (shown on the Offers page)
   groupOffers: [],
   isLoadingGroupOffers: false,
+  // New customer free delivery (dashboard Promo): minimum order when the logged-in customer qualifies, else null
+  newUserFreeMin: null,
   lastOrder: null,
   toast: { show: false, message: '' },
 
@@ -1062,6 +1065,11 @@ export const useStore = create((set, get) => ({
     get().navigateTo('checkout');
   },
 
+  loadMyPromo: async () => {
+    const promo = await fetchMyPromo();
+    set({ newUserFreeMin: promo?.newUserFreeDelivery ? Number(promo.newUserFreeDelivery.minOrderAmount) || 0 : null });
+  },
+
   fetchGroupOffers: async () => {
     if (get().isLoadingGroupOffers) return;
     set({ isLoadingGroupOffers: true });
@@ -1129,7 +1137,7 @@ export const useStore = create((set, get) => ({
 
   // Dynamic Totals & Delivery computation
   getCartTotals: () => {
-    const { cart, products, shippingInfo, shippingAddress, sameAsBilling, appliedCoupon } = get();
+    const { cart, products, shippingInfo, shippingAddress, sameAsBilling, appliedCoupon, newUserFreeMin } = get();
 
     let subtotal = 0;
     let totalItemCount = 0;
@@ -1210,7 +1218,10 @@ export const useStore = create((set, get) => ({
       }
     }
 
-    if (isTrialPackFreeDelivery || isDirectOfferFreeDelivery) deliveryFee = 0;
+    // New customer: first order ships free above the dashboard's minimum (only claimed when nothing else made it free)
+    const isNewUserFreeDelivery =
+      newUserFreeMin != null && totalItemCount > 0 && subtotal >= newUserFreeMin && !isTrialPackFreeDelivery && !isDirectOfferFreeDelivery;
+    if (isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery) deliveryFee = 0;
 
     const couponDiscount = discountAmount;
     discountAmount = Math.min(subtotal, couponDiscount + groupDiscount);
@@ -1219,7 +1230,9 @@ export const useStore = create((set, get) => ({
     return {
       isTrialPackFreeDelivery,
       isDirectOfferFreeDelivery,
-      isFreeDelivery: isFreeShippingCoupon || isTrialPackFreeDelivery || isDirectOfferFreeDelivery,
+      isNewUserFreeDelivery,
+      newUserFreeMin,
+      isFreeDelivery: isFreeShippingCoupon || isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery,
       subtotal,
       deliveryFee,
       originalDeliveryFee,
@@ -1289,6 +1302,7 @@ export const useStore = create((set, get) => ({
       tax: 0,
       discountTotalAmount: totals.discountAmount || 0,
       couponCode: appliedCoupon ? String(appliedCoupon.code).trim().toUpperCase() : null,
+      promo: totals.isNewUserFreeDelivery ? 'new-user-free-delivery' : undefined,
       total: totals.grandTotal,
       items: Object.entries(cart)
         .filter(([_, qty]) => qty > 0)
@@ -1325,7 +1339,9 @@ export const useStore = create((set, get) => ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          // The server checks the new customer free delivery against this customer
+          ...(orderPayload.promo && getCustomerToken() ? { Authorization: `Bearer ${getCustomerToken()}` } : {})
         },
         body: JSON.stringify(orderPayload)
       });

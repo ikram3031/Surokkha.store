@@ -38,6 +38,8 @@ const memberSchema = new Schema(
     emailOtp: { type: String, trim: true, select: false },
     emailOtpExpiresAt: { type: Date, select: false },
     isEmailVerified: { type: Boolean, default: false },
+    // Signed up but has not entered the emailed code yet: cannot log in until verified
+    registrationPending: { type: Boolean, default: false },
     emailVerifiedAt: { type: Date, select: false },
     passwordReset: { type: Boolean, default: false },
     billingAddress: {

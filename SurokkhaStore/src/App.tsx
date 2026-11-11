@@ -26,6 +26,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 import { OfferHome } from '@/components/OfferHome'
 import { GroupOfferPage } from '@/components/offer/GroupOfferPage'
 import { OffersPage } from '@/components/offer/OffersPage'
+import { PromoBanner } from '@/components/home/PromoBanner'
 import { ProductPage } from '@/components/product/ProductPage'
 import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/components/checkout/ConfirmationPage'
@@ -107,6 +108,7 @@ function AppShell() {
         )}
         {route.name === 'home' && (
           <>
+            <PromoBanner />
             <HomeHero />
             <TrustStrip />
             <IntroProducts />

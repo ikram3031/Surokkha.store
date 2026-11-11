@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import logoDark from '../asset/surokkha_logo_dark.png';
+import loginImage from '../asset/login.webp';
 import {
   fetchCurrentCustomer,
   forgotPassword,
   loginCustomer,
   logoutCustomer,
   registerCustomer,
+  resendVerification,
   resetPassword,
+  verifyEmail,
 } from '../utils/customerAuth';
 
 const MIN_PASSWORD = 8;
@@ -23,7 +26,7 @@ const TEXT = {
     forgotTitle: 'Forgot your password?', forgotSub: "Enter your email and we'll send you a 6-digit code.",
     resetTitle: 'Reset your password', resetSub: 'Enter the code we emailed you and choose a new password.',
     hello: 'Hello', loggedIn: 'You are logged in.',
-    name: 'Full name', phone: 'Mobile number (optional)', email: 'Email', password: 'Password', newPassword: 'New password',
+    name: 'Full name', phone: 'Mobile number', email: 'Email', password: 'Password', newPassword: 'New password',
     passwordHint: `At least ${MIN_PASSWORD} characters`, code: '6-digit code',
     forgotLink: 'Forgot password?', newHere: 'New to Surokkha?', createLink: 'Create an account',
     haveAccount: 'Already have an account?', createBtn: 'Create account', sendCode: 'Send reset code', resetBtn: 'Reset password',
@@ -32,6 +35,10 @@ const TEXT = {
     errName: 'Please enter your name', errEmail: 'Please enter a valid email address',
     errPassword: `Password must be at least ${MIN_PASSWORD} characters`, errCode: 'Enter the 6-digit code from your email',
     passwordUpdated: 'Password updated. You are now logged in.',
+    verifyTitle: 'Verify your email', verifySub: 'Enter the 6-digit code we sent to your email.',
+    verifyBtn: 'Verify and continue', verified: 'Email verified. Your account is ready.',
+    codeSent: 'We have emailed you a 6-digit code. Enter it to finish creating your account.',
+    errPhone: 'Enter a valid Bangladeshi mobile number (01XXXXXXXXX)',
   },
   bn: {
     login: 'লগ ইন', signup: 'সাইন আপ', logout: 'লগ আউট', home: 'হোম', account: 'আমার অ্যাকাউন্ট',
@@ -41,7 +48,7 @@ const TEXT = {
     forgotTitle: 'পাসওয়ার্ড ভুলে গেছেন?', forgotSub: 'ইমেইল দিন, আমরা ৬ ডিজিটের একটি কোড পাঠাব।',
     resetTitle: 'পাসওয়ার্ড রিসেট', resetSub: 'ইমেইলে পাঠানো কোড দিয়ে নতুন পাসওয়ার্ড দিন।',
     hello: 'হ্যালো', loggedIn: 'আপনি লগ ইন করা আছেন।',
-    name: 'পুরো নাম', phone: 'মোবাইল নম্বর (ঐচ্ছিক)', email: 'ইমেইল', password: 'পাসওয়ার্ড', newPassword: 'নতুন পাসওয়ার্ড',
+    name: 'পুরো নাম', phone: 'মোবাইল নম্বর', email: 'ইমেইল', password: 'পাসওয়ার্ড', newPassword: 'নতুন পাসওয়ার্ড',
     passwordHint: `কমপক্ষে ${MIN_PASSWORD} অক্ষর`, code: '৬ ডিজিটের কোড',
     forgotLink: 'পাসওয়ার্ড ভুলে গেছেন?', newHere: 'সুরক্ষায় নতুন?', createLink: 'অ্যাকাউন্ট তৈরি করুন',
     haveAccount: 'আগে থেকেই অ্যাকাউন্ট আছে?', createBtn: 'অ্যাকাউন্ট তৈরি করুন', sendCode: 'রিসেট কোড পাঠান', resetBtn: 'পাসওয়ার্ড রিসেট করুন',
@@ -50,6 +57,10 @@ const TEXT = {
     errName: 'আপনার নাম লিখুন', errEmail: 'সঠিক ইমেইল ঠিকানা দিন',
     errPassword: `পাসওয়ার্ড কমপক্ষে ${MIN_PASSWORD} অক্ষরের হতে হবে`, errCode: 'ইমেইলে পাঠানো ৬ ডিজিটের কোড দিন',
     passwordUpdated: 'পাসওয়ার্ড পরিবর্তন হয়েছে, আপনি এখন লগ ইন করা আছেন।',
+    verifyTitle: 'ইমেইল যাচাই করুন', verifySub: 'আপনার ইমেইলে পাঠানো ৬ ডিজিটের কোডটি দিন।',
+    verifyBtn: 'যাচাই করে এগিয়ে যান', verified: 'ইমেইল যাচাই হয়েছে, আপনার অ্যাকাউন্ট তৈরি হয়েছে।',
+    codeSent: 'আপনার ইমেইলে ৬ ডিজিটের একটি কোড পাঠানো হয়েছে। অ্যাকাউন্ট তৈরি শেষ করতে কোডটি দিন।',
+    errPhone: 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন (01XXXXXXXXX)',
   },
 };
 
@@ -61,6 +72,21 @@ const linkBtn = 'font-semibold text-rose-700 hover:underline cursor-pointer';
 
 // Bengali digits are common on phone keyboards here
 const toEnDigits = (s) => String(s).replace(/[০-৯]/g, (d) => '০১২৩৪৫৬৭৮৯'.indexOf(d));
+
+// Bangladeshi mobile in +8801XXXXXXXXX form (same rules as checkout), or '' when it is not one
+const bdPhone = (value) => {
+  const digits = toEnDigits(value || '').replace(/\D/g, '');
+  let n = '';
+  if (digits.startsWith('8801') && digits.length >= 13) n = '+880' + digits.slice(3, 13);
+  else if (digits.startsWith('01') && digits.length >= 11) n = '+88' + digits.slice(0, 11);
+  else if (digits.startsWith('1') && digits.length === 10) n = '+880' + digits;
+  return /^\+8801[3-9]\d{8}$/.test(n) ? n : '';
+};
+// Local 01XXXXXXXXX form for anything pasted or typed (+880 1..., 8801..., 1...)
+const localPhone = (value) => {
+  const n = bdPhone(value);
+  return n ? '0' + n.slice(4) : toEnDigits(value || '').replace(/[^\d+]/g, '');
+};
 
 function Field({ label, hint, children }) {
   return (
@@ -162,18 +188,51 @@ export default function AccountView() {
 
   const submitLogin = (e) => {
     e.preventDefault();
-    run(async () => enter(await loginCustomer({ email: email.trim(), password })));
+    run(async () => {
+      try {
+        enter(await loginCustomer({ email: email.trim(), password }));
+      } catch (err) {
+        // Signed up but never entered the emailed code: the server has sent a new one
+        if (err?.code === 'EMAIL_NOT_VERIFIED') {
+          setView('verify');
+          setCode('');
+          setNotice(err.message);
+          return;
+        }
+        throw err;
+      }
+    });
   };
+
+  const submitVerify = (e) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(code)) return showToast(t.errCode);
+    run(async () => {
+      enter(await verifyEmail({ email: email.trim(), otp: code }));
+      showToast(t.verified);
+    });
+  };
+
+  const resendSignupCode = () =>
+    run(async () => {
+      const res = await resendVerification(email.trim());
+      setNotice(res.message);
+    });
 
   const submitSignup = (e) => {
     e.preventDefault();
     if (name.trim().length < 2) return showToast(t.errName);
+    if (!bdPhone(phone)) return showToast(t.errPhone);
     if (!EMAIL_RE.test(email.trim())) return showToast(t.errEmail);
     if (password.length < MIN_PASSWORD) return showToast(t.errPassword);
-    const digits = toEnDigits(phone).replace(/\D/g, '').slice(-11);
-    run(async () =>
-      enter(await registerCustomer({ name: name.trim(), email: email.trim(), password, phone: digits || undefined }))
-    );
+    const normalized = bdPhone(phone);
+    if (!normalized) return showToast(t.errPhone);
+    run(async () => {
+      await registerCustomer({ name: name.trim(), email: email.trim(), password, phone: normalized });
+      setView('verify');
+      setCode('');
+      setNotice(t.codeSent);
+    });
   };
 
   const submitForgot = (e) => {
@@ -211,12 +270,13 @@ export default function AccountView() {
   const heading = {
     login: [t.welcomeBack, t.welcomeSub],
     signup: [t.createTitle, t.createSub],
+    verify: [t.verifyTitle, t.verifySub],
     forgot: [t.forgotTitle, t.forgotSub],
     reset: [t.resetTitle, t.resetSub],
     account: [`${t.hello}${customer ? `, ${customer.name.split(' ')[0]}` : ''}`, t.loggedIn],
   }[view];
 
-  const crumb = { login: t.login, signup: t.signup, forgot: t.forgotTitle, reset: t.resetBtn, account: t.account }[view];
+  const crumb = { login: t.login, signup: t.signup, verify: t.verifyTitle, forgot: t.forgotTitle, reset: t.resetBtn, account: t.account }[view];
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-6 lg:pt-8">
@@ -228,7 +288,9 @@ export default function AccountView() {
       {/* One light-tinted rounded card; brand panel on the left, forms on the right (same layout as SurokkhaStore) */}
       <div className="mb-10 mt-4 grid overflow-hidden rounded-3xl bg-rose-50/60 lg:mb-14 lg:grid-cols-2">
         <aside className="relative hidden min-h-[640px] overflow-hidden bg-slate-900 text-white lg:block">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#4d1224] to-[#241f1c]" />
+          {/* Same photo as the surokkhastore.shop login page, darkened so the text stays readable */}
+          <img src={loginImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/40" />
           <div className="relative flex h-full flex-col justify-between p-10">
             <img src={logoDark} alt="Surokkha" className="h-12 w-auto self-start" />
             <div>
@@ -238,7 +300,9 @@ export default function AccountView() {
           </div>
         </aside>
 
-        <div className="relative h-32 overflow-hidden bg-gradient-to-br from-slate-900 via-[#4d1224] to-[#241f1c] lg:hidden">
+        <div className="relative h-32 overflow-hidden bg-slate-900 lg:hidden">
+          <img src={loginImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/20" />
           <div className="relative flex h-full flex-col justify-end gap-1 p-5">
             <p className="text-xl font-extrabold text-white">{t.tagline}</p>
           </div>
@@ -302,11 +366,18 @@ export default function AccountView() {
                 <Field label={t.phone}>
                   <input
                     value={phone}
-                    onChange={(e) => setPhone(toEnDigits(e.target.value))}
+                    onChange={(e) => setPhone(toEnDigits(e.target.value).replace(/[^\d+]/g, '').slice(0, 14))}
+                    // Pasting +8801..., 8801... or 1... becomes the local 01XXXXXXXXX form
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      setPhone(localPhone(e.clipboardData.getData('text')));
+                    }}
+                    onBlur={() => phone && setPhone(localPhone(phone))}
                     inputMode="tel"
                     autoComplete="tel"
                     placeholder="01XXXXXXXXX"
-                    className={inputClass}
+                    className={`${inputClass} ${phone && !bdPhone(phone) ? 'border-rose-500' : ''}`}
+                    required
                   />
                 </Field>
                 <Field label={t.email}>
@@ -319,6 +390,30 @@ export default function AccountView() {
                 <p className="text-center text-sm text-slate-600 sm:col-span-2">
                   {t.haveAccount}{' '}
                   <button type="button" className={linkBtn} onClick={() => go('login')}>{t.login}</button>
+                </p>
+              </form>
+            )}
+
+            {view === 'verify' && (
+              <form onSubmit={submitVerify} className="mt-6 space-y-4">
+                <Field label={t.email}>
+                  <input type="email" value={email} readOnly className={`${inputClass} bg-slate-50`} />
+                </Field>
+                <Field label={t.code}>
+                  <input
+                    value={code}
+                    onChange={(e) => setCode(toEnDigits(e.target.value).replace(/\D/g, '').slice(0, 6))}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="123456"
+                    className={`${inputClass} tracking-[0.4em]`}
+                    required
+                  />
+                </Field>
+                <button type="submit" className={primaryBtn} disabled={busy}>{busy ? t.wait : t.verifyBtn}</button>
+                <p className="flex justify-between text-sm">
+                  <button type="button" className={linkBtn} onClick={resendSignupCode} disabled={busy}>{t.resend}</button>
+                  <button type="button" className={linkBtn} onClick={() => go('login')}>{t.back}</button>
                 </p>
               </form>
             )}
