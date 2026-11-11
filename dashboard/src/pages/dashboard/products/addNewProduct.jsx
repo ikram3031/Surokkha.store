@@ -19,6 +19,11 @@ import {
   BanglaContentCard,
   bnFormFromProduct,
   bnPayloadFromForm,
+  ProductContentCard,
+  normalizeBenefits,
+  normalizeSections,
+  benefitsPayload,
+  sectionsPayload,
 } from "@/components/dashboard/products";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB limit
@@ -67,6 +72,8 @@ const AddNewProduct = () => {
   const [description, setDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
   const [bnContent, setBnContent] = useState(() => bnFormFromProduct({}));
+  const [benefits, setBenefits] = useState([]);
+  const [sections, setSections] = useState([]);
 
   // 2. SEO details
   const [metaTitle, setMetaTitle] = useState("");
@@ -153,6 +160,8 @@ const AddNewProduct = () => {
     if (p.description) setDescription(p.description);
     if (p.longDescription) setLongDescription(p.longDescription);
     if (p.bn) setBnContent(bnFormFromProduct(p.bn));
+    if (Array.isArray(p.benefits)) setBenefits(normalizeBenefits(p.benefits));
+    if (Array.isArray(p.sections)) setSections(normalizeSections(p.sections));
     if (p.type) setProductType(p.type);
     if (p.season) {
       setSeason(
@@ -644,6 +653,8 @@ const AddNewProduct = () => {
         description: description.trim(),
         longDescription: longDescription.trim(),
         bn: bnPayloadFromForm(bnContent),
+        benefits: benefitsPayload(benefits),
+        sections: sectionsPayload(sections),
         type: productType,
         imageUrl: finalMainImageUrl || "",
         thumbnailUrl: finalThumbnailUrl || finalMainImageUrl || "",
@@ -837,6 +848,13 @@ const AddNewProduct = () => {
                 />
               </div>
             </div>
+
+            <ProductContentCard
+              benefits={benefits}
+              setBenefits={setBenefits}
+              sections={sections}
+              setSections={setSections}
+            />
 
             <BanglaContentCard bn={bnContent} setBn={setBnContent} />
           </div>

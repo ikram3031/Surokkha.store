@@ -2,6 +2,14 @@ import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RichTextEditor } from "@/components/dashboard/rich-text-editor";
+import {
+  BenefitsEditor,
+  SectionsEditor,
+  normalizeBenefits,
+  normalizeSections,
+  benefitsPayload,
+  sectionsPayload,
+} from "./ProductContentCard";
 
 const textareaClass =
   "w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
@@ -14,13 +22,6 @@ export const bnFormFromProduct = (bn) => {
     : src.specifications && typeof src.specifications === "object"
     ? Object.entries(src.specifications).map(([key, value]) => ({ key, value: String(value ?? "") }))
     : [];
-  const benefits = Array.isArray(src.benefits)
-    ? src.benefits.map((b) =>
-        typeof b === "object" && b !== null
-          ? { title: b.title || b.name || "", description: b.description || b.desc || "" }
-          : { title: String(b), description: "" }
-      )
-    : [];
   return {
     ...src,
     name: src.name || src.title || "",
@@ -29,7 +30,8 @@ export const bnFormFromProduct = (bn) => {
     longDescription: src.longDescription || "",
     packSize: src.packSize || "",
     packageContents: src.packageContents || "",
-    benefits,
+    benefits: normalizeBenefits(src.benefits),
+    sections: normalizeSections(src.sections),
     specifications: specs,
   };
 };
@@ -45,9 +47,8 @@ export const bnPayloadFromForm = (form) => {
     longDescription: trim(form.longDescription),
     packSize: trim(form.packSize),
     packageContents: trim(form.packageContents),
-    benefits: (form.benefits || [])
-      .map((b) => ({ title: trim(b.title), description: trim(b.description) }))
-      .filter((b) => b.title),
+    benefits: benefitsPayload(form.benefits),
+    sections: sectionsPayload(form.sections),
     specifications: (form.specifications || [])
       .map((s) => ({ key: trim(s.key), value: trim(s.value) }))
       .filter((s) => s.key && s.value),
@@ -117,25 +118,21 @@ export const BanglaContentCard = ({ bn, setBn }) => {
         />
       </div>
 
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-muted-foreground">সুবিধাসমূহ (Benefits)</label>
-          <Button type="button" variant="secondary" size="sm" onClick={() => addRow("benefits", { title: "", description: "" })}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> Add
-          </Button>
-        </div>
-        {bn.benefits.map((b, i) => (
-          <div key={i} className="flex gap-2 items-start">
-            <div className="flex-1 grid gap-2 sm:grid-cols-[1fr_2fr]">
-              <Input placeholder="শিরোনাম" value={b.title} onChange={(e) => updateRow("benefits", i, "title", e.target.value)} />
-              <Input placeholder="বর্ণনা" value={b.description} onChange={(e) => updateRow("benefits", i, "description", e.target.value)} />
-            </div>
-            <Button type="button" variant="ghost" size="icon" onClick={() => removeRow("benefits", i)}>
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          </div>
-        ))}
-      </div>
+      <BenefitsEditor
+        label="সুবিধাসমূহ (Benefits)"
+        rows={bn.benefits}
+        onChange={(rows) => set("benefits", rows)}
+        titlePlaceholder="শিরোনাম"
+        descPlaceholder="বর্ণনা"
+      />
+
+      <SectionsEditor
+        label="সেকশন (Sections)"
+        rows={bn.sections}
+        onChange={(rows) => set("sections", rows)}
+        headingPlaceholder="হেডিং"
+        contentPlaceholder="কনটেন্ট"
+      />
 
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
