@@ -26,6 +26,8 @@ interface Props {
   /** current tier percentage, if any */
   discountPercent?: number
   shipping: number
+  /** Delivery is free for this order (e.g. it has a Trial Pack) */
+  freeDelivery?: boolean
   /** false until the customer has chosen where it is delivered */
   addressKnown: boolean
   total: number
@@ -33,7 +35,7 @@ interface Props {
 }
 
 /** Floating cart button on the left edge; opens a panel with the whole order, editable. */
-export function OfferCart({ lines, count, subtotal, discount, discountPercent, shipping, addressKnown, total, onCheckout }: Props) {
+export function OfferCart({ lines, count, subtotal, discount, discountPercent, shipping, freeDelivery, addressKnown, total, onCheckout }: Props) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -127,8 +129,8 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
                 )}
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Delivery</dt>
-                  <dd className={addressKnown ? '' : 'text-gray-500'}>
-                    {addressKnown ? taka(shipping) : 'Added after you choose your area'}
+                  <dd className={freeDelivery ? 'font-semibold text-emerald-600' : addressKnown ? '' : 'text-gray-500'}>
+                    {freeDelivery ? 'Free' : addressKnown ? taka(shipping) : 'Added after you choose your area'}
                   </dd>
                 </div>
                 <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-semibold">

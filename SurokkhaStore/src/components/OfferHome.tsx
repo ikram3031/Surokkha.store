@@ -240,7 +240,9 @@ export function OfferHome() {
   const zone = deliveryZone(form.district, form.thana)
   // No delivery charge until the customer has told us where it goes (Dhaka also needs the thana for the suburb rate)
   const addressKnown = !!form.district && (form.district.trim().toLowerCase() !== 'dhaka' || !!form.thana)
-  const shipping = count === 0 || !addressKnown ? 0 : DELIVERY[zone]
+  // Any Trial Pack piece in the order makes delivery free (same rule as SurokkhaShop)
+  const trialFree = trialCount > 0
+  const shipping = count === 0 || !addressKnown || trialFree ? 0 : DELIVERY[zone]
   const total = subtotal - discount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]
 
@@ -800,7 +802,7 @@ export function OfferHome() {
                         Delivery charge{' '}
                         {form.district && <span className="text-xs text-gray-400">({ZONE_LABEL[zone]})</span>}
                       </dt>
-                      <dd>{count ? (addressKnown ? taka(shipping) : <span className="text-gray-500">Added after you choose your area</span>) : '—'}</dd>
+                      <dd>{count ? (trialFree ? <span className="font-semibold text-emerald-600">Free</span> : addressKnown ? taka(shipping) : <span className="text-gray-500">Added after you choose your area</span>) : '—'}</dd>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold">
                       <dt>Grand total</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
@@ -857,7 +859,7 @@ export function OfferHome() {
                 {discount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(subtotal)}</s>}
                 {count > 0 && (
                   <span className="ml-2 text-xs font-normal text-gray-600">
-                    {addressKnown ? `+ ${taka(shipping)} delivery` : '+ delivery (added at checkout)'}
+                    {trialFree ? '+ free delivery' : addressKnown ? `+ ${taka(shipping)} delivery` : '+ delivery (added at checkout)'}
                   </span>
                 )}
               </p>
@@ -876,6 +878,7 @@ export function OfferHome() {
         discount={discount}
         discountPercent={tier?.off}
         shipping={shipping}
+        freeDelivery={trialFree}
         addressKnown={addressKnown}
         total={total}
         onCheckout={goCheckout}
