@@ -37,11 +37,11 @@ const Toaster = ({ ...props }) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
-          top: "32px",
-          right: "0px",
-          "--x-gutter": "0px",
         }
       }
+      // Sits below the top header so its buttons (cache, language, theme, notifications) stay clickable
+      offset={{ top: "76px", right: "16px" }}
+      mobileOffset={{ top: "68px", left: "12px", right: "12px" }}
       toastOptions={{
         classNames: {
           toast: "cn-toast",
