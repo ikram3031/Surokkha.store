@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight, DatabaseBackup } from 'lucide-react';
+import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight, DatabaseBackup, LifeBuoy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -44,6 +44,9 @@ export const NotificationBell = () => {
               queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
               queryClient.invalidateQueries({ queryKey: ['orders'] });
               toast.info(msg.data?.log?.description || 'New order placed!');
+            } else if (msg.event === 'SUPPORT_TICKET_UPDATED') {
+              // Plexivia changed a ticket: the Support Desk page refreshes itself
+              window.dispatchEvent(new CustomEvent('support:updated', { detail: msg.data }));
             } else if (msg.event === 'NOTIFICATION_READ_UPDATE') {
               queryClient.invalidateQueries({ queryKey: ['notification-logs'] });
             }
@@ -121,6 +124,8 @@ export const NotificationBell = () => {
       navigate('/dashboard/tools/messages');
     } else if (log.type === 'backup') {
       navigate('/settings/r2-storage');
+    } else if (log.type === 'supportTicket') {
+      navigate('/dashboard/tools/support');
     } else {
       navigate('/dashboard/orders');
     }
@@ -198,6 +203,7 @@ export const NotificationBell = () => {
               const isUnread = !log.readStatus;
               const isMail = log.type === 'contactMessage' || log.type === 'webmailMessage';
               const isBackup = log.type === 'backup';
+              const isSupport = log.type === 'supportTicket';
               const backupFailed = isBackup && /FAILED/.test(log.description || '');
 
               return (
@@ -217,6 +223,8 @@ export const NotificationBell = () => {
                             : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                           : isMail
                             ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                            : isSupport
+                            ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
                             : 'bg-primary/15 text-primary'
                         : 'bg-muted text-muted-foreground'
                     }`}
@@ -225,6 +233,8 @@ export const NotificationBell = () => {
                       <DatabaseBackup className="h-4 w-4" />
                     ) : isMail ? (
                       <Mail className="h-4 w-4" />
+                    ) : isSupport ? (
+                      <LifeBuoy className="h-4 w-4" />
                     ) : (
                       <ShoppingBag className="h-4 w-4" />
                     )}

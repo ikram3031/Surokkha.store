@@ -252,6 +252,14 @@ const storeSettingsSchema = new Schema(
         default: false,
       },
     },
+    // Plexivia Support Desk connection, set from Business Settings (the key is stored encrypted)
+    plexiviaSupport: {
+      apiBaseUrl: { type: String, default: "", trim: true },
+      keyEnc: { type: String, default: "" },
+      keyHint: { type: String, default: "" },
+      updatedAt: { type: Date },
+      updatedBy: { type: String, default: "" },
+    },
     imap: {
       host: {
         type: String,

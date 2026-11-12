@@ -21,6 +21,7 @@ export const LOG_TYPE_DIDS = {
   contactMessage: "112",
   webmailMessage: "113",
   backup: "115",
+  supportTicket: "116",
 };
 
 const logSchema = new Schema(
@@ -34,7 +35,7 @@ const logSchema = new Schema(
     type: {
       type: String,
       required: true,
-      enum: ["newOrder", "created", "updated", "deleted", "error", "contactMessage", "webmailMessage", "backup"],
+      enum: ["newOrder", "created", "updated", "deleted", "error", "contactMessage", "webmailMessage", "backup", "supportTicket"],
       default: "created",
       index: true,
     },

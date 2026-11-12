@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import SlotCard from '@/components/cms/SlotCard';
 import IdFormatsCard from '@/components/settings/IdFormatsCard';
+import PlexiviaSupportCard from '@/components/settings/PlexiviaSupportCard';
 import { apiClient } from '@/lib/api-client';
 import { useCmsAssets } from '@/lib/use-cms-assets';
 import { toast } from 'sonner';
@@ -76,6 +77,8 @@ const BusinessSettingsPage = () => {
       </Card>
 
       <IdFormatsCard data={data} isLoading={isLoading} />
+
+      <PlexiviaSupportCard />
 
       <ConfirmDeleteDialog
         open={Boolean(cms.deleteTarget)}

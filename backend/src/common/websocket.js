@@ -81,7 +81,7 @@ export const initWebSocketServer = (httpServer) => {
 
     // Send initial notification snapshot upon connection
     try {
-      const notificationFilter = { active: true, type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup"] } };
+      const notificationFilter = { active: true, type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup", "supportTicket"] } };
       const [topLogs, unreadCount] = await Promise.all([
         LogModel.find(notificationFilter).sort({ createdAt: -1 }).limit(10).lean(),
         LogModel.countDocuments({ ...notificationFilter, readStatus: false }),
@@ -157,7 +157,7 @@ export async function broadcastLiveNotification(logEntry) {
   try {
     const unreadCount = await LogModel.countDocuments({
       active: true,
-      type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup"] },
+      type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup", "supportTicket"] },
       readStatus: false,
     });
 
@@ -186,6 +186,17 @@ export async function broadcastLiveNotification(logEntry) {
     }
   } catch (err) {
     logger.error({ err }, "Error broadcasting live notification over WebSocket");
+  }
+}
+
+/**
+ * Sends a named event (e.g. SUPPORT_TICKET_UPDATED) to every connected dashboard
+ */
+export function broadcastEvent(event, data) {
+  if (!authenticatedClients.size) return;
+  const payload = JSON.stringify({ event, data });
+  for (const client of authenticatedClients) {
+    if (client.readyState === WebSocket.OPEN) client.send(payload);
   }
 }
 

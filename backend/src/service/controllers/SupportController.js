@@ -1,14 +1,15 @@
 import express from "express";
 import { logger } from "../../common/config/logger.js";
+import { getSupportConfig, DEFAULT_PLEXIVIA_API_BASE_URL } from "../../common/services/plexiviaSupport.service.js";
 
 /**
  * Support Desk proxy (outbound to Plexivia).
  *
  * The dashboard never sees the Plexivia support key: it calls these routes with its own staff
  * token, and this controller adds `X-Support-Key` server-side before forwarding.
+ * The key and API URL come from Business Settings (stored encrypted in the database).
  */
 
-const DEFAULT_PLEXIVIA_API_BASE_URL = "https://api.plexivia.com";
 const UPSTREAM_TIMEOUT_MS = 15000;
 const UPLOAD_TIMEOUT_MS = 30000;
 
@@ -20,23 +21,26 @@ const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 const CATEGORIES = ["VPS", "DEPLOYMENT", "BUG", "BILLING", "FEATURE"];
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 
-const getBaseUrl = () =>
-  (process.env.PLEXIVIA_API_BASE_URL || DEFAULT_PLEXIVIA_API_BASE_URL).trim().replace(/\/+$/, "");
-const getSupportKey = () => (process.env.PLEXIVIA_SUPPORT_KEY || "").trim();
+// Loaded per request (cached briefly by the service) so a key saved in settings applies at once
+let current = { apiBaseUrl: DEFAULT_PLEXIVIA_API_BASE_URL, key: "" };
+const getBaseUrl = () => current.apiBaseUrl;
+const getSupportKey = () => current.key;
 
-// Log the "not configured" state once per process, not once per request
-let warnedUnconfigured = false;
-
-// Keeps the endpoints closed (503) until PLEXIVIA_SUPPORT_KEY is set, like requirePlexiviaKey does for the sync key
-export const requireSupportConfigured = (req, res, next) => {
-  if (getSupportKey()) return next();
-  if (!warnedUnconfigured) {
-    warnedUnconfigured = true;
-    logger.warn("[Support] PLEXIVIA_SUPPORT_KEY is not set; Support Desk endpoints return 503 until it is configured");
+// Keeps the endpoints closed (503) until the Owner connects the store in Business Settings
+export const requireSupportConfigured = async (req, res, next) => {
+  try {
+    const cfg = await getSupportConfig();
+    if (cfg.configured) {
+      current = cfg;
+      return next();
+    }
+  } catch (err) {
+    logger.warn({ err: err?.message }, "[Support] Could not load the Plexivia support settings");
   }
   return res.status(503).json({
     success: false,
-    message: "Support Desk is not configured on this server. Ask your administrator to set the Plexivia support key.",
+    code: "SUPPORT_NOT_CONNECTED",
+    message: "Support Desk is not connected yet. The store Owner can connect it in Settings → Business Settings → Plexivia Support Desk.",
   });
 };
 

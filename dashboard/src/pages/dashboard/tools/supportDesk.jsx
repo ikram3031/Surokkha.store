@@ -265,6 +265,13 @@ export const SupportDesk = () => {
     return () => clearInterval(timer);
   }, [loadData]);
 
+  // Live: Plexivia pushed a change (engineer reply, status, new ticket) — refresh right away
+  useEffect(() => {
+    const onLive = () => loadData();
+    window.addEventListener("support:updated", onLive);
+    return () => window.removeEventListener("support:updated", onLive);
+  }, [loadData]);
+
   // Keep the newest message in view when a thread opens or grows
   useEffect(() => {
     if (selectedId) threadEndRef.current?.scrollIntoView({ block: "end" });

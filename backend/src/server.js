@@ -6,6 +6,7 @@ import { env } from "./common/config/env.js";
 import { logger } from "./common/config/logger.js";
 import { createShutdownHandler } from "./common/helper/sutdownHelper.js";
 import { initWebSocketServer } from "./common/websocket.js";
+import { startSupportStream } from "./common/services/plexiviaSupportStream.service.js";
 import { initMediaSchedulers, stopMediaSchedulers } from "./common/schedulers/mediaScheduler.js";
 import { initHeartbeatScheduler, stopHeartbeatScheduler } from "./common/schedulers/heartbeat.scheduler.js";
 import { loadSiteConfigOverrides, startSiteConfigRefresh } from "./common/services/siteConfig.service.js";
@@ -43,6 +44,7 @@ const bootstrap = async () => {
     servers.push(server);
 
     initWebSocketServer(server);
+    startSupportStream();
     initMediaSchedulers();
     initHeartbeatScheduler();
     initBackupScheduler();
@@ -75,6 +77,7 @@ const bootstrap = async () => {
     servers.push(serviceServer);
 
     initWebSocketServer(serviceServer);
+    startSupportStream();
     initMediaSchedulers();
     initHeartbeatScheduler();
     initBackupScheduler();
