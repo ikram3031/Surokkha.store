@@ -11,10 +11,11 @@ export const sendOtpEmail = async ({
   otp,
   name,
   type = "registration",
+  site,
   transport,
   log = console,
 }) => {
-  const smtpResult = await getSmtpTransport();
+  const smtpResult = await getSmtpTransport(site);
   const activeTransport = transport || smtpResult.transport;
   const smtpConfig = smtpResult.config;
 
