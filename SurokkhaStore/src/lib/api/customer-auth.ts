@@ -54,6 +54,26 @@ export function resendVerification(email: string) {
   return api.post<{ message: string }>('/customer-auth/resend-verification', { email })
 }
 
+export interface CheckoutAddress {
+  fullName: string
+  phone: string
+  address: string
+  district: string
+  thana: string
+}
+
+/** GET /store/v1/customer-auth/checkout-details — the logged-in customer's details from their latest order (null when logged out). */
+export async function fetchCheckoutDetails(): Promise<{ billing: CheckoutAddress & { email: string }; shipping: CheckoutAddress | null } | null> {
+  const token = getCustomerToken()
+  if (!token) return null
+  try {
+    const res = await api.get<{ data: { billing: CheckoutAddress & { email: string }; shipping: CheckoutAddress | null } }>('/customer-auth/checkout-details', undefined, { token })
+    return res.data
+  } catch {
+    return null
+  }
+}
+
 /** GET /store/v1/customer-auth/promo — preset offers the logged-in customer can use (null when logged out). */
 export async function fetchMyPromo(): Promise<{ newUserFreeDelivery: { minOrderAmount: number } | null } | null> {
   const token = getCustomerToken()

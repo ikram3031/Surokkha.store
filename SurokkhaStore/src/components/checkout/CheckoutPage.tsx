@@ -10,7 +10,7 @@ import { ApiError } from '@/lib/api/client'
 import { getCoupon } from '@/lib/api/catalog'
 import { getThanasByDistrict } from '@/lib/api/locations'
 import { checkPhone, createOrder, type NewOrderPayload, type OrderAddress } from '@/lib/api/orders'
-import { fetchMyPromo, getCustomerToken } from '@/lib/api/customer-auth'
+import { fetchCheckoutDetails, fetchMyPromo, getCustomerToken } from '@/lib/api/customer-auth'
 import {
   comboSubtotal,
   couponDiscount,
@@ -126,6 +126,30 @@ export function CheckoutPage() {
   useEffect(() => {
     let cancelled = false
     fetchMyPromo().then((p) => !cancelled && setNewUserFreeMin(p?.newUserFreeDelivery ? p.newUserFreeDelivery.minOrderAmount : null))
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Logged-in customer: pre-fill from their latest order; never overwrite what they've already typed
+  useEffect(() => {
+    let cancelled = false
+    fetchCheckoutDetails().then((d) => {
+      if (cancelled || !d) return
+      const b = d.billing
+      setForm((f) => ({
+        ...f,
+        fullName: f.fullName || b.fullName,
+        phone: f.phone || b.phone,
+        email: f.email || b.email,
+        ...(f.address || f.district ? {} : { address: b.address, district: b.district, thana: b.thana }),
+      }))
+      const s = d.shipping
+      if (s && (s.address !== b.address || s.district !== b.district || s.thana !== b.thana || s.fullName !== b.fullName || s.phone !== b.phone)) {
+        setSameAsBilling(false)
+        setShip((cur) => (cur.address || cur.district ? cur : { ...s }))
+      }
+    })
     return () => {
       cancelled = true
     }

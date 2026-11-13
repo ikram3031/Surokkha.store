@@ -7,6 +7,7 @@ import { comparePassword, hashPassword } from "../../common/utils/password.js";
 import { allowHit, clearHits } from "../../common/utils/rateLimit.js";
 import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 import { newUserFreeDeliveryFor } from "../../common/utils/promo.js";
+import { OrderModel } from "../../common/models/order.model.js";
 
 // Customer tokens use a secret derived from the staff one, so a customer token can never
 // authenticate against the dashboard/staff APIs (and vice versa).
@@ -187,6 +188,28 @@ export const myPromo = async (req, res, next) => {
   try {
     const nufd = await newUserFreeDeliveryFor(req.customer);
     res.json({ status: "success", data: { newUserFreeDelivery: nufd.eligible ? { minOrderAmount: nufd.minOrderAmount } : null } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /store/v1/customer-auth/checkout-details
+// Contact and address from this customer's latest order, to pre-fill checkout. Matched on the verified
+// account email only (the phone is not verified, so it could point at someone else's orders).
+export const checkoutDetails = async (req, res, next) => {
+  try {
+    const member = req.customer;
+    const pick = (o) => (o ? { fullName: o.fullName || "", phone: o.phone || "", address: o.address || "", district: o.district || "", thana: o.thana || "" } : null);
+    const order = member?.email
+      ? await OrderModel.findOne({ "billingInfo.email": member.email }).sort({ createdAt: -1 }).select("billingInfo shippingInfo").lean()
+      : null;
+    res.json({
+      status: "success",
+      data: {
+        billing: order ? { ...pick(order.billingInfo), email: order.billingInfo?.email || member.email } : { fullName: member?.name || "", phone: member?.phone || "", email: member?.email || "", address: "", district: "", thana: "" },
+        shipping: order ? pick(order.shippingInfo) : null,
+      },
+    });
   } catch (error) {
     next(error);
   }

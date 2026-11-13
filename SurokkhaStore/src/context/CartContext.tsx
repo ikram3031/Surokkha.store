@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
-import { FREE_SHIP_AT, SHIP_FEE, type Product } from '@/data/products'
+import { SHIP_FEE, type Product } from '@/data/products'
 import { groupOfferTotals, hasFreeDelivery } from '@/lib/checkout'
 import type { GroupOfferProduct, GroupOfferRule } from '@/lib/api/groupOffers'
 import { taka } from '@/lib/bn'
@@ -136,13 +136,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const count = lines.reduce((s, line) => s + line.qty, 0)
     const subtotal = lines.reduce((s, line) => s + line.qty * line.product.price, 0)
     const freeDelivery = hasFreeDelivery(lines)
-    const shipping = subtotal === 0 || freeDelivery || subtotal >= FREE_SHIP_AT ? 0 : SHIP_FEE
+    const shipping = subtotal === 0 || freeDelivery ? 0 : SHIP_FEE
     const freeShipNote =
-      subtotal === 0
-        ? ''
-        : freeDelivery || subtotal >= FREE_SHIP_AT
-          ? 'Delivery is free on your order.'
-          : `Add ${taka(FREE_SHIP_AT - subtotal)} more for free delivery.`
+      subtotal > 0 && freeDelivery ? 'Delivery is free on your order.' : ''
     const groupDiscount = groupOfferTotals(lines).discount
     return { count, subtotal, shipping, total: subtotal + shipping - groupDiscount, freeShipNote, groupDiscount }
   }, [cart])

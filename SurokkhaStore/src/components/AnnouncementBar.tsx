@@ -1,7 +1,6 @@
 // Each message leads with its own icon: an offer emoji for deals, a plain one for general info
 const MESSAGES = [
-  { icon: '🚚', text: 'Cash on delivery available. Free delivery on orders above ৳1,000.' },
-  { icon: '🔥', text: '20% off combo packs — use code COMBO20 at checkout.' },
+  { icon: '🚚', text: 'রেজিস্ট্রেশন করলে প্রথম অর্ডারে ফ্রি ডেলিভারি' },
 ]
 
 /* Each half of the track repeats the messages enough to be wider than any

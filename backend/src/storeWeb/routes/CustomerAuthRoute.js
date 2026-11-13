@@ -9,6 +9,7 @@ import {
   verifyEmail,
   resendVerification,
   myPromo,
+  checkoutDetails,
 } from "../controllers/CustomerAuthController.js";
 
 const router = Router();
@@ -21,5 +22,6 @@ router.get("/me", authenticateCustomer, me);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification", resendVerification);
 router.get("/promo", authenticateCustomer, myPromo);
+router.get("/checkout-details", authenticateCustomer, checkoutDetails);
 
 export default router;
