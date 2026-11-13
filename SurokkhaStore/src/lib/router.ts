@@ -16,6 +16,7 @@ export type Route =
   | { name: 'policy'; page: 'terms' | 'privacy' | 'refund' }
   | { name: 'blog' }
   | { name: 'blog-post'; slug: string }
+  | { name: 'not-found' }
 
 export function parseRoute(pathname: string): Route {
   const parts = pathname.split('/').filter(Boolean)
@@ -34,7 +35,8 @@ export function parseRoute(pathname: string): Route {
   if (parts[0] === 'privacy-policy') return { name: 'policy', page: 'privacy' }
   if (parts[0] === 'return-and-refund-policy') return { name: 'policy', page: 'refund' }
   if (parts[0] === 'order-confirmed') return { name: 'confirmation' }
-  return { name: 'home' }
+  if (parts.length === 0) return { name: 'home' }
+  return { name: 'not-found' }
 }
 
 export const categoryPath = (slug: string) => `/category/${encodeURIComponent(slug)}`

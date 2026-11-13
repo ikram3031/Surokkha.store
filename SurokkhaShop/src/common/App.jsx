@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import NotFoundView from './views/NotFoundView';
 import { useStore, parseRouteFromLocation } from './store/useStore';
 import Navbar from './components/SurokkhaNavbar';
 import Footer from './components/Footer';
@@ -77,6 +78,7 @@ export default function App() {
         {currentView === 'faq' && <FaqView />}
         {currentView === 'contact' && <ContactView />}
         {currentView === 'account' && <AccountView />}
+        {currentView === 'notfound' && <NotFoundView />}
       </main>
 
       <Footer />
