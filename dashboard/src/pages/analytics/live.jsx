@@ -77,7 +77,15 @@ export default function AnalyticsLive() {
             {(data?.recent || []).map((e) => (
               <div key={e._id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                 <div className="min-w-0">
-                  <div className="truncate">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span
+                      className={`inline-flex h-4 shrink-0 items-center rounded px-1 text-[10px] font-bold leading-none text-white ${
+                        e.site === 'store' ? 'bg-green-600' : 'bg-blue-600'
+                      }`}
+                      title={e.site === 'store' ? 'surokkha.store' : 'surokkha.shop'}
+                    >
+                      {e.site === 'store' ? 'ST' : 'SH'}
+                    </span>
                     <span className="font-medium">{EVENT_LABELS[e.eventType] || e.eventType}</span>
                     {' · '}
                     {e.productName || e.productKey}

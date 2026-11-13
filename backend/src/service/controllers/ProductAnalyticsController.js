@@ -268,7 +268,7 @@ export const getLiveActivity = async (req, res) => {
         { $count: "n" },
       ]),
       ProductEventModel.find({ createdAt: { $gte: since } })
-        .select("productKey productName eventType quantity value source device ipAddress visitorId createdAt")
+        .select("site productKey productName eventType quantity value source device ipAddress visitorId createdAt")
         .sort({ createdAt: -1 })
         .limit(40)
         .lean(),
