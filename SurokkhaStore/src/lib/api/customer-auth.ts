@@ -117,3 +117,65 @@ export async function fetchCurrentCustomer(): Promise<Customer | null> {
 export function logout() {
   setCustomerToken(null)
 }
+
+export type CustomerOrderStatus = 'pending' | 'confirmed' | 'shipped' | 'out' | 'delivered' | 'cancelled' | 'returned'
+
+export interface CustomerOrder {
+  id: string
+  status: CustomerOrderStatus
+  createdAt: string
+  updatedAt: string
+  total: number
+  subtotal: number
+  shipping: number
+  discount: number
+  paymentMethod: string
+  paymentStatus: string
+  items: { name: string; qty: number; price: number; image: string; size: string }[]
+  courier: {
+    provider: string
+    consignmentId: string
+    trackingCode: string
+    status: string
+    dispatchedAt: string | null
+    deliveredAt: string | null
+    lastEventAt: string | null
+  }
+  shippingInfo: { fullName?: string; phone?: string; address?: string; thana?: string; district?: string } | null
+}
+
+export interface SavedAddress {
+  id: number
+  label: 'Home' | 'Office' | 'Other'
+  name: string
+  phone: string
+  division: string
+  district: string
+  area: string
+  address: string
+  isDefault: boolean
+}
+
+function authed() {
+  const token = getCustomerToken()
+  if (!token) throw new Error('Please log in to continue')
+  return { token }
+}
+
+/** GET /store/v1/customer-auth/orders — the logged-in customer's orders, newest first. */
+export async function fetchMyOrders(): Promise<CustomerOrder[]> {
+  const res = await api.get<{ data: CustomerOrder[] }>('/customer-auth/orders', undefined, authed())
+  return res.data
+}
+
+/** GET /store/v1/customer-auth/addresses */
+export async function fetchMyAddresses(): Promise<SavedAddress[]> {
+  const res = await api.get<{ data: SavedAddress[] }>('/customer-auth/addresses', undefined, authed())
+  return res.data
+}
+
+/** PUT /store/v1/customer-auth/addresses — replaces the saved list; returns what the server kept. */
+export async function saveMyAddresses(addresses: SavedAddress[]): Promise<SavedAddress[]> {
+  const res = await api.put<{ data: SavedAddress[] }>('/customer-auth/addresses', { addresses }, authed())
+  return res.data
+}

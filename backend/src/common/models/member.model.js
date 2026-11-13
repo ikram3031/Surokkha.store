@@ -10,6 +10,8 @@ const memberSchema = new Schema(
     phone: { type: String, trim: true, default: "" },
     names: { type: [String], default: [] },
     phones: { type: [String], default: [] },
+    // Saved delivery addresses from the storefront account page
+    addresses: { type: [Schema.Types.Mixed], default: [] },
     emails: { type: [String], default: [] },
     orderProfiles: {
       type: [

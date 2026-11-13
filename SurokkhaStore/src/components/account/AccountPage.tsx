@@ -18,6 +18,7 @@ import {
 import { isValidEmail, isValidPhone, localPhone, normalizePhone, toEnDigits } from '@/lib/checkout'
 import { ApiError } from '@/lib/api/client'
 import { navigate } from '@/lib/router'
+import { CustomerDashboard } from '@/components/account/CustomerDashboard'
 
 type View = 'login' | 'signup' | 'verify' | 'forgot' | 'reset' | 'account'
 
@@ -245,6 +246,10 @@ export function AccountPage() {
 
   const primary = 'h-11 w-full rounded-full text-base'
   const link = 'font-semibold text-primary underline-offset-4 hover:underline'
+
+  if (!checking && view === 'account' && customer) {
+    return <CustomerDashboard customer={customer} onSignOut={signOut} />
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-6 lg:pt-8">
