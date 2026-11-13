@@ -1,5 +1,7 @@
+import crypto from "crypto";
 import mongoose from "mongoose";
 import nodemailer from "nodemailer";
+import MailComposer from "nodemailer/lib/mail-composer/index.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { decryptText } from "../utils/crypto.util.js";
 import { env } from "../config/env.js";
@@ -113,8 +115,54 @@ export const guardSelfSend = (transport, senderAddresses) => {
   return transport;
 };
 
+/**
+ * Mailbox copy: every email the store sends is also saved into the webmail mailbox's Sent folder
+ * (IMAP APPEND), so notifications show up in Webmail. It is never re-sent over SMTP, so nothing
+ * bounces or loops. On when Webmail IMAP is switched on, unless imap.copySentMail is false.
+ * Emails with one-time codes or sign-in links pass { mailboxCopy: false } and are never copied.
+ */
+const mailboxCopyEnabled = async () => {
+  if (mongoose.connection.readyState !== 1) return false;
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap.isEnabled imap.copySentMail").lean();
+    return Boolean(doc?.imap?.isEnabled) && doc?.imap?.copySentMail !== false;
+  } catch {
+    return false;
+  }
+};
+
+const copyToMailbox = async (options) => {
+  if (!(await mailboxCopyEnabled())) return;
+  const raw = await new MailComposer(options).compile().build();
+  // Loaded here because imapSync itself imports this module
+  const { appendEmailToSentFolder } = await import("./imapSync.service.js");
+  await appendEmailToSentFolder(raw);
+};
+
+const domainOf = (address) => addressOf(address).split("@")[1] || "surokkha.store";
+
+const withMailboxCopy = (transport, fromEmail) => {
+  const send = transport.sendMail.bind(transport);
+  transport.sendMail = async (options = {}, callback) => {
+    // Same Message-ID on the sent mail and its copy, so the Sent folder sync doesn't list it twice
+    const message = { ...options, messageId: options.messageId || `<${crypto.randomUUID()}@${domainOf(options.from || fromEmail)}>` };
+    try {
+      const info = await send(message);
+      if (!info?.skipped) {
+        copyToMailbox(message).catch((err) => console.warn("[SMTP] Mailbox copy failed:", err.message));
+      }
+      if (callback) return callback(null, info);
+      return info;
+    } catch (err) {
+      if (callback) return callback(err);
+      throw err;
+    }
+  };
+  return transport;
+};
+
 // Creates and returns a Nodemailer transport instance with current active SMTP settings for a site ("shop" by default)
-export const getSmtpTransport = async (site) => {
+export const getSmtpTransport = async (site, { mailboxCopy = true } = {}) => {
   const config = await getSmtpConfig(site);
 
   const isLocalhost = config.host === "127.0.0.1" || config.host === "localhost";
@@ -139,7 +187,8 @@ export const getSmtpTransport = async (site) => {
     };
   }
 
-  const transport = guardSelfSend(nodemailer.createTransport(transportConfig), [config.user, config.fromEmail]);
+  const guarded = guardSelfSend(nodemailer.createTransport(transportConfig), [config.user, config.fromEmail]);
+  const transport = mailboxCopy ? withMailboxCopy(guarded, config.fromEmail) : guarded;
 
   return {
     transport,

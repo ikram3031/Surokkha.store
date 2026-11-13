@@ -15,7 +15,7 @@ export const sendOtpEmail = async ({
   transport,
   log = console,
 }) => {
-  const smtpResult = await getSmtpTransport(site);
+  const smtpResult = await getSmtpTransport(site, { mailboxCopy: false });
   const activeTransport = transport || smtpResult.transport;
   const smtpConfig = smtpResult.config;
 

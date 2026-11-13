@@ -15,7 +15,7 @@ authenticator.options = { window: 1 };
 // Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
 export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
   try {
-    const { transport, config: smtpConfig } = await getSmtpTransport();
+    const { transport, config: smtpConfig } = await getSmtpTransport(undefined, { mailboxCopy: false });
     if (!smtpConfig.isConfigured) {
       logger.warn({ email: user.email }, "Cannot send 2FA setup email: SMTP is not configured");
       return false;

@@ -68,7 +68,7 @@ const accessUpdatesFor = (actorRole, payload, current = {}) => {
 // Dispatches user invitation email via active SMTP configuration
 export const sendInvitationEmail = async ({ user, inviteUrl }) => {
   try {
-    const { transport, config: smtpConfig } = await getSmtpTransport();
+    const { transport, config: smtpConfig } = await getSmtpTransport(undefined, { mailboxCopy: false });
     if (!smtpConfig.isConfigured) {
       console.warn(`[UsersController] Cannot send invitation email to ${user.email}: SMTP is not configured in DB or .env`);
       return { success: false, reason: "SMTP credentials not configured" };

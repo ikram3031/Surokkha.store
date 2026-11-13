@@ -41,7 +41,7 @@ export const sendQrCodeEmail = async (req, res, next) => {
 
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
 
-    const { transport, config: smtpConfig } = await getSmtpTransport();
+    const { transport, config: smtpConfig } = await getSmtpTransport(undefined, { mailboxCopy: false });
     if (!smtpConfig.isConfigured) {
       return res.status(500).json({ status: "error", message: "SMTP service is not configured" });
     }

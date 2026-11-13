@@ -288,6 +288,11 @@ const storeSettingsSchema = new Schema(
         type: Boolean,
         default: false,
       },
+      // Save a copy of every email the store sends (orders, alerts, notices) into this mailbox's Sent folder
+      copySentMail: {
+        type: Boolean,
+        default: true,
+      },
       // Where new incoming webmail is forwarded; empty means no forwarding
       forwardEmails: {
         type: [{ type: String, trim: true, lowercase: true }],
