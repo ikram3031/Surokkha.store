@@ -3,12 +3,12 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import { catBg } from '@/data/products'
-import { DISTRICT_NAMES, FALLBACK_THANAS } from '@/data/districts'
+import { DISTRICT_NAMES } from '@/data/districts'
+import { useThanas } from '@/lib/useThanas'
 import LocationSelect from '@/components/checkout/LocationSelect'
 import { useCart } from '@/context/CartContext'
 import { ApiError } from '@/lib/api/client'
 import { getCoupon } from '@/lib/api/catalog'
-import { getThanasByDistrict } from '@/lib/api/locations'
 import { checkPhone, createOrder, type NewOrderPayload, type OrderAddress } from '@/lib/api/orders'
 import { fetchCheckoutDetails, fetchMyPromo, getCustomerToken } from '@/lib/api/customer-auth'
 import {
@@ -73,37 +73,6 @@ const DELIVERY_TIERS = [
   { label: 'Dhaka Suburbs & Nearby', time: 'Within 2–3 days', fee: 90 },
   { label: 'Outside Dhaka', time: 'Within 2–3 days', fee: 120 },
 ]
-
-// Thana list for a district: live from the API, bundled list as a fallback
-const thanaCache: Record<string, string[]> = {}
-function useThanas(district: string) {
-  const [options, setOptions] = useState<string[]>([])
-  useEffect(() => {
-    if (!district) {
-      setOptions([])
-      return
-    }
-    if (thanaCache[district]) {
-      setOptions(thanaCache[district])
-      return
-    }
-    let cancelled = false
-    const fallback = FALLBACK_THANAS[district] ?? []
-    setOptions(fallback)
-    getThanasByDistrict<{ data?: { name: string }[] }>(district)
-      .then((res) => {
-        const names = (res.data ?? []).map((t) => t.name).filter(Boolean)
-        const next = names.length > 0 ? names : fallback
-        if (next.length > 0) thanaCache[district] = next
-        if (!cancelled) setOptions(next)
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-    }
-  }, [district])
-  return options
-}
 
 export function CheckoutPage() {
   const { cart, count, subtotal, clear } = useCart()

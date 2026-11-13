@@ -16,6 +16,9 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import LocationSelect from '@/components/checkout/LocationSelect'
+import { DISTRICT_NAMES } from '@/data/districts'
+import { useThanas } from '@/lib/useThanas'
 import {
   fetchMyAddresses,
   fetchMyOrders,
@@ -76,7 +79,6 @@ const isActive = (o: CustomerOrder) => ['pending', 'confirmed', 'shipped', 'out'
 const payLabel = (o: CustomerOrder) =>
   o.paymentMethod === 'cod' || !o.paymentMethod ? 'Cash on Delivery' : o.paymentMethod.toUpperCase()
 
-const DIVISIONS = ['Dhaka', 'Chattogram', 'Rajshahi', 'Khulna', 'Barishal', 'Sylhet', 'Rangpur', 'Mymensingh']
 
 const FILTER_OPTIONS: [string, string][] = [
   ['all', 'All'],
@@ -181,13 +183,15 @@ export function CustomerDashboard({
   const [formState, setFormState] = useState({
     name: '',
     phone: '',
-    division: 'Dhaka',
+    division: '',
     district: '',
     area: '',
     address: '',
     label: 'Home' as Address['label'],
     isDefault: false,
   })
+
+  const formThanas = useThanas(formState.district)
 
   const firstName = customer.name.trim().split(/\s+/)[0] || 'there'
   const initials = getInitials(customer.name)
@@ -253,7 +257,7 @@ export function CustomerDashboard({
       setFormState({
         name: customer.name || '',
         phone: customer.phone || '',
-        division: 'Dhaka',
+        division: '',
         district: '',
         area: '',
         address: '',
@@ -266,6 +270,10 @@ export function CustomerDashboard({
 
   const saveAddress = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formState.district || !formState.area) {
+      toast.error(!formState.district ? 'Select a district' : 'Select a thana / upazila')
+      return
+    }
     let next = addresses.map((a) => (formState.isDefault ? { ...a, isDefault: false } : a))
     if (editingId !== null) {
       next = next.map((a) => (a.id === editingId ? { id: editingId, ...formState } : a))
@@ -967,7 +975,7 @@ export function CustomerDashboard({
                       <p className="text-sm text-[#5E4E52] mt-2 leading-relaxed flex-1">
                         {a.address}, {a.area}
                         <br />
-                        {a.district}, {a.division} Division
+                        {a.district}
                       </p>
                       {!a.isDefault ? (
                         <button
@@ -1041,42 +1049,33 @@ export function CustomerDashboard({
                   />
                 </label>
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <label className="block">
-                  <span className="text-sm font-semibold">Division</span>
-                  <select
-                    value={formState.division}
-                    onChange={(e) => setFormState((s) => ({ ...s, division: e.target.value }))}
-                    className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-[#EADFD0] text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6B1028]/20 focus:border-[#6B1028]"
-                  >
-                    {DIVISIONS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <span className="text-sm font-semibold">District</span>
-                  <input
-                    required
-                    value={formState.district}
-                    onChange={(e) => setFormState((s) => ({ ...s, district: e.target.value }))}
-                    className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-[#EADFD0] text-sm focus:outline-none focus:ring-2 focus:ring-[#6B1028]/20 focus:border-[#6B1028]"
-                    placeholder="e.g. Dhaka"
-                  />
-                </label>
+                  <div className="mt-1.5">
+                    <LocationSelect
+                      id="addrDistrict"
+                      value={formState.district}
+                      options={DISTRICT_NAMES}
+                      onSelect={(name) => setFormState((s) => ({ ...s, district: name, area: '' }))}
+                      placeholder="Select district"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <span className="text-sm font-semibold">Thana / Upazila</span>
+                  <div className="mt-1.5">
+                    <LocationSelect
+                      id="addrThana"
+                      value={formState.area}
+                      options={formThanas}
+                      disabled={!formState.district}
+                      onSelect={(name) => setFormState((s) => ({ ...s, area: name }))}
+                      placeholder={formState.district ? 'Select thana' : 'District first'}
+                    />
+                  </div>
+                </div>
               </div>
-              <label className="block">
-                <span className="text-sm font-semibold">Area / Thana</span>
-                <input
-                  required
-                  value={formState.area}
-                  onChange={(e) => setFormState((s) => ({ ...s, area: e.target.value }))}
-                  className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-[#EADFD0] text-sm focus:outline-none focus:ring-2 focus:ring-[#6B1028]/20 focus:border-[#6B1028]"
-                  placeholder="e.g. Mirpur 10"
-                />
-              </label>
               <label className="block">
                 <span className="text-sm font-semibold">Full Address</span>
                 <textarea
