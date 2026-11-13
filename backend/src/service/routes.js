@@ -43,6 +43,7 @@ import inventoryRouter from "./routes/InventoryRoute.js";
 import stockItemRouter from "./routes/StockItemRoute.js";
 import purchaseRouter from "./routes/PurchaseRoute.js";
 import webmailRouter from "./routes/WebmailRoute.js";
+import deployRouter from "./routes/DeployRoute.js";
 import storeUtilsRouter from "./routes/StoreUtilsRoute.js";
 import reportsRouter from "./routes/ReportsRoute.js";
 import sizeChartRouter from "./routes/SizeChartRoute.js";
@@ -119,6 +120,7 @@ serviceRouter.use("/stock-items", accessArea({ inventory: "operator" }), stockIt
 serviceRouter.use("/purchases", accessArea({ inventory: "admin", accounts: "admin" }), purchaseRouter, clearAccessArea);
 serviceRouter.use("/contact", accessArea({ support: "operator" }), contactRouter, clearAccessArea);
 serviceRouter.use("/webmail", accessArea({ webmail: "operator" }), webmailRouter, clearAccessArea);
+serviceRouter.use("/deploy", deployRouter);
 serviceRouter.use("/store-utils", storeUtilsRouter);
 serviceRouter.use("/settings", settingsRouter);
 serviceRouter.use("/telemetry", telemetryRouter);

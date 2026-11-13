@@ -131,7 +131,8 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
       { upsert: true, new: true }
     );
 
-    if (isNewIncoming && !isBounceOrDaemonNotification(from.address, subject)) {
+    // System reports (deploy) carry X-Surokkha-System and post their own notification, so no second bell or forward
+    if (isNewIncoming && !isBounceOrDaemonNotification(from.address, subject) && !parsed.headers?.has("x-surokkha-system")) {
       try {
         const senderName = from.name || from.address;
         const log = await LogModel.create({
@@ -333,6 +334,27 @@ export const startImapIdleListener = async () => {
 };
 
 // Appends an outgoing email buffer into the IMAP Sent folder
+// Drops a system message (e.g. a deploy report) straight into the Webmail INBOX as unread, then syncs
+// it so it shows at once. Used instead of SMTP because the store mailbox never mails itself.
+export const appendEmailToInbox = async (rawMimeBuffer) => {
+  if (!env.IMAP_SYNC_ENABLED) return false;
+  const client = await createImapClient();
+  try {
+    await client.connect();
+    await client.append("INBOX", rawMimeBuffer, []);
+    await client.logout();
+  } catch (err) {
+    logger.error({ err }, "Error appending email to IMAP INBOX");
+    try {
+      await client.logout();
+    } catch {
+    }
+    return false;
+  }
+  await syncImapFolder("INBOX", 10).catch((err) => logger.warn({ err: err.message }, "INBOX sync after append failed"));
+  return true;
+};
+
 export const appendEmailToSentFolder = async (rawMimeBuffer) => {
   if (!env.IMAP_SYNC_ENABLED) return;
 

@@ -1,4 +1,4 @@
-.PHONY: deploy build-shop build-store build-dashboard build-frontend restart-backend status logs down help sync-config
+.PHONY: deploy deploy-notify build-shop build-store build-dashboard build-frontend restart-backend status logs down help sync-config
 
 # ── Surokkha Shop Environment & Paths (Native VPS: systemd + Nginx) ──
 CLIENT := surokkha
@@ -69,7 +69,13 @@ deploy:
 
 	@# 4. Reload Nginx
 	@systemctl reload nginx 2>/dev/null || true
+
+	@# 5. Record the deploy version (minor +1, rolls into major after 99), notify the dashboard bell and Webmail inbox
+	@bash scripts/deploy-notify.sh
 	@echo "🎉 Surokkha Shop deployment finished!"
+
+deploy-notify:
+	@bash scripts/deploy-notify.sh
 
 build-shop:
 	@echo "📦 Building and deploying Surokkha Shop (surokkha.shop)..."

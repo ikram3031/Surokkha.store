@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight, DatabaseBackup, LifeBuoy } from 'lucide-react';
+import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight, DatabaseBackup, LifeBuoy, Rocket } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -120,7 +120,7 @@ export const NotificationBell = () => {
       }
     }
     setIsOpen(false);
-    if (log.type === 'contactMessage' || log.type === 'webmailMessage') {
+    if (log.type === 'contactMessage' || log.type === 'webmailMessage' || log.type === 'deploy') {
       navigate('/dashboard/tools/messages');
     } else if (log.type === 'backup') {
       navigate('/settings/r2-storage');
@@ -204,6 +204,7 @@ export const NotificationBell = () => {
               const isMail = log.type === 'contactMessage' || log.type === 'webmailMessage';
               const isBackup = log.type === 'backup';
               const isSupport = log.type === 'supportTicket';
+              const isDeploy = log.type === 'deploy';
               const backupFailed = isBackup && /FAILED/.test(log.description || '');
 
               return (
@@ -225,6 +226,8 @@ export const NotificationBell = () => {
                             ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
                             : isSupport
                             ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
+                            : isDeploy
+                            ? 'bg-violet-500/15 text-violet-600 dark:text-violet-400'
                             : 'bg-primary/15 text-primary'
                         : 'bg-muted text-muted-foreground'
                     }`}
@@ -235,6 +238,8 @@ export const NotificationBell = () => {
                       <Mail className="h-4 w-4" />
                     ) : isSupport ? (
                       <LifeBuoy className="h-4 w-4" />
+                    ) : isDeploy ? (
+                      <Rocket className="h-4 w-4" />
                     ) : (
                       <ShoppingBag className="h-4 w-4" />
                     )}
