@@ -15,13 +15,12 @@ const steps = [
   },
 ]
 
-/** Dark band explaining the discreet delivery in three steps. */
+/** Band explaining the discreet delivery in three steps. */
 export function DeliverySteps() {
   return (
     <section id="delivery" className="scroll-mt-20 bg-background py-16 text-foreground md:py-24">
       <div className="mx-auto max-w-7xl px-4">
         <SectionHeading
-          invert
           title="How private delivery works"
           subtitle="From checkout to your door, nobody else needs to know what you ordered."
         />

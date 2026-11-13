@@ -40,8 +40,8 @@ const Toaster = ({ ...props }) => {
         }
       }
       // Sits below the top header so its buttons (cache, language, theme, notifications) stay clickable
-      offset={{ top: "76px", right: "16px" }}
-      mobileOffset={{ top: "68px", left: "12px", right: "12px" }}
+      offset={{ top: "88px", right: "20px" }}
+      mobileOffset={{ top: "80px", left: "12px", right: "12px" }}
       toastOptions={{
         classNames: {
           toast: "cn-toast",

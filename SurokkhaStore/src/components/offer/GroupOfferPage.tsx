@@ -6,6 +6,7 @@ import { getGroupOffer, groupOfferDiscount, type GroupOffer } from '@/lib/api/gr
 import { resolveMediaUrl } from '@/lib/api/client'
 import { useCart } from '@/context/CartContext'
 import { navigate } from '@/lib/router'
+import { trackProductView } from '@/lib/api/productEvents'
 import { taka } from '@/lib/bn'
 
 // Same caps the backend enforces on new orders
@@ -30,6 +31,8 @@ export function GroupOfferPage({ slug, embedded = false }: { slug: string; embed
         if (res.data) {
           setOffer(res.data)
           setStatus('ready')
+          // Dashboard analytics: the whole combo counts as one view
+          trackProductView(`combo:${res.data.slug}`, res.data.name)
         } else setStatus('missing')
       })
       .catch(() => !controller.signal.aborted && setStatus('missing'))
