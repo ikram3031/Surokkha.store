@@ -1,3 +1,4 @@
+import FreeDeliveryProgress from '../components/FreeDeliveryProgress';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore, isGroupPieceKey } from '../store/useStore';
@@ -905,6 +906,8 @@ export default function CheckoutView() {
                   );
                 })}
               </div>
+
+              <FreeDeliveryProgress subtotal={totals.subtotal} isBn={isBn} />
 
               {/* Promo / Coupon Code Section */}
               <div className="border-t border-zinc-200/90 pt-3.5 space-y-2">

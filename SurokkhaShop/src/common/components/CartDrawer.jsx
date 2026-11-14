@@ -1,3 +1,4 @@
+import FreeDeliveryProgress from './FreeDeliveryProgress';
 import React, { useEffect, useRef, useState } from 'react';
 import { useStore, getFeaturedCombo, isTrialPackSlug, isGroupPieceKey } from '../store/useStore';
 import TrialPackOfferCard from './TrialPackOfferCard';
@@ -372,6 +373,8 @@ export default function CartDrawer() {
                     <span>+ {isBn ? 'আরও প্রোডাক্ট যোগ করুন' : 'Add More Products'}</span>
                   </button>
                 </div>
+
+                <FreeDeliveryProgress subtotal={totals.subtotal} isBn={isBn} />
 
                 {cartKeys.some((k) => isTrialPackSlug(k.split(':::')[0])) ? (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-emerald-900 flex items-center gap-2">

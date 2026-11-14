@@ -89,6 +89,9 @@ export const parseRouteFromLocation = () => {
 
 const initialRoute = parseRouteFromLocation();
 
+// Orders of this amount or more (product subtotal) ship free
+export const FREE_DELIVERY_MIN = 1000;
+
 // Initialize and persist default language (always Bangla)
 export const getInitialLanguage = () => {
   if (typeof window !== 'undefined') {
@@ -1228,7 +1231,9 @@ export const useStore = create((set, get) => ({
     // New customer: first order ships free above the dashboard's minimum (only claimed when nothing else made it free)
     const isNewUserFreeDelivery =
       newUserFreeMin != null && totalItemCount > 0 && subtotal >= newUserFreeMin && !isTrialPackFreeDelivery && !isDirectOfferFreeDelivery;
-    if (isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery) deliveryFee = 0;
+    // Any order of ৳1,000 or more ships free
+    const isOrderAmountFreeDelivery = totalItemCount > 0 && subtotal >= FREE_DELIVERY_MIN;
+    if (isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery) deliveryFee = 0;
 
     const couponDiscount = discountAmount;
     discountAmount = Math.min(subtotal, couponDiscount + groupDiscount);
@@ -1238,8 +1243,9 @@ export const useStore = create((set, get) => ({
       isTrialPackFreeDelivery,
       isDirectOfferFreeDelivery,
       isNewUserFreeDelivery,
+      isOrderAmountFreeDelivery,
       newUserFreeMin,
-      isFreeDelivery: isFreeShippingCoupon || isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery,
+      isFreeDelivery: isFreeShippingCoupon || isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery,
       subtotal,
       deliveryFee,
       originalDeliveryFee,

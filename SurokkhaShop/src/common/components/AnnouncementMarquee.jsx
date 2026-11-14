@@ -39,6 +39,12 @@ export default function AnnouncementMarquee() {
       onClick: () => openProduct(MEGA_COMBO_SLUG),
     },
     {
+      lead: isBn ? '🚚 ফ্রি ডেলিভারি!' : '🚚 Free Delivery!',
+      text: isBn ? '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি' : 'Free delivery on orders over ৳1,000',
+      action: isBn ? 'শপ দেখুন →' : 'Shop now →',
+      onClick: () => navigateTo('shop'),
+    },
+    {
       lead: isBn ? '📦 ১০০% গোপনীয়' : '📦 100% Discreet',
       text: isBn ? 'লেবেল ছাড়া সিল করা পার্সেল, ক্যাশ অন ডেলিভারি' : 'Unlabelled sealed parcel, cash on delivery',
       action: isBn ? 'শপ দেখুন →' : 'Shop now →',

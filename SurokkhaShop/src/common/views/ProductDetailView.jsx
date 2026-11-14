@@ -515,6 +515,11 @@ export default function ProductDetailView() {
             </div>
           )}
 
+          <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs sm:text-sm font-bold text-emerald-800">
+            <span aria-hidden>🚚</span>
+            {isBn ? '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি' : 'Free delivery on orders over ৳1,000'}
+          </div>
+
           {/* Price display with Offer Price, Regular Price and Right-aligned Savings Badge */}
           <div className="border-y border-slate-200/80 py-4">
             <div className="flex items-center justify-between gap-4">
