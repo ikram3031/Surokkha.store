@@ -2,6 +2,7 @@ import { User } from 'lucide-react'
 import { useCategories } from '@/hooks/useCategories'
 import { navigate } from '@/lib/router'
 import { L } from '@/lib/i18n'
+import { NavOfferCards } from './NavOfferCards'
 
 const itemClass = 'block w-full rounded-xl px-2 py-2.5 text-left font-medium transition-colors hover:bg-white/10'
 
@@ -79,7 +80,8 @@ export function MobileNav({
       </div>
 
       {/* Pinned to the bottom */}
-      <div className="mt-auto border-t border-white/15 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="mt-auto space-y-3 border-t border-white/15 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <NavOfferCards compact onNavigate={onNavigate} />
         <button
           type="button"
           onClick={() => go('/account')}
