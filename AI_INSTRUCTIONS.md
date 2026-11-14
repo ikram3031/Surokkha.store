@@ -57,13 +57,11 @@ Every git commit must strictly adhere to the format:
 
 ---
 
-## 5. Git Branching, Push & Merge Policy (STRICT)
-- **Always Push to `dev` Branch**:
-  - All feature work, bug fixes, refactoring, and daily changes must **ALWAYS** be committed and pushed strictly to the **`dev`** branch.
-- **NEVER Push to `Live` or `master` Directly**:
-  - Direct pushing to `Live` or `master` is strictly prohibited.
-- **Manual Code Merge by User**:
-  - Code merging from `dev` into `Live` or `master` will strictly be performed manually by the user. AI must never automatically merge branches into `Live` or `master`.
+## 5. Git Branching & Push Policy (STRICT)
+- **Commit and Push Directly to `Live`**:
+  - All work (features, fixes, refactoring, docs) is committed on and pushed straight to the **`Live`** branch. No `dev` step, no merge step.
+- **Never Push to `master`** and never force-push `Live`.
+- Commit and push only when the user asks (see section 6).
 
 ---
 
