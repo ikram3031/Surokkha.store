@@ -118,12 +118,20 @@ function AppShell() {
           <>
             <PromoBanner />
             <HomeHero />
-            <TrustStrip />
             <IntroProducts />
+            <TrustStrip />
             {/* Categories right after the best sellers */}
-            <ShopByNeed />
+            {/* Mobile shows the combo offers here instead of "Shop by need"; desktop keeps both in their own places */}
+            <div className="hidden md:block">
+              <ShopByNeed />
+            </div>
+            <div className="md:hidden">
+              <ComboOffers />
+            </div>
             <MoProducts />
-            <ComboOffers />
+            <div className="hidden md:block">
+              <ComboOffers />
+            </div>
             <DeliverySteps />
             <WellnessProducts />
             {SHOW_ALL_PRODUCTS && <Shop ref={shopRef} query={query} filter={filter} onFilterChange={setFilter} />}

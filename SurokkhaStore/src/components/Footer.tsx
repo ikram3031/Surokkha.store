@@ -11,7 +11,7 @@ const QUICK_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="dark bg-header text-white">
+    <footer className="dark hidden bg-header text-white md:block">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
         <div>
           <img src="/surokkha_store_logo_dark.png" alt={L('Surokkha Store', 'সুরক্ষা স্টোর')} className="h-10 w-auto" />

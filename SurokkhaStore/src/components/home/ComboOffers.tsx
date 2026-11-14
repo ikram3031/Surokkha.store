@@ -123,7 +123,8 @@ export function ComboOffers() {
                 <span>{L('Mega savings • Exclusive combo packs', 'মেগা সেভিংস • এক্সক্লুসিভ কম্বো প্যাক')}</span>
               </div>
               <h2 className="text-2xl leading-tight font-extrabold tracking-tight text-white sm:text-3xl md:text-4xl">
-                {L('Featured combos —', 'ফিচার্ড কম্বো —')} <span className="text-amber-400">{L('premium value bundles', 'প্রিমিয়াম ভ্যালু বান্ডেল')}</span>
+                <span className="md:hidden">{L('Combo offers —', 'কম্বো অফার —')}</span>
+                <span className="hidden md:inline">{L('Featured combos —', 'ফিচার্ড কম্বো —')}</span> <span className="text-amber-400">{L('premium value bundles', 'প্রিমিয়াম ভ্যালু বান্ডেল')}</span>
               </h2>
               <p className="mt-1 text-xs text-slate-300 sm:text-sm">{L('More in one pack, guaranteed savings, delivered in one discreet parcel.', 'এক প্যাকে বেশি পণ্য, নিশ্চিত সাশ্রয়, একটি গোপনীয় পার্সেলে ডেলিভারি।')}</p>
             </div>

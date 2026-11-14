@@ -6,16 +6,24 @@ export default function AgeGateModal() {
   const [underAgeBlocked, setUnderAgeBlocked] = useState(false);
   const { isBn } = useTranslation();
 
+  // The popup shows 2.5 seconds after the whole page has loaded, never on top of a half-loaded page
   useEffect(() => {
+    let verified = false;
     try {
-      const verified = localStorage.getItem('surokkha_age_verified');
-      if (verified !== 'true') {
-        setIsOpen(true);
-      }
-    } catch (e) {
-      // LocalStorage access fallback
-      setIsOpen(true);
-    }
+      verified = localStorage.getItem('surokkha_age_verified') === 'true';
+    } catch (e) { }
+    if (verified) return undefined;
+
+    let timer;
+    const show = () => {
+      timer = setTimeout(() => setIsOpen(true), 2500);
+    };
+    if (document.readyState === 'complete') show();
+    else window.addEventListener('load', show, { once: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('load', show);
+    };
   }, []);
 
   const handleConfirmAge = () => {

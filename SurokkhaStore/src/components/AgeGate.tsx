@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { LogoMark } from '@/components/icons/ArtIcons'
@@ -8,9 +8,23 @@ import { L } from '@/lib/i18n'
 export function AgeGate() {
   const { verified, confirm } = useAgeGate()
   const [declined, setDeclined] = useState(false)
+  // The popup shows 2.5 seconds after the whole page has loaded, never on top of a half-loaded page
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+    const show = () => {
+      timer = setTimeout(() => setReady(true), 2500)
+    }
+    if (document.readyState === 'complete') show()
+    else window.addEventListener('load', show, { once: true })
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('load', show)
+    }
+  }, [])
 
   return (
-    <Dialog open={!verified}>
+    <Dialog open={ready && !verified}>
       <DialogContent
         className="max-w-sm rounded-3xl text-center [&>button]:hidden"
         onInteractOutside={(e) => e.preventDefault()}
