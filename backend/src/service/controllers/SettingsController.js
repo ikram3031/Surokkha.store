@@ -1003,8 +1003,8 @@ export const testTemplateEmail = async (req, res, next) => {
       clientConfig,
     });
 
-    const transport = await getSmtpTransport();
-    if (!transport) {
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig?.isConfigured || !transport) {
       return res.status(400).json({
         status: "error",
         message: "SMTP server is not configured. Please configure SMTP in Settings > SMTP Configuration first.",
@@ -1012,7 +1012,7 @@ export const testTemplateEmail = async (req, res, next) => {
     }
 
     const brand = clientConfig?.brandName || "Surokkha";
-    const senderEmail = transport.options?.auth?.user || clientConfig?.contact?.supportEmail || "support@surokkha.store";
+    const senderEmail = smtpConfig.fromEmail || smtpConfig.user || clientConfig?.contact?.supportEmail || "support@surokkha.store";
 
     const mailOptions = {
       from: `"${brand}" <${senderEmail}>`,

@@ -6,7 +6,12 @@ import { env } from "../../common/config/env.js";
 import {
   syncAllMailFolders,
   appendEmailToSentFolder,
+  mailboxFilter,
+  isStoreMailboxConfigured,
 } from "../../common/services/imapSync.service.js";
+
+// "store" = support@surokkha.store, anything else = the main shop mailbox
+const mailboxOf = (req) => (String(req.query?.mailbox || req.body?.mailbox || "") === "store" ? "store" : "shop");
 
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { decryptText } from "../../common/utils/crypto.util.js";
@@ -20,7 +25,8 @@ export const listWebmailMessages = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const folder = req.query.folder || "INBOX";
-    const filter = { active: true };
+    const box = mailboxFilter(mailboxOf(req));
+    const filter = { active: true, ...box };
 
     if (folder === "Starred") {
       filter.isStarred = true;
@@ -48,10 +54,10 @@ export const listWebmailMessages = async (req, res, next) => {
           .select("-bodyHtml")
           .lean(),
         EmailMessageModel.countDocuments(filter),
-        EmailMessageModel.countDocuments({ active: true, folder: "INBOX", isRead: false }),
-        EmailMessageModel.countDocuments({ active: true, isStarred: true }),
-        EmailMessageModel.countDocuments({ active: true, folder: "Sent" }),
-        EmailMessageModel.countDocuments({ active: true, folder: "Trash" }),
+        EmailMessageModel.countDocuments({ ...box, active: true, folder: "INBOX", isRead: false }),
+        EmailMessageModel.countDocuments({ ...box, active: true, isStarred: true }),
+        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Sent" }),
+        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Trash" }),
         ContactMessageModel.countDocuments({ active: true, status: "unread" }),
       ]);
 
@@ -105,6 +111,7 @@ export const getWebmailMessageById = async (req, res, next) => {
     let thread = [];
     if (message.threadId) {
       thread = await EmailMessageModel.find({
+        ...mailboxFilter(message.mailbox || "shop"),
         threadId: message.threadId,
         _id: { $ne: message._id },
         active: true,
@@ -138,7 +145,10 @@ export const sendWebmailMessage = async (req, res, next) => {
       });
     }
 
-    const { transport, fromName, fromEmail: fromAddress } = await getSmtpTransport();
+    const mailbox = mailboxOf(req);
+    // The store mailbox sends through the store's own SMTP (support@surokkha.store)
+    const { transport, fromName, fromEmail: fromAddress } =
+      mailbox === "store" ? await getSmtpTransport("store", { mailboxCopy: false }) : await getSmtpTransport(undefined, { mailboxCopy: false });
 
     const toAddresses = Array.isArray(to)
       ? to.map((t) => (typeof t === "string" ? t : t.address)).filter(Boolean)
@@ -175,6 +185,7 @@ export const sendWebmailMessage = async (req, res, next) => {
     const sendResult = await transport.sendMail(mailOptions);
 
     const savedRecord = await EmailMessageModel.create({
+      mailbox,
       messageId: sendResult.messageId || `sent-${Date.now()}@local`,
       folder: "Sent",
       from: { name: fromName, address: fromAddress },
@@ -333,13 +344,14 @@ export const deleteWebmailMessage = async (req, res, next) => {
 // Returns list of all mail folders with unread and total counters
 export const getWebmailFolders = async (req, res, next) => {
   try {
+    const box = mailboxFilter(mailboxOf(req));
     const [inboxUnread, inboxTotal, sentTotal, trashTotal, starredTotal, inquiriesUnread, inquiriesTotal] =
       await Promise.all([
-        EmailMessageModel.countDocuments({ active: true, folder: "INBOX", isRead: false }),
-        EmailMessageModel.countDocuments({ active: true, folder: "INBOX" }),
-        EmailMessageModel.countDocuments({ active: true, folder: "Sent" }),
-        EmailMessageModel.countDocuments({ active: true, folder: "Trash" }),
-        EmailMessageModel.countDocuments({ active: true, isStarred: true }),
+        EmailMessageModel.countDocuments({ ...box, active: true, folder: "INBOX", isRead: false }),
+        EmailMessageModel.countDocuments({ ...box, active: true, folder: "INBOX" }),
+        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Sent" }),
+        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Trash" }),
+        EmailMessageModel.countDocuments({ ...box, active: true, isStarred: true }),
         ContactMessageModel.countDocuments({ active: true, status: "unread" }),
         ContactMessageModel.countDocuments({ active: true }),
       ]);
@@ -354,6 +366,34 @@ export const getWebmailFolders = async (req, res, next) => {
         { id: "Trash", name: "Trash", unread: 0, total: trashTotal, icon: "Trash2" },
       ],
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Lists the mailboxes the Webmail can switch between, with their unread INBOX counts
+export const getWebmailMailboxes = async (req, res, next) => {
+  try {
+    const { getSmtpConfig } = await import("../../common/services/smtpConfig.service.js");
+    const shopCfg = await getSmtpConfig();
+    const boxes = [
+      {
+        id: "shop",
+        address: shopCfg.fromEmail || shopCfg.user,
+        unread: await EmailMessageModel.countDocuments({ ...mailboxFilter("shop"), active: true, folder: "INBOX", isRead: false }),
+      },
+    ];
+    const storeConfigured = await isStoreMailboxConfigured();
+    if (storeConfigured) {
+      const storeCfg = await getSmtpConfig("store");
+      boxes.unshift({
+        id: "store",
+        label: "Store",
+        address: storeCfg.fromEmail || storeCfg.user,
+        unread: await EmailMessageModel.countDocuments({ ...mailboxFilter("store"), active: true, folder: "INBOX", isRead: false }),
+      });
+    }
+    return res.json({ status: true, data: boxes, defaultMailbox: storeConfigured ? "store" : "shop" });
   } catch (err) {
     next(err);
   }

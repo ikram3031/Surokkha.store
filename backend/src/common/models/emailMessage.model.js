@@ -39,6 +39,13 @@ const emailMessageSchema = new Schema(
       type: String,
       index: true,
     },
+    // Which mailbox the message belongs to: "shop" (main support mailbox) or "store" (surokkha.store support@)
+    mailbox: {
+      type: String,
+      enum: ["shop", "store"],
+      default: "shop",
+      index: true,
+    },
     folder: {
       type: String,
       enum: ["INBOX", "Sent", "Drafts", "Trash", "Spam", "Archive"],

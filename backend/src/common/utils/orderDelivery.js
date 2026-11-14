@@ -190,6 +190,12 @@ export const sendOrderEmailsAsynchronously = (order) => {
         let adminRecipients = [];
         try {
           adminRecipients = await resolveAlertRecipients(adminSmtpConfig);
+          // The surokkha.store support mailbox gets every order too, so orders show up in its Webmail inbox
+          const { getSmtpConfig } = await import("../services/smtpConfig.service.js");
+          const storeCfg = await getSmtpConfig("store");
+          const supportBox = String(storeCfg.source === "store-smtp" ? storeCfg.fromEmail || storeCfg.user : "support@surokkha.store").toLowerCase().trim();
+          const adminSender = String(adminSmtpConfig.fromEmail || adminSmtpConfig.user || "").toLowerCase().trim();
+          if (supportBox && supportBox !== adminSender && !adminRecipients.includes(supportBox)) adminRecipients.push(supportBox);
         } catch (dbErr) {
           console.error("[Email Notification] Loading alert email recipients failed:", dbErr.message);
         }

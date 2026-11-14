@@ -19,7 +19,8 @@ export const createAccessToken = (user) => {
 };
 
 // Only the Owner role signs in with a second factor
-export const requiresTwoFactor = (user) => user.role === "Owner";
+// Every dashboard user signs in with 2FA (on by default); only an explicit twoFactorEnabled=false turns it off
+export const requiresTwoFactor = (user) => user.role === "Owner" || user.twoFactorEnabled !== false;
 
 export const createRefreshToken = () => {
   return crypto.randomBytes(48).toString("hex");

@@ -115,13 +115,28 @@ export const guardSelfSend = (transport, senderAddresses) => {
   return transport;
 };
 
+const parseAddressList = (field) =>
+  toList(field)
+    .map((entry) => {
+      if (typeof entry === "object" && entry) {
+        return { name: String(entry.name || ""), address: String(entry.address || "").toLowerCase().trim() };
+      }
+      const str = String(entry || "").trim();
+      const match = str.match(/^(.*?)\s*<([^>]+)>$/);
+      if (match) {
+        return { name: match[1].replace(/^["']|["']$/g, "").trim(), address: match[2].toLowerCase().trim() };
+      }
+      return { name: "", address: str.toLowerCase().trim() };
+    })
+    .filter((item) => item.address);
+
 /**
- * Mailbox copy: every email the store sends is also saved into the webmail mailbox's Sent folder
- * (IMAP APPEND), so notifications show up in Webmail. It is never re-sent over SMTP, so nothing
- * bounces or loops. On when Webmail IMAP is switched on, unless imap.copySentMail is false.
+ * Mailbox copy: every email the store or shop sends is also recorded in Webmail's Sent folder
+ * (and appended to IMAP Sent when IMAP is enabled), so orders and notifications show up in Webmail.
+ * It is never re-sent over SMTP, so nothing bounces or loops.
  * Emails with one-time codes or sign-in links pass { mailboxCopy: false } and are never copied.
  */
-const mailboxCopyEnabled = async () => {
+const shopCopyEnabled = async () => {
   if (mongoose.connection.readyState !== 1) return false;
   try {
     const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap.isEnabled imap.copySentMail").lean();
@@ -131,17 +146,80 @@ const mailboxCopyEnabled = async () => {
   }
 };
 
-const copyToMailbox = async (options) => {
-  if (!(await mailboxCopyEnabled())) return;
-  const raw = await new MailComposer(options).compile().build();
+const saveWebmailSentCopy = async (options, targetMailbox, fallbackFromEmail) => {
+  if (mongoose.connection.readyState !== 1) return;
+  const { EmailMessageModel } = await import("../models/emailMessage.model.js");
+  const { mailboxFilter } = await import("./imapSync.service.js");
+  const fromList = parseAddressList(options.from || fallbackFromEmail);
+  const from = fromList[0] || { name: "", address: addressOf(fallbackFromEmail) || "no-reply@surokkha.store" };
+  const bodyHtml = options.html || (options.text ? `<pre>${options.text}</pre>` : "");
+  const bodyText = options.text || String(options.html || "").replace(/<[^>]*>?/gm, " ").replace(/\s+/g, " ").trim();
+  const snippet = bodyText.slice(0, 160);
+  const messageId = options.messageId;
+
+  await EmailMessageModel.findOneAndUpdate(
+    { ...mailboxFilter(targetMailbox), messageId },
+    {
+      $setOnInsert: {
+        mailbox: targetMailbox,
+        messageId,
+        folder: "Sent",
+        from,
+        to: parseAddressList(options.to),
+        cc: parseAddressList(options.cc),
+        bcc: parseAddressList(options.bcc),
+        replyTo: parseAddressList(options.replyTo),
+        subject: options.subject || "(No Subject)",
+        snippet,
+        bodyHtml,
+        bodyText,
+        date: new Date(),
+        isRead: true,
+        inReplyTo: options.inReplyTo || null,
+        references: Array.isArray(options.references) ? options.references : options.references ? [options.references] : [],
+        threadId: options.inReplyTo || messageId,
+        active: true,
+      },
+    },
+    { upsert: true }
+  );
+};
+
+const copyToMailbox = async (options, site, fallbackFromEmail) => {
   // Loaded here because imapSync itself imports this module
-  const { appendEmailToSentFolder } = await import("./imapSync.service.js");
-  await appendEmailToSentFolder(raw);
+  const { appendEmailToSentFolder, isStoreMailboxConfigured } = await import("./imapSync.service.js");
+  const storeConfigured = await isStoreMailboxConfigured();
+  const shopImapOn = await shopCopyEnabled();
+
+  const targets = new Set();
+  // Always mirror into the Store Webmail when it is configured, so orders & notifications from any site appear there
+  if (storeConfigured) targets.add("store");
+  if (site !== "store" && (shopImapOn || !storeConfigured)) targets.add("shop");
+
+  if (targets.size === 0) return;
+
+  for (const targetMailbox of targets) {
+    await saveWebmailSentCopy(options, targetMailbox, fallbackFromEmail).catch((err) =>
+      console.warn(`[Webmail Copy] Failed saving Sent copy for ${targetMailbox}:`, err.message)
+    );
+  }
+
+  const raw = await new MailComposer(options).compile().build();
+  if (storeConfigured) {
+    await appendEmailToSentFolder(raw, "store").catch((err) =>
+      console.warn("[SMTP] Store IMAP Sent append failed:", err.message)
+    );
+  }
+  if (targets.has("shop") && shopImapOn) {
+    await appendEmailToSentFolder(raw, "shop").catch((err) =>
+      console.warn("[SMTP] Shop IMAP Sent append failed:", err.message)
+    );
+  }
 };
 
 const domainOf = (address) => addressOf(address).split("@")[1] || "surokkha.store";
 
-const withMailboxCopy = (transport, fromEmail) => {
+const withMailboxCopy = (transport, fromEmail, site) => {
   const send = transport.sendMail.bind(transport);
   transport.sendMail = async (options = {}, callback) => {
     // Same Message-ID on the sent mail and its copy, so the Sent folder sync doesn't list it twice
@@ -149,7 +227,7 @@ const withMailboxCopy = (transport, fromEmail) => {
     try {
       const info = await send(message);
       if (!info?.skipped) {
-        copyToMailbox(message).catch((err) => console.warn("[SMTP] Mailbox copy failed:", err.message));
+        copyToMailbox(message, site, fromEmail).catch((err) => console.warn("[SMTP] Mailbox copy failed:", err.message));
       }
       if (callback) return callback(null, info);
       return info;
@@ -188,7 +266,7 @@ export const getSmtpTransport = async (site, { mailboxCopy = true } = {}) => {
   }
 
   const guarded = guardSelfSend(nodemailer.createTransport(transportConfig), [config.user, config.fromEmail]);
-  const transport = mailboxCopy ? withMailboxCopy(guarded, config.fromEmail) : guarded;
+  const transport = mailboxCopy ? withMailboxCopy(guarded, config.fromEmail, site) : guarded;
 
   return {
     transport,

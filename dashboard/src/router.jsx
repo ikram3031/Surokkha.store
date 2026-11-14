@@ -1,3 +1,5 @@
+import { useAuth } from '@/lib/auth-context';
+import { hasMenuAccess } from '@/lib/rbac';
 import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 
 // Layout
@@ -137,6 +139,20 @@ const RedirectToSettings = () => {
   const tail = pathname.replace(/^\/(dashboard|admin)/, '');
   const target = tail.startsWith('/users') ? '/settings/users' : tail;
   return <Navigate to={`${target}${search}`} replace />;
+};
+
+// /settings lands on the first settings page the user may open (Admin cannot open the owner-only Business page)
+const SettingsHome = () => {
+  const { user } = useAuth();
+  const order = [
+    ['settings.business', 'business'],
+    ['settings.cms-content', 'cms-content'],
+    ['settings.seo', 'seo'],
+    ['settings.meta-pixel', 'meta-pixel'],
+    ['users', 'users'],
+  ];
+  const hit = order.find(([key]) => hasMenuAccess(user, key));
+  return hit ? <Navigate to={hit[1]} replace /> : <NotFound />;
 };
 
 const dashboardRoutes = [
@@ -821,7 +837,7 @@ const financeRoutes = [
 ];
 
 const settingsRoutes = [
-  { path: '', element: <Navigate to="business" replace /> },
+  { path: '', element: <SettingsHome /> },
   {
     path: 'users',
     element: (

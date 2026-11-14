@@ -14,8 +14,41 @@ let idleClient = null;
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { decryptText } from "../utils/crypto.util.js";
 
+// Store mailbox (support@surokkha.store): IMAP login from the store's own SMTP settings, same mail host
+const storeImapSettings = async () => {
+  const doc = await StoreSettingsModel.findOne({ key: "store-smtp" }).lean();
+  const smtp = doc?.smtp || {};
+  const imap = doc?.imap || {};
+  if (imap.isEnabled && imap.host && imap.user && imap.password) {
+    return { host: imap.host, port: imap.port || 993, secure: imap.secure !== false, user: imap.user, pass: decryptText(imap.password) };
+  }
+  if (!smtp.isEnabled || !smtp.host || !smtp.user || !smtp.password) return null;
+  return { host: String(smtp.host).replace(/^smtp\./i, "imap."), port: 993, secure: true, user: smtp.user, pass: decryptText(smtp.password) };
+};
+
+// Is the store mailbox set up (store SMTP on and complete)?
+export const isStoreMailboxConfigured = async () => Boolean(await storeImapSettings());
+
+// Is the shop mailbox set up (DB IMAP enabled or env IMAP/SMTP credentials)?
+export const isShopMailboxConfigured = async () => {
+  const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap").lean();
+  const dbImap = doc?.imap || {};
+  if (dbImap.isEnabled && dbImap.host && dbImap.user && dbImap.password) return true;
+  const user = env.IMAP_USER || env.SMTP_USER;
+  const pass = env.IMAP_PASSWORD || env.SMTP_PASSWORD;
+  return Boolean(env.IMAP_HOST && user && pass);
+};
+
+// Mailbox filter: older messages have no mailbox field and belong to the shop mailbox
+export const mailboxFilter = (mailbox) => (mailbox === "store" ? { mailbox: "store" } : { mailbox: { $in: ["shop", null] } });
+
 // Creates a new configured ImapFlow client instance
-const createImapClient = async () => {
+const createImapClient = async (mailbox = "shop") => {
+  if (mailbox === "store") {
+    const s = await storeImapSettings();
+    if (!s) throw new Error("Store mailbox is not configured");
+    return new ImapFlow({ host: s.host, port: s.port, secure: s.secure, auth: { user: s.user, pass: s.pass }, logger: false, emitLogs: false });
+  }
   const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
   const dbImap = doc?.imap || {};
 
@@ -62,7 +95,7 @@ const isBounceOrDaemonNotification = (fromAddress = "", subject = "") => {
 };
 
 // Parses a single MIME message stream and saves or updates it in MongoDB
-const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
+const parseAndSaveMessage = async (msgSource, uid, folder, flags = [], mailbox = "shop") => {
   try {
     const parsed = await simpleParser(msgSource);
 
@@ -94,16 +127,19 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
 
     const threadId = parsed.inReplyTo || messageId;
 
+    const scope = mailboxFilter(mailbox);
     const existingMsg = await EmailMessageModel.findOne({
+      ...scope,
       $or: [{ messageId }, { uid, folder }],
     });
 
     const isNewIncoming = !existingMsg && folder.toUpperCase() === "INBOX";
 
     const saved = await EmailMessageModel.findOneAndUpdate(
-      { $or: [{ messageId }, { uid, folder }] },
+      { ...scope, $or: [{ messageId }, { uid, folder }] },
       {
         $set: {
+          mailbox,
           uid,
           messageId,
           folder,
@@ -138,7 +174,7 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
         const log = await LogModel.create({
           type: "webmailMessage",
           typeDid: "113",
-          description: `New email from ${senderName}: "${subject.slice(0, 45)}"`,
+          description: `${mailbox === "store" ? "[surokkha.store] " : ""}New email from ${senderName}: "${subject.slice(0, 45)}"`,
           readStatus: false,
           active: true,
           createdBy: "webmail-sync",
@@ -150,7 +186,7 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
         });
 
         const { transport: forwardTransport, config: smtp } = await getSmtpTransport();
-        const mailbox = smtp.fromEmail || smtp.user;
+        const senderMailbox = smtp.fromEmail || smtp.user;
 
         // Never forward our own mail, and never forward back into this mailbox, or it loops forever
         const ownAddresses = new Set(
@@ -169,16 +205,16 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
           /^\s*\[fwd:/i.test(subject) ||
           parsed.headers?.has("x-support-forwarded");
 
-        if (forwardTarget.length && smtp.isConfigured && !isOwnOrForwarded) {
+        if (mailbox === "shop" && forwardTarget.length && smtp.isConfigured && !isOwnOrForwarded) {
           forwardTransport.sendMail({
             from: smtp.fromAddress,
             to: forwardTarget,
             replyTo: from.address,
             headers: { "X-Support-Forwarded": "1" },
-            subject: `[Fwd: ${mailbox}] ${subject}`,
+            subject: `[Fwd: ${senderMailbox}] ${subject}`,
             html: `
               <div style="font-family: -apple-system, sans-serif; padding: 15px; border-left: 4px solid #e11d48; background: #f8fafc; margin-bottom: 20px;">
-                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from ${mailbox}</strong></p>
+                <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;"><strong>Forwarded from ${senderMailbox}</strong></p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>From:</strong> ${from.name ? `${from.name} &lt;${from.address}&gt;` : from.address}</p>
                 <p style="margin: 0 0 4px 0; font-size: 14px;"><strong>Subject:</strong> ${subject}</p>
                 <p style="margin: 0; font-size: 14px;"><strong>Date:</strong> ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Dhaka' })}</p>
@@ -202,10 +238,15 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
 };
 
 // Synchronizes messages from a specific IMAP folder into the database
-export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
+export const syncImapFolder = async (folderName = "INBOX", limit = 50, mailbox = "shop") => {
   if (!env.IMAP_SYNC_ENABLED) return { count: 0 };
 
-  const client = await createImapClient();
+  let client;
+  try {
+    client = await createImapClient(mailbox);
+  } catch (err) {
+    return { count: 0, error: err.message };
+  }
   let processedCount = 0;
 
   try {
@@ -237,7 +278,7 @@ export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
         source: true,
       })) {
         if (message.source) {
-          await parseAndSaveMessage(message.source, message.uid, folderName, Array.from(message.flags || []));
+          await parseAndSaveMessage(message.source, message.uid, folderName, Array.from(message.flags || []), mailbox);
           processedCount += 1;
         }
       }
@@ -248,7 +289,7 @@ export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
     await client.logout();
     return { count: processedCount, folder: folderName };
   } catch (err) {
-    logger.error({ err, folder: folderName }, "IMAP folder synchronization error");
+    logger.error({ err, folder: folderName, mailbox }, "IMAP folder synchronization error");
     try {
       await client.logout();
     } catch {
@@ -257,29 +298,59 @@ export const syncImapFolder = async (folderName = "INBOX", limit = 50) => {
   }
 };
 
-// Synchronizes both INBOX and Sent mail folders
+// Synchronizes both INBOX and Sent mail folders for configured mailboxes
 export const syncAllMailFolders = async (limit = 50) => {
   if (isSyncing) return { status: "already_syncing" };
   isSyncing = true;
 
   try {
-    const inboxResult = await syncImapFolder("INBOX", limit);
-    const sentResult = await syncImapFolder("Sent", Math.min(25, limit));
+    let inboxResult = { count: 0, skipped: true };
+    let sentResult = { count: 0, skipped: true };
+    if (await isShopMailboxConfigured()) {
+      inboxResult = await syncImapFolder("INBOX", limit, "shop");
+      sentResult = await syncImapFolder("Sent", Math.min(25, limit), "shop");
+    }
+    // The surokkha.store support@ mailbox, when its SMTP/IMAP is set up
+    let store = null;
+    if (await isStoreMailboxConfigured()) {
+      store = {
+        inbox: await syncImapFolder("INBOX", limit, "store"),
+        sent: await syncImapFolder("Sent", Math.min(25, limit), "store"),
+      };
+    }
 
     return {
       success: true,
       inbox: inboxResult,
       sent: sentResult,
+      store,
     };
   } finally {
     isSyncing = false;
   }
 };
 
-// Starts real-time IMAP IDLE listener on the INBOX folder
+// The store mailbox has no IDLE connection of its own: its INBOX is checked every 2 minutes
+let storePollTimer = null;
+const startStoreMailboxPolling = () => {
+  if (storePollTimer) return;
+  storePollTimer = setInterval(async () => {
+    try {
+      if (await isStoreMailboxConfigured()) await syncImapFolder("INBOX", 15, "store");
+    } catch (err) {
+      logger.warn({ err: err.message }, "Store mailbox poll failed");
+    }
+  }, 2 * 60 * 1000);
+};
+
+// Starts real-time IMAP IDLE listener on the INBOX folder (and store mailbox polling)
 export const startImapIdleListener = async () => {
   if (!env.IMAP_SYNC_ENABLED) return;
-  if (!env.SMTP_USER || !env.SMTP_PASSWORD) return;
+
+  await syncAllMailFolders(40).catch((err) => logger.warn({ err: err.message }, "Initial IMAP sync failed"));
+  startStoreMailboxPolling();
+
+  if (!(await isShopMailboxConfigured())) return;
 
   if (idleClient) {
     try {
@@ -288,14 +359,12 @@ export const startImapIdleListener = async () => {
     }
   }
 
-  const client = await createImapClient();
+  const client = await createImapClient("shop");
   idleClient = client;
 
   try {
     await client.connect();
     logger.info({ host: env.IMAP_HOST, user: env.IMAP_USER || env.SMTP_USER }, "Connected to IMAP server successfully");
-
-    await syncAllMailFolders(40);
 
     const lock = await client.getMailboxLock("INBOX");
 
@@ -333,33 +402,35 @@ export const startImapIdleListener = async () => {
   }
 };
 
-// Appends an outgoing email buffer into the IMAP Sent folder
+// Appends an outgoing email buffer into the IMAP INBOX folder
 // Drops a system message (e.g. a deploy report) straight into the Webmail INBOX as unread, then syncs
 // it so it shows at once. Used instead of SMTP because the store mailbox never mails itself.
-export const appendEmailToInbox = async (rawMimeBuffer) => {
+export const appendEmailToInbox = async (rawMimeBuffer, mailbox = "shop") => {
   if (!env.IMAP_SYNC_ENABLED) return false;
-  const client = await createImapClient();
+  let client;
   try {
+    client = await createImapClient(mailbox);
     await client.connect();
     await client.append("INBOX", rawMimeBuffer, []);
     await client.logout();
   } catch (err) {
-    logger.error({ err }, "Error appending email to IMAP INBOX");
+    logger.error({ err, mailbox }, "Error appending email to IMAP INBOX");
     try {
-      await client.logout();
+      if (client) await client.logout();
     } catch {
     }
     return false;
   }
-  await syncImapFolder("INBOX", 10).catch((err) => logger.warn({ err: err.message }, "INBOX sync after append failed"));
+  await syncImapFolder("INBOX", 10, mailbox).catch((err) => logger.warn({ err: err.message }, "INBOX sync after append failed"));
   return true;
 };
 
-export const appendEmailToSentFolder = async (rawMimeBuffer) => {
+export const appendEmailToSentFolder = async (rawMimeBuffer, mailbox = "shop") => {
   if (!env.IMAP_SYNC_ENABLED) return;
 
-  const client = await createImapClient();
+  let client;
   try {
+    client = await createImapClient(mailbox);
     await client.connect();
 
     const mailboxes = await client.list();
@@ -372,9 +443,9 @@ export const appendEmailToSentFolder = async (rawMimeBuffer) => {
     await client.append(folderPath, rawMimeBuffer, ["\\Seen"]);
     await client.logout();
   } catch (err) {
-    logger.error({ err }, "Error appending email to IMAP Sent folder");
+    logger.error({ err, mailbox }, "Error appending email to IMAP Sent folder");
     try {
-      await client.logout();
+      if (client) await client.logout();
     } catch {
     }
   }
