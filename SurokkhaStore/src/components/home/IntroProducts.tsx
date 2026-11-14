@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { type Product } from '@/data/products'
 import { useBestSellers } from '@/hooks/useBestSellers'
@@ -62,6 +63,13 @@ export function IntroProducts() {
     }
   }, [])
 
+  const prev = useCallback(() => {
+    const el = trackRef.current
+    if (!el) return
+    if (el.scrollLeft <= 4) el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' })
+    else el.scrollBy({ left: -stepWidth(), behavior: 'smooth' })
+  }, [])
+
   useEffect(() => {
     if (paused || positions < 2) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -94,7 +102,7 @@ export function IntroProducts() {
         </div>
 
         <div
-          className="mt-8 min-w-0"
+          className="relative mt-8 min-w-0"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onFocus={() => setPaused(true)}
@@ -113,6 +121,27 @@ export function IntroProducts() {
               </div>
             ))}
           </div>
+
+          {positions > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={prev}
+                aria-label="Previous products"
+                className="absolute left-0 top-[38%] z-10 flex h-10 w-10 -translate-x-1/3 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-md ring-1 ring-border transition hover:bg-primary hover:text-primary-foreground md:h-11 md:w-11 md:-translate-x-1/2"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={next}
+                aria-label="Next products"
+                className="absolute right-0 top-[38%] z-10 flex h-10 w-10 translate-x-1/3 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-md ring-1 ring-border transition hover:bg-primary hover:text-primary-foreground md:h-11 md:w-11 md:translate-x-1/2"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          )}
 
           {positions > 1 && (
             <div className="mt-6 flex justify-center gap-2" role="group" aria-label="Choose product">

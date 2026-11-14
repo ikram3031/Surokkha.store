@@ -83,7 +83,8 @@ export const parseRouteFromLocation = () => {
     }
   }
 
-  return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  // Any other path is not a page of this shop
+  return { view: 'notfound', slug: null };
 };
 
 const initialRoute = parseRouteFromLocation();
@@ -863,6 +864,12 @@ export const useStore = create((set, get) => ({
       }
       return updates;
     });
+
+    if (typeof window !== 'undefined' && view === 'notfound') {
+      // Keep the unknown URL in the address bar
+      window.scrollTo({ top: 0 });
+      return;
+    }
 
     if (typeof window !== 'undefined') {
       let targetPath = '/';

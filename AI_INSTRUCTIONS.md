@@ -45,7 +45,7 @@ Every git commit must strictly adhere to the format:
 
 ## 4. Code Style & Architecture Guardrails
 - **Dual-Backend Instance Standard**:
-  - `server.clientname.com` $\rightarrow$ Storefront Public API (Port 4001, lean, cached, public routes only).
+  - `api/server.clientname.com` $\rightarrow$ Storefront Public API (Port 4001, lean, cached, public routes only).
   - `service.clientname.com` $\rightarrow$ Dashboard Business API (Port 4002, admin routes, WebSockets, background schedulers).
   - Both backends share a single database and JWT secret layer.
 - **Zero Local Deploy Scripts**:

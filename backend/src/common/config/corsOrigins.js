@@ -132,6 +132,11 @@ export const getDynamicCorsConfig = (envAllowedOrigins = "") => {
     "http://localhost:5174",
     "http://localhost:8001",
     "http://localhost:8005",
+    // Local Surokkha Store (8040) and Shop (8050) against the live API
+    "http://localhost:8040",
+    "http://localhost:8050",
+    "http://127.0.0.1:8040",
+    "http://127.0.0.1:8050",
     "http://127.0.0.1:3000",
     "https://127.0.0.1:3000",
     "http://127.0.0.1:5173",

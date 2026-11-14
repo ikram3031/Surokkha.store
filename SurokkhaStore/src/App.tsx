@@ -34,6 +34,7 @@ import { CartProvider } from '@/context/CartContext'
 import { AccountPage } from '@/components/account/AccountPage'
 import { BlogArchive } from '@/components/blog/BlogArchive'
 import { BlogPost } from '@/components/blog/BlogPost'
+import { NotFoundPage } from '@/components/pages/NotFoundPage'
 import { categoryPath, navigate, useRoute, type Route } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
 import type { ShopFilter } from '@/components/shop/FilterBar'
@@ -136,6 +137,7 @@ function AppShell() {
         {route.name === 'policy' && <PolicyPage page={route.page} />}
         {route.name === 'blog' && <BlogArchive />}
         {route.name === 'blog-post' && <BlogPost slug={route.slug} />}
+        {route.name === 'not-found' && <NotFoundPage />}
           </>
         )}
       </main>

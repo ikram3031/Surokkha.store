@@ -8,7 +8,8 @@ import { SectionHeading } from '@/components/SectionHeading'
 const PREFERRED = ['condoms', 'lubricants', 'feminine-care', 'combo', 'wellness']
 
 // Three equal columns filled top to bottom: the first tile is tall, then two stacked tiles in each other column
-const SPANS = ['md:row-span-2', '', '', '', '']
+// On mobile: two columns, the first tile full width on top
+const SPANS = ['col-span-2 md:col-span-1 md:row-span-2', '', '', '', '']
 
 // Generated mood photos (dark slate + maroon silk, no brand packs) for the main categories;
 // others fall back to a product photo
@@ -41,7 +42,7 @@ export function ShopByNeed() {
       <div className="relative mx-auto max-w-7xl px-4 py-10 md:py-14">
         <SectionHeading title="Shop by need" subtitle="Pick the category you came for — every tile opens its full range." />
 
-        <div className="mt-10 grid gap-5 md:h-[560px] md:grid-flow-col md:grid-cols-3 md:grid-rows-2">
+        <div className="mt-8 grid grid-cols-2 gap-3 md:mt-10 md:h-[560px] md:gap-5 md:grid-flow-col md:grid-cols-3 md:grid-rows-2">
           {ordered.map((category, i) => {
             const image = imageFor(category.slug)
             return (
@@ -52,7 +53,7 @@ export function ShopByNeed() {
                   e.preventDefault()
                   navigate(categoryPath(category.slug))
                 }}
-                className={`group relative min-h-[240px] overflow-hidden rounded-2xl bg-secondary ring-1 ring-border ${SPANS[i] ?? ''} ${i === 0 ? 'min-h-[320px]' : ''}`}
+                className={`group relative min-h-[150px] overflow-hidden rounded-xl md:min-h-[240px] md:rounded-2xl bg-secondary ring-1 ring-border ${SPANS[i] ?? ''} ${i === 0 ? 'min-h-[180px] md:min-h-[320px]' : ''}`}
               >
                 {image && (
                   <img
@@ -64,9 +65,9 @@ export function ShopByNeed() {
                 )}
                 {/* Dark at the bottom, fading out towards the middle, so the label reads on any photo */}
                 <span className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/45 to-transparent" aria-hidden="true" />
-                <span className="absolute inset-x-5 bottom-5 flex items-center gap-3 text-sm font-semibold tracking-[0.25em] text-white uppercase md:text-base">
+                <span className="absolute inset-x-3 bottom-3 flex items-center gap-2 text-xs font-semibold tracking-[0.15em] md:inset-x-5 md:bottom-5 md:gap-3 md:tracking-[0.25em] text-white uppercase md:text-base">
                   {category.label}
-                  <span className="h-px w-8 bg-primary transition-all duration-500 group-hover:w-16" aria-hidden="true" />
+                  <span className="hidden h-px w-8 bg-primary sm:block transition-all duration-500 group-hover:w-16" aria-hidden="true" />
                 </span>
               </a>
             )
