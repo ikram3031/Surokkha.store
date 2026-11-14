@@ -68,7 +68,8 @@ export const saveCheckoutLead = async (req, res) => {
         req,
         eventId: `ic_${sessionId}`,
         eventSourceUrl: str(body.sourceUrl, 400),
-        user: { externalId: sessionId },
+        // external_id comes from body.externalId: the visitor id the browser pixel was initialised with
+        user: {},
       });
     }
 
@@ -132,7 +133,6 @@ export const saveCheckoutLead = async (req, res) => {
             email,
             phone: set.phone,
             district: set.district,
-            externalId: sessionId,
           },
         });
       }

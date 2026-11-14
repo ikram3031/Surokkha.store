@@ -14,6 +14,8 @@ export interface CheckoutLeadPayload {
   customData?: Record<string, unknown>
   fbp?: string
   fbc?: string
+  /** Visitor id (_sk_ext_id) the pixel uses as external_id */
+  externalId?: string
 }
 
 /** One id per checkout attempt: ties the saved lead, the Meta InitiateCheckout and the placed order together. */

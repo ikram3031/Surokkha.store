@@ -1,3 +1,4 @@
+import { getExternalId } from '@/lib/pixel'
 import { api } from '@/lib/api/client'
 
 export type ProductEventType = 'view' | 'add_to_cart' | 'checkout' | 'purchase'
@@ -10,22 +11,7 @@ export interface ProductEvent {
   value?: number
 }
 
-const VISITOR_KEY = '_sk_ext_id'
 const VIEW_REPEAT_WINDOW_MS = 30 * 60 * 1000
-
-/** Persistent anonymous id of this browser; the dashboard counts unique visitors with it. */
-function getVisitorId(): string {
-  try {
-    let id = localStorage.getItem(VISITOR_KEY)
-    if (!id) {
-      id = `sk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
-      localStorage.setItem(VISITOR_KEY, id)
-    }
-    return id
-  } catch {
-    return `sk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
-  }
-}
 
 function resolveTrafficSource(): string {
   try {
@@ -46,7 +32,7 @@ function resolveTrafficSource(): string {
 /** POST /store/v1/product-events — first-party product funnel for the dashboard. Fire-and-forget. */
 export function trackProductEvents(events: ProductEvent[]) {
   if (typeof window === 'undefined' || events.length === 0) return
-  const visitorId = getVisitorId()
+  const visitorId = getExternalId()
   const source = resolveTrafficSource()
   const referrer = document.referrer || ''
   const pageUrl = window.location.href

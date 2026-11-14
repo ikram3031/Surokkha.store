@@ -51,6 +51,8 @@ export interface NewOrderPayload {
   /** Meta cookies so the server-side CAPI event matches this browser. */
   fbp?: string
   fbc?: string
+  /** Visitor id (_sk_ext_id) the pixel uses as external_id */
+  externalId?: string
 }
 
 export interface Order {

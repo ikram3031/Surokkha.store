@@ -545,6 +545,7 @@ export const trackViewContent = (product) => {
         fbp,
         fbc,
         fb_login_id: fbLoginId || undefined,
+        externalId: getExternalId(),
         eventId,
         eventSourceUrl: isBrowser ? window.location.href : '',
         user
@@ -631,6 +632,7 @@ export const trackAddToCart = (product, quantity = 1) => {
         fbp,
         fbc,
         fb_login_id: fbLoginId || undefined,
+        externalId: getExternalId(),
         eventId,
         eventSourceUrl: isBrowser ? window.location.href : '',
         user
@@ -699,6 +701,7 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
         fbp,
         fbc,
         fb_login_id: fbLoginId || undefined,
+        externalId: getExternalId(),
         eventId,
         eventSourceUrl: isBrowser ? window.location.href : '',
         user
@@ -1019,6 +1022,7 @@ export const saveCheckoutLead = (details = {}, keepalive = false) => {
         customData: getLastInitiateCheckoutData(),
         fbp: getFbp(),
         fbc: getFbc(),
+        externalId: getExternalId(),
         sourceUrl: window.location.href
       })
     }).catch(() => {});

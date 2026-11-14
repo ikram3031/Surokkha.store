@@ -16,6 +16,24 @@ declare global {
   }
 }
 
+const EXTERNAL_ID_KEY = '_sk_ext_id'
+let memoryExternalId = ''
+
+/** Persistent anonymous id of this browser: pixel external_id, CAPI external_id and dashboard visitor id. */
+export function getExternalId(): string {
+  try {
+    let id = localStorage.getItem(EXTERNAL_ID_KEY)
+    if (!id) {
+      id = memoryExternalId || `sk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+      localStorage.setItem(EXTERNAL_ID_KEY, id)
+    }
+    return id
+  } catch {
+    memoryExternalId ||= `sk_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+    return memoryExternalId
+  }
+}
+
 /** Resolves the pixel id for this site, or '' when the dashboard has the browser pixel turned off. */
 async function resolvePixelId(): Promise<string> {
   const { metaPixel } = await loadSiteConfig()
@@ -43,7 +61,8 @@ function bootstrap(pixelId: string) {
   script.async = true
   script.src = 'https://connect.facebook.net/en_US/fbevents.js'
   document.head.appendChild(script)
-  fbq('init', pixelId)
+  // Same visitor id the backend sends as external_id on every Conversions API event, so Meta pairs them
+  fbq('init', pixelId, { external_id: getExternalId() })
 }
 
 export function initPixel() {
@@ -79,8 +98,8 @@ function cookie(name: string): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-/** _fbp / _fbc let the server-side event match this browser session. */
-export function getFbIdentifiers(): { fbp?: string; fbc?: string } {
+/** _fbp / _fbc / external_id let the server-side event match this browser session. */
+export function getFbIdentifiers(): { fbp?: string; fbc?: string; externalId?: string } {
   try {
     let fbc = cookie('_fbc')
     if (!fbc) {
@@ -90,8 +109,8 @@ export function getFbIdentifiers(): { fbp?: string; fbc?: string } {
         document.cookie = `_fbc=${encodeURIComponent(fbc)}; path=/; max-age=7776000; SameSite=Lax`
       }
     }
-    return { fbp: cookie('_fbp') || undefined, fbc: fbc || undefined }
+    return { fbp: cookie('_fbp') || undefined, fbc: fbc || undefined, externalId: getExternalId() }
   } catch {
-    return {}
+    return { externalId: getExternalId() }
   }
 }

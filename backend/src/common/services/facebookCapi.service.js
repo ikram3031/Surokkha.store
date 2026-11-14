@@ -205,6 +205,24 @@ const getCookie = (req, name) => {
   return match ? decodeURIComponent(match[1]) : "";
 };
 
+// Browser visitor id (_sk_ext_id) that the storefront pixel is initialised with. CAPI events lead with
+// this same id so Meta matches each server event to its pixel twin; a known member/customer id follows.
+export const resolveExternalIds = (user = {}, req = null, ...fallbacks) => {
+  const visitorId =
+    user?.externalId ||
+    req?.body?.externalId ||
+    req?.body?.external_id ||
+    req?.body?.user?.externalId ||
+    req?.query?.externalId ||
+    req?.headers?.["x-sk-ext-id"] ||
+    getCookie(req, "_sk_ext_id") ||
+    "";
+  const ids = [visitorId, user?.memberId, user?.did, ...fallbacks]
+    .map((v) => (v == null ? "" : String(v).trim()))
+    .filter(Boolean);
+  return [...new Set(ids.map(sha256).filter(Boolean))];
+};
+
 // Extracts Facebook Login ID (App-Scoped User ID) from source object, req, or cookies
 export const extractFbLoginId = (source = null, req = null) => {
   if (!source && !req) return "";
@@ -350,6 +368,14 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       ...(fbc ? { fbc } : {}),
       ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
+    const externalIds = resolveExternalIds(
+      { externalId: order.externalId },
+      req,
+      order.member,
+      order.customerDid,
+      order.orderNumber || order._id,
+    );
+    if (externalIds.length) userData.external_id = externalIds;
 
     if (advancedMatching) {
       const hashedEmail = sha256(rawEmail);
@@ -449,16 +475,6 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
         // Non-fatal: skip ge/db enrichment if lookup fails
       }
 
-      const rawExtId = (
-        order.member ||
-        order.customerDid ||
-        req?.body?.externalId ||
-        req?.body?.external_id ||
-        String(order.orderNumber || order._id || "")
-      );
-      if (rawExtId) {
-        userData.external_id = [sha256(String(rawExtId))];
-      }
     }
 
     const items = (Array.isArray(order.items) ? order.items : []).filter(i => i.itemType !== 'item');
@@ -595,6 +611,8 @@ export const sendServerViewContentEvent = async ({
       ...(fbc ? { fbc } : {}),
       ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
+    const externalIds = resolveExternalIds(user, req);
+    if (externalIds.length) userData.external_id = externalIds;
 
     if (advancedMatching && user) {
       const email = user.email || "";
@@ -615,9 +633,6 @@ export const sendServerViewContentEvent = async ({
       if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
       if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
       userData.country = [sha256("bd")];
-      if (user.memberId || user.did || user.externalId) {
-        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
-      }
     }
 
     const price = Number(product?.offerPrice || product?.price || 0);
@@ -724,6 +739,8 @@ export const sendServerAddToCartEvent = async ({
       ...(fbc ? { fbc } : {}),
       ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
+    const externalIds = resolveExternalIds(user, req);
+    if (externalIds.length) userData.external_id = externalIds;
 
     if (advancedMatching && user) {
       const email = user.email || "";
@@ -744,9 +761,6 @@ export const sendServerAddToCartEvent = async ({
       if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
       if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
       userData.country = [sha256("bd")];
-      if (user.memberId || user.did || user.externalId) {
-        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
-      }
     }
 
     const price = Number(product?.offerPrice || product?.price || 0);
@@ -840,6 +854,8 @@ export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, 
       ...(fbc ? { fbc } : {}),
       ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
+    const externalIds = resolveExternalIds(user, req);
+    if (externalIds.length) userData.external_id = externalIds;
 
     if (advancedMatching && user) {
       const email = user.email || '';
@@ -860,9 +876,6 @@ export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, 
       if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
       if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
       userData.country = [sha256('bd')];
-      if (user.memberId || user.did || user.externalId) {
-        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
-      }
     }
 
     const eventData = [
@@ -922,6 +935,8 @@ export const sendServerAddPaymentInfoEvent = async ({ customData, req = null, ev
       ...(fbc ? { fbc } : {}),
       ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
+    const externalIds = resolveExternalIds(user, req);
+    if (externalIds.length) userData.external_id = externalIds;
 
     if (advancedMatching && user) {
       const email = user.email || '';
@@ -942,9 +957,6 @@ export const sendServerAddPaymentInfoEvent = async ({ customData, req = null, ev
       if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
       if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
       userData.country = [sha256('bd')];
-      if (user.memberId || user.did || user.externalId) {
-        userData.external_id = [sha256(String(user.memberId || user.did || user.externalId))];
-      }
     }
 
     const eventData = [

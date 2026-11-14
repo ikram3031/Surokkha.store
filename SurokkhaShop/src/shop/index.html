@@ -97,7 +97,17 @@
     }(window, document, 'script',
       'https://connect.facebook.net/en_US/fbevents.js');
     fbq('set', 'autoConfig', false, '1565104865301894');
-    fbq('init', '1565104865301894');
+    // One visitor id (localStorage _sk_ext_id, same key as analytics.js getExternalId) is the pixel
+    // external_id; the backend Conversions API events send this same id so Meta pairs them.
+    var skExtId = ;
+    try {
+      skExtId = localStorage.getItem(_sk_ext_id) || ;
+      if (!skExtId) {
+        skExtId = sk_ + Date.now() + _ + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem(_sk_ext_id, skExtId);
+      }
+    } catch (e) {}
+    fbq(init, 1565104865301894, skExtId ? { external_id: skExtId } : {});
     fbq('track', 'PageView');
   </script>
   <!-- End Meta Pixel Code -->
