@@ -1,0 +1,36 @@
+{
+  "hubUrl": "https://api.plexihub.space",
+  "docsKey": "spQoEF1gr1QZ1hyK",
+  "clientKey": "surokkha",
+  "ownerDId": "9827314097734146",
+  "project": "surokkha",
+  "timeoutMs": 10000,
+  "categories": {
+    "planning": [
+      "plans/",
+      "planning/"
+    ],
+    "docs": [
+      "docs/",
+      "AI_INSTRUCTIONS.md",
+      "CHANGES_SESSION_OCT07_2026.md"
+    ],
+    "dashboard": [
+      "dashboard/"
+    ],
+    "frontend": [
+      "SurokkhaStore/",
+      "SurokkhaShop/"
+    ],
+    "infra": [
+      "nginx",
+      "docker-compose",
+      "Makefile",
+      "scripts/",
+      "configs/"
+    ],
+    "backend": [
+      "backend/"
+    ]
+  }
+}

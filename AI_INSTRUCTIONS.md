@@ -28,7 +28,13 @@ Every git commit must strictly adhere to the format:
   - `chor` (Chores / dependency updates)
   - `styl` (Styling / CSS / theme UI changes)
   - `test` (Testing / test scripts)
+  - `plan` (Planning)
 - **No Lazy Commits**: Never use generic messages like `wip`, `update`, `fix`, `changes`.
+- **Commit Body (Plexi Docs)**: every commit is sent to Plexi Docs by the post-commit hook (`tools/commit-docs`). Add a body with `Category:` (planning / docs / backend / frontend / dashboard / infra), `Why:`, `Purpose:` lines and free Markdown details.
+  - `docs` commit: add `Section:` (Documentation folder) and optionally `Page:`; the body text becomes that documentation page.
+  - `plan` commit: add `Status:` (draft / active / done) and `Goal:` (one line), optionally `Page:`; the body text becomes the plan.
+  - Long messages: write them to a file and `git commit -F message.txt`.
+  - New machine: `node tools/commit-docs/install.mjs` once.
 
 ---
 
