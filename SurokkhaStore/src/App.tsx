@@ -51,7 +51,7 @@ const OFFER_ONLY_MODE = false
 const SHOW_ALL_PRODUCTS = false
 
 // Light header v2 (logo + menu left, search / cart / profile right). false brings back the old dark Header.
-const USE_HEADER_V2 = true
+const USE_HEADER_V2 = false
 
 function AppShell() {
   const [query, setQuery] = useState('')

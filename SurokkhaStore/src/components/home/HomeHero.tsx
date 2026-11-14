@@ -20,6 +20,16 @@ export function HomeHero() {
     <section className="relative overflow-hidden [background:radial-gradient(circle_at_78%_28%,var(--accent)_0%,var(--secondary)_38%,var(--background)_72%)]">
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-10 pt-8 md:pt-12 lg:grid-cols-[1.25fr_1fr] lg:pb-14 lg:pt-14">
         <div>
+          <div className="mb-5 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm">
+              <span aria-hidden>⚡</span>
+              {L('November Flash Sale: discounts on most products', 'নভেম্বর ফ্ল্যাশ সেল: বেশিরভাগ প্রোডাক্টে ছাড়')}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-50 px-3.5 py-1.5 text-sm font-semibold text-emerald-700">
+              <span aria-hidden>🚚</span>
+              {L('Free delivery on orders over ৳1,000', '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি')}
+            </span>
+          </div>
 
           <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
             {L('Safe love,', 'নিরাপদ ভালোবাসা,')}
