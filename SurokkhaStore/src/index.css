@@ -115,9 +115,9 @@
   --border: #ecdfe3;
   --input: #ecdfe3;
   --ring: #e11d48;
-  --font-display: "Marcellus", "Noto Serif Bengali", Georgia, serif;
-  --font-body: "Manrope", "Hind Siliguri", system-ui, sans-serif;
-  --font-product: "Jost", "Hind Siliguri", system-ui, sans-serif;
+  --font-display: "Noto Serif Bengali", "Marcellus", Georgia, serif;
+  --font-body: "Noto Serif Bengali", "Hind Siliguri", "Manrope", system-ui, sans-serif;
+  --font-product: "Noto Serif Bengali", "Hind Siliguri", "Jost", system-ui, sans-serif;
 }
 
 .dark {
@@ -171,9 +171,9 @@
   --input: #3a2a2e;
   --ring: #fb7185;
 
-  --font-display: "Marcellus", "Noto Serif Bengali", Georgia, serif;
-  --font-body: "Manrope", "Hind Siliguri", system-ui, sans-serif;
-  --font-product: "Jost", "Hind Siliguri", system-ui, sans-serif;
+  --font-display: "Noto Serif Bengali", "Marcellus", Georgia, serif;
+  --font-body: "Noto Serif Bengali", "Hind Siliguri", "Manrope", system-ui, sans-serif;
+  --font-product: "Noto Serif Bengali", "Hind Siliguri", "Jost", system-ui, sans-serif;
 }
 
 @theme inline {
