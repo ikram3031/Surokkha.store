@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, resolveMediaUrl } from '@/lib/api/client'
 import { navigate } from '@/lib/router'
+import { L } from '@/lib/i18n'
 
 interface Promo {
   banner: { imageUrl: string; text: string; link: string } | null
@@ -34,7 +35,7 @@ export function PromoBanner() {
         onClick={open}
         className={`relative overflow-hidden rounded-2xl bg-primary/10 ${banner.link ? 'cursor-pointer' : ''}`}
       >
-        {image && <img src={image} alt={banner.text || 'Promotion'} className="block w-full object-cover" />}
+        {image && <img src={image} alt={banner.text || L('Promotion', 'প্রমোশন')} className="block w-full object-cover" />}
         {banner.text && (
           <p
             className={

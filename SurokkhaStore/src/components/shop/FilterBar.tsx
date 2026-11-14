@@ -1,5 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCategories } from '@/hooks/useCategories'
+import { L } from '@/lib/i18n'
 
 /** 'all', a legacy bucket ('condom' | 'lube' | 'combo'), or an API category slug. */
 export type ShopFilter = string
@@ -12,14 +13,14 @@ export function FilterBar({
   onChange: (value: ShopFilter) => void
 }) {
   const categories = useCategories()
-  const filters = [{ slug: 'all', label: 'All' }, ...categories]
+  const filters = [{ slug: 'all', label: L('All', 'সব') }, ...categories]
 
   return (
     <ToggleGroup
       type="single"
       value={value}
       onValueChange={(v) => v && onChange(v)}
-      aria-label="Product filter"
+      aria-label={L('Product filter', 'প্রোডাক্ট ফিল্টার')}
       className="flex-wrap gap-2"
     >
       {filters.map((f) => (

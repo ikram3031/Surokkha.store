@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { resolveMediaUrl } from '@/lib/api/client'
 import { navigate, productPath } from '@/lib/router'
+import { L } from '@/lib/i18n'
 
 // Ported from SurokkhaShop's HeroBannerSlider (Trial Pack, Ultimate 3-in-1, Protection Combo banners).
 interface HeroSlide {
@@ -23,62 +24,62 @@ const SLIDES: HeroSlide[] = [
   {
     key: 'trial-pack',
     slug: 'mo-trial-pack-6-pcs',
-    badge: 'Trial Combo Pack',
+    badge: L('Trial Combo Pack', 'ট্রায়াল কম্বো প্যাক'),
     title: [
       { text: 'MO ', color: 'text-[#4a0f1f]' },
-      { text: 'Trial ', color: 'text-[#b0213f]' },
-      { text: 'Pack', color: 'text-[#e05578]' },
+      { text: L('Trial ', 'ট্রায়াল '), color: 'text-[#b0213f]' },
+      { text: L('Pack', 'প্যাক'), color: 'text-[#e05578]' },
     ],
-    tagline: ['Try', 'Compare', 'Choose Yours'],
-    subtitle: 'Try them together and pick what suits you',
+    tagline: [L('Try', 'ট্রাই করুন'), L('Compare', 'তুলনা করুন'), L('Choose Yours', 'আপনারটি বেছে নিন')],
+    subtitle: L('Try them together and pick what suits you', 'একসাথে ট্রাই করে আপনার পছন্দেরটি বেছে নিন'),
     chips: [
-      { label: '2 pcs Ultra Thin', dot: 'bg-sky-500' },
-      { label: '2 pcs Dotted', dot: 'bg-pink-500' },
-      { label: '2 pcs Ribbed', dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
+      { label: L('2 pcs Ultra Thin', '২ পিস আল্ট্রা থিন'), dot: 'bg-sky-500' },
+      { label: L('2 pcs Dotted', '২ পিস ডটেড'), dot: 'bg-pink-500' },
+      { label: L('2 pcs Ribbed', '২ পিস রিবড'), dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
     ],
     image: '/banners/trial-pack-packets.webp',
-    imageAlt: 'MO Trial Pack — Ultra Thin, Dotted and Ribbed',
+    imageAlt: L('MO Trial Pack — Ultra Thin, Dotted and Ribbed', 'MO ট্রায়াল প্যাক — আল্ট্রা থিন, ডটেড ও রিবড'),
     framed: false,
-    ctaNote: '6 pcs in total — 3 types, 2 of each',
+    ctaNote: L('6 pcs in total — 3 types, 2 of each', 'মোট ৬ পিস — ৩ ধরনের, প্রতিটি ২টি করে'),
   },
   {
     key: 'ultimate-combo',
     slug: 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo',
-    badge: 'Best Value Combo',
+    badge: L('Best Value Combo', 'সেরা ভ্যালু কম্বো'),
     title: [
-      { text: 'Ultimate ', color: 'text-[#4a0f1f]' },
-      { text: '3-in-1', color: 'text-[#b0213f] whitespace-nowrap' },
+      { text: L('Ultimate ', 'আল্টিমেট '), color: 'text-[#4a0f1f]' },
+      { text: L('3-in-1', '৩-ইন-১'), color: 'text-[#b0213f] whitespace-nowrap' },
     ],
-    tagline: ['Ultra Thin', 'Dotted', 'Ribbed'],
-    subtitle: 'Three full boxes of three types — all in one package',
+    tagline: [L('Ultra Thin', 'আল্ট্রা থিন'), L('Dotted', 'ডটেড'), L('Ribbed', 'রিবড')],
+    subtitle: L('Three full boxes of three types — all in one package', 'তিন ধরনের তিনটি সম্পূর্ণ বক্স — সব এক প্যাকেজে'),
     chips: [
-      { label: '10 pcs Ultra Thin', dot: 'bg-sky-400' },
-      { label: '10 pcs Dotted', dot: 'bg-pink-400' },
-      { label: '10 pcs Ribbed', dot: 'bg-slate-400' },
+      { label: L('10 pcs Ultra Thin', '১০ পিস আল্ট্রা থিন'), dot: 'bg-sky-400' },
+      { label: L('10 pcs Dotted', '১০ পিস ডটেড'), dot: 'bg-pink-400' },
+      { label: L('10 pcs Ribbed', '১০ পিস রিবড'), dot: 'bg-slate-400' },
     ],
     image: resolveMediaUrl('/uploads/2610/261025/mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo_main_1792933776798.webp')!,
-    imageAlt: 'MO Ultimate 3-in-1 Combo — Ultra Thin, Dotted and Ribbed',
+    imageAlt: L('MO Ultimate 3-in-1 Combo — Ultra Thin, Dotted and Ribbed', 'MO আল্টিমেট ৩-ইন-১ কম্বো — আল্ট্রা থিন, ডটেড ও রিবড'),
     framed: true,
-    ctaNote: '30 pcs in total — 3 types, 10 of each',
+    ctaNote: L('30 pcs in total — 3 types, 10 of each', 'মোট ৩০ পিস — ৩ ধরনের, প্রতিটি ১০টি করে'),
   },
   {
     key: 'protection-combo',
     slug: 'protection-combo-20-pcs-50gm-gel',
-    badge: 'Protection Combo',
+    badge: L('Protection Combo', 'প্রোটেকশন কম্বো'),
     title: [
-      { text: 'Protection ', color: 'text-[#4a0f1f]' },
-      { text: 'Combo', color: 'text-[#b0213f]' },
+      { text: L('Protection ', 'প্রোটেকশন '), color: 'text-[#4a0f1f]' },
+      { text: L('Combo', 'কম্বো'), color: 'text-[#b0213f]' },
     ],
-    tagline: ['20 Pcs', '50gm Gel', 'One Pack'],
-    subtitle: '20 pcs condoms and 50 g gel — all in one package',
+    tagline: [L('20 Pcs', '২০ পিস'), L('50gm Gel', '৫০ গ্রাম জেল'), L('One Pack', 'এক প্যাকে')],
+    subtitle: L('20 pcs condoms and 50 g gel — all in one package', '২০ পিস কনডম ও ৫০ গ্রাম জেল — সব এক প্যাকেজে'),
     chips: [
-      { label: '20 pcs condoms', dot: 'bg-sky-400' },
-      { label: '50 g gel', dot: 'bg-pink-400' },
+      { label: L('20 pcs condoms', '২০ পিস কনডম'), dot: 'bg-sky-400' },
+      { label: L('50 g gel', '৫০ গ্রাম জেল'), dot: 'bg-pink-400' },
     ],
     image: resolveMediaUrl('/uploads/2610/261018/product_protection_combo_20pcs_50g.webp')!,
-    imageAlt: 'Protection Combo — 20 pcs condoms and 50gm gel',
+    imageAlt: L('Protection Combo — 20 pcs condoms and 50gm gel', 'প্রোটেকশন কম্বো — ২০ পিস কনডম ও ৫০ গ্রাম জেল'),
     framed: true,
-    ctaNote: '20 pcs condoms + 50 g gel, together in one package',
+    ctaNote: L('20 pcs condoms + 50 g gel, together in one package', '২০ পিস কনডম + ৫০ গ্রাম জেল, একসাথে এক প্যাকেজে'),
   },
 ]
 
@@ -164,11 +165,11 @@ function Slide({ slide }: { slide: HeroSlide }) {
                   <path d="M2.5 3.5h2.7l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1" />
                 </svg>
               </span>
-              <span className="text-lg font-extrabold lg:text-xl">Order now</span>
+              <span className="text-lg font-extrabold lg:text-xl">{L('Order now', 'অর্ডার করুন')}</span>
             </button>
             <div className="text-sm font-semibold leading-snug text-[#5a2a35]">{slide.ctaNote}</div>
           </div>
-          <p className="mt-4 text-xs text-slate-500 md:mt-6">For adults only (18+)</p>
+          <p className="mt-4 text-xs text-slate-500 md:mt-6">{L('For adults only (18+)', 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)')}</p>
         </div>
       </div>
     </div>
@@ -226,7 +227,7 @@ export function HeroSlider() {
       <button
         type="button"
         onClick={() => goTo(active - 1)}
-        aria-label="Previous slide"
+        aria-label={L('Previous slide', 'আগের স্লাইড')}
         className="absolute left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/80 text-2xl text-[#5a1426] shadow-md transition hover:bg-white 2xl:flex"
       >
         ‹
@@ -234,7 +235,7 @@ export function HeroSlider() {
       <button
         type="button"
         onClick={() => goTo(active + 1)}
-        aria-label="Next slide"
+        aria-label={L('Next slide', 'পরের স্লাইড')}
         className="absolute right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/80 text-2xl text-[#5a1426] shadow-md transition hover:bg-white 2xl:flex"
       >
         ›
@@ -246,7 +247,7 @@ export function HeroSlider() {
             key={slide.key}
             type="button"
             onClick={() => goTo(i)}
-            aria-label={`Slide ${i + 1}`}
+            aria-label={`${L('Slide', 'স্লাইড')} ${i + 1}`}
             className={`h-2.5 cursor-pointer rounded-full transition-all ${i === active ? 'w-7 bg-[#e05578]' : 'w-2.5 bg-slate-400/60 hover:bg-slate-400'}`}
           />
         ))}

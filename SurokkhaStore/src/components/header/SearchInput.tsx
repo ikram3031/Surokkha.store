@@ -1,5 +1,6 @@
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { L } from '@/lib/i18n'
 
 export function SearchInput({
   value,
@@ -19,11 +20,11 @@ export function SearchInput({
 
   return (
     <label className={`relative block ${className}`}>
-      <span className="sr-only">Search products</span>
+      <span className="sr-only">{L('Search products', 'প্রোডাক্ট খুঁজুন')}</span>
       <Input
         id={id}
         type="search"
-        placeholder="Search products"
+        placeholder={L('Search products', 'প্রোডাক্ট খুঁজুন')}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={
@@ -41,7 +42,7 @@ export function SearchInput({
         <button
           type="button"
           onClick={() => onChange('')}
-          aria-label="Clear search"
+          aria-label={L('Clear search', 'সার্চ মুছুন')}
           className={`absolute right-3 top-1/2 -translate-y-1/2 ${
             inverted
               ? 'text-white/60 hover:text-white'

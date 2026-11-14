@@ -5,6 +5,7 @@ import { FilterBar, type ShopFilter } from '@/components/shop/FilterBar'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import { Button } from '@/components/ui/button'
 import { SectionHeading } from '@/components/SectionHeading'
+import { L } from '@/lib/i18n'
 
 interface ShopProps {
   query: string
@@ -32,19 +33,19 @@ export const Shop = forwardRef<HTMLDivElement, ShopProps>(function Shop(
   return (
     <section id="shop" ref={ref} className="mx-auto max-w-7xl px-4 pb-16">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <SectionHeading title="All products" />
+        <SectionHeading title={L('All products', 'সকল প্রোডাক্ট')} />
         <FilterBar value={filter} onChange={onFilterChange} />
       </div>
 
       {loading && (
-        <p className="mt-10 text-center text-muted-foreground">Loading products...</p>
+        <p className="mt-10 text-center text-muted-foreground">{L('Loading products...', 'প্রোডাক্ট লোড হচ্ছে...')}</p>
       )}
 
       {!loading && error && (
         <div className="mt-10 text-center">
-          <p className="text-muted-foreground">Could not load products. {error}</p>
+          <p className="text-muted-foreground">{L('Could not load products.', 'প্রোডাক্ট লোড করা যায়নি।')} {error}</p>
           <Button variant="outline" className="mt-4 rounded-full" onClick={() => location.reload()}>
-            Try again
+            {L('Try again', 'আবার চেষ্টা করুন')}
           </Button>
         </div>
       )}

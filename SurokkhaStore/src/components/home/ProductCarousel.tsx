@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/shop/ProductCard'
 import type { Product } from '@/data/products'
 import { SectionHeading } from '@/components/SectionHeading'
+import { L } from '@/lib/i18n'
 
 const AUTOPLAY_MS = 3500
 
@@ -60,10 +61,10 @@ export function ProductCarousel({
       <div className="flex items-end justify-between gap-4">
         <SectionHeading title={title} subtitle={subtitle} />
         <div className="hidden gap-2 sm:flex">
-          <Button variant="outline" size="icon" className="rounded-full border-transparent bg-secondary text-secondary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" aria-label="Previous" onClick={() => step(-1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-transparent bg-secondary text-secondary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" aria-label={L('Previous', 'আগের')} onClick={() => step(-1)}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon" className="rounded-full border-transparent bg-secondary text-secondary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" aria-label="Next" onClick={() => step(1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-transparent bg-secondary text-secondary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" aria-label={L('Next', 'পরের')} onClick={() => step(1)}>
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>

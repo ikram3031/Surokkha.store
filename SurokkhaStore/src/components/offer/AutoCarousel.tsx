@@ -1,4 +1,5 @@
 import { Children, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { L } from '@/lib/i18n'
 
 interface Props {
   children: ReactNode
@@ -104,7 +105,7 @@ export function AutoCarousel({
                 pause()
                 resumeLater()
               }}
-              aria-label={`Slide ${i + 1}`}
+              aria-label={`${L('Slide', 'স্লাইড')} ${i + 1}`}
               className={`h-2 rounded-full transition-all ${i === active ? 'w-6 bg-primary' : 'w-2 bg-gray-300'}`}
             />
           ))}

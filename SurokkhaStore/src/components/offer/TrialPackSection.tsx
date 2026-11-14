@@ -3,6 +3,7 @@ import { Minus, Plus, ShoppingBag } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import type { GroupOffer } from '@/lib/api/groupOffers'
 import { bn, taka } from '@/lib/bn'
+import { L } from '@/lib/i18n'
 
 interface Props {
   offer: GroupOffer
@@ -48,18 +49,17 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
 
           <div>
             <span className="inline-block rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-rose-700">
-              Trial pack
+              {L('Trial pack', 'ট্রায়াল প্যাক')}
             </span>
             <h2 className="mt-3 text-2xl font-bold leading-snug text-black sm:text-4xl">{offer.name}</h2>
             <p className="mt-2 text-base text-gray-800 sm:text-lg">
-              {offer.description || 'Give them a try before purchasing a full packet'}
+              {offer.description || L('Give them a try before purchasing a full packet', 'পুরো প্যাকেট কেনার আগে একবার ট্রাই করে দেখুন')}
             </p>
             <p className="mt-2 text-sm text-gray-600">
-              Pick any pieces you like: each one starts at {bn(min)} pieces, and the pack needs at least {bn(minPieces)} pieces
-              in total.
+              {L(`Pick any pieces you like: each one starts at ${bn(min)} pieces, and the pack needs at least ${bn(minPieces)} pieces in total.`, `পছন্দমতো পিস বাছাই করুন: প্রতিটি শুরু ${bn(min)} পিস থেকে, আর প্যাকে মোট কমপক্ষে ${bn(minPieces)} পিস লাগবে।`)}
             </p>
             <p className="mt-4 text-sm text-gray-700">
-              From <b className="text-xl text-rose-600">{taka(fromPrice)}</b> / piece
+              {L('From', 'মাত্র')} <b className="text-xl text-rose-600">{taka(fromPrice)}</b> / {L('piece', 'পিস')}
             </p>
             <button
               type="button"
@@ -67,7 +67,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
               className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition hover:opacity-90 sm:w-auto"
             >
               <ShoppingBag className="size-5" />
-              Add to cart
+              {L('Add to cart', 'কার্টে যোগ করুন')}
             </button>
           </div>
         </div>
@@ -82,7 +82,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
           <div className="border-b border-gray-200 px-5 py-4 pr-16">
             <DialogTitle className="text-xl font-bold leading-snug sm:text-2xl">{offer.name}</DialogTitle>
             <DialogDescription className="mt-1 text-sm text-gray-600">
-              Pick your pieces: {bn(min)} to start, at least {bn(minPieces)} pieces in total.
+              {L(`Pick your pieces: ${bn(min)} to start, at least ${bn(minPieces)} pieces in total.`, `আপনার পিস বাছাই করুন: শুরু ${bn(min)}টি থেকে, মোট কমপক্ষে ${bn(minPieces)} পিস।`)}
             </DialogDescription>
           </div>
 
@@ -110,7 +110,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
                     </p>
                     <div className="mt-auto pt-2">
                       {!p.inStock ? (
-                        <p className="py-2 text-center text-xs font-semibold text-rose-600">Out of stock</p>
+                        <p className="py-2 text-center text-xs font-semibold text-rose-600">{L('Out of stock', 'স্টকে নেই')}</p>
                       ) : n === 0 ? (
                         <button
                           type="button"
@@ -124,7 +124,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
                           <button
                             type="button"
                             onClick={() => onStep(p.id, -1)}
-                            aria-label={`Decrease ${p.name}`}
+                            aria-label={`${p.name} ${L('decrease', 'কমান')}`}
                             className="flex size-8 items-center justify-center rounded-full hover:bg-white/15"
                           >
                             <Minus className="size-3.5" />
@@ -133,7 +133,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
                           <button
                             type="button"
                             onClick={() => onStep(p.id, 1)}
-                            aria-label={`Increase ${p.name}`}
+                            aria-label={`${p.name} ${L('increase', 'বাড়ান')}`}
                             className="flex size-8 items-center justify-center rounded-full hover:bg-white/15"
                           >
                             <Plus className="size-3.5" />
@@ -152,16 +152,16 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
               <p className="text-center text-sm text-gray-700">
                 {picked > 0 ? (
                   <>
-                    {bn(picked)} {picked === 1 ? 'piece' : 'pieces'} · <b className="text-lg text-rose-600">{taka(subtotal)}</b>
+                    {bn(picked)} {picked === 1 ? L('piece', 'পিস') : L('pieces', 'পিস')} · <b className="text-lg text-rose-600">{taka(subtotal)}</b>
                   </>
                 ) : (
-                  <>Minimum {bn(minPieces)} pieces</>
+                  <>{L('Minimum', 'সর্বনিম্ন')} {bn(minPieces)} {L('pieces', 'পিস')}</>
                 )}
               </p>
               {warn && missing > 0 && (
                 <p role="alert" className="text-center text-sm font-semibold text-red-600">
-                  Please select minimum {bn(minPieces)} pieces
-                  {picked > 0 && <> (add {bn(missing)} more)</>}
+                  {L(`Please select minimum ${bn(minPieces)} pieces`, `অনুগ্রহ করে কমপক্ষে ${bn(minPieces)} পিস বাছাই করুন`)}
+                  {picked > 0 && <> ({L(`add ${bn(missing)} more`, `আরও ${bn(missing)}টি যোগ করুন`)})</>}
                 </p>
               )}
               <div className="flex gap-3">
@@ -170,7 +170,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
                   onClick={close}
                   className="h-12 flex-1 rounded-full bg-red-600 text-base font-semibold text-white transition hover:bg-red-700"
                 >
-                  Cancel
+                  {L('Cancel', 'বাতিল')}
                 </button>
                 <button
                   type="button"
@@ -185,7 +185,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
                   }}
                   className={`h-12 flex-1 rounded-full bg-primary text-base font-semibold text-primary-foreground transition ${missing > 0 ? 'opacity-50' : 'hover:opacity-90'}`}
                 >
-                  OK
+                  {L('OK', 'ঠিক আছে')}
                 </button>
               </div>
             </div>

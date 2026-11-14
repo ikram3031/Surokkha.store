@@ -6,6 +6,7 @@ import type { GroupOfferProduct, GroupOfferRule } from '@/lib/api/groupOffers'
 import { newEventId, trackAddToCart } from '@/lib/api/events'
 import { productKeyOf, trackProductEvents } from '@/lib/api/productEvents'
 import { pixelTrack } from '@/lib/pixel'
+import { L } from '@/lib/i18n'
 
 interface CartLine {
   product: Product
@@ -42,7 +43,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev[product.id]
       return { ...prev, [product.id]: { product, qty: (existing?.qty ?? 0) + qty } }
     })
-    toast.success('Added to cart')
+    toast.success(L('Added to cart', 'কার্টে যোগ করা হয়েছে'))
     const contentId = product.did ?? product.slug ?? String(product.id)
     const eventId = newEventId('atc')
     trackAddToCart({ productDid: contentId, productName: product.apiName ?? product.name, price: product.price, qty, eventId })
@@ -137,7 +138,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const freeDelivery = hasFreeDelivery(lines)
     const shipping = subtotal === 0 || freeDelivery ? 0 : SHIP_FEE
     const freeShipNote =
-      subtotal > 0 && freeDelivery ? 'Delivery is free on your order.' : ''
+      subtotal > 0 && freeDelivery ? L('Delivery is free on your order.', 'আপনার অর্ডারে ডেলিভারি ফ্রি।') : ''
     const groupDiscount = groupOfferTotals(lines).discount
     return { count, subtotal, shipping, total: subtotal + shipping - groupDiscount, freeShipNote, groupDiscount }
   }, [cart])

@@ -19,6 +19,7 @@ import { isValidEmail, isValidPhone, localPhone, normalizePhone, toEnDigits } fr
 import { ApiError } from '@/lib/api/client'
 import { navigate } from '@/lib/router'
 import { CustomerDashboard } from '@/components/account/CustomerDashboard'
+import { L } from '@/lib/i18n'
 
 type View = 'login' | 'signup' | 'verify' | 'forgot' | 'reset' | 'account'
 
@@ -61,7 +62,7 @@ function PasswordInput({
         type="button"
         onClick={() => setShown((s) => !s)}
         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b5f63] hover:text-[#1f1a1c]"
-        aria-label={shown ? 'Hide password' : 'Show password'}
+        aria-label={shown ? L('Hide password', 'পাসওয়ার্ড লুকান') : L('Show password', 'পাসওয়ার্ড দেখুন')}
       >
         {shown ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>
@@ -71,7 +72,7 @@ function PasswordInput({
 
 function Breadcrumb({ current, onDark = false }: { current: string; onDark?: boolean }) {
   return (
-    <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-sm ${onDark ? 'text-white/80' : 'text-muted-foreground'}`}>
+    <nav aria-label={L('Breadcrumb', 'ব্রেডক্রাম্ব')} className={`flex items-center gap-2 text-sm ${onDark ? 'text-white/80' : 'text-muted-foreground'}`}>
       <a
         href="/"
         onClick={(e) => {
@@ -80,7 +81,7 @@ function Breadcrumb({ current, onDark = false }: { current: string; onDark?: boo
         }}
         className={onDark ? 'hover:text-white' : 'hover:text-primary'}
       >
-        Home
+        {L('Home', 'হোম')}
       </a>
       <span aria-hidden="true">/</span>
       <span className={`font-semibold ${onDark ? 'text-white' : 'text-foreground'}`} aria-current="page">
@@ -133,7 +134,7 @@ export function AccountPage() {
     try {
       await task()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      toast.error(err instanceof Error ? err.message : L('Something went wrong. Please try again.', 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।'))
     } finally {
       setBusy(false)
     }
@@ -167,10 +168,10 @@ export function AccountPage() {
 
   const submitVerify = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!/^\d{6}$/.test(code)) return toast.error('Enter the 6-digit code from your email')
+    if (!/^\d{6}$/.test(code)) return toast.error(L('Enter the 6-digit code from your email', 'ইমেইলে পাঠানো ৬ ডিজিটের কোডটি লিখুন'))
     run(async () => {
       enter(await verifyEmail({ email: email.trim(), otp: code }))
-      toast.success('Email verified. Your account is ready.')
+      toast.success(L('Email verified. Your account is ready.', 'ইমেইল যাচাই হয়েছে। আপনার অ্যাকাউন্ট প্রস্তুত।'))
     })
   }
 
@@ -182,21 +183,21 @@ export function AccountPage() {
 
   const submitSignup = (e: React.FormEvent) => {
     e.preventDefault()
-    if (name.trim().length < 2) return toast.error('Please enter your name')
-    if (!isValidPhone(phone)) return toast.error('Please enter a valid Bangladeshi mobile number (01XXXXXXXXX)')
-    if (!isValidEmail(email)) return toast.error('Please enter a valid email address')
-    if (password.length < MIN_PASSWORD) return toast.error(`Password must be at least ${MIN_PASSWORD} characters`)
+    if (name.trim().length < 2) return toast.error(L('Please enter your name', 'অনুগ্রহ করে আপনার নাম লিখুন'))
+    if (!isValidPhone(phone)) return toast.error(L('Please enter a valid Bangladeshi mobile number (01XXXXXXXXX)', '১১ ডিজিটের সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: 01XXXXXXXXX)'))
+    if (!isValidEmail(email)) return toast.error(L('Please enter a valid email address', 'অনুগ্রহ করে একটি সঠিক ইমেইল লিখুন'))
+    if (password.length < MIN_PASSWORD) return toast.error(L(`Password must be at least ${MIN_PASSWORD} characters`, `পাসওয়ার্ড কমপক্ষে ${MIN_PASSWORD} অক্ষরের হতে হবে`))
     run(async () => {
       const res = await register({ name: name.trim(), email: email.trim(), password, phone: normalizePhone(phone) })
       setView('verify')
       setCode('')
-      setNotice(res.message || 'We have emailed you a 6-digit code. Enter it to finish creating your account.')
+      setNotice(res.message || L('We have emailed you a 6-digit code. Enter it to finish creating your account.', 'আপনার ইমেইলে একটি ৬ ডিজিটের কোড পাঠানো হয়েছে। অ্যাকাউন্ট তৈরি সম্পন্ন করতে কোডটি লিখুন।'))
     })
   }
 
   const submitForgot = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isValidEmail(email)) return toast.error('Please enter a valid email address')
+    if (!isValidEmail(email)) return toast.error(L('Please enter a valid email address', 'অনুগ্রহ করে একটি সঠিক ইমেইল লিখুন'))
     run(async () => {
       const res = await forgotPassword(email.trim())
       setView('reset')
@@ -206,11 +207,11 @@ export function AccountPage() {
 
   const submitReset = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!/^\d{6}$/.test(code)) return toast.error('Enter the 6-digit code from your email')
-    if (password.length < MIN_PASSWORD) return toast.error(`Password must be at least ${MIN_PASSWORD} characters`)
+    if (!/^\d{6}$/.test(code)) return toast.error(L('Enter the 6-digit code from your email', 'ইমেইলে পাঠানো ৬ ডিজিটের কোডটি লিখুন'))
+    if (password.length < MIN_PASSWORD) return toast.error(L(`Password must be at least ${MIN_PASSWORD} characters`, `পাসওয়ার্ড কমপক্ষে ${MIN_PASSWORD} অক্ষরের হতে হবে`))
     run(async () => {
       enter(await resetPassword({ email: email.trim(), otp: code, password }))
-      toast.success('Password updated. You are now logged in.')
+      toast.success(L('Password updated. You are now logged in.', 'পাসওয়ার্ড আপডেট হয়েছে। আপনি এখন লগইন অবস্থায় আছেন।'))
     })
   }
 
@@ -227,21 +228,21 @@ export function AccountPage() {
   }
 
   const heading: Record<View, { title: string; sub: string }> = {
-    login: { title: 'Welcome back', sub: 'Log in to your Surokkha account.' },
-    signup: { title: 'Create your account', sub: 'Quick to set up, and your details stay private.' },
-    verify: { title: 'Verify your email', sub: 'Enter the 6-digit code we sent to your email.' },
-    forgot: { title: 'Forgot your password?', sub: "Enter your email and we'll send you a 6-digit code." },
-    reset: { title: 'Reset your password', sub: 'Enter the code we emailed you and choose a new password.' },
-    account: { title: customer ? `Hello, ${customer.name.split(' ')[0]}` : 'My Account', sub: 'You are logged in.' },
+    login: { title: L('Welcome back', 'আবার স্বাগতম'), sub: L('Log in to your Surokkha account.', 'আপনার সুরক্ষা অ্যাকাউন্টে লগইন করুন।') },
+    signup: { title: L('Create your account', 'অ্যাকাউন্ট তৈরি করুন'), sub: L('Quick to set up, and your details stay private.', 'দ্রুত তৈরি করুন, আপনার তথ্য গোপন থাকবে।') },
+    verify: { title: L('Verify your email', 'ইমেইল যাচাই করুন'), sub: L('Enter the 6-digit code we sent to your email.', 'আপনার ইমেইলে পাঠানো ৬ ডিজিটের কোডটি লিখুন।') },
+    forgot: { title: L('Forgot your password?', 'পাসওয়ার্ড ভুলে গেছেন?'), sub: L('Enter your email and we\'ll send you a 6-digit code.', 'আপনার ইমেইল লিখুন, আমরা একটি ৬ ডিজিটের কোড পাঠাব।') },
+    reset: { title: L('Reset your password', 'পাসওয়ার্ড রিসেট করুন'), sub: L('Enter the code we emailed you and choose a new password.', 'ইমেইলে পাঠানো কোডটি লিখে নতুন পাসওয়ার্ড দিন।') },
+    account: { title: customer ? `${L('Hello', 'হ্যালো')}, ${customer.name.split(' ')[0]}` : L('My Account', 'আমার অ্যাকাউন্ট'), sub: L('You are logged in.', 'আপনি লগইন অবস্থায় আছেন।') },
   }
 
   const crumb: Record<View, string> = {
-    login: 'Log in',
-    signup: 'Sign up',
-    verify: 'Verify email',
-    forgot: 'Forgot password',
-    reset: 'Reset password',
-    account: 'My Account',
+    login: L('Log in', 'লগইন'),
+    signup: L('Sign up', 'সাইন আপ'),
+    verify: L('Verify email', 'ইমেইল যাচাই'),
+    forgot: L('Forgot password', 'পাসওয়ার্ড ভুলে গেছেন'),
+    reset: L('Reset password', 'পাসওয়ার্ড রিসেট'),
+    account: L('My Account', 'আমার অ্যাকাউন্ট'),
   }
 
   const primary = 'h-11 w-full rounded-full text-base'
@@ -270,10 +271,10 @@ export function AccountPage() {
         {/* Soft dark glow in the top-left corner so the logo stands out from the photo */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.35)_28%,transparent_55%)]" />
         <div className="relative flex h-full flex-col justify-between p-10">
-          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-12 w-auto self-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]" />
+          <img src="/surokkha_store_logo_dark.png" alt={L('Surokkha Store', 'সুরক্ষা স্টোর')} className="h-12 w-auto self-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]" />
           <div>
-            <p className="font-display text-3xl font-bold leading-snug">Safe today, tomorrow too.</p>
-            <p className="mt-2 max-w-sm text-white/80">Discreet packaging, genuine products and cash on delivery.</p>
+            <p className="font-display text-3xl font-bold leading-snug">{L('Safe today, tomorrow too.', 'আজও নিরাপদ, আগামীকালও।')}</p>
+            <p className="mt-2 max-w-sm text-white/80">{L('Discreet packaging, genuine products and cash on delivery.', 'গোপনীয় প্যাকেজিং, আসল প্রোডাক্ট ও ক্যাশ অন ডেলিভারি।')}</p>
           </div>
         </div>
       </aside>
@@ -284,7 +285,7 @@ export function AccountPage() {
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative flex h-full flex-col justify-end gap-1.5 p-5">
           <Breadcrumb current={crumb[view]} onDark />
-          <p className="font-display text-2xl font-bold text-white">Safe today, tomorrow too.</p>
+          <p className="font-display text-2xl font-bold text-white">{L('Safe today, tomorrow too.', 'আজও নিরাপদ, আগামীকালও।')}</p>
         </div>
       </div>
 
@@ -308,7 +309,7 @@ export function AccountPage() {
                       onClick={() => go(tab)}
                       className={`rounded-full py-2 transition-colors ${view === tab ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                     >
-                      {tab === 'login' ? 'Log in' : 'Sign up'}
+                      {tab === 'login' ? L('Log in', 'লগইন') : L('Sign up', 'সাইন আপ')}
                     </button>
                   ))}
                 </div>
@@ -320,24 +321,24 @@ export function AccountPage() {
 
               {view === 'login' && (
                 <form onSubmit={submitLogin} className="mt-6 space-y-4">
-                  <Field label="Email">
+                  <Field label={L('Email', 'ইমেইল')}>
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className="h-11" required />
                   </Field>
-                  <Field label="Password">
+                  <Field label={L('Password', 'পাসওয়ার্ড')}>
                     <PasswordInput value={password} onChange={setPassword} autoComplete="current-password" />
                   </Field>
                   <div className="text-right text-sm">
                     <button type="button" className={link} onClick={() => go('forgot')}>
-                      Forgot password?
+                      {L('Forgot password?', 'পাসওয়ার্ড ভুলে গেছেন?')}
                     </button>
                   </div>
                   <Button type="submit" className={primary} disabled={busy}>
-                    {busy ? 'Please wait...' : 'Log in'}
+                    {busy ? L('Please wait...', 'অপেক্ষা করুন...') : L('Log in', 'লগইন')}
                   </Button>
                   <p className="text-center text-sm text-muted-foreground">
-                    New to Surokkha?{' '}
+                    {L('New to Surokkha?', 'সুরক্ষায় নতুন?')}{' '}
                     <button type="button" className={link} onClick={() => go('signup')}>
-                      Create an account
+                      {L('Create an account', 'অ্যাকাউন্ট তৈরি করুন')}
                     </button>
                   </p>
                 </form>
@@ -345,10 +346,10 @@ export function AccountPage() {
 
               {view === 'signup' && (
                 <form onSubmit={submitSignup} className="mt-6 grid gap-4 sm:grid-cols-2" noValidate>
-                  <Field label="Full name">
+                  <Field label={L('Full name', 'পূর্ণ নাম')}>
                     <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" className="h-11" required />
                   </Field>
-                  <Field label="Mobile number" hint={phone && !isValidPhone(phone) ? 'Enter a valid Bangladeshi number, e.g. 01712345678' : undefined}>
+                  <Field label={L('Mobile number', 'মোবাইল নম্বর')} hint={phone && !isValidPhone(phone) ? L('Enter a valid Bangladeshi number, e.g. 01712345678', 'সঠিক বাংলাদেশি নম্বর দিন, যেমন: 01712345678') : undefined}>
                     <Input
                       value={phone}
                       onChange={(e) => setPhone(toEnDigits(e.target.value).replace(/[^\d+]/g, '').slice(0, 14))}
@@ -365,19 +366,19 @@ export function AccountPage() {
                       required
                     />
                   </Field>
-                  <Field label="Email">
+                  <Field label={L('Email', 'ইমেইল')}>
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className="h-11" required />
                   </Field>
-                  <Field label="Password" hint={`At least ${MIN_PASSWORD} characters`}>
+                  <Field label={L('Password', 'পাসওয়ার্ড')} hint={L(`At least ${MIN_PASSWORD} characters`, `কমপক্ষে ${MIN_PASSWORD} অক্ষর`)}>
                     <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" />
                   </Field>
                   <Button type="submit" className={`${primary} sm:col-span-2`} disabled={busy}>
-                    {busy ? 'Please wait...' : 'Create account'}
+                    {busy ? L('Please wait...', 'অপেক্ষা করুন...') : L('Create account', 'অ্যাকাউন্ট তৈরি করুন')}
                   </Button>
                   <p className="text-center text-sm text-muted-foreground sm:col-span-2">
-                    Already have an account?{' '}
+                    {L('Already have an account?', 'আগে থেকেই অ্যাকাউন্ট আছে?')}{' '}
                     <button type="button" className={link} onClick={() => go('login')}>
-                      Log in
+                      {L('Log in', 'লগইন')}
                     </button>
                   </p>
                 </form>
@@ -385,10 +386,10 @@ export function AccountPage() {
 
               {view === 'verify' && (
                 <form onSubmit={submitVerify} className="mt-6 space-y-4">
-                  <Field label="Email">
+                  <Field label={L('Email', 'ইমেইল')}>
                     <Input type="email" value={email} readOnly className="h-11 bg-muted/40" />
                   </Field>
-                  <Field label="6-digit code">
+                  <Field label={L('6-digit code', '৬ ডিজিটের কোড')}>
                     <Input
                       value={code}
                       onChange={(e) => setCode(toEnDigits(e.target.value).replace(/\D/g, '').slice(0, 6))}
@@ -400,14 +401,14 @@ export function AccountPage() {
                     />
                   </Field>
                   <Button type="submit" className={primary} disabled={busy}>
-                    {busy ? 'Please wait...' : 'Verify and continue'}
+                    {busy ? L('Please wait...', 'অপেক্ষা করুন...') : L('Verify and continue', 'যাচাই করে এগিয়ে যান')}
                   </Button>
                   <p className="flex justify-between text-sm">
                     <button type="button" className={link} onClick={resendSignupCode} disabled={busy}>
-                      Resend code
+                      {L('Resend code', 'আবার কোড পাঠান')}
                     </button>
                     <button type="button" className={link} onClick={() => go('login')}>
-                      Back to log in
+                      {L('Back to log in', 'লগইনে ফিরে যান')}
                     </button>
                   </p>
                 </form>
@@ -415,15 +416,15 @@ export function AccountPage() {
 
               {view === 'forgot' && (
                 <form onSubmit={submitForgot} className="mt-6 space-y-4">
-                  <Field label="Email">
+                  <Field label={L('Email', 'ইমেইল')}>
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className="h-11" required />
                   </Field>
                   <Button type="submit" className={primary} disabled={busy}>
-                    {busy ? 'Sending...' : 'Send reset code'}
+                    {busy ? L('Sending...', 'পাঠানো হচ্ছে...') : L('Send reset code', 'রিসেট কোড পাঠান')}
                   </Button>
                   <p className="text-center text-sm">
                     <button type="button" className={link} onClick={() => go('login')}>
-                      Back to log in
+                      {L('Back to log in', 'লগইনে ফিরে যান')}
                     </button>
                   </p>
                 </form>
@@ -431,10 +432,10 @@ export function AccountPage() {
 
               {view === 'reset' && (
                 <form onSubmit={submitReset} className="mt-6 grid gap-4 sm:grid-cols-2">
-                  <Field label="Email">
+                  <Field label={L('Email', 'ইমেইল')}>
                     <Input type="email" value={email} readOnly className="h-11 bg-muted/40" />
                   </Field>
-                  <Field label="6-digit code">
+                  <Field label={L('6-digit code', '৬ ডিজিটের কোড')}>
                     <Input
                       value={code}
                       onChange={(e) => setCode(toEnDigits(e.target.value).replace(/\D/g, '').slice(0, 6))}
@@ -446,19 +447,19 @@ export function AccountPage() {
                     />
                   </Field>
                   <div className="sm:col-span-2">
-                    <Field label="New password" hint={`At least ${MIN_PASSWORD} characters`}>
+                    <Field label={L('New password', 'নতুন পাসওয়ার্ড')} hint={L(`At least ${MIN_PASSWORD} characters`, `কমপক্ষে ${MIN_PASSWORD} অক্ষর`)}>
                       <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" />
                     </Field>
                   </div>
                   <Button type="submit" className={`${primary} sm:col-span-2`} disabled={busy}>
-                    {busy ? 'Please wait...' : 'Reset password'}
+                    {busy ? L('Please wait...', 'অপেক্ষা করুন...') : L('Reset password', 'পাসওয়ার্ড রিসেট করুন')}
                   </Button>
                   <p className="flex justify-between text-sm sm:col-span-2">
                     <button type="button" className={link} onClick={resendCode} disabled={busy}>
-                      Resend code
+                      {L('Resend code', 'আবার কোড পাঠান')}
                     </button>
                     <button type="button" className={link} onClick={() => go('login')}>
-                      Back to log in
+                      {L('Back to log in', 'লগইনে ফিরে যান')}
                     </button>
                   </p>
                 </form>
@@ -468,26 +469,26 @@ export function AccountPage() {
                 <div className="mt-6 space-y-4">
                   <dl className="space-y-3 rounded-2xl border border-border bg-card p-5 text-sm">
                     <div className="flex justify-between gap-4">
-                      <dt className="text-muted-foreground">Name</dt>
+                      <dt className="text-muted-foreground">{L('Name', 'নাম')}</dt>
                       <dd className="font-medium">{customer.name}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-muted-foreground">Email</dt>
+                      <dt className="text-muted-foreground">{L('Email', 'ইমেইল')}</dt>
                       <dd className="font-medium break-all">{customer.email}</dd>
                     </div>
                     {customer.phone && (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-muted-foreground">Mobile</dt>
+                        <dt className="text-muted-foreground">{L('Mobile', 'মোবাইল')}</dt>
                         <dd className="font-medium">{customer.phone}</dd>
                       </div>
                     )}
                   </dl>
                   <div className="flex gap-3">
                     <Button className="h-11 flex-1 rounded-full" onClick={() => navigate('/')}>
-                      Continue shopping
+                      {L('Continue shopping', 'আরও কেনাকাটা করুন')}
                     </Button>
                     <Button variant="outline" className="h-11 flex-1 rounded-full" onClick={signOut}>
-                      Log out
+                      {L('Log out', 'লগ আউট')}
                     </Button>
                   </div>
                 </div>

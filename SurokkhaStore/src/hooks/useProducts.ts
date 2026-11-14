@@ -3,6 +3,7 @@ import { listProducts } from '@/lib/api/products'
 import { listItems } from '@/lib/api/items'
 import { mapApiProduct, unwrapList, type ApiProduct } from '@/lib/api/mappers'
 import type { Product } from '@/data/products'
+import { L } from '@/lib/i18n'
 
 // The catalog is split across two collections (products + items); fetch both once and share
 // the result between the shop grid and the featured carousel.
@@ -48,7 +49,7 @@ export function useProducts() {
       .catch((err) => {
         if (cancelled) return
         setProducts([])
-        setError(err instanceof Error ? err.message : 'Could not load products.')
+        setError(err instanceof Error ? err.message : L('Could not load products.', 'প্রোডাক্ট লোড করা যায়নি।'))
       })
       .finally(() => !cancelled && setLoading(false))
     return () => {

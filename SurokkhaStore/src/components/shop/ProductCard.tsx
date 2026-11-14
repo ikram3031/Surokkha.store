@@ -7,6 +7,7 @@ import { catBg, catLabel, type Product } from '@/data/products'
 import { bn, taka } from '@/lib/bn'
 import { useCart } from '@/context/CartContext'
 import { navigate, productPath } from '@/lib/router'
+import { L } from '@/lib/i18n'
 
 export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart()
@@ -26,10 +27,10 @@ export function ProductCard({ product }: { product: Product }) {
           </Badge>
         )}
         {product.freeDelivery && !soldOut && (
-          <Badge className="absolute bottom-3 left-3 z-10 bg-emerald-600 text-white hover:bg-emerald-600">Free Delivery</Badge>
+          <Badge className="absolute bottom-3 left-3 z-10 bg-emerald-600 text-white hover:bg-emerald-600">{L('Free Delivery', 'ফ্রি ডেলিভারি')}</Badge>
         )}
         {soldOut && (
-          <Badge className="absolute bottom-3 left-3 z-10 bg-background text-white hover:bg-background">Out of stock</Badge>
+          <Badge className="absolute bottom-3 left-3 z-10 bg-background text-white hover:bg-background">{L('Out of stock', 'স্টকে নেই')}</Badge>
         )}
         {discountPercent > 0 && (
           <Badge className="absolute right-3 top-3 z-10 bg-primary text-primary-foreground hover:bg-primary">
@@ -80,7 +81,7 @@ export function ProductCard({ product }: { product: Product }) {
               e.stopPropagation()
               add(product)
             }}
-            aria-label={`Add ${product.name} to cart`}
+            aria-label={`${product.name} ${L('add to cart', 'কার্টে যোগ করুন')}`}
           >
             <ShoppingCart className="h-4 w-4" />
           </Button>
@@ -95,7 +96,7 @@ export function ProductCard({ product }: { product: Product }) {
             navigate('/checkout')
           }}
         >
-          {soldOut ? 'Out of stock' : (<><Zap className="h-4 w-4" />Order now</>)}
+          {soldOut ? L('Out of stock', 'স্টকে নেই') : (<><Zap className="h-4 w-4" />{L('Order now', 'অর্ডার করুন')}</>)}
         </Button>
       </CardContent>
     </Card>

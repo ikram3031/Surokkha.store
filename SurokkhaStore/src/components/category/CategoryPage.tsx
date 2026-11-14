@@ -3,6 +3,8 @@ import { ProductGrid } from '@/components/shop/ProductGrid'
 import { useCategories } from '@/hooks/useCategories'
 import { useProducts } from '@/hooks/useProducts'
 import { navigate } from '@/lib/router'
+import { bn } from '@/lib/bn'
+import { L } from '@/lib/i18n'
 
 /** All products of one category (reached from the menu and the "Shop by need" tiles). */
 export function CategoryPage({ slug }: { slug: string }) {
@@ -14,7 +16,7 @@ export function CategoryPage({ slug }: { slug: string }) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground">
+      <nav aria-label={L('Breadcrumb', 'ব্রেডক্রাম্ব')} className="flex items-center gap-2 text-sm text-muted-foreground">
         <a
           href="/"
           onClick={(e) => {
@@ -23,7 +25,7 @@ export function CategoryPage({ slug }: { slug: string }) {
           }}
           className="hover:text-primary"
         >
-          Home
+          {L('Home', 'হোম')}
         </a>
         <span aria-hidden="true">/</span>
         <span className="font-semibold capitalize text-foreground" aria-current="page">
@@ -34,14 +36,14 @@ export function CategoryPage({ slug }: { slug: string }) {
       <h1 className="mt-4 font-display text-3xl font-bold capitalize md:text-4xl">{label}</h1>
       {!loading && !error && list.length > 0 && (
         <p className="mt-1 text-muted-foreground">
-          {list.length} {list.length === 1 ? 'product' : 'products'}
+          {bn(list.length)} {list.length === 1 ? L('product', 'টি প্রোডাক্ট') : L('products', 'টি প্রোডাক্ট')}
         </p>
       )}
 
-      {loading && <p className="mt-10 text-center text-muted-foreground">Loading products...</p>}
-      {!loading && error && <p className="mt-10 text-center text-muted-foreground">Could not load products. {error}</p>}
+      {loading && <p className="mt-10 text-center text-muted-foreground">{L('Loading products...', 'প্রোডাক্ট লোড হচ্ছে...')}</p>}
+      {!loading && error && <p className="mt-10 text-center text-muted-foreground">{L('Could not load products.', 'প্রোডাক্ট লোড করা যায়নি।')} {error}</p>}
       {!loading && !error && list.length === 0 && (
-        <p className="mt-10 text-center text-muted-foreground">No products in this category yet.</p>
+        <p className="mt-10 text-center text-muted-foreground">{L('No products in this category yet.', 'এই ক্যাটাগরিতে এখনো কোনো প্রোডাক্ট নেই।')}</p>
       )}
       {!loading && !error && list.length > 0 && <ProductGrid products={list} />}
     </div>

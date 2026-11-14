@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, resolveMediaUrl } from '@/lib/api/client'
 import type { OfferProduct } from '@/data/offerProducts'
 import picks from '@/data/offer-picks.json'
+import { L } from '@/lib/i18n'
 
 // Store products shown first on the page, loaded live from the StoreWeb API by their catalog id (did).
 // Using the did as the pixel content id keeps these products matched to the store's Meta catalog.
@@ -59,7 +60,7 @@ function toOfferProduct(p: ApiProduct, entity: 'product' | 'item' = 'product'): 
     images,
     // A single-variant product (e.g. "Pack One") is just sold as itself
     variants: variants.length > 1 ? variants : undefined,
-    variantLabel: variants.length > 1 ? 'Option' : undefined,
+    variantLabel: variants.length > 1 ? L('Option', 'অপশন') : undefined,
     freeDelivery: p.freeDelivery === true || undefined,
   }
 }

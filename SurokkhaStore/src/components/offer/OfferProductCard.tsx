@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { fromPrice, type OfferProduct } from '@/data/offerProducts'
 import { bn, taka } from '@/lib/bn'
 import { ProductSlider } from './ProductMedia'
+import { L } from '@/lib/i18n'
 
 interface Props {
   product: OfferProduct
@@ -47,14 +48,14 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         <button
           type="button"
           onClick={onQuickView}
-          aria-label={`${product.name} view details`}
+          aria-label={`${product.name} ${L('view details', 'বিস্তারিত দেখুন')}`}
           className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow transition hover:bg-emerald-700"
         >
-          <Eye className="size-3.5" /> Details
+          <Eye className="size-3.5" /> {L('Details', 'বিস্তারিত')}
         </button>
         {!product.inStock && (
           <span className="absolute inset-x-0 bottom-0 bg-gray-900/70 py-1 text-center text-xs font-semibold text-white">
-            Out of stock
+            {L('Out of stock', 'স্টকে নেই')}
           </span>
         )}
       </div>
@@ -66,7 +67,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
               <Badge className="w-fit bg-rose-100 text-[11px] text-rose-700 hover:bg-rose-100">{product.badge}</Badge>
             )}
             {product.freeDelivery && (
-              <Badge className="w-fit bg-emerald-100 text-[11px] text-emerald-700 hover:bg-emerald-100">Free Delivery</Badge>
+              <Badge className="w-fit bg-emerald-100 text-[11px] text-emerald-700 hover:bg-emerald-100">{L('Free Delivery', 'ফ্রি ডেলিভারি')}</Badge>
             )}
           </div>
         )}
@@ -75,7 +76,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
         <div className="mt-auto flex flex-col gap-2 pt-1 sm:flex-row sm:items-end sm:justify-between">
           <p className="leading-tight">
             <span className="text-base font-bold text-rose-600 sm:text-lg">{taka(fromPrice(product))}</span>
-            {isVariable && <span className="ml-1 text-[11px] font-normal text-gray-600">from</span>}
+            {isVariable && <span className="ml-1 text-[11px] font-normal text-gray-600">{L('from', 'থেকে')}</span>}
             {product.regularPrice && product.regularPrice > product.price && (
               <s className="ml-1 text-xs font-normal text-gray-400">{taka(product.regularPrice)}</s>
             )}
@@ -83,12 +84,12 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
           {qty > 0 && !isVariable ? (
             // Already in the order: a compact stepper in the same spot as "Add"
             <div className="flex h-9 w-full shrink-0 items-center justify-between gap-1 rounded-full bg-primary p-0.5 text-primary-foreground sm:h-8 sm:w-auto">
-              <button type="button" onClick={onDec} aria-label={`${product.name} decrease quantity`}
+              <button type="button" onClick={onDec} aria-label={`${product.name} ${L('decrease quantity', 'পরিমাণ কমান')}`}
                 className="flex size-8 items-center justify-center rounded-full hover:bg-white/15 sm:size-7">
                 <Minus className="size-3.5" />
               </button>
               <span className="min-w-4 text-center text-sm font-semibold tabular-nums">{bn(qty)}</span>
-              <button type="button" onClick={onInc} aria-label={`${product.name} increase quantity`}
+              <button type="button" onClick={onInc} aria-label={`${product.name} ${L('increase quantity', 'পরিমাণ বাড়ান')}`}
                 className="flex size-8 items-center justify-center rounded-full hover:bg-white/15 sm:size-7">
                 <Plus className="size-3.5" />
               </button>
@@ -98,10 +99,10 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
               type="button"
               onClick={isVariable ? onChooseOptions : onInc}
               disabled={!product.inStock}
-              aria-label={`${product.name} increase quantity`}
+              aria-label={`${product.name} ${L('increase quantity', 'পরিমাণ বাড়ান')}`}
               className="flex h-9 w-full shrink-0 items-center justify-center gap-1 rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40 sm:h-8 sm:w-auto"
             >
-              {isVariable && qty > 0 ? bn(qty) : 'Add'} <Plus className="size-4" />
+              {isVariable && qty > 0 ? bn(qty) : L('Add', 'যোগ করুন')} <Plus className="size-4" />
             </button>
           )}
         </div>

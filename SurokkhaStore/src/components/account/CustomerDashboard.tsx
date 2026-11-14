@@ -28,35 +28,37 @@ import {
   type CustomerOrderStatus,
   type SavedAddress,
 } from '@/lib/api/customer-auth'
+import { L } from '@/lib/i18n'
+import { bn, taka } from '@/lib/bn'
 
 type Tab = 'overview' | 'orders' | 'tracking' | 'addresses'
 type OrderStatus = CustomerOrderStatus
 type Address = SavedAddress
 
 const STATUS_META: Record<OrderStatus, { label: string; cls: string; step: number }> = {
-  pending: { label: 'Pending', cls: 'bg-slate-100 text-slate-700 border-slate-200', step: 0 },
-  confirmed: { label: 'Confirmed', cls: 'bg-sky-50 text-sky-800 border-sky-200', step: 1 },
-  shipped: { label: 'Shipped', cls: 'bg-indigo-50 text-indigo-800 border-indigo-200', step: 3 },
-  out: { label: 'Out for Delivery', cls: 'bg-amber-50 text-amber-800 border-amber-200', step: 4 },
-  delivered: { label: 'Delivered', cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', step: 5 },
-  cancelled: { label: 'Cancelled', cls: 'bg-red-50 text-red-700 border-red-200', step: -1 },
-  returned: { label: 'Returned', cls: 'bg-stone-100 text-stone-700 border-stone-300', step: -1 },
+  pending: { label: L('Pending', 'অপেক্ষমাণ'), cls: 'bg-slate-100 text-slate-700 border-slate-200', step: 0 },
+  confirmed: { label: L('Confirmed', 'কনফার্মড'), cls: 'bg-sky-50 text-sky-800 border-sky-200', step: 1 },
+  shipped: { label: L('Shipped', 'পাঠানো হয়েছে'), cls: 'bg-indigo-50 text-indigo-800 border-indigo-200', step: 3 },
+  out: { label: L('Out for Delivery', 'ডেলিভারির পথে'), cls: 'bg-amber-50 text-amber-800 border-amber-200', step: 4 },
+  delivered: { label: L('Delivered', 'ডেলিভারি সম্পন্ন'), cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', step: 5 },
+  cancelled: { label: L('Cancelled', 'বাতিল'), cls: 'bg-red-50 text-red-700 border-red-200', step: -1 },
+  returned: { label: L('Returned', 'ফেরত'), cls: 'bg-stone-100 text-stone-700 border-stone-300', step: -1 },
 }
 
 const TRACK_STEPS = [
-  { t: 'Order Placed', d: 'We have received your order.' },
-  { t: 'Order Confirmed', d: 'Confirmed by phone call with our team.' },
-  { t: 'Packed Discreetly', d: 'Sealed in plain packaging, no product name outside.' },
-  { t: 'Handed to Courier', d: 'Picked up by the courier partner.' },
-  { t: 'Out for Delivery', d: 'Rider is on the way to your address.' },
-  { t: 'Delivered', d: 'Parcel received and payment collected.' },
+  { t: L('Order Placed', 'অর্ডার গ্রহণ'), d: L('We have received your order.', 'আমরা আপনার অর্ডার পেয়েছি।') },
+  { t: L('Order Confirmed', 'অর্ডার কনফার্মড'), d: L('Confirmed by phone call with our team.', 'আমাদের টিম ফোনে কনফার্ম করেছে।') },
+  { t: L('Packed Discreetly', 'গোপনীয়ভাবে প্যাক করা'), d: L('Sealed in plain packaging, no product name outside.', 'সাধারণ প্যাকেটে সিল করা, বাইরে পণ্যের নাম নেই।') },
+  { t: L('Handed to Courier', 'কুরিয়ারে হস্তান্তর'), d: L('Picked up by the courier partner.', 'কুরিয়ার পার্টনার পার্সেল সংগ্রহ করেছে।') },
+  { t: L('Out for Delivery', 'ডেলিভারির পথে'), d: L('Rider is on the way to your address.', 'রাইডার আপনার ঠিকানার পথে আছেন।') },
+  { t: L('Delivered', 'ডেলিভারি সম্পন্ন'), d: L('Parcel received and payment collected.', 'পার্সেল গ্রহণ ও পেমেন্ট সম্পন্ন হয়েছে।') },
 ]
 
 const fmtDate = (iso?: string | null) =>
-  iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : ''
+  iso ? new Date(iso).toLocaleDateString(L('en-GB', 'bn-BD'), { day: '2-digit', month: 'short', year: 'numeric' }) : ''
 const fmtDateTime = (iso?: string | null) =>
   iso
-    ? new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })
+    ? new Date(iso).toLocaleString(L('en-GB', 'bn-BD'), { day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })
     : ''
 
 const COURIER_NAMES: Record<string, string> = { pathao: 'Pathao', steadfast: 'Steadfast', redx: 'RedX' }
@@ -77,20 +79,22 @@ function stepTimes(o: CustomerOrder): string[] {
 
 const isActive = (o: CustomerOrder) => ['pending', 'confirmed', 'shipped', 'out'].includes(o.status)
 const payLabel = (o: CustomerOrder) =>
-  o.paymentMethod === 'cod' || !o.paymentMethod ? 'Cash on Delivery' : o.paymentMethod.toUpperCase()
+  o.paymentMethod === 'cod' || !o.paymentMethod ? L('Cash on Delivery', 'ক্যাশ অন ডেলিভারি') : o.paymentMethod.toUpperCase()
 
 
 const FILTER_OPTIONS: [string, string][] = [
-  ['all', 'All'],
-  ['pending', 'Pending'],
-  ['confirmed', 'Confirmed'],
-  ['out', 'Out for Delivery'],
-  ['delivered', 'Delivered'],
-  ['cancelled', 'Cancelled'],
-  ['returned', 'Returned'],
+  ['all', L('All', 'সব')],
+  ['pending', L('Pending', 'অপেক্ষমাণ')],
+  ['confirmed', L('Confirmed', 'কনফার্মড')],
+  ['out', L('Out for Delivery', 'ডেলিভারির পথে')],
+  ['delivered', L('Delivered', 'ডেলিভারি সম্পন্ন')],
+  ['cancelled', L('Cancelled', 'বাতিল')],
+  ['returned', L('Returned', 'ফেরত')],
 ]
 
-const taka = (n: number) => '৳' + n.toLocaleString('en-IN')
+
+const ADDR_LABELS: Record<string, string> = { Home: L('Home', 'বাসা'), Office: L('Office', 'অফিস'), Other: L('Other', 'অন্যান্য') }
+const addrLabel = (l: string) => ADDR_LABELS[l] ?? l
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean)
@@ -149,7 +153,7 @@ export function CustomerDashboard({
           setTrackedOrderId(first.id)
         }
       })
-      .catch((err) => alive && setOrdersError(err instanceof Error ? err.message : 'Could not load your orders'))
+      .catch((err) => alive && setOrdersError(err instanceof Error ? err.message : L('Could not load your orders', 'আপনার অর্ডার লোড করা যায়নি')))
       .finally(() => alive && setOrdersLoading(false))
     fetchMyAddresses()
       .then((list) => alive && setAddresses(list))
@@ -170,7 +174,7 @@ export function CustomerDashboard({
       return true
     } catch (err) {
       setAddresses(prev)
-      toast.error(err instanceof Error ? err.message : 'Could not save the address')
+      toast.error(err instanceof Error ? err.message : L('Could not save the address', 'ঠিকানা সংরক্ষণ করা যায়নি'))
       return false
     } finally {
       setSavingAddresses(false)
@@ -271,7 +275,7 @@ export function CustomerDashboard({
   const saveAddress = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formState.district || !formState.area) {
-      toast.error(!formState.district ? 'Select a district' : 'Select a thana / upazila')
+      toast.error(!formState.district ? L('Select a district', 'জেলা নির্বাচন করুন') : L('Select a thana / upazila', 'থানা / উপজেলা নির্বাচন করুন'))
       return
     }
     let next = addresses.map((a) => (formState.isDefault ? { ...a, isDefault: false } : a))
@@ -283,34 +287,34 @@ export function CustomerDashboard({
     if (!next.some((a) => a.isDefault) && next.length > 0) {
       next[0] = { ...next[0], isDefault: true }
     }
-    if (await persistAddresses(next, editingId !== null ? 'Address updated' : 'Address added')) setModalOpen(false)
+    if (await persistAddresses(next, editingId !== null ? L('Address updated', 'ঠিকানা আপডেট হয়েছে') : L('Address added', 'ঠিকানা যোগ হয়েছে'))) setModalOpen(false)
   }
 
   const setDefaultAddress = (id: number) => {
     persistAddresses(
       addresses.map((a) => ({ ...a, isDefault: a.id === id })),
-      'Default address updated',
+      L('Default address updated', 'ডিফল্ট ঠিকানা আপডেট হয়েছে'),
     )
   }
 
   const deleteAddress = (id: number) => {
-    if (!window.confirm('Remove this address?')) return
+    if (!window.confirm(L('Remove this address?', 'এই ঠিকানাটি মুছে ফেলবেন?'))) return
     persistAddresses(
       addresses.filter((a) => a.id !== id),
-      'Address removed',
+      L('Address removed', 'ঠিকানা মুছে ফেলা হয়েছে'),
     )
   }
 
   const navItems: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { id: 'overview', label: 'Overview', icon: <LayoutGrid className="w-[18px] h-[18px]" strokeWidth={1.7} /> },
+    { id: 'overview', label: L('Overview', 'সারসংক্ষেপ'), icon: <LayoutGrid className="w-[18px] h-[18px]" strokeWidth={1.7} /> },
     {
       id: 'orders',
-      label: 'My Orders',
+      label: L('My Orders', 'আমার অর্ডার'),
       icon: <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={1.7} />,
       badge: orders.length,
     },
-    { id: 'tracking', label: 'Track Order', icon: <Truck className="w-[18px] h-[18px]" strokeWidth={1.7} /> },
-    { id: 'addresses', label: 'Addresses', icon: <MapPin className="w-[18px] h-[18px]" strokeWidth={1.7} /> },
+    { id: 'tracking', label: L('Track Order', 'অর্ডার ট্র্যাক'), icon: <Truck className="w-[18px] h-[18px]" strokeWidth={1.7} /> },
+    { id: 'addresses', label: L('Addresses', 'ঠিকানা'), icon: <MapPin className="w-[18px] h-[18px]" strokeWidth={1.7} /> },
   ]
 
   return (
@@ -318,8 +322,8 @@ export function CustomerDashboard({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 lg:py-10">
         {/* Breadcrumb + title */}
         <div className="mb-6 lg:mb-8">
-          <p className="text-xs uppercase tracking-[.2em] text-[#B8955A] font-semibold">My Account</p>
-          <h1 className="font-serif text-3xl sm:text-4xl mt-1 tracking-tight">Welcome back, {firstName}</h1>
+          <p className="text-xs uppercase tracking-[.2em] text-[#B8955A] font-semibold">{L('My Account', 'আমার অ্যাকাউন্ট')}</p>
+          <h1 className="font-serif text-3xl sm:text-4xl mt-1 tracking-tight">{L('Welcome back', 'আবার স্বাগতম')}, {firstName}</h1>
         </div>
 
         <div className="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-8">
@@ -337,8 +341,8 @@ export function CustomerDashboard({
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-[#EADFD0] text-xs text-[#5E4E52] flex justify-between">
-                <span>Member</span>
-                <span className="font-semibold text-[#1C1215]">Verified</span>
+                <span>{L('Member', 'সদস্য')}</span>
+                <span className="font-semibold text-[#1C1215]">{L('Verified', 'যাচাইকৃত')}</span>
               </div>
             </div>
 
@@ -365,7 +369,7 @@ export function CustomerDashboard({
                           active ? 'bg-white/15 text-[#FAF6F0]' : 'bg-[#FBEEF1] text-[#6B1028]'
                         }`}
                       >
-                        {item.badge}
+                        {bn(item.badge)}
                       </span>
                     )}
                   </button>
@@ -378,15 +382,15 @@ export function CustomerDashboard({
                 className="hidden lg:flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#5E4E52] hover:bg-[#F4EDE3] hover:text-[#1C1215] transition cursor-pointer"
               >
                 <LogOut className="w-[18px] h-[18px]" strokeWidth={1.7} />
-                <span>Log out</span>
+                <span>{L('Log out', 'লগ আউট')}</span>
               </button>
             </nav>
 
             {/* Help card */}
             <div className="hidden lg:block mt-4 rounded-2xl bg-[#24171B] text-[#FAF6F0] p-5">
-              <p className="font-serif text-lg">Need help?</p>
+              <p className="font-serif text-lg">{L('Need help?', 'সাহায্য দরকার?')}</p>
               <p className="text-sm text-[#FAF6F0]/75 mt-1 leading-relaxed">
-                Our team is available 10 AM – 10 PM, every day.
+                {L('Our team is available 10 AM – 10 PM, every day.', 'আমাদের টিম প্রতিদিন সকাল ১০টা – রাত ১০টা পর্যন্ত আছে।')}
               </p>
               <a
                 href="https://wa.me/8801700000000"
@@ -394,7 +398,7 @@ export function CustomerDashboard({
                 rel="noreferrer"
                 className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#E9D9BC] hover:text-white"
               >
-                Chat with us
+                {L('Chat with us', 'আমাদের সাথে কথা বলুন')}
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>
@@ -408,32 +412,32 @@ export function CustomerDashboard({
                 {/* Stats */}
                 <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
                   <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-4 sm:p-5">
-                    <p className="text-xs sm:text-sm text-[#5E4E52] font-medium">Total Orders</p>
-                    <p className="text-2xl sm:text-3xl font-semibold mt-2">{orders.length}</p>
-                    <p className="text-xs text-[#5E4E52] mt-1">All time</p>
+                    <p className="text-xs sm:text-sm text-[#5E4E52] font-medium">{L('Total Orders', 'মোট অর্ডার')}</p>
+                    <p className="text-2xl sm:text-3xl font-semibold mt-2">{bn(orders.length)}</p>
+                    <p className="text-xs text-[#5E4E52] mt-1">{L('All time', 'এখন পর্যন্ত')}</p>
                   </div>
                   <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-4 sm:p-5">
-                    <p className="text-xs sm:text-sm text-[#5E4E52] font-medium">In Transit</p>
-                    <p className="text-2xl sm:text-3xl font-semibold mt-2 text-amber-700">{inTransit}</p>
-                    <p className="text-xs text-[#5E4E52] mt-1">Arriving soon</p>
+                    <p className="text-xs sm:text-sm text-[#5E4E52] font-medium">{L('In Transit', 'পথে আছে')}</p>
+                    <p className="text-2xl sm:text-3xl font-semibold mt-2 text-amber-700">{bn(inTransit)}</p>
+                    <p className="text-xs text-[#5E4E52] mt-1">{L('Arriving soon', 'শীঘ্রই পৌঁছাবে')}</p>
                   </div>
                   <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-4 sm:p-5">
-                    <p className="text-xs sm:text-sm text-[#5E4E52] font-medium">Delivered</p>
+                    <p className="text-xs sm:text-sm text-[#5E4E52] font-medium">{L('Delivered', 'ডেলিভারি সম্পন্ন')}</p>
                     <p className="text-2xl sm:text-3xl font-semibold mt-2 text-emerald-700">
-                      {orders.filter((o) => o.status === 'delivered').length}
+                      {bn(orders.filter((o) => o.status === 'delivered').length)}
                     </p>
-                    <p className="text-xs text-[#5E4E52] mt-1">Successfully received</p>
+                    <p className="text-xs text-[#5E4E52] mt-1">{L('Successfully received', 'সফলভাবে গ্রহণ করা হয়েছে')}</p>
                   </div>
                   <div className="bg-[#6B1028] rounded-2xl shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-4 sm:p-5 text-[#FAF6F0]">
-                    <p className="text-xs sm:text-sm text-[#FAF6F0]/80 font-medium">Total Spent</p>
+                    <p className="text-xs sm:text-sm text-[#FAF6F0]/80 font-medium">{L('Total Spent', 'মোট খরচ')}</p>
                     <p className="text-2xl sm:text-3xl font-semibold mt-2">{taka(totalSpent)}</p>
-                    <p className="text-xs text-[#FAF6F0]/75 mt-1">On delivered orders</p>
+                    <p className="text-xs text-[#FAF6F0]/75 mt-1">{L('On delivered orders', 'ডেলিভারি সম্পন্ন অর্ডারে')}</p>
                   </div>
                 </div>
 
                 {ordersLoading && (
                   <div className="bg-white rounded-2xl border border-[#EADFD0] p-8 text-center text-sm text-[#5E4E52]">
-                    Loading your orders…
+                    {L('Loading your orders…', 'আপনার অর্ডার লোড হচ্ছে…')}
                   </div>
                 )}
                 {ordersError && (
@@ -442,15 +446,15 @@ export function CustomerDashboard({
 
                 {/* Active order */}
                 {activeOrder && (() => {
-                  const STEPS = ['Placed', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered']
+                  const STEPS = [L('Placed', 'অর্ডার গ্রহণ'), L('Confirmed', 'কনফার্মড'), L('Shipped', 'পাঠানো হয়েছে'), L('Out for Delivery', 'ডেলিভারির পথে'), L('Delivered', 'ডেলিভারি সম্পন্ন')]
                   const cur = { pending: 0, confirmed: 1, shipped: 2, out: 3, delivered: 4, cancelled: 0, returned: 0 }[activeOrder.status]
                   return (
                     <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] overflow-hidden">
                       <div className="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-6 py-4 border-b border-[#EADFD0]">
                         <div>
-                          <h2 className="font-serif text-xl">Active Order</h2>
+                          <h2 className="font-serif text-xl">{L('Active Order', 'চলমান অর্ডার')}</h2>
                           <p className="text-sm text-[#5E4E52]">
-                            Order <span className="font-semibold text-[#1C1215]">#{activeOrder.id}</span> · placed{' '}
+                            {L('Order', 'অর্ডার')} <span className="font-semibold text-[#1C1215]">#{activeOrder.id}</span> · {L('placed', 'অর্ডারের তারিখ')}{' '}
                             {fmtDate(activeOrder.createdAt)}
                           </p>
                         </div>
@@ -484,11 +488,11 @@ export function CustomerDashboard({
                         </div>
                         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 bg-[#FAF6F0] rounded-xl p-4">
                           <div className="text-sm">
-                            <p className="text-[#5E4E52]">Expected delivery</p>
-                            <p className="font-semibold">{activeOrder.status === 'out' ? 'Today' : '2–3 days'}</p>
+                            <p className="text-[#5E4E52]">{L('Expected delivery', 'সম্ভাব্য ডেলিভারি')}</p>
+                            <p className="font-semibold">{activeOrder.status === 'out' ? L('Today', 'আজ') : L('2–3 days', '২–৩ দিন')}</p>
                           </div>
                           <div className="text-sm">
-                            <p className="text-[#5E4E52]">{activeOrder.paymentStatus === 'paid' ? 'Paid' : 'Pay on delivery'}</p>
+                            <p className="text-[#5E4E52]">{activeOrder.paymentStatus === 'paid' ? L('Paid', 'পরিশোধিত') : L('Pay on delivery', 'ডেলিভারিতে পরিশোধ')}</p>
                             <p className="font-semibold text-lg text-[#6B1028]">{taka(activeOrder.total)}</p>
                           </div>
                           <button
@@ -496,7 +500,7 @@ export function CustomerDashboard({
                             onClick={() => openTracking(activeOrder.id)}
                             className="px-5 py-2.5 rounded-xl bg-[#1C1215] text-[#FAF6F0] text-sm font-semibold hover:bg-[#6B1028] transition cursor-pointer"
                           >
-                            Track Order
+                            {L('Track Order', 'অর্ডার ট্র্যাক করুন')}
                           </button>
                         </div>
                       </div>
@@ -508,18 +512,18 @@ export function CustomerDashboard({
                   {/* Recent orders */}
                   <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)]">
                     <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[#EADFD0]">
-                      <h2 className="font-serif text-xl">Recent Orders</h2>
+                      <h2 className="font-serif text-xl">{L('Recent Orders', 'সাম্প্রতিক অর্ডার')}</h2>
                       <button
                         type="button"
                         onClick={() => switchTab('orders')}
                         className="text-sm font-semibold text-[#6B1028] hover:underline cursor-pointer"
                       >
-                        View all
+                        {L('View all', 'সব দেখুন')}
                       </button>
                     </div>
                     <div className="divide-y divide-[#EADFD0]">
                       {!ordersLoading && orders.length === 0 && (
-                        <p className="px-6 py-8 text-center text-sm text-[#5E4E52]">You haven&apos;t placed any orders yet.</p>
+                        <p className="px-6 py-8 text-center text-sm text-[#5E4E52]">{L('You haven&apos;t placed any orders yet.', 'আপনি এখনো কোনো অর্ডার করেননি।')}</p>
                       )}
                       {orders.slice(0, 4).map((o) => (
                         <div key={o.id} className="flex items-center gap-4 px-5 sm:px-6 py-4">
@@ -528,7 +532,7 @@ export function CustomerDashboard({
                             <p className="font-medium truncate">
                               {o.items[0].name}
                               {o.items.length > 1 && (
-                                <span className="text-[#5E4E52] font-normal"> +{o.items.length - 1} more</span>
+                                <span className="text-[#5E4E52] font-normal"> +{bn(o.items.length - 1)} {L('more', 'টি আরও')}</span>
                               )}
                             </p>
                             <p className="text-xs text-[#5E4E52] mt-0.5">
@@ -550,18 +554,18 @@ export function CustomerDashboard({
                   {defaultAddress && (
                     <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-5 sm:p-6 h-fit">
                       <div className="flex items-center justify-between">
-                        <h2 className="font-serif text-xl">Default Address</h2>
+                        <h2 className="font-serif text-xl">{L('Default Address', 'ডিফল্ট ঠিকানা')}</h2>
                         <button
                           type="button"
                           onClick={() => switchTab('addresses')}
                           className="text-sm font-semibold text-[#6B1028] hover:underline cursor-pointer"
                         >
-                          Manage
+                          {L('Manage', 'পরিচালনা')}
                         </button>
                       </div>
                       <div className="mt-4 text-sm leading-relaxed">
                         <span className="inline-block text-[11px] font-bold uppercase tracking-wider bg-[#FBEEF1] text-[#6B1028] px-2 py-0.5 rounded">
-                          {defaultAddress.label}
+                          {addrLabel(defaultAddress.label)}
                         </span>
                         <p className="font-semibold mt-2">{defaultAddress.name}</p>
                         <p className="text-[#5E4E52]">{defaultAddress.phone}</p>
@@ -572,7 +576,7 @@ export function CustomerDashboard({
                       <div className="mt-5 flex items-start gap-3 rounded-xl bg-[#FAF6F0] p-3">
                         <ShieldCheck className="w-5 h-5 text-[#B8955A] shrink-0 mt-0.5" strokeWidth={1.7} />
                         <p className="text-xs text-[#5E4E52] leading-relaxed">
-                          All parcels are packed discreetly with no product name on the outside.
+                          {L('All parcels are packed discreetly with no product name on the outside.', 'সব পার্সেল গোপনীয়ভাবে প্যাক করা হয়, বাইরে পণ্যের কোনো নাম থাকে না।')}
                         </p>
                       </div>
                     </div>
@@ -586,8 +590,8 @@ export function CustomerDashboard({
               <div className="space-y-5">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <h2 className="font-serif text-2xl">My Orders</h2>
-                    <p className="text-sm text-[#5E4E52]">View and track all your orders</p>
+                    <h2 className="font-serif text-2xl">{L('My Orders', 'আমার অর্ডার')}</h2>
+                    <p className="text-sm text-[#5E4E52]">{L('View and track all your orders', 'আপনার সব অর্ডার দেখুন ও ট্র্যাক করুন')}</p>
                   </div>
                   <div className="relative w-full sm:w-72">
                     <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5E4E52]" />
@@ -595,7 +599,7 @@ export function CustomerDashboard({
                       type="text"
                       value={orderSearch}
                       onChange={(e) => setOrderSearch(e.target.value)}
-                      placeholder="Search by order ID or product"
+                      placeholder={L('Search by order ID or product', 'অর্ডার আইডি বা প্রোডাক্ট দিয়ে খুঁজুন')}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#EADFD0] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#6B1028]/20 focus:border-[#6B1028]"
                     />
                   </div>
@@ -619,7 +623,7 @@ export function CustomerDashboard({
                         }`}
                       >
                         {label}{' '}
-                        <span className={on ? 'text-[#FAF6F0]/80' : 'text-[#5E4E52]/70'}>{count}</span>
+                        <span className={on ? 'text-[#FAF6F0]/80' : 'text-[#5E4E52]/70'}>{bn(count)}</span>
                       </button>
                     )
                   })}
@@ -628,8 +632,8 @@ export function CustomerDashboard({
                 {/* Orders list */}
                 {filteredOrders.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-[#EADFD0] p-10 text-center">
-                    <p className="font-serif text-xl">No orders found</p>
-                    <p className="text-sm text-[#5E4E52] mt-1">Try a different filter or search term.</p>
+                    <p className="font-serif text-xl">{L('No orders found', 'কোনো অর্ডার পাওয়া যায়নি')}</p>
+                    <p className="text-sm text-[#5E4E52] mt-1">{L('Try a different filter or search term.', 'অন্য ফিল্টার বা শব্দ দিয়ে চেষ্টা করুন।')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -655,7 +659,7 @@ export function CustomerDashboard({
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium">{it.name}</p>
                                   <p className="text-xs text-[#5E4E52]">
-                                    Qty {it.qty}
+                                    {L('Qty', 'পরিমাণ')} {bn(it.qty)}
                                     {it.size ? ` · ${it.size}` : ''}
                                   </p>
                                 </div>
@@ -665,9 +669,9 @@ export function CustomerDashboard({
                           </div>
                           <footer className="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-6 py-4 border-t border-[#EADFD0]">
                             <p className="text-sm text-[#5E4E52]">
-                              Total{' '}
+                              {L('Total', 'সর্বমোট')}{' '}
                               <span className="font-semibold text-lg text-[#1C1215] ml-1">{taka(o.total)}</span>{' '}
-                              <span className="text-xs">(incl. ৳{o.shipping} delivery)</span>
+                              <span className="text-xs">{L(`(incl. ৳${o.shipping} delivery)`, `(ডেলিভারি চার্জ ${taka(o.shipping)} সহ)`)}</span>
                             </p>
                             <div className="flex gap-2">
                               {o.status === 'pending' && (
@@ -677,7 +681,7 @@ export function CustomerDashboard({
                                   rel="noreferrer"
                                   className="px-4 py-2 rounded-xl border border-red-200 text-red-700 text-sm font-semibold hover:bg-red-50 cursor-pointer"
                                 >
-                                  Cancel
+                                  {L('Cancel', 'বাতিল')}
                                 </a>
                               )}
                               {trackable ? (
@@ -686,7 +690,7 @@ export function CustomerDashboard({
                                   onClick={() => openTracking(o.id)}
                                   className="px-4 py-2 rounded-xl bg-[#1C1215] text-[#FAF6F0] text-sm font-semibold hover:bg-[#6B1028] transition cursor-pointer"
                                 >
-                                  Track Order
+                                  {L('Track Order', 'অর্ডার ট্র্যাক করুন')}
                                 </button>
                               ) : (
                                 <button
@@ -694,7 +698,7 @@ export function CustomerDashboard({
                                   onClick={() => openTracking(o.id)}
                                   className="px-4 py-2 rounded-xl border border-[#EADFD0] text-sm font-semibold hover:bg-[#FAF6F0] cursor-pointer"
                                 >
-                                  View Details
+                                  {L('View Details', 'বিস্তারিত দেখুন')}
                                 </button>
                               )}
                             </div>
@@ -713,28 +717,28 @@ export function CustomerDashboard({
                 <div className="bg-[#24171B] text-[#FAF6F0] rounded-2xl p-6 sm:p-8 relative overflow-hidden">
                   <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-[#6B1028]/40 blur-2xl" />
                   <div className="relative">
-                    <h2 className="font-serif text-2xl sm:text-3xl">Track Your Order</h2>
+                    <h2 className="font-serif text-2xl sm:text-3xl">{L('Track Your Order', 'আপনার অর্ডার ট্র্যাক করুন')}</h2>
                     <p className="text-sm text-[#FAF6F0]/75 mt-1">
-                      Enter your order ID to see live delivery status.
+                      {L('Enter your order ID to see live delivery status.', 'ডেলিভারির সর্বশেষ অবস্থা দেখতে অর্ডার আইডি লিখুন।')}
                     </p>
                     <form onSubmit={handleTrackSubmit} className="mt-5 flex flex-col sm:flex-row gap-3 max-w-xl">
                       <input
                         type="text"
                         value={trackInput}
                         onChange={(e) => setTrackInput(e.target.value)}
-                        placeholder={orders[0]?.id ? `e.g. ${orders[0].id}` : 'Order ID'}
+                        placeholder={orders[0]?.id ? `${L('e.g.', 'যেমন:')} ${orders[0].id}` : L('Order ID', 'অর্ডার আইডি')}
                         className="flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/15 placeholder:text-[#FAF6F0]/50 text-[#FAF6F0] text-sm focus:outline-none focus:border-[#B8955A]"
                       />
                       <button
                         type="submit"
                         className="px-6 py-3 rounded-xl bg-[#B8955A] text-[#140C0F] font-semibold text-sm hover:bg-[#E9D9BC] transition cursor-pointer"
                       >
-                        Track
+                        {L('Track', 'ট্র্যাক করুন')}
                       </button>
                     </form>
                     {trackError && (
                       <p className="text-sm text-red-300 mt-3">
-                        We couldn&apos;t find that order in your account. Please check the ID and try again.
+                        {L('We couldn&apos;t find that order in your account. Please check the ID and try again.', 'আপনার অ্যাকাউন্টে এই অর্ডারটি পাওয়া যায়নি। আইডি দেখে আবার চেষ্টা করুন।')}
                       </p>
                     )}
                   </div>
@@ -745,20 +749,20 @@ export function CustomerDashboard({
                     <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)]">
                       <div className="flex flex-wrap items-start justify-between gap-3 px-5 sm:px-6 py-5 border-b border-[#EADFD0]">
                         <div>
-                          <p className="text-sm text-[#5E4E52]">Order</p>
+                          <p className="text-sm text-[#5E4E52]">{L('Order', 'অর্ডার')}</p>
                           <p className="font-serif text-2xl">#{trackedOrder.id}</p>
-                          <p className="text-sm text-[#5E4E52] mt-1">Placed on {fmtDate(trackedOrder.createdAt)}</p>
+                          <p className="text-sm text-[#5E4E52] mt-1">{L('Placed on', 'অর্ডারের তারিখ:')} {fmtDate(trackedOrder.createdAt)}</p>
                         </div>
                         <div className="text-right">
                           <StatusBadge status={trackedOrder.status} />
                           <p className="text-sm mt-2">
                             {trackedOrder.status === 'delivered' ? (
-                              `Delivered on ${fmtDate(trackedOrder.courier.deliveredAt || trackedOrder.updatedAt)}`
+                              `${L('Delivered on', 'ডেলিভারি হয়েছে')} ${fmtDate(trackedOrder.courier.deliveredAt || trackedOrder.updatedAt)}`
                             ) : (
                               <>
-                                Expected:{' '}
+                                {L('Expected:', 'সম্ভাব্য:')}{' '}
                                 <span className="font-semibold">
-                                  {trackedOrder.status === 'out' ? 'Today' : ['cancelled', 'returned'].includes(trackedOrder.status) ? '—' : '2–3 days'}
+                                  {trackedOrder.status === 'out' ? L('Today', 'আজ') : ['cancelled', 'returned'].includes(trackedOrder.status) ? '—' : L('2–3 days', '২–৩ দিন')}
                                 </span>
                               </>
                             )}
@@ -767,20 +771,20 @@ export function CustomerDashboard({
                       </div>
                       <div className="grid sm:grid-cols-3 gap-px bg-[#EADFD0] border-b border-[#EADFD0]">
                         <div className="bg-white px-5 sm:px-6 py-4">
-                          <p className="text-xs text-[#5E4E52]">Courier</p>
+                          <p className="text-xs text-[#5E4E52]">{L('Courier', 'কুরিয়ার')}</p>
                           <p className="font-semibold mt-0.5">{courierName(trackedOrder)}</p>
                         </div>
                         <div className="bg-white px-5 sm:px-6 py-4">
-                          <p className="text-xs text-[#5E4E52]">Consignment ID</p>
+                          <p className="text-xs text-[#5E4E52]">{L('Consignment ID', 'কনসাইনমেন্ট আইডি')}</p>
                           <p className="font-semibold mt-0.5 break-all">{trackedOrder.courier.consignmentId || '—'}</p>
                         </div>
                         <div className="bg-white px-5 sm:px-6 py-4">
-                          <p className="text-xs text-[#5E4E52]">Payment</p>
+                          <p className="text-xs text-[#5E4E52]">{L('Payment', 'পেমেন্ট')}</p>
                           <p className="font-semibold mt-0.5">{payLabel(trackedOrder)}</p>
                         </div>
                       </div>
                       <div className="px-5 sm:px-6 py-6">
-                        <h3 className="font-serif text-lg mb-5">Delivery Progress</h3>
+                        <h3 className="font-serif text-lg mb-5">{L('Delivery Progress', 'ডেলিভারির অগ্রগতি')}</h3>
                         <ol>
                           {TRACK_STEPS.map((s, i) => {
                             const cur = STATUS_META[trackedOrder.status].step
@@ -819,7 +823,7 @@ export function CustomerDashboard({
                                         {s.t}
                                       </p>
                                       <p className="text-xs text-[#5E4E52]">
-                                        {done || active ? time : 'Pending'}
+                                        {done || active ? time : L('Pending', 'অপেক্ষমাণ')}
                                       </p>
                                     </div>
                                     <p className="text-sm text-[#5E4E52] mt-0.5">{s.d}</p>
@@ -835,7 +839,7 @@ export function CustomerDashboard({
                     <div className="space-y-4">
                       {trackedOrder.courier.status && (
                         <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-5">
-                          <p className="text-xs uppercase tracking-wider font-bold text-[#B8955A]">Courier Update</p>
+                          <p className="text-xs uppercase tracking-wider font-bold text-[#B8955A]">{L('Courier Update', 'কুরিয়ার আপডেট')}</p>
                           <div className="flex items-center gap-3 mt-3">
                             <div className="w-11 h-11 rounded-full bg-[#EADFD0] grid place-items-center">
                               <Truck className="w-5 h-5 text-[#6B1028]" strokeWidth={1.7} />
@@ -849,7 +853,7 @@ export function CustomerDashboard({
                             <a
                               href="tel:+8801700000000"
                               className="w-10 h-10 rounded-full bg-[#6B1028] text-[#FAF6F0] grid place-items-center hover:bg-[#4E0B1D]"
-                              aria-label="Call support"
+                              aria-label={L('Call support', 'সাপোর্টে কল করুন')}
                             >
                               <Phone className="w-4 h-4" />
                             </a>
@@ -859,7 +863,7 @@ export function CustomerDashboard({
 
                       {trackedOrder.shippingInfo && (
                         <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-5">
-                          <p className="text-xs uppercase tracking-wider font-bold text-[#B8955A]">Delivery Address</p>
+                          <p className="text-xs uppercase tracking-wider font-bold text-[#B8955A]">{L('Delivery Address', 'ডেলিভারি ঠিকানা')}</p>
                           <p className="font-semibold mt-3">{trackedOrder.shippingInfo.fullName}</p>
                           <p className="text-sm text-[#5E4E52]">{trackedOrder.shippingInfo.phone}</p>
                           <p className="text-sm text-[#5E4E52] mt-1">
@@ -871,13 +875,13 @@ export function CustomerDashboard({
                       )}
 
                       <div className="bg-white rounded-2xl border border-[#EADFD0] shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] p-5">
-                        <p className="text-xs uppercase tracking-wider font-bold text-[#B8955A]">Order Summary</p>
+                        <p className="text-xs uppercase tracking-wider font-bold text-[#B8955A]">{L('Order Summary', 'অর্ডার সামারি')}</p>
                         <div className="mt-3 space-y-3">
                           {trackedOrder.items.map((it, idx) => (
                             <div key={idx} className="flex items-center gap-3">
                               <ItemThumb image={it.image} size="w-10 h-10" />
                               <p className="text-sm flex-1">
-                                {it.name} <span className="text-[#5E4E52]">× {it.qty}</span>
+                                {it.name} <span className="text-[#5E4E52]">× {bn(it.qty)}</span>
                               </p>
                               <p className="text-sm font-medium">{taka(it.price * it.qty)}</p>
                             </div>
@@ -885,23 +889,23 @@ export function CustomerDashboard({
                         </div>
                         <div className="mt-4 pt-4 border-t border-[#EADFD0] space-y-1.5 text-sm">
                           <div className="flex justify-between text-[#5E4E52]">
-                            <span>Subtotal</span>
+                            <span>{L('Subtotal', 'সাবটোটাল')}</span>
                             <span>
                               {taka(trackedOrder.subtotal)}
                             </span>
                           </div>
                           <div className="flex justify-between text-[#5E4E52]">
-                            <span>Delivery</span>
+                            <span>{L('Delivery', 'ডেলিভারি')}</span>
                             <span>{taka(trackedOrder.shipping)}</span>
                           </div>
                           {trackedOrder.discount > 0 && (
                             <div className="flex justify-between text-emerald-700">
-                              <span>Discount</span>
+                              <span>{L('Discount', 'ছাড়')}</span>
                               <span>−{taka(trackedOrder.discount)}</span>
                             </div>
                           )}
                           <div className="flex justify-between font-semibold pt-1.5">
-                            <span>{trackedOrder.status === 'delivered' || trackedOrder.paymentStatus === 'paid' ? 'Paid' : 'Pay on delivery'}</span>
+                            <span>{trackedOrder.status === 'delivered' || trackedOrder.paymentStatus === 'paid' ? L('Paid', 'পরিশোধিত') : L('Pay on delivery', 'ডেলিভারিতে পরিশোধ')}</span>
                             <span className="text-lg text-[#6B1028]">{taka(trackedOrder.total)}</span>
                           </div>
                         </div>
@@ -917,8 +921,8 @@ export function CustomerDashboard({
               <div className="space-y-5">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <h2 className="font-serif text-2xl">Delivery Addresses</h2>
-                    <p className="text-sm text-[#5E4E52]">Manage where your orders are delivered</p>
+                    <h2 className="font-serif text-2xl">{L('Delivery Addresses', 'ডেলিভারি ঠিকানা')}</h2>
+                    <p className="text-sm text-[#5E4E52]">{L('Manage where your orders are delivered', 'আপনার অর্ডার কোথায় ডেলিভারি হবে তা পরিচালনা করুন')}</p>
                   </div>
                   <button
                     type="button"
@@ -926,7 +930,7 @@ export function CustomerDashboard({
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#6B1028] text-[#FAF6F0] text-sm font-semibold hover:bg-[#4E0B1D] transition cursor-pointer"
                   >
                     <Plus className="w-4 h-4" strokeWidth={2.2} />
-                    Add New Address
+                    {L('Add New Address', 'নতুন ঠিকানা যোগ করুন')}
                   </button>
                 </div>
 
@@ -941,11 +945,11 @@ export function CustomerDashboard({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold uppercase tracking-wider bg-[#FBEEF1] text-[#6B1028] px-2 py-0.5 rounded">
-                            {a.label}
+                            {addrLabel(a.label)}
                           </span>
                           {a.isDefault && (
                             <span className="text-[11px] font-bold uppercase tracking-wider bg-[#1C1215] text-[#FAF6F0] px-2 py-0.5 rounded">
-                              Default
+                              {L('Default', 'ডিফল্ট')}
                             </span>
                           )}
                         </div>
@@ -954,7 +958,7 @@ export function CustomerDashboard({
                             type="button"
                             onClick={() => openAddressModal(a)}
                             className="p-2 rounded-lg text-[#5E4E52] hover:bg-[#FAF6F0] hover:text-[#1C1215] cursor-pointer"
-                            aria-label="Edit"
+                            aria-label={L('Edit', 'এডিট')}
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
@@ -963,7 +967,7 @@ export function CustomerDashboard({
                               type="button"
                               onClick={() => deleteAddress(a.id)}
                               className="p-2 rounded-lg text-[#5E4E52] hover:bg-red-50 hover:text-red-700 cursor-pointer"
-                              aria-label="Delete"
+                              aria-label={L('Delete', 'মুছুন')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -983,10 +987,10 @@ export function CustomerDashboard({
                           onClick={() => setDefaultAddress(a.id)}
                           className="mt-4 self-start text-sm font-semibold text-[#6B1028] hover:underline cursor-pointer"
                         >
-                          Set as default
+                          {L('Set as default', 'ডিফল্ট করুন')}
                         </button>
                       ) : (
-                        <p className="mt-4 text-xs text-[#5E4E52]">Used for new orders automatically</p>
+                        <p className="mt-4 text-xs text-[#5E4E52]">{L('Used for new orders automatically', 'নতুন অর্ডারে স্বয়ংক্রিয়ভাবে ব্যবহার হবে')}</p>
                       )}
                     </div>
                   ))}
@@ -1000,7 +1004,7 @@ export function CustomerDashboard({
                       <span className="w-10 h-10 rounded-full bg-[#F4EDE3] grid place-items-center">
                         <Plus className="w-5 h-5" />
                       </span>
-                      Add New Address
+                      {L('Add New Address', 'নতুন ঠিকানা যোগ করুন')}
                     </span>
                   </button>
                 </div>
@@ -1016,12 +1020,12 @@ export function CustomerDashboard({
           <div className="absolute inset-0 bg-[#140C0F]/60" onClick={() => setModalOpen(false)} />
           <div className="absolute inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[#EADFD0] sticky top-0 bg-white">
-              <h3 className="font-serif text-xl">{editingId !== null ? 'Edit Address' : 'Add New Address'}</h3>
+              <h3 className="font-serif text-xl">{editingId !== null ? L('Edit Address', 'ঠিকানা এডিট করুন') : L('Add New Address', 'নতুন ঠিকানা যোগ করুন')}</h3>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
                 className="p-2 rounded-full hover:bg-[#FAF6F0] cursor-pointer"
-                aria-label="Close"
+                aria-label={L('Close', 'বন্ধ করুন')}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1029,17 +1033,17 @@ export function CustomerDashboard({
             <form onSubmit={saveAddress} className="p-6 space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-sm font-semibold">Full Name</span>
+                  <span className="text-sm font-semibold">{L('Full Name', 'পূর্ণ নাম')}</span>
                   <input
                     required
                     value={formState.name}
                     onChange={(e) => setFormState((s) => ({ ...s, name: e.target.value }))}
                     className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-[#EADFD0] text-sm focus:outline-none focus:ring-2 focus:ring-[#6B1028]/20 focus:border-[#6B1028]"
-                    placeholder="Your name"
+                    placeholder={L('Your name', 'আপনার নাম')}
                   />
                 </label>
                 <label className="block">
-                  <span className="text-sm font-semibold">Phone Number</span>
+                  <span className="text-sm font-semibold">{L('Phone Number', 'মোবাইল নম্বর')}</span>
                   <input
                     required
                     value={formState.phone}
@@ -1051,19 +1055,19 @@ export function CustomerDashboard({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-sm font-semibold">District</span>
+                  <span className="text-sm font-semibold">{L('District', 'জেলা')}</span>
                   <div className="mt-1.5">
                     <LocationSelect
                       id="addrDistrict"
                       value={formState.district}
                       options={DISTRICT_NAMES}
                       onSelect={(name) => setFormState((s) => ({ ...s, district: name, area: '' }))}
-                      placeholder="Select district"
+                      placeholder={L('Select district', 'জেলা নির্বাচন করুন')}
                     />
                   </div>
                 </div>
                 <div>
-                  <span className="text-sm font-semibold">Thana / Upazila</span>
+                  <span className="text-sm font-semibold">{L('Thana / Upazila', 'থানা / উপজেলা')}</span>
                   <div className="mt-1.5">
                     <LocationSelect
                       id="addrThana"
@@ -1071,24 +1075,24 @@ export function CustomerDashboard({
                       options={formThanas}
                       disabled={!formState.district}
                       onSelect={(name) => setFormState((s) => ({ ...s, area: name }))}
-                      placeholder={formState.district ? 'Select thana' : 'District first'}
+                      placeholder={formState.district ? L('Select thana', 'থানা নির্বাচন করুন') : L('District first', 'আগে জেলা')}
                     />
                   </div>
                 </div>
               </div>
               <label className="block">
-                <span className="text-sm font-semibold">Full Address</span>
+                <span className="text-sm font-semibold">{L('Full Address', 'বিস্তারিত ঠিকানা')}</span>
                 <textarea
                   rows={2}
                   required
                   value={formState.address}
                   onChange={(e) => setFormState((s) => ({ ...s, address: e.target.value }))}
                   className="mt-1.5 w-full px-4 py-2.5 rounded-xl border border-[#EADFD0] text-sm focus:outline-none focus:ring-2 focus:ring-[#6B1028]/20 focus:border-[#6B1028]"
-                  placeholder="House, road, block, landmark"
+                  placeholder={L('House, road, block, landmark', 'বাড়ি, রোড, ব্লক, পরিচিত স্থান')}
                 />
               </label>
               <div>
-                <span className="text-sm font-semibold">Label</span>
+                <span className="text-sm font-semibold">{L('Label', 'লেবেল')}</span>
                 <div className="mt-1.5 flex gap-2">
                   {(['Home', 'Office', 'Other'] as const).map((lbl) => (
                     <button
@@ -1101,7 +1105,7 @@ export function CustomerDashboard({
                           : 'border-[#EADFD0] text-[#1C1215]'
                       }`}
                     >
-                      {lbl}
+                      {addrLabel(lbl)}
                     </button>
                   ))}
                 </div>
@@ -1113,7 +1117,7 @@ export function CustomerDashboard({
                   onChange={(e) => setFormState((s) => ({ ...s, isDefault: e.target.checked }))}
                   className="w-4 h-4 accent-[#6B1028]"
                 />
-                <span className="text-sm">Set as default delivery address</span>
+                <span className="text-sm">{L('Set as default delivery address', 'ডিফল্ট ডেলিভারি ঠিকানা হিসেবে সেট করুন')}</span>
               </label>
               <div className="flex gap-3 pt-2">
                 <button
@@ -1121,14 +1125,14 @@ export function CustomerDashboard({
                   onClick={() => setModalOpen(false)}
                   className="flex-1 py-3 rounded-xl border border-[#EADFD0] text-sm font-semibold hover:bg-[#FAF6F0] cursor-pointer"
                 >
-                  Cancel
+                  {L('Cancel', 'বাতিল')}
                 </button>
                 <button
                   type="submit"
                   disabled={savingAddresses}
                   className="flex-1 py-3 rounded-xl bg-[#6B1028] text-[#FAF6F0] text-sm font-semibold hover:bg-[#4E0B1D] cursor-pointer disabled:opacity-60"
                 >
-                  {savingAddresses ? 'Saving…' : 'Save Address'}
+                  {savingAddresses ? L('Saving…', 'সংরক্ষণ হচ্ছে…') : L('Save Address', 'ঠিকানা সংরক্ষণ করুন')}
                 </button>
               </div>
             </form>

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { BoxIcon, BottleIcon } from '@/components/icons/ArtIcons'
+import { L } from '@/lib/i18n'
 
 export function Hero() {
   return (
@@ -7,24 +8,23 @@ export function Hero() {
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 md:grid-cols-2 md:py-20">
         <div>
           <h1 className="font-display text-4xl font-extrabold leading-[1.25] text-foreground sm:text-5xl sm:leading-[1.25]">
-            Safe love,
+            {L('Safe love,', 'নিরাপদ ভালোবাসা,')}
             <br />
-            without hesitation
+            {L('without hesitation', 'কোনো দ্বিধা ছাড়াই')}
           </h1>
           <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-            Order condoms and lubricants from home. They arrive at your door in plain
-            packaging that gives nothing away.
+            {L('Order condoms and lubricants from home. They arrive at your door in plain packaging that gives nothing away.', 'ঘরে বসেই কনডম ও লুব্রিকেন্ট অর্ডার করুন। সাধারণ প্যাকেটে দরজায় পৌঁছে যাবে, বাইরে থেকে কিছুই বোঝা যাবে না।')}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="rounded-full px-7">
-              <a href="#shop">Start shopping</a>
+              <a href="#shop">{L('Start shopping', 'কেনাকাটা শুরু করুন')}</a>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full px-7">
-              <a href="#faq">View FAQ</a>
+              <a href="#faq">{L('View FAQ', 'সাধারণ জিজ্ঞাসা দেখুন')}</a>
             </Button>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            Pay with bKash, Nagad or cash on delivery.
+            {L('Pay with bKash, Nagad or cash on delivery.', 'বিকাশ, নগদ বা ক্যাশ অন ডেলিভারিতে পেমেন্ট করুন।')}
           </p>
         </div>
 

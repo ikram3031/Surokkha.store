@@ -3,6 +3,7 @@ import { useCategories } from '@/hooks/useCategories'
 import { useProducts } from '@/hooks/useProducts'
 import { categoryPath, navigate } from '@/lib/router'
 import { SectionHeading } from '@/components/SectionHeading'
+import { L } from '@/lib/i18n'
 
 // Which categories lead the mosaic, in this order; anything else from the API fills the gaps
 const PREFERRED = ['condoms', 'lubricants', 'feminine-care', 'combo', 'wellness']
@@ -40,7 +41,7 @@ export function ShopByNeed() {
     <section id="categories" className="relative overflow-hidden">
       <SectionBackground name="categories" />
       <div className="relative mx-auto max-w-7xl px-4 py-10 md:py-14">
-        <SectionHeading title="Shop by need" subtitle="Pick the category you came for — every tile opens its full range." />
+        <SectionHeading title={L('Shop by need', 'প্রয়োজন অনুযায়ী কিনুন')} subtitle={L('Pick the category you came for — every tile opens its full range.', 'আপনার দরকারি ক্যাটাগরি বেছে নিন — প্রতিটিতে পুরো কালেকশন দেখতে পাবেন।')} />
 
         <div className="mt-8 grid grid-cols-2 gap-3 md:mt-10 md:h-[560px] md:gap-5 md:grid-flow-col md:grid-cols-3 md:grid-rows-2">
           {ordered.map((category, i) => {

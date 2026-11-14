@@ -12,6 +12,7 @@ import { mapApiProduct, type ApiProduct } from '@/lib/api/mappers'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
+import { L } from '@/lib/i18n'
 
 /** The API wraps single resources as `{ status, data }`; unwrap defensively. */
 function unwrapOne(res: unknown): ApiProduct | null {
@@ -77,9 +78,9 @@ export function ProductPage({ slug }: { slug: string }) {
   if (failed || !product) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-24 text-center">
-        <p className="text-lg font-semibold">Product not found.</p>
+        <p className="text-lg font-semibold">{L('Product not found.', 'প্রোডাক্টটি পাওয়া যায়নি।')}</p>
         <Button className="mt-4 rounded-full" onClick={() => navigate('/')}>
-          View all products
+          {L('View all products', 'সকল প্রোডাক্ট দেখুন')}
         </Button>
       </div>
     )
@@ -112,7 +113,7 @@ export function ProductPage({ slug }: { slug: string }) {
                 key={src}
                 type="button"
                 onClick={() => setActiveImage(i)}
-                aria-label={`Image ${i + 1}`}
+                aria-label={`${L('Image', 'ছবি')} ${i + 1}`}
                 className={`h-20 w-full overflow-hidden rounded-lg border-2 transition-colors ${i === activeImage ? 'border-primary' : 'border-transparent'}`}
               >
                 <img src={src} alt="" className="h-full w-full object-cover" />
@@ -143,7 +144,7 @@ export function ProductPage({ slug }: { slug: string }) {
             )}
             {product.directOffer.freeDelivery && (
               <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-semibold text-emerald-700">
-                Free Delivery
+                {L('Free Delivery', 'ফ্রি ডেলিভারি')}
               </span>
             )}
           </div>
@@ -166,7 +167,7 @@ export function ProductPage({ slug }: { slug: string }) {
               size="icon"
               className="rounded-full"
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              aria-label="Decrease quantity"
+              aria-label={L('Decrease quantity', 'পরিমাণ কমান')}
             >
               <Minus className="h-4 w-4 text-primary" strokeWidth={2.5} />
             </Button>
@@ -176,7 +177,7 @@ export function ProductPage({ slug }: { slug: string }) {
               size="icon"
               className="rounded-full"
               onClick={() => setQty((q) => Math.min(10, q + 1))}
-              aria-label="Increase quantity"
+              aria-label={L('Increase quantity', 'পরিমাণ বাড়ান')}
             >
               <Plus className="h-4 w-4 text-primary" strokeWidth={2.5} />
             </Button>
@@ -195,7 +196,7 @@ export function ProductPage({ slug }: { slug: string }) {
               navigate('/checkout')
             }}
           >
-            {soldOut ? 'Out of stock' : 'Order now'}
+            {soldOut ? L('Out of stock', 'স্টকে নেই') : L('Order now', 'অর্ডার করুন')}
           </Button>
           <Button
             size="lg"
@@ -204,17 +205,17 @@ export function ProductPage({ slug }: { slug: string }) {
             onClick={() => add(product, qty)}
           >
             <ShoppingCart className="h-4 w-4" />
-            Add to cart
+            {L('Add to cart', 'কার্টে যোগ করুন')}
           </Button>
         </div>
 
         <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
           <li className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-primary" />100% discreet packaging, no branding
+            <ShieldCheck className="h-4 w-4 text-primary" />{L('100% discreet packaging, no branding', '১০০% গোপনীয় প্যাকেজিং, কোনো ব্র্যান্ডিং নেই')}
           </li>
           <li className="flex items-center gap-2">
             <Truck className="h-4 w-4 text-primary" />
-            Cash on delivery — pay when you receive it
+            {L('Cash on delivery — pay when you receive it', 'ক্যাশ অন ডেলিভারি — হাতে পেয়ে মূল্য পরিশোধ করুন')}
           </li>
         </ul>
 

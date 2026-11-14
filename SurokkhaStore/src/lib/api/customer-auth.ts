@@ -1,4 +1,5 @@
 import { api } from '@/lib/api/client'
+import { L } from '@/lib/i18n'
 
 export interface Customer {
   id: string
@@ -158,7 +159,7 @@ export interface SavedAddress {
 
 function authed() {
   const token = getCustomerToken()
-  if (!token) throw new Error('Please log in to continue')
+  if (!token) throw new Error(L('Please log in to continue', 'চালিয়ে যেতে লগইন করুন'))
   return { token }
 }
 

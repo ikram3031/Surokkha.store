@@ -2,6 +2,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
 import { Dialog as SheetPrimitive } from "radix-ui"
+import { L } from '@/lib/i18n'
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -75,7 +76,7 @@ function SheetContent({
           <SheetPrimitive.Close className="group/close absolute top-4 right-4 flex size-8 items-center justify-center rounded-full border border-primary transition-colors hover:bg-primary focus:outline-none focus-visible:outline-none disabled:pointer-events-none">
             {/* !important beats parents that recolor every svg (e.g. the header menu's [&_svg]:text-white) */}
             <XIcon className="size-4 !text-primary group-hover/close:!text-primary-foreground" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{L('Close', 'বন্ধ করুন')}</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Content>

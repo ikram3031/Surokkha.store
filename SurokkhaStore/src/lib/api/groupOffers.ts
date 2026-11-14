@@ -1,4 +1,5 @@
 import { api, resolveMediaUrl } from '@/lib/api/client'
+import { L } from '@/lib/i18n'
 
 export interface GroupDiscount {
   discountType: 'percentage' | 'fixed'
@@ -99,7 +100,7 @@ export async function getTrialPack(slug: string, options?: { signal?: AbortSigna
   return {
     id: itemId,
     did,
-    name: item.name ?? 'Trial Pack',
+    name: item.name ?? L('Trial Pack', 'ট্রায়াল প্যাক'),
     slug,
     description: item.description ?? '',
     imageUrl: resolveMediaUrl(item.imageUrl) ?? '',

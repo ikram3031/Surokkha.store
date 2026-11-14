@@ -4,6 +4,7 @@ import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import { catBg, type Product } from '@/data/products'
 import { bn, taka } from '@/lib/bn'
 import { useCart } from '@/context/CartContext'
+import { L } from '@/lib/i18n'
 
 export function CartItem({ product, qty }: { product: Product; qty: number }) {
   const { inc, dec, remove } = useCart()
@@ -25,7 +26,7 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
         <p className="truncate font-semibold">{product.name}</p>
         <p className="text-sm text-muted-foreground">
           {taka(product.price)}
-          {product.groupOffer && <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">Group Offer</span>}
+          {product.groupOffer && <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">{L('Group Offer', 'গ্রুপ অফার')}</span>}
         </p>
         <div className="mt-1 inline-flex items-center rounded-full border border-border">
           <Button
@@ -33,7 +34,7 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
             size="icon"
             className="h-8 w-8 rounded-full"
             onClick={() => dec(product.id)}
-            aria-label="Decrease quantity"
+            aria-label={L('Decrease quantity', 'পরিমাণ কমান')}
           >
             <Minus className="h-3.5 w-3.5" />
           </Button>
@@ -43,7 +44,7 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
             size="icon"
             className="h-8 w-8 rounded-full"
             onClick={() => inc(product.id)}
-            aria-label="Increase quantity"
+            aria-label={L('Increase quantity', 'পরিমাণ বাড়ান')}
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>
@@ -55,7 +56,7 @@ export function CartItem({ product, qty }: { product: Product; qty: number }) {
           className="mt-1 text-xs text-primary underline"
           onClick={() => remove(product.id)}
         >
-          Remove
+          {L('Remove', 'মুছে ফেলুন')}
         </button>
       </div>
     </div>

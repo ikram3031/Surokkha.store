@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { testimonials } from '@/data/testimonials'
+import { L } from '@/lib/i18n'
 
 const ROTATE_MS = 7000
 
@@ -33,7 +34,7 @@ export function Testimonial() {
                 key={t.quote}
                 type="button"
                 onClick={() => setActive(i)}
-                aria-label={`Show review ${i + 1}`}
+                aria-label={`${L('Show review', 'রিভিউ দেখুন')} ${i + 1}`}
                 aria-current={i === active}
                 className={`h-2 rounded-full transition-all ${i === active ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30'}`}
               />

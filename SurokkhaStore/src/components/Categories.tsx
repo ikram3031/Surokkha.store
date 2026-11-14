@@ -5,6 +5,7 @@ import { BoxIcon, BottleIcon, ComboIcon } from '@/components/icons/ArtIcons'
 import type { ShopFilter } from '@/components/shop/FilterBar'
 import { SectionBackground } from '@/components/SectionBackground'
 import { SectionHeading } from '@/components/SectionHeading'
+import { L } from '@/lib/i18n'
 
 const tiles: {
   cat: ShopFilter
@@ -15,29 +16,29 @@ const tiles: {
 }[] = [
   {
     cat: 'condoms',
-    title: 'Condoms',
-    desc: 'Classic, ultra thin and flavoured',
+    title: L('Condoms', 'কনডম'),
+    desc: L('Classic, ultra thin and flavoured', 'ক্লাসিক, আল্ট্রা থিন ও ফ্লেভার্ড'),
     bg: 'bg-secondary hover:bg-muted',
     icon: <BoxIcon c1="#F4919F" c2="#C9475F" />,
   },
   {
     cat: 'lubricants',
-    title: 'Lubricants',
-    desc: 'Water and silicone based',
+    title: L('Lubricants', 'লুব্রিকেন্ট'),
+    desc: L('Water and silicone based', 'পানি ও সিলিকন-ভিত্তিক'),
     bg: 'bg-accent hover:bg-accent/80',
     icon: <BottleIcon c1="#F5E6D3" c2="#948B86" />,
   },
   {
     cat: 'combo',
-    title: 'Combo Packs',
-    desc: 'Better together, for less',
+    title: L('Combo Packs', 'কম্বো প্যাক'),
+    desc: L('Better together, for less', 'একসাথে নিন, কম দামে'),
     bg: 'bg-muted hover:bg-muted/70',
     icon: <ComboIcon />,
   },
   {
     cat: 'feminine-care',
-    title: 'Feminine Care',
-    desc: 'Personal care & hygiene',
+    title: L('Feminine Care', 'ফেমিনিন কেয়ার'),
+    desc: L('Personal care & hygiene', 'ব্যক্তিগত যত্ন ও স্বাস্থ্যবিধি'),
     bg: 'bg-secondary hover:bg-muted',
     icon: <Flower2 className="h-full w-full text-primary" strokeWidth={1.5} />,
   },
@@ -48,7 +49,7 @@ export function Categories({ onSelect }: { onSelect: (cat: ShopFilter) => void }
     <section id="categories" className="relative overflow-hidden">
       <SectionBackground name="categories" />
       <div className="relative mx-auto max-w-7xl px-4 py-14">
-      <SectionHeading align="center" title="What are you looking for?" />
+      <SectionHeading align="center" title={L('What are you looking for?', 'আপনি কী খুঁজছেন?')} />
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((tile) => (
           <Card

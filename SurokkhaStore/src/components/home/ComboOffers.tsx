@@ -4,6 +4,7 @@ import { useCart } from '@/context/CartContext'
 import { categoryPath, navigate, productPath } from '@/lib/router'
 import { taka } from '@/lib/bn'
 import type { Product } from '@/data/products'
+import { L } from '@/lib/i18n'
 
 // The two best combo deals, same picks as surokkha.shop's "Featured Combos" block
 const LEFT = { id: '6ab8a664721c81cc89218856', slug: 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo' }
@@ -57,14 +58,14 @@ function ComboCard({ product, badge, contents, note, theme }: { product: Product
 
         <div className={`flex items-center justify-between gap-3 rounded-2xl border bg-slate-950/90 p-3.5 ${theme.soft}`}>
           <div>
-            <div className={`text-[10px] font-bold tracking-wider uppercase ${theme.text}`}>Special combo price</div>
+            <div className={`text-[10px] font-bold tracking-wider uppercase ${theme.text}`}>{L('Special combo price', 'স্পেশাল কম্বো মূল্য')}</div>
             <div className="mt-0.5 flex items-baseline gap-2">
               <span className={`animate-price-shake text-2xl font-black sm:text-3xl ${theme.text}`}>{taka(price)}</span>
               {regular > 0 && <span className="text-xs text-slate-400 line-through sm:text-sm">{taka(regular)}</span>}
             </div>
           </div>
           <div className="text-right">
-            {regular > 0 && <span className={`inline-block rounded-xl px-2.5 py-1 text-xs font-black ${theme.save}`}>Save {taka(regular - price)}</span>}
+            {regular > 0 && <span className={`inline-block rounded-xl px-2.5 py-1 text-xs font-black ${theme.save}`}>{L('Save', 'সাশ্রয়')} {taka(regular - price)}</span>}
             <div className="mt-1 text-[10px] font-bold text-emerald-400">{note}</div>
           </div>
         </div>
@@ -79,14 +80,14 @@ function ComboCard({ product, badge, contents, note, theme }: { product: Product
           }}
           className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 py-3 text-xs font-bold text-white shadow-lg transition active:scale-95 sm:text-sm ${theme.cta}`}
         >
-          ⚡ Order now
+          ⚡ {L('Order now', 'অর্ডার করুন')}
         </button>
         <button
           type="button"
           onClick={() => add(product)}
           className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-3 text-xs font-bold text-white transition hover:bg-white/20 active:scale-95 sm:text-sm"
         >
-          🛒 Add to cart
+          🛒 {L('Add to cart', 'কার্টে যোগ করুন')}
         </button>
       </div>
     </div>
@@ -119,12 +120,12 @@ export function ComboOffers() {
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-rose-500/60 bg-rose-950/90 px-3.5 py-1.5 text-xs font-bold text-amber-300">
                 <span className="animate-pulse">🔥</span>
-                <span>Mega savings • Exclusive combo packs</span>
+                <span>{L('Mega savings • Exclusive combo packs', 'মেগা সেভিংস • এক্সক্লুসিভ কম্বো প্যাক')}</span>
               </div>
               <h2 className="text-2xl leading-tight font-extrabold tracking-tight text-white sm:text-3xl md:text-4xl">
-                Featured combos — <span className="text-amber-400">premium value bundles</span>
+                {L('Featured combos —', 'ফিচার্ড কম্বো —')} <span className="text-amber-400">{L('premium value bundles', 'প্রিমিয়াম ভ্যালু বান্ডেল')}</span>
               </h2>
-              <p className="mt-1 text-xs text-slate-300 sm:text-sm">More in one pack, guaranteed savings, delivered in one discreet parcel.</p>
+              <p className="mt-1 text-xs text-slate-300 sm:text-sm">{L('More in one pack, guaranteed savings, delivered in one discreet parcel.', 'এক প্যাকে বেশি পণ্য, নিশ্চিত সাশ্রয়, একটি গোপনীয় পার্সেলে ডেলিভারি।')}</p>
             </div>
             <a
               href={categoryPath('combo')}
@@ -134,7 +135,7 @@ export function ComboOffers() {
               }}
               className="flex items-center gap-1 text-xs font-bold text-amber-300 underline underline-offset-4 hover:text-amber-200 sm:text-sm"
             >
-              View all combos →
+              {L('View all combos →', 'সব কম্বো দেখুন →')}
             </a>
           </div>
 
@@ -143,18 +144,18 @@ export function ComboOffers() {
               <ComboCard
                 product={left}
                 theme={GOLD}
-                badge={`⭐ Most popular deal (${taka(left.price)})`}
-                contents={left.slug === LEFT.slug || left.apiId === LEFT.id ? '1x Ultra Thin + 1x Dotted + 1x Ribbed = 3 full sealed boxes.' : left.desc}
-                note={left.slug === LEFT.slug || left.apiId === LEFT.id ? `Only ${taka(Math.round(left.price / 30))} / piece` : 'Combo deal'}
+                badge={`⭐ ${L('Most popular deal', 'সবচেয়ে জনপ্রিয় ডিল')} (${taka(left.price)})`}
+                contents={left.slug === LEFT.slug || left.apiId === LEFT.id ? L('1x Ultra Thin + 1x Dotted + 1x Ribbed = 3 full sealed boxes.', '১টি আল্ট্রা থিন + ১টি ডটেড + ১টি রিবড = ৩টি সম্পূর্ণ সিল করা বক্স।') : left.desc}
+                note={left.slug === LEFT.slug || left.apiId === LEFT.id ? `${L('Only', 'মাত্র')} ${taka(Math.round(left.price / 30))} / ${L('piece', 'পিস')}` : L('Combo deal', 'কম্বো ডিল')}
               />
             )}
             {right && (
               <ComboCard
                 product={right}
                 theme={VIOLET}
-                badge={right.slug === RIGHT.slug || right.apiId === RIGHT.id ? '🔥 Protection combo • 20 pcs + care' : '🔥 Limited combo deal'}
-                contents={right.slug === RIGHT.slug || right.apiId === RIGHT.id ? 'Two full 10-piece boxes plus a 50g personal care pack.' : right.desc}
-                note={right.slug === RIGHT.slug || right.apiId === RIGHT.id ? '20 pcs + 50g' : 'Combo deal'}
+                badge={right.slug === RIGHT.slug || right.apiId === RIGHT.id ? L('🔥 Protection combo • 20 pcs + care', '🔥 প্রোটেকশন কম্বো • ২০ পিস + কেয়ার') : L('🔥 Limited combo deal', '🔥 সীমিত কম্বো ডিল')}
+                contents={right.slug === RIGHT.slug || right.apiId === RIGHT.id ? L('Two full 10-piece boxes plus a 50g personal care pack.', '১০ পিসের ২টি সম্পূর্ণ বক্স এবং ৫০ গ্রামের একটি পার্সোনাল কেয়ার প্যাক।') : right.desc}
+                note={right.slug === RIGHT.slug || right.apiId === RIGHT.id ? L('20 pcs + 50g', '২০ পিস + ৫০ গ্রাম') : L('Combo deal', 'কম্বো ডিল')}
               />
             )}
           </div>

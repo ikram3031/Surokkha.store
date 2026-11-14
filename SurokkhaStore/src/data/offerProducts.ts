@@ -1,4 +1,5 @@
 import type { ProductArt } from '@/components/icons/ArtIcons'
+import { L } from '@/lib/i18n'
 
 export interface OfferVariant {
   id: string
@@ -76,7 +77,7 @@ export function deliveryZone(district: string, thana: string): DeliveryZone {
 }
 
 export const ZONE_LABEL: Record<DeliveryZone, string> = {
-  dhakaCity: 'Dhaka City',
-  dhakaSuburbs: 'Dhaka suburbs',
-  outsideDhaka: 'Outside Dhaka',
+  dhakaCity: L('Dhaka City', 'ঢাকা সিটি'),
+  dhakaSuburbs: L('Dhaka suburbs', 'ঢাকার পার্শ্ববর্তী এলাকা'),
+  outsideDhaka: L('Outside Dhaka', 'ঢাকার বাইরে'),
 }

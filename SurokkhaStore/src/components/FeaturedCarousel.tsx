@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { useShowcaseProducts } from '@/hooks/useShowcaseProducts'
 import { SectionHeading } from '@/components/SectionHeading'
+import { L } from '@/lib/i18n'
 
 const AUTOPLAY_MS = 3500
 
@@ -38,7 +39,7 @@ export function FeaturedCarousel() {
     <section
       id="featured"
       className="mx-auto max-w-7xl px-4 pt-14"
-      aria-label="Featured products"
+      aria-label={L('Featured products', 'ফিচার্ড প্রোডাক্টস')}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -47,12 +48,12 @@ export function FeaturedCarousel() {
       onTouchEnd={() => setPaused(false)}
     >
       <div className="flex items-end justify-between gap-4">
-        <SectionHeading title="Featured products" />
+        <SectionHeading title={L('Featured products', 'ফিচার্ড প্রোডাক্টস')} />
         <div className="hidden gap-2 sm:flex">
-          <Button variant="outline" size="icon" className="rounded-full border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground" aria-label="Previous" onClick={() => step(-1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground" aria-label={L('Previous', 'আগের')} onClick={() => step(-1)}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon" className="rounded-full border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground" aria-label="Next" onClick={() => step(1)}>
+          <Button variant="outline" size="icon" className="rounded-full border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground" aria-label={L('Next', 'পরের')} onClick={() => step(1)}>
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>

@@ -1,18 +1,19 @@
 import { SectionBackground } from '@/components/SectionBackground'
 import { SectionHeading } from '@/components/SectionHeading'
+import { L } from '@/lib/i18n'
 
 export const tips = [
   {
-    title: 'Check the expiry date',
-    desc: 'Do not use a pack once the expiry date printed on it has passed.',
+    title: L('Check the expiry date', 'মেয়াদ শেষের তারিখ দেখে নিন'),
+    desc: L('Do not use a pack once the expiry date printed on it has passed.', 'প্যাকেটে ছাপা মেয়াদ শেষ হয়ে গেলে সেটি ব্যবহার করবেন না।'),
   },
   {
-    title: 'Choose the right lubricant',
-    desc: 'Use water or silicone based lubricant with latex condoms. Anything oil based can damage the condom.',
+    title: L('Choose the right lubricant', 'সঠিক লুব্রিকেন্ট বেছে নিন'),
+    desc: L('Use water or silicone based lubricant with latex condoms. Anything oil based can damage the condom.', 'ল্যাটেক্স কনডমের সাথে পানি বা সিলিকন-ভিত্তিক লুব্রিকেন্ট ব্যবহার করুন। তেল-ভিত্তিক কিছু কনডমের ক্ষতি করতে পারে।'),
   },
   {
-    title: 'Store in a cool, dry place',
-    desc: 'Keeping condoms in a wallet or car for long periods exposes them to heat and damages them.',
+    title: L('Store in a cool, dry place', 'ঠান্ডা ও শুকনো জায়গায় রাখুন'),
+    desc: L('Keeping condoms in a wallet or car for long periods exposes them to heat and damages them.', 'মানিব্যাগ বা গাড়িতে দীর্ঘ সময় কনডম রাখলে তাপে নষ্ট হয়ে যায়।'),
   },
 ]
 
@@ -23,8 +24,8 @@ export function SafeUse() {
       <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-14 md:grid-cols-2">
         <div>
           <SectionHeading
-            title="Three things to know about safe use"
-            subtitle="Condoms only protect fully when used correctly. Keep these in mind before you buy and before you use."
+            title={L('Three things to know about safe use', 'নিরাপদ ব্যবহারে যে ৩টি বিষয় জানা জরুরি')}
+            subtitle={L('Condoms only protect fully when used correctly. Keep these in mind before you buy and before you use.', 'সঠিকভাবে ব্যবহার করলেই কনডম পুরোপুরি সুরক্ষা দেয়। কেনার ও ব্যবহারের আগে এগুলো মনে রাখুন।')}
           />
         </div>
         <ol className="space-y-4">

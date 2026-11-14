@@ -1,5 +1,6 @@
 import type { ProductArt } from '@/components/icons/ArtIcons'
 import type { GroupOfferRule } from '@/lib/api/groupOffers'
+import { L } from '@/lib/i18n'
 
 export type ProductCategory = 'condom' | 'lube' | 'combo'
 
@@ -53,9 +54,9 @@ export const products: Product[] = [
 ]
 
 export const catLabel: Record<ProductCategory, string> = {
-  condom: 'Condoms',
-  lube: 'Lubricants',
-  combo: 'Combo Packs',
+  condom: L('Condoms', 'কনডম'),
+  lube: L('Lubricants', 'লুব্রিকেন্ট'),
+  combo: L('Combo Packs', 'কম্বো প্যাক'),
 }
 
 // Soft tint behind each product's art, grouped by category.

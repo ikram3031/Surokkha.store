@@ -1,8 +1,9 @@
 import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSectionBackground } from '@/hooks/useSectionBackground'
+import { L } from '@/lib/i18n'
 
-const perks = ['Cash on delivery', '100% genuine products', 'Plain, discreet packaging']
+const perks = [L('Cash on delivery', 'ক্যাশ অন ডেলিভারি'), L('100% genuine products', '১০০% আসল প্রোডাক্ট'), L('Plain, discreet packaging', 'সাধারণ, গোপনীয় প্যাকেজিং')]
 
 // Shown until a hero image is set in the dashboard (CMS → Section Backgrounds → "Home hero")
 const FALLBACK_IMAGE = '/banners/trial-pack-packets.webp'
@@ -21,19 +22,18 @@ export function HomeHero() {
         <div>
 
           <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Safe love,
+            {L('Safe love,', 'নিরাপদ ভালোবাসা,')}
             <br />
-            <span className="text-primary">without hesitation.</span>
+            <span className="text-primary">{L('without hesitation.', 'কোনো দ্বিধা ছাড়াই।')}</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-            Condoms, lubricants and intimate care from trusted brands. Order from home and get it delivered in plain
-            packaging.
+            {L('Condoms, lubricants and intimate care from trusted brands. Order from home and get it delivered in plain packaging.', 'বিশ্বস্ত ব্র্যান্ডের কনডম, লুব্রিকেন্ট ও ব্যক্তিগত যত্নের পণ্য। ঘরে বসে অর্ডার করুন, সাধারণ প্যাকেটে ডেলিভারি পান।')}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Button size="lg" className="h-12 rounded-full px-8 text-base" onClick={() => scrollToId('featured')}>
-              Shop products
+              {L('Shop products', 'প্রোডাক্ট দেখুন')}
             </Button>
             <Button
               size="lg"
@@ -41,7 +41,7 @@ export function HomeHero() {
               className="h-12 rounded-full border-2 border-link bg-card/80 px-8 text-base font-semibold text-link backdrop-blur hover:bg-link hover:text-link-foreground"
               onClick={() => scrollToId('delivery')}
             >
-              How it works
+              {L('How it works', 'কীভাবে কাজ করে')}
             </Button>
           </div>
 

@@ -5,6 +5,7 @@ import { fromPrice, variantPrice, type OfferProduct } from '@/data/offerProducts
 import { taka } from '@/lib/bn'
 import { ProductSlider } from './ProductMedia'
 import { QtyStepper } from './QtyStepper'
+import { L } from '@/lib/i18n'
 
 interface CommonProps {
   product: OfferProduct | null
@@ -30,7 +31,7 @@ function VariantRows({ product, qtyOf, change }: Omit<CommonProps, 'onOpenChange
               <p className="text-base font-semibold leading-normal">{v.label}</p>
               <p className="text-sm font-semibold text-rose-600">
                 {taka(variantPrice(product, v))}
-                {!v.inStock && <span className="ml-2 text-xs font-normal text-gray-500">Out of stock</span>}
+                {!v.inStock && <span className="ml-2 text-xs font-normal text-gray-500">{L('Out of stock', 'স্টকে নেই')}</span>}
               </p>
             </div>
             <div className={`w-32 ${v.inStock ? '' : 'pointer-events-none opacity-40'}`}>
@@ -56,11 +57,11 @@ export function VariantDialog({ product, onOpenChange, qtyOf, change }: CommonPr
         <DialogContent className="[&_[data-slot=dialog-close]]:text-rose-600 [&_[data-slot=dialog-close]]:opacity-100 [&_[data-slot=dialog-close]]:flex [&_[data-slot=dialog-close]]:size-8 [&_[data-slot=dialog-close]]:items-center [&_[data-slot=dialog-close]]:justify-center [&_[data-slot=dialog-close]]:rounded-full [&_[data-slot=dialog-close]]:border-2 [&_[data-slot=dialog-close]]:border-rose-500 [&_[data-slot=dialog-close]]:!bg-white [&_[data-slot=dialog-close]]:!opacity-100 [&_[data-slot=dialog-close]]:!ring-0 [&_[data-slot=dialog-close]]:!ring-offset-0 [&_[data-slot=dialog-close]]:!outline-none [&_[data-slot=dialog-close]]:hover:!bg-rose-50 [&_[data-slot=dialog-close]]:top-3 [&_[data-slot=dialog-close]]:right-3 [&_[data-slot=dialog-close]]:z-10 [&_[data-slot=dialog-close]_svg]:size-4 offer-font max-h-[90dvh] overflow-y-auto rounded-3xl bg-white p-5 sm:max-w-md">
           <DialogTitle className="text-xl leading-snug">{product.name}</DialogTitle>
           <DialogDescription>
-            Choose your {product.variantLabel ?? 'variation'} and quantity
+            {L(`Choose your ${product.variantLabel ?? 'variation'} and quantity`, `আপনার ${product.variantLabel ?? 'ভ্যারিয়েশন'} ও পরিমাণ বেছে নিন`)}
           </DialogDescription>
           <VariantRows product={product} qtyOf={qtyOf} change={change} />
           <Button className="h-11 rounded-full" onClick={() => onOpenChange(false)}>
-            <Check /> Done
+            <Check /> {L('Done', 'সম্পন্ন')}
           </Button>
         </DialogContent>
       )}
@@ -84,7 +85,7 @@ export function QuickViewDialog({ product, onOpenChange, qtyOf, change }: Common
               <p className="text-2xl font-bold text-rose-600">
                 {taka(fromPrice(product))}
                 {product.variants?.length ? (
-                  <span className="ml-1 text-sm font-normal text-gray-600">from</span>
+                  <span className="ml-1 text-sm font-normal text-gray-600">{L('from', 'থেকে')}</span>
                 ) : null}
               </p>
               <ul className="space-y-1.5 text-sm">

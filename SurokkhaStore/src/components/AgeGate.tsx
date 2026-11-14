@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { Button } from '@/components/ui/button'
 import { LogoMark } from '@/components/icons/ArtIcons'
 import { useAgeGate } from '@/hooks/useAgeGate'
+import { L } from '@/lib/i18n'
 
 export function AgeGate() {
   const { verified, confirm } = useAgeGate()
@@ -17,22 +18,22 @@ export function AgeGate() {
       >
         <LogoMark className="mx-auto h-14 w-14" />
         <DialogTitle className="mt-3 font-display text-2xl font-bold">
-          Are you 18 or older?
+          {L('Are you 18 or older?', 'আপনার বয়স কি ১৮ বছর বা তার বেশি?')}
         </DialogTitle>
         <DialogDescription className="mt-2 text-muted-foreground">
-          Products on this site are for adults only.
+          {L('Products on this site are for adults only.', 'এই সাইটের পণ্য শুধুমাত্র প্রাপ্তবয়স্কদের জন্য।')}
         </DialogDescription>
         <div className="mt-6 flex flex-col gap-3">
           <Button className="rounded-full" onClick={confirm}>
-            Yes, I'm 18 or older
+            {L('Yes, I\'m 18 or older', 'হ্যাঁ, আমার বয়স ১৮+')}
           </Button>
           <Button variant="outline" className="rounded-full" onClick={() => setDeclined(true)}>
-            No
+            {L('No', 'না')}
           </Button>
         </div>
         {declined && (
           <p className="mt-4 text-sm text-primary">
-            Sorry, please come back when you are an adult.
+            {L('Sorry, please come back when you are an adult.', 'দুঃখিত, প্রাপ্তবয়স্ক হলে আবার আসুন।')}
           </p>
         )}
       </DialogContent>

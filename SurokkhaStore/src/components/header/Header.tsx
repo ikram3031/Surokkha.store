@@ -5,6 +5,7 @@ import { SearchInput } from '@/components/header/SearchInput'
 import { CartButton } from '@/components/header/CartButton'
 import { MobileNav } from '@/components/header/MobileNav'
 import { AccountMenu } from '@/components/header/AccountMenu'
+import { L } from '@/lib/i18n'
 
 export function Header({
   query,
@@ -26,7 +27,7 @@ export function Header({
         <div className="flex min-w-0 items-center gap-2">
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-lg border border-primary bg-transparent text-white hover:bg-primary/15 hover:text-white" aria-label="Open menu">
+              <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-lg border border-primary bg-transparent text-white hover:bg-primary/15 hover:text-white" aria-label={L('Open menu', 'মেনু খুলুন')}>
                 {/* Font Awesome "bars" (fa-solid fa-bars) */}
                 <svg viewBox="0 0 448 512" className="h-5 w-5" fill="currentColor" aria-hidden="true">
                   <path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z" />
@@ -37,7 +38,7 @@ export function Header({
               side="left"
               className="max-w-xs border-none bg-header text-white [&_svg]:text-white"
             >
-              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <SheetTitle className="sr-only">{L('Menu', 'মেনু')}</SheetTitle>
               <MobileNav onNavigate={() => setMenuOpen(false)} onCategory={onCategory} />
             </SheetContent>
           </Sheet>
@@ -52,8 +53,8 @@ export function Header({
           />
         </div>
 
-        <a href="/" className="flex items-center justify-center" aria-label="Surokkha home">
-          <img src="/surokkha_store_logo_dark.png" alt="Surokkha Store" className="h-10 w-auto" />
+        <a href="/" className="flex items-center justify-center" aria-label={L('Surokkha home', 'সুরক্ষা হোম')}>
+          <img src="/surokkha_store_logo_dark.png" alt={L('Surokkha Store', 'সুরক্ষা স্টোর')} className="h-10 w-auto" />
         </a>
 
         <div className="flex items-center justify-end gap-2">

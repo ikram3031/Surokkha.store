@@ -1,6 +1,7 @@
 import type { Product, ProductCategory } from '@/data/products'
 import type { ProductArt } from '@/components/icons/ArtIcons'
 import { resolveMediaUrl } from '@/lib/api/client'
+import { L } from '@/lib/i18n'
 
 /**
  * The real shape of a StoreWeb API product isn't pinned down yet, so this is
@@ -111,7 +112,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
   return {
     id: toNumericId(raw),
     cat,
-    name: raw.name || raw.title || 'Product',
+    name: raw.name || raw.title || L('Product', 'প্রোডাক্ট'),
     desc: htmlToText(rawDesc),
     descHtml: HTML_TAG_RX.test(rawDesc) ? rawDesc : undefined,
     // Same precedence as SurokkhaShop: active offer price, else list price
@@ -132,7 +133,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
     art: visual.art,
     c1: visual.c1,
     c2: visual.c2,
-    badge: raw.badge ?? (raw.isNew ? 'New' : raw.isBestSeller ? 'Best Seller' : undefined),
+    badge: raw.badge ?? (raw.isNew ? L('New', 'নতুন') : raw.isBestSeller ? L('Best Seller', 'বেস্ট সেলার') : undefined),
     image: resolveMediaUrl(raw.thumbnailUrl || raw.featuredImage || raw.imageUrl || raw.gallery?.[0]),
     largeImage: resolveMediaUrl(raw.featuredImage || raw.imageUrl || raw.gallery?.[0] || raw.thumbnailUrl),
   }

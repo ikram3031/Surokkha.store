@@ -7,14 +7,15 @@ import { resolveMediaUrl } from '@/lib/api/client'
 import { useCart } from '@/context/CartContext'
 import { navigate } from '@/lib/router'
 import { trackProductView } from '@/lib/api/productEvents'
-import { taka } from '@/lib/bn'
+import { bn, taka } from '@/lib/bn'
+import { L } from '@/lib/i18n'
 
 // Same caps the backend enforces on new orders
 const MAX_PER_PRODUCT = 10
 const MAX_PER_ORDER = 20
 
 const describe = (d: { discountType: string; discountValue: number }) =>
-  d.discountType === 'percentage' ? `${d.discountValue}% off` : `${taka(d.discountValue)} off`
+  d.discountType === 'percentage' ? `${bn(d.discountValue)}% ${L('off', 'ছাড়')}` : `${taka(d.discountValue)} ${L('off', 'ছাড়')}`
 
 /** A Group Offer: pick pieces from several products; the whole group is priced by the offer's rules. */
 export function GroupOfferPage({ slug, embedded = false }: { slug: string; embedded?: boolean }) {
@@ -45,12 +46,12 @@ export function GroupOfferPage({ slug, embedded = false }: { slug: string; embed
     [offer, qty],
   )
 
-  if (status === 'loading') return <p className="mx-auto max-w-3xl px-4 py-16 text-center text-muted-foreground">Loading...</p>
+  if (status === 'loading') return <p className="mx-auto max-w-3xl px-4 py-16 text-center text-muted-foreground">{L('Loading...', 'লোড হচ্ছে...')}</p>
   if (status === 'missing' || !offer)
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p className="text-muted-foreground">This offer is not available right now.</p>
-        <Button className="mt-4 rounded-full" onClick={() => navigate('/')}>Back to home</Button>
+        <p className="text-muted-foreground">{L('This offer is not available right now.', 'এই অফারটি এখন পাওয়া যাচ্ছে না।')}</p>
+        <Button className="mt-4 rounded-full" onClick={() => navigate('/')}>{L('Back to home', 'হোমে ফিরে যান')}</Button>
       </div>
     )
 
@@ -62,15 +63,15 @@ export function GroupOfferPage({ slug, embedded = false }: { slug: string; embed
     const cur = qty[id] ?? 0
     let n = cur
     if (delta === 1) {
-      if (cur >= MAX_PER_PRODUCT) return toast.error(`You can add up to ${MAX_PER_PRODUCT} pieces of one product`)
+      if (cur >= MAX_PER_PRODUCT) return toast.error(L(`You can add up to ${MAX_PER_PRODUCT} pieces of one product`, `একটি প্রোডাক্টের সর্বোচ্চ ${bn(MAX_PER_PRODUCT)} পিস যোগ করা যাবে`))
       n = cur === 0 ? min : cur + 1
-      if (totalQty - cur + n > MAX_PER_ORDER) return toast.error(`You can order up to ${MAX_PER_ORDER} pieces in one order`)
+      if (totalQty - cur + n > MAX_PER_ORDER) return toast.error(L(`You can order up to ${MAX_PER_ORDER} pieces in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_PER_ORDER)} পিস অর্ডার করা যাবে`))
     } else n = cur <= min ? 0 : cur - 1
     setQty((q) => ({ ...q, [id]: n }))
   }
 
   const submit = (goCheckout: boolean) => {
-    if (!eligible) return toast.error(`Pick at least ${taka(offer.minOrderAmount)} worth of pieces`)
+    if (!eligible) return toast.error(L(`Pick at least ${taka(offer.minOrderAmount)} worth of pieces`, `কমপক্ষে ${taka(offer.minOrderAmount)} মূল্যের পিস বাছাই করুন`))
     addGroup(offer, offer.products.map((product) => ({ product, qty: qty[product.id] ?? 0 })))
     if (goCheckout) navigate('/checkout')
   }
@@ -80,9 +81,9 @@ export function GroupOfferPage({ slug, embedded = false }: { slug: string; embed
       <h1 className="font-display text-3xl font-bold md:text-4xl">{offer.name}</h1>
       {offer.description && <p className="mt-2 text-muted-foreground">{offer.description}</p>}
       <p className="mt-3 text-sm text-muted-foreground">
-        Pick any pieces you like (minimum {min} of each product you choose, then add one at a time). Order at least{' '}
-        <b className="text-foreground">{taka(offer.minOrderAmount)}</b> to get the offer
-        {offer.pricingMode === 'fixed' && offer.fixedDiscount ? `: ${describe(offer.fixedDiscount)}` : '.'}
+        {L(`Pick any pieces you like (minimum ${min} of each product you choose, then add one at a time). Order at least`, `পছন্দমতো পিস বাছাই করুন (প্রতিটি প্রোডাক্টের কমপক্ষে ${bn(min)}টি, তারপর একটি করে যোগ করুন)। অফার পেতে কমপক্ষে`)}{' '}
+        <b className="text-foreground">{taka(offer.minOrderAmount)}</b> {L('to get the offer', 'মূল্যের অর্ডার করুন')}
+        {offer.pricingMode === 'fixed' && offer.fixedDiscount ? `: ${describe(offer.fixedDiscount)}` : L('.', '।')}
       </p>
       {offer.pricingMode === 'conditional' && (
         <ul className="mt-2 flex flex-wrap gap-2 text-xs">
@@ -103,19 +104,19 @@ export function GroupOfferPage({ slug, embedded = false }: { slug: string; embed
               {image ? <img src={image} alt={p.name} className="h-20 w-20 shrink-0 rounded-xl object-cover" /> : <div className="h-20 w-20 shrink-0 rounded-xl bg-secondary" />}
               <div className="min-w-0 flex-1">
                 <p className="font-semibold leading-snug">{p.name}</p>
-                <p className="text-sm text-muted-foreground">{taka(p.unitPrice)} / piece</p>
+                <p className="text-sm text-muted-foreground">{taka(p.unitPrice)} / {L('piece', 'পিস')}</p>
                 {p.inStock ? (
                   <div className="mt-2 inline-flex items-center rounded-full border border-border">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" disabled={n === 0} onClick={() => step(p.id, -1)} aria-label="Decrease pieces">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" disabled={n === 0} onClick={() => step(p.id, -1)} aria-label={L('Decrease pieces', 'পিস কমান')}>
                       <Minus className="h-3.5 w-3.5" />
                     </Button>
-                    <span className="w-8 text-center text-sm font-semibold">{n}</span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => step(p.id, 1)} aria-label="Increase pieces">
+                    <span className="w-8 text-center text-sm font-semibold">{bn(n)}</span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => step(p.id, 1)} aria-label={L('Increase pieces', 'পিস বাড়ান')}>
                       <Plus className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 ) : (
-                  <p className="mt-2 text-sm font-semibold text-destructive">Out of stock</p>
+                  <p className="mt-2 text-sm font-semibold text-destructive">{L('Out of stock', 'স্টকে নেই')}</p>
                 )}
               </div>
             </li>
@@ -127,25 +128,25 @@ export function GroupOfferPage({ slug, embedded = false }: { slug: string; embed
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
           <div className="text-sm">
             <p>
-              {totalQty} pieces · {taka(subtotal)}
+              {bn(totalQty)} {L('pieces', 'পিস')} · {taka(subtotal)}
               {discount > 0 && <span className="ml-2 font-semibold text-primary">−{taka(discount)} → {taka(subtotal - discount)}</span>}
             </p>
             <p className="text-xs text-muted-foreground">
               {subtotal === 0
-                ? `Minimum ${taka(offer.minOrderAmount)} to get the offer`
+                ? L(`Minimum ${taka(offer.minOrderAmount)} to get the offer`, `অফার পেতে সর্বনিম্ন ${taka(offer.minOrderAmount)}`)
                 : !eligible
-                  ? `Add ${taka(offer.minOrderAmount - subtotal)} more to get the offer`
+                  ? L(`Add ${taka(offer.minOrderAmount - subtotal)} more to get the offer`, `অফার পেতে আরও ${taka(offer.minOrderAmount - subtotal)} যোগ করুন`)
                   : next
-                    ? `Add ${taka(next.minOrderAmount - subtotal)} more for ${describe(next)}`
-                    : 'Offer applied'}
+                    ? L(`Add ${taka(next.minOrderAmount - subtotal)} more for ${describe(next)}`, `${describe(next)} পেতে আরও ${taka(next.minOrderAmount - subtotal)} যোগ করুন`)
+                    : L('Offer applied', 'অফার প্রয়োগ হয়েছে')}
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="rounded-full" disabled={!eligible} onClick={() => submit(false)}>
-              Add to cart
+              {L('Add to cart', 'কার্টে যোগ করুন')}
             </Button>
             <Button className="rounded-full" disabled={!eligible} onClick={() => submit(true)}>
-              Order now
+              {L('Order now', 'অর্ডার করুন')}
             </Button>
           </div>
         </div>

@@ -91,7 +91,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const data = text ? safeJsonParse(text) : null
 
   if (!res.ok) {
-    throw new ApiError(extractErrorMessage(data) ?? res.statusText ?? 'Request failed', res.status, data)
+    throw new ApiError(extractErrorMessage(data) ?? res.statusText ?? L('Request failed', 'অনুরোধ সম্পন্ন করা যায়নি'), res.status, data)
   }
 
   return data as T
@@ -125,3 +125,5 @@ export const api = {
   delete: <T>(path: string, options?: Omit<RequestOptions, 'method'>) =>
     request<T>(path, { ...options, method: 'DELETE' }),
 }
+
+import { L } from '@/lib/i18n'

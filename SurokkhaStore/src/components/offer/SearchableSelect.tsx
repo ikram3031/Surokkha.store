@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Check, ChevronDown, Search, X } from 'lucide-react'
+import { L } from '@/lib/i18n'
 
 export interface SelectOption {
   value: string
@@ -104,7 +105,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
             setOpen(false)
             onClear?.()
           }}
-          aria-label="Clear selection"
+          aria-label={L('Clear selection', 'নির্বাচন মুছুন')}
           className="absolute right-9 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#dc143c] transition hover:bg-[#dc143c]/10"
         >
           <X className="size-4" strokeWidth={2.5} />
@@ -120,7 +121,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
                 ref={searchRef}
                 value={query}
                 autoComplete="off"
-                placeholder="Search…"
+                placeholder={L('Search…', 'খুঁজুন…')}
                 onChange={(e) => {
                   setQuery(e.target.value)
                   setActive(0)
@@ -171,7 +172,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
                 )
               })
             ) : (
-              <li className="px-3.5 py-3 text-center text-sm text-gray-400">{emptyText ?? 'No results found'}</li>
+              <li className="px-3.5 py-3 text-center text-sm text-gray-400">{emptyText ?? L('No results found', 'কোনো ফলাফল পাওয়া যায়নি')}</li>
             )}
           </ul>
         </div>

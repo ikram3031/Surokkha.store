@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { subscribe } from '@/lib/api/contact'
 import { isValidEmail } from '@/lib/checkout'
+import { L } from '@/lib/i18n'
 
 /** Email signup card on the page background, just above the footer. */
 export function Newsletter() {
@@ -14,15 +15,15 @@ export function Newsletter() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (busy) return
-    if (!isValidEmail(email)) return toast.error('Please enter a valid email address')
+    if (!isValidEmail(email)) return toast.error(L('Please enter a valid email address', 'অনুগ্রহ করে একটি সঠিক ইমেইল লিখুন'))
     setBusy(true)
     try {
       await subscribe(email.trim().toLowerCase())
       setDone(true)
       setEmail('')
-      toast.success('You are subscribed. Welcome!')
+      toast.success(L('You are subscribed. Welcome!', 'সাবস্ক্রাইব সম্পন্ন হয়েছে। স্বাগতম!'))
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not subscribe. Please try again.')
+      toast.error(err instanceof Error ? err.message : L('Could not subscribe. Please try again.', 'সাবস্ক্রাইব করা যায়নি। আবার চেষ্টা করুন।'))
     } finally {
       setBusy(false)
     }
@@ -35,13 +36,13 @@ export function Newsletter() {
           <img src="/banners/blog-hero.webp" alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
           <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" aria-hidden="true" />
           <div className="relative">
-            <h2 className="font-display text-3xl font-bold leading-tight">Get health tips and offers by email</h2>
-            <p className="mt-2 text-sm text-muted-foreground">No spam, just the useful stuff.</p>
+            <h2 className="font-display text-3xl font-bold leading-tight">{L('Get health tips and offers by email', 'ইমেইলে স্বাস্থ্য টিপস ও অফার পান')}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{L('No spam, just the useful stuff.', 'কোনো স্প্যাম নয়, শুধু দরকারি তথ্য।')}</p>
           </div>
 
           <form onSubmit={submit} noValidate className="relative">
             <label htmlFor="newsletter-email" className="sr-only">
-              Email address
+              {L('Email address', 'ইমেইল ঠিকানা')}
             </label>
             <div className="flex overflow-hidden rounded-full bg-white">
               <Input
@@ -49,12 +50,12 @@ export function Newsletter() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Your email address"
+                placeholder={L('Your email address', 'আপনার ইমেইল ঠিকানা')}
                 autoComplete="email"
                 className="h-12 flex-1 border-0 !bg-transparent px-5 text-[#1f1a1c] shadow-none placeholder:text-[#8a7b7f]"
               />
               <Button type="submit" className="h-12 rounded-none px-6" disabled={busy || done}>
-                {done ? 'Subscribed' : busy ? '...' : 'Subscribe'}
+                {done ? L('Subscribed', 'সাবস্ক্রাইবড') : busy ? '...' : L('Subscribe', 'সাবস্ক্রাইব')}
               </Button>
             </div>
           </form>

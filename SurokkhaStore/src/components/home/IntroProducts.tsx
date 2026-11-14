@@ -7,6 +7,7 @@ import { useShowcaseProducts } from '@/hooks/useShowcaseProducts'
 import { navigate } from '@/lib/router'
 import { SectionHeading } from '@/components/SectionHeading'
 import { ProductCard } from '@/components/shop/ProductCard'
+import { L } from '@/lib/i18n'
 
 const AUTOPLAY_MS = 3500
 const GAP_PX = 24
@@ -91,13 +92,13 @@ export function IntroProducts() {
     <section id="featured" className="bg-background py-10 text-foreground md:py-14">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHeading title="Featured products" subtitle="Our best sellers, the packs customers order most." />
+          <SectionHeading title={L('Featured products', 'ফিচার্ড প্রোডাক্টস')} subtitle={L('Our best sellers, the packs customers order most.', 'আমাদের বেস্ট সেলার, গ্রাহকরা যে প্যাকগুলো সবচেয়ে বেশি অর্ডার করেন।')} />
           <Button
             size="lg"
             className="h-11 rounded-full border border-foreground/15 bg-transparent px-7 text-foreground hover:bg-foreground/10"
             onClick={() => navigate('/category/combo')}
           >
-            See all offers
+            {L('See all offers', 'সব অফার দেখুন')}
           </Button>
         </div>
 
@@ -127,7 +128,7 @@ export function IntroProducts() {
               <button
                 type="button"
                 onClick={prev}
-                aria-label="Previous products"
+                aria-label={L('Previous products', 'আগের প্রোডাক্ট')}
                 className="absolute left-0 top-[38%] z-10 flex h-10 w-10 -translate-x-1/3 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-md ring-1 ring-border transition hover:bg-primary hover:text-primary-foreground md:h-11 md:w-11 md:-translate-x-1/2"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -135,7 +136,7 @@ export function IntroProducts() {
               <button
                 type="button"
                 onClick={next}
-                aria-label="Next products"
+                aria-label={L('Next products', 'পরের প্রোডাক্ট')}
                 className="absolute right-0 top-[38%] z-10 flex h-10 w-10 translate-x-1/3 -translate-y-1/2 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-md ring-1 ring-border transition hover:bg-primary hover:text-primary-foreground md:h-11 md:w-11 md:translate-x-1/2"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -144,13 +145,13 @@ export function IntroProducts() {
           )}
 
           {positions > 1 && (
-            <div className="mt-6 flex justify-center gap-2" role="group" aria-label="Choose product">
+            <div className="mt-6 flex justify-center gap-2" role="group" aria-label={L('Choose product', 'প্রোডাক্ট বেছে নিন')}>
               {Array.from({ length: positions }, (_, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => goTo(i)}
-                  aria-label={`Show slide ${i + 1}`}
+                  aria-label={`${L('Show slide', 'স্লাইড দেখুন')} ${i + 1}`}
                   aria-current={i === current}
                   className={`h-2 rounded-full transition-all duration-300 ${i === current ? 'w-6 bg-brand-accent' : 'w-2 bg-foreground/30 hover:bg-foreground/50'}`}
                 />

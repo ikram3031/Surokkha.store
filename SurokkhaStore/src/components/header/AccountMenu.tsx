@@ -3,6 +3,7 @@ import { LayoutDashboard, LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SESSION_EVENT, fetchCurrentCustomer, getCustomerToken, logout, type Customer } from '@/lib/api/customer-auth'
 import { navigate } from '@/lib/router'
+import { L } from '@/lib/i18n'
 
 /**
  * Profile icon in the header. Logged out: goes to the log in / sign up page.
@@ -58,7 +59,7 @@ export function AccountMenu() {
         size="icon"
         variant="ghost"
         className="size-10 rounded-full text-white hover:bg-white/10 hover:text-white"
-        aria-label={customer ? 'My account menu' : 'Log in or sign up'}
+        aria-label={customer ? L('My account menu', 'আমার অ্যাকাউন্ট মেনু') : L('Log in or sign up', 'লগইন বা সাইন আপ')}
         aria-expanded={customer ? open : undefined}
         onClick={() => (customer ? setOpen((o) => !o) : navigate('/account'))}
       >
@@ -75,7 +76,7 @@ export function AccountMenu() {
           </div>
           <div className="pt-2">
             <button type="button" className={itemClass} onClick={() => go('/account')}>
-              <LayoutDashboard className="h-4 w-4" /> Profile dashboard
+              <LayoutDashboard className="h-4 w-4" /> {L('Profile dashboard', 'প্রোফাইল ড্যাশবোর্ড')}
             </button>
             <button
               type="button"
@@ -85,7 +86,7 @@ export function AccountMenu() {
                 go('/')
               }}
             >
-              <LogOut className="h-4 w-4" /> Log out
+              <LogOut className="h-4 w-4" /> {L('Log out', 'লগ আউট')}
             </button>
           </div>
         </div>

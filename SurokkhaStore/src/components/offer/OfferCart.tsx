@@ -3,6 +3,7 @@ import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { bn, taka } from '@/lib/bn'
+import { L } from '@/lib/i18n'
 
 export interface CartLine {
   key: string
@@ -43,7 +44,7 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={`Open cart${count ? `, ${count} items` : ''}`}
+        aria-label={`${L('Open cart', 'কার্ট খুলুন')}${count ? `, ${count} ${L('items', 'আইটেম')}` : ''}`}
         className="offer-font fixed bottom-32 left-3 z-40 flex size-12 items-center justify-center rounded-full offer-cart-fab shadow-lg ring-1 ring-rose-200 transition-transform hover:scale-105 active:scale-95 sm:left-5"
       >
         <ShoppingBag className="size-6" />
@@ -55,16 +56,16 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="offer-font flex w-full max-w-sm flex-col gap-0 bg-white p-0">
           <SheetHeader className="border-b border-gray-200 px-5 py-4">
-            <SheetTitle className="text-lg font-bold">Your order</SheetTitle>
+            <SheetTitle className="text-lg font-bold">{L('Your order', 'আপনার অর্ডার')}</SheetTitle>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-5">
             {lines.length === 0 ? (
               <div className="py-16 text-center text-gray-500">
                 <ShoppingBag className="mx-auto size-10 text-gray-300" />
-                <p className="mt-3">Your cart is empty.</p>
+                <p className="mt-3">{L('Your cart is empty.', 'আপনার কার্ট বর্তমানে খালি।')}</p>
                 <Button className="mt-4 rounded-full" onClick={() => setOpen(false)}>
-                  Browse products
+                  {L('Browse products', 'প্রোডাক্ট দেখুন')}
                 </Button>
               </div>
             ) : (
@@ -81,7 +82,7 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
                         <button
                           type="button"
                           onClick={l.onDec}
-                          aria-label={`Decrease ${l.name} quantity`}
+                          aria-label={`${l.name} ${L('decrease quantity', 'পরিমাণ কমান')}`}
                           className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
                         >
                           <Minus className="size-3.5" />
@@ -90,7 +91,7 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
                         <button
                           type="button"
                           onClick={l.onInc}
-                          aria-label={`Increase ${l.name} quantity`}
+                          aria-label={`${l.name} ${L('increase quantity', 'পরিমাণ বাড়ান')}`}
                           className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
                         >
                           <Plus className="size-3.5" />
@@ -102,10 +103,10 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
                       <button
                         type="button"
                         onClick={l.onRemove}
-                        aria-label={`Remove ${l.name}`}
+                        aria-label={`${l.name} ${L('remove', 'মুছুন')}`}
                         className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
                       >
-                        <Trash2 className="size-3.5" /> Remove
+                        <Trash2 className="size-3.5" /> {L('Remove', 'মুছুন')}
                       </button>
                     </div>
                   </li>
@@ -118,23 +119,23 @@ export function OfferCart({ lines, count, subtotal, discount, discountPercent, s
             <div className="border-t border-gray-200 bg-gray-50 px-5 py-4">
               <dl className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Subtotal</dt>
+                  <dt className="text-gray-500">{L('Subtotal', 'সাবটোটাল')}</dt>
                   <dd>{taka(subtotal)}</dd>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between">
-                    <dt className="text-gray-500">Combo discount{discountPercent ? ` (${bn(discountPercent)}%)` : ''}</dt>
+                    <dt className="text-gray-500">{L('Combo discount', 'কম্বো ছাড়')}{discountPercent ? ` (${bn(discountPercent)}%)` : ''}</dt>
                     <dd className="text-emerald-600">−{taka(discount)}</dd>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Delivery</dt>
+                  <dt className="text-gray-500">{L('Delivery', 'ডেলিভারি')}</dt>
                   <dd className={freeDelivery ? 'font-semibold text-emerald-600' : addressKnown ? '' : 'text-gray-500'}>
-                    {freeDelivery ? 'Free' : addressKnown ? taka(shipping) : 'Added after you choose your district'}
+                    {freeDelivery ? L('Free', 'ফ্রি') : addressKnown ? taka(shipping) : L('Added after you choose your district', 'জেলা নির্বাচনের পর যোগ হবে')}
                   </dd>
                 </div>
                 <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-semibold">
-                  <dt>{addressKnown ? 'Grand total' : 'Total so far'}</dt>
+                  <dt>{addressKnown ? L('Grand total', 'সর্বমোট প্রদেয়') : L('Total so far', 'এখন পর্যন্ত মোট')}</dt>
                   <dd className="text-[#b80f31]">{taka(total)}</dd>
                 </div>
               </dl>

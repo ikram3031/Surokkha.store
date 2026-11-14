@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { L } from '@/lib/i18n'
 
 /**
  * Searchable district / thana dropdown — ported from SurokkhaShop.
@@ -15,8 +16,8 @@ export default function LocationSelect({
   placeholder,
   disabled = false,
   error = '',
-  clearLabel = 'Clear',
-  emptyText = 'No matching results',
+  clearLabel = L('Clear', 'মুছুন'),
+  emptyText = L('No matching results', 'কোনো মিল পাওয়া যায়নি'),
 }: {
   id?: string
   value: string

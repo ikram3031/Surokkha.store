@@ -36,86 +36,87 @@ import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type Chec
 import { normalizePhone, toEnDigits } from '@/lib/checkout'
 import { getFbIdentifiers, pixelTrack as track } from '@/lib/pixel'
 import { bn, taka } from '@/lib/bn'
+import { L } from '@/lib/i18n'
 
 // value: Pathao spelling the thana API and orders use; label: Bangla name from the store DB
 const DISTRICTS: SelectOption[] = [
-  { value: "Cox's Bazar", label: "Cox's Bazar · কক্সবাজার" },
-  { value: 'Kishoreganj', label: 'Kishoreganj · কিশোরগঞ্জ' },
-  { value: 'Kurigram', label: 'Kurigram · কুড়িগ্রাম' },
-  { value: 'Cumilla', label: 'Cumilla · কুমিল্লা' },
-  { value: 'Kushtia', label: 'Kushtia · কুষ্টিয়া' },
-  { value: 'Khagrachari', label: 'Khagrachari · খাগড়াছড়ি' },
-  { value: 'Khulna', label: 'Khulna · খুলনা' },
-  { value: 'Gaibandha', label: 'Gaibandha · গাইবান্ধা' },
-  { value: 'Gazipur', label: 'Gazipur · গাজীপুর' },
-  { value: 'Gopalgonj', label: 'Gopalgonj · গোপালগঞ্জ' },
-  { value: 'Chittagong', label: 'Chittagong · চট্টগ্রাম' },
-  { value: 'Chandpur', label: 'Chandpur · চাঁদপুর' },
-  { value: 'Chapainawabganj', label: 'Chapainawabganj · চাঁপাইনবাবগঞ্জ' },
-  { value: 'Chuadanga', label: 'Chuadanga · চুয়াডাঙ্গা' },
-  { value: 'Joypurhat', label: 'Joypurhat · জয়পুরহাট' },
-  { value: 'Jamalpur', label: 'Jamalpur · জামালপুর' },
-  { value: 'Jhalokathi', label: 'Jhalokathi · ঝালকাঠি' },
-  { value: 'Jhenidah', label: 'Jhenidah · ঝিনাইদহ' },
-  { value: 'Tangail', label: 'Tangail · টাঙ্গাইল' },
-  { value: 'Thakurgaon', label: 'Thakurgaon · ঠাকুরগাঁও' },
-  { value: 'Dhaka', label: 'Dhaka · ঢাকা' },
-  { value: 'Dinajpur', label: 'Dinajpur · দিনাজপুর' },
-  { value: 'Naogaon', label: 'Naogaon · নওগাঁ' },
-  { value: 'Narail', label: 'Narail · নড়াইল' },
-  { value: 'Narshingdi', label: 'Narshingdi · নরসিংদী' },
-  { value: 'Natore', label: 'Natore · নাটোর' },
-  { value: 'Narayanganj', label: 'Narayanganj · নারায়ণগঞ্জ' },
-  { value: 'Nilphamari', label: 'Nilphamari · নীলফামারী' },
-  { value: 'Netrakona', label: 'Netrakona · নেত্রকোণা' },
-  { value: 'Noakhali', label: 'Noakhali · নোয়াখালী' },
-  { value: 'Panchagarh', label: 'Panchagarh · পঞ্চগড়' },
-  { value: 'Patuakhali', label: 'Patuakhali · পটুয়াখালী' },
-  { value: 'Pabna', label: 'Pabna · পাবনা' },
-  { value: 'Pirojpur', label: 'Pirojpur · পিরোজপুর' },
-  { value: 'Faridpur', label: 'Faridpur · ফরিদপুর' },
-  { value: 'Feni', label: 'Feni · ফেনী' },
-  { value: 'Bogra', label: 'Bogra · বগুড়া' },
-  { value: 'Barguna', label: 'Barguna · বরগুনা' },
-  { value: 'Barisal', label: 'Barisal · বরিশাল' },
-  { value: 'Bagerhat', label: 'Bagerhat · বাগেরহাট' },
-  { value: 'Bandarban', label: 'Bandarban · বান্দরবান' },
-  { value: 'B. Baria', label: 'Brahmanbaria · ব্রাহ্মণবাড়িয়া' },
-  { value: 'Bhola', label: 'Bhola · ভোলা' },
-  { value: 'Mymensingh', label: 'Mymensingh · ময়মনসিংহ' },
-  { value: 'Magura', label: 'Magura · মাগুরা' },
-  { value: 'Madaripur', label: 'Madaripur · মাদারীপুর' },
-  { value: 'Manikganj', label: 'Manikganj · মানিকগঞ্জ' },
-  { value: 'Munsiganj', label: 'Munsiganj · মুন্সীগঞ্জ' },
-  { value: 'Meherpur', label: 'Meherpur · মেহেরপুর' },
-  { value: 'Moulvibazar', label: 'Moulvibazar · মৌলভীবাজার' },
-  { value: 'Jashore', label: 'Jashore · যশোর' },
-  { value: 'Rangpur', label: 'Rangpur · রংপুর' },
-  { value: 'Rangamati', label: 'Rangamati · রাঙ্গামাটি' },
-  { value: 'Rajbari', label: 'Rajbari · রাজবাড়ী' },
-  { value: 'Rajshahi', label: 'Rajshahi · রাজশাহী' },
-  { value: 'Lakshmipur', label: 'Lakshmipur · লক্ষ্মীপুর' },
-  { value: 'Lalmonirhat', label: 'Lalmonirhat · লালমনিরহাট' },
-  { value: 'Shariatpur', label: 'Shariatpur · শরীয়তপুর' },
-  { value: 'Sherpur', label: 'Sherpur · শেরপুর' },
-  { value: 'Satkhira', label: 'Satkhira · সাতক্ষীরা' },
-  { value: 'Sirajganj', label: 'Sirajganj · সিরাজগঞ্জ' },
-  { value: 'Sylhet', label: 'Sylhet · সিলেট' },
-  { value: 'Sunamganj', label: 'Sunamganj · সুনামগঞ্জ' },
-  { value: 'Habiganj', label: 'Habiganj · হবিগঞ্জ' },
+  { value: "Cox's Bazar", label: L("Cox's Bazar", 'কক্সবাজার') },
+  { value: 'Kishoreganj', label: L('Kishoreganj', 'কিশোরগঞ্জ') },
+  { value: 'Kurigram', label: L('Kurigram', 'কুড়িগ্রাম') },
+  { value: 'Cumilla', label: L('Cumilla', 'কুমিল্লা') },
+  { value: 'Kushtia', label: L('Kushtia', 'কুষ্টিয়া') },
+  { value: 'Khagrachari', label: L('Khagrachari', 'খাগড়াছড়ি') },
+  { value: 'Khulna', label: L('Khulna', 'খুলনা') },
+  { value: 'Gaibandha', label: L('Gaibandha', 'গাইবান্ধা') },
+  { value: 'Gazipur', label: L('Gazipur', 'গাজীপুর') },
+  { value: 'Gopalgonj', label: L('Gopalgonj', 'গোপালগঞ্জ') },
+  { value: 'Chittagong', label: L('Chittagong', 'চট্টগ্রাম') },
+  { value: 'Chandpur', label: L('Chandpur', 'চাঁদপুর') },
+  { value: 'Chapainawabganj', label: L('Chapainawabganj', 'চাঁপাইনবাবগঞ্জ') },
+  { value: 'Chuadanga', label: L('Chuadanga', 'চুয়াডাঙ্গা') },
+  { value: 'Joypurhat', label: L('Joypurhat', 'জয়পুরহাট') },
+  { value: 'Jamalpur', label: L('Jamalpur', 'জামালপুর') },
+  { value: 'Jhalokathi', label: L('Jhalokathi', 'ঝালকাঠি') },
+  { value: 'Jhenidah', label: L('Jhenidah', 'ঝিনাইদহ') },
+  { value: 'Tangail', label: L('Tangail', 'টাঙ্গাইল') },
+  { value: 'Thakurgaon', label: L('Thakurgaon', 'ঠাকুরগাঁও') },
+  { value: 'Dhaka', label: L('Dhaka', 'ঢাকা') },
+  { value: 'Dinajpur', label: L('Dinajpur', 'দিনাজপুর') },
+  { value: 'Naogaon', label: L('Naogaon', 'নওগাঁ') },
+  { value: 'Narail', label: L('Narail', 'নড়াইল') },
+  { value: 'Narshingdi', label: L('Narshingdi', 'নরসিংদী') },
+  { value: 'Natore', label: L('Natore', 'নাটোর') },
+  { value: 'Narayanganj', label: L('Narayanganj', 'নারায়ণগঞ্জ') },
+  { value: 'Nilphamari', label: L('Nilphamari', 'নীলফামারী') },
+  { value: 'Netrakona', label: L('Netrakona', 'নেত্রকোণা') },
+  { value: 'Noakhali', label: L('Noakhali', 'নোয়াখালী') },
+  { value: 'Panchagarh', label: L('Panchagarh', 'পঞ্চগড়') },
+  { value: 'Patuakhali', label: L('Patuakhali', 'পটুয়াখালী') },
+  { value: 'Pabna', label: L('Pabna', 'পাবনা') },
+  { value: 'Pirojpur', label: L('Pirojpur', 'পিরোজপুর') },
+  { value: 'Faridpur', label: L('Faridpur', 'ফরিদপুর') },
+  { value: 'Feni', label: L('Feni', 'ফেনী') },
+  { value: 'Bogra', label: L('Bogra', 'বগুড়া') },
+  { value: 'Barguna', label: L('Barguna', 'বরগুনা') },
+  { value: 'Barisal', label: L('Barisal', 'বরিশাল') },
+  { value: 'Bagerhat', label: L('Bagerhat', 'বাগেরহাট') },
+  { value: 'Bandarban', label: L('Bandarban', 'বান্দরবান') },
+  { value: 'B. Baria', label: L('Brahmanbaria', 'ব্রাহ্মণবাড়িয়া') },
+  { value: 'Bhola', label: L('Bhola', 'ভোলা') },
+  { value: 'Mymensingh', label: L('Mymensingh', 'ময়মনসিংহ') },
+  { value: 'Magura', label: L('Magura', 'মাগুরা') },
+  { value: 'Madaripur', label: L('Madaripur', 'মাদারীপুর') },
+  { value: 'Manikganj', label: L('Manikganj', 'মানিকগঞ্জ') },
+  { value: 'Munsiganj', label: L('Munsiganj', 'মুন্সীগঞ্জ') },
+  { value: 'Meherpur', label: L('Meherpur', 'মেহেরপুর') },
+  { value: 'Moulvibazar', label: L('Moulvibazar', 'মৌলভীবাজার') },
+  { value: 'Jashore', label: L('Jashore', 'যশোর') },
+  { value: 'Rangpur', label: L('Rangpur', 'রংপুর') },
+  { value: 'Rangamati', label: L('Rangamati', 'রাঙ্গামাটি') },
+  { value: 'Rajbari', label: L('Rajbari', 'রাজবাড়ী') },
+  { value: 'Rajshahi', label: L('Rajshahi', 'রাজশাহী') },
+  { value: 'Lakshmipur', label: L('Lakshmipur', 'লক্ষ্মীপুর') },
+  { value: 'Lalmonirhat', label: L('Lalmonirhat', 'লালমনিরহাট') },
+  { value: 'Shariatpur', label: L('Shariatpur', 'শরীয়তপুর') },
+  { value: 'Sherpur', label: L('Sherpur', 'শেরপুর') },
+  { value: 'Satkhira', label: L('Satkhira', 'সাতক্ষীরা') },
+  { value: 'Sirajganj', label: L('Sirajganj', 'সিরাজগঞ্জ') },
+  { value: 'Sylhet', label: L('Sylhet', 'সিলেট') },
+  { value: 'Sunamganj', label: L('Sunamganj', 'সুনামগঞ্জ') },
+  { value: 'Habiganj', label: L('Habiganj', 'হবিগঞ্জ') },
 ]
 
 type FieldKey = 'name' | 'phone' | 'email' | 'district' | 'thana' | 'address'
 type CheckoutForm = Record<FieldKey | 'note', string>
 
 const RULES: Record<FieldKey, (v: string) => string | true> = {
-  name: (v) => v.trim().length >= 3 || 'Name must be at least 3 characters',
-  phone: (v) => /^01[3-9]\d{8}$/.test(v) || 'Enter a valid mobile number (01XXXXXXXXX, 11 digits)',
-  email: (v) => !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Enter a valid email, or leave it empty',
-  district: (v) => !!v || 'Select a district',
+  name: (v) => v.trim().length >= 3 || L('Name must be at least 3 characters', 'নাম কমপক্ষে ৩ অক্ষরের হতে হবে'),
+  phone: (v) => /^01[3-9]\d{8}$/.test(v) || L('Enter a valid mobile number (01XXXXXXXXX, 11 digits)', '১১ ডিজিটের সঠিক মোবাইল নম্বর দিন (01XXXXXXXXX)'),
+  email: (v) => !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || L('Enter a valid email, or leave it empty', 'সঠিক ইমেইল দিন, অথবা খালি রাখুন'),
+  district: (v) => !!v || L('Select a district', 'জেলা নির্বাচন করুন'),
   // Thana is optional, same as the email
   thana: () => true,
-  address: (v) => v.trim().length >= 5 || 'Enter your full address (house, road, area)',
+  address: (v) => v.trim().length >= 5 || L('Enter your full address (house, road, area)', 'পূর্ণ ঠিকানা লিখুন (বাড়ি, রোড, এলাকা)'),
 }
 
 const inputCls = (bad: boolean) =>
@@ -199,7 +200,7 @@ export function OfferHome() {
       .get<{ data?: { name: string; bnName?: string }[] }>(`/locations/districts/${encodeURIComponent(form.district)}/thanas`, undefined, {
         signal: controller.signal,
       })
-      .then((res) => setThanas((res?.data ?? []).map((t) => ({ value: t.name, label: t.bnName && t.bnName !== t.name ? `${t.name} · ${t.bnName}` : t.name })).sort((x, y) => x.label.localeCompare(y.label))))
+      .then((res) => setThanas((res?.data ?? []).map((t) => ({ value: t.name, label: t.bnName && t.bnName !== t.name ? L(`${t.name} · ${t.bnName}`, t.bnName) : t.name })).sort((x, y) => x.label.localeCompare(y.label))))
       .catch(() => {
         if (!controller.signal.aborted) setThanas([])
       })
@@ -263,12 +264,12 @@ export function OfferHome() {
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
       const v = p.variants?.find((x) => x.id === variantId)
-      if (!(v ? v.inStock : p.inStock)) return fail('Sorry, this is out of stock right now')
+      if (!(v ? v.inStock : p.inStock)) return fail(L('Sorry, this is out of stock right now', 'দুঃখিত, এটি এখন স্টকে নেই'))
       const price = variantPrice(p, v)
-      if (cur >= MAX_QTY_PER_LINE) return fail(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
-      if (count >= MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
+      if (cur >= MAX_QTY_PER_LINE) return fail(L(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`, `একটি প্রোডাক্ট সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি যোগ করা যাবে`))
+      if (count >= MAX_QTY_PER_ORDER) return fail(L(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি আইটেম অর্ডার করা যাবে`))
       if (subtotal + price > MAX_ORDER_AMOUNT)
-        return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
+        return fail(L(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`, `${taka(MAX_ORDER_AMOUNT)}-এর বেশি মূল্যের অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`))
     }
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
@@ -287,7 +288,7 @@ export function OfferHome() {
 
 
   const goCheckout = () => {
-    if (!count) return toast.error('Please select at least one product first')
+    if (!count) return toast.error(L('Please select at least one product first', 'অনুগ্রহ করে আগে অন্তত একটি প্রোডাক্ট নির্বাচন করুন'))
     // Same event id as the main checkout, so the server's CAPI InitiateCheckout merges with this one
     track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count }, `ic_${getCheckoutSessionId()}`)
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -305,7 +306,7 @@ export function OfferHome() {
   const addFromPhoto = (p: OfferProduct) => {
     if (p.variants?.length) return setVariantFor(p)
     if (!p.inStock) return setQuickView(p)
-    if (change(p.id, undefined, 1)) toast.success(`${p.name} added to your order`)
+    if (change(p.id, undefined, 1)) toast.success(L(`${p.name} added to your order`, `${p.name} অর্ডারে যোগ করা হয়েছে`))
   }
 
   const trialMin = Math.max(1, trial?.minPerProduct || 1)
@@ -317,12 +318,12 @@ export function OfferHome() {
     const cur = trialQty[id] ?? 0
     let n = cur
     if (delta === 1) {
-      if (!p.inStock) return fail('Sorry, this is out of stock right now')
-      if (cur >= MAX_QTY_PER_LINE) return fail(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
+      if (!p.inStock) return fail(L('Sorry, this is out of stock right now', 'দুঃখিত, এটি এখন স্টকে নেই'))
+      if (cur >= MAX_QTY_PER_LINE) return fail(L(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`, `একটি প্রোডাক্ট সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি যোগ করা যাবে`))
       n = cur === 0 ? trialMin : cur + 1
-      if (count - cur + n > MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
+      if (count - cur + n > MAX_QTY_PER_ORDER) return fail(L(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি আইটেম অর্ডার করা যাবে`))
       if (subtotal + (n - cur) * p.unitPrice > MAX_ORDER_AMOUNT)
-        return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
+        return fail(L(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`, `${taka(MAX_ORDER_AMOUNT)}-এর বেশি মূল্যের অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`))
       track('AddToCart', { content_ids: [p.did], content_name: p.name, content_type: 'product', value: (n - cur) * p.unitPrice, currency: 'BDT' })
     } else n = cur <= trialMin ? 0 : cur - 1
     setTrialQty((q) => ({ ...q, [id]: n }))
@@ -338,8 +339,8 @@ export function OfferHome() {
     if (!p) return
     const cur = trialPick[id] ?? 0
     if (delta === 1) {
-      if (!p.inStock) return void fail('Sorry, this is out of stock right now')
-      if (cur + (trialQty[id] ?? 0) >= MAX_QTY_PER_LINE) return void fail(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`)
+      if (!p.inStock) return void fail(L('Sorry, this is out of stock right now', 'দুঃখিত, এটি এখন স্টকে নেই'))
+      if (cur + (trialQty[id] ?? 0) >= MAX_QTY_PER_LINE) return void fail(L(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`, `একটি প্রোডাক্ট সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি যোগ করা যাবে`))
     }
     setTrialPick((q) => {
       const c = q[id] ?? 0
@@ -356,9 +357,9 @@ export function OfferHome() {
   const addTrialPackToCart = () => {
     if (!trial) return false
     if (pickedPieces < TRIAL_MIN_PIECES)
-      return fail(`Pick at least ${bn(TRIAL_MIN_PIECES)} pieces for the Trial Pack (you have ${bn(pickedPieces)})`)
-    if (count + pickedPieces > MAX_QTY_PER_ORDER) return fail(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`)
-    if (subtotal + pickedAmount > MAX_ORDER_AMOUNT) return fail(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`)
+      return fail(L(`Pick at least ${bn(TRIAL_MIN_PIECES)} pieces for the Trial Pack (you have ${bn(pickedPieces)})`, `ট্রায়াল প্যাকের জন্য কমপক্ষে ${bn(TRIAL_MIN_PIECES)} পিস বাছাই করুন (আপনি নিয়েছেন ${bn(pickedPieces)})`))
+    if (count + pickedPieces > MAX_QTY_PER_ORDER) return fail(L(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি আইটেম অর্ডার করা যাবে`))
+    if (subtotal + pickedAmount > MAX_ORDER_AMOUNT) return fail(L(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`, `${taka(MAX_ORDER_AMOUNT)}-এর বেশি মূল্যের অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`))
     setTrialQty((q) => {
       const next = { ...q }
       for (const [id, n] of Object.entries(trialPick)) next[id] = (next[id] ?? 0) + n
@@ -366,7 +367,7 @@ export function OfferHome() {
     })
     track('AddToCart', { content_ids: [trial.did], content_name: trial.name, content_type: 'product', value: pickedAmount, currency: 'BDT' })
     setTrialPick({})
-    toast.success(`${trial.name} added to your order`)
+    toast.success(L(`${trial.name} added to your order`, `${trial.name} অর্ডারে যোগ করা হয়েছে`))
     return true
   }
 
@@ -445,15 +446,15 @@ export function OfferHome() {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!count) return toast.error('Please select at least one product first')
+    if (!count) return toast.error(L('Please select at least one product first', 'অনুগ্রহ করে আগে অন্তত একটি প্রোডাক্ট নির্বাচন করুন'))
     if (trial && trialCount > 0 && trialCount < TRIAL_MIN_PIECES)
-      return toast.error(`Take at least ${bn(TRIAL_MIN_PIECES)} pieces of ${trial.name}, or remove them`)
+      return toast.error(L(`Take at least ${bn(TRIAL_MIN_PIECES)} pieces of ${trial.name}, or remove them`, `${trial.name}-এর কমপক্ষে ${bn(TRIAL_MIN_PIECES)} পিস নিন, অথবা মুছে ফেলুন`))
     const ok = (Object.keys(RULES) as FieldKey[]).map((k) => validate(k)).every(Boolean)
     if (!ok) {
       setTimeout(() => document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
       return
     }
-    if (CHECKOUT_CAPTCHA && !captcha) return toast.error('Please complete the "I am not a robot" check before ordering')
+    if (CHECKOUT_CAPTCHA && !captcha) return toast.error(L('Please complete the "I am not a robot" check before ordering', 'অর্ডারের আগে "আমি রোবট নই" যাচাই সম্পন্ন করুন'))
 
     const phone = normalizePhone(form.phone)
     const info = {
@@ -476,7 +477,7 @@ export function OfferHome() {
       // Same spam / fake-order check as the main checkout: blocked by phone or email, never by IP
       const flagged = await checkPhone(phone.slice(-10)).catch(() => null)
       if (flagged?.isFake) {
-        const msg = flagged.message || 'Please use a different valid phone number.'
+        const msg = flagged.message || L('Please use a different valid phone number.', 'অনুগ্রহ করে অন্য একটি সঠিক মোবাইল নম্বর ব্যবহার করুন।')
         setErrors({ phone: msg })
         throw new Error(msg)
       }
@@ -484,7 +485,7 @@ export function OfferHome() {
       if (email) {
         const flaggedEmail = await checkPhone('', email).catch(() => null)
         if (flaggedEmail?.isFake) {
-          const msg = flaggedEmail.message || 'Please use a different email.'
+          const msg = flaggedEmail.message || L('Please use a different email.', 'অনুগ্রহ করে অন্য একটি ইমেইল ব্যবহার করুন।')
           setErrors({ email: msg })
           throw new Error(msg)
         }
@@ -564,8 +565,8 @@ export function OfferHome() {
       const body = err instanceof ApiError ? (err.body as { code?: string } | null) : null
       toast.error(
         body?.code === 'CONTACT_REQUIRED'
-          ? 'Sorry, this order cannot be placed online. Please contact us.'
-          : err instanceof Error ? err.message : 'Could not place the order, please try again',
+          ? L('Sorry, this order cannot be placed online. Please contact us.', 'দুঃখিত, এই অর্ডারটি অনলাইনে করা যাচ্ছে না। অনুগ্রহ করে আমাদের সাথে যোগাযোগ করুন।')
+          : err instanceof Error ? err.message : L('Could not place the order, please try again', 'অর্ডার সম্পন্ন করা যায়নি, আবার চেষ্টা করুন'),
       )
       // A Turnstile token is single-use, so ask for a fresh one before the next try
       captchaRef.current?.reset()
@@ -580,10 +581,10 @@ export function OfferHome() {
       <main className="offer-font flex min-h-[60dvh] items-center justify-center bg-white px-4 py-12">
         <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-lg">
           <CheckCircle2 className="mx-auto size-14 text-primary" />
-          <h1 className="mt-4 text-2xl font-bold">Order placed!</h1>
-          {placed && <p className="mt-2 text-gray-600">Order number: <b className="text-foreground">{placed}</b></p>}
-          <p className="mt-2 text-sm text-gray-600">Our team will call you shortly to confirm your order.</p>
-          <Button className="mt-6 rounded-full" onClick={() => setPlaced(null)}>Order again</Button>
+          <h1 className="mt-4 text-2xl font-bold">{L('Order placed!', 'অর্ডার সম্পন্ন হয়েছে!')}</h1>
+          {placed && <p className="mt-2 text-gray-600">{L('Order number:', 'অর্ডার নম্বর:')} <b className="text-foreground">{placed}</b></p>}
+          <p className="mt-2 text-sm text-gray-600">{L('Our team will call you shortly to confirm your order.', 'অর্ডার কনফার্ম করতে আমাদের টিম শীঘ্রই আপনাকে কল করবে।')}</p>
+          <Button className="mt-6 rounded-full" onClick={() => setPlaced(null)}>{L('Order again', 'আবার অর্ডার করুন')}</Button>
         </div>
       </main>
     )
@@ -595,12 +596,12 @@ export function OfferHome() {
         <section className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
           <div className="mx-auto mb-6 max-w-2xl text-center sm:mb-8">
             <h1 className="text-2xl font-bold leading-snug sm:text-3xl">
-              <span className="text-black">Build your own </span>
-              <span className="offer-combo">combo</span>
-              <span className="text-black"> your way</span>
+              <span className="text-black">{L('Build your own ', 'নিজের পছন্দে ')}</span>
+              <span className="offer-combo">{L('combo', 'কম্বো')}</span>
+              <span className="text-black">{L(' your way', ' বানান')}</span>
             </h1>
             <p className="mt-2 text-sm text-gray-600 sm:text-base">
-              Discounts start at {taka(DISCOUNT_TIERS[0].min)} — the more you buy, the more you save, up to{' '}
+              {L(`Discounts start at ${taka(DISCOUNT_TIERS[0].min)} — the more you buy, the more you save, up to`, `${taka(DISCOUNT_TIERS[0].min)} থেকে ছাড় শুরু — যত বেশি কিনবেন, তত বেশি সাশ্রয়, সর্বোচ্চ`)}{' '}
               <b className="text-emerald-600">{bn(topTier.off)}%</b>!
             </p>
             <div className="mx-auto mt-4 grid max-w-md grid-cols-3 gap-2 sm:gap-3">
@@ -609,8 +610,8 @@ export function OfferHome() {
                 return (
                   <div key={t.min}
                     className={`rounded-xl border-2 px-1 py-2 transition ${on ? 'border-emerald-500 bg-emerald-50' : 'border-dashed border-gray-200'}`}>
-                    <p className={`text-base font-bold sm:text-lg ${on ? 'text-emerald-600' : 'text-rose-600'}`}>{bn(t.off)}% off</p>
-                    <p className="text-[11px] text-gray-600 sm:text-xs">on orders of {taka(t.min)}+</p>
+                    <p className={`text-base font-bold sm:text-lg ${on ? 'text-emerald-600' : 'text-rose-600'}`}>{bn(t.off)}% {L('off', 'ছাড়')}</p>
+                    <p className="text-[11px] text-gray-600 sm:text-xs">{L(`on orders of ${taka(t.min)}+`, `${taka(t.min)}+ অর্ডারে`)}</p>
                   </div>
                 )
               })}
@@ -656,9 +657,9 @@ export function OfferHome() {
         <section className="bg-rose-50">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 py-8 sm:grid-cols-3">
             {[
-              { icon: Lock, t: 'Discreet packaging', d: 'Nobody can tell what is inside' },
-              { icon: Truck, t: 'Nationwide delivery', d: `${taka(DELIVERY.dhakaCity)} in Dhaka, ${taka(DELIVERY.outsideDhaka)} elsewhere` },
-              { icon: Wallet, t: 'Cash on delivery', d: 'Pay when you receive the product' },
+              { icon: Lock, t: L('Discreet packaging', 'গোপনীয় প্যাকেজিং'), d: L('Nobody can tell what is inside', 'ভেতরে কী আছে কেউ বুঝতে পারবে না') },
+              { icon: Truck, t: L('Nationwide delivery', 'সারা দেশে ডেলিভারি'), d: L(`${taka(DELIVERY.dhakaCity)} in Dhaka, ${taka(DELIVERY.outsideDhaka)} elsewhere`, `ঢাকায় ${taka(DELIVERY.dhakaCity)}, অন্যত্র ${taka(DELIVERY.outsideDhaka)}`) },
+              { icon: Wallet, t: L('Cash on delivery', 'ক্যাশ অন ডেলিভারি'), d: L('Pay when you receive the product', 'পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন') },
             ].map(({ icon: Icon, t, d }) => (
               <div key={t} className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4">
                 <Icon className="size-6 shrink-0 text-primary" />
@@ -704,20 +705,20 @@ export function OfferHome() {
         <section ref={checkoutRef} id="checkout" className="scroll-mt-4 border-t border-gray-200 bg-gray-50">
           <div className="mx-auto max-w-7xl px-3 py-6 sm:px-4 sm:py-8 lg:py-12">
             <div className="mb-4 sm:mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Checkout</h2>
-              <p className="mt-1 text-sm text-gray-500">Enter your delivery details, then confirm your order.</p>
+              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">{L('Checkout', 'চেকআউট')}</h2>
+              <p className="mt-1 text-sm text-gray-500">{L('Enter your delivery details, then confirm your order.', 'ডেলিভারির তথ্য দিন, তারপর অর্ডার কনফার্ম করুন।')}</p>
             </div>
 
             <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
               <div className="min-w-0 space-y-4 sm:space-y-6">
-                <CheckoutCard step={1} title="Contact details">
+                <CheckoutCard step={1} title={L('Contact details', 'যোগাযোগের তথ্য')}>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-                    <Field label="Full name" required error={errors.name} className="sm:col-span-2">
-                      <input value={form.name} autoComplete="name" placeholder="e.g. Abdur Rahman"
+                    <Field label={L('Full name', 'পূর্ণ নাম')} required error={errors.name} className="sm:col-span-2">
+                      <input value={form.name} autoComplete="name" placeholder={L('e.g. Abdur Rahman', 'যেমন: আব্দুর রহমান')}
                         onChange={(e) => setField('name', e.target.value)} onBlur={() => validate('name')}
                         className={inputCls(!!errors.name)} />
                     </Field>
-                    <Field label="Mobile number" required error={errors.phone}>
+                    <Field label={L('Mobile number', 'মোবাইল নম্বর')} required error={errors.phone}>
                       <div className={`flex rounded-lg border bg-white transition focus-within:border-[#dc143c] ${
                         errors.phone ? 'border-[#dc143c]' : 'border-gray-300'}`}>
                         <span className="flex items-center border-r border-gray-300 px-3 text-sm text-gray-500">+88</span>
@@ -727,7 +728,7 @@ export function OfferHome() {
                           className="w-full min-w-0 bg-transparent px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400" />
                       </div>
                     </Field>
-                    <Field label="Email" optional error={errors.email}>
+                    <Field label={L('Email', 'ইমেইল')} optional error={errors.email}>
                       <input type="email" autoComplete="email" placeholder="you@example.com" value={form.email}
                         onChange={(e) => setField('email', e.target.value)} onBlur={() => validate('email')}
                         className={inputCls(!!errors.email)} />
@@ -735,10 +736,10 @@ export function OfferHome() {
                   </div>
                 </CheckoutCard>
 
-                <CheckoutCard step={2} title="Delivery address">
+                <CheckoutCard step={2} title={L('Delivery address', 'ডেলিভারি ঠিকানা')}>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 [&>*]:min-w-0">
-                    <Field label="District" required error={errors.district}>
-                      <SearchableSelect value={form.district} options={DISTRICTS} placeholder="Select district"
+                    <Field label={L('District', 'জেলা')} required error={errors.district}>
+                      <SearchableSelect value={form.district} options={DISTRICTS} placeholder={L('Select district', 'জেলা নির্বাচন করুন')}
                         invalid={!!errors.district}
                         onChange={(v) => {
                           setForm((f) => ({ ...f, district: v, thana: '' }))
@@ -746,38 +747,38 @@ export function OfferHome() {
                         }}
                         onClear={() => setForm((f) => ({ ...f, district: '', thana: '' }))} />
                     </Field>
-                    <Field label="Thana / Upazila" optional error={errors.thana}>
+                    <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} optional error={errors.thana}>
                       <SearchableSelect value={form.thana} options={thanas} invalid={!!errors.thana}
                         disabled={!form.district || thanasLoading}
-                        placeholder={!form.district ? 'Select a district first' : thanasLoading ? 'Loading…' : 'Select a thana'}
-                        emptyText={thanas.length ? undefined : 'No thanas found for this district'}
+                        placeholder={!form.district ? L('Select a district first', 'আগে জেলা নির্বাচন করুন') : thanasLoading ? L('Loading…', 'লোড হচ্ছে…') : L('Select a thana', 'থানা নির্বাচন করুন')}
+                        emptyText={thanas.length ? undefined : L('No thanas found for this district', 'এই জেলার কোনো থানা পাওয়া যায়নি')}
                         onChange={(v) => setField('thana', v)}
                         onClear={() => setField('thana', '')} />
                     </Field>
-                    <Field label="Full address" required error={errors.address} className="sm:col-span-2">
-                      <textarea rows={3} autoComplete="street-address" placeholder="House no., road no., area, landmark…"
+                    <Field label={L('Full address', 'বিস্তারিত ঠিকানা')} required error={errors.address} className="sm:col-span-2">
+                      <textarea rows={3} autoComplete="street-address" placeholder={L('House no., road no., area, landmark…', 'বাড়ি নং, রোড নং, এলাকা, পরিচিত স্থান…')}
                         value={form.address} onChange={(e) => setField('address', e.target.value)} onBlur={() => validate('address')}
                         className={`${inputCls(!!errors.address)} resize-none`} />
                     </Field>
-                    <Field label="Special instructions" optional className="sm:col-span-2">
-                      <input value={form.note} placeholder="e.g. Deliver in the afternoon" onChange={(e) => setField('note', e.target.value)}
+                    <Field label={L('Special instructions', 'বিশেষ নির্দেশনা')} optional className="sm:col-span-2">
+                      <input value={form.note} placeholder={L('e.g. Deliver in the afternoon', 'যেমন: বিকেলে ডেলিভারি দিন')} onChange={(e) => setField('note', e.target.value)}
                         className={inputCls(false)} />
                     </Field>
                   </div>
                 </CheckoutCard>
 
-                <CheckoutCard step={3} title="Payment method">
+                <CheckoutCard step={3} title={L('Payment method', 'পেমেন্ট পদ্ধতি')}>
                   <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#dc143c] bg-[#dc143c]/10 px-4 py-3 text-sm sm:max-w-xs">
                     <input type="radio" name="payment" checked readOnly className="accent-[#dc143c]" />
-                    Cash on delivery
+                    {L('Cash on delivery', 'ক্যাশ অন ডেলিভারি')}
                   </label>
-                  <p className="mt-2 text-xs text-gray-500">Pay when you receive the product.</p>
+                  <p className="mt-2 text-xs text-gray-500">{L('Pay when you receive the product.', 'পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন।')}</p>
                 </CheckoutCard>
               </div>
 
               <aside className="min-w-0 lg:sticky lg:top-6 lg:self-start">
                 <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
-                  <h3 className="mb-2 text-base font-semibold text-gray-900">Order summary</h3>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">{L('Order summary', 'অর্ডার সামারি')}</h3>
                   {lines.length || trialLines.length ? (
                     <ul className="divide-y divide-gray-200">
                       {lines.map((l) => (
@@ -792,7 +793,7 @@ export function OfferHome() {
                               <button
                                 type="button"
                                 onClick={() => change(l.product.id, l.variant?.id, -1)}
-                                aria-label={`Decrease ${l.product.name} quantity`}
+                                aria-label={`${l.product.name} ${L('decrease quantity', 'পরিমাণ কমান')}`}
                                 className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
                               >
                                 <Minus className="size-3.5" />
@@ -801,7 +802,7 @@ export function OfferHome() {
                               <button
                                 type="button"
                                 onClick={() => change(l.product.id, l.variant?.id, 1)}
-                                aria-label={`Increase ${l.product.name} quantity`}
+                                aria-label={`${l.product.name} ${L('increase quantity', 'পরিমাণ বাড়ান')}`}
                                 className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
                               >
                                 <Plus className="size-3.5" />
@@ -813,10 +814,10 @@ export function OfferHome() {
                             <button
                               type="button"
                               onClick={() => removeLine(l.product.id, l.variant?.id)}
-                              aria-label={`Remove ${l.product.name}`}
+                              aria-label={`${l.product.name} ${L('remove', 'মুছুন')}`}
                               className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
                             >
-                              <Trash2 className="size-3.5" /> Remove
+                              <Trash2 className="size-3.5" /> {L('Remove', 'মুছুন')}
                             </button>
                           </div>
                         </li>
@@ -831,7 +832,7 @@ export function OfferHome() {
                               <button
                                 type="button"
                                 onClick={() => stepTrial(p.id, -1)}
-                                aria-label={`Decrease ${p.name} quantity`}
+                                aria-label={`${p.name} ${L('decrease quantity', 'পরিমাণ কমান')}`}
                                 className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
                               >
                                 <Minus className="size-3.5" />
@@ -840,7 +841,7 @@ export function OfferHome() {
                               <button
                                 type="button"
                                 onClick={() => stepTrial(p.id, 1)}
-                                aria-label={`Increase ${p.name} quantity`}
+                                aria-label={`${p.name} ${L('increase quantity', 'পরিমাণ বাড়ান')}`}
                                 className="flex size-7 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100"
                               >
                                 <Plus className="size-3.5" />
@@ -852,36 +853,36 @@ export function OfferHome() {
                             <button
                               type="button"
                               onClick={() => removeTrialLine(p.id)}
-                              aria-label={`Remove ${p.name}`}
+                              aria-label={`${p.name} ${L('remove', 'মুছুন')}`}
                               className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700"
                             >
-                              <Trash2 className="size-3.5" /> Remove
+                              <Trash2 className="size-3.5" /> {L('Remove', 'মুছুন')}
                             </button>
                           </div>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="py-3 text-sm text-gray-500">No products selected yet.</p>
+                    <p className="py-3 text-sm text-gray-500">{L('No products selected yet.', 'এখনো কোনো প্রোডাক্ট নির্বাচন করা হয়নি।')}</p>
                   )}
 
                   <dl className="mt-4 space-y-2 border-t border-gray-200 pt-4 text-sm">
-                    <div className="flex justify-between"><dt className="text-gray-500">Subtotal</dt><dd>{taka(subtotal)}</dd></div>
+                    <div className="flex justify-between"><dt className="text-gray-500">{L('Subtotal', 'সাবটোটাল')}</dt><dd>{taka(subtotal)}</dd></div>
                     {tier && (
                       <div className="flex justify-between">
-                        <dt className="text-gray-500">Combo discount ({bn(tier.off)}%)</dt>
+                        <dt className="text-gray-500">{L('Combo discount', 'কম্বো ছাড়')} ({bn(tier.off)}%)</dt>
                         <dd className="text-emerald-600">−{taka(discount)}</dd>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <dt className="text-gray-500">
-                        Delivery charge{' '}
+                        {L('Delivery charge', 'ডেলিভারি চার্জ')}{' '}
                         {form.district && <span className="text-xs text-gray-400">({ZONE_LABEL[zone]})</span>}
                       </dt>
-                      <dd>{count ? (trialFree ? <span className="font-semibold text-emerald-600">Free</span> : addressKnown ? taka(shipping) : <span className="text-gray-500">Added after you choose your district</span>) : '—'}</dd>
+                      <dd>{count ? (trialFree ? <span className="font-semibold text-emerald-600">{L('Free', 'ফ্রি')}</span> : addressKnown ? taka(shipping) : <span className="text-gray-500">{L('Added after you choose your district', 'জেলা নির্বাচনের পর যোগ হবে')}</span>) : '—'}</dd>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold">
-                      <dt>Grand total</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
+                      <dt>{L('Grand total', 'সর্বমোট প্রদেয়')}</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
                     </div>
                   </dl>
 
@@ -890,9 +891,9 @@ export function OfferHome() {
                   <button type="submit" disabled={submitting || (CHECKOUT_CAPTCHA && !captcha)}
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#dc143c] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b80f31] focus:outline-none focus:ring-2 focus:ring-[#dc143c]/50 disabled:cursor-not-allowed disabled:opacity-60">
                     {submitting && <Loader2 className="size-4 animate-spin" />}
-                    {submitting ? 'Placing order…' : `Confirm order — ${taka(total)}`}
+                    {submitting ? L('Placing order…', 'অর্ডার প্রক্রিয়াধীন…') : `${L('Confirm order', 'অর্ডার কনফার্ম করুন')} — ${taka(total)}`}
                   </button>
-                  <p className="mt-3 text-center text-xs text-gray-400">By placing an order you agree to our terms.</p>
+                  <p className="mt-3 text-center text-xs text-gray-400">{L('By placing an order you agree to our terms.', 'অর্ডার করার মাধ্যমে আপনি আমাদের শর্তাবলীতে সম্মত হচ্ছেন।')}</p>
                 </div>
               </aside>
             </form>
@@ -906,12 +907,12 @@ export function OfferHome() {
           <p className="truncate text-xs text-foreground sm:text-sm">
             {next ? (
               <>
-                Add <b className="text-rose-600">{taka(next.min - comboSubtotal)}</b> more to get{' '}
-                <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(next.off)}% off</b>
-                {tier && <> · you now get <b className="text-emerald-600">{bn(tier.off)}%</b></>}
+                {L('Add', 'আরও')} <b className="text-rose-600">{taka(next.min - comboSubtotal)}</b> {L('more to get', 'যোগ করলে পাবেন')}{' '}
+                <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(next.off)}% {L('off', 'ছাড়')}</b>
+                {tier && <> · {L('you now get', 'এখন পাচ্ছেন')} <b className="text-emerald-600">{bn(tier.off)}%</b></>}
               </>
             ) : (
-              <>🎉 You get the maximum <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(topTier.off)}% off</b>!</>
+              <>🎉 {L('You get the maximum', 'আপনি পাচ্ছেন সর্বোচ্চ')} <b className="rounded bg-emerald-100 px-1 text-emerald-700">{bn(topTier.off)}% {L('off', 'ছাড়')}</b>!</>
             )}
           </p>
           <div className="relative mt-2 h-2.5 rounded-full bg-gray-200">
@@ -926,8 +927,8 @@ export function OfferHome() {
           <div className="mt-2.5 flex items-center justify-between gap-3">
             <div className="leading-tight">
               <p className="text-xs text-gray-600">
-                {bn(count)} {count === 1 ? 'item' : 'items'}
-                {discount > 0 && <span className="ml-1.5 font-semibold text-emerald-600">You save {taka(discount)}</span>}
+                {bn(count)} {count === 1 ? L('item', 'টি আইটেম') : L('items', 'টি আইটেম')}
+                {discount > 0 && <span className="ml-1.5 font-semibold text-emerald-600">{L('You save', 'সাশ্রয়')} {taka(discount)}</span>}
               </p>
               {/* Product price only (after the discount); delivery is shown separately and added in the checkout summary */}
               <p className="text-xl font-bold text-rose-600">
@@ -935,7 +936,7 @@ export function OfferHome() {
                 {discount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(subtotal)}</s>}
                 {count > 0 && (
                   <span className="ml-2 hidden text-xs font-normal text-gray-600 sm:inline">
-                    {trialFree ? '+ free delivery' : addressKnown ? `+ ${taka(shipping)} delivery` : '+ delivery (added at checkout)'}
+                    {trialFree ? L('+ free delivery', '+ ফ্রি ডেলিভারি') : addressKnown ? `+ ${taka(shipping)} ${L('delivery', 'ডেলিভারি')}` : L('+ delivery (added at checkout)', '+ ডেলিভারি (চেকআউটে যোগ হবে)')}
                   </span>
                 )}
               </p>
@@ -990,7 +991,7 @@ function Field({ label, required, optional, error, className = '', children }: {
     <div className={className}>
       <label className="mb-1.5 block text-sm font-medium text-gray-900">
         {label} {required && <span className="text-[#b80f31]">*</span>}
-        {optional && <span className="text-xs font-normal text-gray-400">(optional)</span>}
+        {optional && <span className="text-xs font-normal text-gray-400">{L('(optional)', '(ঐচ্ছিক)')}</span>}
       </label>
       {children}
       {error && <p data-error className="mt-1 text-xs text-[#b80f31]">{error}</p>}

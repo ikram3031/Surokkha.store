@@ -1,21 +1,22 @@
 const items = [
   {
-    title: 'Discreet packaging',
-    desc: 'Nothing on the pack gives away the product.',
+    title: L('Discreet packaging', 'গোপনীয় প্যাকেজিং'),
+    desc: L('Nothing on the pack gives away the product.', 'প্যাকেটে পণ্যের কোনো পরিচয় থাকে না।'),
     path: 'M20 7.5 12 3 4 7.5v9L12 21l8-4.5v-9ZM4 7.5l8 4.5 8-4.5M12 12v9',
   },
   {
-    title: '100% genuine products',
-    desc: 'Sourced directly from authorised suppliers.',
+    title: L('100% genuine products', '১০০% আসল প্রোডাক্ট'),
+    desc: L('Sourced directly from authorised suppliers.', 'সরাসরি অনুমোদিত সরবরাহকারী থেকে সংগৃহীত।'),
     path: 'M12 3 4 6v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-3Zm-3 9 2.2 2.2L15.5 10',
   },
   {
-    title: 'Cash on delivery',
-    desc: 'Pay when you receive the product.',
+    title: L('Cash on delivery', 'ক্যাশ অন ডেলিভারি'),
+    cash: true,
+    desc: L('Pay when you receive the product.', 'পণ্য হাতে পেয়ে টাকা দিন।'),
   },
   {
-    title: 'Fast delivery',
-    desc: '1 day in Dhaka, 2–3 days nationwide.',
+    title: L('Fast delivery', 'দ্রুত ডেলিভারি'),
+    desc: L('1 day in Dhaka, 2–3 days nationwide.', 'ঢাকায় ১ দিন, সারা দেশে ২–৩ দিন।'),
     path: 'M12 7v5l3 2',
     circle: true,
   },
@@ -39,7 +40,7 @@ export function TrustStrip() {
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                {item.title === 'Cash on delivery' ? (
+                {item.cash ? (
                   <>
                     <rect x="2.5" y="6" width="19" height="12" rx="2" />
                     <circle cx="12" cy="12" r="2.6" />
@@ -64,3 +65,5 @@ export function TrustStrip() {
     </section>
   )
 }
+
+import { L } from '@/lib/i18n'

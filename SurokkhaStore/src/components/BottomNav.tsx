@@ -2,6 +2,8 @@ import { Home, ShoppingBag, Sparkles } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { navigate, useRoute } from '@/lib/router'
 import { useCart } from '@/context/CartContext'
+import { bn } from '@/lib/bn'
+import { L } from '@/lib/i18n'
 
 const WHATSAPP_URL = 'https://wa.me/8801600905774'
 
@@ -23,32 +25,32 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
 
   return (
     <nav
-      aria-label="Quick navigation"
+      aria-label={L('Quick navigation', 'দ্রুত নেভিগেশন')}
       className="dark fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-background text-white pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <div className="mx-auto flex max-w-md items-stretch">
         <button type="button" onClick={() => navigate('/')} className={`${itemBase} ${isHome ? on : off}`}>
           <Home className="h-5 w-5 text-nav-accent" />
-          Home
+          {L('Home', 'হোম')}
         </button>
         <button type="button" onClick={() => navigate('/offers')} className={`${itemBase} ${isOffer ? on : off}`}>
           <Sparkles className="h-5 w-5 text-nav-accent" />
-          Offers
+          {L('Offers', 'অফার')}
         </button>
         <button type="button" onClick={onCartOpen} className={`${itemBase} ${off}`}>
           <span className="relative">
             <ShoppingBag className="h-5 w-5 text-nav-accent" />
             {count > 0 && (
               <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-background px-1 text-[10px] font-bold text-foreground">
-                {count}
+                {bn(count)}
               </span>
             )}
           </span>
-          Cart
+          {L('Cart', 'কার্ট')}
         </button>
         <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={`${itemBase} ${off}`}>
           <WhatsAppIcon className="h-5 w-5" />
-          Contact
+          {L('Contact', 'যোগাযোগ')}
         </a>
       </div>
     </nav>
