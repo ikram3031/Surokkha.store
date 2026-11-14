@@ -200,15 +200,27 @@ export const checkoutDetails = async (req, res, next) => {
   try {
     const member = req.customer;
     const pick = (o) => (o ? { fullName: o.fullName || "", phone: o.phone || "", address: o.address || "", district: o.district || "", thana: o.thana || "" } : null);
-    const order = member?.email
-      ? await OrderModel.findOne({ "billingInfo.email": member.email }).sort({ createdAt: -1 }).select("billingInfo shippingInfo").lean()
+    const emailRe = member?.email ? new RegExp(`^${member.email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") : null;
+    const order = emailRe
+      ? await OrderModel.findOne({ "billingInfo.email": emailRe }).sort({ createdAt: -1 }).select("billingInfo shippingInfo").lean()
       : null;
+    // The default address the customer saved on their account page wins; then their latest order; then the last order profile
+    const saved = (member?.addresses || []).find((a) => a?.isDefault) || member?.addresses?.[0];
+    const profile = member?.orderProfiles?.length ? member.orderProfiles[member.orderProfiles.length - 1] : null;
+    const base = { fullName: member?.name || "", phone: member?.phone || "", email: member?.email || "" };
+    let billing;
+    if (saved?.address) {
+      billing = { ...base, fullName: saved.name || base.fullName, phone: saved.phone || base.phone, address: saved.address, district: saved.district || "", thana: saved.area || "" };
+    } else if (order) {
+      billing = { ...pick(order.billingInfo), email: order.billingInfo?.email || base.email };
+    } else if (profile?.address) {
+      billing = { ...base, fullName: profile.name || base.fullName, phone: profile.phone || base.phone, address: profile.address, district: profile.district || "", thana: profile.thana || "" };
+    } else {
+      billing = { ...base, address: "", district: "", thana: "" };
+    }
     res.json({
       status: "success",
-      data: {
-        billing: order ? { ...pick(order.billingInfo), email: order.billingInfo?.email || member.email } : { fullName: member?.name || "", phone: member?.phone || "", email: member?.email || "", address: "", district: "", thana: "" },
-        shipping: order ? pick(order.shippingInfo) : null,
-      },
+      data: { billing, shipping: !saved?.address && order ? pick(order.shippingInfo) : null },
     });
   } catch (error) {
     next(error);

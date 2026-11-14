@@ -4,6 +4,11 @@ import { Button } from '@/components/ui/button'
 import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import { catBg } from '@/data/products'
 import { DISTRICT_NAMES } from '@/data/districts'
+
+const normalizeName = (s: string) => s.toLowerCase().replace(/[^a-zঀ-৿]/g, '')
+// Returns the option that matches `value` ignoring case/spacing, or `value` unchanged
+const matchOption = (options: readonly string[], value: string) =>
+  options.find((o) => normalizeName(o) === normalizeName(value)) ?? value
 import { useThanas } from '@/lib/useThanas'
 import LocationSelect from '@/components/checkout/LocationSelect'
 import { useCart } from '@/context/CartContext'
@@ -126,6 +131,26 @@ export function CheckoutPage() {
 
   const thanas = useThanas(form.district)
   const shipThanas = useThanas(sameAsBilling ? '' : ship.district)
+
+  // Pre-filled district/thana must equal a dropdown option exactly, or the selects show blank;
+  // snap saved values onto the matching option (ignoring case and spacing)
+  useEffect(() => {
+    const fixDistrict = (d: string) => (d ? matchOption(DISTRICT_NAMES, d) : d)
+    setForm((f) => (f.district && fixDistrict(f.district) !== f.district ? { ...f, district: fixDistrict(f.district) } : f))
+    setShip((s) => (s.district && fixDistrict(s.district) !== s.district ? { ...s, district: fixDistrict(s.district) } : s))
+  }, [form.district, ship.district])
+  useEffect(() => {
+    if (form.thana && thanas.length && !thanas.includes(form.thana)) {
+      const m = matchOption(thanas, form.thana)
+      if (m !== form.thana) setForm((f) => ({ ...f, thana: m }))
+    }
+  }, [thanas, form.thana])
+  useEffect(() => {
+    if (ship.thana && shipThanas.length && !shipThanas.includes(ship.thana)) {
+      const m = matchOption(shipThanas, ship.thana)
+      if (m !== ship.thana) setShip((s) => ({ ...s, thana: m }))
+    }
+  }, [shipThanas, ship.thana])
   const set = (key: keyof typeof form, value: string) => {
     setForm((f) => ({ ...f, [key]: value, ...(key === 'district' ? { thana: '' } : {}) }))
     setErrors((e) => ({ ...e, [key]: '', ...(key === 'district' ? { thana: '' } : {}) }))
