@@ -1,23 +1,35 @@
 {
   "top": [
     {
-      "path": "/items/d4e5bb9933b56966",
-      "entity": "item"
-    },
-    {
-      "path": "/items/8c5e84fa18642aa8",
-      "entity": "item"
-    },
-    {
-      "path": "/products/788b855254ac89fa",
+      "path": "/products/6ab2c80d6fa8d45f03d4ba6f",
       "entity": "product"
     },
     {
-      "path": "/products/68c019a9c15c38dc",
+      "path": "/products/6ab2c80d6fa8d45f03d4ba71",
       "entity": "product"
     },
     {
-      "path": "/products/b9de8b186df2b554",
+      "path": "/products/6ab2c80d6fa8d45f03d4ba70",
+      "entity": "product"
+    },
+    {
+      "path": "/products/6ab8a664721c81cc89218856",
+      "entity": "product"
+    },
+    {
+      "path": "/products/6adce8d4875a6ceb291a81cc",
+      "entity": "product"
+    },
+    {
+      "path": "/products/6af77a9210eb2e54ae01880a",
+      "entity": "product"
+    },
+    {
+      "path": "/products/6af77a9210eb2e54ae018811",
+      "entity": "product"
+    },
+    {
+      "path": "/products/6af77a9210eb2e54ae018817",
       "entity": "product"
     }
   ]

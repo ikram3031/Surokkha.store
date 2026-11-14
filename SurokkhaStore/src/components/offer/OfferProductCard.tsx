@@ -1,5 +1,4 @@
 import { Eye, Minus, Plus } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { fromPrice, type OfferProduct } from '@/data/offerProducts'
 import { bn, taka } from '@/lib/bn'
 import { ProductSlider } from './ProductMedia'
@@ -61,18 +60,7 @@ export function OfferProductCard({ product, qty, onInc, onDec, onChooseOptions, 
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
-        {(product.badge || product.freeDelivery) && (
-          <div className="mb-0.5 flex flex-wrap gap-1">
-            {product.badge && (
-              <Badge className="w-fit bg-rose-100 text-[11px] text-rose-700 hover:bg-rose-100">{product.badge}</Badge>
-            )}
-            {product.freeDelivery && (
-              <Badge className="w-fit bg-emerald-100 text-[11px] text-emerald-700 hover:bg-emerald-100">{L('Free Delivery', 'ফ্রি ডেলিভারি')}</Badge>
-            )}
-          </div>
-        )}
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug sm:text-base">{product.name}</h3>
-        {product.desc && <p className="line-clamp-1 text-xs text-gray-600 sm:text-sm">{product.desc}</p>}
+        <h3 className="truncate text-sm font-semibold leading-snug sm:text-base">{product.name}</h3>
         <div className="mt-auto flex flex-col gap-2 pt-1 sm:flex-row sm:items-end sm:justify-between">
           <p className="leading-tight">
             <span className="text-base font-bold text-rose-600 sm:text-lg">{taka(fromPrice(product))}</span>

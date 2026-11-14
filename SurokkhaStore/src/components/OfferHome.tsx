@@ -6,7 +6,6 @@ import { TrialPackSection } from '@/components/offer/TrialPackSection'
 import { OfferCart, type CartLine } from '@/components/offer/OfferCart'
 import { getTrialPack, type GroupOffer } from '@/lib/api/groupOffers'
 import { OfferProductCard } from '@/components/offer/OfferProductCard'
-import { AutoCarousel } from '@/components/offer/AutoCarousel'
 import { SearchableSelect, type SelectOption } from '@/components/offer/SearchableSelect'
 import { TOP_PRODUCTS, useCatalogProducts, useComboProducts } from '@/hooks/useCatalogProducts'
 import { Turnstile, TURNSTILE_SITE_KEY, type TurnstileHandle } from '@/components/offer/Turnstile'
@@ -140,9 +139,9 @@ const trackedOrders = new Set<string>()
 export function OfferHome() {
   const { products: catalogProducts, loading: catalogLoading } = useCatalogProducts()
   const { products: allComboProducts, loading: combosLoading } = useComboProducts()
-  // A product already in the top carousel (e.g. Trial Pack 2 is also a combo) is not listed twice
+  // A product already in the top grid is not listed twice
   const comboProducts = useMemo(
-    () => allComboProducts.filter((c) => !catalogProducts.some((p) => p.id === c.id)),
+    () => allComboProducts.filter((c) => !catalogProducts.some((p) => p.id === c.id || (p.apiId && p.apiId === c.apiId))),
     [allComboProducts, catalogProducts],
   )
   const products = useMemo(
@@ -246,9 +245,7 @@ export function OfferHome() {
   const zone = deliveryZone(form.district, form.thana)
   // No delivery charge until the customer has chosen a district (Dhaka without a thana is charged the city rate)
   const addressKnown = !!form.district
-  // A Trial Pack piece, or a product with a Direct Offer's free delivery, makes the whole order ship free
-  const trialFree = trialCount > 0 || lines.some((l) => l.product.freeDelivery)
-  const shipping = count === 0 || !addressKnown || trialFree ? 0 : DELIVERY[zone]
+  const shipping = count === 0 || !addressKnown ? 0 : DELIVERY[zone]
   const total = subtotal - discount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]
 
@@ -594,8 +591,8 @@ export function OfferHome() {
     <>
       <main className="bg-white pb-40 leading-relaxed antialiased offer-font">
         <section className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
-          <div className="mx-auto mb-6 max-w-2xl text-center sm:mb-8">
-            <h1 className="text-2xl font-bold leading-snug sm:text-3xl">
+          <div className="mx-auto mb-6 max-w-3xl text-center sm:mb-8">
+            <h1 className="text-2xl font-bold leading-snug sm:text-4xl lg:text-5xl">
               <span className="text-black">{L('Build your own ', 'নিজের পছন্দে ')}</span>
               <span className="offer-combo">{L('combo', 'কম্বো')}</span>
               <span className="text-black">{L(' your way', ' বানান')}</span>
@@ -619,26 +616,25 @@ export function OfferHome() {
           </div>
           {catalogLoading ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-              {TOP_PRODUCTS.slice(0, 4).map((t, i) => (
-                <div key={t.path} className={`aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100 ${i >= 2 ? 'hidden sm:block' : ''} ${i >= 3 ? 'sm:hidden lg:block' : ''}`} />
+              {TOP_PRODUCTS.map((t) => (
+                <div key={t.path} className="aspect-[3/5] animate-pulse rounded-3xl border border-gray-200 bg-gray-100" />
               ))}
             </div>
           ) : (
-          // Trial Packs first, then the top products: swipeable, moves on its own, dots below
-          <AutoCarousel>
-            {catalogProducts.map((p) => (
-              <OfferProductCard
-                key={p.id}
-                product={p}
-                qty={productQty(p)}
-                onInc={() => change(p.id, undefined, 1)}
-                onDec={() => change(p.id, undefined, -1)}
-                onChooseOptions={() => setVariantFor(p)}
-                onQuickView={() => setQuickView(p)}
-                onMediaClick={() => addFromPhoto(p)}
-              />
-            ))}
-          </AutoCarousel>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+              {catalogProducts.map((p) => (
+                <OfferProductCard
+                  key={p.id}
+                  product={p}
+                  qty={productQty(p)}
+                  onInc={() => change(p.id, undefined, 1)}
+                  onDec={() => change(p.id, undefined, -1)}
+                  onChooseOptions={() => setVariantFor(p)}
+                  onQuickView={() => setQuickView(p)}
+                  onMediaClick={() => addFromPhoto(p)}
+                />
+              ))}
+            </div>
           )}
         </section>
 
@@ -879,7 +875,7 @@ export function OfferHome() {
                         {L('Delivery charge', 'ডেলিভারি চার্জ')}{' '}
                         {form.district && <span className="text-xs text-gray-400">({ZONE_LABEL[zone]})</span>}
                       </dt>
-                      <dd>{count ? (trialFree ? <span className="font-semibold text-emerald-600">{L('Free', 'ফ্রি')}</span> : addressKnown ? taka(shipping) : <span className="text-gray-500">{L('Added after you choose your district', 'জেলা নির্বাচনের পর যোগ হবে')}</span>) : '—'}</dd>
+                      <dd>{count ? (addressKnown ? taka(shipping) : <span className="text-gray-500">{L('Added after you choose your district', 'জেলা নির্বাচনের পর যোগ হবে')}</span>) : '—'}</dd>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold">
                       <dt>{L('Grand total', 'সর্বমোট প্রদেয়')}</dt><dd className="text-[#b80f31]">{taka(total)}</dd>
@@ -936,7 +932,7 @@ export function OfferHome() {
                 {discount > 0 && <s className="ml-1.5 text-sm font-normal text-gray-600">{taka(subtotal)}</s>}
                 {count > 0 && (
                   <span className="ml-2 hidden text-xs font-normal text-gray-600 sm:inline">
-                    {trialFree ? L('+ free delivery', '+ ফ্রি ডেলিভারি') : addressKnown ? `+ ${taka(shipping)} ${L('delivery', 'ডেলিভারি')}` : L('+ delivery (added at checkout)', '+ ডেলিভারি (চেকআউটে যোগ হবে)')}
+                    {addressKnown ? `+ ${taka(shipping)} ${L('delivery', 'ডেলিভারি')}` : L('+ delivery (added at checkout)', '+ ডেলিভারি (চেকআউটে যোগ হবে)')}
                   </span>
                 )}
               </p>
@@ -955,7 +951,6 @@ export function OfferHome() {
         discount={discount}
         discountPercent={tier?.off}
         shipping={shipping}
-        freeDelivery={trialFree}
         addressKnown={addressKnown}
         total={total}
         onCheckout={goCheckout}

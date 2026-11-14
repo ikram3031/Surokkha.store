@@ -24,7 +24,6 @@ export interface OfferProduct {
   art: ProductArt
   c1: string
   c2: string
-  badge?: string
   /** Card and Details slider photos; the drawn art is used when empty */
   images: string[]
   /** Present only on variable products: the card opens the variant picker */
@@ -34,8 +33,6 @@ export interface OfferProduct {
   regularPrice?: number
   /** Shown in the "Or choose our combos" section */
   readyCombo?: boolean
-  /** A dashboard Direct Offer gives this product free delivery */
-  freeDelivery?: boolean
 }
 
 export const READY_COMBOS_TITLE = 'অথবা আমাদের কম্বো থেকে বেছে নিন'
@@ -47,9 +44,9 @@ export const fromPrice = (p: OfferProduct) => p.price
 
 // Combo discount by subtotal (no free delivery here, delivery is always charged)
 export const DISCOUNT_TIERS = [
-  { min: 400, off: 15 },
-  { min: 1000, off: 20 },
-  { min: 1500, off: 25 },
+  { min: 500, off: 20 },
+  { min: 1000, off: 25 },
+  { min: 1500, off: 30 },
 ]
 
 export const tierFor = (subtotal: number) => [...DISCOUNT_TIERS].reverse().find((t) => subtotal >= t.min)

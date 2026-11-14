@@ -413,10 +413,10 @@ input[type='search']::-webkit-search-results-decoration {
   .offer-cart-fab { animation: none; }
 }
 
-/* /offer page and its dialogs: a cleaner Bangla face (Hind Siliguri's digits read poorly at small sizes) */
+/* /offer page and its dialogs: uses the main storefront Bangla font */
 .offer-font,
 [data-slot="dialog-content"].offer-font {
-  font-family: "Noto Sans Bengali", "Hind Siliguri", sans-serif;
+  font-family: var(--font-body);
 }
 
 /* Login / sign-up card is dark, so its fields are plain white (Chrome autofill blue included) */

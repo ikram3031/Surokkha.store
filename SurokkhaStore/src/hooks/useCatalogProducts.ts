@@ -61,7 +61,6 @@ function toOfferProduct(p: ApiProduct, entity: 'product' | 'item' = 'product'): 
     // A single-variant product (e.g. "Pack One") is just sold as itself
     variants: variants.length > 1 ? variants : undefined,
     variantLabel: variants.length > 1 ? L('Option', 'অপশন') : undefined,
-    freeDelivery: p.freeDelivery === true || undefined,
   }
 }
 
@@ -89,36 +88,27 @@ export function useCatalogProducts() {
   return { products, loading }
 }
 
-const isCombo = (p: ApiProduct) =>
-  [...(p.categories ?? []), p.category].some((c) => {
-    const slug = typeof c === 'string' ? c : c?.slug || c?.name
-    return String(slug ?? '').toLowerCase() === 'combo'
-  })
+const TOP_PRODUCT_IDS = new Set(TOP_PRODUCTS.map((t) => t.path.split('/').pop() ?? ''))
 
-/** In-stock products and items from the store's "Combo" category, for the ready-made combo section */
+/** Remaining products from the store's `/products` collection (excluding the top 8 products; no items). */
 export function useComboProducts() {
   const [products, setProducts] = useState<OfferProduct[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const controller = new AbortController()
-    const opts = { signal: controller.signal }
-    const list = (path: string) =>
-      api
-        .get<{ data?: ApiProduct[] }>(path, { limit: 100 }, opts)
-        .then((res) => res?.data ?? [])
-        .catch(() => [] as ApiProduct[])
-    Promise.all([list('/products'), list('/items')]).then(([prods, items]) => {
-      if (controller.signal.aborted) return
-      const combos = [
-        ...prods.filter(isCombo).map((p) => toOfferProduct(p, 'product')),
-        ...items.filter(isCombo).map((p) => toOfferProduct(p, 'item')),
-      ]
-        .filter((p) => p.inStock)
-        .map((p) => ({ ...p, readyCombo: true }))
-      setProducts(combos)
-      setLoading(false)
-    })
+    api
+      .get<{ data?: ApiProduct[] }>('/products', { limit: 100 }, { signal: controller.signal })
+      .then((res) => res?.data ?? [])
+      .catch(() => [] as ApiProduct[])
+      .then((prods) => {
+        if (controller.signal.aborted) return
+        const remaining = prods
+          .filter((p) => !TOP_PRODUCT_IDS.has(p.did) && !TOP_PRODUCT_IDS.has(p.id ?? '') && !TOP_PRODUCT_IDS.has(p._id ?? ''))
+          .map((p) => ({ ...toOfferProduct(p, 'product'), readyCombo: true }))
+        setProducts(remaining)
+        setLoading(false)
+      })
     return () => controller.abort()
   }, [])
 
