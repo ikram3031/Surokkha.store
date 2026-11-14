@@ -1,19 +1,16 @@
 import { useState } from 'react'
 import { User } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
-import { SearchInput } from '@/components/header/SearchInput'
 import { CartButton } from '@/components/header/CartButton'
 import { MobileNav } from '@/components/header/MobileNav'
 import { navigate, useRoute } from '@/lib/router'
 import { L } from '@/lib/i18n'
 
 /**
- * Header v2 (light): logo + menu (Home, Shop, Offers, Contact) on the left; search, cart and profile on the right.
+ * Header v2 (dark): logo + menu (Home, Shop, Offers, Contact) logo left, menu centred, profile then cart on the right (no search).
  * The previous dark header stays in Header.tsx; App.tsx picks which one is shown.
  */
 export function Header2({
-  query,
-  onQueryChange,
   onCartOpen,
   onCategory,
 }: {
@@ -38,14 +35,14 @@ export function Header2({
   ]
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white text-foreground">
+    <header className="dark sticky top-0 z-40 border-b border-white/10 bg-header text-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:gap-8">
         {/* Mobile: menu button */}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
             <button
               type="button"
-              className="-ml-1 rounded-lg p-2 hover:bg-secondary md:hidden"
+              className="-ml-1 rounded-lg p-2 hover:bg-white/10 md:hidden"
               aria-label={L('Open menu', 'মেনু খুলুন')}
             >
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -68,10 +65,10 @@ export function Header2({
           className="shrink-0"
           aria-label={L('Surokkha home', 'সুরক্ষা হোম')}
         >
-          <img src="/surokkha_store_logo.png" alt={L('Surokkha Store', 'সুরক্ষা স্টোর')} className="h-9 w-auto" />
+          <img src="/surokkha_store_logo_dark.png" alt={L('Surokkha Store', 'সুরক্ষা স্টোর')} className="h-9 w-auto" />
         </a>
 
-        <nav className="hidden items-center gap-6 text-[15px] font-medium md:flex" aria-label={L('Main menu', 'প্রধান মেনু')}>
+        <nav className="hidden flex-1 items-center justify-center gap-8 text-[15px] font-medium md:flex" aria-label={L('Main menu', 'প্রধান মেনু')}>
           {links.map((l) => (
             <a
               key={l.label}
@@ -89,20 +86,16 @@ export function Header2({
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1 md:gap-3">
-          <SearchInput value={query} onChange={onQueryChange} className="hidden w-72 md:block lg:w-96" id="searchInput" />
-          {/* CartButton is styled for a dark bar; recolour it for this light one */}
-          <div className="[&_button]:text-foreground [&_button:hover]:bg-secondary [&_button:hover]:text-foreground">
-            <CartButton onClick={onCartOpen} />
-          </div>
+        <div className="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
           <button
             type="button"
             onClick={() => navigate('/account')}
-            className="flex size-10 items-center justify-center rounded-full hover:bg-secondary"
+            className="flex size-10 items-center justify-center rounded-full hover:bg-white/10"
             aria-label={L('My account', 'আমার অ্যাকাউন্ট')}
           >
             <User className="size-6" strokeWidth={1.8} />
           </button>
+          <CartButton onClick={onCartOpen} />
         </div>
       </div>
     </header>
