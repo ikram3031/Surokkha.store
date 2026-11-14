@@ -1,6 +1,7 @@
 // Each message leads with its own icon: an offer emoji for deals, a plain one for general info
 const MESSAGES = [
   { icon: '🚚', text: 'রেজিস্ট্রেশন করলে প্রথম অর্ডারে ফ্রি ডেলিভারি' },
+  { icon: '🎁', text: '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি' },
 ]
 
 /* Each half of the track repeats the messages enough to be wider than any

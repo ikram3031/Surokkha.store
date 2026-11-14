@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
-import { SHIP_FEE, type Product } from '@/data/products'
+import { FREE_SHIP_AT, SHIP_FEE, type Product } from '@/data/products'
 import { groupOfferTotals, hasFreeDelivery } from '@/lib/checkout'
 import type { GroupOfferProduct, GroupOfferRule } from '@/lib/api/groupOffers'
 import { newEventId, trackAddToCart } from '@/lib/api/events'
@@ -135,7 +135,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const lines = Object.values(cart)
     const count = lines.reduce((s, line) => s + line.qty, 0)
     const subtotal = lines.reduce((s, line) => s + line.qty * line.product.price, 0)
-    const freeDelivery = hasFreeDelivery(lines)
+    // Free delivery: a product's own offer, or any order of ৳1,000 or more
+    const freeDelivery = hasFreeDelivery(lines) || subtotal >= FREE_SHIP_AT
     const shipping = subtotal === 0 || freeDelivery ? 0 : SHIP_FEE
     const freeShipNote =
       subtotal > 0 && freeDelivery ? L('Delivery is free on your order.', 'আপনার অর্ডারে ডেলিভারি ফ্রি।') : ''

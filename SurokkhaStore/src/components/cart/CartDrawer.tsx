@@ -1,3 +1,5 @@
+import { FreeDeliveryProgress } from '@/components/cart/FreeDeliveryProgress'
+import { FREE_SHIP_AT } from '@/data/products'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -34,7 +36,8 @@ export function CartDrawer({ open, onOpenChange }: { open: boolean; onOpenChange
         </div>
 
         <div className="border-t border-border bg-card px-5 py-4">
-          {freeShipNote && <p className="mb-3 text-sm text-muted-foreground">{freeShipNote}</p>}
+          {count > 0 && <FreeDeliveryProgress subtotal={subtotal} className="mb-3" />}
+          {freeShipNote && subtotal < FREE_SHIP_AT && <p className="mb-3 text-sm text-muted-foreground">{freeShipNote}</p>}
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted-foreground">{L('Subtotal', 'সাবটোটাল')}</dt>

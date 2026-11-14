@@ -1,3 +1,4 @@
+import { FREE_SHIP_AT } from '@/data/products'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -251,7 +252,7 @@ export function CheckoutPage() {
     const baseFee = count > 0 ? deliveryFee(dest.district, dest.thana) : 0
     const { discount: couponOff, fee: couponFee } = couponDiscount(coupon, subtotal, baseFee, lines)
     const newUserFree = newUserFreeMin != null && subtotal >= newUserFreeMin && count > 0
-    const offerFree = hasFreeDelivery(lines) || newUserFree
+    const offerFree = hasFreeDelivery(lines) || newUserFree || (count > 0 && subtotal >= FREE_SHIP_AT)
     const fee = offerFree ? 0 : couponFee
     const group = groupOfferTotals(lines)
     const discount = couponOff + group.discount
@@ -726,9 +727,9 @@ export function CheckoutPage() {
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">
                   {L('Delivery charge', 'ডেলিভারি চার্জ')}{destDistrict ? ` · ${destDistrict}` : ''}
-                  {totals.newUserFree && !hasFreeDelivery(lines) && <span className="block text-xs text-emerald-600">{L('New customer offer', 'নতুন গ্রাহক অফার')}</span>}
-                  {newUserFreeMin != null && !totals.newUserFree && (
-                    <span className="block text-xs text-emerald-600">{L(`Add ${taka(newUserFreeMin - subtotal)} more for free delivery`, `ফ্রি ডেলিভারির জন্য আরও ${taka(newUserFreeMin - subtotal)} টাকার পণ্য যোগ করুন`)}</span>
+                  {subtotal >= FREE_SHIP_AT && <span className="block text-xs text-emerald-600">{L('Free delivery on orders over ৳1,000', '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি')}</span>}
+                  {!freeShipping && subtotal < FREE_SHIP_AT && (
+                    <span className="block text-xs text-emerald-600">{L(`Add ${taka(FREE_SHIP_AT - subtotal)} more for free delivery`, `আরও ${taka(FREE_SHIP_AT - subtotal)} এর পণ্য যোগ করলে ফ্রি ডেলিভারি`)}</span>
                   )}
                 </dt>
                 <dd>

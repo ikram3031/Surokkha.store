@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Minus, Plus, ShieldCheck, ShoppingCart, Truck } from 'lucide-react'
+import { Gift, Minus, Plus, ShieldCheck, ShoppingCart, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductArtIcon } from '@/components/icons/ArtIcons'
 import { catBg, catLabel, type Product } from '@/data/products'
@@ -216,6 +216,10 @@ export function ProductPage({ slug }: { slug: string }) {
           <li className="flex items-center gap-2">
             <Truck className="h-4 w-4 text-primary" />
             {L('Cash on delivery — pay when you receive it', 'ক্যাশ অন ডেলিভারি — হাতে পেয়ে মূল্য পরিশোধ করুন')}
+          </li>
+          <li className="flex items-center gap-2 font-medium text-emerald-700">
+            <Gift className="h-4 w-4 text-emerald-600" />
+            {L('Free delivery on orders over ৳1,000', '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি')}
           </li>
         </ul>
 
