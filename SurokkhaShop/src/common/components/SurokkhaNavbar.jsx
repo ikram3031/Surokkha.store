@@ -208,7 +208,7 @@ const SurokkhaNavbar = () => {
             >
               {isBn ? 'হোম' : 'Home'}
             </button>
-            <details open className="rounded-lg [&_summary::-webkit-details-marker]:hidden">
+            <details className="rounded-lg [&_summary::-webkit-details-marker]:hidden">
               <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg font-semibold text-rose-400 hover:bg-white/5">
                 {/* Tapping the label opens the shop; the arrow opens/closes the categories */}
                 <button

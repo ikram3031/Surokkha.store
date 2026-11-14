@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Gift, Minus, Plus, ShieldCheck, ShoppingCart, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProductArtIcon } from '@/components/icons/ArtIcons'
+import { ProductCard } from '@/components/shop/ProductCard'
 import { catBg, catLabel, type Product } from '@/data/products'
 import { useCart } from '@/context/CartContext'
+import { useProducts } from '@/hooks/useProducts'
 import { getProduct } from '@/lib/api/products'
 import { getItem } from '@/lib/api/items'
 import { newEventId, trackViewContent } from '@/lib/api/events'
@@ -14,6 +16,54 @@ import { navigate } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
 import { L } from '@/lib/i18n'
 
+const RECENTLY_VIEWED_KEY = 'surokkha_recently_viewed'
+const MAX_RECENTLY_VIEWED = 20
+
+const productIdentifier = (p: Product): string => p.slug ?? p.did ?? String(p.id)
+
+const hasOffer = (p: Product): boolean =>
+  Boolean(p.directOffer || p.freeDelivery || (p.regularPrice && p.regularPrice > p.price))
+
+function shuffleList<T>(items: T[]): T[] {
+  const arr = [...items]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
+/** Picks up to `count` items randomly while giving offer products first priority. */
+function pickWithOfferPriority(items: Product[], count: number): Product[] {
+  const withOffer = shuffleList(items.filter(hasOffer))
+  const withoutOffer = shuffleList(items.filter((p) => !hasOffer(p)))
+  return [...withOffer, ...withoutOffer].slice(0, count)
+}
+
+function readRecentlyViewedIds(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(RECENTLY_VIEWED_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string' && x.length > 0) : []
+  } catch {
+    return []
+  }
+}
+
+function recordRecentlyViewedId(id: string): string[] {
+  const prev = readRecentlyViewedIds()
+  const next = [id, ...prev.filter((item) => item !== id)].slice(0, MAX_RECENTLY_VIEWED)
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(next))
+    } catch {
+      // ignore storage quota / privacy mode errors
+    }
+  }
+  return next
+}
+
 /** The API wraps single resources as `{ status, data }`; unwrap defensively. */
 function unwrapOne(res: unknown): ApiProduct | null {
   if (res && typeof res === 'object' && 'data' in res) return (res as { data: ApiProduct }).data
@@ -22,7 +72,9 @@ function unwrapOne(res: unknown): ApiProduct | null {
 
 export function ProductPage({ slug }: { slug: string }) {
   const { add } = useCart()
+  const { products: allProducts } = useProducts()
   const [product, setProduct] = useState<Product | null>(null)
+  const [recentIds, setRecentIds] = useState<string[]>(() => readRecentlyViewedIds())
   const [loading, setLoading] = useState(true)
   const [failed, setFailed] = useState(false)
   const [qty, setQty] = useState(1)
@@ -43,6 +95,7 @@ export function ProductPage({ slug }: { slug: string }) {
         const mapped = mapApiProduct(raw)
         if (cancelled) return
         setProduct(mapped)
+        setRecentIds(recordRecentlyViewedId(productIdentifier(mapped)))
         const contentId = mapped.did ?? mapped.slug ?? String(mapped.id)
         const eventId = newEventId('vc')
         trackViewContent({ productDid: contentId, productName: mapped.apiName ?? mapped.name, price: mapped.price, eventId })
@@ -61,6 +114,27 @@ export function ProductPage({ slug }: { slug: string }) {
       cancelled = true
     }
   }, [slug])
+
+  const currentKey = product ? productIdentifier(product) : ''
+
+  const recentlyViewedProducts = useMemo(() => {
+    if (!product || allProducts.length === 0) return []
+    const byId = new Map(allProducts.map((p) => [productIdentifier(p), p]))
+    const matched = recentIds
+      .filter((id) => id !== currentKey)
+      .map((id) => byId.get(id))
+      .filter((p): p is Product => Boolean(p))
+    return pickWithOfferPriority(matched, 4)
+  }, [allProducts, product, recentIds, currentKey])
+
+  const moreProducts = useMemo(() => {
+    if (!product || allProducts.length === 0) return []
+    const recentSet = new Set(recentlyViewedProducts.map(productIdentifier))
+    const others = allProducts.filter((p) => productIdentifier(p) !== currentKey)
+    const nonDuplicate = others.filter((p) => !recentSet.has(productIdentifier(p)))
+    const pool = nonDuplicate.length >= 8 ? nonDuplicate : others
+    return pickWithOfferPriority(pool, 8)
+  }, [allProducts, product, currentKey, recentlyViewedProducts])
 
   if (loading) {
     return (
@@ -233,6 +307,51 @@ export function ProductPage({ slug }: { slug: string }) {
         // Admin-authored HTML from our own StoreWeb API
         dangerouslySetInnerHTML={{ __html: product.longDescription }}
       />
+    )}
+
+    {/* Recently Viewed Products (4 random, offer priority) */}
+    {recentlyViewedProducts.length > 0 && (
+      <section className="mt-12 border-t border-border pt-8">
+        <div className="mb-5 flex items-baseline justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl font-bold tracking-tight md:text-2xl">
+              {L('Recently Viewed Products', 'সম্প্রতি দেখা প্রোডাক্ট')}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+              {L('Products you checked out recently.', 'আপনি সম্প্রতি যে প্রোডাক্টগুলো দেখেছেন।')}
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {recentlyViewedProducts.map((item) => (
+            <ProductCard key={item.id} product={item} />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {/* More Products (8 random, offer priority) */}
+    {moreProducts.length > 0 && (
+      <section className="mt-12 border-t border-border pt-8">
+        <div className="mb-5 flex items-baseline justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl font-bold tracking-tight md:text-2xl">
+              {L('More Products', 'আরও প্রোডাক্ট')}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+              {L('Explore more discreet essentials and active offers.', 'আরও প্রোডাক্ট ও চলমান অফারগুলো দেখুন।')}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={() => navigate('/shop')}>
+            {L('View all →', 'সব দেখুন →')}
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {moreProducts.map((item) => (
+            <ProductCard key={item.id} product={item} />
+          ))}
+        </div>
+      </section>
     )}
     </div>
   )

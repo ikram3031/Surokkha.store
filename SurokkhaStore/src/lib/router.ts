@@ -7,6 +7,8 @@ export type Route =
   | { name: 'product'; slug: string }
   | { name: 'offer' }
   | { name: 'offers' }
+  | { name: 'shop' }
+  | { name: 'offer-products' }
   | { name: 'group-offer'; slug: string }
   | { name: 'category'; slug: string }
   | { name: 'checkout' }
@@ -24,6 +26,8 @@ export function parseRoute(pathname: string): Route {
   if (parts[0] === 'blog') return { name: 'blog' }
   if (parts[0] === 'product' && parts[1]) return { name: 'product', slug: decodeURIComponent(parts[1]) }
   if (parts[0] === 'offers') return { name: 'offers' }
+  if (parts[0] === 'shop') return { name: 'shop' }
+  if (parts[0] === 'offer-products') return { name: 'offer-products' }
   if (parts[0] === 'offer') return { name: 'offer' }
   if (parts[0] === 'group-offer' && parts[1]) return { name: 'group-offer', slug: decodeURIComponent(parts[1]) }
   if (parts[0] === 'category' && parts[1]) return { name: 'category', slug: decodeURIComponent(parts[1]) }

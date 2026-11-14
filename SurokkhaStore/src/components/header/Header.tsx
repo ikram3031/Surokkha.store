@@ -1,3 +1,4 @@
+import { CategoryBar } from '@/components/header/CategoryBar'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
@@ -65,6 +66,7 @@ export function Header({
           <CartButton onClick={onCartOpen} />
         </div>
       </div>
+      <CategoryBar onCategory={onCategory} />
     </header>
   )
 }

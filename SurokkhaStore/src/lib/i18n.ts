@@ -11,3 +11,10 @@ export const LANG: Lang = 'bn'
 export function L(en: string, bnText: string): string {
   return LANG === 'bn' ? bnText : en
 }
+
+const BN_DIGITS = '০১২৩৪৫৬৭৮৯'
+
+/** 1299 -> ১২৯৯ (Bengali digits for prices and counts in Bangla text). */
+export function toBnDigits(value: number | string): string {
+  return String(value).replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)])
+}

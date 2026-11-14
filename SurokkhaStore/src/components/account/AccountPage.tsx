@@ -17,7 +17,7 @@ import {
 } from '@/lib/api/customer-auth'
 import { isValidEmail, isValidPhone, localPhone, normalizePhone, toEnDigits } from '@/lib/checkout'
 import { ApiError } from '@/lib/api/client'
-import { navigate } from '@/lib/router'
+import { navigate, useSearch } from '@/lib/router'
 import { CustomerDashboard } from '@/components/account/CustomerDashboard'
 import { L } from '@/lib/i18n'
 
@@ -94,7 +94,13 @@ function Breadcrumb({ current, onDark = false }: { current: string; onDark?: boo
 export function AccountPage() {
   // CMS image (Dashboard → CMS → Section Backgrounds → "login") wins; otherwise the bundled default photo
   const image = useSectionBackground('login') || '/auth/login.webp'
+  // /account?view=signup (the menu's Register button) opens on the sign up form, ?view=login back on log in
+  const search = useSearch()
   const [view, setView] = useState<View>('login')
+  useEffect(() => {
+    const wanted = new URLSearchParams(search).get('view')
+    if (wanted === 'signup' || wanted === 'login') setView(wanted)
+  }, [search])
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [checking, setChecking] = useState(true)
   const [busy, setBusy] = useState(false)

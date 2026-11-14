@@ -4,7 +4,6 @@ import nodemailer from "nodemailer";
 import MailComposer from "nodemailer/lib/mail-composer/index.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { decryptText } from "../utils/crypto.util.js";
-import { env } from "../config/env.js";
 import { resolveSite } from "../templates/surokkhaBrand.js";
 
 // Store (surokkha.store) SMTP lives in its own settings document; the shop uses "default"
@@ -29,7 +28,7 @@ const readSiteSmtp = async (site) => {
   }
 };
 
-// Resolves active SMTP configuration from database with environment fallback; a site with its own SMTP uses that
+// Resolves active SMTP configuration strictly from the database; a site with its own SMTP uses that
 export const getSmtpConfig = async (site) => {
   const siteSmtp = await readSiteSmtp(site);
   let dbSmtp = siteSmtp || {};
@@ -38,38 +37,22 @@ export const getSmtpConfig = async (site) => {
       const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
       dbSmtp = doc?.smtp || {};
     } catch (err) {
-      console.warn("[SMTP Config] Failed to fetch StoreSettings from DB, using env fallback:", err.message);
+      console.warn("[SMTP Config] Failed to fetch StoreSettings from DB:", err.message);
     }
   }
 
-  const hasDbCredentials = Boolean(dbSmtp.host && dbSmtp.user && dbSmtp.password);
-  const useDb = Boolean(dbSmtp.isEnabled && hasDbCredentials);
-
-  const host = (useDb ? dbSmtp.host : (env.SMTP_HOST || dbSmtp.host || "smtp.hostinger.com")).trim();
-  const port = Number(useDb ? dbSmtp.port : (env.SMTP_PORT || dbSmtp.port || 465));
-  const user = (useDb ? dbSmtp.user : (env.SMTP_USER || dbSmtp.user || "")).trim();
-  const rawPassword = useDb
-    ? decryptText(dbSmtp.password || "")
-    : (env.SMTP_PASSWORD || decryptText(dbSmtp.password || "") || "");
-  const password = String(rawPassword).trim();
-  
-  let secure;
-  if (useDb && dbSmtp.secure !== undefined) {
-    secure = Boolean(dbSmtp.secure);
-  } else if (port === 465) {
-    secure = true;
-  } else if (port === 587) {
-    secure = false;
-  } else {
-    secure = String(env.SMTP_ENCRYPTION || "").toLowerCase() === "ssl";
-  }
+  const host = String(dbSmtp.host || "").trim();
+  const port = Number(dbSmtp.port || 465);
+  const user = String(dbSmtp.user || "").trim();
+  const password = String(dbSmtp.password ? decryptText(dbSmtp.password) : "").trim();
+  const secure = dbSmtp.secure !== undefined ? Boolean(dbSmtp.secure) : port === 465;
 
   const defaultBrand = "Surokkha";
   const defaultDomain = "surokkha.store";
-  const fromName = (useDb && dbSmtp.senderName ? dbSmtp.senderName : env.SMTP_FROM_NAME || defaultBrand).trim();
-  const fromEmail = (useDb && dbSmtp.senderEmail ? dbSmtp.senderEmail : env.SMTP_FROM || user || `support@${defaultDomain}`).trim();
+  const fromName = String(dbSmtp.senderName || defaultBrand).trim();
+  const fromEmail = String(dbSmtp.senderEmail || user || `support@${defaultDomain}`).trim();
 
-  const isConfigured = Boolean(host && user && password && password !== "none");
+  const isConfigured = Boolean(dbSmtp.isEnabled && host && user && password && password !== "none");
 
   return {
     host,
@@ -81,7 +64,7 @@ export const getSmtpConfig = async (site) => {
     fromEmail,
     fromAddress: { name: fromName, address: fromEmail },
     isConfigured,
-    source: siteSmtp ? SITE_SMTP_KEYS[site] : useDb ? "database" : (hasDbCredentials ? "database-fallback" : "env"),
+    source: siteSmtp ? SITE_SMTP_KEYS[site] : "database",
   };
 };
 

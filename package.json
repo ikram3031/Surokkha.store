@@ -10,6 +10,8 @@
     "dev:backend:storefront": "npm run dev:storefront --prefix backend",
     "dev:backend:dashboard": "npm run dev:dashboard --prefix backend",
     "dev:dashboard": "npm run dev --prefix dashboard",
+    "dev:dashboard:live": "npm run dev:live --prefix dashboard",
+    "dev:dashboard:local": "npm run dev:local --prefix dashboard",
     "dev:catalog": "npm run dev --prefix catalog",
     "build": "npm run build:frontend && npm run build:dashboard",
     "build:catalog": "npm run build --prefix catalog",

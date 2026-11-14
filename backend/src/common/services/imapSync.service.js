@@ -29,20 +29,17 @@ const storeImapSettings = async () => {
 // Is the store mailbox set up (store SMTP on and complete)?
 export const isStoreMailboxConfigured = async () => Boolean(await storeImapSettings());
 
-// Is the shop mailbox set up (DB IMAP enabled or env IMAP/SMTP credentials)?
+// Is the shop mailbox set up in the database?
 export const isShopMailboxConfigured = async () => {
   const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap").lean();
   const dbImap = doc?.imap || {};
-  if (dbImap.isEnabled && dbImap.host && dbImap.user && dbImap.password) return true;
-  const user = env.IMAP_USER || env.SMTP_USER;
-  const pass = env.IMAP_PASSWORD || env.SMTP_PASSWORD;
-  return Boolean(env.IMAP_HOST && user && pass);
+  return Boolean(dbImap.isEnabled && dbImap.host && dbImap.user && dbImap.password);
 };
 
 // Mailbox filter: older messages have no mailbox field and belong to the shop mailbox
 export const mailboxFilter = (mailbox) => (mailbox === "store" ? { mailbox: "store" } : { mailbox: { $in: ["shop", null] } });
 
-// Creates a new configured ImapFlow client instance
+// Creates a new configured ImapFlow client instance from database settings
 const createImapClient = async (mailbox = "shop") => {
   if (mailbox === "store") {
     const s = await storeImapSettings();
@@ -51,20 +48,17 @@ const createImapClient = async (mailbox = "shop") => {
   }
   const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
   const dbImap = doc?.imap || {};
-
-  const host = dbImap.isEnabled ? dbImap.host : env.IMAP_HOST;
-  const port = dbImap.isEnabled ? dbImap.port : env.IMAP_PORT;
-  const secure = dbImap.isEnabled ? dbImap.secure : env.IMAP_SECURE;
-  const user = dbImap.isEnabled ? dbImap.user : (env.IMAP_USER || env.SMTP_USER);
-  const pass = dbImap.isEnabled ? decryptText(dbImap.password) : (env.IMAP_PASSWORD || env.SMTP_PASSWORD);
+  if (!dbImap.isEnabled || !dbImap.host || !dbImap.user || !dbImap.password) {
+    throw new Error("Shop IMAP is not configured in database");
+  }
 
   return new ImapFlow({
-    host,
-    port,
-    secure,
+    host: dbImap.host,
+    port: dbImap.port || 993,
+    secure: dbImap.secure !== false,
     auth: {
-      user,
-      pass,
+      user: dbImap.user,
+      pass: decryptText(dbImap.password),
     },
     logger: false,
     emitLogs: false,
@@ -190,7 +184,7 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = [], mailbox =
 
         // Never forward our own mail, and never forward back into this mailbox, or it loops forever
         const ownAddresses = new Set(
-          [smtp.user, smtp.fromEmail, env.SMTP_USER, env.SMTP_FROM, env.IMAP_USER]
+          [smtp.user, smtp.fromEmail]
             .filter(Boolean)
             .map((addr) => String(addr).toLowerCase().trim())
         );
@@ -364,7 +358,7 @@ export const startImapIdleListener = async () => {
 
   try {
     await client.connect();
-    logger.info({ host: env.IMAP_HOST, user: env.IMAP_USER || env.SMTP_USER }, "Connected to IMAP server successfully");
+    logger.info("Connected to shop IMAP server successfully");
 
     const lock = await client.getMailboxLock("INBOX");
 

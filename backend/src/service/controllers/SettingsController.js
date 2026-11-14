@@ -693,7 +693,7 @@ export const getBusinessSettings = async (req, res, next) => {
       status: "success",
       data: {
         webmailForwardEmails: Array.isArray(doc?.imap?.forwardEmails) ? doc.imap.forwardEmails : [],
-        webmailMailbox: doc?.imap?.isEnabled ? doc.imap.user || "" : process.env.IMAP_USER || process.env.SMTP_USER || "",
+        webmailMailbox: doc?.imap?.isEnabled ? doc.imap.user || "" : "",
         idFormats: doc?.idFormats || {},
         idTypes: ID_TYPES,
         idTokens: ID_TOKENS,
@@ -735,7 +735,7 @@ export const updateBusinessSettings = async (req, res, next) => {
 
     // Forwarding into the mailbox that is being synced (or that sends) would loop, so it is refused
     const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap smtp").lean();
-    const ownMailboxes = [doc?.imap?.user, doc?.smtp?.user, doc?.smtp?.senderEmail, process.env.IMAP_USER, process.env.SMTP_USER, process.env.SMTP_FROM]
+    const ownMailboxes = [doc?.imap?.user, doc?.smtp?.user, doc?.smtp?.senderEmail]
       .filter(Boolean)
       .map((addr) => String(addr).toLowerCase().trim());
     const looping = forwardList.filter((addr) => ownMailboxes.includes(addr));

@@ -3,6 +3,9 @@ import { Toaster } from '@/components/ui/sonner'
 import { AgeGate } from '@/components/AgeGate'
 import { AnnouncementBar } from '@/components/AnnouncementBar'
 import { Header } from '@/components/header/Header'
+import { Header2 } from '@/components/header/Header2'
+import { ShopPage } from '@/components/shop/ShopPage'
+import { OfferProductsPage } from '@/components/offer/OfferProductsPage'
 import { HomeHero } from '@/components/home/HomeHero'
 import { HomeClassic } from '@/components/home/HomeClassic'
 import { IntroProducts } from '@/components/home/IntroProducts'
@@ -46,6 +49,9 @@ const OFFER_ONLY_MODE = false
 
 // "All Products" grid is hidden on the home page for now; flip to true to bring it back
 const SHOW_ALL_PRODUCTS = false
+
+// Light header v2 (logo + menu left, search / cart / profile right). false brings back the old dark Header.
+const USE_HEADER_V2 = true
 
 function AppShell() {
   const [query, setQuery] = useState('')
@@ -92,7 +98,8 @@ function AppShell() {
     <>
       <AgeGate />
       {!bare && <AnnouncementBar />}
-      {!bare && <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />}
+      {!bare && USE_HEADER_V2 && <Header2 query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />}
+      {!bare && !USE_HEADER_V2 && <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />}
       <main className="min-h-[90vh]">
         {searching && <SearchResults query={query} onClear={() => setQuery('')} />}
         {!searching && (
@@ -127,6 +134,8 @@ function AppShell() {
         )}
         {route.name === 'offer' && <OfferHome />}
         {route.name === 'offers' && <OffersPage />}
+        {route.name === 'shop' && <ShopPage />}
+        {route.name === 'offer-products' && <OfferProductsPage />}
         {route.name === 'group-offer' && <GroupOfferPage slug={route.slug} />}
         {route.name === 'category' && <CategoryPage slug={route.slug} />}
         {route.name === 'product' && <ProductPage slug={route.slug} />}
