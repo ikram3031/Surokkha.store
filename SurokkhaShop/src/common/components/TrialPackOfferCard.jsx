@@ -11,7 +11,8 @@ export default function TrialPackOfferCard({ compact = false }) {
   const closeCartDrawer = useStore((state) => state.closeCartDrawer);
   const { isBn, formatPrice } = useTranslation();
 
-  if (!product || product.isOutOfStock || product.isActive === false || product.stockAmount === 0) return null;
+  // Only promoted while a dashboard Direct Offer gives the Trial Pack free delivery
+  if (!product || !product.freeDelivery || product.isOutOfStock || product.isActive === false || product.stockAmount === 0) return null;
   const price = Number(product.offerPrice || product.price || 0);
 
   const goToProduct = () => {

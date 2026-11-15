@@ -12,8 +12,8 @@ export default function AnnouncementMarquee() {
   const { isBn, formatPrice } = useTranslation();
 
   const trial = products[TRIAL_PACK_SLUG];
-  // The free-delivery message only runs while the Trial Pack exists and can be bought
-  const trialOnSale = Boolean(trial) && trial.isActive !== false && !trial.isOutOfStock &&
+  // The free-delivery message only runs while a Direct Offer gives the Trial Pack free delivery and it can be bought
+  const trialOnSale = Boolean(trial?.freeDelivery) && trial.isActive !== false && !trial.isOutOfStock &&
     trial.stockStatus !== 'outofstock' && trial.stockStatus !== 'out_of_stock' && trial.stockAmount !== 0;
   const trialPrice = trial ? Number(trial.offerPrice || trial.price || 0) : 0;
   const mega = products[MEGA_COMBO_SLUG];

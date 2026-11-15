@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore, isSingleQtyItem, isTrialPackSlug } from '../store/useStore';
+import { useStore, isSingleQtyItem } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from '../components/ProductArtwork';
 import ProductCard from '../components/ProductCard';
@@ -351,7 +351,7 @@ export default function ProductDetailView() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
 
-      {isTrialPackSlug(product.slug) && (
+      {product.freeDelivery && (
         <div className="flex items-start gap-3 rounded-2xl border-2 border-emerald-500 bg-emerald-50 px-4 py-3">
           <span className="text-2xl leading-none">🚚</span>
           <div>
@@ -359,7 +359,7 @@ export default function ProductDetailView() {
               {isBn ? 'এই প্রোডাক্টের সাথে পাবেন ফ্রি হোম ডেলিভারি!' : 'Free home delivery with this product!'}
             </div>
             <div className="text-xs sm:text-sm text-black mt-0.5">
-              {isBn ? 'সুরক্ষা ট্রায়াল প্যাক অর্ডার করলে আপনার পুরো অর্ডারে কোনো ডেলিভারি চার্জ লাগবে না।' : 'Order the Surokkha Trial Pack and pay no delivery charge on your whole order.'}
+              {isBn ? 'এই প্রোডাক্টটি অর্ডারে থাকলে পুরো অর্ডারে কোনো ডেলিভারি চার্জ লাগবে না।' : 'With this product in your order, there is no delivery charge on the whole order.'}
             </div>
           </div>
         </div>

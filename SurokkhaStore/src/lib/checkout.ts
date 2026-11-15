@@ -53,15 +53,8 @@ export const isComboOnlyCoupon = (code?: string) => COMBO_ONLY_COUPONS.includes(
 
 type CartLine = { product: { price: number; slug?: string; freeDelivery?: boolean; itemType?: string; categorySlugs?: string[]; groupOffer?: GroupOfferRule }; qty: number }
 
-/** Surokkha Trial Pack slugs (the pack item, or its Group Offer): orders that include one get free delivery, as on SurokkhaShop */
-export const isTrialPackSlug = (slug?: string) => !!slug && slug.startsWith('surokkha-trial-pack')
-
-/** The order ships free: it has a Trial Pack, or a product a dashboard Direct Offer gives free delivery */
-export const hasFreeDelivery = (lines: CartLine[]) =>
-  lines.some(
-    ({ product, qty }) =>
-      qty > 0 && (product.freeDelivery || isTrialPackSlug(product.slug) || isTrialPackSlug(product.groupOffer?.slug))
-  )
+/** The order ships free: it has a product a dashboard Direct Offer gives free delivery */
+export const hasFreeDelivery = (lines: CartLine[]) => lines.some(({ product, qty }) => qty > 0 && product.freeDelivery)
 
 /** Pricing of every Group Offer in the cart: each group is discounted on its own pieces total. */
 export function groupOfferTotals(lines: CartLine[]) {

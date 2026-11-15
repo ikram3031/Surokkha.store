@@ -110,7 +110,6 @@ export const isSingleQtyItem = (prod) => {
   return isItem && !hasVariants;
 };
 
-// Surokkha Trial Pack slugs: orders that include any trial pack get free delivery
 // Category slugs a product belongs to, using the dashboard categories; a parent category also holds its sub-categories' products
 export const productCategorySlugs = (p, allCategories = []) => {
   const byId = new Map();
@@ -1187,8 +1186,6 @@ export const useStore = create((set, get) => ({
       deliveryFee = getDeliveryCharge(activeDistrict, activeThana);
     }
 
-    const isTrialPackFreeDelivery = Object.entries(cart).some(([k, q]) => q > 0 && (isTrialPackSlug(k.split(':::')[0]) || isTrialPackSlug(products[k.split(':::')[0]]?.groupOffer?.slug)));
-
     // Group Offers: each group is discounted on its own pieces total
     const groupMap = new Map();
     Object.entries(cart).forEach(([k, q]) => {
@@ -1230,22 +1227,21 @@ export const useStore = create((set, get) => ({
 
     // New customer: first order ships free above the dashboard's minimum (only claimed when nothing else made it free)
     const isNewUserFreeDelivery =
-      newUserFreeMin != null && totalItemCount > 0 && subtotal >= newUserFreeMin && !isTrialPackFreeDelivery && !isDirectOfferFreeDelivery;
+      newUserFreeMin != null && totalItemCount > 0 && subtotal >= newUserFreeMin && !isDirectOfferFreeDelivery;
     // Any order of ৳1,000 or more ships free
     const isOrderAmountFreeDelivery = totalItemCount > 0 && subtotal >= FREE_DELIVERY_MIN;
-    if (isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery) deliveryFee = 0;
+    if (isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery) deliveryFee = 0;
 
     const couponDiscount = discountAmount;
     discountAmount = Math.min(subtotal, couponDiscount + groupDiscount);
     const grandTotal = Math.max(0, subtotal + deliveryFee - discountAmount);
 
     return {
-      isTrialPackFreeDelivery,
       isDirectOfferFreeDelivery,
       isNewUserFreeDelivery,
       isOrderAmountFreeDelivery,
       newUserFreeMin,
-      isFreeDelivery: isFreeShippingCoupon || isTrialPackFreeDelivery || isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery,
+      isFreeDelivery: isFreeShippingCoupon || isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery,
       subtotal,
       deliveryFee,
       originalDeliveryFee,

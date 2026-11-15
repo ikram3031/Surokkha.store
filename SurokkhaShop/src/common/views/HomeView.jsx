@@ -64,7 +64,7 @@ export default function HomeView() {
   const RIGHT_COMBO_ID = '6ad3db40d7265af12af6aa8d';
   const RIGHT_COMBO_SLUG = 'protection-combo-20-pcs-50gm-gel';
   const pinnedRightProd = products[RIGHT_COMBO_ID] || products[RIGHT_COMBO_SLUG];
-  // RIGHT card shows the Surokkha Trial Pack (free delivery offer) while it is on sale
+  // RIGHT card shows the Surokkha Trial Pack while it is on sale (free delivery only when a Direct Offer gives it)
   const trialPackProd = isComboActive(products[TRIAL_PACK_SLUG]) ? products[TRIAL_PACK_SLUG] : null;
   const comboRibbedProd = trialPackProd || (microThin30Prod && microThin30Prod !== combo30Prod ? microThin30Prod : null) ||
     (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) ||
@@ -314,13 +314,14 @@ export default function HomeView() {
                 const rStock = Number(comboRibbedProd.stockAmount != null ? comboRibbedProd.stockAmount : (comboRibbedProd.stock != null ? comboRibbedProd.stock : 0));
                 const rLow = rStock > 0 && rStock <= 10;
                 const isTrial = comboRibbedProd === trialPackProd;
+                const trialFree = isTrial && comboRibbedProd.freeDelivery === true;
 
                 return (
                   <div className="bg-slate-900/90 border-2 border-purple-500/80 rounded-3xl p-5 sm:p-6 text-left relative flex flex-col justify-between shadow-2xl hover:border-purple-400 transition-all duration-300 group">
                     <div className="absolute -top-3.5 right-6 z-20 bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 text-white text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xl flex items-center gap-1 border border-purple-400/40">
                       <span>🔥</span>
                       <span>
-                        {isTrial ? (isBn ? '🚚 ফ্রি হোম ডেলিভারি' : '🚚 Free Home Delivery') : rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'প্রোটেকশন কম্বো • ২০ পিস + জেল' : 'Protection Combo • 20 Pcs + Gel')}
+                        {trialFree ? (isBn ? '🚚 ফ্রি হোম ডেলিভারি' : '🚚 Free Home Delivery') : isTrial ? (isBn ? 'সুরক্ষা ট্রায়াল প্যাক' : 'Surokkha Trial Pack') : rLow ? (isBn ? `স্টক সীমিত: মাত্র ${formatNumber(rStock)}টি বাকি!` : `Hurry! Only ${rStock} Left!`) : (isBn ? 'প্রোটেকশন কম্বো • ২০ পিস + জেল' : 'Protection Combo • 20 Pcs + Gel')}
                       </span>
                     </div>
 
@@ -367,7 +368,7 @@ export default function HomeView() {
                         </div>
                         <div className="text-right">
                           <span className="inline-block bg-gradient-to-r from-purple-500 to-rose-500 text-white font-black text-xs px-2.5 py-1 rounded-xl shadow-xs">
-                            {isTrial ? (isBn ? 'ডেলিভারি ফ্রি' : 'Free Delivery') : (isBn ? `সাশ্রয় ৳${cRibbedSavings}` : `Save ৳${cRibbedSavings}`)}
+                            {trialFree ? (isBn ? 'ডেলিভারি ফ্রি' : 'Free Delivery') : isTrial ? (isBn ? '১২ পিস' : '12 Pcs') : (isBn ? `সাশ্রয় ৳${cRibbedSavings}` : `Save ৳${cRibbedSavings}`)}
                           </span>
                           <div className="text-[10px] text-amber-300 font-bold mt-1">
                             {isTrial ? (isBn ? '৬ ভ্যারিয়েন্ট • ১২ পিস' : '6 Variants • 12 Pcs') : (isBn ? '২০ পিস + ৫০ গ্রাম জেল' : '20 Pcs + 50g Gel')}

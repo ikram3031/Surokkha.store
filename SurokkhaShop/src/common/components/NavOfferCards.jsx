@@ -52,15 +52,17 @@ export default function NavOfferCards({ onNavigate, compact = false }) {
         )}
       </button>
 
-      {/* Trial Pack: free delivery first */}
+      {/* Trial Pack: free delivery badge only while a Direct Offer gives it */}
       <button
         type="button"
         onClick={() => open(TRIAL_PACK_SLUG)}
         className={`flex flex-col items-start rounded-2xl bg-gradient-to-br from-emerald-600 to-[#064e3b] text-left text-white cursor-pointer hover:brightness-110 transition ${compact ? 'p-3' : 'p-5'}`}
       >
-        <span className={`rounded-full bg-white font-extrabold text-emerald-800 ${compact ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs'}`}>
-          🚚 {isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'}
-        </span>
+        {trial?.freeDelivery && (
+          <span className={`rounded-full bg-white font-extrabold text-emerald-800 ${compact ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs'}`}>
+            🚚 {isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'}
+          </span>
+        )}
         <span className={`mt-2 font-extrabold leading-tight ${compact ? 'text-sm' : 'text-xl'}`}>
           {isBn ? 'সুরক্ষা ট্রায়াল প্যাক' : 'Surokkha Trial Pack'}
         </span>

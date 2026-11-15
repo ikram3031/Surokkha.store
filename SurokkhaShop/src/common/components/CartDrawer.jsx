@@ -1,6 +1,6 @@
 import FreeDeliveryProgress from './FreeDeliveryProgress';
 import React, { useEffect, useRef, useState } from 'react';
-import { useStore, getFeaturedCombo, isTrialPackSlug, isGroupPieceKey } from '../store/useStore';
+import { useStore, getFeaturedCombo, isGroupPieceKey } from '../store/useStore';
 import TrialPackOfferCard from './TrialPackOfferCard';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
@@ -376,10 +376,10 @@ export default function CartDrawer() {
 
                 <FreeDeliveryProgress subtotal={totals.subtotal} isBn={isBn} />
 
-                {cartKeys.some((k) => isTrialPackSlug(k.split(':::')[0])) ? (
+                {totals.isDirectOfferFreeDelivery ? (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-emerald-900 flex items-center gap-2">
                     <span>🚚</span>
-                    <span>{isBn ? 'সুরক্ষা ট্রায়াল প্যাক থাকায় আপনার পুরো অর্ডারে ডেলিভারি ফ্রি!' : 'Surokkha Trial Pack in cart: free delivery on your whole order!'}</span>
+                    <span>{isBn ? 'ফ্রি ডেলিভারি অফারের প্রোডাক্ট থাকায় আপনার পুরো অর্ডারে ডেলিভারি ফ্রি!' : 'A free delivery offer product is in your cart: free delivery on your whole order!'}</span>
                   </div>
                 ) : (
                   <TrialPackOfferCard compact />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStore, isTrialPackSlug } from '../store/useStore';
+import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
 
@@ -146,19 +146,12 @@ export default function ProductCard({ productKey, className = '' }) {
           </div>
         ) : null}
 
-        {prod?.freeDelivery && !(isTrialPackSlug(productKey) || isTrialPackSlug(prod?.slug)) && (
+        {/* Free delivery only while a dashboard Direct Offer gives it to this product */}
+        {prod?.freeDelivery && (
           <div className="absolute bottom-2 left-2 z-20 pointer-events-none select-none">
-            <span className="inline-flex items-center bg-emerald-600 text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full shadow-md">
-              {isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'}
-            </span>
-          </div>
-        )}
-
-        {(isTrialPackSlug(productKey) || isTrialPackSlug(prod?.slug)) && (
-          <div className="absolute bottom-2 left-2 z-20 pointer-events-none select-none">
-            <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] sm:text-xs font-extrabold px-2.5 py-1 rounded-full shadow-lg border border-white/70">
+            <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full shadow-md">
               <span>🚚</span>
-              <span>{isBn ? 'ফ্রি হোম ডেলিভারি' : 'Free Home Delivery'}</span>
+              <span>{isBn ? 'ফ্রি ডেলিভারি' : 'Free Delivery'}</span>
             </span>
           </div>
         )}
