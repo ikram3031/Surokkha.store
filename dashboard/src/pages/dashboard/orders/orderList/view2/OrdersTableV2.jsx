@@ -21,7 +21,7 @@ import {
   Truck,
   X,
 } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -246,14 +246,14 @@ export function OrdersTableV2({ list }) {
   const someSelected = selectedOnPage > 0 && !allSelected;
 
   return (
-    <Table className="min-w-[1040px] table-fixed [&_td]:py-2.5 [&_th]:text-primary dark:[&_th]:text-foreground/90">
+    <Table className="min-w-[1040px] table-fixed">
       <colgroup>
         {COLUMNS.map((col) => (
           <col key={col.key} className={col.className} />
         ))}
       </colgroup>
 
-      <TableHeader className="bg-primary/10 dark:bg-primary/15 [&_tr]:border-primary/20">
+      <TableHeader>
         <TableRow>
           <TableHead className="pr-0 pl-4">
             <Checkbox
@@ -327,7 +327,7 @@ export function OrdersTableV2({ list }) {
                 key={order.id}
                 data-state={isSelected ? 'selected' : undefined}
                 onClick={() => orderActions.openQuickView(order)}
-                className={cn('cursor-pointer', isSelected && 'bg-primary/5 hover:bg-primary/10')}
+                className="cursor-pointer"
               >
                 <TableCell className="pr-0 pl-4" onClick={stop}>
                   <Checkbox

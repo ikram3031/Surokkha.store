@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { EmptyState, Field, NativeSelect, PageHeader, RowActions, SearchBox } from '@/components/dashboard/blog/blog-ui';
 import { useBlogCategories, useDeleteCategory, useSaveCategory } from '@/hooks/use-blog';
 import { slugify } from '@/lib/blog-seo';

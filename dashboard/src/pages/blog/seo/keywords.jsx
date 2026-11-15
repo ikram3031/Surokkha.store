@@ -3,7 +3,7 @@ import { KeyRound, Plus, Trash2, Trophy, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { EmptyState, Field, PageHeader, RowActions, SearchBox, Sparkline, StatCard, ToneBadge, useDebounced } from '@/components/dashboard/blog/blog-ui';
 import { useCreateKeyword, useDeleteKeyword, useSeoKeywords, useUpdateKeyword } from '@/hooks/use-blog';
 

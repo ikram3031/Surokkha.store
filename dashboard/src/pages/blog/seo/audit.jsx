@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { CircleCheck, CircleX, RefreshCw, TriangleAlert } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { EmptyState, IconTile, NativeSelect, PageHeader, RowActions, ScoreBadge, SearchBox, ToneBadge, useDebounced } from '@/components/dashboard/blog/blog-ui';
 import { useSeoAudit } from '@/hooks/use-blog';
 import { timeAgo } from '@/lib/blog-seo';

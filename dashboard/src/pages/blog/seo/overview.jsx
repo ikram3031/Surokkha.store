@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CircleCheck, CircleX, FileText, Link2, Map, ScanSearch, TriangleAlert } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { EmptyState, LoadingBlocks, PageHeader, StatCard, ToneBadge, scoreTone } from '@/components/dashboard/blog/blog-ui';
 import { useSeoOverview } from '@/hooks/use-blog';
 

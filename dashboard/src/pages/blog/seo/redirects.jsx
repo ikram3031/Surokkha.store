@@ -3,7 +3,7 @@ import { ArrowRightLeft, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { EmptyState, Field, NativeSelect, PageHeader, RowActions, TabBar, ToneBadge } from '@/components/dashboard/blog/blog-ui';
 import { useDeleteNotFound, useDeleteRedirect, useSaveRedirect, useSeoNotFound, useSeoRedirects } from '@/hooks/use-blog';
 import { timeAgo } from '@/lib/blog-seo';

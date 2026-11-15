@@ -25,7 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/table-v2';
 import { Plus, Search, Edit2, Trash2, FolderTree, ImagePlus, X } from 'lucide-react';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';

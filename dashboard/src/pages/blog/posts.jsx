@@ -5,7 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { EmptyState, NativeSelect, PageHeader, RowActions, ScoreBadge, SearchBox, TabBar, ToneBadge, useDebounced } from '@/components/dashboard/blog/blog-ui';
 import { useBlogCategories, useBlogPosts, useBulkPosts, useDeletePost } from '@/hooks/use-blog';
 import { clientConfig } from '@/clientConfig';

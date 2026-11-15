@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Eye, FileText, MessageSquare, Plus } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { EmptyState, LoadingBlocks, PageHeader, StatCard, ToneBadge } from '@/components/dashboard/blog/blog-ui';
 import { useBlogOverview } from '@/hooks/use-blog';
 import { timeAgo } from '@/lib/blog-seo';

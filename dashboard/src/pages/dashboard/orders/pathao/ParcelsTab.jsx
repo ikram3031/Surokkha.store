@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, FileUp, MoreHorizontal, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { CancelPathaoParcelButton } from '@/components/dashboard/orders/pathaoParcel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

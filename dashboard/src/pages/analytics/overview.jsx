@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { Button } from '@/components/ui/button';
 import {
   RangeBar, StatCard, ProductDrawer, METRICS, makeColorFor, useAnalyticsRange, formatMoney, tooltipStyle,

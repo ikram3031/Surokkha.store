@@ -5,7 +5,7 @@ import { apiClient } from '@/lib/api-client';
 import { Eye, ShoppingCart, CreditCard, PackageCheck } from 'lucide-react';
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { DateRangeSelect } from '@/components/dashboard/date-range-select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
