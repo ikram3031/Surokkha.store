@@ -4,6 +4,7 @@ import UltimateComboHero from './UltimateComboHero';
 import ProtectionComboHero from './ProtectionComboHero';
 import CmsHeroSlide from './CmsHeroSlide';
 import SurokkhaTrialPackHero from './SurokkhaTrialPackHero';
+import TodayOfferHero, { isTodayOfferLive } from './TodayOfferHero';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { useStore, TRIAL_PACK_SLUG } from '../store/useStore';
 
@@ -79,12 +80,16 @@ export default function HeroBannerSlider({ useCms = true }) {
   }, []);
 
   const settings = { ...DEFAULT_SETTINGS, ...(cms?.settings || {}) };
-  const slides = useCms && cms
+  const baseSlides = useCms && cms
     ? cms.items.map((item, i) => ({ key: item._id || `cms-${i}`, render: () => <CmsHeroSlide slide={item} /> }))
     : FALLBACK_SLIDES
         // The Trial Pack slide (free delivery) only while that product exists
         .filter(({ key }) => key !== TRIAL_PACK_SLUG || (trialPack && trialPack.isActive !== false))
         .map(({ key, Component, props }) => ({ key, render: () => <Component {...props} /> }));
+  // Today-only MO Smart Pack offer goes first while it is live
+  const slides = isTodayOfferLive()
+    ? [{ key: 'today-offer', render: () => <TodayOfferHero /> }, ...baseSlides]
+    : baseSlides;
 
   const slideCount = slides.length;
   const current = pos % slideCount;

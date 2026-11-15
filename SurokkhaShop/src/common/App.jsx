@@ -9,6 +9,7 @@ import FloatingCart from './components/FloatingCart';
 import MobileBottomNav from './components/MobileBottomNav';
 import AgeGateModal from './components/AgeGateModal';
 import CartDrawer from './components/CartDrawer';
+import SeoHead from './components/SeoHead';
 
 import HomeView from './views/HomeView';
 import ShopView from './views/ShopView';
@@ -63,8 +64,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white antialiased text-slate-800 pb-14 md:pb-0">
+      <SeoHead />
       <Navbar />
-      
+
       <main id="appContent" className="flex-grow">
         {currentView === 'home' && <HomeView />}
         {currentView === 'shop' && <ShopView />}

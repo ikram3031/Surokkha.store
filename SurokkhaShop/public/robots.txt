@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /confirmation
+Disallow: /account
+Disallow: /cart
+
+Sitemap: https://surokkha.shop/sitemap.xml

@@ -1,15 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="facebook-domain-verification" content="jgrq59bzvnhourn0jucw6iyntf2vt5" />
   <link rel="icon" type="image/png" href="/fav.png" />
-  <title>%VITE_BRAND_NAME%</title>
-  <meta name="description" content="Premium personal wellness products storefront." />
-  <meta property="og:title" content="%VITE_BRAND_NAME%" />
-  <meta property="og:description" content="Premium MO personal wellness products storefront." />
+  <!-- Defaults for the home page; SeoHead.jsx updates title, description, canonical and robots per page -->
+  <title>সুরক্ষা | Surokkha Shop – কনডম ও পার্সোনাল কেয়ার অনলাইন শপ</title>
+  <meta name="description" content="সুরক্ষা (Surokkha Shop) – বাংলাদেশে অরিজিনাল কনডম, লুব্রিকেন্ট ও পার্সোনাল কেয়ার পণ্য অনলাইনে কিনুন। গোপন প্যাকেজিং, ক্যাশ অন ডেলিভারি, সারা দেশে হোম ডেলিভারি।" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://surokkha.shop/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="সুরক্ষা – Surokkha Shop" />
+  <meta property="og:locale" content="bn_BD" />
+  <meta property="og:url" content="https://surokkha.shop/" />
+  <meta property="og:title" content="সুরক্ষা | Surokkha Shop – কনডম ও পার্সোনাল কেয়ার অনলাইন শপ" />
+  <meta property="og:description" content="অরিজিনাল কনডম, লুব্রিকেন্ট ও পার্সোনাল কেয়ার পণ্য। গোপন প্যাকেজিং, ক্যাশ অন ডেলিভারি।" />
+  <meta property="og:image" content="https://surokkha.shop/banners/trial-pack-packets.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Brand identity for search engines: "সুরক্ষা", "Surokkha" and "Surokkha Shop" are the same site -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://surokkha.shop/#organization",
+        "name": "সুরক্ষা",
+        "alternateName": ["Surokkha", "Surokkha Shop", "সুরক্ষা শপ"],
+        "url": "https://surokkha.shop/",
+        "logo": "https://surokkha.shop/fav.png",
+        "contactPoint": { "@type": "ContactPoint", "telephone": "+8801600905774", "contactType": "customer service", "areaServed": "BD", "availableLanguage": ["bn", "en"] }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://surokkha.shop/#website",
+        "name": "সুরক্ষা",
+        "alternateName": ["Surokkha", "Surokkha Shop"],
+        "url": "https://surokkha.shop/",
+        "inLanguage": "bn-BD",
+        "publisher": { "@id": "https://surokkha.shop/#organization" }
+      }
+    ]
+  }
+  </script>
 
   <!-- Google Fonts: Noto Serif Bengali, Hind Siliguri, Inter & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -99,15 +135,15 @@
     fbq('set', 'autoConfig', false, '1565104865301894');
     // One visitor id (localStorage _sk_ext_id, same key as analytics.js getExternalId) is the pixel
     // external_id; the backend Conversions API events send this same id so Meta pairs them.
-    var skExtId = ;
+    var skExtId = '';
     try {
-      skExtId = localStorage.getItem(_sk_ext_id) || ;
+      skExtId = localStorage.getItem('_sk_ext_id') || '';
       if (!skExtId) {
-        skExtId = sk_ + Date.now() + _ + Math.random().toString(36).substring(2, 10);
-        localStorage.setItem(_sk_ext_id, skExtId);
+        skExtId = 'sk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('_sk_ext_id', skExtId);
       }
     } catch (e) {}
-    fbq(init, 1565104865301894, skExtId ? { external_id: skExtId } : {});
+    fbq('init', '1565104865301894', skExtId ? { external_id: skExtId } : {});
     fbq('track', 'PageView');
   </script>
   <!-- End Meta Pixel Code -->
@@ -118,6 +154,11 @@
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1565104865301894&ev=PageView&noscript=1" /></noscript>
   <div id="root"></div>
+  <noscript>
+    <h1>সুরক্ষা – Surokkha Shop</h1>
+    <p>বাংলাদেশে অরিজিনাল কনডম, লুব্রিকেন্ট ও পার্সোনাল কেয়ার পণ্যের অনলাইন শপ। গোপন প্যাকেজিং, ক্যাশ অন ডেলিভারি, সারা দেশে হোম ডেলিভারি।</p>
+    <a href="/shop">সব পণ্য</a> · <a href="/offers">অফার</a> · <a href="/faq">প্রশ্নোত্তর</a> · <a href="/contact">যোগাযোগ</a>
+  </noscript>
   <script type="module" src="./main.jsx"></script>
 </body>
 
