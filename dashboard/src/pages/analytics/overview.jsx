@@ -214,44 +214,6 @@ const TrendCard = ({ query, enabled, colorFor }) => {
   );
 };
 
-// Funnel numbers per product as grouped bars, each product in its own color
-const ProductBarsCard = ({ list, colorFor }) => {
-  const { t } = useTranslation();
-  const rows = list.slice(0, 8);
-  if (!rows.length) return null;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('analytics.funnel_by_product', 'Funnel by product')}</CardTitle>
-        <CardDescription>{t('analytics.funnel_by_product_hint', 'Unique visitors per step, top 8 products by views.')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={METRICS.map((m) => ({
-                step: t(`analytics.metric_${m.id}`, m.label),
-                ...Object.fromEntries(rows.map((p) => [p.productKey, p[m.id].unique])),
-              }))}
-              margin={{ left: -16, right: 8, top: 8 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="step" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--muted)', opacity: 0.4 }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              {rows.map((p) => (
-                <Bar key={p.productKey} dataKey={p.productKey} name={p.name} fill={colorFor(p.productKey)} radius={[3, 3, 0, 0]} />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
 const ProductTable = ({ list, colorFor, onSelect }) => {
   const { t } = useTranslation();
   return (
@@ -289,7 +251,7 @@ const ProductTable = ({ list, colorFor, onSelect }) => {
                       <div className="flex items-center gap-2">
                         <span className="size-3 shrink-0 rounded-sm" style={{ background: colorFor(p.productKey) }} />
                         <div className="min-w-0">
-                          <div className="truncate font-medium">{p.name}</div>
+                          <div className="max-w-[140px] truncate font-medium sm:max-w-[240px]" title={p.name}>{p.name}</div>
                           {p.purchase.value > 0 && (
                             <div className="text-[11px] text-muted-foreground">{formatMoney(p.purchase.value)}</div>
                           )}
@@ -392,7 +354,6 @@ export default function AnalyticsOverview() {
       </div>
 
       <TrendCard query={range.query} enabled={range.enabled} colorFor={colorFor} />
-      <ProductBarsCard list={list} colorFor={colorFor} />
       <ProductTable list={list} colorFor={colorFor} onSelect={setSelected} />
 
       <ProductDrawer product={selected} query={range.query} onClose={() => setSelected(null)} />

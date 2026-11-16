@@ -73,6 +73,8 @@ export const tooltipStyle = {
   borderRadius: 8,
   fontSize: 12,
   color: 'var(--popover-foreground)',
+  maxWidth: 240,
+  whiteSpace: 'normal',
 };
 
 // One product: its funnel numbers, day-by-day table, traffic sources, devices and the latest individual actions
@@ -89,7 +91,7 @@ export const ProductDrawer = ({ product, query, onClose }) => {
     <Sheet open={!!product} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>{product?.name}</SheetTitle>
+          <SheetTitle className="line-clamp-2 pr-8" title={product?.name}>{product?.name}</SheetTitle>
         </SheetHeader>
         {product && (
           <div className="space-y-5 px-4 pb-6 text-sm">
