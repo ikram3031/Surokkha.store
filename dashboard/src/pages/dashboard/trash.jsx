@@ -38,13 +38,21 @@ import {
   Eye,
   CheckCircle2,
   ImageIcon,
+  Truck,
 } from 'lucide-react';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { useCategories, useBrands, getCategoryName, getBrandName } from '@/lib/category-cache';
 import { clientConfig } from '@/clientConfig';
 import { toast } from 'sonner';
 import { useNavigate, Link } from 'react-router-dom';
-import { formatDate } from '@/utils/dateHelper';
+import { formatDate, formatDateTime } from '@/utils/dateHelper';
+import { StatusChip } from '@/pages/dashboard/orders/orderList/view2/StatusChip';
+
+const formatTime = (value) => {
+  if (!value) return '';
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
 
 const TrashPage = () => {
   const navigate = useNavigate();
@@ -630,9 +638,10 @@ const TrashPage = () => {
                 </TableHead>
                 <TableHead>Order #</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
+                <TableHead>Date & Time</TableHead>
                 <TableHead className="hidden sm:table-cell">Items</TableHead>
                 <TableHead>Total Amount</TableHead>
+                <TableHead className="hidden lg:table-cell">Courier</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -644,23 +653,24 @@ const TrashPage = () => {
                     <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-12" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-28 ml-auto" /></TableCell>
                   </TableRow>
                 ))
               ) : isOrdersError ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-destructive">
+                  <TableCell colSpan={9} className="text-center py-12 text-destructive">
                     <AlertCircle className="h-6 w-6 mx-auto mb-2" />
                     Failed to load deleted orders.
                   </TableCell>
                 </TableRow>
               ) : orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <CheckCircle2 className="h-8 w-8 text-emerald-500/70" />
                       <p className="font-semibold text-sm">No deleted orders</p>
@@ -673,13 +683,16 @@ const TrashPage = () => {
                   const id = order.id || order._id;
                   const isSelected = selectedIds.includes(id);
                   const customer = order.billingInfo || order.shippingInfo || {};
+                  const courier = order.courier || {};
+                  const hasConsignment = Boolean(courier.consignmentId);
 
                   return (
                     <TableRow
                       key={id}
-                      className={isSelected ? 'bg-muted/40' : 'hover:bg-muted/20'}
+                      onClick={() => navigate(`/dashboard/orders/${id}`)}
+                      className={`cursor-pointer ${isSelected ? 'bg-muted/40' : 'hover:bg-muted/20'}`}
                     >
-                      <TableCell className="text-center">
+                      <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           className="rounded border-input text-primary focus:ring-primary h-4 w-4 cursor-pointer"
@@ -690,6 +703,7 @@ const TrashPage = () => {
                       <TableCell className="font-mono text-xs font-bold text-foreground">
                         <Link
                           to={`/dashboard/orders/${id}`}
+                          onClick={(e) => e.stopPropagation()}
                           className="text-primary hover:underline"
                         >
                           #{order.orderNumber || id.slice(-6)}
@@ -705,22 +719,64 @@ const TrashPage = () => {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                        {order.createdAt ? formatDate(order.createdAt) : '—'}
+                      <TableCell
+                        className="text-xs text-muted-foreground whitespace-nowrap"
+                        title={order.createdAt ? formatDateTime(order.createdAt) : ''}
+                      >
+                        {order.createdAt ? (
+                          <div className="space-y-0.5">
+                            <span className="block text-foreground font-medium">{formatDate(order.createdAt)}</span>
+                            <span className="block text-[11px] text-muted-foreground">{formatTime(order.createdAt)}</span>
+                          </div>
+                        ) : (
+                          '—'
+                        )}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-xs font-semibold">
                         {order.items?.length || 1} item(s)
                       </TableCell>
-                      <TableCell className="text-xs font-bold">
-                        ৳{order.totals?.total || order.total || 0}
+                      <TableCell className="text-xs font-bold tabular-nums">
+                        ৳{order.totals?.total ?? order.total ?? 0}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {hasConsignment ? (
+                          <div className="space-y-1">
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full bg-[#082F49] px-2 py-0.5 text-[10px] font-semibold text-[#38BDF8] ring-1 ring-[#0369A1] ring-inset"
+                              title={`Pathao consignment: ${courier.consignmentId}`}
+                            >
+                              <Truck className="size-2.5" />
+                              {courier.provider ? courier.provider.toUpperCase() : 'PATHAO'}
+                              {courier.orderStatus ? ` · ${courier.orderStatus}` : ''}
+                            </span>
+                            <p className="text-[10px] font-mono text-muted-foreground truncate max-w-[140px]">
+                              {courier.consignmentId}
+                            </p>
+                          </div>
+                        ) : courier.provider ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
+                            <Truck className="size-2.5" />
+                            {courier.provider} · Not dispatched
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px] uppercase font-bold text-muted-foreground">
-                          {order.status || 'cancelled'}
-                        </Badge>
+                        <StatusChip kind="order" status={order.status || 'cancelled'} />
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/dashboard/orders/${id}`)}
+                            title="View Order Details"
+                            className="h-8 px-2.5 text-xs hover:bg-muted cursor-pointer"
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            View
+                          </Button>
                           <Button
                             size="sm"
                             variant="outline"
@@ -730,15 +786,6 @@ const TrashPage = () => {
                           >
                             <RotateCcw className="h-3.5 w-3.5 mr-1" />
                             Restore
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => navigate(`/dashboard/orders/${id}`)}
-                            title="View Order Details"
-                            className="h-8 px-2 text-xs hover:bg-muted cursor-pointer"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </TableCell>
