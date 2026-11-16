@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
+import { TableActionMenu,
   Table,
   TableBody,
   TableCell,
@@ -697,7 +697,7 @@ export const PaymentTypesPage = () => {
 
                       {/* Action Buttons */}
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <TableActionMenu>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -725,7 +725,7 @@ export const PaymentTypesPage = () => {
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
-                        </div>
+                        </TableActionMenu>
                       </TableCell>
                     </TableRow>
                   );

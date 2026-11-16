@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
+import { TableActionMenu,
   Table,
   TableBody,
   TableCell,
@@ -386,7 +386,7 @@ export const BillTypesPage = () => {
                         {type.createdAt ? formatDate(type.createdAt) : '—'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <TableActionMenu>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -405,7 +405,7 @@ export const BillTypesPage = () => {
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
-                        </div>
+                        </TableActionMenu>
                       </TableCell>
                     </TableRow>
                   );

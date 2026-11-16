@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
+import { TableActionMenu, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { apiClient, baseURL } from '@/lib/api-client';
@@ -141,11 +141,11 @@ const CombosPage = () => {
                         <Switch checked={c.isActive} disabled={readOnly || toggle.isPending} onCheckedChange={(v) => toggle.mutate({ id: c.id, isActive: v })} />
                       </TableCell>
                       <TableCell>
-                        <div className="flex justify-end gap-1">
+                        <TableActionMenu>
                           <Button size="icon" variant="ghost" title="Edit" onClick={() => navigate(`/dashboard/products/combos/${c.id}`)}><Pencil className="h-4 w-4" /></Button>
                           {!readOnly && <Button size="icon" variant="ghost" title="Duplicate" onClick={() => navigate(`/dashboard/products/combos/new?copy=${c.id}`)}><Copy className="h-4 w-4" /></Button>}
                           {!readOnly && <Button size="icon" variant="ghost" title="Delete" onClick={() => setDeleting(c)}><Trash2 className="h-4 w-4 text-red-600" /></Button>}
-                        </div>
+                        </TableActionMenu>
                       </TableCell>
                     </TableRow>
                   );

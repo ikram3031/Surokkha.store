@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
+import { TableActionMenu,
   Table,
   TableBody,
   TableCell,
@@ -470,7 +470,7 @@ export const InvestorsPage = () => {
                         {inv.createdAt ? formatDate(inv.createdAt) : '—'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <TableActionMenu>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -510,7 +510,7 @@ export const InvestorsPage = () => {
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
-                        </div>
+                        </TableActionMenu>
                       </TableCell>
                     </TableRow>
                   );

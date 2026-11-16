@@ -1,3 +1,4 @@
+import { TableActionMenu } from '@/components/ui/table-v2';
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -162,7 +163,8 @@ export const LoadingBlocks = ({ rows = 3, className = 'h-24' }) => (
 export const EmptyState = ({ children }) => <p className="px-4 py-10 text-center text-sm text-muted-foreground">{children}</p>;
 
 // Row of icon buttons shown at the end of a table row
-export const RowActions = ({ children }) => <div className="flex justify-end gap-1">{children}</div>;
+// Row actions collapse into one ⋯ menu; each child button's title becomes its label
+export const RowActions = ({ children }) => <TableActionMenu>{children}</TableActionMenu>;
 
 // Small sparkline for keyword trends
 export const Sparkline = ({ points }) => {

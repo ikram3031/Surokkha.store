@@ -4,7 +4,7 @@ import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
 
 import { useVendors, useVendorMutations, taka } from '@/hooks/use-purchases';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
+import { TableActionMenu, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -135,10 +135,10 @@ const VendorsPage = () => {
                   <TableCell className="text-right">{taka(v.purchaseTotal)}</TableCell>
                   <TableCell className={`text-right ${v.due > 0 ? 'font-medium text-red-600' : ''}`}>{taka(v.due)}</TableCell>
                   <TableCell>
-                    <div className="flex justify-end gap-1">
+                    <TableActionMenu>
                       <Button size="icon" variant="ghost" title="Edit" onClick={() => setEditing(v)}><Pencil className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="Remove" className="text-destructive hover:text-destructive" onClick={() => setRemoving(v)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
+                    </TableActionMenu>
                   </TableCell>
                 </TableRow>
               ))}

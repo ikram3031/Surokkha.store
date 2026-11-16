@@ -5,7 +5,7 @@ import { Boxes, Package, AlertTriangle, Wallet, Plus, Pencil, SlidersHorizontal,
 import { useStockItems, useStockItemMutations, useItemRecentChanges } from '@/hooks/use-stock-items';
 import { PackCountInput, RecentHandChanges } from '@/components/dashboard/inventory/stockCount';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
+import { TableActionMenu, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -409,12 +409,12 @@ const StockItemsPage = () => {
                   <TableCell className="text-right"><CostCell cost={r.lastCost} packs={r.packs} unit={r.unit} /></TableCell>
                   <TableCell className="text-right">{money(r.stockValue)}</TableCell>
                   <TableCell>
-                    <div className="flex justify-end gap-1">
+                    <TableActionMenu>
                       <Button size="icon" variant="ghost" title="Adjust stock" onClick={() => setAdjusting(r)}><SlidersHorizontal className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="History" render={<Link to={`/inventory/movements?refId=${r.id}&name=${encodeURIComponent(r.shortName)}`} />}><History className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="Edit" onClick={() => setEditing({ item: r })}><Pencil className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="Delete" className="text-destructive hover:text-destructive" onClick={() => setDeleting(r)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
+                    </TableActionMenu>
                   </TableCell>
                 </TableRow>
               ))}

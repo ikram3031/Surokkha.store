@@ -513,15 +513,6 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
                     </TableCell>
                     <TableCell>{getStatusBadge(b.status)}</TableCell>
                     <TableCell className="text-right whitespace-nowrap">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-primary"
-                        title="View Details"
-                        onClick={() => setViewBillTarget(b)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger render={
                           <Button variant="ghost" className="h-8 w-8 p-0">
