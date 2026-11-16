@@ -1130,6 +1130,13 @@ export const getSpamList = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 20;
     const query = {};
 
+    // Optional search on phone or email
+    const q = String(req.query.q || "").trim();
+    if (q) {
+      const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      query.$or = [{ phone: rx }, { email: rx }];
+    }
+
     const total = await SpamListModel.countDocuments(query);
     const list = await SpamListModel.find(query)
       .sort({ createdAt: -1 })

@@ -1,8 +1,14 @@
 import * as React from "react"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Table V2: the look of the orders View2 table (primary-tinted header, primary header text,
 // compact rows, primary-tinted selected rows). Same API as ui/table, so it is a drop-in swap.
@@ -135,7 +141,29 @@ const TableError = ({ title = "Error", children, className }) => {
   )
 }
 
+// "⋯" row actions menu. Children are DropdownMenuItem / DropdownMenuSeparator.
+// Clicks inside it don't trigger the row's own onClick.
+const TableRowActions = ({ label = "Actions", children }) => {
+  return (
+    <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40"
+          aria-label={label}
+        >
+          <MoreHorizontal className="size-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuLabel>{label}</DropdownMenuLabel>
+          {children}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
+}
+
 export {
+  TableRowActions,
   Table,
   TableHeader,
   TableBody,

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
-import { ShieldAlert, Trash2, Plus } from 'lucide-react';
+import { ShieldAlert, Trash2, Plus, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableRowActions } from '@/components/ui/table-v2';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,12 +19,25 @@ export default function SpamList() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 20;
+  const [searchInput, setSearchInput] = useState('');
+  const [q, setQ] = useState('');
+
+  // Debounced search, resets to page 1
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setQ(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   // Fetch spam list
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['spam-list', page],
+    queryKey: ['spam-list', page, q],
     queryFn: async () => {
-      const res = await apiClient.get(`/api/v1/orders/spam/list?page=${page}&limit=${limit}`);
+      const params = { page, limit };
+      if (q) params.q = q;
+      const res = await apiClient.get('/api/v1/orders/spam/list', { params });
       return res.data;
     },
     keepPreviousData: true,
@@ -152,6 +166,25 @@ export default function SpamList() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="relative mb-3 w-full max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder={t('spam.search', 'Phone or email...')}
+              className="h-9 pl-8 pr-8 text-xs"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => setSearchInput('')}
+                className="absolute right-2.5 top-2.5 cursor-pointer text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
           <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader>
@@ -202,15 +235,16 @@ export default function SpamList() {
                         {entry.createdAt ? new Date(entry.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="border-none"
-                          onClick={() => handleDelete(entry._id || entry.id)}
-                          disabled={deleteMutation.isLoading}
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500 transition-colors" />
-                        </Button>
+                        <TableRowActions label={t('common.actions', 'Actions')}>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            className="cursor-pointer"
+                            disabled={deleteMutation.isPending}
+                            onClick={() => handleDelete(entry._id || entry.id)}
+                          >
+                            <Trash2 /> {t('common.delete', 'Delete')}
+                          </DropdownMenuItem>
+                        </TableRowActions>
                       </TableCell>
                     </TableRow>
                   ))
