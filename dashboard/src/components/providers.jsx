@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/query-client';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/lib/auth-context';
 import UserAppearance from '@/components/userAppearance';
@@ -7,29 +8,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { handleGlobalError } from '@/lib/error-handler';
 
 export const ReactQueryProvider = ({ children }) => {
-  const [queryClient] = React.useState(
-    () =>
-      new QueryClient({
-        queryCache: new QueryCache({
-          onError: (error) => {
-            handleGlobalError(error);
-          },
-        }),
-        mutationCache: new MutationCache({
-          onError: (error) => {
-            handleGlobalError(error);
-          },
-        }),
-        defaultOptions: {
-          queries: {
-            staleTime: 60 * 1000,
-            retry: 1,
-            refetchOnWindowFocus: false,
-          },
-        },
-      })
-  );
-
   React.useEffect(() => {
     const handleUnhandledRejection = (event) => {
       event.preventDefault();

@@ -1,3 +1,4 @@
+import { refreshAfterWrite } from '@/lib/query-client';
 import axios from 'axios';
 import { handleGlobalError } from './error-handler';
 import clientConfig from '@/clientConfig';
@@ -111,7 +112,10 @@ const processQueue = (error, token = null) => {
 
 // Response Interceptor: Handle 401 Unauthorized & Token Refresh logic with queuing
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    refreshAfterWrite(response.config);
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     const requestUrl = originalRequest?.url || '';
