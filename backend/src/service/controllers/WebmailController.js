@@ -376,10 +376,16 @@ export const getWebmailMailboxes = async (req, res, next) => {
   try {
     const { getSmtpConfig } = await import("../../common/services/smtpConfig.service.js");
     const shopCfg = await getSmtpConfig();
+    // The inbox is the IMAP account, so show its login address; fall back to the SMTP sender
+    const [shopDoc, storeDoc] = await Promise.all([
+      StoreSettingsModel.findOne({ key: "default" }).select("imap").lean(),
+      StoreSettingsModel.findOne({ key: "store-smtp" }).select("imap").lean(),
+    ]);
+    const imapAddress = (doc) => (doc?.imap?.isEnabled && doc?.imap?.user ? String(doc.imap.user).trim() : "");
     const boxes = [
       {
         id: "shop",
-        address: shopCfg.fromEmail || shopCfg.user,
+        address: imapAddress(shopDoc) || shopCfg.fromEmail || shopCfg.user,
         unread: await EmailMessageModel.countDocuments({ ...mailboxFilter("shop"), active: true, folder: "INBOX", isRead: false }),
       },
     ];
@@ -389,7 +395,7 @@ export const getWebmailMailboxes = async (req, res, next) => {
       boxes.unshift({
         id: "store",
         label: "Store",
-        address: storeCfg.fromEmail || storeCfg.user,
+        address: imapAddress(storeDoc) || storeCfg.fromEmail || storeCfg.user,
         unread: await EmailMessageModel.countDocuments({ ...mailboxFilter("store"), active: true, folder: "INBOX", isRead: false }),
       });
     }
