@@ -446,6 +446,13 @@ export const updateProduct = async (req, res, next) => {
           product.stockStatus = anyInStock ? "instock" : "outofstock";
         }
       }
+      // A product-level stock change with no variant list (bulk action) applies to every variant
+      if (body.variants === undefined && body.stockStatus !== undefined && Array.isArray(product.variants)) {
+        product.variants.forEach((v) => {
+          v.stockStatus = body.stockStatus;
+        });
+        product.markModified("variants");
+      }
       product.price = undefined;
       product.offerPrice = undefined;
       product.sku = undefined;
