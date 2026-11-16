@@ -35,6 +35,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { CustomerViewSheet } from '@/components/dashboard/customer-view-sheet';
 
 // Renders the members and customer management table with batch actions and navigation to dedicated profile page
 export const MembersTable = ({
@@ -73,6 +74,7 @@ export const MembersTable = ({
     toast.info(`Preparing message for ${member.email}`);
   };
 
+  const [viewTarget, setViewTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -196,8 +198,13 @@ export const MembersTable = ({
             ))
           ) : members && members.length > 0 ? (
             members.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell className="w-[50px] px-4">
+              <TableRow
+                key={member.id}
+                className="cursor-pointer"
+                data-state={selectedIds.includes(member.id) ? 'selected' : undefined}
+                onClick={() => setViewTarget(member)}
+              >
+                <TableCell className="w-[50px] px-4" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
@@ -230,7 +237,7 @@ export const MembersTable = ({
                 <TableCell className="text-right w-[100px] font-semibold">{member.totalOrders}</TableCell>
                 <TableCell className="text-right w-[130px] font-bold whitespace-nowrap text-foreground">৳{member.lifetimeSpent.toFixed(2)}</TableCell>
                 <TableCell className="w-[110px] whitespace-nowrap">{formatDate(member.joinedDate)}</TableCell>
-                <TableCell className="text-right w-[60px]">
+                <TableCell className="text-right w-[60px]" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger render={
                       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -240,6 +247,9 @@ export const MembersTable = ({
                     } />
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => setViewTarget(member)}>
+                        View
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleSendMessage(member)}>
                         Send Message
                       </DropdownMenuItem>
@@ -317,6 +327,7 @@ export const MembersTable = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CustomerViewSheet customer={viewTarget} onClose={() => setViewTarget(null)} />
     </>
   );
 }
