@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { RotateCw } from 'lucide-react';
+import { ArrowLeft, RotateCw } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { NotificationBell } from './NotificationBell';
@@ -17,6 +18,12 @@ export const Header = () => {
   const queryClient = useQueryClient();
   const { brandName } = clientConfig;
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  // No back button on the dashboard home or when there is nowhere inside the app to go back to
+  const isHome = /^\/dashboard\/?$/.test(location.pathname);
+  const canGoBack = !isHome && (window.history.state?.idx ?? 0) > 0;
+  const goBack = () => (canGoBack ? navigate(-1) : navigate('/dashboard'));
 
   const handleRefresh = async () => {
     if (isRefreshing) return;
@@ -34,6 +41,19 @@ export const Header = () => {
     <header className="dark v2-shell sticky top-0 z-30 flex h-14 sm:h-16 shrink-0 items-center justify-between gap-2 sm:gap-4 border-b border-[#1f1f1f] bg-[#0a0a0a] px-3 sm:px-5 text-white">
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <SidebarTrigger className="h-8.5 w-8.5 rounded-lg border border-primary bg-transparent text-primary hover:bg-primary/10 hover:text-primary shrink-0 cursor-pointer" />
+        {!isHome && (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={goBack}
+            className="h-8.5 w-8.5 rounded-lg border-primary bg-transparent text-primary hover:bg-primary/10 hover:text-primary shrink-0 cursor-pointer"
+            title={t('common.back', 'Back')}
+            aria-label={t('common.back', 'Back')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           type="button"
           variant="outline"
