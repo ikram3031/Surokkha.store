@@ -6,7 +6,8 @@ import { ShieldAlert, Trash2, Plus, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableRowActions } from '@/components/ui/table-v2';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableRowActions, TableCheckbox, TableBulkBar, useTableSelection } from '@/components/ui/table-v2';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,6 +100,26 @@ export default function SpamList() {
     }
   };
 
+  const selection = useTableSelection(list, (e) => e._id || e.id);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  const handleBulkDelete = async () => {
+    setIsBulkDeleting(true);
+    try {
+      const results = await Promise.allSettled(
+        selection.selected.map((id) => apiClient.delete(`/api/v1/orders/spam/${id}`))
+      );
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed) toast.error(`${failed} entr${failed === 1 ? 'y' : 'ies'} could not be removed`);
+      else toast.success(t('spam.bulk_deleted', 'Selected entries removed'));
+      selection.clear();
+      queryClient.invalidateQueries({ queryKey: ['spam-list'] });
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   return (
     <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -185,10 +206,24 @@ export default function SpamList() {
               </button>
             )}
           </div>
-          <div className="rounded-md border overflow-hidden">
+          <TableBulkBar
+            count={selection.count}
+            onDelete={() => setBulkDeleteOpen(true)}
+            onClear={selection.clear}
+            deleting={isBulkDeleting}
+          />
+          <div className="mt-3 rounded-md border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <TableCheckbox
+                      checked={selection.allOnPage}
+                      indeterminate={selection.someOnPage}
+                      onChange={selection.togglePage}
+                      label="Select all on page"
+                    />
+                  </TableHead>
                   <TableHead>{t('spam.email', 'Email')}</TableHead>
                   <TableHead>{t('spam.phone', 'Phone')}</TableHead>
                   <TableHead>{t('spam.date_added', 'Date Added')}</TableHead>
@@ -198,25 +233,34 @@ export default function SpamList() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24">
+                    <TableCell colSpan={5} className="text-center h-24">
                       {t('common.loading', 'Loading...')}
                     </TableCell>
                   </TableRow>
                 ) : isError ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24 text-red-500">
+                    <TableCell colSpan={5} className="text-center h-24 text-red-500">
                       {t('common.error_loading', 'Error loading spam list.')}
                     </TableCell>
                   </TableRow>
                 ) : list.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                       {t('spam.no_data', 'No spam entries found.')}
                     </TableCell>
                   </TableRow>
                 ) : (
                   list.map((entry) => (
-                    <TableRow key={entry._id || entry.id}>
+                    <TableRow
+                      key={entry._id || entry.id}
+                      data-state={selection.isSelected(entry._id || entry.id) ? 'selected' : undefined}
+                    >
+                      <TableCell>
+                        <TableCheckbox
+                          checked={selection.isSelected(entry._id || entry.id)}
+                          onChange={(on) => selection.toggle(entry._id || entry.id, on)}
+                        />
+                      </TableCell>
                       <TableCell>
                         {entry.email ? (
                           <span className="text-sm text-foreground">{entry.email}</span>
@@ -279,6 +323,15 @@ export default function SpamList() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={handleBulkDelete}
+        isDeleting={isBulkDeleting}
+        title={`Remove ${selection.count} entr${selection.count === 1 ? 'y' : 'ies'} from the spam list?`}
+        description="These phone numbers and emails will be able to place orders again."
+      />
     </div>
   );
 }

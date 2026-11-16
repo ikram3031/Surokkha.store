@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Search, UserCheck, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Search, Trash2, UserCheck, X } from 'lucide-react';
 
 import { apiClient } from '@/lib/api-client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  TableRowActions, TableCheckbox, TableBulkBar, useTableSelection,
+} from '@/components/ui/table-v2';
+import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
 const LIMIT = 15;
 
@@ -60,6 +66,25 @@ export default function RegisteredMembers() {
   const list = data?.data || [];
   const meta = data?.meta || { total: 0, totalPages: 1 };
 
+  const queryClient = useQueryClient();
+  const selection = useTableSelection(list, (m) => m.id || m._id);
+  const [deleteIds, setDeleteIds] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const results = await Promise.allSettled(deleteIds.map((id) => apiClient.delete(`/api/v1/members/${id}`)));
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed) toast.error(`${failed} member(s) could not be deleted`);
+      else toast.success(t('members.deleted', 'Member(s) deleted'));
+      selection.clear();
+      queryClient.invalidateQueries({ queryKey: ['registered-members'] });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div>
@@ -92,10 +117,25 @@ export default function RegisteredMembers() {
         )}
       </div>
 
+      <TableBulkBar
+        count={selection.count}
+        onDelete={() => setDeleteIds(selection.selected)}
+        onClear={selection.clear}
+        deleting={isDeleting}
+      />
+
       <div className="overflow-x-auto rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <TableCheckbox
+                  checked={selection.allOnPage}
+                  indeterminate={selection.someOnPage}
+                  onChange={selection.togglePage}
+                  label="Select all on page"
+                />
+              </TableHead>
               <TableHead>{t('members.name', 'Name')}</TableHead>
               <TableHead>{t('members.email', 'Email')}</TableHead>
               <TableHead>{t('members.phone', 'Phone')}</TableHead>
@@ -103,22 +143,23 @@ export default function RegisteredMembers() {
               <TableHead className="text-right">{t('members.spent', 'Spent')}</TableHead>
               <TableHead>{t('members.joined', 'Registered')}</TableHead>
               <TableHead>{t('members.status', 'Status')}</TableHead>
+              <TableHead className="w-[60px] text-right">{t('common.actions', 'Actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">{t('common.loading', 'Loading...')}</TableCell>
+                <TableCell colSpan={9} className="h-24 text-center">{t('common.loading', 'Loading...')}</TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-destructive">
+                <TableCell colSpan={9} className="h-24 text-center text-destructive">
                   {t('members.error', 'Error loading members.')}
                 </TableCell>
               </TableRow>
             ) : list.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                   {t('members.empty', 'No members found.')}
                 </TableCell>
               </TableRow>
@@ -126,7 +167,15 @@ export default function RegisteredMembers() {
               list.map((m) => {
                 const id = m.id || m._id;
                 return (
-                  <TableRow key={id} className="cursor-pointer" onClick={() => navigate(`/dashboard/members/${id}`)}>
+                  <TableRow
+                    key={id}
+                    className="cursor-pointer"
+                    data-state={selection.isSelected(id) ? 'selected' : undefined}
+                    onClick={() => navigate(`/dashboard/members/${id}`)}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <TableCheckbox checked={selection.isSelected(id)} onChange={(on) => selection.toggle(id, on)} />
+                    </TableCell>
                     <TableCell className="font-medium">{m.name}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1.5">
@@ -145,6 +194,17 @@ export default function RegisteredMembers() {
                         {m.isActive === false ? t('common.disabled', 'Inactive') : t('common.active', 'Active')}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <TableRowActions label={t('common.actions', 'Actions')}>
+                        <DropdownMenuItem onClick={() => navigate(`/dashboard/members/${id}`)}>
+                          <Eye className="size-4" /> {t('common.view', 'View')}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem variant="destructive" onClick={() => setDeleteIds([id])}>
+                          <Trash2 className="size-4" /> {t('common.delete', 'Delete')}
+                        </DropdownMenuItem>
+                      </TableRowActions>
+                    </TableCell>
                   </TableRow>
                 );
               })
@@ -152,6 +212,15 @@ export default function RegisteredMembers() {
           </TableBody>
         </Table>
       </div>
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleteIds)}
+        onOpenChange={(open) => !open && setDeleteIds(null)}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+        title={`Delete ${deleteIds?.length || 0} member(s)?`}
+        description="Their website accounts will be removed. Orders stay."
+      />
 
       {meta.totalPages > 1 && (
         <div className="flex items-center justify-between">

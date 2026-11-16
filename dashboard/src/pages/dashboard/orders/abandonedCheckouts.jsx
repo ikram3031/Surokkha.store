@@ -9,7 +9,12 @@ import {
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table-v2';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  TableRowActions, TableCheckbox, TableBulkBar, useTableSelection,
+} from '@/components/ui/table-v2';
+import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -305,6 +310,26 @@ export default function AbandonedCheckouts() {
     if (confirm(t('abandoned.confirm_delete', 'Delete this checkout record?'))) deleteMutation.mutate(id);
   };
 
+  const selection = useTableSelection(list, (l) => l._id);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  const handleBulkDelete = async () => {
+    setIsBulkDeleting(true);
+    try {
+      const results = await Promise.allSettled(
+        selection.selected.map((id) => apiClient.delete(`/api/v1/checkout-leads/${id}`))
+      );
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed) toast.error(`${failed} checkout(s) could not be deleted`);
+      else toast.success(t('abandoned.bulk_deleted', 'Selected checkouts deleted'));
+      selection.clear();
+      queryClient.invalidateQueries({ queryKey: ['checkout-leads'] });
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   const submitSearch = (e) => {
     e.preventDefault();
     setPage(1);
@@ -352,39 +377,64 @@ export default function AbandonedCheckouts() {
             </Button>
           </form>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <TableBulkBar
+            count={selection.count}
+            onDelete={() => setBulkDeleteOpen(true)}
+            onClear={selection.clear}
+            deleting={isBulkDeleting}
+          />
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <TableCheckbox
+                      checked={selection.allOnPage}
+                      indeterminate={selection.someOnPage}
+                      onChange={selection.togglePage}
+                      label="Select all on page"
+                    />
+                  </TableHead>
                   <TableHead>{t('abandoned.name', 'Name')}</TableHead>
                   <TableHead>{t('abandoned.phone', 'Phone')}</TableHead>
                   <TableHead className="text-center">{t('abandoned.details', 'Details')}</TableHead>
                   <TableHead>{t('abandoned.total', 'Total')}</TableHead>
                   <TableHead>{t('abandoned.activity', 'Activity')}</TableHead>
-                  <TableHead className="w-[130px] text-right">{t('common.actions', 'Actions')}</TableHead>
+                  <TableHead className="w-[60px] text-right">{t('common.actions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">{t('common.loading', 'Loading...')}</TableCell>
+                    <TableCell colSpan={7} className="text-center h-24">{t('common.loading', 'Loading...')}</TableCell>
                   </TableRow>
                 ) : isError ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24 text-red-500">
+                    <TableCell colSpan={7} className="text-center h-24 text-red-500">
                       {t('abandoned.error_loading', 'Error loading checkouts.')}
                     </TableCell>
                   </TableRow>
                 ) : list.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
                       {t('abandoned.no_data', 'No abandoned checkouts.')}
                     </TableCell>
                   </TableRow>
                 ) : (
                   list.map((lead) => (
-                    <TableRow key={lead._id} className="cursor-pointer" onClick={() => setSelectedLead(lead)}>
+                    <TableRow
+                      key={lead._id}
+                      className="cursor-pointer"
+                      data-state={selection.isSelected(lead._id) ? 'selected' : undefined}
+                      onClick={() => setSelectedLead(lead)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableCheckbox
+                          checked={selection.isSelected(lead._id)}
+                          onChange={(on) => selection.toggle(lead._id, on)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{lead.fullName || '-'}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         {lead.phone ? (
@@ -409,37 +459,27 @@ export default function AbandonedCheckouts() {
                       <TableCell>{formatMoney(lead.cartTotal)}</TableCell>
                       <TableCell className="whitespace-nowrap">{formatDateTime(lead.lastActivityAt)}</TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="border-none"
-                            title={t('abandoned.create_order', 'Create order')}
-                            onClick={() => createOrderFromLead(lead)}
-                          >
-                            <FilePlus className="h-4 w-4 text-primary" />
-                          </Button>
+                        <TableRowActions label={t('common.actions', 'Actions')}>
+                          <DropdownMenuItem onClick={() => setSelectedLead(lead)}>
+                            <Eye className="size-4" /> {t('abandoned.view', 'View details')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => createOrderFromLead(lead)}>
+                            <FilePlus className="size-4" /> {t('abandoned.create_order', 'Create order')}
+                          </DropdownMenuItem>
                           {lead.phone && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="border-none"
-                              title="WhatsApp"
-                              onClick={() => window.open(whatsAppUrl(lead), '_blank')}
-                            >
-                              <WhatsAppIcon className="h-4 w-4 text-green-500" />
-                            </Button>
+                            <DropdownMenuItem onClick={() => window.open(whatsAppUrl(lead), '_blank')}>
+                              <WhatsAppIcon className="size-4" /> WhatsApp
+                            </DropdownMenuItem>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="border-none"
-                            onClick={() => handleDelete(lead._id)}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
                             disabled={deleteMutation.isPending}
+                            onClick={() => handleDelete(lead._id)}
                           >
-                            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500 transition-colors" />
-                          </Button>
-                        </div>
+                            <Trash2 className="size-4" /> {t('common.delete', 'Delete')}
+                          </DropdownMenuItem>
+                        </TableRowActions>
                       </TableCell>
                     </TableRow>
                   ))
@@ -468,6 +508,15 @@ export default function AbandonedCheckouts() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        onConfirm={handleBulkDelete}
+        isDeleting={isBulkDeleting}
+        title={`Delete ${selection.count} checkout(s)?`}
+        description="The selected abandoned checkouts will be removed."
+      />
 
       <LeadDrawer lead={selectedLead} onClose={() => setSelectedLead(null)} onCreateOrder={createOrderFromLead} />
     </div>
