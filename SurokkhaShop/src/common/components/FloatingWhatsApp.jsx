@@ -33,7 +33,7 @@ export default function FloatingWhatsApp() {
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(inquiryMessage)}`;
 
   return (
-    <div id="floatingWhatsAppContainer" className="fixed bottom-16 md:bottom-6 right-3.5 md:right-5 z-50 transition-opacity duration-300">
+    <div id="floatingWhatsAppContainer" className="lock-gap-shift fixed bottom-16 md:bottom-6 right-3.5 md:right-5 z-50 transition-opacity duration-300">
       <a
         href={whatsappUrl}
         target="_blank"

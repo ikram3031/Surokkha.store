@@ -6,7 +6,7 @@ import { nextFormattedId } from '../services/idFormat.service.js';
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 // Pushes address detail errors (minimum address length, mandatory thana/area) per client checkout policy
-const validateAddressDetail = (info, prefix, errors) => {
+const validateAddressDetail = (info, prefix, errors, { areaOptional = false } = {}) => {
   const minAddressLength = Number(getClientPolicy('checkout.minAddressLength', 0)) || 0;
   const requireArea = getClientPolicy('checkout.requireArea', false) === true;
   const address = typeof info?.address === 'string' ? info.address.trim() : '';
@@ -14,7 +14,7 @@ const validateAddressDetail = (info, prefix, errors) => {
   if (address && minAddressLength > 0 && address.length < minAddressLength) {
     errors.push(`${prefix}.address must be at least ${minAddressLength} characters (house, road, area)`);
   }
-  if (requireArea && !thana) {
+  if (requireArea && !areaOptional && !thana) {
     errors.push(`${prefix}.thana (area) is required`);
   }
 };
@@ -28,8 +28,11 @@ export const validateOrderPayload = (body) => {
 
   const isInstore = body.orderType === 'instore';
   const isCustom = body.orderType === 'custom';
-  // Store (surokkhastore.shop) checkouts mark email optional, so ST orders may arrive without one
-  const isEmailOptional = String(body.orderPrefix || '').trim().toUpperCase() === 'ST';
+  const orderPrefix = String(body.orderPrefix || '').trim().toUpperCase();
+  // Store (ST) marks email optional, and the Shop (SH) mobile checkout does not ask for it at all
+  const isEmailOptional = orderPrefix === 'ST' || orderPrefix === 'SH';
+  // Shop mobile checkout takes district only (delivery charge is by district), so no thana arrives
+  const addressOpts = { areaOptional: orderPrefix === 'SH' };
 
   // 1. Validate billingInfo (Mandatory for online and custom orders)
   const billing = body.billingInfo || {};
@@ -63,7 +66,7 @@ export const validateOrderPayload = (body) => {
     if (typeof district !== 'string' || district.trim() === '') {
       errors.push('billingInfo.district is required');
     }
-    validateAddressDetail(hasBillingInfo ? billing : body, 'billingInfo', errors);
+    validateAddressDetail(hasBillingInfo ? billing : body, 'billingInfo', errors, addressOpts);
   } else if (isCustom) {
     // Custom orders require address & district for delivery, email is optional but validated if provided
     if (typeof address !== 'string' || address.trim() === '') {
@@ -101,7 +104,7 @@ export const validateOrderPayload = (body) => {
       errors.push('shippingInfo.district is required when shipping to a different address');
     }
     if (!isCustom) {
-      validateAddressDetail(shipping, 'shippingInfo', errors);
+      validateAddressDetail(shipping, 'shippingInfo', errors, addressOpts);
     }
   }
 

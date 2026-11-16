@@ -6,7 +6,7 @@ export default function MobileBottomNav() {
   const navigateTo = useStore((state) => state.navigateTo);
 
   return (
-    <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#12060b] border-t border-rose-950 shadow-[0_-4px_20px_rgba(0,0,0,0.35)] pb-safe">
+    <div className="lock-gap-pad md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#12060b] border-t border-rose-950 shadow-[0_-4px_20px_rgba(0,0,0,0.35)] pb-safe">
       <div className="max-w-md mx-auto grid grid-cols-3 h-14">
         
         {/* 1. Home */}

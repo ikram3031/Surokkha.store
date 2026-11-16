@@ -27,7 +27,7 @@ export default function FloatingCart() {
   return (
     <>
       {/* Mobile Sticky Bottom Floating Cart Bar */}
-      <div className="sm:hidden fixed bottom-16 inset-x-3 z-40 animate-fade-in">
+      <div className="lock-gap-shift sm:hidden fixed bottom-16 inset-x-3 z-40 animate-fade-in">
         <div className="bg-slate-900/95 backdrop-blur-md text-white p-2.5 px-4 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center justify-between gap-3">
           <div 
             onClick={openCartDrawer}
@@ -74,7 +74,7 @@ export default function FloatingCart() {
       </div>
 
       {/* Desktop Floating Cart Pill (Bottom Right) */}
-      <div id="floatingCartContainer" className="hidden sm:block fixed bottom-6 right-5 z-40 animate-fade-in">
+      <div id="floatingCartContainer" className="lock-gap-shift hidden sm:block fixed bottom-6 right-5 z-40 animate-fade-in">
         <button 
           onClick={openCartDrawer} 
           aria-label="Open Shopping Cart" 

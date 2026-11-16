@@ -5,6 +5,7 @@ import logoImg from '../asset/surokkha_logo_dark.png';
 import AnnouncementMarquee from './AnnouncementMarquee';
 import NavOfferCards from './NavOfferCards';
 import { getCustomerToken, SESSION_EVENT } from '../utils/customerAuth';
+import { setBodyScrollLocked } from '../utils/scrollLock';
 
 // Mega-menu style navbar (dark). Mobile: hamburger on the left opens a left drawer.
 const SurokkhaNavbar = () => {
@@ -33,11 +34,11 @@ const SurokkhaNavbar = () => {
 
   // Lock page scroll while the drawer is open; close it with Escape
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? 'hidden' : '';
+    setBodyScrollLocked(drawerOpen);
     const onKey = (e) => e.key === 'Escape' && setDrawerOpen(false);
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = '';
+      setBodyScrollLocked(false);
       window.removeEventListener('keydown', onKey);
     };
   }, [drawerOpen]);

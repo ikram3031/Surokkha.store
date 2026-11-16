@@ -55,7 +55,9 @@ export default function HomeView() {
     const text = `${c.slug || ''} ${c.name || ''}`.toLowerCase();
     return text.includes('thin') && /(^|[^0-9])30([^0-9]|$)/.test(text);
   }) || null;
-  const combo30Prod = (isComboActive(pinnedLeftProd) ? pinnedLeftProd : null) ||
+  // LEFT card now shows the 30 pcs Micro Ribbed pack while it is on sale
+  const ribbed30Prod = isComboActive(products['mico-ribbed-30-pcs']) ? products['mico-ribbed-30-pcs'] : null;
+  const combo30Prod = ribbed30Prod || (isComboActive(pinnedLeftProd) ? pinnedLeftProd : null) ||
     activeCombos.find(c => (c.slug && (c.slug.includes('3-in-1') || c.slug.includes('30'))) || (c.name && c.name.includes('30'))) ||
     activeCombos[0] || null;
 
@@ -66,7 +68,8 @@ export default function HomeView() {
   const pinnedRightProd = products[RIGHT_COMBO_ID] || products[RIGHT_COMBO_SLUG];
   // RIGHT card shows the Surokkha Trial Pack while it is on sale (free delivery only when a Direct Offer gives it)
   const trialPackProd = isComboActive(products[TRIAL_PACK_SLUG]) ? products[TRIAL_PACK_SLUG] : null;
-  const comboRibbedProd = trialPackProd || (microThin30Prod && microThin30Prod !== combo30Prod ? microThin30Prod : null) ||
+  // RIGHT card now shows the Protection Combo; the Trial Pack is only a fallback
+  const comboRibbedProd = (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) || trialPackProd || (microThin30Prod && microThin30Prod !== combo30Prod ? microThin30Prod : null) ||
     (isComboActive(pinnedRightProd) && pinnedRightProd !== combo30Prod ? pinnedRightProd : null) ||
     activeCombos.find(c => c !== combo30Prod && ((c.slug && (c.slug.includes('thin') || c.slug.includes('30'))) || (c.name && c.name.includes('30')))) ||
     activeCombos.find(c => c !== combo30Prod) || activeCombos[1] || null;
@@ -245,7 +248,9 @@ export default function HomeView() {
                             {c30Name}
                           </h3>
                           <p className="text-[11px] text-slate-300 mt-1 line-clamp-2">
-                            {isBn ? '১টি আল্ট্রা থিন (১০ পিস) + ১টি ডটেড (১০ পিস) + ১টি আল্ট্রা রিবড (১০ পিস) = মোট ৩ বক্স।' : '1x Ultra Thin + 1x Dotted + 1x Ribbed = 3 Full Sealed Retail Boxes.'}
+                            {combo30Prod === ribbed30Prod
+                              ? (isBn ? '৩টি মাইক্রো রিবড বক্স (প্রতিটি ১০ পিস) = মোট ৩০ পিস।' : '3 Micro Ribbed boxes (10 pcs each) = 30 pcs.')
+                              : (isBn ? '১টি আল্ট্রা থিন (১০ পিস) + ১টি ডটেড (১০ পিস) + ১টি আল্ট্রা রিবড (১০ পিস) = মোট ৩ বক্স।' : '1x Ultra Thin + 1x Dotted + 1x Ribbed = 3 Full Sealed Retail Boxes.')}
                           </p>
                         </div>
                       </div>

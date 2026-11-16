@@ -30,6 +30,37 @@ body {
   scrollbar-width: none;
 }
 
+/* Hero "view product" button: gentle bob, with the arrow nudging forward */
+@keyframes hero-cta-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes hero-cta-arrow {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+.hero-cta-nudge {
+  animation: hero-cta-bob 1.6s ease-in-out infinite;
+}
+.hero-cta-nudge .hero-cta-arrow {
+  animation: hero-cta-arrow 0.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta-nudge,
+  .hero-cta-nudge .hero-cta-arrow {
+    animation: none;
+  }
+}
+
+/* While a drawer locks page scroll the scrollbar disappears; utils/scrollLock.js sets
+   --scroll-lock-gap to its width so fixed bars keep their exact place instead of jumping */
+.lock-gap-pad {
+  padding-right: var(--scroll-lock-gap, 0px);
+}
+.lock-gap-shift {
+  margin-right: var(--scroll-lock-gap, 0px);
+}
+
 /* Slider transition */
 .slide-fade {
   transition: opacity 0.35s ease-in-out, transform 0.35s ease-in-out;

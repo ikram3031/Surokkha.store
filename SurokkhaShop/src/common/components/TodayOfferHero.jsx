@@ -12,37 +12,61 @@ export const TODAY_OFFER = {
 
 export const isTodayOfferLive = (now = Date.now()) => now >= TODAY_OFFER.start && now <= TODAY_OFFER.end;
 
-const findSmartPack = (products) =>
+export const findSmartPack = (products) =>
   Object.values(products).find((p) => p && p.isActive !== false && `${p.slug || ''} ${p.name || ''}`.toLowerCase().includes('smart')) || null;
 
-const toBn = (n) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d]);
+export const toBn = (n) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d]);
 const pad = (n) => String(n).padStart(2, '0');
 
-export default function TodayOfferHero() {
-  const openProduct = useStore((state) => state.openProduct);
-  const products = useStore((state) => state.products);
-  // This banner is always in Bangla
-  const isBn = true;
+// Seconds left until the offer ends, ticking every second
+export function useTodayOfferSecondsLeft() {
   const [now, setNow] = useState(Date.now());
-
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+  return Math.max(0, Math.floor((TODAY_OFFER.end - now) / 1000));
+}
+
+// Hours : minutes : seconds countdown to the end of the offer (hero and cart drawer share it)
+export function TodayOfferCountdown({ small = false, className = '' }) {
+  const left = useTodayOfferSecondsLeft();
+  const parts = [
+    { v: Math.floor(left / 3600), bn: 'ঘণ্টা' },
+    { v: Math.floor((left % 3600) / 60), bn: 'মিনিট' },
+    { v: left % 60, bn: 'সেকেন্ড' },
+  ];
+  return (
+    <div className={`flex items-center gap-2 ${small ? '' : 'md:gap-3'} ${className}`} aria-live="off">
+      {parts.map((p, i) => (
+        <React.Fragment key={p.bn}>
+          {i > 0 && <span className={`${small ? 'text-base' : 'text-2xl'} font-extrabold text-[#b0213f]`}>:</span>}
+          <div className={`flex flex-col items-center rounded-xl bg-[#4a0f1f] text-white shadow-lg ${small ? 'min-w-[2.6rem] px-1.5 py-1' : 'min-w-[3.5rem] md:min-w-[4.25rem] px-2 py-1.5 md:py-2'}`}>
+            <span className={`${small ? 'text-base' : 'text-2xl md:text-3xl'} font-extrabold font-['Plus_Jakarta_Sans'] tabular-nums`}>{toBn(pad(p.v))}</span>
+            <span className={`${small ? 'text-[9px]' : 'text-[10px] md:text-xs'} text-rose-200 font-bengali`}>{p.bn}</span>
+          </div>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+// Today-offer saving on the Smart Pack: taka and percent off its regular price
+export const todayOfferSaving = (product) => {
+  const regular = Number(product?.regularPrice || product?.price || 0);
+  const save = regular > TODAY_OFFER.price ? regular - TODAY_OFFER.price : 0;
+  return { regular, save, pct: save ? Math.round((save / regular) * 100) : 0 };
+};
+
+export default function TodayOfferHero() {
+  const openProduct = useStore((state) => state.openProduct);
+  const products = useStore((state) => state.products);
 
   const product = findSmartPack(products);
   const slug = product?.slug || product?.id || '';
   const imagePath = product?.imageUrl || '';
   const imageUrl = imagePath ? (imagePath.startsWith('http') ? imagePath : `${API_BASE_URL}${imagePath}`) : '';
-  const regular = product ? Math.max(product.price || 0, product.offerPrice || 0) : 0;
 
-  const left = Math.max(0, Math.floor((TODAY_OFFER.end - now) / 1000));
-  const parts = [
-    { v: Math.floor(left / 3600), bn: 'ঘণ্টা', en: 'Hours' },
-    { v: Math.floor((left % 3600) / 60), bn: 'মিনিট', en: 'Min' },
-    { v: left % 60, bn: 'সেকেন্ড', en: 'Sec' },
-  ];
-  const num = (n) => (isBn ? toBn(pad(n)) : pad(n));
   const open = () => slug && openProduct(slug);
 
   return (
@@ -54,35 +78,13 @@ export default function TodayOfferHero() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12 md:py-4 lg:py-5 grid grid-cols-1 md:grid-cols-2 md:grid-rows-[auto_auto] gap-y-4 md:gap-y-4 md:gap-x-10 lg:gap-x-12">
         <div className="text-center md:text-left md:col-start-1 md:row-start-1 md:self-end">
-          <span className="inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-[#b0213f] text-white shadow-md text-xs lg:text-sm font-bold font-bengali animate-pulse">
-            ⏰ {isBn ? 'শুধুমাত্র আজকের জন্য' : 'Today Only'}
-          </span>
-
-          <h1 className="mt-3 md:mt-5 font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[0.95] text-[clamp(1.6rem,8vw,2.2rem)] sm:text-5xl lg:text-6xl">
+          <h1 className="font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[0.95] text-[clamp(1.6rem,8vw,2.2rem)] sm:text-5xl lg:text-6xl">
             <span className="text-[#4a0f1f]">MO </span>
             <span className="text-[#b0213f]">Smart Pack</span>
           </h1>
 
-          <p className="mt-3 md:mt-4 text-base sm:text-lg lg:text-xl font-semibold text-[#5a2a35] font-bengali">
-            {isBn ? 'শুধু আজকের জন্য মাত্র ' : 'Today only for just '}
-            <span className="text-[#b0213f] font-extrabold text-2xl lg:text-3xl">৳{isBn ? toBn(TODAY_OFFER.price) : TODAY_OFFER.price}</span>
-            {regular > TODAY_OFFER.price && (
-              <span className="ml-2 text-slate-400 line-through">৳{isBn ? toBn(regular) : regular}</span>
-            )}
-          </p>
-
           {/* Countdown to 11:59 PM tonight */}
-          <div className="mt-4 md:mt-5 flex items-center justify-center md:justify-start gap-2 md:gap-3" aria-live="off">
-            {parts.map((p, i) => (
-              <React.Fragment key={p.en}>
-                {i > 0 && <span className="text-2xl font-extrabold text-[#b0213f]">:</span>}
-                <div className="flex flex-col items-center min-w-[3.5rem] md:min-w-[4.25rem] px-2 py-1.5 md:py-2 rounded-xl bg-[#4a0f1f] text-white shadow-lg">
-                  <span className="text-2xl md:text-3xl font-extrabold font-['Plus_Jakarta_Sans'] tabular-nums">{num(p.v)}</span>
-                  <span className="text-[10px] md:text-xs text-rose-200 font-bengali">{isBn ? p.bn : p.en}</span>
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
+          <TodayOfferCountdown className="mt-4 md:mt-5 justify-center md:justify-start" />
         </div>
 
         {imageUrl && (
@@ -102,16 +104,14 @@ export default function TodayOfferHero() {
           <button
             type="button"
             onClick={open}
-            className="inline-flex items-center gap-3 pl-2 pr-8 py-2 rounded-full bg-gradient-to-r from-[#5a1426] to-[#a51d3a] hover:from-[#6b1830] hover:to-[#be2446] text-white shadow-xl shadow-rose-900/20 transition cursor-pointer active:scale-95"
+            className="hero-cta-nudge inline-flex items-center gap-2 md:gap-3 pl-5 pr-1.5 py-1.5 md:pl-8 md:pr-2 md:py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-white ring-2 ring-white shadow-xl shadow-rose-600/40 cursor-pointer"
           >
-            <span className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/15 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="20" r="1.4" />
-                <circle cx="18" cy="20" r="1.4" />
-                <path d="M2.5 3.5h2.7l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1" />
+            <span className="text-sm md:text-lg lg:text-xl font-extrabold font-bengali">প্রোডাক্টটি দেখুন</span>
+            <span className="hero-cta-arrow w-7 h-7 md:w-11 md:h-11 rounded-full bg-white text-rose-600 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </span>
-            <span className="text-lg lg:text-xl font-extrabold font-bengali">এখনই অর্ডার করুন</span>
           </button>
         </div>
       </div>

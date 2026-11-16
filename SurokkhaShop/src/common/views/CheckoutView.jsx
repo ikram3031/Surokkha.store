@@ -52,6 +52,17 @@ export default function CheckoutView() {
   const [shipPhoneError, setShipPhoneError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
 
+  // Phones get the short checkout (name, phone, address, district); desktop keeps the full form
+  const MOBILE_QUERY = '(max-width: 767px)';
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia(MOBILE_QUERY).matches);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia(MOBILE_QUERY);
+    const onChange = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
   const billingThanas = useThanas(shippingInfo.district);
   const shippingThanas = useThanas(sameAsBilling ? '' : shippingAddress.district);
 
@@ -194,9 +205,9 @@ export default function CheckoutView() {
         errs[tKey] = thanaMsg;
       }
     };
-    check(shippingInfo.district, shippingInfo.thana, billingThanas.options, 'district', 'thana');
+    check(shippingInfo.district, shippingInfo.thana, isMobile ? [] : billingThanas.options, 'district', 'thana');
     if (!sameAsBilling) {
-      check(shippingAddress.district, shippingAddress.thana, shippingThanas.options, 'shipDistrict', 'shipThana');
+      check(shippingAddress.district, shippingAddress.thana, isMobile ? [] : shippingThanas.options, 'shipDistrict', 'shipThana');
     }
     return errs;
   };
@@ -288,6 +299,26 @@ export default function CheckoutView() {
     } catch (_) {}
   };
 
+  const validateNameValue = (value) => ((value || '').trim() ? '' : (isBn ? 'অনুগ্রহ করে আপনার নাম লিখুন' : 'Please enter your name'));
+
+  // 10 characters is the minimum the order API accepts
+  const validateAddressValue = (value) => {
+    const trimmed = (value || '').trim();
+    if (!trimmed) return isBn ? 'অনুগ্রহ করে আপনার সম্পূর্ণ ঠিকানা লিখুন' : 'Please enter your full address';
+    if (trimmed.length < 10) return isBn ? 'ঠিকানা আরেকটু বিস্তারিত লিখুন (বাসা, রোড, এলাকা)' : 'Please write a more detailed address (house, road, area)';
+    return '';
+  };
+
+  // Mobile only: show or clear a field's error right away instead of waiting for the submit tap
+  const liveFieldError = (key, message) => {
+    if (!isMobile) return;
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      if (message) next[key] = message; else delete next[key];
+      return next;
+    });
+  };
+
   const handleBillingPhoneChange = (value) => {
     const cleaned = convertBnToEnDigits(value);
     setShippingInfo({ phone: cleaned });
@@ -338,12 +369,19 @@ export default function CheckoutView() {
     }
 
     // Keep a block found while typing (fake / spam number or email)
-    const emailErr = validateEmail(shippingInfo.email) || emailError;
+    const emailErr = isMobile ? '' : (validateEmail(shippingInfo.email) || emailError);
     const phErr = validatePhoneValue(billingPh) || phoneError;
     const shipPhErr = !sameAsBilling ? validatePhoneValue(shipPh) : '';
     
     const shippingDistrict = (shippingAddress.district || '').trim();
     const locationErrs = getLocationErrors();
+    // Mobile runs its own checks (native browser bubbles are easy to miss on a phone); desktop keeps native validation
+    if (isMobile) {
+      const nameErr = validateNameValue(shippingInfo.fullName || shippingAddress.fullName);
+      const addressErr = validateAddressValue(shippingInfo.address || shippingAddress.address);
+      if (nameErr) locationErrs.fullName = nameErr;
+      if (addressErr) locationErrs.address = addressErr;
+    }
 
     setEmailError(emailErr);
     setPhoneError(phErr);
@@ -351,7 +389,9 @@ export default function CheckoutView() {
     setFieldErrors(locationErrs);
 
     // Show every inline error, then jump to the first invalid field
-    const firstInvalid = (phErr && 'billingPhone')
+    const firstInvalid = (locationErrs.fullName && 'billingFullName')
+      || (phErr && 'billingPhone')
+      || (locationErrs.address && 'billingAddress')
       || (locationErrs.district && FIELD_IDS.district)
       || (locationErrs.thana && FIELD_IDS.thana)
       || (shipPhErr && 'shipPhone')
@@ -360,11 +400,15 @@ export default function CheckoutView() {
     if (firstInvalid) {
       scrollToField(firstInvalid);
       const firstLocErr = Object.values(locationErrs)[0];
-      showToast(phErr || firstLocErr || t('checkout.error_ship_phone_invalid'));
+      showToast(locationErrs.fullName || phErr || firstLocErr || t('checkout.error_ship_phone_invalid'));
       return;
     }
 
     if (!agreedToTerms) {
+      if (isMobile) {
+        setFieldErrors({ terms: t('checkout.error_agree_terms') });
+        scrollToField('agreeTerms');
+      }
       showToast(t('checkout.error_agree_terms'));
       return;
     }
@@ -431,7 +475,7 @@ export default function CheckoutView() {
   const activeDistrict = (sameAsBilling ? (shippingInfo.district || '') : (shippingAddress.district || '')).trim().toLowerCase();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 animate-fade-in text-left">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-10 space-y-3 md:space-y-8 animate-fade-in text-left">
 
       {/* Portalled to <body> so no transformed parent traps it under the header/footer; solid black covers the whole screen */}
       {contactModal && createPortal(
@@ -463,7 +507,23 @@ export default function CheckoutView() {
       )}
       
       {/* Page Header */}
-      <div className="border-b border-zinc-200 pb-5">
+      {isMobile && (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={openCartDrawer}
+            className="inline-flex items-center gap-1 text-xs font-bold text-white bg-rose-600 active:bg-rose-700 px-3 py-2 rounded-xl shadow-xs cursor-pointer"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>{isBn ? 'ফিরে যান' : 'Back'}</span>
+          </button>
+          <h1 className="text-lg font-heading font-extrabold text-zinc-900">Checkout</h1>
+        </div>
+      )}
+
+      <div className={`border-b border-zinc-200 pb-5 ${isMobile ? 'hidden' : ''}`}>
         <div className="flex items-center gap-2 mb-3">
           <button 
             type="button" 
@@ -479,14 +539,15 @@ export default function CheckoutView() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <form onSubmit={handleSubmit} noValidate={isMobile}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-8 items-start">
           
           {/* Left Column: Billing Address & Conditional Shipping Address */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-3 md:space-y-6">
             
             {/* Billing Address Card */}
-            <div className={`bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-5 relative transition-all ${isDistrictOpen || isThanaOpen ? 'z-30' : 'z-10'}`}>
+            <div className={`bg-white border border-zinc-200 rounded-2xl md:rounded-3xl p-3.5 md:p-8 shadow-xs space-y-3 md:space-y-5 relative transition-all ${isDistrictOpen || isThanaOpen ? 'z-30' : 'z-10'}`}>
+              {!isMobile && (
               <div className="border-b border-zinc-100 pb-3 flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-heading font-bold text-zinc-900 uppercase tracking-wider">
@@ -498,8 +559,9 @@ export default function CheckoutView() {
                 </div>
                 <span className="text-xs font-semibold text-brand-800 bg-brand-50 px-2.5 py-1 rounded-md">{t('checkout.step1')}</span>
               </div>
+              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 md:gap-4">
                 {/* Full Name */}
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-bold text-zinc-800 mb-1" htmlFor="billingFullName">
@@ -508,15 +570,20 @@ export default function CheckoutView() {
                   <input 
                     type="text" 
                     id="billingFullName"
+                    name="name"
+                    autoComplete="name"
                     required 
                     value={shippingInfo.fullName || ''}
-                    onChange={(e) => setShippingInfo({ fullName: e.target.value })}
+                    onChange={(e) => { setShippingInfo({ fullName: e.target.value }); clearFieldError('fullName'); }}
+                    onBlur={(e) => liveFieldError('fullName', validateNameValue(e.target.value))}
                     placeholder={t('checkout.full_name_placeholder')} 
-                    className="w-full text-xs sm:text-sm bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition" 
+                    className={`w-full text-xs sm:text-sm bg-zinc-50 border ${fieldErrors.fullName ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition`} 
                   />
+                  {fieldErrors.fullName && <p className="mt-1 text-[11px] text-rose-600 font-semibold">{fieldErrors.fullName}</p>}
                 </div>
 
-                {/* Email Address */}
+                {/* Email Address (desktop only) */}
+                {!isMobile && (
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingEmail">
                     {t('checkout.email_address')} <span className="text-zinc-400 font-normal">({isBn ? 'ঐচ্ছিক' : 'optional'})</span>
@@ -524,7 +591,7 @@ export default function CheckoutView() {
                   <input 
                     type="email" 
                     id="billingEmail"
-                    required 
+                    required
                     value={shippingInfo.email || ''}
                     onChange={(e) => {
                       setShippingInfo({ email: e.target.value });
@@ -536,6 +603,7 @@ export default function CheckoutView() {
                   />
                   {emailError && <p className="mt-1 text-[10px] text-rose-500 font-semibold">{emailError}</p>}
                 </div>
+                )}
 
                 {/* Mobile Phone Number */}
                 <div>
@@ -545,6 +613,8 @@ export default function CheckoutView() {
                   <input 
                     type="tel" 
                     id="billingPhone"
+                    name="tel"
+                    autoComplete="tel"
                     required 
                     value={shippingInfo.phone || ''}
                     onChange={(e) => handleBillingPhoneChange(e.target.value)}
@@ -561,14 +631,22 @@ export default function CheckoutView() {
                     {t('checkout.street_address')} <span className="text-rose-500">*</span>
                   </label>
                   <textarea 
-                    id="billingAddress" 
+                    id="billingAddress"
+                    name="street-address"
+                    autoComplete="street-address"
                     required 
                     rows={2} 
                     value={shippingInfo.address || ''}
-                    onChange={(e) => setShippingInfo({ address: e.target.value })}
+                    onChange={(e) => {
+                      setShippingInfo({ address: e.target.value });
+                      if (isMobile) liveFieldError('address', e.target.value.trim() ? validateAddressValue(e.target.value) : '');
+                      else clearFieldError('address');
+                    }}
+                    onBlur={(e) => liveFieldError('address', validateAddressValue(e.target.value))}
                     placeholder={t('checkout.street_placeholder')} 
-                    className="w-full text-xs sm:text-sm bg-zinc-50 border border-zinc-300 rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
+                    className={`w-full text-xs sm:text-sm bg-zinc-50 border ${fieldErrors.address ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y`}
                   />
+                  {fieldErrors.address && <p className="mt-1 text-[11px] text-rose-600 font-semibold">{fieldErrors.address}</p>}
                 </div>
 
                 {/* District Dropdown (must pick from list) */}
@@ -580,7 +658,12 @@ export default function CheckoutView() {
                     id="billingDistrict"
                     value={shippingInfo.district || ''}
                     options={DISTRICT_NAMES}
-                    onSelect={(name) => { setShippingInfo({ district: name, thana: '' }); clearFieldError('district', 'thana'); }}
+                    onSelect={(name) => {
+                      setShippingInfo({ district: name, thana: '' });
+                      clearFieldError('district', 'thana');
+                      // Typed text that is not in the list gets cleared: say so right away on mobile
+                      if (!name) liveFieldError('district', isBn ? 'অনুগ্রহ করে তালিকা থেকে আপনার জেলা নির্বাচন করুন' : 'Please select your district from the list');
+                    }}
                     onOpenChange={setIsDistrictOpen}
                     placeholder={t('checkout.district_placeholder')}
                     error={fieldErrors.district}
@@ -589,7 +672,8 @@ export default function CheckoutView() {
                   />
                 </div>
                 
-                {/* Thana Dropdown (must pick from list) */}
+                {/* Thana Dropdown (must pick from list; desktop only) */}
+                {!isMobile && (
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingThana">
                     {t('checkout.thana')} <span className="text-rose-500">*</span>
@@ -607,9 +691,11 @@ export default function CheckoutView() {
                     emptyText={billingThanas.loading ? loadingText : noMatchText}
                   />
                 </div>
+                )}
               </div>
 
-              {/* Ship to a different address toggle */}
+              {/* Ship to a different address toggle (hidden on mobile unless already on) */}
+              {(!isMobile || !sameAsBilling) && (
               <div className="pt-4 border-t border-zinc-100">
                 <label className="flex items-center gap-3 text-xs text-zinc-800 font-medium cursor-pointer select-none">
                   <input
@@ -623,6 +709,7 @@ export default function CheckoutView() {
                   </span>
                 </label>
               </div>
+              )}
 
             </div>
 
@@ -711,7 +798,8 @@ export default function CheckoutView() {
                     />
                   </div>
                   
-                  {/* Shipping Thana (must pick from list) */}
+                  {/* Shipping Thana (must pick from list; desktop only) */}
+                  {!isMobile && (
                   <div>
                     <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="shipThana">
                       {t('checkout.shipping_thana')} <span className="text-rose-500">*</span>
@@ -730,11 +818,13 @@ export default function CheckoutView() {
                       inputClassName="bg-white"
                     />
                   </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Delivery Charge Tier Info (Auto calculated based on active location) */}
+            {/* Delivery Charge Tier Info (Auto calculated based on active location; desktop only) */}
+            {!isMobile && (
             <div className="bg-zinc-50/90 border border-zinc-200 rounded-3xl p-6 space-y-3 relative z-0">
               <div className="border-b border-zinc-200 pb-2.5 flex items-center justify-between">
                 <h4 className="text-xs font-heading font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
@@ -805,9 +895,10 @@ export default function CheckoutView() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Order Notes Section */}
-            <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-2">
+            <div className="bg-white border border-zinc-200 rounded-2xl md:rounded-3xl p-3.5 md:p-6 shadow-xs space-y-2">
               <label className="block text-xs font-heading font-bold text-zinc-900 uppercase tracking-wider flex items-center justify-between" htmlFor="orderNotes">
                 <span className="flex items-center gap-1.5">
                   <span>📝</span> {t('checkout.order_notes')}
@@ -827,9 +918,10 @@ export default function CheckoutView() {
           </div>
 
           {/* Right Column: Payment Method & Order Summary Sidebar */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-3 md:space-y-6">
             
-            {/* Payment Method Card - COD Only */}
+            {/* Payment Method Card - COD Only (desktop only) */}
+            {!isMobile && (
             <div className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
               <div className="border-b border-zinc-100 pb-3 flex items-center justify-between">
                 <h3 className="text-sm font-heading font-bold text-zinc-900 uppercase tracking-wider">
@@ -850,9 +942,10 @@ export default function CheckoutView() {
                 <span className="text-xs font-bold text-brand-900 bg-brand-100 px-2 py-0.5 rounded">{t('checkout.primary')}</span>
               </div>
             </div>
+            )}
 
             {/* Order Summary Sidebar */}
-            <div className="bg-zinc-50/90 border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-4">
+            <div className="bg-zinc-50/90 border border-zinc-200 rounded-2xl md:rounded-3xl p-3.5 md:p-6 shadow-xs space-y-3 md:space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
                 <h3 className="text-sm font-heading font-bold text-zinc-900 uppercase tracking-wider">{t('checkout.order_items', { n: totals.itemCount })}</h3>
                 <button 
@@ -1056,6 +1149,7 @@ export default function CheckoutView() {
 
               {/* Terms & Conditions Agreement */}
               <div className="pt-2 border-t border-zinc-200 space-y-3">
+                {!isMobile && (
                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-3.5 space-y-2">
                   <div className="flex items-center gap-2 font-bold text-zinc-900 text-xs sm:text-sm">
                     <span className="text-base">📋</span>
@@ -1079,19 +1173,22 @@ export default function CheckoutView() {
                     </li>
                   </ol>
                 </div>
+                )}
 
                 <label className="flex items-start gap-2.5 cursor-pointer text-xs text-zinc-800 font-medium select-none">
                   <input
                     type="checkbox"
+                    id="agreeTerms"
+                    required={!isMobile}
                     checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    required
+                    onChange={(e) => { setAgreedToTerms(e.target.checked); clearFieldError('terms'); }}
                     className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-brand-700 focus:ring-brand-700 accent-brand-700 cursor-pointer shrink-0"
                   />
                   <span className="leading-snug">
                     {t('checkout.agree_terms')} <span className="text-rose-500 font-bold">*</span>
                   </span>
                 </label>
+                {fieldErrors.terms && <p className="text-[11px] text-rose-600 font-semibold">{fieldErrors.terms}</p>}
 
                 {/* Above the order limit the order goes through WhatsApp instead of the website */}
                 {isOverLimit ? (

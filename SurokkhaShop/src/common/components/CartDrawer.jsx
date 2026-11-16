@@ -2,8 +2,10 @@ import FreeDeliveryProgress from './FreeDeliveryProgress';
 import React, { useEffect, useRef, useState } from 'react';
 import { useStore, getFeaturedCombo, isGroupPieceKey } from '../store/useStore';
 import TrialPackOfferCard from './TrialPackOfferCard';
+import TodayOfferCartCard from './TodayOfferCartCard';
 import { useTranslation } from '../i18n/useTranslation';
 import ProductArtwork from './ProductArtwork';
+import { setBodyScrollLocked } from '../utils/scrollLock';
 
 export default function CartDrawer() {
   const isCartDrawerOpen = useStore((state) => state.isCartDrawerOpen);
@@ -89,14 +91,8 @@ export default function CartDrawer() {
 
   // Prevent background body scroll when drawer is open
   useEffect(() => {
-    if (isRendered) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
+    setBodyScrollLocked(isRendered);
+    return () => setBodyScrollLocked(false);
   }, [isRendered]);
 
   // Handle ESC key to close drawer
@@ -191,7 +187,7 @@ export default function CartDrawer() {
               type="button"
               onClick={closeCartDrawer}
               aria-label="Close Cart Drawer"
-              className="p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 active:scale-95"
+              className="p-2 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 active:scale-95 max-md:bg-rose-600 max-md:text-white max-md:hover:bg-rose-700 max-md:hover:text-white max-md:hover:border-transparent"
             >
               <svg className="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -219,7 +215,8 @@ export default function CartDrawer() {
                   </p>
                 </div>
 
-                <div className="max-w-xs mx-auto">
+                <div className="max-w-xs mx-auto space-y-3">
+                  <TodayOfferCartCard />
                   <TrialPackOfferCard />
                 </div>
 
@@ -375,6 +372,8 @@ export default function CartDrawer() {
                 </div>
 
                 <FreeDeliveryProgress subtotal={totals.subtotal} isBn={isBn} />
+
+                <TodayOfferCartCard />
 
                 {totals.isDirectOfferFreeDelivery ? (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-emerald-900 flex items-center gap-2">

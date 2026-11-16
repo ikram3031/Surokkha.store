@@ -1,51 +1,39 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
-import { SITE_CONFIG } from '../config/siteConfig';
 import ProductCard from './ProductCard';
 
-const API_BASE_URL = SITE_CONFIG.apiBaseUrl.replace(/\/$/, '');
+// Discount as a percentage of the regular price, worked out the same way as the badge on ProductCard
+const discountPercent = (p) => {
+  const regular = Number(p?.regularPrice || p?.price || 0);
+  const offer = Number(p?.offerPrice);
+  if (!(regular > 0) || !(offer > 0) || offer >= regular) return 0;
+  return ((regular - offer) / regular) * 100;
+};
 
-// "Best Offers Right Now" strip on the home page.
-// Shows the products picked in the dashboard (Settings → Product Showcase → Featured), in that order.
-// When nothing is picked it falls back to every product with an offer price.
+// Extra non-product items (KY Jelly, Surokkha Trial Pack) that always join the strip
+const EXTRA_KEYS = ['ky-jelly-personal-lubricant-gel-50g', 'surokkha-trial-pack'];
+const MAX_PRODUCTS = 8;
+
+const isOnSale = (p) => p && p.isActive !== false && !p.groupOffer && discountPercent(p) > 0;
+
+// "Best Offers Right Now" strip on the home page: across every product (not items), the biggest
+// discounts by percentage, plus the extra items above, all ordered by discount, biggest first.
 export default function SpecialOffersStrip() {
   const products = useStore((s) => s.products);
   const productKeys = useStore((s) => s.productKeys);
   const { isBn } = useTranslation();
-  const [featuredIds, setFeaturedIds] = useState(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch(`${API_BASE_URL}/api/v1/store-utils`, { signal: controller.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('store-utils failed'))))
-      .then((json) => {
-        const list = (json?.data || json)?.featured;
-        setFeaturedIds(Array.isArray(list) ? list.map((f) => String(typeof f === 'object' ? (f._id || f.id || f.did || f.slug) : f)) : []);
-      })
-      .catch((err) => { if (err.name !== 'AbortError') setFeaturedIds([]); });
-    return () => controller.abort();
-  }, []);
 
   const keys = useMemo(() => {
     const all = productKeys || [];
-    if (featuredIds && featuredIds.length) {
-      const idOf = (key) => {
-        const p = products[key] || {};
-        return [key, p.slug, p._id, p.mongoId, p.did].filter(Boolean).map(String);
-      };
-      return featuredIds
-        .map((id) => all.find((key) => idOf(key).includes(id)))
-        .filter(Boolean);
-    }
-    return all.filter((key) => {
-      const p = products[key];
-      if (!p) return false;
-      const offer = Number(p.offerPrice);
-      const regular = Number(p.regularPrice);
-      return offer > 0 && regular > 0 && offer < regular;
-    });
-  }, [products, productKeys, featuredIds]);
+    // Stable sort: equal discounts keep the catalog order
+    const byDiscount = (list) => [...list].sort((a, b) => discountPercent(products[b]) - discountPercent(products[a]));
+    const topProducts = byDiscount(
+      all.filter((key) => products[key]?.itemType !== 'item' && isOnSale(products[key]))
+    ).slice(0, MAX_PRODUCTS);
+    const extras = EXTRA_KEYS.filter((key) => all.includes(key) && isOnSale(products[key]) && !topProducts.includes(key));
+    return byDiscount([...topProducts, ...extras]);
+  }, [products, productKeys]);
 
   if (keys.length === 0) return null;
 

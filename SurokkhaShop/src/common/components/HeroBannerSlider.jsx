@@ -52,6 +52,7 @@ const writeCache = (value) => {
 };
 
 const SWIPE_THRESHOLD_PX = 50;
+const SINGLE_SLIDE = true;
 
 // Home hero slider. Slides, speed and display options come from the dashboard (CMSContent type "slider").
 export default function HeroBannerSlider({ useCms = true }) {
@@ -87,9 +88,11 @@ export default function HeroBannerSlider({ useCms = true }) {
         .filter(({ key }) => key !== TRIAL_PACK_SLUG || (trialPack && trialPack.isActive !== false))
         .map(({ key, Component, props }) => ({ key, render: () => <Component {...props} /> }));
   // Today-only MO Smart Pack offer goes first while it is live
-  const slides = isTodayOfferLive()
+  const allSlides = isTodayOfferLive()
     ? [{ key: 'today-offer', render: () => <TodayOfferHero /> }, ...baseSlides]
     : baseSlides;
+  // For now the hero shows only the first (offer) slide; set SINGLE_SLIDE to false to bring the rest back
+  const slides = SINGLE_SLIDE ? allSlides.slice(0, 1) : allSlides;
 
   const slideCount = slides.length;
   const current = pos % slideCount;
