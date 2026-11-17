@@ -33,7 +33,7 @@ import {
 } from '@/lib/checkout'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
-import { getFbIdentifiers, pixelTrack } from '@/lib/pixel'
+import { getFbIdentifiers, pixelTrack, setPixelUserData } from '@/lib/pixel'
 import { productKeyOf, trackProductEvents, type ProductEventType } from '@/lib/api/productEvents'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 import { L } from '@/lib/i18n'
@@ -293,7 +293,8 @@ export function CheckoutPage() {
     if (!form.fullName.trim()) next.fullName = L('Enter your name', 'আপনার নাম লিখুন')
     if (!isValidPhone(form.phone)) next.phone = L('Enter a valid mobile number (e.g. 01XXXXXXXXX)', '১১ ডিজিটের সঠিক মোবাইল নম্বর দিন (যেমন: 01XXXXXXXXX)')
     // Email is optional at checkout
-    if (form.email.trim() && !isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
+    if (!form.email.trim()) next.email = L('Enter your email', 'ইমেইল দিন')
+    else if (!isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
     if (form.address.trim().length < 5) next.address = L('Enter your full address with house, road and area', 'বাড়ি, রোড ও এলাকাসহ পূর্ণ ঠিকানা লিখুন')
     if (!form.district) next.district = L('Select a district', 'জেলা নির্বাচন করুন')
     else if (thanas.length > 0 && !thanas.includes(form.thana)) next.thana = L('Select a thana / upazila', 'থানা / উপজেলা নির্বাচন করুন')
@@ -415,6 +416,7 @@ export function CheckoutPage() {
         total: totals.total,
       })
       const orderNumber = String(res.data?.orderNumber ?? '')
+      setPixelUserData(billing)
       pixelTrack(
         'Purchase',
         {
@@ -483,7 +485,7 @@ export function CheckoutPage() {
                   placeholder="01XXXXXXXXX"
                 />
               </Field>
-              <Field label={L('Email (optional)', 'ইমেইল (ঐচ্ছিক)')} error={errors.email} htmlFor="email">
+              <Field label={L('Email', 'ইমেইল')} required error={errors.email} htmlFor="email">
                 <input
                   id="email"
                   type="email"

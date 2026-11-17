@@ -33,7 +33,7 @@ import { api, ApiError } from '@/lib/api/client'
 import { checkPhone } from '@/lib/api/orders'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 import { normalizePhone, toEnDigits } from '@/lib/checkout'
-import { getFbIdentifiers, pixelTrack as track } from '@/lib/pixel'
+import { getFbIdentifiers, pixelTrack as track, setPixelUserData } from '@/lib/pixel'
 import { bn, taka } from '@/lib/bn'
 import { L } from '@/lib/i18n'
 
@@ -111,9 +111,9 @@ type CheckoutForm = Record<FieldKey | 'note', string>
 const RULES: Record<FieldKey, (v: string) => string | true> = {
   name: (v) => v.trim().length >= 3 || L('Name must be at least 3 characters', 'নাম কমপক্ষে ৩ অক্ষরের হতে হবে'),
   phone: (v) => /^01[3-9]\d{8}$/.test(v) || L('Enter a valid mobile number (01XXXXXXXXX, 11 digits)', '১১ ডিজিটের সঠিক মোবাইল নম্বর দিন (01XXXXXXXXX)'),
-  email: (v) => !v.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || L('Enter a valid email, or leave it empty', 'সঠিক ইমেইল দিন, অথবা খালি রাখুন'),
+  email: (v) => (!v.trim() ? L('Enter your email', 'ইমেইল দিন') : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || L('Enter a valid email', 'সঠিক ইমেইল দিন')),
   district: (v) => !!v || L('Select a district', 'জেলা নির্বাচন করুন'),
-  // Thana is optional, same as the email
+  // Thana is optional
   thana: () => true,
   address: (v) => v.trim().length >= 5 || L('Enter your full address (house, road, area)', 'পূর্ণ ঠিকানা লিখুন (বাড়ি, রোড, এলাকা)'),
 }
@@ -536,6 +536,7 @@ export function OfferHome() {
         total,
       })
       const orderNumber = res?.data?.orderNumber ?? ''
+      setPixelUserData(info)
       // Fire Purchase once per order; the eventID matches the server CAPI event_id so Meta dedupes the pair
       if (!orderNumber || !trackedOrders.has(orderNumber)) track(
         'Purchase',
@@ -724,7 +725,7 @@ export function OfferHome() {
                           className="w-full min-w-0 bg-transparent px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400" />
                       </div>
                     </Field>
-                    <Field label={L('Email', 'ইমেইল')} optional error={errors.email}>
+                    <Field label={L('Email', 'ইমেইল')} error={errors.email}>
                       <input type="email" autoComplete="email" placeholder="you@example.com" value={form.email}
                         onChange={(e) => setField('email', e.target.value)} onBlur={() => validate('email')}
                         className={inputCls(!!errors.email)} />

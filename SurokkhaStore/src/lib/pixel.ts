@@ -61,8 +61,63 @@ function bootstrap(pixelId: string) {
   script.async = true
   script.src = 'https://connect.facebook.net/en_US/fbevents.js'
   document.head.appendChild(script)
-  // Same visitor id the backend sends as external_id on every Conversions API event, so Meta pairs them
-  fbq('init', pixelId, { external_id: getExternalId() })
+  // Same visitor id the backend sends as external_id on every Conversions API event, so Meta pairs them.
+  // Manual advanced matching: returning customers' saved checkout details go out with every event.
+  activePixelId = pixelId
+  fbq('init', pixelId, { ...loadMatchData(), external_id: getExternalId() })
+}
+
+// ---- Manual advanced matching (Meta normalises and hashes these in the browser) ----
+const MATCH_KEY = '_sk_pixel_ud'
+let activePixelId = ''
+type MatchData = Record<string, string>
+
+function loadMatchData(): MatchData {
+  let saved: MatchData = {}
+  try {
+    saved = JSON.parse(localStorage.getItem(MATCH_KEY) || '{}') || {}
+  } catch {
+    /* storage blocked */
+  }
+  return { country: 'bd', ct: 'dhaka', st: 'dhaka', ...saved }
+}
+
+function toMatchData(c: { phone?: string; email?: string; fullName?: string; district?: string }): MatchData {
+  const out: MatchData = {}
+  let ph = String(c.phone || '').replace(/\D/g, '').replace(/^0+/, '')
+  if (ph.startsWith('1')) ph = `880${ph}`
+  if (ph) out.ph = ph
+  const em = String(c.email || '').trim().toLowerCase()
+  if (em) out.em = em
+  const parts = String(c.fullName || '').trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (parts[0]) {
+    out.fn = parts[0]
+    out.ln = parts.slice(1).join(' ') || parts[0]
+  }
+  const place = String(c.district || '').toLowerCase().replace(/[^a-z]/g, '')
+  if (place) {
+    out.ct = place
+    out.st = place
+  }
+  return out
+}
+
+/** Hands the customer's checkout details to the pixel (and remembers them) so the next event, e.g. Purchase, carries them. */
+export function setPixelUserData(customer: { phone?: string; email?: string; fullName?: string; district?: string }) {
+  try {
+    const data = { ...loadMatchData(), ...toMatchData(customer) }
+    try {
+      localStorage.setItem(MATCH_KEY, JSON.stringify(data))
+    } catch {
+      /* storage blocked */
+    }
+    // Already-running pixel: merge into its userData (a second fbq('init') would duplicate every event)
+    const inst = (window.fbq as unknown as { instance?: { pixelsByID?: Record<string, { userData?: MatchData }> } })?.instance
+    const pixel = activePixelId ? inst?.pixelsByID?.[activePixelId] : undefined
+    if (pixel) pixel.userData = { ...(pixel.userData || {}), ...data, external_id: getExternalId() }
+  } catch {
+    /* tracking must never break the storefront */
+  }
 }
 
 export function initPixel() {
