@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { FREE_SHIP_AT, SHIP_FEE, type Product } from '@/data/products'
 import { groupOfferTotals, hasFreeDelivery } from '@/lib/checkout'
@@ -35,8 +35,49 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null)
 
+// Cart survives refresh / closing the tab; dropped after a week so old prices don't linger
+const CART_KEY = 'sk_cart_v1'
+const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
+function loadCart(): CartState {
+  try {
+    const raw = localStorage.getItem(CART_KEY)
+    if (!raw) return {}
+    const saved = JSON.parse(raw) as { at?: number; cart?: CartState }
+    if (!saved?.cart || !saved.at || Date.now() - saved.at > CART_TTL_MS) {
+      localStorage.removeItem(CART_KEY)
+      return {}
+    }
+    const valid: CartState = {}
+    for (const [id, line] of Object.entries(saved.cart)) {
+      if (line?.product && Number(line.qty) > 0) valid[Number(id)] = line
+    }
+    return valid
+  } catch {
+    return {}
+  }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartState>({})
+  const [cart, setCart] = useState<CartState>(loadCart)
+
+  useEffect(() => {
+    try {
+      if (Object.keys(cart).length === 0) localStorage.removeItem(CART_KEY)
+      else localStorage.setItem(CART_KEY, JSON.stringify({ at: Date.now(), cart }))
+    } catch {
+      /* storage blocked (private mode) — cart still works in memory */
+    }
+  }, [cart])
+
+  // Keep tabs in sync: adding in one tab shows up in the other
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === CART_KEY) setCart(loadCart())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   const add = (product: Product, qty = 1) => {
     setCart((prev) => {

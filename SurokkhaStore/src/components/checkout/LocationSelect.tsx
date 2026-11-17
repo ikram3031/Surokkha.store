@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { L } from '@/lib/i18n'
+import { DISTRICT_BN } from '@/data/districts'
 
 /**
- * Searchable district / thana dropdown — ported from SurokkhaShop.
- * Only accepts a value that exists in `options`; free text that isn't an
- * option is discarded on blur. Much friendlier on mobile than a native
- * <select> with 60+ districts.
+ * Dropdown picker (district / thana). The field itself is a button: tapping it
+ * always opens the list, even when a value is already picked. Search lives
+ * inside the open panel, and matches English or Bangla names.
  */
 export default function LocationSelect({
   id,
@@ -16,8 +16,8 @@ export default function LocationSelect({
   placeholder,
   disabled = false,
   error = '',
-  clearLabel = L('Clear', 'মুছুন'),
   emptyText = L('No matching results', 'কোনো মিল পাওয়া যায়নি'),
+  searchPlaceholder = L('Search…', 'খুঁজুন… (বাংলা বা English)'),
 }: {
   id?: string
   value: string
@@ -29,130 +29,130 @@ export default function LocationSelect({
   error?: string
   clearLabel?: string
   emptyText?: string
+  searchPlaceholder?: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [active, setActive] = useState(0)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
   const setOpen = (open: boolean) => {
     setIsOpen(open)
     onOpenChange?.(open)
+    if (!open) setQuery('')
   }
 
-  const filtered = options.filter((o) => o.toLowerCase().includes(query.trim().toLowerCase()))
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return options
+    return options.filter((o) => o.toLowerCase().includes(q) || (DISTRICT_BN[o] || '').includes(q))
+  }, [options, query])
+
+  // Open: focus search, jump to the current value
+  useEffect(() => {
+    if (!isOpen) return
+    const idx = Math.max(0, options.indexOf(value))
+    setActive(idx)
+    requestAnimationFrame(() => {
+      searchRef.current?.focus({ preventScroll: true })
+      listRef.current?.querySelector<HTMLElement>(`[data-idx="${idx}"]`)?.scrollIntoView({ block: 'center' })
+      rootRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    })
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('touchstart', onDown)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('touchstart', onDown)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
+
+  useEffect(() => setActive(0), [query])
 
   const pick = (option: string) => {
     onSelect(option)
-    setQuery('')
     setOpen(false)
   }
 
-  // Accept typed text only when it exactly matches an option, otherwise clear
-  const commitTyped = () => {
-    const typed = query.trim()
-    if (!typed) {
-      setOpen(false)
-      return
-    }
-    const exact = options.find((o) => o.toLowerCase() === typed.toLowerCase())
-    if (exact) pick(exact)
-    else {
-      onSelect('')
-      setQuery('')
-      setOpen(false)
-    }
-  }
+  const label = (o: string) => (DISTRICT_BN[o] ? `${DISTRICT_BN[o]} (${o})` : o)
 
   return (
-    <div className={`relative ${isOpen ? 'z-50' : 'z-20'}`}>
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          id={id}
-          autoComplete="off"
-          disabled={disabled}
-          placeholder={value || placeholder}
-          value={isOpen ? query : value || ''}
-          aria-invalid={!!error}
-          onFocus={() => {
-            setQuery('')
-            setOpen(true)
-          }}
-          onBlur={() => setTimeout(commitTyped, 150)}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            if (!isOpen) setOpen(true)
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              commitTyped()
-              inputRef.current?.blur()
-            } else if (e.key === 'Escape') {
-              setQuery('')
-              setOpen(false)
-              inputRef.current?.blur()
-            }
-          }}
-          className={`w-full cursor-pointer rounded-xl border bg-background px-4 py-2.5 pr-10 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 ${
-            error ? 'border-destructive' : 'border-input'
-          } ${value && !isOpen ? 'placeholder:text-foreground' : ''}`}
-        />
-        <div className="absolute right-2.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
-          {value && !disabled ? (
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault()
-                onSelect('')
-                setQuery('')
-                setOpen(true)
-                inputRef.current?.focus()
-              }}
-              className="rounded-full p-1 text-muted-foreground transition hover:bg-secondary hover:text-destructive"
-              title={clearLabel}
-              aria-label={clearLabel}
-            >
-              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          ) : (
-            <div className="pointer-events-none p-1 text-muted-foreground">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          )}
-        </div>
-      </div>
+    <div ref={rootRef} className={`relative ${isOpen ? 'z-50' : 'z-20'}`}>
+      <button
+        type="button"
+        id={id}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-invalid={!!error}
+        onClick={() => setOpen(!isOpen)}
+        className={`flex w-full items-center justify-between gap-2 rounded-xl border bg-background px-4 py-3 text-left text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 ${
+          error ? 'border-destructive' : isOpen ? 'border-primary ring-2 ring-ring/30' : 'border-input'
+        }`}
+      >
+        <span className={`truncate ${value ? 'font-medium text-foreground' : 'text-foreground/60'}`}>{value ? label(value) : placeholder}</span>
+        <svg className={`h-5 w-5 shrink-0 text-foreground/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
       {isOpen && !disabled && (
-        <div className="absolute left-0 right-0 z-[9999] mt-1 max-h-56 overflow-y-auto rounded-xl border border-border bg-popover py-1 shadow-2xl ring-1 ring-black/10">
-          {filtered.length === 0 ? (
-            <div className="px-4 py-2.5 text-xs text-muted-foreground">{emptyText}</div>
-          ) : (
-            filtered.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onMouseDown={(e) => {
+        <div className="absolute left-0 right-0 z-[9999] mt-1 overflow-hidden rounded-xl border border-border bg-popover shadow-2xl ring-1 ring-black/10">
+          <div className="border-b border-border p-2">
+            <input
+              ref={searchRef}
+              type="text"
+              autoComplete="off"
+              value={query}
+              placeholder={searchPlaceholder}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') {
                   e.preventDefault()
-                  pick(option)
-                }}
-                className={`w-full px-4 py-2.5 text-left text-sm transition hover:bg-accent hover:text-accent-foreground ${
-                  option === value ? 'bg-accent font-bold text-accent-foreground' : 'text-foreground'
-                }`}
-              >
-                {option}
-              </button>
-            ))
-          )}
+                  setActive((a) => Math.min(filtered.length - 1, a + 1))
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  setActive((a) => Math.max(0, a - 1))
+                } else if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (filtered[active]) pick(filtered[active])
+                } else if (e.key === 'Escape') {
+                  setOpen(false)
+                }
+              }}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-base outline-none focus:border-primary focus:ring-2 focus:ring-ring/30"
+            />
+          </div>
+          <div ref={listRef} role="listbox" className="max-h-64 overflow-y-auto overscroll-contain py-1">
+            {filtered.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-foreground/70">{emptyText}</div>
+            ) : (
+              filtered.map((option, i) => (
+                <button
+                  key={option}
+                  type="button"
+                  role="option"
+                  aria-selected={option === value}
+                  data-idx={i}
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => pick(option)}
+                  className={`flex w-full items-center justify-between px-4 py-3 text-left text-base transition ${
+                    i === active ? 'bg-accent text-accent-foreground' : 'text-foreground'
+                  } ${option === value ? 'font-bold' : ''}`}
+                >
+                  <span>{label(option)}</span>
+                  {option === value && <span className="text-primary">✓</span>}
+                </button>
+              ))
+            )}
+          </div>
         </div>
       )}
-
-      {error && <p className="mt-1 text-xs font-medium text-destructive">{error}</p>}
     </div>
   )
 }

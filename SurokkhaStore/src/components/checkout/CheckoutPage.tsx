@@ -10,7 +10,6 @@ const normalizeName = (s: string) => s.toLowerCase().replace(/[^a-zঀ-৿]/g, '
 // Returns the option that matches `value` ignoring case/spacing, or `value` unchanged
 const matchOption = (options: readonly string[], value: string) =>
   options.find((o) => normalizeName(o) === normalizeName(value)) ?? value
-import { useThanas } from '@/lib/useThanas'
 import LocationSelect from '@/components/checkout/LocationSelect'
 import { useCart } from '@/context/CartContext'
 import { ApiError } from '@/lib/api/client'
@@ -42,11 +41,11 @@ const ORDER_LIMIT = 3000
 
 // Shared field styling — tighter and consistent on mobile
 const fieldClass = (err?: string) =>
-  `w-full rounded-xl border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 ${
+  `w-full rounded-xl border bg-background px-4 py-2.5 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 ${
     err ? 'border-destructive' : 'border-input'
   }`
 
-const labelClass = 'mb-1.5 block text-xs font-semibold text-foreground'
+const labelClass = 'mb-1.5 block text-sm font-semibold text-foreground'
 
 function Field({
   label,
@@ -69,7 +68,7 @@ function Field({
         {label} {required && <span className="text-destructive">*</span>}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs font-medium text-destructive">{error}</p>}
+      {error && <p className="mt-1 text-sm font-medium text-destructive">{error}</p>}
     </div>
   )
 }
@@ -131,8 +130,6 @@ export function CheckoutPage() {
     }
   }, [])
 
-  const thanas = useThanas(form.district)
-  const shipThanas = useThanas(sameAsBilling ? '' : ship.district)
 
   // Pre-filled district/thana must equal a dropdown option exactly, or the selects show blank;
   // snap saved values onto the matching option (ignoring case and spacing)
@@ -141,26 +138,14 @@ export function CheckoutPage() {
     setForm((f) => (f.district && fixDistrict(f.district) !== f.district ? { ...f, district: fixDistrict(f.district) } : f))
     setShip((s) => (s.district && fixDistrict(s.district) !== s.district ? { ...s, district: fixDistrict(s.district) } : s))
   }, [form.district, ship.district])
-  useEffect(() => {
-    if (form.thana && thanas.length && !thanas.includes(form.thana)) {
-      const m = matchOption(thanas, form.thana)
-      if (m !== form.thana) setForm((f) => ({ ...f, thana: m }))
-    }
-  }, [thanas, form.thana])
-  useEffect(() => {
-    if (ship.thana && shipThanas.length && !shipThanas.includes(ship.thana)) {
-      const m = matchOption(shipThanas, ship.thana)
-      if (m !== ship.thana) setShip((s) => ({ ...s, thana: m }))
-    }
-  }, [shipThanas, ship.thana])
   const set = (key: keyof typeof form, value: string) => {
-    setForm((f) => ({ ...f, [key]: value, ...(key === 'district' ? { thana: '' } : {}) }))
-    setErrors((e) => ({ ...e, [key]: '', ...(key === 'district' ? { thana: '' } : {}) }))
+    setForm((f) => ({ ...f, [key]: value }))
+    setErrors((e) => ({ ...e, [key]: '' }))
   }
 
   const setShipField = (key: keyof typeof ship, value: string) => {
-    setShip((f) => ({ ...f, [key]: value, ...(key === 'district' ? { thana: '' } : {}) }))
-    setErrors((e) => ({ ...e, [`ship_${key}`]: '', ...(key === 'district' ? { ship_thana: '' } : {}) }))
+    setShip((f) => ({ ...f, [key]: value }))
+    setErrors((e) => ({ ...e, [`ship_${key}`]: '' }))
   }
 
   // One funnel row per product in the cart, like the shop sends
@@ -297,13 +282,13 @@ export function CheckoutPage() {
     else if (!isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
     if (form.address.trim().length < 5) next.address = L('Enter your full address with house, road and area', 'বাড়ি, রোড ও এলাকাসহ পূর্ণ ঠিকানা লিখুন')
     if (!form.district) next.district = L('Select a district', 'জেলা নির্বাচন করুন')
-    else if (thanas.length > 0 && !thanas.includes(form.thana)) next.thana = L('Select a thana / upazila', 'থানা / উপজেলা নির্বাচন করুন')
+    if (form.thana.trim().length < 2) next.thana = L('Enter your thana / upazila', 'থানা / উপজেলার নাম লিখুন')
     if (!sameAsBilling) {
       if (!ship.fullName.trim()) next.ship_fullName = L('Enter the recipient name', 'প্রাপকের নাম লিখুন')
       if (!isValidPhone(ship.phone)) next.ship_phone = L('Enter a valid recipient mobile number', 'প্রাপকের সঠিক মোবাইল নম্বর দিন')
       if (ship.address.trim().length < 5) next.ship_address = L('Enter the recipient full address', 'প্রাপকের পূর্ণ ঠিকানা লিখুন')
       if (!ship.district) next.ship_district = L('Select a district', 'জেলা নির্বাচন করুন')
-      else if (shipThanas.length > 0 && !shipThanas.includes(ship.thana)) next.ship_thana = L('Select a thana / upazila', 'থানা / উপজেলা নির্বাচন করুন')
+      if (ship.thana.trim().length < 2) next.ship_thana = L('Enter the thana / upazila', 'থানা / উপজেলার নাম লিখুন')
     }
     setErrors(next)
     return next
@@ -450,7 +435,7 @@ export function CheckoutPage() {
     <div id="checkout" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
       <div className="mb-6 border-b border-border pb-5">
         <h1 className="font-display text-2xl font-bold md:text-3xl">{L('Checkout', 'চেকআউট')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{L('Fill in your delivery details — pay cash on delivery when the package arrives.', 'ডেলিভারির জন্য আপনার সঠিক তথ্য দিন — পার্সেল হাতে পেয়ে মূল্য পরিশোধ করুন।')}</p>
+        <p className="mt-1 text-base text-foreground/75">{L('Fill in your delivery details — pay cash on delivery when the package arrives.', 'ডেলিভারির জন্য আপনার সঠিক তথ্য দিন — পার্সেল হাতে পেয়ে মূল্য পরিশোধ করুন।')}</p>
       </div>
 
       <form onSubmit={submit} noValidate className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
@@ -458,8 +443,8 @@ export function CheckoutPage() {
         <div className="space-y-6 lg:col-span-7">
           <div className="space-y-5 rounded-3xl border border-border bg-card p-5 sm:p-6">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h2 className="font-display text-lg font-bold">{L('Delivery details', 'ডেলিভারি তথ্য')}</h2>
-              <span className="rounded-md bg-secondary px-2.5 py-1 text-xs font-semibold text-secondary-foreground">{L('Step 1', 'ধাপ ১')}</span>
+              <h2 className="font-display text-xl font-bold">{L('Delivery details', 'ডেলিভারি তথ্য')}</h2>
+              <span className="rounded-md bg-secondary px-2.5 py-1 text-sm font-semibold text-secondary-foreground">{L('Step 1', 'ধাপ ১')}</span>
             </div>
 
             <Field label={L('Your name', 'আপনার নাম')} required error={errors.fullName} htmlFor="fullName">
@@ -522,14 +507,13 @@ export function CheckoutPage() {
                 />
               </Field>
               <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} required error={errors.thana} htmlFor="billingThana">
-                <LocationSelect
+                <input
                   id="billingThana"
+                  className={fieldClass(errors.thana)}
                   value={form.thana}
-                  options={thanas}
-                  disabled={!form.district}
-                  onSelect={(name) => set('thana', name)}
-                  placeholder={form.district ? L('Select a thana', 'থানা নির্বাচন করুন') : L('Select a district first', 'আগে জেলা নির্বাচন করুন')}
-                  error={errors.thana}
+                  onChange={(e) => set('thana', e.target.value)}
+                  autoComplete="address-level3"
+                  placeholder={L('e.g. Mirpur, Savar', 'যেমন: মিরপুর, সাভার')}
                 />
               </Field>
             </div>
@@ -546,10 +530,10 @@ export function CheckoutPage() {
             </Field>
 
             <div className="border-t border-border pt-4">
-              <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm font-medium">
+              <label className="flex cursor-pointer select-none items-center gap-2.5 text-base font-medium">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-primary"
+                  className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
                   checked={!sameAsBilling}
                   onChange={(e) => setSameAsBilling(!e.target.checked)}
                 />
@@ -591,14 +575,13 @@ export function CheckoutPage() {
                     />
                   </Field>
                   <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} required error={errors.ship_thana} htmlFor="shipThana">
-                    <LocationSelect
+                    <input
                       id="shipThana"
+                      className={fieldClass(errors.ship_thana)}
                       value={ship.thana}
-                      options={shipThanas}
-                      disabled={!ship.district}
-                      onSelect={(name) => setShipField('thana', name)}
-                      placeholder={ship.district ? L('Select a thana', 'থানা নির্বাচন করুন') : L('Select a district first', 'আগে জেলা নির্বাচন করুন')}
-                      error={errors.ship_thana}
+                      onChange={(e) => setShipField('thana', e.target.value)}
+                      autoComplete="address-level3"
+                      placeholder={L('e.g. Mirpur, Savar', 'যেমন: মিরপুর, সাভার')}
                     />
                   </Field>
                 </div>
@@ -619,8 +602,8 @@ export function CheckoutPage() {
           {/* Delivery charge tiers — auto-calculated from the selected location */}
           <div className="space-y-3 rounded-3xl border border-border bg-secondary/20 p-5">
             <div className="flex items-center justify-between border-b border-border pb-2.5">
-              <h3 className="flex items-center gap-1.5 text-sm font-bold">📦 {L('Delivery charge', 'ডেলিভারি চার্জ')}</h3>
-              <span className="text-xs text-muted-foreground">{L('Auto-calculated', 'স্বয়ংক্রিয় নির্ধারিত')}</span>
+              <h3 className="flex items-center gap-1.5 text-base font-bold">📦 {L('Delivery charge', 'ডেলিভারি চার্জ')}</h3>
+              <span className="text-sm text-foreground/75">{L('Auto-calculated', 'স্বয়ংক্রিয় নির্ধারিত')}</span>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {DELIVERY_TIERS.map((tier) => {
@@ -629,20 +612,20 @@ export function CheckoutPage() {
                   <div
                     key={tier.fee}
                     className={`flex items-center justify-between rounded-2xl border p-3 transition ${
-                      active ? 'border-primary bg-accent/40 font-semibold text-foreground shadow-xs' : 'border-border bg-card text-muted-foreground opacity-70'
+                      active ? 'border-primary bg-accent/40 font-semibold text-foreground shadow-xs' : 'border-border bg-card text-foreground/75 opacity-70'
                     }`}
                   >
                     <div>
-                      <span className="block text-xs font-bold">{tier.label}</span>
-                      <span className="text-[10px] text-muted-foreground">{tier.time}</span>
+                      <span className="block text-sm font-bold">{tier.label}</span>
+                      <span className="text-xs text-foreground/75">{tier.time}</span>
                     </div>
                     {freeShipping && active ? (
-                      <span className="font-mono text-xs font-bold text-emerald-600">
-                        <span className="mr-1 text-[10px] font-normal text-muted-foreground line-through">{taka(tier.fee)}</span>
+                      <span className="font-mono text-sm font-bold text-emerald-600">
+                        <span className="mr-1 text-xs font-normal text-foreground/75 line-through">{taka(tier.fee)}</span>
                         {L('FREE', 'ফ্রি')}
                       </span>
                     ) : (
-                      <span className="font-mono text-xs font-bold">{taka(tier.fee)}</span>
+                      <span className="font-mono text-sm font-bold">{taka(tier.fee)}</span>
                     )}
                   </div>
                 )
@@ -655,23 +638,23 @@ export function CheckoutPage() {
         <div className="space-y-6 lg:col-span-5">
           <div className="space-y-4 rounded-3xl border border-border bg-card p-5 sm:p-6">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider">{L('Payment method', 'পেমেন্ট পদ্ধতি')}</h2>
-              <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">{L('Verified', 'যাচাইকৃত')}</span>
+              <h2 className="text-base font-bold uppercase tracking-wider">{L('Payment method', 'পেমেন্ট পদ্ধতি')}</h2>
+              <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-sm font-semibold text-emerald-700">{L('Verified', 'যাচাইকৃত')}</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border-2 border-primary bg-accent/30 p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">✓</div>
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">✓</div>
                 <div>
-                  <span className="block text-sm font-bold">{L('Cash on Delivery', 'ক্যাশ অন ডেলিভারি')}</span>
-                  <span className="text-[11px] text-muted-foreground">{L('Pay when you receive the product', 'পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন')}</span>
+                  <span className="block text-base font-bold">{L('Cash on Delivery', 'ক্যাশ অন ডেলিভারি')}</span>
+                  <span className="text-sm text-foreground/75">{L('Pay when you receive the product', 'পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন')}</span>
                 </div>
               </div>
-              <span className="rounded bg-secondary px-2 py-0.5 text-xs font-bold text-secondary-foreground">{L('Primary', 'প্রধান')}</span>
+              <span className="rounded bg-secondary px-2 py-0.5 text-sm font-bold text-secondary-foreground">{L('Primary', 'প্রধান')}</span>
             </div>
           </div>
 
           <aside className="space-y-4 rounded-3xl border border-border bg-card p-5 sm:p-6">
-            <h2 className="font-display text-lg font-bold">{L('Order summary', 'অর্ডার সামারি')}</h2>
+            <h2 className="font-display text-xl font-bold">{L('Order summary', 'অর্ডার সামারি')}</h2>
             <ul className="max-h-60 space-y-3 overflow-y-auto pr-1">
               {lines.map(({ product, qty }) => (
                 <li key={product.id} className="flex items-center gap-3">
@@ -683,12 +666,12 @@ export function CheckoutPage() {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="truncate text-base font-semibold">{product.name}</p>
+                    <p className="text-sm text-foreground/75">
                       {taka(product.price)} × {bn(qty)}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold">{taka(product.price * qty)}</span>
+                  <span className="text-base font-semibold">{taka(product.price * qty)}</span>
                 </li>
               ))}
             </ul>
@@ -718,26 +701,26 @@ export function CheckoutPage() {
                   </Button>
                 )}
               </div>
-              {couponError && <p className="mt-1 text-xs text-destructive">{couponError}</p>}
+              {couponError && <p className="mt-1 text-sm text-destructive">{couponError}</p>}
             </div>
 
-            <dl className="space-y-1.5 border-t border-border pt-4 text-sm">
+            <dl className="space-y-1.5 border-t border-border pt-4 text-base">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">{L('Subtotal', 'সাবটোটাল')}</dt>
+                <dt className="text-foreground/75">{L('Subtotal', 'সাবটোটাল')}</dt>
                 <dd>{taka(subtotal)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">
+                <dt className="text-foreground/75">
                   {L('Delivery charge', 'ডেলিভারি চার্জ')}{destDistrict ? ` · ${destDistrict}` : ''}
-                  {subtotal >= FREE_SHIP_AT && <span className="block text-xs text-emerald-600">{L('Free delivery on orders over ৳1,000', '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি')}</span>}
+                  {subtotal >= FREE_SHIP_AT && <span className="block text-sm text-emerald-600">{L('Free delivery on orders over ৳1,000', '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি')}</span>}
                   {!freeShipping && subtotal < FREE_SHIP_AT && (
-                    <span className="block text-xs text-emerald-600">{L(`Add ${taka(FREE_SHIP_AT - subtotal)} more for free delivery`, `আরও ${taka(FREE_SHIP_AT - subtotal)} এর পণ্য যোগ করলে ফ্রি ডেলিভারি`)}</span>
+                    <span className="block text-sm text-emerald-600">{L(`Add ${taka(FREE_SHIP_AT - subtotal)} more for free delivery`, `আরও ${taka(FREE_SHIP_AT - subtotal)} এর পণ্য যোগ করলে ফ্রি ডেলিভারি`)}</span>
                   )}
                 </dt>
                 <dd>
                   {freeShipping ? (
                     <span className="flex items-center gap-1.5">
-                      <span className="text-xs text-muted-foreground line-through">{taka(totals.baseFee)}</span>
+                      <span className="text-sm text-foreground/75 line-through">{taka(totals.baseFee)}</span>
                       <span className="font-semibold text-emerald-600">{L('Free', 'ফ্রি')}</span>
                     </span>
                   ) : totals.fee ? (
@@ -753,7 +736,7 @@ export function CheckoutPage() {
                   <dd>−{taka(totals.discount)}</dd>
                 </div>
               )}
-              <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
+              <div className="flex justify-between border-t border-border pt-2 text-lg font-bold">
                 <dt>{L('Total', 'সর্বমোট')}</dt>
                 <dd>{taka(totals.total)}</dd>
               </div>
@@ -761,36 +744,36 @@ export function CheckoutPage() {
 
             {/* Terms */}
             <div className="space-y-2 rounded-2xl border border-border bg-secondary/30 p-3.5">
-              <div className="flex items-center gap-2 text-sm font-bold">📋 {L('Terms & Conditions', 'শর্তাবলী')}</div>
-              <ol className="list-decimal space-y-1.5 pl-5 text-xs leading-relaxed text-muted-foreground">
+              <div className="flex items-center gap-2 text-base font-bold">📋 {L('Terms & Conditions', 'শর্তাবলী')}</div>
+              <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-foreground/75">
                 <li>{L('Please check the product before paying the delivery man. Once received, the product cannot be returned.', 'ডেলিভারিম্যানকে টাকা দেওয়ার আগে পণ্য দেখে নিন। গ্রহণ করার পর পণ্য ফেরত নেওয়া হবে না।')}</li>
                 <li>{L('Products sold loose (not as a full sealed pack) are not eligible for return.', 'খুচরা বিক্রিত পণ্য (সম্পূর্ণ সিল করা প্যাক নয়) ফেরতযোগ্য নয়।')}</li>
                 <li>{L('Your package is shipped fully discreetly.', 'আপনার পার্সেল সম্পূর্ণ গোপনীয়ভাবে পাঠানো হয়।')}</li>
               </ol>
             </div>
 
-            <label className="flex cursor-pointer select-none items-start gap-2 text-sm">
-              <input type="checkbox" className="mt-1 h-4 w-4 accent-primary" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+            <label className="flex cursor-pointer select-none items-start gap-3 text-base">
+              <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-primary" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
               <span>{L('I agree to the terms and refund policy, and I am 18 or older.', 'আমি নিশ্চিত করছি আমার বয়স ১৮ বছর বা তার বেশি এবং আমি শর্তাবলী ও রিফান্ড পলিসি মেনে নিচ্ছি।')}</span>
             </label>
 
             {/* Above the order limit the order goes through WhatsApp instead of the website */}
             {isOverLimit ? (
               <>
-                <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
+                <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-base font-semibold text-amber-900">
                   {L(`Orders above ${taka(ORDER_LIMIT)} are taken on WhatsApp. Tap below to send your order details.`, `${taka(ORDER_LIMIT)}-এর বেশি মূল্যের অর্ডার হোয়াটসঅ্যাপে নেওয়া হয়। অর্ডারের তথ্য পাঠাতে নিচে চাপুন।`)}
                 </p>
                 <a
                   href={whatsappOrderHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-12 w-full items-center justify-center rounded-full bg-[#25D366] text-base font-semibold text-white hover:opacity-90"
+                  className="flex h-12 w-full items-center justify-center rounded-full bg-[#25D366] text-lg font-semibold text-white hover:opacity-90"
                 >
                   {L('Order on WhatsApp', 'হোয়াটসঅ্যাপে অর্ডার করুন')}
                 </a>
               </>
             ) : (
-              <Button type="submit" size="lg" className="h-12 w-full rounded-full text-base" disabled={submitting}>
+              <Button type="submit" size="lg" className="h-12 w-full rounded-full text-lg" disabled={submitting}>
                 {submitting ? L('Placing order...', 'অর্ডার প্রক্রিয়াধীন...') : `${L('Confirm order', 'অর্ডার কনফার্ম করুন')} · ${taka(totals.total)}`}
               </Button>
             )}

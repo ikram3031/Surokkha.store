@@ -25,13 +25,17 @@ export const isValidPhone = (value: string) => /^\+8801[3-9]\d{8}$/.test(normali
 
 export const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 
-const DHAKA_SUBURBS = ['savar', 'ashulia', 'dhamrai', 'keraniganj', 'nawabganj', 'dohar']
+const DHAKA_SUBURBS = ['savar', 'ashulia', 'dhamrai', 'keraniganj', 'nawabganj', 'dohar', 'সাভার', 'আশুলিয়া', 'ধামরাই', 'কেরানীগঞ্জ', 'কেরাণীগঞ্জ', 'নবাবগঞ্জ', 'দোহার']
 
 /** Delivery charge by destination — identical to SurokkhaShop's getCartTotals. */
 export function deliveryFee(district: string, thana: string): number {
   const d = district.trim().toLowerCase()
   if (!d) return 70
-  if (d === 'dhaka') return DHAKA_SUBURBS.includes(thana.trim().toLowerCase()) ? 90 : 70
+  if (d === 'dhaka') {
+    // Thana is typed freely now, so match a suburb name anywhere in it (English or Bangla)
+    const t = thana.trim().toLowerCase()
+    return t && DHAKA_SUBURBS.some((s) => t.includes(s)) ? 90 : 70
+  }
   if (d === 'gazipur' || d === 'narayanganj') return 90
   return 120
 }
