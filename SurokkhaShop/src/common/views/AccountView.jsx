@@ -35,6 +35,9 @@ const TEXT = {
     errName: 'Please enter your name', errEmail: 'Please enter a valid email address',
     errPassword: `Password must be at least ${MIN_PASSWORD} characters`, errCode: 'Enter the 6-digit code from your email',
     passwordUpdated: 'Password updated. You are now logged in.',
+    claimTitle: (a) => `Get your extra ৳${a} off`, claimSub: "We'll email you a 6-digit code. Enter it and set a password to complete your membership.",
+    claimSendCode: 'Send code', claimSetBtn: 'Set password & get discount',
+    bonusDone: (a, o) => `Membership complete! ৳${a} has been taken off order ${o}.`,
     verifyTitle: 'Verify your email', verifySub: 'Enter the 6-digit code we sent to your email.',
     verifyBtn: 'Verify and continue', verified: 'Email verified. Your account is ready.',
     codeSent: 'We have emailed you a 6-digit code. Enter it to finish creating your account.',
@@ -57,6 +60,9 @@ const TEXT = {
     errName: 'আপনার নাম লিখুন', errEmail: 'সঠিক ইমেইল ঠিকানা দিন',
     errPassword: `পাসওয়ার্ড কমপক্ষে ${MIN_PASSWORD} অক্ষরের হতে হবে`, errCode: 'ইমেইলে পাঠানো ৬ ডিজিটের কোড দিন',
     passwordUpdated: 'পাসওয়ার্ড পরিবর্তন হয়েছে, আপনি এখন লগ ইন করা আছেন।',
+    claimTitle: (a) => `অতিরিক্ত ৳${a} ছাড় নিন`, claimSub: 'আপনার ইমেইলে ৬ ডিজিটের একটি কোড পাঠাব। কোডটি দিয়ে পাসওয়ার্ড সেট করলেই মেম্বারশিপ সম্পন্ন হবে।',
+    claimSendCode: 'কোড পাঠান', claimSetBtn: 'পাসওয়ার্ড সেট করে ছাড় নিন',
+    bonusDone: (a, o) => `মেম্বারশিপ সম্পন্ন! অর্ডার ${o} থেকে ৳${a} ছাড় দেওয়া হয়েছে।`,
     verifyTitle: 'ইমেইল যাচাই করুন', verifySub: 'আপনার ইমেইলে পাঠানো ৬ ডিজিটের কোডটি দিন।',
     verifyBtn: 'যাচাই করে এগিয়ে যান', verified: 'ইমেইল যাচাই হয়েছে, আপনার অ্যাকাউন্ট তৈরি হয়েছে।',
     codeSent: 'আপনার ইমেইলে ৬ ডিজিটের একটি কোড পাঠানো হয়েছে। অ্যাকাউন্ট তৈরি শেষ করতে কোডটি দিন।',
@@ -128,10 +134,14 @@ export default function AccountView() {
   const showToast = useStore((state) => state.showToast);
 
   const accountTab = useStore((state) => state.accountTab);
-  const [view, setView] = useState(accountTab === 'signup' ? 'signup' : 'login'); // login | signup | forgot | reset | account
+  const accountPrefillEmail = useStore((state) => state.accountPrefillEmail);
+  const lastOrder = useStore((state) => state.lastOrder);
+  // Came from the order confirmation page to claim the membership bonus: set a password with an emailed code
+  const claimBonus = accountTab === 'claim' ? Number(lastOrder?.serverData?.memberBonus?.amount) || 0 : 0;
+  const [view, setView] = useState(accountTab === 'signup' ? 'signup' : accountTab === 'claim' ? 'forgot' : 'login'); // login | signup | forgot | reset | account
   // Menu "Login" / "Register" buttons pick the tab while signed out
   useEffect(() => {
-    setView((v) => (v === 'login' || v === 'signup' ? (accountTab === 'signup' ? 'signup' : 'login') : v));
+    setView((v) => (v === 'login' || v === 'signup' ? (accountTab === 'signup' ? 'signup' : accountTab === 'claim' ? 'forgot' : 'login') : v));
   }, [accountTab]);
   const [customer, setCustomer] = useState(null);
   const [checking, setChecking] = useState(true);
@@ -139,7 +149,7 @@ export default function AccountView() {
   const [notice, setNotice] = useState('');
 
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(accountTab === 'claim' ? accountPrefillEmail || '' : '');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -250,8 +260,9 @@ export default function AccountView() {
     if (!/^\d{6}$/.test(code)) return showToast(t.errCode);
     if (password.length < MIN_PASSWORD) return showToast(t.errPassword);
     run(async () => {
-      enter(await resetPassword({ email: email.trim(), otp: code, password }));
-      showToast(t.passwordUpdated);
+      const c = await resetPassword({ email: email.trim(), otp: code, password });
+      enter(c);
+      showToast(c?.bonusApplied ? t.bonusDone(c.bonusApplied.amount, c.bonusApplied.orderNumber) : t.passwordUpdated);
     });
   };
 
@@ -271,8 +282,8 @@ export default function AccountView() {
     login: [t.welcomeBack, t.welcomeSub],
     signup: [t.createTitle, t.createSub],
     verify: [t.verifyTitle, t.verifySub],
-    forgot: [t.forgotTitle, t.forgotSub],
-    reset: [t.resetTitle, t.resetSub],
+    forgot: claimBonus ? [t.claimTitle(claimBonus), t.claimSub] : [t.forgotTitle, t.forgotSub],
+    reset: claimBonus ? [t.claimTitle(claimBonus), t.resetSub] : [t.resetTitle, t.resetSub],
     account: [`${t.hello}${customer ? `, ${customer.name.split(' ')[0]}` : ''}`, t.loggedIn],
   }[view];
 
@@ -423,7 +434,7 @@ export default function AccountView() {
                 <Field label={t.email}>
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className={inputClass} required />
                 </Field>
-                <button type="submit" className={primaryBtn} disabled={busy}>{busy ? t.sending : t.sendCode}</button>
+                <button type="submit" className={primaryBtn} disabled={busy}>{busy ? t.sending : claimBonus ? t.claimSendCode : t.sendCode}</button>
                 <p className="text-center text-sm">
                   <button type="button" className={linkBtn} onClick={() => go('login')}>{t.back}</button>
                 </p>
@@ -451,7 +462,7 @@ export default function AccountView() {
                     <PasswordInput value={password} onChange={setPassword} autoComplete="new-password" t={t} />
                   </Field>
                 </div>
-                <button type="submit" className={`${primaryBtn} sm:col-span-2`} disabled={busy}>{busy ? t.wait : t.resetBtn}</button>
+                <button type="submit" className={`${primaryBtn} sm:col-span-2`} disabled={busy}>{busy ? t.wait : claimBonus ? t.claimSetBtn : t.resetBtn}</button>
                 <p className="flex justify-between text-sm sm:col-span-2">
                   <button type="button" className={linkBtn} onClick={resendCode} disabled={busy}>{t.resend}</button>
                   <button type="button" className={linkBtn} onClick={() => go('login')}>{t.back}</button>

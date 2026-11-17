@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 
 export default function ConfirmationView() {
-  const { t } = useTranslation();
+  const { t, isBn } = useTranslation();
   const lastOrder = useStore((state) => state.lastOrder);
   const navigateTo = useStore((state) => state.navigateTo);
   const products = useStore((state) => state.products);
@@ -41,6 +41,32 @@ export default function ConfirmationView() {
           {t('confirmation.description')}
         </p>
       </div>
+
+      {/* Membership bonus: the order had an email, so log in (set a password with an emailed code) for the discount */}
+      {lastOrder.serverData?.memberBonus?.status === 'pending' && lastOrder.serverData.memberBonus.amount > 0 && (
+        <div className="bg-emerald-50 border-2 border-emerald-300 rounded-3xl p-5 sm:p-6 text-center space-y-3">
+          <p className="text-lg sm:text-xl font-extrabold text-emerald-800">
+            {isBn
+              ? `অতিরিক্ত ৳${lastOrder.serverData.memberBonus.amount} ছাড় পেতে আপনার অ্যাকাউন্টে লগ ইন করুন`
+              : `Log in to your account to get an extra ৳${lastOrder.serverData.memberBonus.amount} off`}
+          </p>
+          <p className="text-sm sm:text-base text-emerald-900">
+            {isBn
+              ? `${lastOrder.customer?.email} ঠিকানায় একটি কোড পাঠানো হবে। কোড দিয়ে পাসওয়ার্ড সেট করলেই এই অর্ডারের মোট থেকে ছাড়টি কেটে নেওয়া হবে।`
+              : `We'll send a code to ${lastOrder.customer?.email}. Set a password with it and the discount comes off this order's total.`}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              useStore.setState({ accountPrefillEmail: lastOrder.customer?.email || '' });
+              navigateTo('account', 'claim');
+            }}
+            className="w-full sm:w-auto inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-6 py-3.5 rounded-2xl shadow-md transition cursor-pointer"
+          >
+            {isBn ? `লগ ইন করে ৳${lastOrder.serverData.memberBonus.amount} ছাড় নিন` : `Log in & get ৳${lastOrder.serverData.memberBonus.amount} off`}
+          </button>
+        </div>
+      )}
 
       {/* Order Summary Card */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 text-left shadow-xs space-y-6">

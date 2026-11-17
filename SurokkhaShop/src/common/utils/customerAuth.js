@@ -54,7 +54,8 @@ async function request(path, { method = 'GET', body, token } = {}) {
 
 const startSession = (res) => {
   setCustomerToken(res.data.accessToken);
-  return res.data.customer;
+  // bonusApplied: the membership bonus taken off a pending order when this email got verified
+  return res.data.bonusApplied ? { ...res.data.customer, bonusApplied: res.data.bonusApplied } : res.data.customer;
 };
 
 // Sign-up emails a 6-digit code; the account opens after verifyEmail

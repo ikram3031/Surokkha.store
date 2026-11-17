@@ -206,6 +206,8 @@ export const useStore = create((set, get) => ({
   // New customer free delivery (dashboard Promo): minimum order when the logged-in customer qualifies, else null
   newUserFreeMin: null,
   lastOrder: null,
+  // Email carried from the confirmation page into the account page's "claim your bonus" step
+  accountPrefillEmail: '',
   toast: { show: false, message: '' },
 
   // Interactive Slide-Over Cart Drawer State & Actions
@@ -860,7 +862,7 @@ export const useStore = create((set, get) => ({
       const updates = { currentView: view };
       // Shop can open on a category picked from the menu
       if (view === 'shop') updates.shopCategory = param || 'all';
-      if (view === 'account') updates.accountTab = param === 'signup' ? 'signup' : 'login';
+      if (view === 'account') updates.accountTab = param === 'signup' || param === 'claim' ? param : 'login';
       if (view === 'product' && param) {
         updates.selectedProductSlug = param;
       }

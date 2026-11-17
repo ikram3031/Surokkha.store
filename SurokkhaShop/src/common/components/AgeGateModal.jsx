@@ -6,7 +6,8 @@ export default function AgeGateModal() {
   const [underAgeBlocked, setUnderAgeBlocked] = useState(false);
   const { isBn } = useTranslation();
 
-  // The popup shows 2.5 seconds after the whole page has loaded, never on top of a half-loaded page
+  // The popup shows as soon as the page has loaded. A delay made it pop up under the customer's finger
+  // just as they tapped "Order Now", swallowing that tap
   useEffect(() => {
     let verified = false;
     try {
@@ -16,7 +17,7 @@ export default function AgeGateModal() {
 
     let timer;
     const show = () => {
-      timer = setTimeout(() => setIsOpen(true), 2500);
+      timer = setTimeout(() => setIsOpen(true), 0);
     };
     if (document.readyState === 'complete') show();
     else window.addEventListener('load', show, { once: true });

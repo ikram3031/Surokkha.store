@@ -14,6 +14,8 @@ export default function CmsHeroSlide({ slide }) {
   const openProduct = useStore((state) => state.openProduct);
   const navigateTo = useStore((state) => state.navigateTo);
   const navigateToCombo = useStore((state) => state.navigateToCombo);
+  const buyNowDirect = useStore((state) => state.buyNowDirect);
+  const products = useStore((state) => state.products);
 
   const link = (slide.ctaLink || '').trim();
   const imageUrl = resolveImage(slide.image);
@@ -29,6 +31,10 @@ export default function CmsHeroSlide({ slide }) {
       window.location.href = link;
       return;
     }
+    // A plain product goes straight to checkout ("Order Now" means order); one with variants opens its page to pick
+    const prod = products?.[link];
+    const hasVariants = prod?.type === 'variant' && Array.isArray(prod.variants) && prod.variants.length > 0;
+    if (prod && !hasVariants) return buyNowDirect(link);
     openProduct(link);
   };
 
