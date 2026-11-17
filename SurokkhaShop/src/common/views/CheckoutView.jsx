@@ -81,6 +81,8 @@ export default function CheckoutView() {
   // Orders above this subtotal are taken on WhatsApp (same cap the backend enforces)
   const ORDER_LIMIT = 3000;
   const isOverLimit = Number(totals.subtotal || 0) > ORDER_LIMIT;
+  // No email given: the confirm button becomes "Order on WhatsApp"
+  const noEmail = !shippingInfo.email?.trim();
   const whatsappOrderHref = (() => {
     const lines = cartKeys.map((cartKey) => {
       const [slug, size] = cartKey.split(':::');
@@ -94,6 +96,10 @@ export default function CheckoutView() {
       shippingInfo.fullName ? `নাম: ${shippingInfo.fullName}` : '',
       shippingInfo.phone ? `মোবাইল: ${shippingInfo.phone}` : '',
       shippingInfo.address ? `ঠিকানা: ${[shippingInfo.address, shippingInfo.thana, shippingInfo.district].filter(Boolean).join(', ')}` : '',
+      !sameAsBilling && shippingAddress.address
+        ? `ডেলিভারি: ${[shippingAddress.fullName, shippingAddress.phone, shippingAddress.address, shippingAddress.thana, shippingAddress.district].filter(Boolean).join(', ')}`
+        : '',
+      orderNotes ? `নোট: ${orderNotes}` : '',
     ].filter(Boolean).join('\n');
     return `https://wa.me/8801600905774?text=${encodeURIComponent(text)}`;
   })();
@@ -226,7 +232,7 @@ export default function CheckoutView() {
 
   const validateEmail = (value) => {
     const trimmed = (value || '').trim();
-    if (!trimmed) return ''; // email is optional at checkout
+    if (!trimmed) return ''; // empty email: the order goes through WhatsApp instead (see handleSubmit)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(trimmed) ? '' : t('checkout.error_email_invalid');
   };
@@ -369,7 +375,7 @@ export default function CheckoutView() {
     }
 
     // Keep a block found while typing (fake / spam number or email)
-    const emailErr = isMobile ? '' : (validateEmail(shippingInfo.email) || emailError);
+    const emailErr = validateEmail(shippingInfo.email) || emailError;
     const phErr = validatePhoneValue(billingPh) || phoneError;
     const shipPhErr = !sameAsBilling ? validatePhoneValue(shipPh) : '';
     
@@ -446,6 +452,12 @@ export default function CheckoutView() {
     if (totals.groupBlocked) {
       const need = Math.max(0, Number(totals.groupBlocked.rule.minOrderAmount || 0) - totals.groupBlocked.subtotal);
       showToast(isBn ? `${totals.groupBlocked.rule.name}: আরও ৳${need} এর পণ্য যোগ করুন` : `${totals.groupBlocked.rule.name}: add ৳${need} more`);
+      return;
+    }
+
+    // Everything valid but no email: the order is sent on WhatsApp with all details prefilled
+    if (!shippingInfo.email?.trim()) {
+      window.open(whatsappOrderHref, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -565,7 +577,7 @@ export default function CheckoutView() {
                 {/* Full Name */}
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-bold text-zinc-800 mb-1" htmlFor="billingFullName">
-                    {t('checkout.full_name')} <span className="text-rose-500">*</span>
+                    {t('checkout.full_name')}
                   </label>
                   <input 
                     type="text" 
@@ -582,16 +594,14 @@ export default function CheckoutView() {
                   {fieldErrors.fullName && <p className="mt-1 text-[11px] text-rose-600 font-semibold">{fieldErrors.fullName}</p>}
                 </div>
 
-                {/* Email Address (desktop only) */}
-                {!isMobile && (
+                {/* Email Address (required on every device) */}
                 <div>
                   <label className="block text-xs font-bold text-zinc-700 mb-1" htmlFor="billingEmail">
-                    {t('checkout.email_address')} <span className="text-zinc-400 font-normal">({isBn ? 'ঐচ্ছিক' : 'optional'})</span>
+                    {t('checkout.email_address')}
                   </label>
                   <input 
                     type="email" 
                     id="billingEmail"
-                    required
                     value={shippingInfo.email || ''}
                     onChange={(e) => {
                       setShippingInfo({ email: e.target.value });
@@ -603,7 +613,6 @@ export default function CheckoutView() {
                   />
                   {emailError && <p className="mt-1 text-[10px] text-rose-500 font-semibold">{emailError}</p>}
                 </div>
-                )}
 
                 {/* Mobile Phone Number */}
                 <div>
@@ -1211,10 +1220,12 @@ export default function CheckoutView() {
                 <button
                   type="submit" 
                   disabled={isProcessing}
-                  className="w-full bg-brand-700 hover:bg-brand-800 disabled:opacity-60 text-white font-bold text-sm sm:text-base py-4 px-6 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
+                  className={`w-full ${noEmail ? 'bg-[#25D366] hover:opacity-90' : 'bg-brand-700 hover:bg-brand-800'} disabled:opacity-60 text-white font-bold text-sm sm:text-base py-4 px-6 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer`}
                 >
                   {isProcessing ? (
                     <span>{t('checkout.placing_order')}</span>
+                  ) : noEmail ? (
+                    <span>{isBn ? 'WhatsApp-এ অর্ডার করুন' : 'Order on WhatsApp'}</span>
                   ) : (
                     <>
                       <svg className="w-5 h-5 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
