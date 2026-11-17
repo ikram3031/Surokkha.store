@@ -143,7 +143,20 @@
         localStorage.setItem('_sk_ext_id', skExtId);
       }
     } catch (e) {}
-    fbq('init', '1565104865301894', skExtId ? { external_id: skExtId } : {});
+    // Advanced matching at init: returning customers' saved checkout details (same keys analytics.js writes)
+    var am = { country: 'bd', ct: 'dhaka', st: 'dhaka' };
+    if (skExtId) am.external_id = skExtId;
+    try {
+      var ph = (localStorage.getItem('_sk_user_phone') || '').replace(/\D/g, '').replace(/^0+/, '');
+      if (ph) am.ph = ph.indexOf('880') === 0 ? ph : (ph.indexOf('1') === 0 ? '880' + ph : ph);
+      var em = (localStorage.getItem('_sk_user_email') || '').trim().toLowerCase();
+      if (em) am.em = em;
+      var nm = (localStorage.getItem('_sk_user_name') || '').trim().toLowerCase().split(/\s+/);
+      if (nm[0]) { am.fn = nm[0]; am.ln = nm.slice(1).join(' ') || nm[0]; }
+      var ds = (localStorage.getItem('_sk_user_district') || '').toLowerCase().replace(/[^a-z]/g, '');
+      if (ds) { am.ct = ds; am.st = ds; }
+    } catch (e) {}
+    fbq('init', '1565104865301894', am);
     fbq('track', 'PageView');
   </script>
   <!-- End Meta Pixel Code -->

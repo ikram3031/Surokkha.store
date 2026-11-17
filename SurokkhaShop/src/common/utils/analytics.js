@@ -200,7 +200,7 @@ let metaPixelInitialised = false;
 export function syncMetaUserProperties(overrideData = null) {
   if (!isBrowser || typeof window.fbq !== 'function') return;
   const user = overrideData || getStoredUserData();
-  if (user.phone || user.email || user.name) {
+  {
     const userProps = {
       country: 'bd',
       external_id: user.externalId || getExternalId(),
@@ -223,16 +223,18 @@ export function syncMetaUserProperties(overrideData = null) {
       userProps.fn = parts[0] || '';
       userProps.ln = parts.slice(1).join(' ') || parts[0] || '';
     }
-    if (user.district) {
-      userProps.ct = user.district.toLowerCase();
-      userProps.st = user.district.toLowerCase();
-    }
-    // The pixel is already initialised once in index.html. Re-running fbq('init') for the same ID
-    // registers a duplicate pixel instance and every event (incl. Purchase) is then sent twice.
-    // Advanced matching data is still delivered hashed through the server-side CAPI event.
+    // Meta normalises city/state as lowercase letters only; same 'dhaka' fallback the server CAPI uses
+    const place = String(user.district || user.city || 'dhaka').toLowerCase().replace(/[^a-z]/g, '') || 'dhaka';
+    userProps.ct = place;
+    userProps.st = place;
+    // The pixel is initialised once in index.html, so a second fbq('init') would add a duplicate
+    // instance (every event sent twice). Instead merge the checkout data into the live instance's
+    // advanced-matching userData so the next browser event (Purchase) carries ph/em/fn/ln/ct/st/country.
     try {
-      const alreadyInit = !!window.fbq?.instance?.pixelsByID?.[META_PIXEL_ID];
-      if (!alreadyInit && !metaPixelInitialised) {
+      const pixel = window.fbq?.instance?.pixelsByID?.[META_PIXEL_ID];
+      if (pixel) {
+        pixel.userData = { ...(pixel.userData || {}), ...userProps };
+      } else if (!metaPixelInitialised) {
         metaPixelInitialised = true;
         window.fbq('set', 'autoConfig', false, META_PIXEL_ID);
         window.fbq('init', META_PIXEL_ID, userProps);
@@ -964,6 +966,18 @@ export const trackPurchase = (order, products = {}) => {
     external_id: orderId,
     ...(fbLoginId ? { fb_login_id: fbLoginId } : {})
   };
+
+  // Load this order's customer into pixel advanced matching so the browser Purchase carries ph/fn/ln/ct/st
+  try {
+    const stored = getStoredUserData();
+    syncMetaUserProperties({
+      ...stored,
+      phone: order.customer?.mobile || stored.phone,
+      email: order.customer?.email || stored.email,
+      name: order.customer?.name || stored.name,
+      district: order.customer?.district || stored.district,
+    });
+  } catch (_) {}
 
   // Browser Pixel with orderId as eventID (Deduplicated with server-side CAPI)
   fbqTrack('Purchase', customData, orderId);
