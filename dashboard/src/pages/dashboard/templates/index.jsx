@@ -1367,6 +1367,7 @@ export function TemplatesPage() {
         onOpenChange={(open) => !open && setMediaPickerTarget(null)}
         onSelect={handleMediaSelect}
         multiple={false}
+        scope="all"
         title={
           mediaPickerTarget === 'logo'
             ? 'Select Store Logo'

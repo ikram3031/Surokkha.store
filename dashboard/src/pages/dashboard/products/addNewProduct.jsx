@@ -2,7 +2,7 @@ import { toExtraStockForm } from "@/components/dashboard/inventory/StockItemPick
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, Link, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, X, FileJson } from "lucide-react";
 import { apiClient, baseURL } from "@/lib/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import {
   ProductDataCard,
   SEOOverviewCard,
   SidebarCards,
+  ImportJsonDialog,
   BanglaContentCard,
   bnFormFromProduct,
   bnPayloadFromForm,
@@ -143,20 +144,31 @@ const AddNewProduct = () => {
       })
     : [];
 
-  // Draft pre-fill: mount-এ একবার চেক করে সব field set করা হয়
-  useEffect(() => {
-    if (!duplicateDraft) return;
-
-    const p = duplicateDraft;
-    // The copy gets its own name and slug (slug follows the name until edited) and no SKU, so it saves without clashing
-    if (p.name) {
-      const copyName = `${p.name} (Copy)`;
-      setName(copyName);
-      setSlug(slugify(copyName));
-      setSlugManual(false);
-      setDraftSourceName(p.name);
+  // Fills the form from a product object: a duplicated product, or JSON pasted into "Import JSON"
+  const applyProductData = (p, { asCopy = false } = {}) => {
+    if (asCopy) {
+      // The copy gets its own name and slug (slug follows the name until edited) and no SKU, so it saves without clashing
+      if (p.name) {
+        const copyName = `${p.name} (Copy)`;
+        setName(copyName);
+        setSlug(slugify(copyName));
+        setSlugManual(false);
+        setDraftSourceName(p.name);
+      }
+      setSku("");
+    } else {
+      if (p.name) setName(p.name);
+      if (p.slug) {
+        setSlug(p.slug);
+        setSlugManual(true);
+      } else if (p.name) {
+        setSlug(slugify(p.name));
+        setSlugManual(false);
+      }
+      setSku(p.sku || "");
+      if (p.metaData?.metaTitle) setMetaTitle(p.metaData.metaTitle);
+      if (p.metaData?.metaDescription) setMetaDescription(p.metaData.metaDescription);
     }
-    setSku("");
     if (p.description) setDescription(p.description);
     if (p.longDescription) setLongDescription(p.longDescription);
     if (p.bn) setBnContent(bnFormFromProduct(p.bn));
@@ -258,8 +270,16 @@ const AddNewProduct = () => {
         }))
       );
     }
+  };
+
+  // Draft pre-fill: mount-এ একবার চেক করে সব field set করা হয়
+  useEffect(() => {
+    if (duplicateDraft) applyProductData(duplicateDraft, { asCopy: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const [isJsonImportOpen, setIsJsonImportOpen] = useState(false);
+  const [importedFromJson, setImportedFromJson] = useState(false);
 
   useEffect(() => {
     const rawCategory = paramCategory || queryCategory;
@@ -736,6 +756,14 @@ const AddNewProduct = () => {
 
           <div className="flex items-center gap-2">
             <Button
+              variant="outline"
+              type="button"
+              onClick={() => setIsJsonImportOpen(true)}
+              className="text-xs font-semibold cursor-pointer"
+            >
+              <FileJson className="h-3.5 w-3.5 mr-1.5" /> Import JSON
+            </Button>
+            <Button
               variant="ghost"
               type="button"
               onClick={() => {
@@ -766,6 +794,33 @@ const AddNewProduct = () => {
             </Button>
           </div>
         </div>
+
+        {importedFromJson && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/8 px-4 py-2.5 text-sm">
+            <span className="text-emerald-700 dark:text-emerald-400">
+              <span className="font-semibold">JSON থেকে ফর্ম ভরা হয়েছে।</span> ছবি দিন, সব দেখে নিয়ে Publish করুন।
+            </span>
+            <button
+              type="button"
+              onClick={() => setImportedFromJson(false)}
+              className="text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors flex-shrink-0"
+              title="Hide"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        <ImportJsonDialog
+          open={isJsonImportOpen}
+          onOpenChange={setIsJsonImportOpen}
+          categories={categories}
+          onApply={(data) => {
+            applyProductData(data);
+            setImportedFromJson(true);
+            toast.success("JSON থেকে ফর্ম ভরা হয়েছে");
+          }}
+        />
 
         {/* Content Layout Grid */}
         {draftSourceName && (

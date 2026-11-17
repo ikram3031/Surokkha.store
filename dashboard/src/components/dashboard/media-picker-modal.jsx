@@ -62,6 +62,8 @@ export const MediaPickerModal = ({
   initialSelected = DEFAULT_INITIAL_SELECTED,
   title,
   productSlug,
+  // "product" lists only catalog images; "all" also shows invoices, docs, avatars and other uploads
+  scope = "product",
 }) => {
   const [mediaList, setMediaList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -107,7 +109,7 @@ export const MediaPickerModal = ({
     append ? setIsLoadingMore(true) : setIsLoading(true);
     try {
       const res = await apiClient.get("/api/v1/images", {
-        params: { page: nextPage, limit: PAGE_SIZE, search },
+        params: { page: nextPage, limit: PAGE_SIZE, search, scope },
       });
       // A newer search or refresh started while this one was in flight
       if (requestId !== requestRef.current) return;
@@ -127,7 +129,7 @@ export const MediaPickerModal = ({
         setIsLoadingMore(false);
       }
     }
-  }, []);
+  }, [scope]);
 
   // Search as you type, after a short pause
   useEffect(() => {

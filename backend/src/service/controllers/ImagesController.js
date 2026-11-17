@@ -210,15 +210,26 @@ async function getAllUploadFiles(dirPath, baseDir) {
   return results;
 }
 
+// Catalog images live in /uploads/YYMM/YYMMDD/ (and the legacy /uploads/products/)
+const PRODUCT_MEDIA_PATH = /^\/uploads\/(\d{4}\/\d{6}|products)\//;
+
 // List all media files from uploads folder with pagination and search
 export const listAllMedia = async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page || "1", 10));
     const limit = Math.max(1, parseInt(req.query.limit || "20", 10));
     const search = req.query.search ? String(req.query.search).trim().toLowerCase() : "";
+    const scope = req.query.scope === "product" ? "product" : "all";
 
     const uploadsDir = path.join(process.cwd(), "uploads");
-    const allFiles = await getAllUploadFiles(uploadsDir, process.cwd());
+    let allFiles = await getAllUploadFiles(uploadsDir, process.cwd());
+
+    // Product pickers only see catalog images (dated upload folders), not invoices, docs, avatars, blog or CMS files
+    if (scope === "product") {
+      allFiles = allFiles.filter(
+        (f) => PRODUCT_MEDIA_PATH.test(f.url) && !f.filename.toLowerCase().endsWith(".pdf")
+      );
+    }
 
     // Sort by latest created/modified date first (descending)
     allFiles.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
