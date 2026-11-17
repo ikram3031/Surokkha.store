@@ -18,6 +18,8 @@ import {
 import { getClientInvoiceHtml } from '../../common/templates/invoices/index.js';
 import { config } from '../../common/config/index.js';
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
+import { sendOrderWhatsAppAlert } from '../../common/services/whatsappAlert.service.js';
+import { offerMemberBonus } from '../../common/services/memberBonus.service.js';
 import { sendServerPurchaseEvent, extractClientIp } from '../../common/services/facebookCapi.service.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { markCheckoutLeadConverted } from './CheckoutLeadController.js';
@@ -239,7 +241,12 @@ export const createOrder = async (req, res, next) => {
     });
 
     // Non-blocking email notifications for Customer and Admin
+    // Email given: account + membership bonus waiting for verification (shown on the confirmation page)
+    const memberBonus = await offerMemberBonus(createdOrder);
+    if (memberBonus) createdOrder.memberBonus = memberBonus;
+
     sendOrderEmailsAsynchronously(createdOrder);
+    sendOrderWhatsAppAlert(createdOrder);
 
     const isInstoreOrder =
       payload.orderType === "instore" ||

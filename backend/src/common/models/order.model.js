@@ -158,6 +158,19 @@ const orderSchema = new Schema(
     paymentTransactionId: { type: String, trim: true, default: "" },
     shippingTotalAmount: { type: Number, default: 0, min: 0 },
     discountTotalAmount: { type: Number, default: 0, min: 0 },
+    // Checkout membership bonus: offered when an email is given, applied once that email is verified
+    memberBonus: {
+      type: new Schema(
+        {
+          percent: { type: Number, default: 0 },
+          amount: { type: Number, default: 0, min: 0 },
+          status: { type: String, enum: ["pending", "applied"], default: "pending" },
+          appliedAt: { type: Date },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
     couponCode: { type: String, default: null, trim: true, uppercase: true },
     // Customer's note from checkout (e.g. preferred delivery time)
     orderNotes: { type: String, trim: true, default: "", maxlength: 1000 },

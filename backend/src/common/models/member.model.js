@@ -44,6 +44,8 @@ const memberSchema = new Schema(
     registrationPending: { type: Boolean, default: false },
     emailVerifiedAt: { type: Date, select: false },
     passwordReset: { type: Boolean, default: false },
+    // Account made from a checkout email; the customer sets a password with the emailed code
+    createdFromCheckout: { type: Boolean, default: false },
     billingAddress: {
       firstName: { type: String, trim: true, default: '' },
       lastName: { type: String, trim: true, default: '' },

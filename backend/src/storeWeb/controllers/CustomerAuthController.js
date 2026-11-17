@@ -8,6 +8,7 @@ import { allowHit, clearHits } from "../../common/utils/rateLimit.js";
 import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 import { newUserFreeDeliveryFor } from "../../common/utils/promo.js";
 import { OrderModel } from "../../common/models/order.model.js";
+import { applyMemberBonus } from "../../common/services/memberBonus.service.js";
 
 // Customer tokens use a secret derived from the staff one, so a customer token can never
 // authenticate against the dashboard/staff APIs (and vice versa).
@@ -97,7 +98,8 @@ export const register = async (req, res, next) => {
     }
 
     const existing = await MemberModel.findOne({ email });
-    if (existing && !existing.registrationPending) {
+    // An account made from a checkout email (never verified) can still be claimed by signing up
+    if (existing && !existing.registrationPending && !(existing.createdFromCheckout && !existing.isEmailVerified)) {
       return res.status(409).json({
         status: "error",
         message: "An account with this email already exists. Log in, or use Forgot password to set a password.",
@@ -161,7 +163,8 @@ export const verifyEmail = async (req, res, next) => {
     member.emailOtpExpiresAt = undefined;
     await member.save();
     clearHits(`verify:${email}`);
-    res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member) } });
+    const bonusApplied = await applyMemberBonus(email).catch(() => null);
+    res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member), bonusApplied } });
   } catch (error) {
     next(error);
   }
@@ -311,11 +314,19 @@ export const resetPassword = async (req, res, next) => {
     member.passwordHash = await hashPassword(password);
     member.emailOtp = undefined;
     member.emailOtpExpiresAt = undefined;
+    // The emailed code proves the address: setting a password also completes membership
+    const firstVerification = !member.isEmailVerified;
+    if (firstVerification) {
+      member.isEmailVerified = true;
+      member.emailVerifiedAt = new Date();
+      member.registrationPending = false;
+    }
     await member.save();
     clearHits(`reset:${email}`);
-    sendPasswordChangedEmail({ toEmail: email, name: member.name, log: logger });
+    if (!firstVerification) sendPasswordChangedEmail({ toEmail: email, name: member.name, log: logger });
+    const bonusApplied = await applyMemberBonus(email).catch(() => null);
 
-    res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member) } });
+    res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member), bonusApplied } });
   } catch (error) {
     next(error);
   }
