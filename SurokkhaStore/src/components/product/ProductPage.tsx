@@ -130,7 +130,8 @@ export function ProductPage({ slug }: { slug: string }) {
   const moreProducts = useMemo(() => {
     if (!product || allProducts.length === 0) return []
     const recentSet = new Set(recentlyViewedProducts.map(productIdentifier))
-    const others = allProducts.filter((p) => productIdentifier(p) !== currentKey)
+    // Never suggest out-of-stock products
+    const others = allProducts.filter((p) => p.inStock !== false && productIdentifier(p) !== currentKey)
     const nonDuplicate = others.filter((p) => !recentSet.has(productIdentifier(p)))
     const pool = nonDuplicate.length >= 8 ? nonDuplicate : others
     return pickWithOfferPriority(pool, 8)
