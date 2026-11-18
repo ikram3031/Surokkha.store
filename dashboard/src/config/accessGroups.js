@@ -18,7 +18,7 @@ export const ACCESS_GROUPS = [
 
 // Menus a role always has; these show as locked (on) in the access editor
 export const ROLE_DEFAULT_GROUPS = {
-  Accountant: ['accounts', 'support', 'webmail'],
+  Accountant: ['accounts', 'support'],
 };
 
 // Roles that already see everything, so extras never apply

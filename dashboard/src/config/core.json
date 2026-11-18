@@ -125,9 +125,7 @@
       "name": "Accountant",
       "allowedMenus": [
         "accounts.*",
-        "tools.support",
-        "tools.messages",
-        "webmail"
+        "tools.support"
       ]
     }
   }

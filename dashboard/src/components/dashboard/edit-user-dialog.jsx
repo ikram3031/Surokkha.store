@@ -1,21 +1,33 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-handler';
 
-// Edit a system user's name, email, phone and role (own role stays locked, mirroring the backend rules)
+// Edit a system user's name, email, phone, role and email notification preference
 export function EditUserDialog({ open, onOpenChange, user, currentUser, onSuccess }) {
+  const { t } = useTranslation();
   const isOwner = currentUser?.role === 'Owner';
   const isSelf = user?.id === currentUser?.id;
-  const [form, setForm] = useState({ name: '', email: '', phone: '', role: '' });
+  const isInactive = user?.isActive === false || user?.status !== 'Active';
+  const [form, setForm] = useState({ name: '', email: '', phone: '', role: '', receiveEmailNotifications: false });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (user) setForm({ name: user.name || '', email: user.email || '', phone: user.phone || '', role: user.role || '' });
+    if (user) {
+      setForm({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        role: user.role || '',
+        receiveEmailNotifications: user.isActive !== false && user.status === 'Active' && Boolean(user.receiveEmailNotifications),
+      });
+    }
   }, [user]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -30,6 +42,7 @@ export function EditUserDialog({ open, onOpenChange, user, currentUser, onSucces
     try {
       const payload = { name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim() };
       if (!isSelf && form.role && form.role !== user.role) payload.role = form.role;
+      if (!isInactive) payload.receiveEmailNotifications = Boolean(form.receiveEmailNotifications);
       await apiClient.put(`/api/v1/users/${user.id}`, payload);
       toast.success('User updated.');
       onSuccess?.();
@@ -78,6 +91,27 @@ export function EditUserDialog({ open, onOpenChange, user, currentUser, onSucces
                 )}
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-muted/30">
+            <div className="space-y-0.5">
+              <label
+                htmlFor="edit-user-mail"
+                className={`text-xs font-semibold ${isInactive ? 'text-muted-foreground cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                {t('admin.get_mail', 'Get Mail')}
+              </label>
+              <p className="text-[11px] text-muted-foreground">
+                {isInactive
+                  ? t('admin.get_mail_inactive_hint', 'Activate this user to enable email notifications')
+                  : t('admin.get_mail_desc', 'Receives new order (regular & custom) and contact form emails')}
+              </p>
+            </div>
+            <Switch
+              id="edit-user-mail"
+              checked={!isInactive && form.receiveEmailNotifications}
+              disabled={isInactive}
+              onCheckedChange={(val) => setForm((f) => ({ ...f, receiveEmailNotifications: Boolean(val) }))}
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

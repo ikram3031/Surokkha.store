@@ -18,10 +18,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, AlertCircle, Mail, KeyRound, Pencil, ShieldCheck } from 'lucide-react';
+import { MoreHorizontal, AlertCircle, Mail, KeyRound, Pencil, ShieldCheck, Info } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
@@ -193,7 +194,29 @@ export function SystemUsersTable({
             <TableHead>Email</TableHead>
             <TableHead>Assigned Role</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>{t('admin.get_mail', 'Get Mail')}</TableHead>
+            <TableHead>
+              <TooltipProvider>
+                <div className="inline-flex items-center gap-1.5">
+                  <span>{t('admin.get_mail', 'Get Mail')}</span>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <button
+                          type="button"
+                          className="text-muted-foreground hover:text-foreground inline-flex items-center"
+                          aria-label={t('admin.get_mail_desc', 'Receives new order (regular & custom) and contact form emails')}
+                        >
+                          <Info className="h-3.5 w-3.5" />
+                        </button>
+                      }
+                    />
+                    <TooltipContent side="top">
+                      {t('admin.get_mail_desc', 'Receives new order (regular & custom) and contact form emails')}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
+            </TableHead>
             <TableHead>Last Login</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -220,7 +243,15 @@ export function SystemUsersTable({
               </TableRow>
             ))
           ) : users && users.length > 0 ? (
-            users.map((user) => (
+            users.map((user) => {
+              const isInactive = user.isActive === false || user.status !== 'Active';
+              const mailEnabled = !isInactive && Boolean(user.receiveEmailNotifications);
+              const canToggleMail = !isInactive && (canManageUser(currentUser, user) || user.id === currentUser?.id);
+              const mailTooltip = isInactive
+                ? t('admin.get_mail_inactive_hint', 'Activate this user to enable email notifications')
+                : t('admin.get_mail_desc', 'Receives new order (regular & custom) and contact form emails');
+
+              return (
               <TableRow key={user.id}>
                 <TableCell className="w-[50px] px-4">
                   <input
@@ -264,20 +295,33 @@ export function SystemUsersTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <Switch 
-                      id={`mail-${user.id}`} 
-                      checked={user.receiveEmailNotifications !== false}
-                      onCheckedChange={() => handleToggleMail(user.id, user.receiveEmailNotifications !== false)}
-                      disabled={togglingMail === user.id || (!canManageUser(currentUser, user) && user.id !== currentUser?.id)}
-                    />
-                    <label 
-                      htmlFor={`mail-${user.id}`} 
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      {user.receiveEmailNotifications !== false ? 'Active' : 'Inactive'}
-                    </label>
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={
+                          <div className="inline-flex items-center space-x-2">
+                            <Switch
+                              id={`mail-${user.id}`}
+                              checked={mailEnabled}
+                              onCheckedChange={() => !isInactive && handleToggleMail(user.id, mailEnabled)}
+                              disabled={togglingMail === user.id || !canToggleMail}
+                            />
+                            <label
+                              htmlFor={`mail-${user.id}`}
+                              className={`text-sm font-medium leading-none ${
+                                isInactive || !canToggleMail
+                                  ? 'text-muted-foreground cursor-not-allowed opacity-70'
+                                  : 'cursor-pointer'
+                              }`}
+                            >
+                              {mailEnabled ? 'Active' : 'Inactive'}
+                            </label>
+                          </div>
+                        }
+                      />
+                      <TooltipContent side="top">{mailTooltip}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {formatDateTime(user.lastLogin)}
@@ -327,7 +371,12 @@ export function SystemUsersTable({
                       <DropdownMenuItem disabled={!canManageUser(currentUser, user) || user.id === currentUser?.id} onClick={() => handleToggleStatus(user.id, user.status)} className="cursor-pointer">
                         Toggle Active Status
                       </DropdownMenuItem>
-                      <DropdownMenuItem disabled={!canManageUser(currentUser, user) && user.id !== currentUser?.id} onClick={() => handleToggleMail(user.id, user.receiveEmailNotifications !== false)} className="cursor-pointer">
+                      <DropdownMenuItem
+                        disabled={!canToggleMail}
+                        onClick={() => !isInactive && handleToggleMail(user.id, mailEnabled)}
+                        className="cursor-pointer"
+                        title={mailTooltip}
+                      >
                         Toggle Get Mail
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -342,7 +391,8 @@ export function SystemUsersTable({
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))
+              );
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={8} className="h-24 text-center">

@@ -241,7 +241,7 @@ const UsersPage = () => {
                     {t('admin.get_mail', 'Get Mail')}
                   </label>
                   <p className="text-[11px] text-muted-foreground">
-                    {t('admin.get_mail_desc', 'Receive order and site notification emails')}
+                    {t('admin.get_mail_desc', 'Receives new order (regular & custom) and contact form emails')}
                   </p>
                 </div>
                 <Switch
