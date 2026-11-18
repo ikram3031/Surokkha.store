@@ -20,6 +20,8 @@ const productEventSchema = new Schema(
     referrer: { type: String, default: "" },
     pageUrl: { type: String, default: "" },
     device: { type: String, enum: ["mobile", "tablet", "desktop"], default: "desktop" },
+    os: { type: String, default: "" },
+    browser: { type: String, default: "" },
     ipAddress: { type: String, default: "" },
     createdAt: { type: Date, default: Date.now },
   },

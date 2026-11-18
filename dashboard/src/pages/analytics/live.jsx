@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
@@ -7,6 +7,27 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EVENT_LABELS, formatTime, tooltipStyle } from './shared';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { VisitorJourney } from '@/components/dashboard/analytics/VisitorJourney';
+
+// Side panel with one visitor's full history
+const VisitorSheet = ({ visitorId, onClose }) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics-visitor', visitorId],
+    queryFn: async () => (await apiClient.get(`/api/v1/product-analytics/visitor/${encodeURIComponent(visitorId)}`)).data?.data,
+    enabled: Boolean(visitorId),
+  });
+  return (
+    <Sheet open={Boolean(visitorId)} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+        <SheetHeader><SheetTitle>Visitor</SheetTitle></SheetHeader>
+        <div className="px-4 pb-6">
+          {isLoading ? <p className="text-sm text-muted-foreground">Loading...</p> : <VisitorJourney visitor={data} />}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};
 
 const SERIES = [
   { id: 'view', color: '#2563eb', label: 'Views' },
@@ -24,6 +45,9 @@ export default function AnalyticsLive() {
     refetchInterval: 15000,
   });
 
+  const [openVisitor, setOpenVisitor] = useState(null);
+  const flags = data?.visitors || {};
+  const todayStart = data?.todayStart ? new Date(data.todayStart) : null;
   const hourly = (data?.hourly || []).map((h) => ({ ...h, label: `${h.hour}:00` }));
 
   return (
@@ -90,8 +114,19 @@ export default function AnalyticsLive() {
                     {' · '}
                     {e.productName || e.productKey}
                   </div>
-                  <div className="truncate text-[11px] text-muted-foreground">
-                    {e.source} · {e.device} · {e.ipAddress || '-'} · {e.visitorId?.slice(-6)}
+                  <div className="flex items-center gap-1.5 truncate text-[11px] text-muted-foreground">
+                    <span className="truncate">{[e.source, e.device, e.os, e.browser, e.ipAddress || '-'].filter(Boolean).join(' · ')}</span>
+                    {e.visitorId && (
+                      <button type="button" onClick={() => setOpenVisitor(e.visitorId)} className="shrink-0 rounded bg-muted px-1 font-mono text-foreground hover:bg-primary hover:text-primary-foreground">
+                        {e.visitorId.slice(-6)}
+                      </button>
+                    )}
+                    {todayStart && flags[e.visitorId]?.firstSeen && new Date(flags[e.visitorId].firstSeen) < todayStart && (
+                      <span className="shrink-0 rounded bg-amber-500 px-1 font-semibold text-white">Returning · {flags[e.visitorId].activeDays}d</span>
+                    )}
+                    {flags[e.visitorId]?.orders > 0 && (
+                      <span className="shrink-0 rounded bg-green-600 px-1 font-semibold text-white">Ordered {flags[e.visitorId].orders}</span>
+                    )}
                   </div>
                 </div>
                 <span className="shrink-0 text-[11px] text-muted-foreground">{formatTime(e.createdAt)}</span>
@@ -100,6 +135,7 @@ export default function AnalyticsLive() {
           </div>
         </CardContent>
       </Card>
+      <VisitorSheet visitorId={openVisitor} onClose={() => setOpenVisitor(null)} />
     </div>
   );
 }

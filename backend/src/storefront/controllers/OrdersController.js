@@ -2,6 +2,7 @@ import { customerFromRequest } from "../../storeWeb/controllers/CustomerAuthCont
 import { checkNewUserFreeDelivery } from "../../common/utils/promo.js";
 import mongoose from 'mongoose';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
+import { buildOrderTracking } from '../../common/helper/visitorTracking.js';
 import { OrderModel } from '../../common/models/order.model.js';
 import { syncOrderStock } from '../../common/services/stock.service.js';
 import { ProductModel } from '../../common/models/product.model.js';
@@ -224,6 +225,7 @@ export const createOrder = async (req, res, next) => {
     const orderData = await buildOrderDocument(payload, req);
     // Keep the customer's IP so marking the order fake later blocks the customer, not the admin
     orderData.ipAddress = clientIp;
+    orderData.tracking = buildOrderTracking(req, payload);
     const createdOrder = await OrderModel.create(orderData);
 
     await syncOrderStock(createdOrder, { init: true, actor: "storefront_checkout" });

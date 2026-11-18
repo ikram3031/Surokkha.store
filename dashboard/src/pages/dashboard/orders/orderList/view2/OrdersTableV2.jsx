@@ -8,6 +8,7 @@ import {
   ArrowUpDown,
   Check,
   Eye,
+  Fingerprint,
   Loader2,
   Mail,
   MoreHorizontal,
@@ -83,6 +84,9 @@ function RowActions({ order, list }) {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => orderActions.viewDetails(order)} className="cursor-pointer">
           <Eye className="text-muted-foreground" /> {t('common.details', 'View Details')}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => orderActions.tracking(order)} className="cursor-pointer">
+          <Fingerprint className="text-muted-foreground" /> {t('orders.tracking', 'Tracking')}
         </DropdownMenuItem>
         {!isReadOnly && !isCourierDeliveredLocked(order) && (
           <DropdownMenuItem onClick={() => orderActions.edit(order)} className="cursor-pointer">

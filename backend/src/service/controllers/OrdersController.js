@@ -1,3 +1,4 @@
+import { getVisitorProfile, getRelatedOrders } from "../../common/services/visitorProfile.service.js";
 import mongoose from 'mongoose';
 import { loadComboPieceRefs, pieceProblem } from "../../common/utils/combo.js";
 import { BillingModel } from '../../common/models/billing.model.js';
@@ -1217,6 +1218,29 @@ export const deleteSpamListEntry = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Spam list entry not found' });
     }
     return res.json({ status: 'success', message: 'Entry removed from spam list' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Tracking view for one order: device/IP fingerprint, the visitor's full journey and orders sharing its IP or phone
+export const getOrderTracking = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    if (!Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ status: 'error', message: 'Invalid order ID' });
+    }
+    const order = await OrderModel.findById(orderId)
+      .select('orderNumber status orderType siteKey clientDomain createdAt totals billingInfo shippingInfo ipAddress fb_login_id tracking couponCode paymentMethod')
+      .lean();
+    if (!order) return res.status(404).json({ status: 'error', message: 'Order not found' });
+
+    const [visitor, related] = await Promise.all([
+      order.tracking?.visitorId ? getVisitorProfile(order.tracking.visitorId) : null,
+      getRelatedOrders(order),
+    ]);
+
+    return res.json({ status: 'success', data: { order: { ...order, id: String(order._id) }, visitor, related } });
   } catch (error) {
     next(error);
   }

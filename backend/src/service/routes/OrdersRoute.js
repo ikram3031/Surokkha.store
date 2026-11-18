@@ -3,6 +3,7 @@ import {
   createOrder,
   deleteOrder,
   getOrderById,
+  getOrderTracking,
   getOrderInvoiceView,
   sendOrderInvoiceEmail,
   listOrders,
@@ -61,6 +62,14 @@ ordersRouter.get(
   authenticateToken,
   authorizeRoles(ALL_STAFF),
   listOrders,
+);
+
+// Device, IP and visitor journey behind one order (Dashboard/Admin only)
+ordersRouter.get(
+  "/:orderId/tracking",
+  authenticateToken,
+  authorizeRoles(OPERATORS),
+  getOrderTracking,
 );
 
 // Get details of a single order by ID (Dashboard/Admin only)

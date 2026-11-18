@@ -182,6 +182,26 @@ const orderSchema = new Schema(
     courier: { type: courierInfoSchema, default: () => ({}) },
     ipAddress: { type: String, trim: true, default: null, index: true },
     fb_login_id: { type: String, trim: true, default: null, index: true },
+    // Storefront checkout fingerprint: browser visitor id plus the device it was placed from
+    tracking: {
+      type: new Schema(
+        {
+          visitorId: { type: String, default: null },
+          ipAddress: { type: String, default: null },
+          userAgent: { type: String, default: "" },
+          device: { type: String, default: "" },
+          os: { type: String, default: "" },
+          browser: { type: String, default: "" },
+          deviceModel: { type: String, default: "" },
+          language: { type: String, default: "" },
+          fbp: { type: String, default: "" },
+          fbc: { type: String, default: "" },
+          pageUrl: { type: String, default: "" },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
     active: { type: Boolean, default: true, index: true },
     // Inventory bookkeeping: what this order took out of stock, so cancel/return/edit can undo exactly that
     stockStage: { type: String, enum: ["deducted", "released"], default: undefined },
@@ -214,5 +234,7 @@ const orderSchema = new Schema(
     },
   },
 );
+
+orderSchema.index({ "tracking.visitorId": 1 }, { sparse: true });
 
 export const OrderModel = models.Order || model("Order", orderSchema);

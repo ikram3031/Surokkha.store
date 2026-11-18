@@ -1,5 +1,6 @@
 import { ProductEventModel } from "../../common/models/productEvent.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
+import { getVisitorProfile, getVisitorFlags } from "../../common/services/visitorProfile.service.js";
 import { logger } from "../../common/config/logger.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -268,7 +269,7 @@ export const getLiveActivity = async (req, res) => {
         { $count: "n" },
       ]),
       ProductEventModel.find({ createdAt: { $gte: since } })
-        .select("site productKey productName eventType quantity value source device ipAddress visitorId createdAt")
+        .select("site productKey productName eventType quantity value source device os browser ipAddress visitorId createdAt")
         .sort({ createdAt: -1 })
         .limit(40)
         .lean(),
@@ -277,7 +278,9 @@ export const getLiveActivity = async (req, res) => {
     const hours = Array.from({ length: 24 }, (_, h) => ({ hour: h, view: 0, add_to_cart: 0, checkout: 0, purchase: 0 }));
     for (const r of hourly) hours[r._id.hour][r._id.type] = r.count;
 
-    return res.json({ status: "success", data: { hourly: hours, activeNow: activeNow[0]?.n || 0, recent } });
+    const visitors = await getVisitorFlags(recent.map((e) => e.visitorId));
+
+    return res.json({ status: "success", data: { hourly: hours, activeNow: activeNow[0]?.n || 0, recent, visitors, todayStart: since } });
   } catch (err) {
     logger?.warn?.(`[ProductAnalytics] Failed to load live activity. ${err.message}`);
     return res.status(500).json({ status: "error", message: "Failed to load live activity.", detail: err.message });
@@ -340,5 +343,17 @@ export const getProductDetail = async (req, res) => {
   } catch (err) {
     logger?.warn?.(`[ProductAnalytics] Failed to load product details. ${err.message}`);
     return res.status(500).json({ status: "error", message: "Failed to load product details.", detail: err.message });
+  }
+};
+
+// One browser visitor: stats, full action history and the orders they placed
+export const getVisitorDetail = async (req, res) => {
+  try {
+    const profile = await getVisitorProfile(req.params.visitorId);
+    if (!profile) return res.status(400).json({ status: "error", message: "Visitor id is required." });
+    return res.json({ status: "success", data: profile });
+  } catch (err) {
+    logger?.warn?.(`[ProductAnalytics] Failed to load visitor. ${err.message}`);
+    return res.status(500).json({ status: "error", message: "Failed to load visitor." });
   }
 };

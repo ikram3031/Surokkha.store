@@ -1,16 +1,12 @@
 import { ProductEventModel, PRODUCT_EVENT_TYPES } from "../../common/models/productEvent.model.js";
 import { extractClientIp } from "../../common/services/facebookCapi.service.js";
+import { parseUserAgent } from "../../common/helper/visitorTracking.js";
 import { logger } from "../../common/config/logger.js";
 
 const str = (v, max = 300) => String(v ?? "").trim().slice(0, max);
 
 const BOT_RX = /bot|crawl|spider|slurp|facebookexternalhit|preview|headless|lighthouse|pingdom|uptime/i;
 
-const deviceOf = (ua = "") => {
-  if (/ipad|tablet/i.test(ua)) return "tablet";
-  if (/mobi|android|iphone/i.test(ua)) return "mobile";
-  return "desktop";
-};
 
 // Public storefront endpoint. Accepts { events: [...] } (or a single event) and stores one row per product action.
 export const recordProductEvents = async (req, res) => {
@@ -22,7 +18,7 @@ export const recordProductEvents = async (req, res) => {
     const body = req.body || {};
     const raw = Array.isArray(body.events) ? body.events : [body];
     const ip = extractClientIp(req) || "";
-    const device = deviceOf(userAgent);
+    const { device, os, browser } = parseUserAgent(userAgent);
     // The StoreWeb route sets this; the shop API leaves it unset
     const site = req.productEventSite === "store" ? "store" : "shop";
 
@@ -40,6 +36,8 @@ export const recordProductEvents = async (req, res) => {
         referrer: str(e?.referrer, 300),
         pageUrl: str(e?.pageUrl, 400),
         device,
+        os,
+        browser,
         ipAddress: ip,
       }))
       .filter((d) => d.productKey && PRODUCT_EVENT_TYPES.includes(d.eventType));

@@ -75,6 +75,7 @@ import EditAttribute from './pages/dashboard/products/editAttribute';
 // Orders
 import OrdersList from './pages/dashboard/orders/ordersList';
 import OrderDetails from './pages/dashboard/orders/orderDetails';
+import OrderTracking from './pages/dashboard/orders/orderTracking';
 import NewOrder from './pages/dashboard/orders/newOrder';
 import InStoreOrders from './pages/dashboard/orders/inStoreOrders';
 import CustomOrders from './pages/dashboard/orders/customOrders';
@@ -669,6 +670,14 @@ const dashboardRoutes = [
             ),
           },
           { path: 'pathao', element: <Navigate to="/dashboard/pathao" replace /> },
+          {
+            path: ':id/tracking',
+            element: (
+              <RoleGuard menuKey="orders.list">
+                <OrderTracking />
+              </RoleGuard>
+            ),
+          },
           {
             path: ':id',
             element: (

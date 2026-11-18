@@ -338,6 +338,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
   };
 
   const viewDetails = (order) => navigate(`/dashboard/orders/${order.id}`);
+  const viewTracking = (order) => navigate(`/dashboard/orders/${order.id}/tracking`);
   const editOrder = (order) => navigate(`/dashboard/orders/${order.id}?edit=true`);
   // Copies the order into a new custom order
   const reorder = (order) => navigate(reorderPath(order));
@@ -577,6 +578,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       updateStatus: updateOrderStatus,
       updateNotes: updateOrderNotes,
       viewDetails,
+      tracking: viewTracking,
       edit: editOrder,
       reorder: reorderAllowed ? reorder : null,
       openInvoice,
