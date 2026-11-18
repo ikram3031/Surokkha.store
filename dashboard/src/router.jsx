@@ -1068,7 +1068,8 @@ const lazyPage = (loader) => ({
 
 // Analytics workspace: store traffic and conversion reports
 const analyticsRoutes = [
-  { index: true, ...lazyPage(() => import('./pages/analytics/overview')) },
+  { index: true, element: <Navigate to="live" replace /> },
+  { path: 'overview', ...lazyPage(() => import('./pages/analytics/overview')) },
   { path: 'products', ...lazyPage(() => import('./pages/analytics/products')) },
   { path: 'live', ...lazyPage(() => import('./pages/analytics/live')) },
 ];

@@ -14,9 +14,9 @@ export const AnalyticsSidebar = (props) => {
   return (
     <WorkspaceSidebar title={t("analytics.workspace", "Analytics")} {...props}>
       <NavLabel>{t("analytics.group_store", "Store")}</NavLabel>
-      <NavLink to="/analytics" active={pathname === "/analytics"} icon={LayoutDashboard} label={t("analytics.overview", "Overview")} />
-      <NavLink to="/analytics/products" active={pathname.startsWith("/analytics/products")} icon={Package} label={t("analytics.products", "Product Rankings")} />
       <NavLink to="/analytics/live" active={pathname.startsWith("/analytics/live")} icon={Radio} label={t("analytics.live", "Live Today")} />
+      <NavLink to="/analytics/overview" active={pathname.startsWith("/analytics/overview")} icon={LayoutDashboard} label={t("analytics.overview", "Overview")} />
+      <NavLink to="/analytics/products" active={pathname.startsWith("/analytics/products")} icon={Package} label={t("analytics.products", "Product Rankings")} />
     </WorkspaceSidebar>
   )
 }

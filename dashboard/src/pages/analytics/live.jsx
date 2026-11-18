@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
-import { Radio } from 'lucide-react';
+import { Radio, List, Eye, ShoppingCart, CreditCard, PackageCheck } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +29,14 @@ const VisitorSheet = ({ visitorId, onClose }) => {
   );
 };
 
+const TABS = [
+  { id: 'all', label: 'All', icon: List },
+  { id: 'view', label: 'Views', icon: Eye },
+  { id: 'add_to_cart', label: 'Cart', icon: ShoppingCart },
+  { id: 'checkout', label: 'Checkout', icon: CreditCard },
+  { id: 'purchase', label: 'Purchased', icon: PackageCheck },
+];
+
 const SERIES = [
   { id: 'view', color: '#2563eb', label: 'Views' },
   { id: 'add_to_cart', color: '#f97316', label: 'Add to cart' },
@@ -39,15 +47,22 @@ const SERIES = [
 // Real-time view of today: refreshes every 15 seconds
 export default function AnalyticsLive() {
   const { t } = useTranslation();
+  const [tab, setTab] = useState('all');
   const { data } = useQuery({
-    queryKey: ['analytics-live'],
-    queryFn: async () => (await apiClient.get('/api/v1/product-analytics/live')).data?.data,
+    queryKey: ['analytics-live', tab],
+    queryFn: async () => (await apiClient.get('/api/v1/product-analytics/live', { params: tab === 'all' ? {} : { type: tab } })).data?.data,
+    placeholderData: (prev) => prev,
     refetchInterval: 15000,
   });
 
   const [openVisitor, setOpenVisitor] = useState(null);
   const flags = data?.visitors || {};
   const todayStart = data?.todayStart ? new Date(data.todayStart) : null;
+  const counts = (data?.hourly || []).reduce((acc, h) => {
+    for (const k of ['view', 'add_to_cart', 'checkout', 'purchase']) acc[k] = (acc[k] || 0) + (h[k] || 0);
+    return acc;
+  }, {});
+  counts.all = Object.values(counts).reduce((a, b) => a + b, 0);
   const hourly = (data?.hourly || []).map((h) => ({ ...h, label: `${h.hour}:00` }));
 
   return (
@@ -92,6 +107,24 @@ export default function AnalyticsLive() {
       <Card>
         <CardHeader>
           <CardTitle>{t('analytics.latest', 'Latest actions')}</CardTitle>
+          <div className="mt-2 flex gap-1 overflow-x-auto rounded-lg bg-muted p-1">
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                title={label}
+                aria-label={label}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium transition-colors ${
+                  tab === id ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="size-4 shrink-0" />
+                <span className="hidden sm:inline">{label}</span>
+                <span className="rounded bg-muted-foreground/15 px-1 text-[11px] tabular-nums">{counts[id] || 0}</span>
+              </button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="divide-y rounded-md border">

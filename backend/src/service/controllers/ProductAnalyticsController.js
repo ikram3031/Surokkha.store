@@ -1,4 +1,4 @@
-import { ProductEventModel } from "../../common/models/productEvent.model.js";
+import { ProductEventModel, PRODUCT_EVENT_TYPES } from "../../common/models/productEvent.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { getVisitorProfile, getVisitorFlags } from "../../common/services/visitorProfile.service.js";
 import { logger } from "../../common/config/logger.js";
@@ -268,7 +268,7 @@ export const getLiveActivity = async (req, res) => {
         { $group: { _id: "$visitorId" } },
         { $count: "n" },
       ]),
-      ProductEventModel.find({ createdAt: { $gte: since } })
+      ProductEventModel.find({ createdAt: { $gte: since }, ...(PRODUCT_EVENT_TYPES.includes(req.query.type) ? { eventType: req.query.type } : {}) })
         .select("site productKey productName eventType quantity value source device os browser ipAddress visitorId createdAt")
         .sort({ createdAt: -1 })
         .limit(40)
