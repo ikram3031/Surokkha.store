@@ -1,26 +1,42 @@
-import { UserModel } from "../models/user.model.js";
-import { env } from "../config/env.js";
 import { config } from "../config/index.js";
 import { logger } from "../config/logger.js";
-import { getSmtpTransport } from "../services/smtpConfig.service.js";
+import { getOwnerEmails } from "./notificationRecipients.js";
+import { getSmtpTransport, getWebmailAddress, copyToWebmailInbox } from "../services/smtpConfig.service.js";
 import { getClientIp } from "./clientIp.js";
 
-// Emails every active Owner; failures are logged and never block the request
+// Emails every active Owner (ignoring toggle list) and places a copy in Webmail Inbox; never blocks requests
 export const alertOwners = async ({ subject, lines }) => {
   try {
-    const owners = await UserModel.find({ role: "Owner", isActive: true }).select("email").lean();
-    if (owners.length === 0) return;
+    const [ownerEmails, { transport, config: smtpConfig }, webmailAddress] = await Promise.all([
+      getOwnerEmails(),
+      getSmtpTransport(),
+      getWebmailAddress(),
+    ]);
 
-    const { transport, config: smtpConfig } = await getSmtpTransport();
-    if (!smtpConfig.isConfigured || !transport) return;
+    const brandName = smtpConfig.fromName || config?.brandName || "Surokkha";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || webmailAddress || `no-reply@${config?.domain || "surokkha.store"}`;
+    const fromAddress = `"${brandName}" <${fromEmail}>`;
+    const fullSubject = `[Security] ${subject}`;
+    const text = lines.join("\n");
 
-    const brandName = smtpConfig.fromName || config?.brandName || env.SMTP_FROM_NAME || "Store";
-    const fromEmail = smtpConfig.fromEmail || smtpConfig.user;
-    await transport.sendMail({
-      from: `"${brandName}" <${fromEmail}>`,
-      to: owners.map((owner) => owner.email),
-      subject: `[Security] ${subject}`,
-      text: lines.join("\n"),
+    if (ownerEmails.length > 0 && smtpConfig.isConfigured && transport) {
+      try {
+        await transport.sendMail({
+          from: fromAddress,
+          to: ownerEmails,
+          subject: fullSubject,
+          text,
+        });
+      } catch (smtpErr) {
+        logger.warn({ error: smtpErr.message, subject }, "Owner security alert SMTP delivery failed");
+      }
+    }
+
+    await copyToWebmailInbox({
+      from: fromAddress,
+      to: ownerEmails.length > 0 ? ownerEmails.join(", ") : webmailAddress || fromEmail,
+      subject: fullSubject,
+      text,
     });
   } catch (error) {
     logger.warn({ error: error.message, subject }, "Owner security alert delivery failed");

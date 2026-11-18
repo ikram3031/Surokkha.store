@@ -1,20 +1,19 @@
 import { Router } from "express";
 import { buildInvoiceEmailHtml } from "../../common/utils/invoiceEmailTemplate.js";
-import { env } from "../../common/config/env.js";
 import { config } from "../../common/config/index.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
 import { authenticateToken, authorizeRoles, ADMINS } from "../../common/middlewares/auth.middleware.js";
 
 const emailRouter = Router();
 
-// Sends an email using active database or environment SMTP configuration
+// Sends an email using active database SMTP configuration
 const sendEmail = async ({ toEmail, subject, text, html }) => {
   const { transport, config: smtpConfig } = await getSmtpTransport();
   if (!smtpConfig.isConfigured || !transport) {
-    throw new Error("SMTP credentials are not configured in DB or .env");
+    throw new Error("SMTP credentials are not configured");
   }
-  const fromName = smtpConfig.fromName || config.brandName || env.SMTP_FROM_NAME || "Surokkha";
-  const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
+  const fromName = smtpConfig.fromName || config.brandName || "Surokkha";
+  const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || "surokkha.store"}`;
   
   return await transport.sendMail({
     from: `"${fromName}" <${fromEmail}>`,

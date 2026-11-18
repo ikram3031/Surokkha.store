@@ -1,7 +1,6 @@
-import MailComposer from "nodemailer/lib/mail-composer/index.js";
 import { LogModel } from "../models/log.model.js";
-import { getSmtpConfig } from "../services/smtpConfig.service.js";
-import { appendEmailToInbox } from "../services/imapSync.service.js";
+import { getOwnerEmails } from "./notificationRecipients.js";
+import { getSmtpTransport, getWebmailAddress, copyToWebmailInbox } from "../services/smtpConfig.service.js";
 import { broadcastLiveNotification } from "../websocket.js";
 import { config } from "../config/index.js";
 import { logger } from "../config/logger.js";
@@ -30,8 +29,8 @@ const buildEmailHtml = ({ ok, brand, rows }) => {
 };
 
 /**
- * A finished `make deploy`: a dashboard notification (bell, live) and a deploy report placed in the
- * Webmail INBOX (IMAP append, since the store mailbox never mails itself over SMTP). Never throws.
+ * A finished `make deploy`: a dashboard notification (bell, live), an email to all active Owners,
+ * and a deploy report placed in the Webmail INBOX. Never throws.
  * entry: { target, version, commit, branch, host, at, status }
  */
 export const notifyDeploy = async ({ target, version, commit = "", branch = "", host = "", at = new Date(), status = "SUCCESS" }) => {
@@ -53,8 +52,17 @@ export const notifyDeploy = async ({ target, version, commit = "", branch = "", 
   }
 
   try {
-    const smtp = await getSmtpConfig();
-    const mailbox = smtp.fromEmail || smtp.user || `no-reply@${config.domain || "surokkha.store"}`;
+    const [{ transport, config: smtp }, ownerEmails, webmailAddress] = await Promise.all([
+      getSmtpTransport(),
+      getOwnerEmails().catch((err) => {
+        logger.warn({ err: err.message }, "[DeployNotification] Could not load Owner emails");
+        return [];
+      }),
+      getWebmailAddress(),
+    ]);
+
+    const fromEmail = smtp.fromEmail || smtp.user || webmailAddress || `no-reply@${config.domain || "surokkha.store"}`;
+    const fromAddress = { name: `${brand} Deploy`, address: fromEmail };
     const rows = [
       ["Status", ok ? "Completed" : "Failed"],
       ["Version", `v${version}`],
@@ -63,18 +71,33 @@ export const notifyDeploy = async ({ target, version, commit = "", branch = "", 
       ["Server", host || "—"],
       ["When", formatWhen(new Date(at))],
     ];
-    const raw = await new MailComposer({
-      from: { name: `${brand} Deploy`, address: mailbox },
-      to: mailbox,
-      subject: `${ok ? "🚀" : "❌"} ${brand} deployed v${version}${ok ? "" : " (FAILED)"}`,
-      html: buildEmailHtml({ ok, brand, rows }),
-      text: rows.map(([k, v]) => `${k}: ${v}`).join("\n"),
-      headers: { "X-Surokkha-System": `deploy ${target}` },
-      date: new Date(at),
-    })
-      .compile()
-      .build();
-    const placed = await appendEmailToInbox(raw);
+    const subject = `${ok ? "🚀" : "❌"} ${brand} deployed v${version}${ok ? "" : " (FAILED)"}`;
+    const html = buildEmailHtml({ ok, brand, rows });
+    const text = rows.map(([k, v]) => `${k}: ${v}`).join("\n");
+
+    if (smtp.isConfigured && transport && ownerEmails.length > 0) {
+      try {
+        await transport.sendMail({
+          from: fromAddress,
+          to: ownerEmails,
+          subject,
+          html,
+          text,
+          headers: { "X-Surokkha-System": `deploy ${target}` },
+        });
+        logger.info({ recipients: ownerEmails.length }, "[DeployNotification] Deploy email sent to Owners");
+      } catch (smtpErr) {
+        logger.warn({ err: smtpErr.message }, "[DeployNotification] Deploy SMTP email failed");
+      }
+    }
+
+    const placed = await copyToWebmailInbox({
+      from: fromAddress,
+      to: ownerEmails.length ? ownerEmails.join(", ") : webmailAddress || fromEmail,
+      subject,
+      html,
+      text,
+    });
     if (!placed) logger.warn("[DeployNotification] Deploy report not placed in the Webmail inbox (IMAP off or failed)");
   } catch (err) {
     logger.warn({ err: err.message }, "[DeployNotification] Deploy report email failed");

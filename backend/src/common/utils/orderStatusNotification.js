@@ -1,6 +1,6 @@
 import { config } from "../config/index.js";
 import { PaymentModel } from "../models/payment.model.js";
-import { getSmtpTransport, siteOfOrder } from "../services/smtpConfig.service.js";
+import { getSmtpTransport, getWebmailAddress } from "../services/smtpConfig.service.js";
 import { buildOrderStatusEmail, STATUS_EMAILS } from "../templates/orderStatusEmailTemplate.js";
 
 const isRealEmail = (email) => {
@@ -76,16 +76,18 @@ export const notifyOrderStatusChange = (order, previousStatus) => {
 
   setImmediate(async () => {
     try {
-      const { transport, config: smtp } = await getSmtpTransport(siteOfOrder(raw));
+      const { transport, config: smtp } = await getSmtpTransport();
       if (!smtp.isConfigured || !transport) return;
       const email = buildOrderStatusEmail({ status, order: await formatOrder(raw) });
       if (!email) return;
       const brand = smtp.fromName || config.brandName || "Surokkha";
       const fromEmail = smtp.fromEmail || smtp.user || `no-reply@${config.domain || "surokkha.store"}`;
+      const fromAddress = { name: brand, address: fromEmail };
+      const webmailAddress = await getWebmailAddress();
       await transport.sendMail({
-        from: { name: brand, address: fromEmail },
+        from: fromAddress,
         to,
-        replyTo: { name: brand, address: fromEmail },
+        replyTo: webmailAddress ? { name: brand, address: webmailAddress } : fromAddress,
         subject: email.subject,
         html: email.html,
       });

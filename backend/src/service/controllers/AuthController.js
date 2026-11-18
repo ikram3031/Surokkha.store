@@ -106,8 +106,8 @@ export const requestPasswordHelp = async (req, res, next) => {
     if (user && user.isActive !== false) {
       forgotAlertSentAt.set(email, Date.now());
       const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "").split(",")[0].trim();
-      const result = await sendForgotPasswordAlertEmail({ toEmail: env.FORGOT_PASSWORD_ALERT_EMAIL, user, ip, log: logger });
-      if (!result.delivered) {
+      const result = await sendForgotPasswordAlertEmail({ user, ip, log: logger });
+      if (!result.sent) {
         forgotAlertSentAt.delete(email);
         logger.warn({ email, reason: result.reason }, "Forgot password alert was not delivered");
       }

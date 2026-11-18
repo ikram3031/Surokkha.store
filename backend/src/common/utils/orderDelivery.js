@@ -1,11 +1,10 @@
 import { resolveAlertRecipients } from "./notificationRecipients.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
-import { getClientInvoiceHtml } from "../templates/invoices/index.js";
 import { buildOrderInvoiceEmailHtml } from "../templates/orderInvoiceEmailTemplate.js";
 import { buildAdminOrderEmailHtml } from "../templates/adminOrderEmailTemplate.js";
 import { env } from "../config/env.js";
 import { config } from "../config/index.js";
-import { getSmtpTransport, siteOfOrder } from "../services/smtpConfig.service.js";
+import { getSmtpTransport, getWebmailAddress, copyToWebmailInbox } from "../services/smtpConfig.service.js";
 
 // Validates whether the given email address is deliverable rather than dummy or system-generated
 const isValidCustomerEmail = (email) => {
@@ -26,21 +25,21 @@ const isValidCustomerEmail = (email) => {
 export const sendOrderEmailsAsynchronously = (order) => {
   setImmediate(async () => {
     try {
-      // The customer's confirmation goes out through the order's own site SMTP (store orders use the store's);
-      // the admin notification always uses the shop's main SMTP
-      const { transport: activeTransport, config: smtpConfig } = await getSmtpTransport(siteOfOrder(order));
-      const { transport: adminTransport, config: adminSmtpConfig } = await getSmtpTransport();
-      const adminFromAddress = adminSmtpConfig.fromAddress;
+      const [{ transport: activeTransport, config: smtpConfig }, webmailAddress] = await Promise.all([
+        getSmtpTransport(),
+        getWebmailAddress(),
+      ]);
 
       if (!smtpConfig.isConfigured) {
-        console.warn(`[Email Notification] SMTP credentials not fully configured (host: ${smtpConfig.host}, user: ${smtpConfig.user || 'none'}). Skipping SMTP dispatch, but proceeding with Dashboard INBOX ingestion.`);
+        console.warn(`[Email Notification] SMTP credentials not fully configured (host: ${smtpConfig.host}, user: ${smtpConfig.user || 'none'}). Skipping SMTP dispatch.`);
       }
 
       const activeClientKey = (order.client || config.clientKey || process.env.CLIENT_NAME || env.CLIENT_NAME || "surokkha").toLowerCase().trim();
       const brandDisplayName = smtpConfig.fromName || config.brandName || "Surokkha";
-      const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `no-reply@${config.domain || 'surokkha.store'}`;
+      const fromEmail = smtpConfig.fromEmail || smtpConfig.user || webmailAddress || `no-reply@${config.domain || 'surokkha.store'}`;
       const fromAddress = { name: brandDisplayName, address: fromEmail };
-      console.log(`[Email Notification] Preparing order emails via Hostinger/SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
+      const customerReplyTo = webmailAddress ? { name: brandDisplayName, address: webmailAddress } : fromAddress;
+      console.log(`[Email Notification] Preparing order emails via SMTP (${smtpConfig.host}:${smtpConfig.port}, user: ${fromEmail})...`);
 
       const orderId = order.orderNumber || order.did || order._id?.toString()?.slice(-6) || "N/A";
       const isInstoreOrder =
@@ -167,12 +166,12 @@ export const sendOrderEmailsAsynchronously = (order) => {
         templateConfig,
       });
 
-      if (smtpConfig.isConfigured && isValidCustomerEmail(customerEmail)) {
+      if (smtpConfig.isConfigured && activeTransport && isValidCustomerEmail(customerEmail)) {
         try {
           await activeTransport.sendMail({
             from: fromAddress,
             to: customerEmail,
-            replyTo: { name: brandDisplayName, address: fromEmail },
+            replyTo: customerReplyTo,
             subject: `${brandDisplayName}: Order Confirmation - #${orderId}`,
             html: invoiceHtml
           });
@@ -186,47 +185,50 @@ export const sendOrderEmailsAsynchronously = (order) => {
         order.orderType === "custom" ||
         String(orderId).startsWith("CO");
 
-      if (!isCustomOrder) {
-        let adminRecipients = [];
+      let adminRecipients = [];
+      try {
+        adminRecipients = await resolveAlertRecipients();
+      } catch (dbErr) {
+        console.error("[Email Notification] Loading alert email recipients failed:", dbErr.message);
+      }
+      console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
+
+      const adminSubject = `🛒 ${brandDisplayName}: New Order Received - #${orderId} (৳${totalAmount})`;
+      const adminReplyTo = isValidCustomerEmail(customerEmail)
+        ? { name: customerName, address: customerEmail }
+        : customerReplyTo;
+      const adminEmailHtml = buildAdminOrderEmailHtml({
+        order: formattedOrderData,
+        logoUrl: emailLogoUrl,
+      }) || invoiceHtml;
+
+      if (smtpConfig.isConfigured && activeTransport && adminRecipients.length > 0) {
         try {
-          adminRecipients = await resolveAlertRecipients(adminSmtpConfig);
-          // The surokkha.store support mailbox gets every order too, so orders show up in its Webmail inbox
-          const { getSmtpConfig } = await import("../services/smtpConfig.service.js");
-          const storeCfg = await getSmtpConfig("store");
-          const supportBox = String(storeCfg.source === "store-smtp" ? storeCfg.fromEmail || storeCfg.user : "support@surokkha.store").toLowerCase().trim();
-          const adminSender = String(adminSmtpConfig.fromEmail || adminSmtpConfig.user || "").toLowerCase().trim();
-          if (supportBox && supportBox !== adminSender && !adminRecipients.includes(supportBox)) adminRecipients.push(supportBox);
-        } catch (dbErr) {
-          console.error("[Email Notification] Loading alert email recipients failed:", dbErr.message);
+          await activeTransport.sendMail({
+            from: fromAddress,
+            to: adminRecipients,
+            replyTo: adminReplyTo,
+            subject: adminSubject,
+            html: adminEmailHtml
+          });
+          console.log(`[Email Notification] Admin notification email successfully sent to: ${adminRecipients.join(", ")}`);
+        } catch (adminErr) {
+          console.error(`[Email Notification] Failed sending admin email to ${adminRecipients.join(", ")}:`, adminErr.message);
         }
-        console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
-
-        if (adminSmtpConfig.isConfigured && adminRecipients.length > 0) {
-          try {
-            const adminEmailHtml = buildAdminOrderEmailHtml({
-              order: formattedOrderData,
-              logoUrl: emailLogoUrl,
-            });
-
-            await adminTransport.sendMail({
-              from: adminFromAddress,
-              to: adminRecipients,
-              replyTo: isValidCustomerEmail(customerEmail)
-                ? { name: customerName, address: customerEmail }
-                : adminFromAddress,
-              subject: `🛒 ${brandDisplayName}: New Order Received - #${orderId} (৳${totalAmount})`,
-              html: adminEmailHtml || invoiceHtml
-            });
-            console.log(`[Email Notification] Admin notification email successfully sent to: ${adminRecipients.join(", ")}`);
-          } catch (adminErr) {
-            console.error(`[Email Notification] Failed sending admin email to ${adminRecipients.join(", ")}:`, adminErr.message);
-          }
-        } else if (!adminSmtpConfig.isConfigured) {
-          console.warn(`[Email Notification] SMTP is not configured. Admin notification skipped.`);
-        }
+      } else if (!smtpConfig.isConfigured) {
+        console.warn(`[Email Notification] SMTP is not configured. Admin notification skipped.`);
       }
 
-      // The webmail inbox only mirrors what IMAP actually receives, so orders are not written into it here
+      // Copy ONLY regular orders into Webmail Inbox; custom orders (CO...) do NOT go to Webmail Inbox
+      if (!isCustomOrder) {
+        await copyToWebmailInbox({
+          from: fromAddress,
+          to: webmailAddress || fromEmail,
+          replyTo: adminReplyTo,
+          subject: adminSubject,
+          html: adminEmailHtml,
+        });
+      }
     } catch (globalErr) {
       console.error("[Email Notification] Unexpected error in async email handler:", globalErr.message);
     }

@@ -1,8 +1,6 @@
-import nodemailer from "nodemailer";
-import { env } from "../config/env.js";
 import { config } from "../config/index.js";
 import { resolveAlertRecipients } from "./notificationRecipients.js";
-import { getSmtpTransport } from "../services/smtpConfig.service.js";
+import { getSmtpTransport, getWebmailAddress, copyToWebmailInbox } from "../services/smtpConfig.service.js";
 
 const lightThemeHtml = (title, body) => `
 <!DOCTYPE html>
@@ -38,7 +36,10 @@ export const sendContactAcknowledgment = async ({ name, email, message }) => {
   try {
     if (!email) return;
 
-    const { transport, config: smtpConfig } = await getSmtpTransport();
+    const [{ transport, config: smtpConfig }, webmailAddress] = await Promise.all([
+      getSmtpTransport(),
+      getWebmailAddress(),
+    ]);
     if (!smtpConfig.isConfigured || !transport) return;
 
     const fromName = smtpConfig.fromName || config.brandName || "Store Contact";
@@ -58,6 +59,7 @@ export const sendContactAcknowledgment = async ({ name, email, message }) => {
     await transport.sendMail({
       from: fromAddress,
       to: email,
+      replyTo: webmailAddress ? { name: fromName, address: webmailAddress } : fromAddress,
       subject: `Thank you for contacting ${fromName}`,
       html: customerHtml,
     });
@@ -68,7 +70,7 @@ export const sendContactAcknowledgment = async ({ name, email, message }) => {
 
 export const sendContactAcknowledgementEmail = sendContactAcknowledgment;
 
-// Sends an email reply from the dashboard admin to the customer
+// Sends an email reply from the dashboard admin to the customer and copies to Webmail Inbox
 export const sendContactReplyEmail = async ({
   toEmail,
   customerName,
@@ -81,13 +83,18 @@ export const sendContactReplyEmail = async ({
       throw new Error("Recipient email missing");
     }
 
-    const { transport, config: smtpConfig } = await getSmtpTransport();
+    const [{ transport, config: smtpConfig }, webmailAddress] = await Promise.all([
+      getSmtpTransport(),
+      getWebmailAddress(),
+    ]);
     if (!smtpConfig.isConfigured || !transport) {
       throw new Error("SMTP credentials missing or unconfigured");
     }
 
     const fromName = smtpConfig.fromName || config.brandName || "Customer Support";
     const fromAddress = smtpConfig.fromAddress;
+    const replyToAddress = webmailAddress ? { name: fromName, address: webmailAddress } : fromAddress;
+    const replySubject = `Re: Your inquiry on ${fromName}`;
 
     const replyHtml = lightThemeHtml(
       `Response to your inquiry`,
@@ -106,7 +113,16 @@ export const sendContactReplyEmail = async ({
     const info = await transport.sendMail({
       from: fromAddress,
       to: toEmail,
-      subject: `Re: Your inquiry on ${fromName}`,
+      replyTo: replyToAddress,
+      subject: replySubject,
+      html: replyHtml,
+    });
+
+    await copyToWebmailInbox({
+      from: fromAddress,
+      to: toEmail,
+      replyTo: toEmail,
+      subject: `[Support Reply to ${customerName || toEmail}] ${replySubject}`,
       html: replyHtml,
     });
 
@@ -117,26 +133,29 @@ export const sendContactReplyEmail = async ({
   }
 };
 
-// Forwards incoming contact inquiry to store admin
+// Forwards incoming contact inquiry to active alert recipients and copies to Webmail Inbox
 export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject, message }) => {
   try {
-    const { transport, config: smtpConfig } = await getSmtpTransport();
-    if (!smtpConfig.isConfigured || !transport) return;
+    const [{ transport, config: smtpConfig }, webmailAddress] = await Promise.all([
+      getSmtpTransport(),
+      getWebmailAddress(),
+    ]);
 
     const fromName = smtpConfig.fromName || config.brandName || "Surokkha";
-    const fromAddress = smtpConfig.fromAddress;
+    const fallbackEmail = smtpConfig.fromEmail || smtpConfig.user || webmailAddress || `no-reply@${config.domain || "surokkha.store"}`;
+    const fromAddress = smtpConfig.fromAddress || { name: fromName, address: fallbackEmail };
+
     let recipients = [];
     try {
-      recipients = await resolveAlertRecipients(smtpConfig);
+      recipients = await resolveAlertRecipients();
     } catch (dbErr) {
       console.error("[Contact Email] Loading alert email recipients failed:", dbErr.message);
     }
-    if (recipients.length === 0) return;
 
     const forwardSubject = `📩 [New Inquiry for ${config.brandName || "Store"}] ${subject || "Contact Form"}`;
     const forwardHtml = lightThemeHtml(
       "New Customer Inquiry Received",
-      `<p>A new customer inquiry has been received on <strong>${config.supportEmail || config.brandName || "Store Support"}</strong>:</p>
+      `<p>A new customer inquiry has been received on <strong>${webmailAddress || config.supportEmail || config.brandName || "Store Support"}</strong>:</p>
        <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px;">
          <tr><td style="padding: 8px; font-weight: bold; color: #64748b; width: 120px;">Name:</td><td style="padding: 8px; color: #0f172a;">${name || "Anonymous"}</td></tr>
          <tr><td style="padding: 8px; font-weight: bold; color: #64748b;">Email:</td><td style="padding: 8px; color: #0f172a;"><a href="mailto:${email}">${email}</a></td></tr>
@@ -150,9 +169,23 @@ export const forwardContactInquiryToAdmin = async ({ name, email, phone, subject
        <p style="margin-top: 20px; font-size: 12px; color: #94a3b8;">You can reply directly to this email to respond to the customer.</p>`
     );
 
-    await transport.sendMail({
+    if (smtpConfig.isConfigured && transport && recipients.length > 0) {
+      try {
+        await transport.sendMail({
+          from: fromAddress,
+          to: recipients,
+          replyTo: email,
+          subject: forwardSubject,
+          html: forwardHtml,
+        });
+      } catch (smtpErr) {
+        console.error("Error forwarding contact inquiry via SMTP:", smtpErr);
+      }
+    }
+
+    await copyToWebmailInbox({
       from: fromAddress,
-      to: recipients,
+      to: webmailAddress || fallbackEmail,
       replyTo: email,
       subject: forwardSubject,
       html: forwardHtml,

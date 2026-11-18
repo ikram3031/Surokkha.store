@@ -1,33 +1,51 @@
 import { EmailNotificationRecipientModel } from "../models/emailNotificationRecipient.model.js";
+import { UserModel } from "../models/user.model.js";
 
-// Returns the emails that should receive admin alert emails
+// Returns distinct, non-empty lowercase emails of all active Owner accounts
+export const getOwnerEmails = async () => {
+  const owners = await UserModel.find({ role: "Owner", isActive: true }).select("email").lean();
+  const emails = owners.map((owner) => String(owner.email || "").toLowerCase().trim()).filter(Boolean);
+  return [...new Set(emails)];
+};
+
+// Returns the emails that should receive admin alert emails (skipping inactive or deleted linked users)
 export const getNotificationRecipientEmails = async () => {
-  const rows = await EmailNotificationRecipientModel.find().select("email").lean();
-  return rows.map((row) => row.email).filter(Boolean);
+  const rows = await EmailNotificationRecipientModel.find().select("email userId").lean();
+  const linkedUserIds = rows.map((row) => row.userId).filter(Boolean);
+  let activeUserIds = new Set();
+  if (linkedUserIds.length > 0) {
+    const activeUsers = await UserModel.find({ _id: { $in: linkedUserIds }, isActive: true })
+      .select("_id")
+      .lean();
+    activeUserIds = new Set(activeUsers.map((user) => String(user._id)));
+  }
+  return rows
+    .filter((row) => !row.userId || activeUserIds.has(String(row.userId)))
+    .map((row) => row.email)
+    .filter(Boolean);
 };
 
-// Admin alert targets: only the dashboard recipient list, never the sending mailbox itself.
-// The public support email is for customers to write to, so it is not an alert target.
-export const resolveAlertRecipients = async (smtpConfig = {}, extraExcluded = []) => {
+// Admin alert targets: active toggled users on the dashboard recipient list.
+export const resolveAlertRecipients = async (_smtpConfig = {}, extraExcluded = []) => {
   const normalize = (addr) => String(addr || "").toLowerCase().trim();
-  const senders = new Set(
-    [smtpConfig.user, smtpConfig.fromEmail, process.env.SMTP_USER, process.env.SMTP_FROM, ...extraExcluded]
-      .map(normalize)
-      .filter(Boolean)
-  );
+  const excludedInput = Array.isArray(_smtpConfig) ? _smtpConfig : extraExcluded;
+  const excluded = new Set((Array.isArray(excludedInput) ? excludedInput : []).map(normalize).filter(Boolean));
   const set = new Set((await getNotificationRecipientEmails()).map(normalize));
-  return [...set].filter((addr) => addr && !senders.has(addr));
+  return [...set].filter((addr) => addr && !excluded.has(addr));
 };
 
-// Returns the set of user ids (as strings) currently on the recipient list
+// Returns the set of active user ids (as strings) currently on the recipient list
 export const getNotificationRecipientUserIds = async () => {
   const rows = await EmailNotificationRecipientModel.find({ userId: { $ne: null } }).select("userId").lean();
-  return new Set(rows.map((row) => String(row.userId)));
+  const userIds = rows.map((row) => row.userId).filter(Boolean);
+  if (userIds.length === 0) return new Set();
+  const activeUsers = await UserModel.find({ _id: { $in: userIds }, isActive: true }).select("_id").lean();
+  return new Set(activeUsers.map((user) => String(user._id)));
 };
 
-// Adds the user to the recipient list when enabled, removes them when disabled
+// Adds an active user to the recipient list when enabled, removes them when disabled or inactive
 export const setUserEmailNotification = async (user, enabled) => {
-  if (!enabled) {
+  if (!enabled || user?.isActive === false) {
     await EmailNotificationRecipientModel.deleteMany({ userId: user._id });
     return;
   }

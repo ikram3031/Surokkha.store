@@ -29,7 +29,7 @@ import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.
 import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
 
 import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
-import { getSmtpTransport } from '../../common/services/smtpConfig.service.js';
+import { getSmtpTransport, getWebmailAddress } from '../../common/services/smtpConfig.service.js';
 import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { upsertCustomerFromOrder, reconcileCustomerForOrder, isLiveOrder } from '../../common/services/customer.service.js';
@@ -1088,7 +1088,10 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
       paidAmount: effectivePaid,
     };
 
-    const { transport, config: smtpConfig } = await getSmtpTransport();
+    const [{ transport, config: smtpConfig }, webmailAddress] = await Promise.all([
+      getSmtpTransport(),
+      getWebmailAddress(),
+    ]);
     if (!smtpConfig.isConfigured || !transport) {
       return res.status(400).json({
         status: "error",
@@ -1105,7 +1108,7 @@ export const sendOrderInvoiceEmail = async (req, res, next) => {
     await transport.sendMail({
       from: fromAddress,
       to: targetEmail,
-      replyTo: { name: brandDisplayName, address: fromEmail },
+      replyTo: webmailAddress ? { name: brandDisplayName, address: webmailAddress } : fromAddress,
       subject: `${brandDisplayName}: Order Invoice & Details - #${formattedOrderId}`,
       html: htmlContent,
     });

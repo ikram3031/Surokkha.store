@@ -41,12 +41,12 @@ export const sendQrCodeEmail = async (req, res, next) => {
 
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, { width: 220, margin: 2 });
 
-    const { transport, config: smtpConfig } = await getSmtpTransport(undefined, { mailboxCopy: false });
-    if (!smtpConfig.isConfigured) {
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !transport) {
       return res.status(500).json({ status: "error", message: "SMTP service is not configured" });
     }
-    const fromName = smtpConfig.fromName || config.brandName || env.SMTP_FROM_NAME || "Surokkha";
-    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || env.SMTP_USER;
+    const fromName = smtpConfig.fromName || config.brandName || "Surokkha";
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `noreply@${config.domain || "surokkha.store"}`;
     const fromAddress = `"${fromName}" <${fromEmail}>`;
 
     const htmlContent = buildTwoFactorQrEmailHtml({ name: user.name, secret });

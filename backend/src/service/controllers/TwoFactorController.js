@@ -15,13 +15,13 @@ authenticator.options = { window: 1 };
 // Dispatches the 2FA Setup QR Code & key exclusively via registered email for maximum security
 export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
   try {
-    const { transport, config: smtpConfig } = await getSmtpTransport(undefined, { mailboxCopy: false });
-    if (!smtpConfig.isConfigured) {
+    const { transport, config: smtpConfig } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured || !transport) {
       logger.warn({ email: user.email }, "Cannot send 2FA setup email: SMTP is not configured");
       return false;
     }
 
-    const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const brandName = smtpConfig.fromName || clientConfig?.brandName || "Surokkha";
     const otpauth = authenticator.keyuri(user.email, brandName, secret);
     const qrCodeBuffer = await QRCode.toBuffer(otpauth, {
       width: 240,
@@ -32,7 +32,7 @@ export const dispatchTwoFactorSetupEmail = async ({ user, secret }) => {
       },
     });
 
-    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `noreply@${clientConfig?.domain || "surokkha.store"}`;
     const fromAddress = `"${brandName}" <${fromEmail}>`;
 
     const htmlContent = buildTwoFactorQrEmailHtml({

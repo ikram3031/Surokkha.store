@@ -133,7 +133,7 @@ const sendVerificationCode = async (member) => {
   member.emailOtpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
   await member.save();
   clearHits(`verify:${member.email}`);
-  const sent = await sendOtpEmail({ toEmail: member.email, otp, name: member.name, type: "registration", site: "store", log: logger });
+  const sent = await sendOtpEmail({ toEmail: member.email, otp, name: member.name, type: "registration", log: logger });
   if (!sent.delivered) logger.warn({ email: member.email, reason: sent.reason }, "Customer sign-up code email was not delivered");
   return sent.delivered;
 };
@@ -274,7 +274,7 @@ export const forgotPassword = async (req, res, next) => {
       member.emailOtpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
       await member.save();
       clearHits(`reset:${email}`);
-      const sent = await sendOtpEmail({ toEmail: email, otp, name: member.name, type: "forgot-password", site: "store", log: logger });
+      const sent = await sendOtpEmail({ toEmail: email, otp, name: member.name, type: "forgot-password", log: logger });
       if (!sent.delivered) logger.warn({ email, reason: sent.reason }, "Customer password reset email was not delivered");
     }
 

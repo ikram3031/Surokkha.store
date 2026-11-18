@@ -7,7 +7,6 @@ import mongoose from "mongoose";
 import { UserModel } from "../../common/models/user.model.js";
 import { AssetModel } from "../../common/models/asset.model.js";
 import { hashPassword } from "../../common/utils/password.js";
-import { env } from "../../common/config/env.js";
 import { config as clientConfig } from "../../common/config/index.js";
 import { renderUserInviteEmail } from "../../common/templates/userInviteEmailTemplate.js";
 import {
@@ -16,7 +15,7 @@ import {
   validateResetPasswordPayload,
 } from "../../common/helper/userControllerHelper.js";
 import { LogModel } from "../../common/models/log.model.js";
-import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
+import { getSmtpTransport, getWebmailAddress, copyToWebmailInbox } from "../../common/services/smtpConfig.service.js";
 import { sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 import { canManageRole } from "../../common/middlewares/auth.middleware.js";
 import { grantedGroupsFor, sanitizeAccessGroups } from "../../common/config/accessGroups.js";
@@ -65,23 +64,30 @@ const accessUpdatesFor = (actorRole, payload, current = {}) => {
   return { updates };
 };
 
-// Dispatches user invitation email via active SMTP configuration
-export const sendInvitationEmail = async ({ user, inviteUrl }) => {
+const escapeHtml = (value) =>
+  String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+// Dispatches user invitation email via active SMTP configuration and puts a link-free notice in Webmail Inbox
+export const sendInvitationEmail = async ({ user, inviteUrl, inviter = null }) => {
   try {
-    const { transport, config: smtpConfig } = await getSmtpTransport(undefined, { mailboxCopy: false });
-    if (!smtpConfig.isConfigured) {
-      console.warn(`[UsersController] Cannot send invitation email to ${user.email}: SMTP is not configured in DB or .env`);
+    const [{ transport, config: smtpConfig }, webmailAddress] = await Promise.all([
+      getSmtpTransport(),
+      getWebmailAddress(),
+    ]);
+    if (!smtpConfig.isConfigured || !transport) {
+      console.warn(`[UsersController] Cannot send invitation email to ${user.email}: SMTP is not configured`);
       return { success: false, reason: "SMTP credentials not configured" };
     }
 
-    const brandName = smtpConfig.fromName || clientConfig?.brandName || env.SMTP_FROM_NAME || "Surokkha";
+    const brandName = smtpConfig.fromName || clientConfig?.brandName || "Surokkha";
     const logoUrl = clientConfig?.logoUrl || "https://admin.surokkha.store/surokkha_logo.png";
-    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || env.SMTP_FROM || `noreply@${clientConfig?.domain || "surokkha.store"}`;
+    const fromEmail = smtpConfig.fromEmail || smtpConfig.user || `noreply@${clientConfig?.domain || "surokkha.store"}`;
     const fromAddress = `"${brandName}" <${fromEmail}>`;
 
     const info = await transport.sendMail({
       from: fromAddress,
       to: user.email,
+      ...(webmailAddress ? { replyTo: { name: brandName, address: webmailAddress } } : {}),
       subject: `You're invited to join ${brandName} as ${user.role}`,
       html: renderUserInviteEmail({
         name: user.name,
@@ -92,6 +98,20 @@ export const sendInvitationEmail = async ({ user, inviteUrl }) => {
       }),
     });
     console.log(`[UsersController] Invitation email successfully dispatched to ${user.email} (MessageId: ${info.messageId})`);
+
+    const inviterName = inviter?.name || "System Admin";
+    const inviterEmail = inviter?.email || "";
+    const inviterLabel = inviterEmail ? `${inviterName} (${inviterEmail})` : inviterName;
+    const invitedName = user.name || user.email;
+    const noticeText = `${inviterLabel} invited ${invitedName} (${user.email}) as ${user.role}.`;
+    await copyToWebmailInbox({
+      from: fromAddress,
+      to: webmailAddress || user.email,
+      subject: `User Invited: ${invitedName}`,
+      text: noticeText,
+      html: `<p>${escapeHtml(inviterLabel)} invited <strong>${escapeHtml(invitedName)}</strong> (${escapeHtml(user.email)}) as <strong>${escapeHtml(user.role)}</strong>.</p>`,
+    });
+
     return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error(`[UsersController] Failed to send invitation email to ${user.email}:`, err);
@@ -182,9 +202,11 @@ export const createUser = async (req, res, next) => {
       });
     }
 
-    // New users stay off the alert email list unless explicitly opted in
-    if (payload.receiveEmailNotifications === true) {
+    // New users stay off the alert email list unless explicitly opted in (and active)
+    if (payload.receiveEmailNotifications === true && user.isActive) {
       await setUserEmailNotification(user, true);
+    } else if (!user.isActive) {
+      await setUserEmailNotification(user, false);
     }
 
     const origin = req.headers.origin || req.headers.referer || "";
@@ -198,7 +220,7 @@ export const createUser = async (req, res, next) => {
     }
     const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
 
-    const mailResult = await sendInvitationEmail({ user, inviteUrl });
+    const mailResult = await sendInvitationEmail({ user, inviteUrl, inviter: req.user });
 
     try {
       const actorDid = req.user?.did || "staff";
@@ -266,7 +288,7 @@ export const resendInvitation = async (req, res, next) => {
     }
     const inviteUrl = `${domainUrl.replace(/\/$/, "")}/invite?token=${inviteToken}`;
 
-    const mailResult = await sendInvitationEmail({ user, inviteUrl });
+    const mailResult = await sendInvitationEmail({ user, inviteUrl, inviter: req.user });
 
     return res.json({
       status: "success",
@@ -351,10 +373,22 @@ export const updateUser = async (req, res, next) => {
       : user;
     if (!updatedUser) return res.status(404).json({ status: "error", message: "User not found" });
 
-    if (payload.receiveEmailNotifications !== undefined) {
-      await setUserEmailNotification(updatedUser, payload.receiveEmailNotifications);
+    // Inactive users are always removed from notification recipients and cannot be enabled
+    if (!updatedUser.isActive) {
+      await setUserEmailNotification(updatedUser, false);
+    } else if (payload.receiveEmailNotifications !== undefined) {
+      await setUserEmailNotification(updatedUser, Boolean(payload.receiveEmailNotifications));
     } else if (updates.email !== undefined || updates.name !== undefined) {
       await syncUserNotificationRecipient(updatedUser);
+    }
+
+    if (updates.passwordHash) {
+      sendPasswordChangedEmail({
+        toEmail: updatedUser.email,
+        name: updatedUser.name,
+        byAdmin: !isSelf,
+        notifyWebmail: true,
+      });
     }
     const recipientIds = await getNotificationRecipientUserIds();
 
@@ -574,8 +608,8 @@ export const resetUserPassword = async (req, res, next) => {
     user.refreshTokens = [];
     await user.save();
 
-    // Let the staff member know their password was reset (fire-and-forget)
-    sendPasswordChangedEmail({ toEmail: user.email, name: user.name, byAdmin: true });
+    // Let the staff member know their password was reset and place a short notice in Webmail Inbox (fire-and-forget)
+    sendPasswordChangedEmail({ toEmail: user.email, name: user.name, byAdmin: true, notifyWebmail: true });
 
     // Log the password reset activity
     try {

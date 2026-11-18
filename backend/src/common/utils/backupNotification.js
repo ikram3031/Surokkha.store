@@ -1,9 +1,8 @@
 import { LogModel } from "../models/log.model.js";
-import { resolveAlertRecipients } from "./notificationRecipients.js";
-import { getSmtpTransport } from "../services/smtpConfig.service.js";
+import { getOwnerEmails } from "./notificationRecipients.js";
+import { getSmtpTransport, getWebmailAddress, copyToWebmailInbox } from "../services/smtpConfig.service.js";
 import { broadcastLiveNotification } from "../websocket.js";
 import { config } from "../config/index.js";
-import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
 
 const escapeHtml = (value) =>
@@ -18,12 +17,12 @@ const TRIGGER_LABELS = {
 const formatWhen = (date, timeZone) =>
   new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: timeZone || "Asia/Dhaka" }).format(date);
 
-// Everyone who should hear about a backup: the dashboard alert-recipient list, minus the sender
-const resolveRecipients = async (smtp) => {
+// All active Owner accounts (ignoring notification toggle list)
+const resolveRecipients = async () => {
   try {
-    return await resolveAlertRecipients(smtp);
+    return await getOwnerEmails();
   } catch (error) {
-    logger.warn({ err: error.message }, "[BackupNotification] Could not load alert recipients");
+    logger.warn({ err: error.message }, "[BackupNotification] Could not load Owner emails");
     return [];
   }
 };
@@ -80,19 +79,15 @@ export const notifyBackupResult = async (result) => {
   }
 
   try {
-    const { transport, config: smtp } = await getSmtpTransport();
-    if (!smtp.isConfigured) {
-      logger.warn("[BackupNotification] SMTP is not configured; backup email skipped");
-      return;
-    }
-    const recipients = await resolveRecipients(smtp);
-    if (!recipients.length) {
-      logger.warn("[BackupNotification] No recipients for the backup email");
-      return;
-    }
+    const [{ transport, config: smtp }, recipients, webmailAddress] = await Promise.all([
+      getSmtpTransport(),
+      resolveRecipients(),
+      getWebmailAddress(),
+    ]);
 
     const brand = smtp.fromName || config.brandName || "Surokkha";
-    const fromEmail = smtp.fromEmail || smtp.user || `no-reply@${config.domain || "surokkha.store"}`;
+    const fromEmail = smtp.fromEmail || smtp.user || webmailAddress || `no-reply@${config.domain || "surokkha.store"}`;
+    const fromAddress = { name: brand, address: fromEmail };
     const rows = [
       ["Status", ok ? "Completed successfully" : "Failed"],
       ["When", formatWhen(finishedAt)],
@@ -103,13 +98,36 @@ export const notifyBackupResult = async (result) => {
       if (pruned) rows.push(["Old backups removed", String(pruned)]);
     }
 
-    await transport.sendMail({
-      from: { name: brand, address: fromEmail },
-      to: recipients,
-      subject: ok ? `✅ ${brand}: Backup completed` : `❌ ${brand}: Backup FAILED`,
-      html: buildEmailHtml({ ok, brand, rows, errorMessage: ok ? "" : error }),
+    const subject = ok ? `✅ ${brand}: Backup completed` : `❌ ${brand}: Backup FAILED`;
+    const html = buildEmailHtml({ ok, brand, rows, errorMessage: ok ? "" : error });
+    const text = rows.map(([k, v]) => `${k}: ${v}`).join("\n") + (!ok && error ? `\nError: ${error}` : "");
+
+    if (!smtp.isConfigured || !transport) {
+      logger.warn("[BackupNotification] SMTP is not configured; backup SMTP email skipped");
+    } else if (!recipients.length) {
+      logger.warn("[BackupNotification] No active Owner recipients for the backup email");
+    } else {
+      try {
+        await transport.sendMail({
+          from: fromAddress,
+          to: recipients,
+          subject,
+          text,
+          html,
+        });
+        logger.info({ recipients: recipients.length }, "[BackupNotification] Backup email sent");
+      } catch (smtpErr) {
+        logger.warn({ err: smtpErr.message }, "[BackupNotification] Backup SMTP email failed");
+      }
+    }
+
+    await copyToWebmailInbox({
+      from: fromAddress,
+      to: recipients.length ? recipients.join(", ") : webmailAddress || fromEmail,
+      subject,
+      text,
+      html,
     });
-    logger.info({ recipients: recipients.length }, "[BackupNotification] Backup email sent");
   } catch (err) {
     logger.warn({ err: err.message }, "[BackupNotification] Backup email failed");
   }
