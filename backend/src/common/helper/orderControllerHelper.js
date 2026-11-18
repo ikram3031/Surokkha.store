@@ -494,7 +494,10 @@ export const buildAllowedOrderUpdates = async (payload, existingOrder) => {
     allowedUpdates.billingInfo = {
       fullName: normalizeText(customerInfo.fullName || customerInfo.name) || existingOrder.billingInfo?.fullName || '',
       phone: normalizeCustomerPhone(customerInfo.phone || existingOrder.billingInfo?.phone || ''),
-      email: normalizeText(customerInfo.email) || existingOrder.billingInfo?.email || '',
+      // Email may be cleared on purpose (e.g. fake @accountkit.com); only fall back when it wasn't sent
+      email: customerInfo.email !== undefined
+        ? normalizeText(customerInfo.email) || ''
+        : existingOrder.billingInfo?.email || '',
       address: normalizeText(customerInfo.address || customerInfo.street) || existingOrder.billingInfo?.address || '',
       thana: normalizeText(customerInfo.thana) || existingOrder.billingInfo?.thana || '',
       district: normalizeText(customerInfo.district) || existingOrder.billingInfo?.district || '',

@@ -861,20 +861,20 @@ const OrderDetailsPage = () => {
                       </div>
                     </div>
                   )}
-                  {(order.billingInfo?.email || order.customer?.email) && (
+                  {(order.billingInfo?.email) && (
                     <div className="flex items-start gap-2.5">
                       <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                       <div>
                         <span className="text-xs text-muted-foreground block">Email</span>
                         <div className="flex items-center gap-2 mt-0.5">
                           <a
-                            href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                            href={`mailto:${order.billingInfo?.email}`}
                             className="font-medium text-foreground hover:underline"
                           >
-                            {order.billingInfo?.email || order.customer?.email}
+                            {order.billingInfo?.email}
                           </a>
                           <a
-                            href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                            href={`mailto:${order.billingInfo?.email}`}
                             className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
                             title="Send Email"
                           >
@@ -884,7 +884,7 @@ const OrderDetailsPage = () => {
                             type="button"
                             className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
                             title="Copy Email"
-                            onClick={() => handleCopyText(order.billingInfo?.email || order.customer?.email, 'Email')}
+                            onClick={() => handleCopyText(order.billingInfo?.email, 'Email')}
                           >
                             <Copy className="h-3.5 w-3.5" />
                           </button>
@@ -958,20 +958,20 @@ const OrderDetailsPage = () => {
                         )}
                       </div>
                     </div>
-                    {(order.billingInfo?.email || order.customer?.email) && (
+                    {(order.billingInfo?.email) && (
                       <div className="flex items-start gap-2.5">
                         <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div>
                           <span className="text-xs text-muted-foreground block">Email</span>
                           <div className="flex items-center gap-2 mt-0.5">
                             <a
-                              href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                              href={`mailto:${order.billingInfo?.email}`}
                               className="font-medium text-foreground hover:underline"
                             >
-                              {order.billingInfo?.email || order.customer?.email}
+                              {order.billingInfo?.email}
                             </a>
                             <a
-                              href={`mailto:${order.billingInfo?.email || order.customer?.email}`}
+                              href={`mailto:${order.billingInfo?.email}`}
                               className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
                               title="Send Email"
                             >
@@ -981,7 +981,7 @@ const OrderDetailsPage = () => {
                               type="button"
                               className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60 transition-all hover:scale-105 shrink-0 cursor-pointer"
                               title="Copy Email"
-                              onClick={() => handleCopyText(order.billingInfo?.email || order.customer?.email, 'Email')}
+                              onClick={() => handleCopyText(order.billingInfo?.email, 'Email')}
                             >
                               <Copy className="h-3.5 w-3.5" />
                             </button>
