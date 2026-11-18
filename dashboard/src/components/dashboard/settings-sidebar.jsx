@@ -48,7 +48,6 @@ export const SettingsSidebar = (props) => {
     { id: "slider", icon: GalleryHorizontal, label: t("nav.hero_slider", "Hero Slider"), subs: sitePair("/settings/cms-content/slider") },
     { id: "seo", icon: Search, label: t("nav.general_seo", "General & SEO"), subs: sitePair("/settings/seo") },
     { id: "meta-pixel", icon: Share2, label: t("nav.meta_pixel", "Meta Pixel"), subs: sitePair("/settings/meta-pixel") },
-    { id: "smtp", icon: Mail, label: t("nav.email_server_setup", "SMTP Configuration"), subs: sitePair("/settings/smtp") },
   ]
   const activeGroup = groups.find((group) => group.subs.some((sub) => pathname.startsWith(sub.to)))?.id || null
   const [openMenu, setOpenMenu] = React.useState(activeGroup)
@@ -107,7 +106,7 @@ export const SettingsSidebar = (props) => {
           {can("settings.couriers") && <NavLink to="/settings/couriers" active={pathname.startsWith("/settings/couriers")} icon={Truck} label={t("nav.couriers", "Couriers")} />}
           {can("settings.pathao-courier") && <NavLink to="/settings/pathao-courier" active={pathname.startsWith("/settings/pathao")} icon={Truck} label={t("nav.pathao_courier", "Pathao Courier")} />}
           {can("settings.redx-courier") && <NavLink to="/settings/redx-courier" active={pathname.startsWith("/settings/redx")} icon={Truck} label={t("nav.redx_courier", "RedX Courier")} />}
-          {can("settings.smtp") && renderGroup("smtp")}
+          {can("settings.smtp") && <NavLink to="/settings/smtp" active={pathname.startsWith("/settings/smtp")} icon={Mail} label={t("nav.email_server_setup", "Mail (SMTP & IMAP)")} />}
           {can("settings.r2-storage") && <NavLink to="/settings/r2-storage" active={pathname.startsWith("/settings/r2-storage")} icon={HardDrive} label={t("nav.r2_storage", "R2 Storage")} />}
           {can("settings.r2-storage") && <NavLink to="/settings/plexivia-sync" active={pathname.startsWith("/settings/plexivia-sync")} icon={Link2} label={t("nav.plexivia_sync", "Plexivia Sync")} />}
         </>

@@ -991,24 +991,14 @@ const settingsRoutes = [
   },
   {
     path: 'smtp',
-    element: <Navigate to="shop" replace />,
-  },
-  {
-    path: 'smtp/shop',
     element: (
       <RoleGuard menuKey="settings.smtp">
-        <SmtpSettingsPage key="shop" site="shop" />
+        <SmtpSettingsPage />
       </RoleGuard>
     ),
   },
-  {
-    path: 'smtp/store',
-    element: (
-      <RoleGuard menuKey="settings.smtp">
-        <SmtpSettingsPage key="store" site="store" />
-      </RoleGuard>
-    ),
-  },
+  { path: 'smtp/shop', element: <Navigate to="/settings/smtp" replace /> },
+  { path: 'smtp/store', element: <Navigate to="/settings/smtp" replace /> },
   {
     path: 'business',
     element: (

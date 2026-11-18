@@ -141,7 +141,6 @@ const MessagesManager = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const [activeMailbox, setActiveMailbox] = useState(null);
   const [activeFolder, setActiveFolder] = useState('INBOX');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMessageId, setSelectedMessageId] = useState(null);
@@ -159,35 +158,17 @@ const MessagesManager = () => {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch available mailboxes (defaults to "store" when store SMTP/IMAP is configured)
-  const { data: mailboxesResponse } = useQuery({
-    queryKey: ['webmail-mailboxes'],
+  // Fetch folder stats for the single unified Webmail mailbox
+  const { data: folderStatsResponse } = useQuery({
+    queryKey: ['webmail-folders'],
     queryFn: async () => {
-      const res = await apiClient.get('/api/v1/webmail/mailboxes');
+      const res = await apiClient.get('/api/v1/webmail/folders');
       return res.data;
     },
     refetchInterval: 30000,
   });
 
-  const mailboxes = mailboxesResponse?.data || [];
-  const resolvedMailbox = activeMailbox || mailboxesResponse?.defaultMailbox || mailboxes[0]?.id || 'store';
-  const activeMailboxInfo = mailboxes.find((m) => m.id === resolvedMailbox) || mailboxes[0] || null;
-
-  useEffect(() => {
-    if (!activeMailbox && mailboxesResponse?.defaultMailbox) {
-      setActiveMailbox(mailboxesResponse.defaultMailbox);
-    }
-  }, [activeMailbox, mailboxesResponse?.defaultMailbox]);
-
-  // Fetch folder stats
-  const { data: folderStatsResponse, refetch: refetchFolders } = useQuery({
-    queryKey: ['webmail-folders', resolvedMailbox],
-    queryFn: async () => {
-      const res = await apiClient.get(`/api/v1/webmail/folders?mailbox=${encodeURIComponent(resolvedMailbox)}`);
-      return res.data;
-    },
-    refetchInterval: 30000,
-  });
+  const mailboxAddress = folderStatsResponse?.mailboxAddress || folderStatsResponse?.address || '';
 
   const folderList = folderStatsResponse?.data || [
     { id: 'INBOX', name: 'Inbox', unread: 0, total: 0 },
@@ -203,10 +184,8 @@ const MessagesManager = () => {
   const {
     data: messagesResponse,
     isLoading: isLoadingMessages,
-    isRefetching: isRefetchingMessages,
-    refetch: refetchMessages,
   } = useQuery({
-    queryKey: ['webmail-messages', resolvedMailbox, activeFolder, searchQuery, currentPage],
+    queryKey: ['webmail-messages', activeFolder, searchQuery, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append('page', String(currentPage));
@@ -217,7 +196,6 @@ const MessagesManager = () => {
         const res = await apiClient.get(`/api/v1/contact/messages?${params.toString()}`);
         return res.data;
       } else {
-        params.append('mailbox', resolvedMailbox);
         params.append('folder', activeFolder);
         const res = await apiClient.get(`/api/v1/webmail/messages?${params.toString()}`);
         return res.data;
@@ -259,9 +237,8 @@ const MessagesManager = () => {
       const res = await apiClient.post('/api/v1/webmail/sync');
       return res.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Mailbox synchronized with mail server.');
-      queryClient.invalidateQueries({ queryKey: ['webmail-mailboxes'] });
       queryClient.invalidateQueries({ queryKey: ['webmail-messages'] });
       queryClient.invalidateQueries({ queryKey: ['webmail-folders'] });
       queryClient.invalidateQueries({ queryKey: ['notification-logs'] });
@@ -305,7 +282,7 @@ const MessagesManager = () => {
   // Send new email from Compose modal
   const composeMutation = useMutation({
     mutationFn: async (payload) => {
-      const res = await apiClient.post('/api/v1/webmail/send', { ...payload, mailbox: resolvedMailbox });
+      const res = await apiClient.post('/api/v1/webmail/send', payload);
       return res.data;
     },
     onSuccess: () => {
@@ -333,7 +310,6 @@ const MessagesManager = () => {
         return res.data;
       } else {
         const res = await apiClient.post('/api/v1/webmail/send', {
-          mailbox: resolvedMailbox,
           to: activeMessage.from?.address || activeMessage.from,
           subject: activeMessage.subject?.startsWith('Re:')
             ? activeMessage.subject
@@ -479,41 +455,6 @@ const MessagesManager = () => {
               Compose Email
             </Button>
 
-            {mailboxes.length > 1 && (
-              <div className="mb-3 space-y-1 pb-2.5 border-b border-border/50">
-                <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Mailbox
-                </p>
-                {mailboxes.map((box) => {
-                  const isSelectedBox = resolvedMailbox === box.id;
-                  return (
-                    <button
-                      key={box.id}
-                      type="button"
-                      onClick={() => {
-                        setActiveMailbox(box.id);
-                        setSelectedMessageId(null);
-                        setCheckedIds([]);
-                        setCurrentPage(1);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-[11px] transition-colors cursor-pointer ${
-                        isSelectedBox
-                          ? 'bg-primary/10 text-primary font-semibold'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                      }`}
-                    >
-                      <span className="truncate">{box.address || box.id}</span>
-                      {box.unread > 0 && (
-                        <span className="text-[10px] font-bold px-1.5 rounded-full bg-primary/15 text-primary ml-1 shrink-0">
-                          {box.unread}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
             {folderList.map((folder) => {
               const isActive = activeFolder === folder.id;
               const IconComponent =
@@ -567,7 +508,7 @@ const MessagesManager = () => {
           {/* Mailbox Status Footer */}
           <div className="pt-4 border-t border-border/50 text-[11px] text-muted-foreground flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-            <span className="truncate">{activeMailboxInfo?.address || 'SSL IMAP'}</span>
+            <span className="truncate">{mailboxAddress || 'SSL IMAP'}</span>
           </div>
         </div>
 
@@ -961,7 +902,7 @@ const MessagesManager = () => {
                       Reply to {isWebsiteInquiryFolder ? activeMessage.name : activeMessage.from?.name || activeMessage.from?.address}
                     </span>
                     <span className="text-[11px]">
-                      Delivered via {activeMailboxInfo?.address ? `${activeMailboxInfo.address} SMTP` : 'SMTP'}
+                      Delivered via {mailboxAddress ? `${mailboxAddress} SMTP` : 'configured SMTP'}
                     </span>
                   </div>
 
@@ -1083,7 +1024,7 @@ const MessagesManager = () => {
             <div className="flex items-center justify-between pt-2">
               <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                Sent from {activeMailboxInfo?.address || 'official SMTP'}
+                Sent from {mailboxAddress || 'configured SMTP'}
               </span>
 
               <div className="flex items-center gap-2">

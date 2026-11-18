@@ -572,25 +572,14 @@ export const AdminSidebar = ({ ...props }) => {
                   {isAllowed("settings.smtp") && (
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      isActive={pathname === "/admin/settings/smtp"}
-                      render={<Link to="/admin/settings/smtp/shop" />}
+                      isActive={pathname.startsWith("/admin/settings/smtp")}
+                      render={<Link to="/admin/settings/smtp" />}
                     >
                       <Mail className="h-3.5 w-3.5 text-indigo-500" />
-                      <span>{t("nav.email_server_setup", "SMTP Configuration")}</span>
+                      <span>{t("nav.email_server_setup", "Mail (SMTP & IMAP)")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                   )}
-                  {["shop", "store"].map((site) => (
-                    <SidebarMenuSubItem key={`smtp-${site}`}>
-                      <SidebarMenuSubButton
-                        isActive={pathname.startsWith(`/admin/settings/smtp/${site}`)}
-                        render={<Link to={`/admin/settings/smtp/${site}`} />}
-                        className="pl-8"
-                      >
-                        <span>{site === "shop" ? t("nav.meta_pixel_shop", "Shop") : t("nav.meta_pixel_store", "Store")}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
 
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
