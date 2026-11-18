@@ -1,23 +1,20 @@
+import crypto from "crypto";
 import { Types } from "mongoose";
-import nodemailer from "nodemailer";
+import MailComposer from "nodemailer/lib/mail-composer/index.js";
 import { EmailMessageModel } from "../../common/models/emailMessage.model.js";
 import { ContactMessageModel } from "../../common/models/contactMessage.model.js";
-import { env } from "../../common/config/env.js";
+import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
+import { logger } from "../../common/config/logger.js";
 import {
   syncAllMailFolders,
   appendEmailToSentFolder,
-  mailboxFilter,
-  isStoreMailboxConfigured,
 } from "../../common/services/imapSync.service.js";
+import {
+  getSmtpConfig,
+  getSmtpTransport,
+} from "../../common/services/smtpConfig.service.js";
 
-// "store" = support@surokkha.store, anything else = the main shop mailbox
-const mailboxOf = (req) => (String(req.query?.mailbox || req.body?.mailbox || "") === "store" ? "store" : "shop");
-
-import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
-import { decryptText } from "../../common/utils/crypto.util.js";
-import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
-
-// Lists webmail messages with folder, status filtering, search, and pagination
+// Lists webmail messages with folder, status filtering, search, and pagination (single unified mailbox)
 export const listWebmailMessages = async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page || "1", 10));
@@ -25,8 +22,7 @@ export const listWebmailMessages = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const folder = req.query.folder || "INBOX";
-    const box = mailboxFilter(mailboxOf(req));
-    const filter = { active: true, ...box };
+    const filter = { active: true };
 
     if (folder === "Starred") {
       filter.isStarred = true;
@@ -54,10 +50,10 @@ export const listWebmailMessages = async (req, res, next) => {
           .select("-bodyHtml")
           .lean(),
         EmailMessageModel.countDocuments(filter),
-        EmailMessageModel.countDocuments({ ...box, active: true, folder: "INBOX", isRead: false }),
-        EmailMessageModel.countDocuments({ ...box, active: true, isStarred: true }),
-        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Sent" }),
-        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Trash" }),
+        EmailMessageModel.countDocuments({ active: true, folder: "INBOX", isRead: false }),
+        EmailMessageModel.countDocuments({ active: true, isStarred: true }),
+        EmailMessageModel.countDocuments({ active: true, folder: "Sent" }),
+        EmailMessageModel.countDocuments({ active: true, folder: "Trash" }),
         ContactMessageModel.countDocuments({ active: true, status: "unread" }),
       ]);
 
@@ -111,7 +107,6 @@ export const getWebmailMessageById = async (req, res, next) => {
     let thread = [];
     if (message.threadId) {
       thread = await EmailMessageModel.find({
-        ...mailboxFilter(message.mailbox || "shop"),
         threadId: message.threadId,
         _id: { $ne: message._id },
         active: true,
@@ -145,14 +140,28 @@ export const sendWebmailMessage = async (req, res, next) => {
       });
     }
 
-    const mailbox = mailboxOf(req);
-    // The store mailbox sends through the store's own SMTP (support@surokkha.store)
-    const { transport, fromName, fromEmail: fromAddress } =
-      mailbox === "store" ? await getSmtpTransport("store", { mailboxCopy: false }) : await getSmtpTransport(undefined, { mailboxCopy: false });
+    const { transport, config: smtpConfig, fromName, fromEmail: fromAddress } = await getSmtpTransport();
+    if (!smtpConfig.isConfigured) {
+      return res.status(400).json({
+        status: false,
+        message: "SMTP is not configured. Please configure SMTP in Settings first.",
+      });
+    }
 
     const toAddresses = Array.isArray(to)
       ? to.map((t) => (typeof t === "string" ? t : t.address)).filter(Boolean)
       : [to];
+
+    const ccList = cc
+      ? (Array.isArray(cc) ? cc.map((c) => (typeof c === "string" ? c : c.address)) : [cc]).filter(Boolean)
+      : [];
+
+    const bccList = bcc
+      ? (Array.isArray(bcc) ? bcc.map((b) => (typeof b === "string" ? b : b.address)) : [bcc]).filter(Boolean)
+      : [];
+
+    const domain = (String(fromAddress || "").split("@")[1] || "localhost").trim();
+    const generatedMessageId = `<${crypto.randomUUID()}@${domain}>`;
 
     const mailOptions = {
       from: {
@@ -163,15 +172,14 @@ export const sendWebmailMessage = async (req, res, next) => {
       subject: subject || "(No Subject)",
       html: bodyHtml || `<p>${(bodyText || "").replace(/\n/g, "<br>")}</p>`,
       text: bodyText || "",
+      messageId: generatedMessageId,
     };
 
-    if (cc) {
-      const ccList = Array.isArray(cc) ? cc.map((c) => (typeof c === "string" ? c : c.address)) : [cc];
+    if (ccList.length) {
       mailOptions.cc = ccList.join(", ");
     }
 
-    if (bcc) {
-      const bccList = Array.isArray(bcc) ? bcc.map((b) => (typeof b === "string" ? b : b.address)) : [bcc];
+    if (bccList.length) {
       mailOptions.bcc = bccList.join(", ");
     }
 
@@ -183,13 +191,16 @@ export const sendWebmailMessage = async (req, res, next) => {
     }
 
     const sendResult = await transport.sendMail(mailOptions);
+    const finalMessageId = sendResult.messageId || generatedMessageId;
 
     const savedRecord = await EmailMessageModel.create({
-      mailbox,
-      messageId: sendResult.messageId || `sent-${Date.now()}@local`,
+      mailbox: "shop",
+      messageId: finalMessageId,
       folder: "Sent",
       from: { name: fromName, address: fromAddress },
       to: toAddresses.map((addr) => ({ name: "", address: addr })),
+      cc: ccList.map((addr) => ({ name: "", address: addr })),
+      bcc: bccList.map((addr) => ({ name: "", address: addr })),
       subject: mailOptions.subject,
       snippet: (bodyText || bodyHtml || "").replace(/<[^>]*>?/gm, "").slice(0, 160),
       bodyHtml: mailOptions.html,
@@ -198,9 +209,17 @@ export const sendWebmailMessage = async (req, res, next) => {
       isRead: true,
       inReplyTo: inReplyTo || null,
       references: Array.isArray(references) ? references : references ? [references] : [],
-      threadId: threadId || inReplyTo || sendResult.messageId,
+      threadId: threadId || inReplyTo || finalMessageId,
       active: true,
     });
+
+    // Append Webmail-composed/replied emails to IMAP Sent folder (non-fatal if IMAP is off or unavailable)
+    try {
+      const rawMime = await new MailComposer({ ...mailOptions, messageId: finalMessageId }).compile().build();
+      await appendEmailToSentFolder(rawMime);
+    } catch (appendErr) {
+      logger.warn({ err: appendErr.message }, "Failed to append webmail sent message to IMAP Sent folder");
+    }
 
     return res.status(201).json({
       status: true,
@@ -344,14 +363,13 @@ export const deleteWebmailMessage = async (req, res, next) => {
 // Returns list of all mail folders with unread and total counters
 export const getWebmailFolders = async (req, res, next) => {
   try {
-    const box = mailboxFilter(mailboxOf(req));
     const [inboxUnread, inboxTotal, sentTotal, trashTotal, starredTotal, inquiriesUnread, inquiriesTotal] =
       await Promise.all([
-        EmailMessageModel.countDocuments({ ...box, active: true, folder: "INBOX", isRead: false }),
-        EmailMessageModel.countDocuments({ ...box, active: true, folder: "INBOX" }),
-        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Sent" }),
-        EmailMessageModel.countDocuments({ ...box, active: true, folder: "Trash" }),
-        EmailMessageModel.countDocuments({ ...box, active: true, isStarred: true }),
+        EmailMessageModel.countDocuments({ active: true, folder: "INBOX", isRead: false }),
+        EmailMessageModel.countDocuments({ active: true, folder: "INBOX" }),
+        EmailMessageModel.countDocuments({ active: true, folder: "Sent" }),
+        EmailMessageModel.countDocuments({ active: true, folder: "Trash" }),
+        EmailMessageModel.countDocuments({ active: true, isStarred: true }),
         ContactMessageModel.countDocuments({ active: true, status: "unread" }),
         ContactMessageModel.countDocuments({ active: true }),
       ]);
@@ -371,35 +389,25 @@ export const getWebmailFolders = async (req, res, next) => {
   }
 };
 
-// Lists the mailboxes the Webmail can switch between, with their unread INBOX counts
+// Returns the single active Webmail mailbox entry with its unread INBOX count
 export const getWebmailMailboxes = async (req, res, next) => {
   try {
-    const { getSmtpConfig } = await import("../../common/services/smtpConfig.service.js");
-    const shopCfg = await getSmtpConfig();
-    // The inbox is the IMAP account, so show its login address; fall back to the SMTP sender
-    const [shopDoc, storeDoc] = await Promise.all([
+    const [smtpCfg, doc, unread] = await Promise.all([
+      getSmtpConfig(),
       StoreSettingsModel.findOne({ key: "default" }).select("imap").lean(),
-      StoreSettingsModel.findOne({ key: "store-smtp" }).select("imap").lean(),
+      EmailMessageModel.countDocuments({ active: true, folder: "INBOX", isRead: false }),
     ]);
-    const imapAddress = (doc) => (doc?.imap?.isEnabled && doc?.imap?.user ? String(doc.imap.user).trim() : "");
+
+    const imapAddress = doc?.imap?.isEnabled && doc?.imap?.user ? String(doc.imap.user).trim() : "";
     const boxes = [
       {
         id: "shop",
-        address: imapAddress(shopDoc) || shopCfg.fromEmail || shopCfg.user,
-        unread: await EmailMessageModel.countDocuments({ ...mailboxFilter("shop"), active: true, folder: "INBOX", isRead: false }),
+        address: imapAddress || smtpCfg.fromEmail || smtpCfg.user || "",
+        unread,
       },
     ];
-    const storeConfigured = await isStoreMailboxConfigured();
-    if (storeConfigured) {
-      const storeCfg = await getSmtpConfig("store");
-      boxes.unshift({
-        id: "store",
-        label: "Store",
-        address: imapAddress(storeDoc) || storeCfg.fromEmail || storeCfg.user,
-        unread: await EmailMessageModel.countDocuments({ ...mailboxFilter("store"), active: true, folder: "INBOX", isRead: false }),
-      });
-    }
-    return res.json({ status: true, data: boxes, defaultMailbox: storeConfigured ? "store" : "shop" });
+
+    return res.json({ status: true, data: boxes, defaultMailbox: "shop" });
   } catch (err) {
     next(err);
   }

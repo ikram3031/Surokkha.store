@@ -49,17 +49,15 @@ const bootstrap = async () => {
     initHeartbeatScheduler();
     initBackupScheduler();
 
-    if (env.IMAP_SYNC_ENABLED) {
-      import("./common/services/imapSync.service.js")
-        .then(({ startImapIdleListener }) => {
-          startImapIdleListener().catch((err) => {
-            logger.error({ err }, "Failed to start IMAP IDLE listener");
-          });
-        })
-        .catch((err) => {
-          logger.error({ err }, "Could not load IMAP service");
+    import("./common/services/imapSync.service.js")
+      .then(({ startImapIdleListener }) => {
+        startImapIdleListener().catch((err) => {
+          logger.error({ err }, "Failed to start IMAP IDLE listener");
         });
-    }
+      })
+      .catch((err) => {
+        logger.error({ err }, "Could not load IMAP service");
+      });
   } else {
     // 3. Default Dual Mode (npm run dev): Run BOTH Storefront (4001) and Service (4002) simultaneously
     const storefrontApp = await createStorefrontApp();
@@ -82,17 +80,15 @@ const bootstrap = async () => {
     initHeartbeatScheduler();
     initBackupScheduler();
 
-    if (env.IMAP_SYNC_ENABLED) {
-      import("./common/services/imapSync.service.js")
-        .then(({ startImapIdleListener }) => {
-          startImapIdleListener().catch((err) => {
-            logger.error({ err }, "Failed to start IMAP IDLE listener");
-          });
-        })
-        .catch((err) => {
-          logger.error({ err }, "Could not load IMAP service");
+    import("./common/services/imapSync.service.js")
+      .then(({ startImapIdleListener }) => {
+        startImapIdleListener().catch((err) => {
+          logger.error({ err }, "Failed to start IMAP IDLE listener");
         });
-    }
+      })
+      .catch((err) => {
+        logger.error({ err }, "Could not load IMAP service");
+      });
   }
 
   const shutdown = (signal) => {

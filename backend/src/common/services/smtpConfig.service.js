@@ -1,38 +1,13 @@
-import crypto from "crypto";
 import mongoose from "mongoose";
 import nodemailer from "nodemailer";
 import MailComposer from "nodemailer/lib/mail-composer/index.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { decryptText } from "../utils/crypto.util.js";
-import { resolveSite } from "../templates/surokkhaBrand.js";
 
-// Store (surokkha.store) SMTP lives in its own settings document; the shop uses "default"
-export const STORE_SMTP_KEY = "store-smtp";
-const SITE_SMTP_KEYS = { store: STORE_SMTP_KEY };
-
-// Site an order's emails belong to: its saved site, then (for older orders) the number prefix and domain
-export const siteOfOrder = (order) =>
-  order?.siteKey === "store" ? "store" : resolveSite({ orderId: order?.orderNumber, clientDomain: order?.clientDomain }).key;
-
-// A site's own SMTP, only when it is switched on and complete; otherwise the caller falls back to the shop's
-const readSiteSmtp = async (site) => {
-  const key = SITE_SMTP_KEYS[site];
-  if (!key || mongoose.connection.readyState !== 1) return null;
-  try {
-    const doc = await StoreSettingsModel.findOne({ key }).lean();
-    const smtp = doc?.smtp || {};
-    return smtp.isEnabled && smtp.host && smtp.user && smtp.password ? smtp : null;
-  } catch (err) {
-    console.warn(`[SMTP Config] Failed to fetch ${key} settings, using shop SMTP:`, err.message);
-    return null;
-  }
-};
-
-// Resolves active SMTP configuration strictly from the database; a site with its own SMTP uses that
-export const getSmtpConfig = async (site) => {
-  const siteSmtp = await readSiteSmtp(site);
-  let dbSmtp = siteSmtp || {};
-  if (!siteSmtp && mongoose.connection.readyState === 1) {
+// Resolves active SMTP configuration strictly from the database ("default" settings document)
+export const getSmtpConfig = async () => {
+  let dbSmtp = {};
+  if (mongoose.connection.readyState === 1) {
     try {
       const doc = await StoreSettingsModel.findOne({ key: "default" }).lean();
       dbSmtp = doc?.smtp || {};
@@ -47,10 +22,8 @@ export const getSmtpConfig = async (site) => {
   const password = String(dbSmtp.password ? decryptText(dbSmtp.password) : "").trim();
   const secure = dbSmtp.secure !== undefined ? Boolean(dbSmtp.secure) : port === 465;
 
-  const defaultBrand = "Surokkha";
-  const defaultDomain = "surokkha.store";
-  const fromName = String(dbSmtp.senderName || defaultBrand).trim();
-  const fromEmail = String(dbSmtp.senderEmail || user || `support@${defaultDomain}`).trim();
+  const fromName = String(dbSmtp.senderName || "Surokkha").trim();
+  const fromEmail = String(dbSmtp.senderEmail || user || "").trim();
 
   const isConfigured = Boolean(dbSmtp.isEnabled && host && user && password && password !== "none");
 
@@ -64,8 +37,20 @@ export const getSmtpConfig = async (site) => {
     fromEmail,
     fromAddress: { name: fromName, address: fromEmail },
     isConfigured,
-    source: siteSmtp ? SITE_SMTP_KEYS[site] : "database",
+    source: "database",
   };
+};
+
+// Returns the configured Webmail IMAP inbox address from the database (or "" if unset)
+export const getWebmailAddress = async () => {
+  if (mongoose.connection.readyState !== 1) return "";
+  try {
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap").lean();
+    return String(doc?.imap?.user || "").trim();
+  } catch (err) {
+    console.warn("[SMTP Config] Failed to fetch Webmail address from DB:", err.message);
+    return "";
+  }
 };
 
 const addressOf = (entry) => {
@@ -98,133 +83,9 @@ export const guardSelfSend = (transport, senderAddresses) => {
   return transport;
 };
 
-const parseAddressList = (field) =>
-  toList(field)
-    .map((entry) => {
-      if (typeof entry === "object" && entry) {
-        return { name: String(entry.name || ""), address: String(entry.address || "").toLowerCase().trim() };
-      }
-      const str = String(entry || "").trim();
-      const match = str.match(/^(.*?)\s*<([^>]+)>$/);
-      if (match) {
-        return { name: match[1].replace(/^["']|["']$/g, "").trim(), address: match[2].toLowerCase().trim() };
-      }
-      return { name: "", address: str.toLowerCase().trim() };
-    })
-    .filter((item) => item.address);
-
-/**
- * Mailbox copy: every email the store or shop sends is also recorded in Webmail's Sent folder
- * (and appended to IMAP Sent when IMAP is enabled), so orders and notifications show up in Webmail.
- * It is never re-sent over SMTP, so nothing bounces or loops.
- * Emails with one-time codes or sign-in links pass { mailboxCopy: false } and are never copied.
- */
-const shopCopyEnabled = async () => {
-  if (mongoose.connection.readyState !== 1) return false;
-  try {
-    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap.isEnabled imap.copySentMail").lean();
-    return Boolean(doc?.imap?.isEnabled) && doc?.imap?.copySentMail !== false;
-  } catch {
-    return false;
-  }
-};
-
-const saveWebmailSentCopy = async (options, targetMailbox, fallbackFromEmail) => {
-  if (mongoose.connection.readyState !== 1) return;
-  const { EmailMessageModel } = await import("../models/emailMessage.model.js");
-  const { mailboxFilter } = await import("./imapSync.service.js");
-  const fromList = parseAddressList(options.from || fallbackFromEmail);
-  const from = fromList[0] || { name: "", address: addressOf(fallbackFromEmail) || "no-reply@surokkha.store" };
-  const bodyHtml = options.html || (options.text ? `<pre>${options.text}</pre>` : "");
-  const bodyText = options.text || String(options.html || "").replace(/<[^>]*>?/gm, " ").replace(/\s+/g, " ").trim();
-  const snippet = bodyText.slice(0, 160);
-  const messageId = options.messageId;
-
-  await EmailMessageModel.findOneAndUpdate(
-    { ...mailboxFilter(targetMailbox), messageId },
-    {
-      $setOnInsert: {
-        mailbox: targetMailbox,
-        messageId,
-        folder: "Sent",
-        from,
-        to: parseAddressList(options.to),
-        cc: parseAddressList(options.cc),
-        bcc: parseAddressList(options.bcc),
-        replyTo: parseAddressList(options.replyTo),
-        subject: options.subject || "(No Subject)",
-        snippet,
-        bodyHtml,
-        bodyText,
-        date: new Date(),
-        isRead: true,
-        inReplyTo: options.inReplyTo || null,
-        references: Array.isArray(options.references) ? options.references : options.references ? [options.references] : [],
-        threadId: options.inReplyTo || messageId,
-        active: true,
-      },
-    },
-    { upsert: true }
-  );
-};
-
-const copyToMailbox = async (options, site, fallbackFromEmail) => {
-  // Loaded here because imapSync itself imports this module
-  const { appendEmailToSentFolder, isStoreMailboxConfigured } = await import("./imapSync.service.js");
-  const storeConfigured = await isStoreMailboxConfigured();
-  const shopImapOn = await shopCopyEnabled();
-
-  const targets = new Set();
-  // Always mirror into the Store Webmail when it is configured, so orders & notifications from any site appear there
-  if (storeConfigured) targets.add("store");
-  if (site !== "store" && (shopImapOn || !storeConfigured)) targets.add("shop");
-
-  if (targets.size === 0) return;
-
-  for (const targetMailbox of targets) {
-    await saveWebmailSentCopy(options, targetMailbox, fallbackFromEmail).catch((err) =>
-      console.warn(`[Webmail Copy] Failed saving Sent copy for ${targetMailbox}:`, err.message)
-    );
-  }
-
-  const raw = await new MailComposer(options).compile().build();
-  if (storeConfigured) {
-    await appendEmailToSentFolder(raw, "store").catch((err) =>
-      console.warn("[SMTP] Store IMAP Sent append failed:", err.message)
-    );
-  }
-  if (targets.has("shop") && shopImapOn) {
-    await appendEmailToSentFolder(raw, "shop").catch((err) =>
-      console.warn("[SMTP] Shop IMAP Sent append failed:", err.message)
-    );
-  }
-};
-
-const domainOf = (address) => addressOf(address).split("@")[1] || "surokkha.store";
-
-const withMailboxCopy = (transport, fromEmail, site) => {
-  const send = transport.sendMail.bind(transport);
-  transport.sendMail = async (options = {}, callback) => {
-    // Same Message-ID on the sent mail and its copy, so the Sent folder sync doesn't list it twice
-    const message = { ...options, messageId: options.messageId || `<${crypto.randomUUID()}@${domainOf(options.from || fromEmail)}>` };
-    try {
-      const info = await send(message);
-      if (!info?.skipped) {
-        copyToMailbox(message, site, fromEmail).catch((err) => console.warn("[SMTP] Mailbox copy failed:", err.message));
-      }
-      if (callback) return callback(null, info);
-      return info;
-    } catch (err) {
-      if (callback) return callback(err);
-      throw err;
-    }
-  };
-  return transport;
-};
-
-// Creates and returns a Nodemailer transport instance with current active SMTP settings for a site ("shop" by default)
-export const getSmtpTransport = async (site, { mailboxCopy = true } = {}) => {
-  const config = await getSmtpConfig(site);
+// Creates and returns a Nodemailer transport instance with the single active SMTP configuration
+export const getSmtpTransport = async () => {
+  const config = await getSmtpConfig();
 
   const isLocalhost = config.host === "127.0.0.1" || config.host === "localhost";
   const hasAuth = !isLocalhost && config.user && config.password;
@@ -248,8 +109,7 @@ export const getSmtpTransport = async (site, { mailboxCopy = true } = {}) => {
     };
   }
 
-  const guarded = guardSelfSend(nodemailer.createTransport(transportConfig), [config.user, config.fromEmail]);
-  const transport = mailboxCopy ? withMailboxCopy(guarded, config.fromEmail, site) : guarded;
+  const transport = guardSelfSend(nodemailer.createTransport(transportConfig), [config.user, config.fromEmail]);
 
   return {
     transport,
@@ -259,4 +119,47 @@ export const getSmtpTransport = async (site, { mailboxCopy = true } = {}) => {
     fromAddress: config.fromAddress,
     isConfigured: config.isConfigured,
   };
+};
+
+// Copies a system/notification email directly into the Webmail IMAP INBOX (never throws)
+export const copyToWebmailInbox = async ({ subject, html, text, from, to, replyTo, headers } = {}) => {
+  try {
+    if (mongoose.connection.readyState !== 1) return false;
+    const doc = await StoreSettingsModel.findOne({ key: "default" }).select("imap").lean();
+    const imap = doc?.imap || {};
+    const imapHost = String(imap.host || "").trim();
+    const imapUser = String(imap.user || "").trim();
+    const imapPass = imap.password ? String(decryptText(imap.password)).trim() : "";
+
+    if (!imap.isEnabled || !imapHost || !imapUser || !imapPass) {
+      return false;
+    }
+
+    const smtp = await getSmtpConfig();
+    const hasValidFrom =
+      typeof from === "string"
+        ? Boolean(from.trim())
+        : Boolean(from && typeof from === "object" && String(from.address || "").trim());
+    const hasValidTo = Array.isArray(to)
+      ? to.length > 0
+      : Boolean(typeof to === "string" ? to.trim() : to && typeof to === "object" && String(to.address || "").trim());
+
+    const mailOptions = {
+      from: hasValidFrom ? from : smtp.fromEmail ? smtp.fromAddress : imapUser,
+      to: hasValidTo ? to : imapUser,
+      subject: subject || "(No Subject)",
+      headers: { "X-Surokkha-System": "1", ...(headers || {}) },
+      date: new Date(),
+    };
+    if (replyTo) mailOptions.replyTo = replyTo;
+    if (html !== undefined) mailOptions.html = html;
+    if (text !== undefined) mailOptions.text = text;
+
+    const rawBuffer = await new MailComposer(mailOptions).compile().build();
+    const { appendEmailToInbox } = await import("./imapSync.service.js");
+    return Boolean(await appendEmailToInbox(rawBuffer));
+  } catch (err) {
+    console.warn("[Webmail Inbox Copy] Failed to copy message to Webmail inbox:", err.message);
+    return false;
+  }
 };

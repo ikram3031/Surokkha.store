@@ -32,17 +32,15 @@ export const bootstrapService = async () => {
   initBackupScheduler();
   initPathaoSyncScheduler();
 
-  if (env.IMAP_SYNC_ENABLED) {
-    import("../common/services/imapSync.service.js")
-      .then(({ startImapIdleListener }) => {
-        startImapIdleListener().catch((err) => {
-          logger.error({ err }, "Failed to start IMAP IDLE listener");
-        });
-      })
-      .catch((err) => {
-        logger.error({ err }, "Could not load IMAP service");
+  import("../common/services/imapSync.service.js")
+    .then(({ startImapIdleListener }) => {
+      startImapIdleListener().catch((err) => {
+        logger.error({ err }, "Failed to start IMAP IDLE listener");
       });
-  }
+    })
+    .catch((err) => {
+      logger.error({ err }, "Could not load IMAP service");
+    });
 
   const shutdown = (signal) => {
     stopHeartbeatScheduler();

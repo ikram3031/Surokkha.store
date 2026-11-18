@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import {
   getMetaPixelConfig,
@@ -9,6 +10,7 @@ import {
   testTikTokEventsApiConnection,
 } from "../../common/services/tiktokEventsApi.service.js";
 import { config as clientConfig } from "../../common/config/index.js";
+import { logger } from "../../common/config/logger.js";
 import { encryptText, decryptText } from "../../common/utils/crypto.util.js";
 import {
   DEFAULT_TEMPLATE_PRESETS,
@@ -16,6 +18,7 @@ import {
   compileTransactionalEmailHtml,
 } from "../../common/templates/invoices/templateEngine.js";
 import { getSmtpTransport } from "../../common/services/smtpConfig.service.js";
+import { restartImapIdleListener } from "../../common/services/imapSync.service.js";
 import { ID_TYPES, ID_TOKENS, saveIdFormats } from "../../common/services/idFormat.service.js";
 
 // Retrieves full Meta Pixel and Conversions API settings for Dashboard administration
@@ -510,17 +513,23 @@ export const updateSmtpSettings = async (req, res, next) => {
       isEnabled = false,
     } = req.body || {};
 
+    const cleanPassword = String(password || "").trim();
+    const isMaskedPassword = /^\*+$/.test(cleanPassword);
+
     const updatePayload = {
       "smtp.host": String(host).trim(),
       "smtp.port": Number(port),
       "smtp.secure": Boolean(secure),
       "smtp.user": String(user).trim(),
-      "smtp.password": password ? encryptText(String(password).trim()) : "",
       "smtp.senderName": String(senderName).trim(),
       "smtp.senderEmail": String(senderEmail).trim(),
       "smtp.isEnabled": Boolean(isEnabled),
       updatedBy: req.user?.userId || null,
     };
+
+    if (cleanPassword && !isMaskedPassword) {
+      updatePayload["smtp.password"] = encryptText(cleanPassword);
+    }
 
     const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
       { key: "default" },
@@ -533,8 +542,8 @@ export const updateSmtpSettings = async (req, res, next) => {
       message: "SMTP settings saved successfully.",
       data: {
         ...updatedDoc.smtp,
-        password: decryptText(updatedDoc.smtp.password || ""),
-      }
+        password: decryptText(updatedDoc.smtp?.password || ""),
+      },
     });
   } catch (error) {
     next(error);
@@ -551,7 +560,12 @@ export const testSmtpConnection = async (req, res, next) => {
     const targetPort = Number(req.body?.port || currentConfig.port || 465);
     const targetSecure = req.body?.secure !== undefined ? Boolean(req.body.secure) : (currentConfig.secure ?? true);
     const targetUser = (req.body?.user || currentConfig.user || "").trim();
-    const targetPassword = (req.body?.password || decryptText(currentConfig.password || "")).trim();
+    const rawBodyPassword = String(req.body?.password || "").trim();
+    const targetPassword = (
+      rawBodyPassword && !/^\*+$/.test(rawBodyPassword)
+        ? rawBodyPassword
+        : decryptText(currentConfig.password || "")
+    ).trim();
 
     if (!targetHost || !targetUser || !targetPassword) {
       return res.status(400).json({
@@ -644,7 +658,7 @@ export const getImapSettings = async (req, res, next) => {
   }
 };
 
-// Persists updated IMAP settings to database
+// Persists updated IMAP settings to database and hot-reloads the IMAP IDLE listener
 export const updateImapSettings = async (req, res, next) => {
   try {
     const {
@@ -656,15 +670,21 @@ export const updateImapSettings = async (req, res, next) => {
       isEnabled = false,
     } = req.body || {};
 
+    const cleanPassword = String(password || "").trim();
+    const isMaskedPassword = /^\*+$/.test(cleanPassword);
+
     const updatePayload = {
       "imap.host": String(host).trim(),
       "imap.port": Number(port),
       "imap.secure": Boolean(secure),
       "imap.user": String(user).trim(),
-      "imap.password": password ? encryptText(String(password).trim()) : "",
       "imap.isEnabled": Boolean(isEnabled),
       updatedBy: req.user?.userId || null,
     };
+
+    if (cleanPassword && !isMaskedPassword) {
+      updatePayload["imap.password"] = encryptText(cleanPassword);
+    }
 
     const updatedDoc = await StoreSettingsModel.findOneAndUpdate(
       { key: "default" },
@@ -672,13 +692,17 @@ export const updateImapSettings = async (req, res, next) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     ).lean();
 
+    restartImapIdleListener().catch((err) => {
+      logger.error({ err }, "Failed to hot-reload IMAP IDLE listener after settings update");
+    });
+
     return res.json({
       status: "success",
       message: "IMAP settings saved successfully.",
       data: {
         ...updatedDoc.imap,
-        password: decryptText(updatedDoc.imap.password || ""),
-      }
+        password: decryptText(updatedDoc.imap?.password || ""),
+      },
     });
   } catch (error) {
     next(error);
@@ -1011,8 +1035,8 @@ export const testTemplateEmail = async (req, res, next) => {
       });
     }
 
-    const brand = clientConfig?.brandName || "Surokkha";
-    const senderEmail = smtpConfig.fromEmail || smtpConfig.user || clientConfig?.contact?.supportEmail || "support@surokkha.store";
+    const brand = smtpConfig.fromName || clientConfig?.brandName || "Surokkha";
+    const senderEmail = smtpConfig.fromEmail || smtpConfig.user;
 
     const mailOptions = {
       from: `"${brand}" <${senderEmail}>`,

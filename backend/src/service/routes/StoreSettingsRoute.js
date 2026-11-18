@@ -9,12 +9,7 @@ import {
   getStoreSeoSettings,
   updateStoreSeoSettings,
 } from "../controllers/StoreSeoController.js";
-import {
-  getStoreSmtpSettings,
-  updateStoreSmtpSettings,
-  testStoreSmtpConnection,
-} from "../controllers/StoreSmtpController.js";
-import { authenticateToken, authorizeRoles, OWNER_ONLY, MARKETERS } from "../../common/middlewares/auth.middleware.js";
+import { authenticateToken, authorizeRoles, MARKETERS } from "../../common/middlewares/auth.middleware.js";
 import { alertOwnersOnAdminAction } from "../../common/utils/ownerAlerts.js";
 
 // Store (surokkha.store) settings, mounted at /store/v2/settings
@@ -56,28 +51,6 @@ storeSettingsRouter.put(
   authenticateToken,
   authorizeRoles(MARKETERS), alertOwnersOnAdminAction("Changed settings: /seo"),
   updateStoreSeoSettings
-);
-
-// Store SMTP settings
-storeSettingsRouter.get(
-  "/smtp",
-  authenticateToken,
-  authorizeRoles(OWNER_ONLY),
-  getStoreSmtpSettings
-);
-
-storeSettingsRouter.put(
-  "/smtp",
-  authenticateToken,
-  authorizeRoles(OWNER_ONLY),
-  updateStoreSmtpSettings
-);
-
-storeSettingsRouter.post(
-  "/smtp/test",
-  authenticateToken,
-  authorizeRoles(OWNER_ONLY),
-  testStoreSmtpConnection
 );
 
 export default storeSettingsRouter;
