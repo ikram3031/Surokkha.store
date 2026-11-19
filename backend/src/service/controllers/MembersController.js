@@ -53,8 +53,9 @@ export const listMembers = async (req, res, next) => {
     const page = Math.max(1, parseInt(req.query.page || '1', 10));
     const limit = Math.max(1, parseInt(req.query.limit || '15', 10));
     
-    const filter = {};
-    
+    // Only email-verified members belong in the Members list; checkout-made and pending sign-ups stay out
+    const filter = { isEmailVerified: true, registrationPending: { $ne: true } };
+
     if (req.query.q) {
       const searchRegex = new RegExp(req.query.q.trim(), 'i');
       filter.$or = [
