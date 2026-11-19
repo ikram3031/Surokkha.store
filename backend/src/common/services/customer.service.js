@@ -1,27 +1,9 @@
 import { CustomerModel } from "../models/customer.model.js";
 import { OrderModel } from "../models/order.model.js";
+import { toLocalBdPhone } from "../utils/phone.js";
 
-/**
- * Standardize phone number for Bangladesh (e.g. 017XXXXXXXX)
- */
-export const normalizeCustomerPhone = (rawPhone) => {
-  if (!rawPhone || typeof rawPhone !== "string") return "";
-  const digits = rawPhone.replace(/\D/g, "");
-  if (!digits) return "";
-  if (digits.startsWith("88001") && digits.length >= 14) {
-    return digits.slice(3, 14);
-  }
-  if (digits.startsWith("880") && digits.length >= 12) {
-    return "0" + digits.slice(3, 13);
-  }
-  if (digits.length === 10 && digits.startsWith("1")) {
-    return "0" + digits;
-  }
-  if (digits.length >= 11 && digits.slice(-11).startsWith("01")) {
-    return digits.slice(-11);
-  }
-  return digits;
-};
+// Standard 01XXXXXXXXX form of a Bangladeshi phone (shared phone utility)
+export const normalizeCustomerPhone = toLocalBdPhone;
 
 /**
  * Parses full name into firstName and lastName

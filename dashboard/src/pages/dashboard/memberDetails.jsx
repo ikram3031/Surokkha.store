@@ -66,6 +66,8 @@ import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { toLocalBdPhone, isValidBdPhone } from '@/utils/phone';
+import { DistrictCombobox, ThanaCombobox } from '@/components/orders/LocationCombobox';
 
 // Helper to format currency
 const formatBDT = (amount = 0) => `৳${Number(amount || 0).toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -100,6 +102,8 @@ export const MemberDetails = () => {
     phone: '',
     address1: '',
     address2: '',
+    district: '',
+    thana: '',
     city: '',
     state: '',
     postcode: '',
@@ -111,6 +115,8 @@ export const MemberDetails = () => {
     phone: '',
     address1: '',
     address2: '',
+    district: '',
+    thana: '',
     city: '',
     state: '',
     postcode: '',
@@ -168,6 +174,8 @@ export const MemberDetails = () => {
         phone: bAddr.phone || member.phone || '',
         address1: bAddr.address1 || '',
         address2: bAddr.address2 || '',
+        district: bAddr.district || bAddr.city || '',
+        thana: bAddr.thana || '',
         city: bAddr.city || '',
         state: bAddr.state || '',
         postcode: bAddr.postcode || '',
@@ -181,6 +189,8 @@ export const MemberDetails = () => {
         phone: sAddr.phone || member.phone || '',
         address1: sAddr.address1 || '',
         address2: sAddr.address2 || '',
+        district: sAddr.district || sAddr.city || '',
+        thana: sAddr.thana || '',
         city: sAddr.city || '',
         state: sAddr.state || '',
         postcode: sAddr.postcode || '',
@@ -877,15 +887,20 @@ export const MemberDetails = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">
-                      Phone Number <span className="text-muted-foreground font-normal">(Format: +8801XXXXXXXXX)</span>
+                      Phone Number <span className="text-muted-foreground font-normal">(e.g. 01712345678)</span>
                     </label>
                     <Input
                       value={editForm.phone}
                       onChange={(e) => setEditForm((prev) => ({ ...prev, phone: e.target.value }))}
+                      onBlur={(e) => setEditForm((prev) => ({ ...prev, phone: toLocalBdPhone(e.target.value) }))}
                       disabled={!isEditingProfile || updateProfileMutation.isPending}
                       className="text-xs font-mono"
-                      placeholder="+8801700000000"
+                      placeholder="01712345678"
+                      inputMode="tel"
                     />
+                    {isEditingProfile && editForm.phone && !isValidBdPhone(editForm.phone) && (
+                      <p className="text-[11px] text-destructive">Enter a valid Bangladeshi mobile number, e.g. 01712345678</p>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -1034,23 +1049,22 @@ export const MemberDetails = () => {
 
                     <div className="grid grid-cols-3 gap-2">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">City / District</label>
-                        <Input
-                          value={billingForm.city}
-                          onChange={(e) => setBillingForm((p) => ({ ...p, city: e.target.value }))}
+                        <label className="text-[11px] font-semibold text-muted-foreground">District</label>
+                        <DistrictCombobox
+                          value={billingForm.district}
+                          onChange={(val) => setBillingForm((p) => ({ ...p, district: val, thana: '' }))}
                           disabled={!isEditingAddresses}
-                          className="h-8 text-xs"
-                          placeholder="e.g. Dhaka"
+                          triggerClassName="h-8 text-xs"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">State / Div</label>
-                        <Input
-                          value={billingForm.state}
-                          onChange={(e) => setBillingForm((p) => ({ ...p, state: e.target.value }))}
+                        <label className="text-[11px] font-semibold text-muted-foreground">Thana / Upazila</label>
+                        <ThanaCombobox
+                          district={billingForm.district}
+                          value={billingForm.thana}
+                          onChange={(val) => setBillingForm((p) => ({ ...p, thana: val }))}
                           disabled={!isEditingAddresses}
-                          className="h-8 text-xs"
-                          placeholder="e.g. Dhaka"
+                          triggerClassName="h-8 text-xs"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1114,23 +1128,22 @@ export const MemberDetails = () => {
 
                     <div className="grid grid-cols-3 gap-2">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">City / District</label>
-                        <Input
-                          value={shippingForm.city}
-                          onChange={(e) => setShippingForm((p) => ({ ...p, city: e.target.value }))}
+                        <label className="text-[11px] font-semibold text-muted-foreground">District</label>
+                        <DistrictCombobox
+                          value={shippingForm.district}
+                          onChange={(val) => setShippingForm((p) => ({ ...p, district: val, thana: '' }))}
                           disabled={!isEditingAddresses}
-                          className="h-8 text-xs"
-                          placeholder="e.g. Dhaka"
+                          triggerClassName="h-8 text-xs"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-muted-foreground">State / Div</label>
-                        <Input
-                          value={shippingForm.state}
-                          onChange={(e) => setShippingForm((p) => ({ ...p, state: e.target.value }))}
+                        <label className="text-[11px] font-semibold text-muted-foreground">Thana / Upazila</label>
+                        <ThanaCombobox
+                          district={shippingForm.district}
+                          value={shippingForm.thana}
+                          onChange={(val) => setShippingForm((p) => ({ ...p, thana: val }))}
                           disabled={!isEditingAddresses}
-                          className="h-8 text-xs"
-                          placeholder="e.g. Dhaka"
+                          triggerClassName="h-8 text-xs"
                         />
                       </div>
                       <div className="space-y-1">

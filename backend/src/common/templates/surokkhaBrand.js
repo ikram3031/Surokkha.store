@@ -1,4 +1,5 @@
 import { config } from "../config/index.js";
+import { toLocalBdPhone, toIntlBdPhone } from "../utils/phone.js";
 
 // Shared Surokkha brand styling for the invoice page and every email template.
 // Emails can't rely on CSS variables, grid or scripts, so everything here is inline styles and tables.
@@ -79,11 +80,12 @@ export const tk = (n) =>
 
 // 8801711711621 / 01711711621 -> +880 1711-711621
 export const fmtPhone = (p) => {
-  const d = String(p || "").replace(/\D/g, "").replace(/^880/, "0");
+  const d = toLocalBdPhone(p);
   return d.length === 11 ? `+880 ${d.slice(1, 5)}-${d.slice(5)}` : String(p || "");
 };
 
-export const waLink = (p) => "https://wa.me/880" + String(p || "").replace(/\D/g, "").replace(/^880/, "").replace(/^0/, "");
+// wa.me chat link for a Bangladeshi number in any format
+export const waLink = (p) => `https://wa.me/${toIntlBdPhone(p)}`;
 
 // Address object (billingInfo / shippingInfo) or string -> display lines
 export const addressLines = (addr) => {

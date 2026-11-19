@@ -2,15 +2,12 @@ import { CheckoutLeadModel } from "../../common/models/checkoutLead.model.js";
 import { sendServerInitiateCheckoutEvent, extractClientIp } from "../../common/services/facebookCapi.service.js";
 import { logger } from "../../common/config/logger.js";
 import { seenRecently } from "../../common/utils/recentEvents.js";
+import { toLocalBdPhone, isValidBdPhone } from "../../common/utils/phone.js";
 
 const str = (v, max = 300) => String(v ?? "").trim().slice(0, max);
 
 // Last 10 digits of a Bangladeshi mobile number, or "" when it isn't a valid one
-export const phoneKeyOf = (raw) => {
-  const digits = String(raw || "").replace(/\D/g, "");
-  const key = digits.length >= 10 ? digits.slice(-10) : "";
-  return /^1[3-9]\d{8}$/.test(key) ? key : "";
-};
+export const phoneKeyOf = (raw) => (isValidBdPhone(raw) ? toLocalBdPhone(raw).slice(1) : "");
 
 // Marks open leads as converted once an order is placed (matched by session id or phone)
 export const markCheckoutLeadConverted = async ({ sessionId, phone, orderNumber }) => {

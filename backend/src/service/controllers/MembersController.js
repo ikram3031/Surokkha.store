@@ -8,6 +8,7 @@ import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 import { notifyMemberRegistered } from "../../common/utils/memberNotification.js";
+import { toLocalBdPhone, isValidBdPhone, bdPhoneVariants, BD_PHONE_ERROR } from "../../common/utils/phone.js";
 import {
   sanitizeInfo,
   validateAddressPayload,
@@ -291,17 +292,13 @@ export const updateMember = async (req, res, next) => {
       updates.email = payload.email.toLowerCase().trim();
     }
     if (payload.phone !== undefined) {
-      const trimmedPhone = typeof payload.phone === "string" ? payload.phone.trim() : "";
+      const trimmedPhone = toLocalBdPhone(payload.phone);
       if (trimmedPhone) {
-        if (!/^\+8801[3-9]\d{8}$/.test(trimmedPhone)) {
-          return res.status(400).json({
-            status: "error",
-            message: "phone must be a valid Bangladeshi number in format +8801[3-9]XXXXXXXXX",
-          });
+        if (!isValidBdPhone(trimmedPhone)) {
+          return res.status(400).json({ status: "error", message: BD_PHONE_ERROR });
         }
-        // Check uniqueness excluding the current member being updated
         const existingPhoneMember = await MemberModel.findOne({
-          phone: trimmedPhone,
+          phone: { $in: bdPhoneVariants(trimmedPhone) },
           _id: { $ne: memberId },
         }).lean();
         if (existingPhoneMember) {
@@ -377,7 +374,7 @@ export const registerMember = async (req, res, next) => {
     const trimmedEmail =
       typeof email === "string" ? email.toLowerCase().trim() : "";
     const trimmedPassword = typeof password === "string" ? password : "";
-    const trimmedPhone = typeof phone === "string" ? phone.trim() : "";
+    const trimmedPhone = toLocalBdPhone(phone);
 
     const errors = [];
     if (!trimmedName) {
@@ -386,8 +383,8 @@ export const registerMember = async (req, res, next) => {
     if (!trimmedEmail) {
       errors.push("email is required");
     }
-    if (trimmedPhone && !/^\+8801[3-9]\d{8}$/.test(trimmedPhone)) {
-      errors.push("phone must be a valid Bangladeshi number in format +8801[3-9]XXXXXXXXX");
+    if (trimmedPhone && !isValidBdPhone(trimmedPhone)) {
+      errors.push(BD_PHONE_ERROR);
     }
     if (!trimmedPassword || trimmedPassword.length < 6) {
       errors.push("password is required and must be at least 6 characters");

@@ -1,5 +1,6 @@
 import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
 import crypto from "crypto";
+import { toLocalBdPhone } from "../../common/utils/phone.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { LogModel } from "../../common/models/log.model.js";
@@ -38,12 +39,7 @@ const writeLog = async (req, description) => {
 };
 
 // Same rules as Pathao: Bangladeshi 11-digit number (01XXXXXXXXX)
-const cleanBdPhone = (raw) => {
-  let phone = String(raw || "").trim().replace(/\D/g, "");
-  if (phone.startsWith("880")) phone = phone.slice(2);
-  if (!phone.startsWith("0")) phone = `0${phone}`;
-  return phone;
-};
+const cleanBdPhone = toLocalBdPhone;
 
 const findOrder = (orderId) =>
   OrderModel.findOne({

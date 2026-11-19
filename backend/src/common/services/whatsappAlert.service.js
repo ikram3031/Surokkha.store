@@ -5,6 +5,8 @@
 //   3. In backend .env: WHATSAPP_ALERT_TO=8801XXXXXXXXX:APIKEY  (several: comma separated)
 // Without that env var nothing is sent. A failed alert never affects the order.
 
+import { isValidBdPhone, toIntlBdPhone } from "../utils/phone.js";
+
 const ENDPOINT = "https://api.callmebot.com/whatsapp.php";
 
 const recipients = () =>
@@ -21,11 +23,7 @@ const recipients = () =>
 const taka = (n) => `৳${Math.round(Number(n) || 0)}`;
 
 // Bangladeshi mobile (01XXXXXXXXX / +8801… / 8801…) → wa.me link that opens a chat with the customer
-const waLink = (phone) => {
-  const d = String(phone || "").replace(/\D/g, "");
-  const local = d.startsWith("880") ? d.slice(2) : d.startsWith("80") ? d.slice(1) : d;
-  return /^01[3-9]\d{8}$/.test(local) ? `https://wa.me/88${local}` : "";
-};
+const waLink = (phone) => (isValidBdPhone(phone) ? `https://wa.me/${toIntlBdPhone(phone)}` : "");
 
 export const buildOrderAlertText = (order) => {
   const b = order.billingInfo || {};

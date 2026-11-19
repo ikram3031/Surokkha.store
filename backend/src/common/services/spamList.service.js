@@ -1,9 +1,8 @@
 import { SpamListModel } from "../models/spamList.model.js";
+import { toLocalBdPhone } from "../utils/phone.js";
 
-const normalizePhone = (raw) => {
-  const value = String(raw || "").trim();
-  return value.replace(/\D/g, "").slice(-11) || value;
-};
+// Spam-list phone key: 01XXXXXXXXX for Bangladeshi numbers, raw text otherwise
+const normalizePhone = (raw) => toLocalBdPhone(raw) || String(raw || "").trim();
 
 /**
  * Adds ip / phone / email to the spam list without creating a second entry for the same data.

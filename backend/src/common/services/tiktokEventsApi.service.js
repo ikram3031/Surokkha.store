@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { env } from "../config/env.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { config as clientConfig } from "../config/index.js";
+import { toIntlBdPhone } from "../utils/phone.js";
 
 // Computes SHA-256 hash for TikTok user data normalization
 const sha256 = (value) => {
@@ -11,21 +12,8 @@ const sha256 = (value) => {
   return crypto.createHash("sha256").update(cleanVal).digest("hex");
 };
 
-// Normalizes Bangladeshi phone numbers into international format
-const normalizePhone = (phone = "") => {
-  if (!phone) return "";
-  let digits = String(phone).replace(/\D/g, "");
-  if (digits.startsWith("880")) {
-    return digits;
-  }
-  if (digits.startsWith("0")) {
-    return `88${digits}`;
-  }
-  if (digits.length === 10) {
-    return `880${digits}`;
-  }
-  return digits;
-};
+// Bangladeshi phone as 8801XXXXXXXXX digits for hashed matching
+const normalizePhone = toIntlBdPhone;
 
 // Resolves active TikTok Pixel configuration from database, client config, and environment fallbacks
 export const getTikTokPixelConfig = async () => {

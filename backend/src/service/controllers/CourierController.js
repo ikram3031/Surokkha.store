@@ -8,6 +8,7 @@ import { OrderModel } from "../../common/models/order.model.js";
 import { ensurePaymentOnShip } from "../../common/helper/orderControllerHelper.js";
 import { LogModel } from "../../common/models/log.model.js";
 import { DistrictModel, ThanaModel } from "../../common/models/district.model.js";
+import { toLocalBdPhone, isValidBdPhone } from "../../common/utils/phone.js";
 import { getDeliveryTier } from "../../common/helper/deliveryCharge.helper.js";
 import {
   getPathaoConfig,
@@ -403,16 +404,9 @@ export const createOrderConsignmentController = async (req, res, next) => {
       }
     }
 
-    // Clean phone number (Pathao expects Bangladeshi 11-digit format e.g. 017XXXXXXXX)
-    let cleanPhone = String(recipient_phone || "").trim().replace(/\D/g, "");
-    if (cleanPhone.startsWith("880")) {
-      cleanPhone = cleanPhone.slice(2);
-    }
-    if (!cleanPhone.startsWith("0")) {
-      cleanPhone = `0${cleanPhone}`;
-    }
+    const cleanPhone = toLocalBdPhone(recipient_phone);
 
-    if (cleanPhone.length !== 11) {
+    if (!isValidBdPhone(cleanPhone)) {
       return res.status(400).json({
         status: "error",
         message: `Recipient phone number "${recipient_phone}" is invalid. Must be a valid 11-digit BD number (e.g. 01712345678).`,
@@ -426,10 +420,8 @@ export const createOrderConsignmentController = async (req, res, next) => {
       });
     }
 
-    let cleanSecondary = String(recipient_secondary_phone || "").replace(/\D/g, "");
-    if (cleanSecondary.startsWith("880")) cleanSecondary = cleanSecondary.slice(2);
-    if (cleanSecondary && !cleanSecondary.startsWith("0")) cleanSecondary = `0${cleanSecondary}`;
-    if (cleanSecondary && cleanSecondary.length !== 11) {
+    const cleanSecondary = toLocalBdPhone(recipient_secondary_phone);
+    if (cleanSecondary && !isValidBdPhone(cleanSecondary)) {
       return res.status(400).json({
         status: "error",
         message: `Secondary phone number "${recipient_secondary_phone}" is invalid. Must be a valid 11-digit BD number.`,

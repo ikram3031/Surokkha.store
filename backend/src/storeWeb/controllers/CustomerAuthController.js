@@ -8,6 +8,7 @@ import { allowHit, clearHits } from "../../common/utils/rateLimit.js";
 import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
 import { notifyMemberRegistered } from "../../common/utils/memberNotification.js";
 import { newUserFreeDeliveryFor } from "../../common/utils/promo.js";
+import { bdPhoneVariants } from "../../common/utils/phone.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { applyMemberBonus, createClaimMember } from "../../common/services/memberBonus.service.js";
 
@@ -344,12 +345,7 @@ export const me = (req, res) => {
 
 // ---------- Customer dashboard: my orders + saved addresses ----------
 
-const phoneVariants = (raw) => {
-  const digits = String(raw || "").replace(/\D/g, "");
-  if (digits.length < 10) return [];
-  const local = "0" + digits.slice(-10);
-  return [local, "88" + local, "+88" + local];
-};
+const phoneVariants = bdPhoneVariants;
 
 const customerStatus = (o) => {
   const slug = String(o.courier?.orderStatusSlug || o.courier?.orderStatus || "").toLowerCase();

@@ -1,9 +1,11 @@
 // Helper validators and sanitizers for member controller request payloads.
+import { toLocalBdPhone, isValidBdPhone, BD_PHONE_ERROR } from "../utils/phone.js";
+
 const hasAddressData = (address) => {
   if (!address || typeof address !== "object") return false;
 
   return Object.entries(address).some(([key, value]) => {
-    if (key === "company" || key === "address2") return false;
+    if (["company", "address2", "country"].includes(key)) return false;
     if (typeof value === "string") return value.trim() !== "";
     return value !== undefined && value !== null;
   });
@@ -12,18 +14,7 @@ const hasAddressData = (address) => {
 // Validate a billing or shipping address object against the required schema.
 export const validateAddressPayload = (address, sectionName) => {
   const errors = [];
-  const requiredFields = [
-    "firstName",
-    "lastName",
-    "address1",
-    "district",
-    "city",
-    "state",
-    "postcode",
-    "country",
-    "email",
-    "phone",
-  ];
+  const requiredFields = ["firstName", "address1", "district"];
 
   if (!address || typeof address !== "object") {
     return [];
@@ -39,6 +30,9 @@ export const validateAddressPayload = (address, sectionName) => {
       errors.push(`${sectionName}.${field} is required`);
     }
   });
+  if (address.phone && !isValidBdPhone(address.phone)) {
+    errors.push(`${sectionName}.phone: ${BD_PHONE_ERROR}`);
+  }
 
   return errors;
 };
@@ -72,9 +66,12 @@ export const validateMemberPayload = (payload, billingInfo, shippingInfo) => {
 // Normalize an address object by trimming string fields and removing nullish values.
 export const sanitizeInfo = (info) => {
   if (!info || typeof info !== "object") return {};
-  return Object.entries(info).reduce((acc, [key, value]) => {
+  const clean = Object.entries(info).reduce((acc, [key, value]) => {
     if (value === undefined || value === null) return acc;
     acc[key] = typeof value === "string" ? value.trim() : value;
     return acc;
   }, {});
+  if (clean.phone) clean.phone = toLocalBdPhone(clean.phone);
+  if (clean.district) clean.city = clean.district;
+  return clean;
 };
