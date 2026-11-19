@@ -57,7 +57,7 @@ export const listLogs = async (req, res, next) => {
 // Get top 10 notification logs and total unread count
 export const getNotificationLogs = async (req, res, next) => {
   try {
-    const filter = { active: true, type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup", "supportTicket"] } };
+    const filter = { active: true, type: { $in: ["newOrder", "contactMessage", "backup", "supportTicket", "newMember"] } };
 
     const [logs, unreadCount] = await Promise.all([
       LogModel.find(filter).sort({ createdAt: -1 }).limit(10).lean(),
@@ -131,7 +131,7 @@ export const markLogsRead = async (req, res, next) => {
         ),
       };
     } else {
-      filter.type = { $in: ["newOrder", "contactMessage", "webmailMessage", "backup", "supportTicket"] };
+      filter.type = { $in: ["newOrder", "contactMessage", "backup", "supportTicket", "newMember"] };
       filter.readStatus = false;
     }
 
@@ -141,7 +141,7 @@ export const markLogsRead = async (req, res, next) => {
 
     const unreadCount = await LogModel.countDocuments({
       active: true,
-      type: { $in: ["newOrder", "contactMessage", "webmailMessage", "backup", "supportTicket"] },
+      type: { $in: ["newOrder", "contactMessage", "backup", "supportTicket", "newMember"] },
       readStatus: false,
     });
     broadcastNotificationReadState(unreadCount).catch((err) => {

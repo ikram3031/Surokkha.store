@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight, DatabaseBackup, LifeBuoy, Rocket } from 'lucide-react';
+import { Bell, ShoppingBag, Mail, CheckCheck, Clock, ArrowRight, DatabaseBackup, LifeBuoy, Rocket, UserPlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -43,12 +43,19 @@ export const NotificationBell = () => {
               queryClient.invalidateQueries({ queryKey: ['notification-logs'] });
               queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
               queryClient.invalidateQueries({ queryKey: ['orders'] });
+              if (msg.data?.log?.type === 'newMember') {
+                queryClient.invalidateQueries({ queryKey: ['members'] });
+                queryClient.invalidateQueries({ queryKey: ['registered-members'] });
+              }
               toast.info(msg.data?.log?.description || 'New order placed!');
             } else if (msg.event === 'SUPPORT_TICKET_UPDATED') {
               // Plexivia changed a ticket: the Support Desk page refreshes itself
               window.dispatchEvent(new CustomEvent('support:updated', { detail: msg.data }));
             } else if (msg.event === 'NOTIFICATION_READ_UPDATE') {
               queryClient.invalidateQueries({ queryKey: ['notification-logs'] });
+            } else if (msg.event === 'WEBMAIL_UNREAD_UPDATE') {
+              // Feeds the sidebar Webmail badge; webmail has no bell notification
+              queryClient.setQueryData(['webmail-unread'], { unreadCount: Number(msg.data?.unreadCount) || 0 });
             }
           } catch (_) {}
         };
@@ -126,6 +133,8 @@ export const NotificationBell = () => {
       navigate('/settings/r2-storage');
     } else if (log.type === 'supportTicket') {
       navigate('/dashboard/tools/support');
+    } else if (log.type === 'newMember') {
+      navigate('/dashboard/registered-members');
     } else {
       navigate('/dashboard/orders');
     }
@@ -205,6 +214,7 @@ export const NotificationBell = () => {
               const isBackup = log.type === 'backup';
               const isSupport = log.type === 'supportTicket';
               const isDeploy = log.type === 'deploy';
+              const isNewMember = log.type === 'newMember';
               const backupFailed = isBackup && /FAILED/.test(log.description || '');
 
               return (
@@ -228,6 +238,8 @@ export const NotificationBell = () => {
                             ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
                             : isDeploy
                             ? 'bg-violet-500/15 text-violet-600 dark:text-violet-400'
+                            : isNewMember
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                             : 'bg-primary/15 text-primary'
                         : 'bg-muted text-muted-foreground'
                     }`}
@@ -240,6 +252,8 @@ export const NotificationBell = () => {
                       <LifeBuoy className="h-4 w-4" />
                     ) : isDeploy ? (
                       <Rocket className="h-4 w-4" />
+                    ) : isNewMember ? (
+                      <UserPlus className="h-4 w-4" />
                     ) : (
                       <ShoppingBag className="h-4 w-4" />
                     )}

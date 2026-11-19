@@ -3,10 +3,9 @@ import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
 import { logger } from "../config/logger.js";
 import { EmailMessageModel } from "../models/emailMessage.model.js";
-import { LogModel } from "../models/log.model.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { decryptText } from "../utils/crypto.util.js";
-import { broadcastLiveNotification } from "../websocket.js";
+import { broadcastWebmailUnread } from "../utils/webmailUnread.js";
 import { getSmtpTransport } from "./smtpConfig.service.js";
 
 let isSyncing = false;
@@ -159,24 +158,12 @@ const parseAndSaveMessage = async (msgSource, uid, folder, flags = []) => {
       { upsert: true, new: true }
     );
 
-    // System messages (e.g. deploy reports, inbox copies) carry X-Surokkha-System so no duplicate bell or forward
+    // Webmail has no bell notification; the sidebar badge shows the Inbox unread count instead
+    if (isNewIncoming) broadcastWebmailUnread();
+
+    // System messages (e.g. deploy reports, inbox copies) carry X-Surokkha-System so they are never forwarded
     if (isNewIncoming && !isBounceOrDaemonNotification(from.address, subject) && !parsed.headers?.has("x-surokkha-system")) {
       try {
-        const senderName = from.name || from.address;
-        const log = await LogModel.create({
-          type: "webmailMessage",
-          typeDid: "113",
-          description: `New email from ${senderName}: "${subject.slice(0, 45)}"`,
-          readStatus: false,
-          active: true,
-          createdBy: "webmail-sync",
-          updatedBy: "webmail-sync",
-        });
-
-        broadcastLiveNotification(log).catch((wsErr) => {
-          logger.error({ wsErr }, "WebSocket broadcast error on incoming webmail");
-        });
-
         const { transport: forwardTransport, config: smtp } = await getSmtpTransport();
         const senderMailbox = smtp.fromEmail || smtp.user;
 

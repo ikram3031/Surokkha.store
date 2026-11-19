@@ -9,6 +9,7 @@ import {
   deleteWebmailMessage,
   getWebmailFolders,
   getWebmailMailboxes,
+  getWebmailUnread,
 } from "../controllers/WebmailController.js";
 import { authenticateToken, authorizeRoles, MANAGERS } from "../../common/middlewares/auth.middleware.js";
 
@@ -20,6 +21,7 @@ const adminAuth = [
 ];
 
 webmailRouter.get("/mailboxes", ...adminAuth, getWebmailMailboxes);
+webmailRouter.get("/unread-count", ...adminAuth, getWebmailUnread);
 webmailRouter.get("/folders", ...adminAuth, getWebmailFolders);
 webmailRouter.get("/messages", ...adminAuth, listWebmailMessages);
 webmailRouter.post("/messages/batch", ...adminAuth, batchWebmailAction);

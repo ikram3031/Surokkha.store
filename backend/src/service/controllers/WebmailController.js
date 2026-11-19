@@ -5,6 +5,17 @@ import { EmailMessageModel } from "../../common/models/emailMessage.model.js";
 import { ContactMessageModel } from "../../common/models/contactMessage.model.js";
 import { StoreSettingsModel } from "../../common/models/storeSettings.model.js";
 import { logger } from "../../common/config/logger.js";
+import { getWebmailUnreadCount, broadcastWebmailUnread } from "../../common/utils/webmailUnread.js";
+
+// Returns the Inbox unread count for the dashboard sidebar Webmail badge
+export const getWebmailUnread = async (req, res, next) => {
+  try {
+    const unreadCount = await getWebmailUnreadCount();
+    return res.json({ status: true, data: { unreadCount } });
+  } catch (err) {
+    next(err);
+  }
+};
 import {
   syncAllMailFolders,
   appendEmailToSentFolder,
@@ -102,6 +113,7 @@ export const getWebmailMessageById = async (req, res, next) => {
     if (!message.isRead) {
       message.isRead = true;
       await message.save();
+      broadcastWebmailUnread();
     }
 
     let thread = [];
@@ -271,6 +283,8 @@ export const updateMessageFlags = async (req, res, next) => {
       });
     }
 
+    broadcastWebmailUnread();
+
     return res.json({
       status: true,
       message: "Message flags updated.",
@@ -316,6 +330,7 @@ export const batchWebmailAction = async (req, res, next) => {
     }
 
     await EmailMessageModel.updateMany(filter, { $set: update });
+    broadcastWebmailUnread();
 
     return res.json({
       status: true,
@@ -350,6 +365,7 @@ export const deleteWebmailMessage = async (req, res, next) => {
       msg.active = false;
       await msg.save();
     }
+    broadcastWebmailUnread();
 
     return res.json({
       status: true,

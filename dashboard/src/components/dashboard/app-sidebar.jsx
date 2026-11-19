@@ -1,5 +1,6 @@
 import * as React from "react"
-import { resolveImageUrl } from "@/lib/api-client"
+import { resolveImageUrl, apiClient } from "@/lib/api-client"
+import { useQuery } from "@tanstack/react-query"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
@@ -174,14 +175,29 @@ export const NavSub = ({ to, active, icon: Icon, iconClass = "", children, class
 )
 
 // Top-level single link entry
-export const NavLink = ({ to, active, icon: Icon, label }) => (
-  <SidebarMenuItem>
-    <SidebarMenuButton isActive={active} tooltip={label} render={<Link to={to} />} className={navItemClass}>
-      <Icon className="h-4 w-4" />
-      <span>{label}</span>
-    </SidebarMenuButton>
-  </SidebarMenuItem>
-)
+export const NavLink = ({ to, active, icon: Icon, label, badge = 0 }) => {
+  const badgeText = badge > 99 ? "99+" : String(badge)
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton isActive={active} tooltip={label} render={<Link to={to} />} className={navItemClass}>
+        <Icon className="h-4 w-4" />
+        <span>{label}</span>
+        {badge > 0 && (
+          <>
+            {/* Count pill beside the label when the sidebar is expanded */}
+            <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-bold leading-none text-neutral-900 group-data-[collapsible=icon]:hidden">
+              {badgeText}
+            </span>
+            {/* Small dot-count on the icon corner when the sidebar is collapsed */}
+            <span className="absolute right-0.5 top-0.5 hidden h-4 min-w-4 items-center justify-center rounded-full bg-white px-1 text-[9px] font-bold leading-none text-neutral-900 group-data-[collapsible=icon]:inline-flex">
+              {badgeText}
+            </span>
+          </>
+        )}
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
 
 // Sub-section caption inside a submenu
 export const SubLabel = ({ children }) => (
@@ -225,6 +241,15 @@ export const AppSidebar = ({ ...props }) => {
   const showOverview = isAllowed("overview")
   const showWebmail = isAllowed("webmail") || isAllowed("tools.messages")
   const showSupport = isAllowed("tools.support") || isAllowed("admin")
+
+  // Inbox unread count for the Webmail badge; live updates arrive over the websocket
+  const { data: webmailUnreadData } = useQuery({
+    queryKey: ["webmail-unread"],
+    queryFn: async () => (await apiClient.get("/api/v1/webmail/unread-count")).data?.data,
+    enabled: Boolean(user) && showWebmail,
+    refetchInterval: 120000,
+  })
+  const webmailUnread = Number(webmailUnreadData?.unreadCount) || 0
   const showOrders = isAllowed("orders")
   const showCustomers = isAllowed("customers") || isAllowed("members") || isAllowed("admin")
   const showReviews = isAllowed("products.reviews") || isAllowed("reviews")
@@ -346,7 +371,7 @@ export const AppSidebar = ({ ...props }) => {
             <NavLink to="/dashboard" active={pathname === "/dashboard"} icon={LayoutDashboard} label={t("nav.overview", "Overview")} />
           )}
           {showWebmail && (
-            <NavLink to="/dashboard/tools/messages" active={pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"} icon={Mail} label={t("nav.webmail", "Webmail")} />
+            <NavLink to="/dashboard/tools/messages" active={pathname.startsWith("/dashboard/tools/messages") || pathname === "/dashboard/messages"} icon={Mail} label={t("nav.webmail", "Webmail")} badge={webmailUnread} />
           )}
           {showSupport && (
             <NavLink to="/dashboard/tools/support" active={pathname.startsWith("/dashboard/tools/support")} icon={LifeBuoy} label={t("nav.support_desk", "Support Desk")} />
