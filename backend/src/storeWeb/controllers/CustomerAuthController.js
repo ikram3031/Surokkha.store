@@ -6,6 +6,7 @@ import { logger } from "../../common/config/logger.js";
 import { comparePassword, hashPassword } from "../../common/utils/password.js";
 import { allowHit, clearHits } from "../../common/utils/rateLimit.js";
 import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
+import { notifyMemberRegistered } from "../../common/utils/memberNotification.js";
 import { newUserFreeDeliveryFor } from "../../common/utils/promo.js";
 import { OrderModel } from "../../common/models/order.model.js";
 import { applyMemberBonus } from "../../common/services/memberBonus.service.js";
@@ -156,6 +157,7 @@ export const verifyEmail = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "That code is invalid or has expired. Request a new one." });
     }
 
+    const wasPending = Boolean(member.registrationPending || !member.isEmailVerified);
     member.isEmailVerified = true;
     member.emailVerifiedAt = new Date();
     member.registrationPending = false;
@@ -163,6 +165,7 @@ export const verifyEmail = async (req, res, next) => {
     member.emailOtpExpiresAt = undefined;
     await member.save();
     clearHits(`verify:${email}`);
+    if (wasPending) notifyMemberRegistered(member);
     const bonusApplied = await applyMemberBonus(email).catch(() => null);
     res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member), bonusApplied } });
   } catch (error) {

@@ -7,6 +7,7 @@ import crypto from "node:crypto";
 import { env } from "../../common/config/env.js";
 import { logger } from "../../common/config/logger.js";
 import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDelivery.js";
+import { notifyMemberRegistered } from "../../common/utils/memberNotification.js";
 import {
   sanitizeInfo,
   validateAddressPayload,
@@ -446,6 +447,7 @@ export const registerMember = async (req, res, next) => {
     }
 
     const tokenBundle = await issueMemberTokens(member);
+    notifyMemberRegistered(member);
 
     return res.status(201).json({
       status: "success",
