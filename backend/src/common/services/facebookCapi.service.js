@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
+import { toIntlBdPhone } from "../utils/phone.js";
 import crypto from "crypto";
 import { env } from "../config/env.js";
 import { config as clientConfig } from "../config/index.js";
 import { StoreSettingsModel } from "../models/storeSettings.model.js";
 import { MemberModel } from "../models/member.model.js";
 import { ProductModel } from "../models/product.model.js";
+import { dispatchCapiEvent, recordCapiSkip } from "./metaCapiLog.service.js";
 
 // Computes SHA-256 hash for CAPI user data normalization
 const sha256 = (value) => {
@@ -14,21 +16,8 @@ const sha256 = (value) => {
   return crypto.createHash("sha256").update(cleanVal).digest("hex");
 };
 
-// Normalizes Bangladeshi phone numbers into international format
-const normalizePhone = (phone = "") => {
-  if (!phone) return "";
-  let digits = String(phone).replace(/\D/g, "");
-  if (digits.startsWith("880")) {
-    return digits;
-  }
-  if (digits.startsWith("0")) {
-    return `88${digits}`;
-  }
-  if (digits.length === 10) {
-    return `880${digits}`;
-  }
-  return digits;
-};
+// Bangladeshi phone as 8801XXXXXXXXX digits for hashed matching
+const normalizePhone = toIntlBdPhone;
 
 // Meta rejects the whole event unless content_category is a string; storefront sends brand/category objects or arrays
 const toCategoryString = (value) => {
@@ -279,7 +268,9 @@ const recentServerPurchases = new Map();
 const PURCHASE_DEDUPLICATION_WINDOW_MS = 60 * 1000;
 
 // Sends server-side Purchase event to Meta Conversions API asynchronously
-export const sendServerPurchaseEvent = async (order, req = null) => {
+export const sendServerPurchaseEvent = async (order, req = null, options = {}) => {
+  const eventName = options.eventName || "Purchase";
+  const eventIdPrefix = options.eventIdPrefix || "";
   try {
     // Strictly prevent in-store walk-in counter sales or manual orders from being sent to Meta CAPI
     const isInstore =
@@ -305,21 +296,26 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       }
     }
 
-    if (recentServerPurchases.has(resolvedOrderNumber)) {
-      console.log(`[Meta CAPI Server] Deduplication guard: Purchase event for order ${resolvedOrderNumber} was already dispatched recently. Skipping.`);
+    const dedupKey = `${eventName}:${resolvedOrderNumber}`;
+    if (recentServerPurchases.has(dedupKey)) {
+      console.log(`[Meta CAPI Server] Deduplication guard: ${eventName} event for order ${resolvedOrderNumber} was already dispatched recently. Skipping.`);
       return;
     }
-    recentServerPurchases.set(resolvedOrderNumber, now);
+    recentServerPurchases.set(dedupKey, now);
 
-    const metaConfig = await getMetaPixelConfig(order, req);
+    const site = isStoreRequest(req ? order : order?.siteKey, req) ? "store" : "shop";
+    const eventId = `${eventIdPrefix}${resolvedOrderNumber}`;
+    const metaConfig = await getMetaPixelConfig(site);
+    const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
+    const skipBase = { eventName, eventId, orderNumber: resolvedOrderNumber, site, pixelId: pixelId || "" };
 
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) {
+      await recordCapiSkip({ ...skipBase, reason: `Conversions API is turned off for the ${site} pixel in Settings → Meta Pixel.` });
       return;
     }
 
-    const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
-
     if (!pixelId || !accessToken) {
+      await recordCapiSkip({ ...skipBase, reason: `The ${site} pixel ID or access token is missing in Settings → Meta Pixel.`, alert: true });
       return;
     }
 
@@ -328,11 +324,12 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    const clientIp = extractClientIp(req);
-    const clientUserAgent = req?.headers?.["user-agent"] || "";
+    const tracking = order.tracking || {};
+    const clientIp = extractClientIp(req) || tracking.ipAddress || "";
+    const clientUserAgent = req?.headers?.["user-agent"] || tracking.userAgent || "";
 
-    const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || "";
-    const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || "";
+    const fbp = req?.body?.fbp || req?.query?.fbp || getCookie(req, "_fbp") || tracking.fbp || "";
+    const fbc = req?.body?.fbc || req?.query?.fbc || getCookie(req, "_fbc") || tracking.fbc || "";
     const fbLoginId = extractFbLoginId(order, req);
 
     const rawEmail = (
@@ -369,7 +366,7 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       ...(fbLoginId ? { fb_login_id: fbLoginId } : {}),
     };
     const externalIds = resolveExternalIds(
-      { externalId: order.externalId },
+      { externalId: order.externalId || tracking.visitorId },
       req,
       order.member,
       order.customerDid,
@@ -479,7 +476,10 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
 
     const items = (Array.isArray(order.items) ? order.items : []).filter(i => i.itemType !== 'item');
 
-    if (items.length === 0) return;
+    if (items.length === 0) {
+      await recordCapiSkip({ ...skipBase, reason: "The order has no product lines to report." });
+      return;
+    }
     const productDids = items.map((i) => i.productDid).filter(Boolean);
     const productNames = items.map((i) => i.name).filter(Boolean);
     const validMongoIds = items.map((i) => i.productId).filter((id) => mongoose.Types.ObjectId.isValid(id));
@@ -532,11 +532,11 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
     };
 
     const eventPayload = {
-      event_name: "Purchase",
+      event_name: eventName,
       event_time: Math.floor(Date.now() / 1000),
-      event_id: resolvedOrderNumber,
+      event_id: eventId,
       action_source: "website",
-      event_source_url: req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || undefined,
+      event_source_url: req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || tracking.pageUrl || undefined,
       user_data: userData,
       custom_data: customData,
     };
@@ -547,34 +547,27 @@ export const sendServerPurchaseEvent = async (order, req = null) => {
       ...(testEventCode ? { test_event_code: testEventCode } : {}),
     };
 
-    const endpoint = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
-
-    // Retry transient failures (network / 5xx / rate limit) so the server copy isn't silently lost
-    const send = async (attempt = 1) => {
-      try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestBody),
-        });
-        if (res.ok) {
-          console.log(`[Meta CAPI Server] Purchase sent: order=${resolvedOrderNumber} pixel=${pixelId} value=${orderTotalAmount}`);
-          return;
-        }
-        const errData = await res.text();
-        console.warn(`[Meta CAPI Server] Purchase response error (attempt ${attempt}):`, errData);
-        if ((res.status >= 500 || res.status === 429) && attempt < 3) {
-          setTimeout(() => send(attempt + 1), attempt * 3000);
-        }
-      } catch (err) {
-        console.warn(`[Meta CAPI Server] Purchase network error (attempt ${attempt}):`, err.message);
-        if (attempt < 3) setTimeout(() => send(attempt + 1), attempt * 3000);
-      }
-    };
-    send();
+    dispatchCapiEvent({ eventName, eventId, orderNumber: resolvedOrderNumber, site, pixelId, accessToken, requestBody }).catch((err) =>
+      console.warn(`[Meta CAPI Server] ${eventName} dispatch exception:`, err.message),
+    );
   } catch (err) {
     console.warn("[Meta CAPI Server] Request builder exception:", err.message);
+    await recordCapiSkip({
+      eventName,
+      eventId: `${eventIdPrefix}${order?.orderNumber || ""}`,
+      orderNumber: String(order?.orderNumber || ""),
+      site: order?.siteKey === "store" ? "store" : "shop",
+      reason: `The event could not be built: ${err.message}`,
+      alert: true,
+    }).catch(() => null);
   }
+};
+
+// Sends the server-only ConfirmedOrder event when staff move a website order to processing
+export const sendServerConfirmedOrderEvent = (order) => {
+  const isWebsiteOrder = order && (order.orderType || "online") === "online" && !String(order.orderNumber || "").startsWith("CO");
+  if (!isWebsiteOrder) return;
+  return sendServerPurchaseEvent(order, null, { eventName: "ConfirmedOrder", eventIdPrefix: "confirmed_" });
 };
 
 // Sends server-side ViewContent event to Meta Conversions API asynchronously with IPv6 preservation

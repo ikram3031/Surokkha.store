@@ -28,13 +28,25 @@ const { Types } = mongoose;
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
 import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
 
-import { sendServerPurchaseEvent } from '../../common/services/facebookCapi.service.js';
+import { sendServerPurchaseEvent, sendServerConfirmedOrderEvent } from '../../common/services/facebookCapi.service.js';
 import { getSmtpTransport, getWebmailAddress } from '../../common/services/smtpConfig.service.js';
 import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
 import { upsertCustomerFromOrder, reconcileCustomerForOrder, isLiveOrder } from '../../common/services/customer.service.js';
 import { syncCourierBill } from '../services/pathaoBill.service.js';
 import { syncOrderStock, releaseStockForDeletedOrder } from '../../common/services/stock.service.js';
+
+// Sends Meta ConfirmedOrder once per order, claiming it atomically so repeat processing moves never resend
+const dispatchConfirmedOrderEvents = async (orderIds = []) => {
+  for (const id of orderIds) {
+    const claimed = await OrderModel.findOneAndUpdate(
+      { _id: id, status: 'processing', orderType: 'online', metaConfirmedSentAt: null },
+      { $set: { metaConfirmedSentAt: new Date() } },
+      { new: true },
+    ).lean().catch(() => null);
+    if (claimed) sendServerConfirmedOrderEvent(claimed);
+  }
+};
 
 // Create a new order from checkout payload and sync related payment/member data.
 
@@ -542,6 +554,9 @@ export const updateOrder = async (req, res, next) => {
     }
 
     notifyOrderStatusChange(order, existingOrder.status);
+    if (order.status === 'processing' && existingOrder.status !== 'processing') {
+      await dispatchConfirmedOrderEvents([order._id]);
+    }
 
     await syncOrderStock(order, {
       rebuild: Boolean(allowedUpdates.items),
@@ -820,6 +835,9 @@ export const bulkUpdateOrders = async (req, res, next) => {
           notifyOrderStatusChange({ ...ord, ...updateFields }, ord.status);
           await syncOrderStock(ord, { actor: req.user?.name || req.user?.did || 'staff' });
         }
+      }
+      if (updateFields.status === 'processing') {
+        await dispatchConfirmedOrderEvents(orders.filter((ord) => ord.status !== 'processing').map((ord) => ord._id));
       }
     }
 

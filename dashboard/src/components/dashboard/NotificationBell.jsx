@@ -127,7 +127,7 @@ export const NotificationBell = () => {
       }
     }
     setIsOpen(false);
-    if (log.type === 'contactMessage' || log.type === 'webmailMessage' || log.type === 'deploy') {
+    if (log.type === 'contactMessage' || log.type === 'webmailMessage' || log.type === 'deploy' || log.type === 'error') {
       navigate('/dashboard/tools/messages');
     } else if (log.type === 'backup') {
       navigate('/settings/r2-storage');

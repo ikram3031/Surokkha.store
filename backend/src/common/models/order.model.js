@@ -182,6 +182,8 @@ const orderSchema = new Schema(
     courier: { type: courierInfoSchema, default: () => ({}) },
     ipAddress: { type: String, trim: true, default: null, index: true },
     fb_login_id: { type: String, trim: true, default: null, index: true },
+    // Set once the Meta ConfirmedOrder event has been dispatched so it never repeats
+    metaConfirmedSentAt: { type: Date, default: null },
     // Storefront checkout fingerprint: browser visitor id plus the device it was placed from
     tracking: {
       type: new Schema(

@@ -1,4 +1,5 @@
 import { initPathaoSyncScheduler, stopPathaoSyncScheduler } from "./schedulers/pathaoSync.scheduler.js";
+import { initMetaCapiRetryScheduler, stopMetaCapiRetryScheduler } from "./schedulers/metaCapiRetry.scheduler.js";
 import { createServiceApp } from "./app.js";
 import { connectDatabase } from "../common/database/index.js";
 import { env } from "../common/config/env.js";
@@ -31,6 +32,7 @@ export const bootstrapService = async () => {
   initHeartbeatScheduler();
   initBackupScheduler();
   initPathaoSyncScheduler();
+  initMetaCapiRetryScheduler();
 
   import("../common/services/imapSync.service.js")
     .then(({ startImapIdleListener }) => {
@@ -47,6 +49,7 @@ export const bootstrapService = async () => {
     stopMediaSchedulers();
     stopBackupScheduler();
     stopPathaoSyncScheduler();
+    stopMetaCapiRetryScheduler();
     const handler = createShutdownHandler(server);
     return handler(signal);
   };
