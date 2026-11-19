@@ -40,7 +40,7 @@ import { syncOrderStock, releaseStockForDeletedOrder } from '../../common/servic
 const dispatchConfirmedOrderEvents = async (orderIds = []) => {
   for (const id of orderIds) {
     const claimed = await OrderModel.findOneAndUpdate(
-      { _id: id, status: 'processing', orderType: 'online', metaConfirmedSentAt: null },
+      { _id: id, status: 'processing', metaConfirmedSentAt: null, $or: [{ orderType: 'online' }, { orderType: 'custom', reportToMeta: true }] },
       { $set: { metaConfirmedSentAt: new Date() } },
       { new: true },
     ).lean().catch(() => null);
@@ -187,6 +187,10 @@ export const createOrder = async (req, res, next) => {
 
     // Safely trigger non-blocking email notifications for Customer and Admin
     sendOrderEmailsAsynchronously(createdOrder, { actorName: req.user?.name || "" });
+
+    if (createdOrder.reportToMeta && createdOrder.status === 'processing') {
+      await dispatchConfirmedOrderEvents([createdOrder._id]);
+    }
 
     const isInstoreOrder =
       payload.orderType === "instore" ||

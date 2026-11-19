@@ -535,6 +535,7 @@ const NewCustomOrderPage = () => {
 
   // Order Notes & Payment
   const [orderNotes, setOrderNotes] = useState("");
+  const [reportToMeta, setReportToMeta] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [paidAmount, setPaidAmount] = useState("");
 
@@ -923,6 +924,7 @@ const NewCustomOrderPage = () => {
         shippingInfo,
         shipToDifferentAddress: shipToDifferent,
         orderNotes: orderNotes.trim(),
+        reportToMeta,
         giftWrap: false,
         items: cart.map((item) => ({
           name: item.name,
@@ -1048,6 +1050,7 @@ const NewCustomOrderPage = () => {
     setDiscountValue("");
     setPaidAmount("");
     setOrderNotes("");
+    setReportToMeta(false);
   };
 
   return (
@@ -2001,6 +2004,24 @@ const NewCustomOrderPage = () => {
               placeholder="e.g. Call before delivery, confidential packaging required..."
               className="w-full text-xs bg-background border border-input rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition resize-y"
             />
+          </div>
+
+          {/* Report to Meta (inbox / catalog orders) */}
+          <div className="bg-card border rounded-2xl p-5 shadow-xs">
+            <label className="flex items-start gap-2.5 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={reportToMeta}
+                onChange={(e) => setReportToMeta(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary accent-primary cursor-pointer"
+              />
+              <span>
+                <span className="block font-semibold uppercase tracking-wider">Report to Meta as a confirmed order</span>
+                <span className="block text-[11px] text-muted-foreground mt-0.5">
+                  For orders from the Facebook inbox or catalog. Sends one ConfirmedOrder event (server only, no Purchase) once the order is processing.
+                </span>
+              </span>
+            </label>
           </div>
         </div>
 

@@ -184,6 +184,8 @@ const orderSchema = new Schema(
     fb_login_id: { type: String, trim: true, default: null, index: true },
     // Set once the Meta ConfirmedOrder event has been dispatched so it never repeats
     metaConfirmedSentAt: { type: Date, default: null },
+    // Staff opted this custom (inbox / catalog) order into the Meta ConfirmedOrder signal
+    reportToMeta: { type: Boolean, default: false },
     // Storefront checkout fingerprint: browser visitor id plus the device it was placed from
     tracking: {
       type: new Schema(

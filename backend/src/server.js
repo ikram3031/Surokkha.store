@@ -11,6 +11,7 @@ import { initMediaSchedulers, stopMediaSchedulers } from "./common/schedulers/me
 import { initHeartbeatScheduler, stopHeartbeatScheduler } from "./common/schedulers/heartbeat.scheduler.js";
 import { loadSiteConfigOverrides, startSiteConfigRefresh } from "./common/services/siteConfig.service.js";
 import { initBackupScheduler, stopBackupScheduler } from "./common/schedulers/backupScheduler.js";
+import { initMetaCapiRetryScheduler, stopMetaCapiRetryScheduler } from "./service/schedulers/metaCapiRetry.scheduler.js";
 
 // Bootstraps backend server instances (Storefront on 4001, Service on 4002, or both in dual mode)
 const bootstrap = async () => {
@@ -48,6 +49,7 @@ const bootstrap = async () => {
     initMediaSchedulers();
     initHeartbeatScheduler();
     initBackupScheduler();
+    initMetaCapiRetryScheduler();
 
     import("./common/services/imapSync.service.js")
       .then(({ startImapIdleListener }) => {
@@ -79,6 +81,7 @@ const bootstrap = async () => {
     initMediaSchedulers();
     initHeartbeatScheduler();
     initBackupScheduler();
+    initMetaCapiRetryScheduler();
 
     import("./common/services/imapSync.service.js")
       .then(({ startImapIdleListener }) => {
@@ -95,6 +98,7 @@ const bootstrap = async () => {
     stopHeartbeatScheduler();
     stopMediaSchedulers();
     stopBackupScheduler();
+    stopMetaCapiRetryScheduler();
     servers.forEach((srv) => {
       const handler = createShutdownHandler(srv);
       handler(signal);

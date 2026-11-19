@@ -271,6 +271,7 @@ const PURCHASE_DEDUPLICATION_WINDOW_MS = 60 * 1000;
 export const sendServerPurchaseEvent = async (order, req = null, options = {}) => {
   const eventName = options.eventName || "Purchase";
   const eventIdPrefix = options.eventIdPrefix || "";
+  const actionSource = options.actionSource || "website";
   try {
     // Strictly prevent in-store walk-in counter sales or manual orders from being sent to Meta CAPI
     const isInstore =
@@ -535,8 +536,8 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
       event_name: eventName,
       event_time: Math.floor(Date.now() / 1000),
       event_id: eventId,
-      action_source: "website",
-      event_source_url: req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || tracking.pageUrl || undefined,
+      action_source: actionSource,
+      event_source_url: actionSource !== "website" ? undefined : req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || tracking.pageUrl || undefined,
       user_data: userData,
       custom_data: customData,
     };
@@ -563,11 +564,17 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
   }
 };
 
-// Sends the server-only ConfirmedOrder event when staff move a website order to processing
+// Sends the server-only ConfirmedOrder event for a website order, or a custom inbox order staff opted in, once it is processing
 export const sendServerConfirmedOrderEvent = (order) => {
-  const isWebsiteOrder = order && (order.orderType || "online") === "online" && !String(order.orderNumber || "").startsWith("CO");
-  if (!isWebsiteOrder) return;
-  return sendServerPurchaseEvent(order, null, { eventName: "ConfirmedOrder", eventIdPrefix: "confirmed_" });
+  if (!order) return;
+  const isWebsiteOrder = (order.orderType || "online") === "online" && !String(order.orderNumber || "").startsWith("CO");
+  const isReportedCustomOrder = order.orderType === "custom" && order.reportToMeta === true;
+  if (!isWebsiteOrder && !isReportedCustomOrder) return;
+  return sendServerPurchaseEvent(order, null, {
+    eventName: "ConfirmedOrder",
+    eventIdPrefix: "confirmed_",
+    actionSource: isReportedCustomOrder ? "chat" : "website",
+  });
 };
 
 // Sends server-side ViewContent event to Meta Conversions API asynchronously with IPv6 preservation

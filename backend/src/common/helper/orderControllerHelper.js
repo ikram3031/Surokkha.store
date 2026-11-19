@@ -242,6 +242,7 @@ export const buildOrderDocument = async (payload, req = null) => {
     couponCode: payload.couponCode ? String(payload.couponCode).trim().toUpperCase() : null,
     orderNotes: normalizeText(payload.orderNotes || payload.notes || '').slice(0, 1000),
     orderType: resolvedOrderType,
+    reportToMeta: isCustom && payload.reportToMeta === true,
     items: await normalizeOrderItems(payload.items),
     totals: {
       subtotal: Number(payload.subtotal || payload.subTotal || 0),
