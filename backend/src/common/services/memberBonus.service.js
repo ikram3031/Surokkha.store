@@ -19,21 +19,9 @@ export const offerMemberBonus = async (order) => {
     const email = String(order?.billingInfo?.email || "").trim().toLowerCase();
     if (!EMAIL_RE.test(email) || email.includes("instore@")) return null;
 
-    let member = await MemberModel.findOne({ email });
+    // Checkout no longer creates a member; the account is made only when the customer claims the bonus
+    const member = await MemberModel.findOne({ email }).lean();
     if (member?.isEmailVerified && !member.registrationPending) return null; // already a member
-
-    if (!member) {
-      member = await MemberModel.create({
-        name: String(order.billingInfo?.fullName || "Customer").trim().slice(0, 80) || "Customer",
-        email,
-        phone: String(order.billingInfo?.phone || "").trim(),
-        // Random password nobody knows: the customer sets their own with the emailed code
-        passwordHash: await hashPassword(crypto.randomBytes(24).toString("hex")),
-        isEmailVerified: false,
-        registrationPending: false,
-        createdFromCheckout: true,
-      });
-    }
 
     const amount = memberBonusAmount(order.totals?.subtotal);
     if (amount <= 0) return null;
@@ -44,6 +32,29 @@ export const offerMemberBonus = async (order) => {
     console.warn("[Member Bonus] could not offer bonus:", err.message);
     return null;
   }
+};
+
+// The customer asked for a claim code: create their (still unverified) account from the order that
+// waits for the bonus. Returns the member, or null when no such order exists.
+export const createClaimMember = async (email) => {
+  const clean = String(email || "").trim().toLowerCase();
+  if (!EMAIL_RE.test(clean)) return null;
+  const order = await OrderModel.findOne({
+    "billingInfo.email": clean,
+    "memberBonus.status": "pending",
+    status: "pending",
+  }).sort({ createdAt: -1 }).lean();
+  if (!order) return null;
+  return MemberModel.create({
+    name: String(order.billingInfo?.fullName || "Customer").trim().slice(0, 80) || "Customer",
+    email: clean,
+    phone: String(order.billingInfo?.phone || "").trim(),
+    // Random password nobody knows: the customer sets their own with the emailed code
+    passwordHash: await hashPassword(crypto.randomBytes(24).toString("hex")),
+    isEmailVerified: false,
+    registrationPending: false,
+    createdFromCheckout: true,
+  });
 };
 
 // The email is now verified: take the bonus off this customer's latest order that still waits for it.

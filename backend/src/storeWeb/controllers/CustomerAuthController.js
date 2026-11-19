@@ -9,7 +9,7 @@ import { sendOtpEmail, sendPasswordChangedEmail } from "../../common/utils/otpDe
 import { notifyMemberRegistered } from "../../common/utils/memberNotification.js";
 import { newUserFreeDeliveryFor } from "../../common/utils/promo.js";
 import { OrderModel } from "../../common/models/order.model.js";
-import { applyMemberBonus } from "../../common/services/memberBonus.service.js";
+import { applyMemberBonus, createClaimMember } from "../../common/services/memberBonus.service.js";
 
 // Customer tokens use a secret derived from the staff one, so a customer token can never
 // authenticate against the dashboard/staff APIs (and vice versa).
@@ -270,7 +270,8 @@ export const forgotPassword = async (req, res, next) => {
     if (!EMAIL_RE.test(email)) return res.status(400).json({ status: "error", message: "Please enter a valid email address" });
     if (!allowHit(`forgot:${clientIp(req)}`, { max: 5, windowMs: 15 * 60 * 1000 })) return tooMany(res);
 
-    const member = await MemberModel.findOne({ email });
+    // A checkout customer claiming the member bonus gets their account only now, when they ask for the code
+    const member = (await MemberModel.findOne({ email })) || (await createClaimMember(email).catch(() => null));
     if (member && member.isActive !== false && allowHit(`forgot-email:${email}`, { max: 3, windowMs: 15 * 60 * 1000 })) {
       const otp = String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
       member.emailOtp = otpHash(email, otp);
@@ -327,6 +328,7 @@ export const resetPassword = async (req, res, next) => {
     await member.save();
     clearHits(`reset:${email}`);
     if (!firstVerification) sendPasswordChangedEmail({ toEmail: email, name: member.name, log: logger });
+    else notifyMemberRegistered(member);
     const bonusApplied = await applyMemberBonus(email).catch(() => null);
 
     res.json({ status: "success", data: { customer: publicCustomer(member), accessToken: signToken(member), bonusApplied } });
