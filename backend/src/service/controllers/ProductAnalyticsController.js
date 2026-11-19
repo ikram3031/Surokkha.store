@@ -45,6 +45,23 @@ const rangeOf = (query) => {
   return { from: todayStart, to: new Date(), preset: "today" };
 };
 
+// Same-length window right before the range ("today so far" compares with yesterday up to the same time)
+const previousOf = (range) => {
+  const span = range.to.getTime() - range.from.getTime();
+  return { from: new Date(range.from.getTime() - span - 1), to: new Date(range.from.getTime() - 1) };
+};
+
+// Unique visitors per funnel step across all products
+const stepTotals = async (range) => {
+  const rows = await ProductEventModel.aggregate([
+    { $match: { createdAt: { $gte: range.from, $lte: range.to } } },
+    { $group: { _id: "$eventType", total: { $sum: 1 }, visitors: { $addToSet: "$visitorId" } } },
+    { $project: { total: 1, unique: { $size: { $setDifference: ["$visitors", [""]] } } } },
+  ]);
+  const map = Object.fromEntries(rows.map((r) => [r._id, { total: r.total, unique: r.unique }]));
+  return (type) => map[type] || { total: 0, unique: 0 };
+};
+
 const pct = (num, den) => (den > 0 ? Math.round((num / den) * 1000) / 10 : 0);
 
 // Website orders (online, not cancelled/fake) placed in the range - the real "converted" number
@@ -75,7 +92,7 @@ export const getProductFunnel = async (req, res) => {
       match.$or = [{ productName: rx }, { productKey: rx }];
     }
 
-    const [rows, overallRows, website] = await Promise.all([
+    const [rows, step, website, prevStep, prevWebsite] = await Promise.all([
       ProductEventModel.aggregate([
         { $match: match },
         {
@@ -95,13 +112,10 @@ export const getProductFunnel = async (req, res) => {
           },
         },
       ]),
-      // Unique visitors across all products per step (a visitor who viewed 3 products counts once)
-      ProductEventModel.aggregate([
-        { $match: { createdAt: { $gte: range.from, $lte: range.to } } },
-        { $group: { _id: "$eventType", total: { $sum: 1 }, visitors: { $addToSet: "$visitorId" } } },
-        { $project: { total: 1, unique: { $size: { $setDifference: ["$visitors", [""]] } } } },
-      ]),
+      stepTotals(range),
       countWebsiteOrders(range),
+      stepTotals(previousOf(range)),
+      countWebsiteOrders(previousOf(range)),
     ]);
 
     const byProduct = new Map();
@@ -131,8 +145,6 @@ export const getProductFunnel = async (req, res) => {
       }))
       .sort((a, b) => b.view.total - a.view.total);
 
-    const overall = Object.fromEntries(overallRows.map((r) => [r._id, { total: r.total, unique: r.unique }]));
-    const step = (type) => overall[type] || { total: 0, unique: 0 };
 
     // Funnel steps use unique visitors; "orders" is the real website order count
     const funnel = {
@@ -146,6 +158,15 @@ export const getProductFunnel = async (req, res) => {
         cartToCheckout: pct(step("checkout").unique, step("add_to_cart").unique),
         checkoutToOrder: pct(website.orders, step("checkout").unique),
         viewToOrder: pct(website.orders, step("view").unique),
+      },
+      // Same numbers for the window just before, so the dashboard can show the change
+      previous: {
+        views: prevStep("view"),
+        addToCart: prevStep("add_to_cart"),
+        checkout: prevStep("checkout"),
+        orders: prevWebsite.orders,
+        revenue: prevWebsite.revenue,
+        viewToOrder: pct(prevWebsite.orders, prevStep("view").unique),
       },
     };
 
