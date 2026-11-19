@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/lib/api-client';
-import { Eye, ShoppingCart, CreditCard, PackageCheck, LayoutDashboard } from 'lucide-react';
+import { Eye, ShoppingCart, CreditCard, PackageCheck, Filter } from 'lucide-react';
 import {
   ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend,
@@ -281,7 +281,7 @@ const ProductTable = ({ list, colorFor, onSelect }) => {
   );
 };
 
-export default function AnalyticsOverview() {
+export default function AnalyticsConversion() {
   const { t } = useTranslation();
   const range = useAnalyticsRange();
   const [metric, setMetric] = useState('view');
@@ -305,11 +305,11 @@ export default function AnalyticsOverview() {
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-            <LayoutDashboard className="h-8 w-8" />
-            {t('analytics.overview_title', 'Analytics Overview')}
+            <Filter className="h-8 w-8" />
+            {t('analytics.conversion_title', 'Conversion Details')}
           </h2>
           <p className="text-muted-foreground">
-            {t('analytics.overview_desc', 'How visitors move from viewing a product to placing an order. Data is kept for 90 days.')}
+            {t('analytics.conversion_desc', 'Step-by-step funnel, hour-by-hour trend and every product in detail. Data is kept for 90 days.')}
           </p>
         </div>
         <RangeBar range={range} />

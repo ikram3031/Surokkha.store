@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { LayoutDashboard, Package, Radio } from "lucide-react"
+import { Filter, LayoutDashboard, Package, Radio } from "lucide-react"
 
 import { NavLabel, NavLink } from "./app-sidebar"
 import { WorkspaceSidebar } from "./workspace-sidebar"
@@ -16,6 +16,7 @@ export const AnalyticsSidebar = (props) => {
       <NavLabel>{t("analytics.group_store", "Store")}</NavLabel>
       <NavLink to="/analytics/live" active={pathname.startsWith("/analytics/live")} icon={Radio} label={t("analytics.live", "Live Today")} />
       <NavLink to="/analytics/overview" active={pathname.startsWith("/analytics/overview")} icon={LayoutDashboard} label={t("analytics.overview", "Overview")} />
+      <NavLink to="/analytics/conversion" active={pathname.startsWith("/analytics/conversion")} icon={Filter} label={t("analytics.conversion", "Conversion Details")} />
       <NavLink to="/analytics/products" active={pathname.startsWith("/analytics/products")} icon={Package} label={t("analytics.products", "Product Rankings")} />
     </WorkspaceSidebar>
   )

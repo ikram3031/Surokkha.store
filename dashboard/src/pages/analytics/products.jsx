@@ -7,12 +7,15 @@ import { Package, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { RangeBar, ProductDrawer, METRICS, makeColorFor, useAnalyticsRange } from './shared';
+import { RangeBar, ProductDrawer, METRICS, makeColorFor, useAnalyticsRange, formatMoney } from './shared';
+
+// Gold, silver, bronze for the top three; plain muted badge after that
+const RANK_STYLES = ['bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400', 'bg-slate-200 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300', 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400'];
 
 // Products ranked by one metric: which product got the most views, cart adds, checkouts or purchases
 export default function AnalyticsProducts() {
   const { t } = useTranslation();
-  const range = useAnalyticsRange();
+  const range = useAnalyticsRange('month');
   const [metric, setMetric] = useState('view');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
@@ -76,17 +79,26 @@ export default function AnalyticsProducts() {
           ) : ranked.length === 0 ? (
             <p className="py-10 text-center text-muted-foreground">{t('analytics.no_data', 'No activity in this period yet.')}</p>
           ) : (
-            <div className="divide-y rounded-md border">
+            <div className="divide-y overflow-hidden rounded-md border">
               {ranked.map((p, i) => (
                 <button
                   key={p.productKey}
                   type="button"
                   onClick={() => setSelected(p)}
-                  className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50"
+                  className="flex w-full items-center gap-3 px-3 py-3 text-left hover:bg-muted/50"
                 >
-                  <span className="w-6 shrink-0 text-center text-sm font-semibold tabular-nums text-muted-foreground">{i + 1}</span>
+                  <span className={`flex size-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums ${RANK_STYLES[i] || 'bg-muted text-muted-foreground'}`}>
+                    #{i + 1}
+                  </span>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{p.name}</div>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="truncate text-sm font-medium">{p.name}</span>
+                      {p.purchase.value > 0 && (
+                        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                          {p.purchase.qty || 0} sold · {formatMoney(p.purchase.value)}
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full rounded-full"

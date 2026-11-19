@@ -1060,6 +1060,7 @@ const lazyPage = (loader) => ({
 const analyticsRoutes = [
   { index: true, element: <Navigate to="live" replace /> },
   { path: 'overview', ...lazyPage(() => import('./pages/analytics/overview')) },
+  { path: 'conversion', ...lazyPage(() => import('./pages/analytics/conversion')) },
   { path: 'products', ...lazyPage(() => import('./pages/analytics/products')) },
   { path: 'live', ...lazyPage(() => import('./pages/analytics/live')) },
 ];

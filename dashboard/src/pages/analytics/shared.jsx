@@ -41,8 +41,9 @@ export const formatDateTime = (v) =>
 export const formatTime = (v) => (v ? new Date(v).toLocaleTimeString('en-US', { timeStyle: 'short' }) : '-');
 
 // Date range state shared by the analytics pages. `query` is ready to append to an API URL.
-export const useAnalyticsRange = () => {
-  const [value, setValue] = useState({ preset: 'today', from: null, to: null });
+// Each page picks its own starting preset (rankings make more sense over a month than a single day).
+export const useAnalyticsRange = (defaultPreset = 'today') => {
+  const [value, setValue] = useState({ preset: defaultPreset, from: null, to: null });
   const params = new URLSearchParams({ preset: value.preset });
   if (value.preset === 'custom') {
     params.set('from', value.from);
