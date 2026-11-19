@@ -106,3 +106,12 @@ Every git commit must strictly adhere to the format:
 - **Never** create or keep marketing files inside the codebase repository (`D:\Surokkha.store`). `/marketing` is git-ignored and must never be committed.
 - One subfolder per campaign or product (e.g. `trial-pack-2\`, `smart-pack\`, `website-video\`). Shared brand logos live in `G:\My Drive\Surokkha\marketing\logos\`.
 - Meta ad copy rule: no explicit product-type words (condom, lubricant, gel, ...) in ad copy and banner text.
+
+---
+
+## 10. Working Rules for Every AI Agent (Claude Code, Antigravity, Gemini)
+- **Discuss before implementing**: explain the plan and wait for the user's explicit go-ahead before writing code.
+- **Bangla font**: use **Noto Sans Bengali** for Bangla text. Never Hind Siliguri (its ১ is unreadable).
+- **Meta-safe condom copy**: in ads, blogs and banners never use Dotted / pleasure / sensation words; say "MO Multi-Texture".
+- **Commits**: only when the user asks; format in section 2 (`<LogID>(<type>): desc` + `Category/Why/Purpose` body).
+- **Delegated work**: when Claude Code hands you a task, stay inside the files it names, do not commit or push, and report exactly which files you changed.
