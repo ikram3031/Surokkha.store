@@ -228,6 +228,8 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
   // ---------------------------------------------------------------- single order actions
   const invalidateOrders = (orderId) => {
     queryClient.invalidateQueries({ queryKey: ['orders'] });
+    // The status counts bar lives under a different key, so it must be refreshed with the list
+    queryClient.invalidateQueries({ queryKey: STATUS_COUNTS_KEY });
     if (orderId) queryClient.invalidateQueries({ queryKey: ['order', orderId] });
     queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
   };
@@ -473,6 +475,7 @@ export function useOrderList({ fetchData = true, orderType = 'online' } = {}) {
       } else {
         toast.success(`Pathao sync done: ${result.updated} updated of ${result.checked} orders.`);
         queryClient.invalidateQueries({ queryKey: ['orders'] });
+        queryClient.invalidateQueries({ queryKey: STATUS_COUNTS_KEY });
       }
       pathaoQuery.refetch();
     } catch {
