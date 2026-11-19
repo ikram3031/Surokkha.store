@@ -1,12 +1,5 @@
-import { LogModel } from "../models/log.model.js";
-import { getOwnerEmails } from "./notificationRecipients.js";
-import { getSmtpTransport, getWebmailAddress, copyToWebmailInbox } from "../services/smtpConfig.service.js";
-import { broadcastLiveNotification } from "../websocket.js";
+import { notifyOwners, buildNotificationHtml, rowsToText, formatWhen } from "../services/notification.service.js";
 import { config } from "../config/index.js";
-import { logger } from "../config/logger.js";
-
-const escapeHtml = (value) =>
-  String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const TRIGGER_LABELS = {
   SCHEDULER_CRON: "Daily schedule",
@@ -14,121 +7,46 @@ const TRIGGER_LABELS = {
   MANUAL_TRIGGER: "Started manually",
 };
 
-const formatWhen = (date, timeZone) =>
-  new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: timeZone || "Asia/Dhaka" }).format(date);
-
-// All active Owner accounts (ignoring notification toggle list)
-const resolveRecipients = async () => {
-  try {
-    return await getOwnerEmails();
-  } catch (error) {
-    logger.warn({ err: error.message }, "[BackupNotification] Could not load Owner emails");
-    return [];
-  }
-};
-
-const buildEmailHtml = ({ ok, brand, rows, errorMessage }) => {
-  const accent = ok ? "#059669" : "#dc2626";
-  const heading = ok ? "Backup completed" : "Backup failed";
-  const tableRows = rows
-    .map(
-      ([label, value]) =>
-        `<tr><td style="padding:8px 12px;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap">${escapeHtml(label)}</td><td style="padding:8px 12px;color:#111827;border-bottom:1px solid #e5e7eb">${escapeHtml(value)}</td></tr>`
-    )
-    .join("");
-  const errorBlock = errorMessage
-    ? `<p style="margin:16px 0 0;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;color:#991b1b;font-size:13px">${escapeHtml(errorMessage)}</p>`
-    : "";
-
-  return `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;padding:24px">
-  <div style="border-top:4px solid ${accent};border:1px solid #e5e7eb;border-top-width:4px;border-top-color:${accent};border-radius:8px;padding:20px">
-    <h2 style="margin:0 0 4px;color:${accent};font-size:20px">${heading}</h2>
-    <p style="margin:0 0 16px;color:#6b7280;font-size:13px">${escapeHtml(brand)} · Cloudflare R2 backup</p>
-    <table style="width:100%;border-collapse:collapse;font-size:13px">${tableRows}</table>
-    ${errorBlock}
-  </div>
-</div>`;
-};
-
 /**
- * Tells the team a backup run has finished: a dashboard notification (bell, live) and an email.
+ * Tells the team a backup run has finished: dashboard bell, email to Owners, Webmail inbox copy.
  * Never throws, so a notification problem can't make a good backup look failed.
  * result: { ok, triggeredBy, bucket, database, uploads, pruned, error }
  */
 export const notifyBackupResult = async (result) => {
   const { ok, triggeredBy = "SCHEDULER_CRON", bucket = "", database = "", uploads = "", pruned = 0, error = "" } = result;
-  const finishedAt = new Date();
+  const brand = config.brandName || "Surokkha";
   const triggerLabel = TRIGGER_LABELS[triggeredBy] || triggeredBy;
 
-  const description = ok
-    ? `Backup completed: database ${database}, uploads ${uploads}${pruned ? `, ${pruned} old backup(s) removed` : ""}. Bucket '${bucket}'.`
-    : `Backup FAILED (${triggerLabel}): ${error}`;
+  const rows = [
+    ["Status", ok ? "Completed successfully" : "Failed"],
+    ["When", formatWhen(new Date())],
+    ["Started by", triggerLabel],
+  ];
+  if (ok) {
+    rows.push(["Database", database], ["Uploads", uploads], ["Bucket", bucket]);
+    if (pruned) rows.push(["Old backups removed", String(pruned)]);
+  }
+  const errorMessage = ok ? "" : error;
 
-  try {
-    const log = await LogModel.create({
+  await notifyOwners({
+    log: {
       type: "backup",
       typeDid: "115",
-      description,
-      readStatus: false,
-      active: true,
+      description: ok
+        ? `Backup completed: database ${database}, uploads ${uploads}${pruned ? `, ${pruned} old backup(s) removed` : ""}. Bucket '${bucket}'.`
+        : `Backup FAILED (${triggerLabel}): ${error}`,
       createdBy: triggeredBy,
-    });
-    broadcastLiveNotification(log).catch((err) => logger.warn({ err: err.message }, "[BackupNotification] Live notification failed"));
-  } catch (err) {
-    logger.warn({ err: err.message }, "[BackupNotification] Could not write the dashboard notification");
-  }
-
-  try {
-    const [{ transport, config: smtp }, recipients, webmailAddress] = await Promise.all([
-      getSmtpTransport(),
-      resolveRecipients(),
-      getWebmailAddress(),
-    ]);
-
-    const brand = smtp.fromName || config.brandName || "Surokkha";
-    const fromEmail = smtp.fromEmail || smtp.user || webmailAddress || `no-reply@${config.domain || "surokkha.store"}`;
-    const fromAddress = { name: brand, address: fromEmail };
-    const rows = [
-      ["Status", ok ? "Completed successfully" : "Failed"],
-      ["When", formatWhen(finishedAt)],
-      ["Started by", triggerLabel],
-    ];
-    if (ok) {
-      rows.push(["Database", database], ["Uploads", uploads], ["Bucket", bucket]);
-      if (pruned) rows.push(["Old backups removed", String(pruned)]);
-    }
-
-    const subject = ok ? `✅ ${brand}: Backup completed` : `❌ ${brand}: Backup FAILED`;
-    const html = buildEmailHtml({ ok, brand, rows, errorMessage: ok ? "" : error });
-    const text = rows.map(([k, v]) => `${k}: ${v}`).join("\n") + (!ok && error ? `\nError: ${error}` : "");
-
-    if (!smtp.isConfigured || !transport) {
-      logger.warn("[BackupNotification] SMTP is not configured; backup SMTP email skipped");
-    } else if (!recipients.length) {
-      logger.warn("[BackupNotification] No active Owner recipients for the backup email");
-    } else {
-      try {
-        await transport.sendMail({
-          from: fromAddress,
-          to: recipients,
-          subject,
-          text,
-          html,
-        });
-        logger.info({ recipients: recipients.length }, "[BackupNotification] Backup email sent");
-      } catch (smtpErr) {
-        logger.warn({ err: smtpErr.message }, "[BackupNotification] Backup SMTP email failed");
-      }
-    }
-
-    await copyToWebmailInbox({
-      from: fromAddress,
-      to: recipients.length ? recipients.join(", ") : webmailAddress || fromEmail,
-      subject,
-      text,
-      html,
-    });
-  } catch (err) {
-    logger.warn({ err: err.message }, "[BackupNotification] Backup email failed");
-  }
+    },
+    mail: {
+      subject: ok ? `✅ ${brand}: Backup completed` : `❌ ${brand}: Backup FAILED`,
+      html: buildNotificationHtml({
+        heading: ok ? "Backup completed" : "Backup failed",
+        subheading: `${brand} · Cloudflare R2 backup`,
+        rows,
+        accent: ok ? "#059669" : "#dc2626",
+        errorMessage,
+      }),
+      text: rowsToText(rows, errorMessage),
+    },
+  });
 };

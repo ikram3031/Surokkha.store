@@ -22,7 +22,8 @@ const isValidCustomerEmail = (email) => {
 };
 
 // Safely send customer and admin order notification emails asynchronously
-export const sendOrderEmailsAsynchronously = (order) => {
+// options.actorName: the staff member who added the order from the dashboard (used for custom orders)
+export const sendOrderEmailsAsynchronously = (order, { actorName = "" } = {}) => {
   setImmediate(async () => {
     try {
       const [{ transport: activeTransport, config: smtpConfig }, webmailAddress] = await Promise.all([
@@ -126,7 +127,11 @@ export const sendOrderEmailsAsynchronously = (order) => {
       const couponCode = order.couponCode ? String(order.couponCode).trim().toUpperCase() : null;
       const paymentMethod = order.paymentMethod || "Cash on Delivery (COD)";
 
+      const isCustomOrder = order.orderType === "custom" || String(orderId).startsWith("CO");
+      const addedBy = isCustomOrder ? String(actorName || order.createdBy || "").trim() || "Admin" : "";
+
       const formattedOrderData = {
+        addedBy,
         orderId,
         status: order.status || "processing",
         orderType: order.orderType || "online",
@@ -181,10 +186,6 @@ export const sendOrderEmailsAsynchronously = (order) => {
         }
       }
 
-      const isCustomOrder =
-        order.orderType === "custom" ||
-        String(orderId).startsWith("CO");
-
       let adminRecipients = [];
       try {
         adminRecipients = await resolveAlertRecipients();
@@ -193,8 +194,11 @@ export const sendOrderEmailsAsynchronously = (order) => {
       }
       console.log(`[Email Notification] Admin notification targets (${adminRecipients.length}): ${adminRecipients.join(", ")}`);
 
-      const adminSubject = `🛒 ${brandDisplayName}: New Order Received - #${orderId} (৳${totalAmount})`;
-      const adminReplyTo = isValidCustomerEmail(customerEmail)
+      // Custom orders are added by staff in the dashboard, so the alert names the staff member, not the customer
+      const adminSubject = isCustomOrder
+        ? `🆕 ${brandDisplayName}: ${addedBy} added a new custom order - #${orderId} (৳${totalAmount})`
+        : `🛒 ${brandDisplayName}: New Order Received - #${orderId} (৳${totalAmount})`;
+      const adminReplyTo = !isCustomOrder && isValidCustomerEmail(customerEmail)
         ? { name: customerName, address: customerEmail }
         : customerReplyTo;
       const adminEmailHtml = buildAdminOrderEmailHtml({

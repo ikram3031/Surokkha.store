@@ -174,7 +174,7 @@ export const createOrder = async (req, res, next) => {
     });
 
     // Safely trigger non-blocking email notifications for Customer and Admin
-    sendOrderEmailsAsynchronously(createdOrder);
+    sendOrderEmailsAsynchronously(createdOrder, { actorName: req.user?.name || "" });
 
     const isInstoreOrder =
       payload.orderType === "instore" ||

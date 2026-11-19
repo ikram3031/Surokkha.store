@@ -9,6 +9,7 @@ export const buildAdminOrderEmailHtml = ({ order = {}, logoUrl } = {}) => {
     orderId = "",
     createdAt = "",
     orderType = "online",
+    addedBy = "",
     customerName = "Customer",
     customerEmail = "",
     customerPhone = "",
@@ -28,8 +29,10 @@ export const buildAdminOrderEmailHtml = ({ order = {}, logoUrl } = {}) => {
   const body = `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
       <td valign="top">
-        <div style="font-family:${SERIF};font-size:22px;font-weight:600;color:${BRAND.maroon};line-height:1.25">New order received</div>
-        <div style="font-family:${SANS};font-size:13.5px;color:${BRAND.muted};margin-top:6px">${esc(customerName)} placed a ${esc(orderType)} order worth <b style="color:${BRAND.ink}">${tk(totalAmount)}</b>.</div>
+        <div style="font-family:${SERIF};font-size:22px;font-weight:600;color:${BRAND.maroon};line-height:1.25">${addedBy ? "New custom order added" : "New order received"}</div>
+        <div style="font-family:${SANS};font-size:13.5px;color:${BRAND.muted};margin-top:6px">${addedBy
+          ? `<b style="color:${BRAND.ink}">${esc(addedBy)}</b> added a custom order in the dashboard for ${esc(customerName)}, worth <b style="color:${BRAND.ink}">${tk(totalAmount)}</b>.`
+          : `${esc(customerName)} placed a ${esc(orderType)} order worth <b style="color:${BRAND.ink}">${tk(totalAmount)}</b>.`}</div>
       </td>
       <td valign="top" align="right" style="text-align:right;white-space:nowrap;padding-left:12px">
         <div style="font-family:${SANS};font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:${BRAND.crimson};font-weight:700">Order</div>
