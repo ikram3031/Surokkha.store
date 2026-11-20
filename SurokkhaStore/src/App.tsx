@@ -116,8 +116,8 @@ function AppShell() {
         )}
         {route.name === 'home' && (
           <>
-            <PromoBanner />
             <HomeHero />
+            <PromoBanner />
             <IntroProducts />
             <TrustStrip />
             {/* Categories right after the best sellers */}

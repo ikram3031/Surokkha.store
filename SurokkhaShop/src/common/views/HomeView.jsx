@@ -78,14 +78,14 @@ export default function HomeView() {
 
   return (
     <div className="space-y-6 sm:space-y-8 bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 pb-4">
-      <PromoBanner />
-      
       {/* PURE HERO BANNER SLIDER (Dashboard CMS Uploaded) — hidden for now.
           To restore it, change `false` to `true` below. */}
       {false && <HeroSlider />}
 
       {/* HERO SLIDER: coded banners — hidden for now. Change `false` to `true` to restore. */}
       <HeroBannerSlider useCms={false} />
+
+      <PromoBanner />
 
       {/* CONTAINER-WIDTH BANNER CAROUSEL (campaign images) */}
       {false && <BannerCarousel />}
