@@ -80,7 +80,7 @@ export function useCatalogProducts() {
       ),
     ).then((list) => {
       if (controller.signal.aborted) return
-      setProducts(list.filter((p): p is OfferProduct => !!p))
+      setProducts(list.filter((p): p is OfferProduct => !!p && p.inStock))
       setLoading(false)
     })
     return () => controller.abort()
@@ -107,6 +107,7 @@ export function useComboProducts() {
         const remaining = prods
           .filter((p) => !TOP_PRODUCT_IDS.has(p.did) && !TOP_PRODUCT_IDS.has(p.id ?? '') && !TOP_PRODUCT_IDS.has(p._id ?? ''))
           .map((p) => ({ ...toOfferProduct(p, 'product'), readyCombo: true }))
+          .filter((p) => p.inStock)
         setProducts(remaining)
         setLoading(false)
       })

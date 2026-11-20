@@ -96,7 +96,7 @@ export function GroupOfferPage({ slug, embedded = false }: { slug: string; embed
       )}
 
       <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-        {offer.products.map((p) => {
+        {offer.products.filter((p) => p.inStock).map((p) => {
           const n = qty[p.id] ?? 0
           const image = resolveMediaUrl(p.image)
           return (

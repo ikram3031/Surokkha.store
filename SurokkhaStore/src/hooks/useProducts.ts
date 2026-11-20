@@ -24,6 +24,7 @@ function loadCatalog(): Promise<Product[]> {
       return raw
         .filter((p) => p.isActive !== false)
         .map(mapApiProduct)
+        .filter((p) => p.inStock !== false)
         .filter((p) => {
           const key = p.slug ?? String(p.id)
           if (seen.has(key)) return false

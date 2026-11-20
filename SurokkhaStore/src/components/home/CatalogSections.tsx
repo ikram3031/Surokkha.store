@@ -21,8 +21,7 @@ function useCatalogGroups() {
   return useMemo(() => {
     const live = products.filter(inStock)
     const combos = live.filter(isCombo)
-    // Every MO pack is listed, including ones that are temporarily out of stock (the card says so)
-    const mo = [...products.filter((p) => isMo(p) && !isSmartPack(p)), ...products.filter(isSmartPack)]
+    const mo = [...live.filter((p) => isMo(p) && !isSmartPack(p)), ...live.filter(isSmartPack)]
     const rest = live.filter((p) => !isCombo(p) && !isMo(p))
     return { combos, mo, rest }
   }, [products])

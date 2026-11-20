@@ -88,7 +88,7 @@ export function TrialPackSection({ offer, qty, onStep, subtotal, minPieces, onCo
 
           <div className="flex-1 overflow-y-auto bg-rose-50 px-4 py-5">
             <ul className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-              {offer.products.map((p) => {
+              {offer.products.filter((p) => p.inStock).map((p) => {
                 const n = qty[p.id] ?? 0
                 return (
                   <li
