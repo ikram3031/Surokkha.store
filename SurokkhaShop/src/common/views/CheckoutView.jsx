@@ -1,4 +1,3 @@
-import FreeDeliveryProgress from '../components/FreeDeliveryProgress';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore, isGroupPieceKey } from '../store/useStore';
@@ -16,9 +15,6 @@ export default function CheckoutView() {
   const navigateTo = useStore((state) => state.navigateTo);
   const openCartDrawer = useStore((state) => state.openCartDrawer);
   const getCartTotals = useStore((state) => state.getCartTotals);
-  const loadMyPromo = useStore((state) => state.loadMyPromo);
-  // Is the logged-in customer still eligible for the new customer free delivery?
-  useEffect(() => { loadMyPromo(); }, [loadMyPromo]);
   const submitOrder = useStore((state) => state.submitOrder);
   const [contactModal, setContactModal] = useState(null);
   const showToast = useStore((state) => state.showToast);
@@ -29,6 +25,7 @@ export default function CheckoutView() {
   const setShippingAddress = useStore((state) => state.setShippingAddress);
   const sameAsBilling = useStore((state) => state.sameAsBilling);
   const setSameAsBilling = useStore((state) => state.setSameAsBilling);
+  useEffect(() => { if (!sameAsBilling) setSameAsBilling(true); }, []);
   const orderNotes = useStore((state) => state.orderNotes);
   const setOrderNotes = useStore((state) => state.setOrderNotes);
 
@@ -42,6 +39,8 @@ export default function CheckoutView() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const isSubmittingRef = useRef(false);
+  const phoneTimerRef = useRef(null);
+  const emailTimerRef = useRef(null);
   const [agreedToTerms, setAgreedToTerms] = useState(true); // 18+ already confirmed at the age gate
   const [isDistrictOpen, setIsDistrictOpen] = useState(false);
   const [isShipDistrictOpen, setIsShipDistrictOpen] = useState(false);
@@ -81,30 +80,6 @@ export default function CheckoutView() {
   const appliedCoupon = totals.appliedCoupon || storeAppliedCoupon;
   const cartKeys = Object.keys(cart).filter((k) => cart[k] > 0);
 
-  // Orders above this subtotal are taken on WhatsApp (same cap the backend enforces)
-  const ORDER_LIMIT = 3000;
-  const isOverLimit = Number(totals.subtotal || 0) > ORDER_LIMIT;
-  const whatsappOrderHref = (() => {
-    const lines = cartKeys.map((cartKey) => {
-      const [slug, size] = cartKey.split(':::');
-      const prod = products[slug];
-      return `- ${prod?.name || slug}${size ? ` (${size})` : ''} x ${cart[cartKey]}`;
-    });
-    const text = [
-      'Hello Surokkha, আমি অর্ডার করতে চাই:',
-      ...lines,
-      `মোট: ৳${totals.grandTotal || totals.subtotal || 0}`,
-      shippingInfo.fullName ? `নাম: ${shippingInfo.fullName}` : '',
-      shippingInfo.phone ? `মোবাইল: ${shippingInfo.phone}` : '',
-      shippingInfo.address ? `ঠিকানা: ${[shippingInfo.address, shippingInfo.thana, shippingInfo.district].filter(Boolean).join(', ')}` : '',
-      !sameAsBilling && shippingAddress.address
-        ? `ডেলিভারি: ${[shippingAddress.fullName, shippingAddress.phone, shippingAddress.address, shippingAddress.thana, shippingAddress.district].filter(Boolean).join(', ')}`
-        : '',
-      orderNotes ? `নোট: ${orderNotes}` : '',
-    ].filter(Boolean).join('\n');
-    return `https://wa.me/8801600905774?text=${encodeURIComponent(text)}`;
-  })();
-
 
   const formatPrice = (val) => {
     const num = Number(val) || 0;
@@ -141,7 +116,7 @@ export default function CheckoutView() {
   const leadSig = JSON.stringify([shippingInfo.fullName, shippingInfo.phone, shippingInfo.email, shippingInfo.address, shippingInfo.district, shippingInfo.thana, totals.grandTotal, cartKeys.join(',')]);
   useEffect(() => {
     if (!shippingInfo.phone && !shippingInfo.fullName && !shippingInfo.email) return;
-    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 1200);
+    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 2000);
     return () => clearTimeout(timer);
   }, [leadSig]);
   useEffect(() => {
@@ -304,11 +279,11 @@ export default function CheckoutView() {
 
   const validateNameValue = (value) => ((value || '').trim() ? '' : (isBn ? 'অনুগ্রহ করে আপনার নাম লিখুন' : 'Please enter your name'));
 
-  // 10 characters is the minimum the order API accepts
+  // 5 characters is the minimum the order API accepts
   const validateAddressValue = (value) => {
     const trimmed = (value || '').trim();
     if (!trimmed) return isBn ? 'অনুগ্রহ করে আপনার সম্পূর্ণ ঠিকানা লিখুন' : 'Please enter your full address';
-    if (trimmed.length < 10) return isBn ? 'ঠিকানা আরেকটু বিস্তারিত লিখুন (বাসা, রোড, এলাকা)' : 'Please write a more detailed address (house, road, area)';
+    if (trimmed.length < 5) return isBn ? 'ঠিকানা আরেকটু বিস্তারিত লিখুন (বাসা, রোড, এলাকা)' : 'Please write a more detailed address (house, road, area)';
     return '';
   };
 
@@ -325,15 +300,14 @@ export default function CheckoutView() {
   const handleBillingPhoneChange = (value) => {
     const cleaned = convertBnToEnDigits(value);
     setShippingInfo({ phone: cleaned });
-    if (cleaned.trim()) {
+    setPhoneError('');
+    clearTimeout(phoneTimerRef.current);
+    if (!cleaned.trim()) return;
+    phoneTimerRef.current = setTimeout(() => {
       const err = validatePhoneValue(cleaned);
       setPhoneError(err);
-      if (!err) {
-        checkFakePhone(cleaned);
-      }
-    } else {
-      setPhoneError('');
-    }
+      if (!err) checkFakePhone(cleaned);
+    }, 1000);
   };
 
   const handleShippingPhoneChange = (value) => {
@@ -379,11 +353,11 @@ export default function CheckoutView() {
     const shippingDistrict = (shippingAddress.district || '').trim();
     const locationErrs = getLocationErrors();
     // Mobile runs its own checks (native browser bubbles are easy to miss on a phone); desktop keeps native validation
+    const addressErr = validateAddressValue(shippingInfo.address || shippingAddress.address);
+    if (addressErr) locationErrs.address = addressErr;
     if (isMobile) {
       const nameErr = validateNameValue(shippingInfo.fullName || shippingAddress.fullName);
-      const addressErr = validateAddressValue(shippingInfo.address || shippingAddress.address);
       if (nameErr) locationErrs.fullName = nameErr;
-      if (addressErr) locationErrs.address = addressErr;
     }
 
     setEmailError(emailErr);
@@ -615,10 +589,13 @@ export default function CheckoutView() {
                     id="billingEmail"
                     value={shippingInfo.email || ''}
                     onChange={(e) => {
-                      setShippingInfo({ email: e.target.value });
-                      setEmailError(validateEmail(e.target.value));
+                      const value = e.target.value;
+                      setShippingInfo({ email: value });
+                      setEmailError('');
+                      clearTimeout(emailTimerRef.current);
+                      emailTimerRef.current = setTimeout(() => { setEmailError(validateEmail(value)); checkBlockedEmail(value); }, 1000);
                     }}
-                    onBlur={(e) => { setEmailError(validateEmail(e.target.value)); checkBlockedEmail(e.target.value); }}
+                    onBlur={(e) => { clearTimeout(emailTimerRef.current); setEmailError(validateEmail(e.target.value)); checkBlockedEmail(e.target.value); }}
                     placeholder={t('checkout.email_placeholder')} 
                     className={`w-full text-base bg-zinc-50 border ${emailError ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition`} 
                   />
@@ -701,132 +678,7 @@ export default function CheckoutView() {
                 </div>
               </div>
 
-              {/* Ship to a different address toggle (hidden on mobile unless already on) */}
-              {(!isMobile || !sameAsBilling) && (
-              <div className="pt-4 border-t border-zinc-100">
-                <label className="flex items-center gap-3 text-xs text-zinc-800 font-medium cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={!sameAsBilling}
-                    onChange={(e) => setSameAsBilling(!e.target.checked)}
-                    className="h-4.5 w-4.5 rounded border-zinc-300 text-brand-700 focus:ring-brand-700 accent-brand-700 cursor-pointer"
-                  />
-                  <span className="font-bold text-brand-900 uppercase tracking-wider text-xs">
-                    {t('checkout.ship_to_different')}
-                  </span>
-                </label>
-              </div>
-              )}
-
             </div>
-
-            {/* Conditional Shipping Address Section */}
-            {!sameAsBilling && (
-              <div className={`bg-brand-50/40 border-2 border-brand-200 rounded-3xl p-6 sm:p-8 shadow-xs space-y-5 animate-fade-in relative transition-all ${isShipDistrictOpen || isShipThanaOpen ? 'z-30' : 'z-10'}`}>
-                <div className="border-b border-brand-200/60 pb-3 flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-heading font-bold text-brand-950 uppercase tracking-wider flex items-center gap-2">
-                      <span>🚚</span> {t('checkout.recipient_title')}
-                    </h3>
-                    <p className="text-[11px] text-zinc-500 mt-0.5">
-                      {t('checkout.recipient_desc')}
-                    </p>
-                  </div>
-                  <span className="text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md">{t('checkout.mandatory_recipient')}</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Recipient Full Name */}
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-900 mb-1.5" htmlFor="shipFullName">
-                      {t('checkout.recipient_name')} <span className="text-rose-500">*</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      id="shipFullName"
-                      required={!sameAsBilling}
-                      value={shippingAddress.fullName || ''}
-                      onChange={(e) => setShippingAddress({ fullName: e.target.value })}
-                      placeholder={t('checkout.recipient_name_placeholder')} 
-                      className="w-full text-base bg-white border border-zinc-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition" 
-                    />
-                  </div>
-
-                  {/* Recipient Phone */}
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-900 mb-1.5" htmlFor="shipPhone">
-                      {t('checkout.recipient_phone')} <span className="text-rose-500">*</span>
-                    </label>
-                    <input 
-                      type="tel" 
-                      id="shipPhone"
-                      required={!sameAsBilling}
-                      value={shippingAddress.phone || ''}
-                      onChange={(e) => handleShippingPhoneChange(e.target.value)}
-                      onBlur={(e) => setShipPhoneError(validatePhoneValue(e.target.value))}
-                      placeholder={t('checkout.mobile_placeholder', '01XXXXXXXXX (যেমন: 01712345678)')} 
-                      className={`w-full text-base bg-white border ${shipPhoneError ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition font-mono`} 
-                    />
-                    {shipPhoneError && <p className="mt-1 text-sm text-rose-600 font-semibold">{shipPhoneError}</p>}
-                  </div>
-
-                  {/* Shipping Street Address */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-bold text-zinc-900 mb-1.5" htmlFor="shipAddress">
-                      {t('checkout.shipping_street_address')} <span className="text-rose-500">*</span>
-                    </label>
-                    <textarea 
-                      id="shipAddress" 
-                      required={!sameAsBilling}
-                      rows={2} 
-                      value={shippingAddress.address || ''}
-                      onChange={(e) => setShippingAddress({ address: e.target.value })}
-                      placeholder={t('checkout.shipping_street_placeholder')} 
-                      className="w-full text-base bg-white border border-zinc-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition resize-y"
-                    />
-                  </div>
-
-                  {/* Shipping District (must pick from list) */}
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-900 mb-1.5" htmlFor="shipDistrict">
-                      {t('checkout.shipping_district')} <span className="text-rose-500">*</span>
-                    </label>
-                    <LocationSelect
-                      id="shipDistrict"
-                      value={shippingAddress.district || ''}
-                      options={DISTRICT_NAMES}
-                      onSelect={(name) => { setShippingAddress({ district: name }); clearFieldError('shipDistrict', 'shipThana'); }}
-                      onOpenChange={setIsShipDistrictOpen}
-                      placeholder={t('checkout.shipping_district_placeholder')}
-                      error={fieldErrors.shipDistrict}
-                      clearLabel={t('checkout.clear_district')}
-                      emptyText={noMatchText}
-                      inputClassName="bg-white"
-                    />
-                  </div>
-                  
-                  {/* Shipping thana: typed, with the thana list as suggestions (optional on mobile) */}
-                  <div>
-                    <label className="block text-sm font-bold text-zinc-900 mb-1.5" htmlFor="shipThana">
-                      {t('checkout.shipping_thana')} {isMobile ? <span className="font-medium text-zinc-500">{isBn ? '(ঐচ্ছিক)' : '(optional)'}</span> : <span className="text-rose-500">*</span>}
-                    </label>
-                    <input
-                      type="text"
-                      id="shipThana"
-                      list="shipThanaList"
-                      value={shippingAddress.thana || ''}
-                      onChange={(e) => { setShippingAddress({ thana: e.target.value }); clearFieldError('shipThana'); }}
-                      placeholder={isBn ? 'যেমন: মিরপুর, সাভার' : 'e.g. Mirpur, Savar'}
-                      className={`w-full text-base bg-white border ${fieldErrors.shipThana ? 'border-rose-500' : 'border-zinc-300'} rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-700/30 focus:border-brand-700 transition`}
-                    />
-                    <datalist id="shipThanaList">
-                      {shippingThanas.options.map((o) => <option key={o} value={o} />)}
-                    </datalist>
-                    {fieldErrors.shipThana && <p className="mt-1 text-sm text-rose-600 font-semibold">{fieldErrors.shipThana}</p>}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Delivery Charge Tier Info (Auto calculated based on active location; desktop only) */}
             {!isMobile && (
@@ -1005,7 +857,6 @@ export default function CheckoutView() {
                 })}
               </div>
 
-              <FreeDeliveryProgress subtotal={totals.subtotal} isBn={isBn} />
 
               {/* Promo / Coupon Code Section */}
               <div className="border-t border-zinc-200/90 pt-3.5 space-y-2">
@@ -1195,31 +1046,19 @@ export default function CheckoutView() {
                 </label>
                 {fieldErrors.terms && <p className="text-sm text-rose-600 font-semibold">{fieldErrors.terms}</p>}
 
-                {/* Above the order limit the order goes through WhatsApp instead of the website */}
-                {isOverLimit ? (
-                  <>
-                    <p className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs sm:text-sm font-semibold text-amber-900">
-                      {isBn
-                        ? `${formatPrice(ORDER_LIMIT)}-এর বেশি অর্ডার WhatsApp-এ নেওয়া হয়। নিচের বাটনে চাপ দিন, আপনার অর্ডারের তথ্যসহ চ্যাট খুলে যাবে।`
-                        : `Orders above ${formatPrice(ORDER_LIMIT)} are taken on WhatsApp. Tap below to send your order details.`}
-                    </p>
-                    <a
-                      href={whatsappOrderHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full bg-[#25D366] hover:opacity-90 text-white font-bold text-sm sm:text-base py-4 px-6 rounded-2xl shadow-lg transition flex items-center justify-center gap-2"
-                    >
-                      {isBn ? 'WhatsApp-এ অর্ডার করুন' : 'Order on WhatsApp'}
-                    </a>
-                  </>
-                ) : (
                 <button
                   type="submit" 
                   disabled={isProcessing}
                   className={`w-full bg-brand-700 hover:bg-brand-800 disabled:opacity-60 text-white font-bold text-base sm:text-lg py-4 px-6 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer`}
                 >
                   {isProcessing ? (
-                    <span>{t('checkout.placing_order')}</span>
+                    <>
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                      </svg>
+                      <span>{t('checkout.placing_order')}</span>
+                    </>
                   ) : (
                     <>
                       <svg className="w-5 h-5 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
@@ -1229,7 +1068,6 @@ export default function CheckoutView() {
                     </>
                   )}
                 </button>
-                )}
               </div>
 
             </div>

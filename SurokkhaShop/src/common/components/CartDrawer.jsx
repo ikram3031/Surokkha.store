@@ -1,4 +1,3 @@
-import FreeDeliveryProgress from './FreeDeliveryProgress';
 import React, { useEffect, useRef, useState } from 'react';
 import { useStore, getFeaturedCombo, isGroupPieceKey } from '../store/useStore';
 import TrialPackOfferCard from './TrialPackOfferCard';
@@ -371,7 +370,6 @@ export default function CartDrawer() {
                   </button>
                 </div>
 
-                <FreeDeliveryProgress subtotal={totals.subtotal} isBn={isBn} />
 
                 <TodayOfferCartCard />
 

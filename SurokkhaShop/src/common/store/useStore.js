@@ -1,4 +1,4 @@
-import { fetchMyPromo, getCustomerToken } from '../utils/customerAuth';
+import { getCustomerToken } from '../utils/customerAuth';
 import { create } from 'zustand';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { getDeliveryCharge } from '../utils/deliveryCharge';
@@ -88,9 +88,6 @@ export const parseRouteFromLocation = () => {
 };
 
 const initialRoute = parseRouteFromLocation();
-
-// Orders of this amount or more (product subtotal) ship free
-export const FREE_DELIVERY_MIN = 1000;
 
 // Initialize and persist default language (always Bangla)
 export const getInitialLanguage = () => {
@@ -203,8 +200,6 @@ export const useStore = create((set, get) => ({
   // Active dashboard Group Offers (shown on the Offers page)
   groupOffers: [],
   isLoadingGroupOffers: false,
-  // New customer free delivery (dashboard Promo): minimum order when the logged-in customer qualifies, else null
-  newUserFreeMin: null,
   lastOrder: null,
   // Email carried from the confirmation page into the account page's "claim your bonus" step
   accountPrefillEmail: '',
@@ -1076,11 +1071,6 @@ export const useStore = create((set, get) => ({
     get().navigateTo('checkout');
   },
 
-  loadMyPromo: async () => {
-    const promo = await fetchMyPromo();
-    set({ newUserFreeMin: promo?.newUserFreeDelivery ? Number(promo.newUserFreeDelivery.minOrderAmount) || 0 : null });
-  },
-
   fetchGroupOffers: async () => {
     if (get().isLoadingGroupOffers) return;
     set({ isLoadingGroupOffers: true });
@@ -1148,7 +1138,7 @@ export const useStore = create((set, get) => ({
 
   // Dynamic Totals & Delivery computation
   getCartTotals: () => {
-    const { cart, products, shippingInfo, shippingAddress, sameAsBilling, appliedCoupon, newUserFreeMin } = get();
+    const { cart, products, shippingInfo, shippingAddress, sameAsBilling, appliedCoupon } = get();
 
     let subtotal = 0;
     let totalItemCount = 0;
@@ -1227,12 +1217,7 @@ export const useStore = create((set, get) => ({
       }
     }
 
-    // New customer: first order ships free above the dashboard's minimum (only claimed when nothing else made it free)
-    const isNewUserFreeDelivery =
-      newUserFreeMin != null && totalItemCount > 0 && subtotal >= newUserFreeMin && !isDirectOfferFreeDelivery;
-    // Any order of ৳1,000 or more ships free
-    const isOrderAmountFreeDelivery = totalItemCount > 0 && subtotal >= FREE_DELIVERY_MIN;
-    if (isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery) deliveryFee = 0;
+    if (isDirectOfferFreeDelivery) deliveryFee = 0;
 
     const couponDiscount = discountAmount;
     discountAmount = Math.min(subtotal, couponDiscount + groupDiscount);
@@ -1240,10 +1225,7 @@ export const useStore = create((set, get) => ({
 
     return {
       isDirectOfferFreeDelivery,
-      isNewUserFreeDelivery,
-      isOrderAmountFreeDelivery,
-      newUserFreeMin,
-      isFreeDelivery: isFreeShippingCoupon || isDirectOfferFreeDelivery || isNewUserFreeDelivery || isOrderAmountFreeDelivery,
+      isFreeDelivery: isFreeShippingCoupon || isDirectOfferFreeDelivery,
       subtotal,
       deliveryFee,
       originalDeliveryFee,
@@ -1313,7 +1295,6 @@ export const useStore = create((set, get) => ({
       tax: 0,
       discountTotalAmount: totals.discountAmount || 0,
       couponCode: appliedCoupon ? String(appliedCoupon.code).trim().toUpperCase() : null,
-      promo: totals.isNewUserFreeDelivery ? 'new-user-free-delivery' : undefined,
       total: totals.grandTotal,
       items: Object.entries(cart)
         .filter(([_, qty]) => qty > 0)
