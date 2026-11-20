@@ -209,10 +209,6 @@ export default function ProductCard({ productKey, className = '' }) {
               <span className="text-[10px] sm:text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200/70 px-2 py-0.5 rounded-md">
                 {isBn ? 'স্টক শেষ' : 'Out of Stock'}
               </span>
-            ) : hasDiscount ? (
-              <span className="text-[10px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-md">
-                {isBn ? `${formatPrice(savingsAmount)} সাশ্রয়` : `Save ${formatPrice(savingsAmount)}`}
-              </span>
             ) : null}
           </div>
 

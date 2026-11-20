@@ -65,7 +65,6 @@ function ComboCard({ product, badge, contents, note, theme }: { product: Product
             </div>
           </div>
           <div className="text-right">
-            {regular > 0 && <span className={`inline-block rounded-xl px-2.5 py-1 text-xs font-black ${theme.save}`}>{L('Save', 'সাশ্রয়')} {taka(regular - price)}</span>}
             <div className="mt-1 text-[10px] font-bold text-emerald-400">{note}</div>
           </div>
         </div>
