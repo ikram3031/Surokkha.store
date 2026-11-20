@@ -55,9 +55,7 @@ export const tierFor = (subtotal: number) => [...DISCOUNT_TIERS].reverse().find(
 export const nextTier = (subtotal: number) => DISCOUNT_TIERS.find((t) => subtotal < t.min)
 
 // Same caps the backend enforces on /orders/new-order
-export const MAX_QTY_PER_LINE = 10
 export const MAX_QTY_PER_ORDER = 20
-export const MAX_ORDER_AMOUNT = 3000
 
 // Delivery charge, same tiers as SurokkhaShop's checkout (no free-delivery threshold on this page).
 // Thana names are Pathao zones like "Bank Colony, Savar", so suburbs are matched by name fragment.

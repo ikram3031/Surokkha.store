@@ -1,4 +1,3 @@
-import { FREE_SHIP_AT } from '@/data/products'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -15,7 +14,7 @@ import { useCart } from '@/context/CartContext'
 import { ApiError } from '@/lib/api/client'
 import { getCoupon } from '@/lib/api/catalog'
 import { checkPhone, createOrder, type NewOrderPayload, type OrderAddress } from '@/lib/api/orders'
-import { fetchCheckoutDetails, fetchMyPromo, getCustomerToken } from '@/lib/api/customer-auth'
+import { fetchCheckoutDetails, getCustomerToken } from '@/lib/api/customer-auth'
 import {
   comboSubtotal,
   couponDiscount,
@@ -37,7 +36,6 @@ import { productKeyOf, trackProductEvents, type ProductEventType } from '@/lib/a
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 import { L } from '@/lib/i18n'
 // Orders above this subtotal are taken on WhatsApp (the backend caps website orders at the same amount)
-const ORDER_LIMIT = 3000
 
 // Shared field styling — tighter and consistent on mobile
 const fieldClass = (err?: string) =>
@@ -85,27 +83,19 @@ export function CheckoutPage() {
   const lines = Object.values(cart)
 
   const [form, setForm] = useState({ fullName: '', phone: '', email: '', address: '', district: '', thana: '', notes: '' })
-  const [sameAsBilling, setSameAsBilling] = useState(true)
+  const [sameAsBilling] = useState(true)
   const [ship, setShip] = useState({ fullName: '', phone: '', address: '', district: '', thana: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [agreed, setAgreed] = useState(false)
+  const [agreed, setAgreed] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const submittingRef = useRef(false)
+  const phoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const emailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [couponInput, setCouponInput] = useState('')
   const [coupon, setCoupon] = useState<Coupon | null>(null)
   const [couponError, setCouponError] = useState('')
   const [applying, setApplying] = useState(false)
-  // New customer free delivery (dashboard Promo): the minimum order when this logged-in customer qualifies
-  const [newUserFreeMin, setNewUserFreeMin] = useState<number | null>(null)
-  useEffect(() => {
-    let cancelled = false
-    fetchMyPromo().then((p) => !cancelled && setNewUserFreeMin(p?.newUserFreeDelivery ? p.newUserFreeDelivery.minOrderAmount : null))
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
   // Logged-in customer: pre-fill from their latest order; never overwrite what they've already typed
   useEffect(() => {
     let cancelled = false
@@ -119,11 +109,6 @@ export function CheckoutPage() {
         email: f.email || b.email,
         ...(f.address || f.district ? {} : { address: b.address, district: b.district, thana: b.thana }),
       }))
-      const s = d.shipping
-      if (s && (s.address !== b.address || s.district !== b.district || s.thana !== b.thana || s.fullName !== b.fullName || s.phone !== b.phone)) {
-        setSameAsBilling(false)
-        setShip((cur) => (cur.address || cur.district ? cur : { ...s }))
-      }
     })
     return () => {
       cancelled = true
@@ -141,11 +126,6 @@ export function CheckoutPage() {
   const set = (key: keyof typeof form, value: string) => {
     setForm((f) => ({ ...f, [key]: value }))
     setErrors((e) => ({ ...e, [key]: '' }))
-  }
-
-  const setShipField = (key: keyof typeof ship, value: string) => {
-    setShip((f) => ({ ...f, [key]: value }))
-    setErrors((e) => ({ ...e, [`ship_${key}`]: '' }))
   }
 
   // One funnel row per product in the cart, like the shop sends
@@ -176,19 +156,6 @@ export function CheckoutPage() {
     pixelTrack('InitiateCheckout', data, `ic_${getCheckoutSessionId()}`)
     trackProductEvents(productEventLines('checkout'))
   }, [count, lines, subtotal])
-
-  // Orders above this subtotal are taken on WhatsApp (same cap the backend enforces)
-  const isOverLimit = subtotal > ORDER_LIMIT
-  const whatsappOrderHref = `https://wa.me/8801600905774?text=${encodeURIComponent(
-    [
-      'Hello Surokkha, আমি অর্ডার করতে চাই:',
-      ...lines.map(({ product, qty }) => `- ${product.apiName ?? product.name} x ${qty}`),
-      `মোট: ৳${subtotal}`,
-      form.fullName ? `নাম: ${form.fullName}` : '',
-      form.phone ? `মোবাইল: ${form.phone}` : '',
-      form.address ? `ঠিকানা: ${[form.address, form.thana, form.district].filter(Boolean).join(', ')}` : '',
-    ].filter(Boolean).join('\n'),
-  )}`
 
   // Keep what the customer has typed so far (abandoned checkout capture); debounced, and flushed when they leave
   const leadRef = useRef<() => CheckoutLeadPayload>(() => ({ fullName: '', phone: '', email: '', address: '', district: '', thana: '', cartTotal: 0, items: [] }))
@@ -236,13 +203,12 @@ export function CheckoutPage() {
     const dest = sameAsBilling ? form : ship
     const baseFee = count > 0 ? deliveryFee(dest.district, dest.thana) : 0
     const { discount: couponOff, fee: couponFee } = couponDiscount(coupon, subtotal, baseFee, lines)
-    const newUserFree = newUserFreeMin != null && subtotal >= newUserFreeMin && count > 0
-    const offerFree = hasFreeDelivery(lines) || newUserFree || (count > 0 && subtotal >= FREE_SHIP_AT)
+    const offerFree = hasFreeDelivery(lines)
     const fee = offerFree ? 0 : couponFee
     const group = groupOfferTotals(lines)
     const discount = couponOff + group.discount
-    return { fee, baseFee, offerFree, newUserFree, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
-  }, [count, sameAsBilling, form, ship, coupon, subtotal, cart, newUserFreeMin])
+    return { fee, baseFee, offerFree, discount, groupDiscount: group.discount, groupShort: group.short, total: Math.max(0, subtotal + fee - discount) }
+  }, [count, sameAsBilling, form, ship, coupon, subtotal, cart])
 
   const freeShipping = coupon?.discountType === 'free_shipping' || totals.offerFree
   const destDistrict = (sameAsBilling ? form.district : ship.district).trim()
@@ -277,12 +243,9 @@ export function CheckoutPage() {
     const next: Record<string, string> = {}
     if (!form.fullName.trim()) next.fullName = L('Enter your name', 'আপনার নাম লিখুন')
     if (!isValidPhone(form.phone)) next.phone = L('Enter a valid mobile number (e.g. 01XXXXXXXXX)', '১১ ডিজিটের সঠিক মোবাইল নম্বর দিন (যেমন: 01XXXXXXXXX)')
-    // Email is optional at checkout
-    if (!form.email.trim()) next.email = L('Enter your email', 'ইমেইল দিন')
-    else if (!isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
+    if (form.email.trim() && !isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
     if (form.address.trim().length < 5) next.address = L('Enter your full address with house, road and area', 'বাড়ি, রোড ও এলাকাসহ পূর্ণ ঠিকানা লিখুন')
     if (!form.district) next.district = L('Select a district', 'জেলা নির্বাচন করুন')
-    if (form.thana.trim().length < 2) next.thana = L('Enter your thana / upazila', 'থানা / উপজেলার নাম লিখুন')
     if (!sameAsBilling) {
       if (!ship.fullName.trim()) next.ship_fullName = L('Enter the recipient name', 'প্রাপকের নাম লিখুন')
       if (!isValidPhone(ship.phone)) next.ship_phone = L('Enter a valid recipient mobile number', 'প্রাপকের সঠিক মোবাইল নম্বর দিন')
@@ -292,6 +255,44 @@ export function CheckoutPage() {
     }
     setErrors(next)
     return next
+  }
+
+  const clearError = (key: string) => setErrors((cur) => {
+    if (!cur[key]) return cur
+    const next = { ...cur }
+    delete next[key]
+    return next
+  })
+
+  const onPhoneChange = (raw: string) => {
+    const value = toEnDigits(raw)
+    set('phone', value)
+    clearError('phone')
+    if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current)
+    if (!value.trim()) return
+    phoneTimerRef.current = setTimeout(async () => {
+      if (!isValidPhone(value)) {
+        setErrors((cur) => ({ ...cur, phone: L('Enter a valid mobile number (e.g. 01XXXXXXXXX)', '১১ ডিজিটের সঠিক মোবাইল নম্বর দিন (যেমন: 01XXXXXXXXX)') }))
+        return
+      }
+      const flagged = await checkPhone(normalizePhone(value).slice(-10)).catch(() => null)
+      if (flagged?.isFake) setErrors((cur) => ({ ...cur, phone: flagged.message || L('Please use a different valid phone number.', 'অনুগ্রহ করে অন্য একটি সঠিক মোবাইল নম্বর ব্যবহার করুন।') }))
+    }, 1000)
+  }
+
+  const onEmailChange = (value: string) => {
+    set('email', value)
+    clearError('email')
+    if (emailTimerRef.current) clearTimeout(emailTimerRef.current)
+    if (!value.trim()) return
+    emailTimerRef.current = setTimeout(async () => {
+      if (!isValidEmail(value)) {
+        setErrors((cur) => ({ ...cur, email: L('Enter a valid email', 'সঠিক ইমেইল লিখুন') }))
+        return
+      }
+      const flagged = await checkPhone('', value.trim().toLowerCase()).catch(() => null)
+      if (flagged?.isFake) setErrors((cur) => ({ ...cur, email: flagged.message || L('Please use a different email.', 'অনুগ্রহ করে অন্য একটি ইমেইল ব্যবহার করুন।') }))
+    }, 1000)
   }
 
   const submit = async (e: React.FormEvent) => {
@@ -367,7 +368,6 @@ export function CheckoutPage() {
         discountTotalAmount: totals.discount,
         couponCode: coupon ? coupon.code : null,
         // Only claimed when no other offer already made delivery free
-        promo: totals.newUserFree && !hasFreeDelivery(lines) ? 'new-user-free-delivery' : undefined,
         total: totals.total,
         items: lines.map(({ product, qty }) => ({
           productId: product.itemType === 'item' ? undefined : product.apiId,
@@ -464,19 +464,19 @@ export function CheckoutPage() {
                   id="phone"
                   className={`${fieldClass(errors.phone)} font-mono`}
                   value={form.phone}
-                  onChange={(e) => set('phone', toEnDigits(e.target.value))}
+                  onChange={(e) => onPhoneChange(e.target.value)}
                   inputMode="tel"
                   autoComplete="tel"
                   placeholder="01XXXXXXXXX"
                 />
               </Field>
-              <Field label={L('Email', 'ইমেইল')} required error={errors.email} htmlFor="email">
+              <Field label={`${L('Email', 'ইমেইল')} ${L('(optional)', '(ঐচ্ছিক)')}`} error={errors.email} htmlFor="email">
                 <input
                   id="email"
                   type="email"
                   className={fieldClass(errors.email)}
                   value={form.email}
-                  onChange={(e) => set('email', e.target.value)}
+                  onChange={(e) => onEmailChange(e.target.value)}
                   autoComplete="email"
                   placeholder="you@example.com"
                 />
@@ -506,7 +506,7 @@ export function CheckoutPage() {
                   error={errors.district}
                 />
               </Field>
-              <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} required error={errors.thana} htmlFor="billingThana">
+              <Field label={`${L('Thana / Upazila', 'থানা / উপজেলা')} ${L('(optional)', '(ঐচ্ছিক)')}`} error={errors.thana} htmlFor="billingThana">
                 <input
                   id="billingThana"
                   className={fieldClass(errors.thana)}
@@ -529,74 +529,6 @@ export function CheckoutPage() {
               />
             </Field>
 
-            <div className="border-t border-border pt-4">
-              <label className="flex cursor-pointer select-none items-center gap-2.5 text-base font-medium">
-                <input
-                  type="checkbox"
-                  className="h-5 w-5 shrink-0 cursor-pointer accent-primary"
-                  checked={!sameAsBilling}
-                  onChange={(e) => setSameAsBilling(!e.target.checked)}
-                />
-                {L('Deliver to a different address', 'ভিন্ন কোনো ঠিকানায় ডেলিভারি চান?')}
-              </label>
-            </div>
-
-            {!sameAsBilling && (
-              <div className="space-y-5 rounded-2xl border border-border bg-secondary/30 p-4 sm:p-5">
-                <h3 className="flex items-center gap-2 font-semibold">🚚 {L('Recipient details', 'প্রাপকের বিবরণ')}</h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label={L('Recipient name', 'প্রাপকের নাম')} required error={errors.ship_fullName} htmlFor="shipFullName">
-                    <input
-                      id="shipFullName"
-                      className={fieldClass(errors.ship_fullName)}
-                      value={ship.fullName}
-                      onChange={(e) => setShipField('fullName', e.target.value)}
-                      placeholder={L('Full name', 'পূর্ণ নাম')}
-                    />
-                  </Field>
-                  <Field label={L('Recipient mobile', 'প্রাপকের মোবাইল নম্বর')} required error={errors.ship_phone} htmlFor="shipPhone">
-                    <input
-                      id="shipPhone"
-                      className={`${fieldClass(errors.ship_phone)} font-mono`}
-                      value={ship.phone}
-                      onChange={(e) => setShipField('phone', toEnDigits(e.target.value))}
-                      inputMode="tel"
-                      placeholder="01XXXXXXXXX"
-                    />
-                  </Field>
-                  <Field label={L('District', 'জেলা')} required error={errors.ship_district} htmlFor="shipDistrict">
-                    <LocationSelect
-                      id="shipDistrict"
-                      value={ship.district}
-                      options={DISTRICT_NAMES}
-                      onSelect={(name) => setShipField('district', name)}
-                      placeholder={L('Select a district', 'জেলা নির্বাচন করুন')}
-                      error={errors.ship_district}
-                    />
-                  </Field>
-                  <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} required error={errors.ship_thana} htmlFor="shipThana">
-                    <input
-                      id="shipThana"
-                      className={fieldClass(errors.ship_thana)}
-                      value={ship.thana}
-                      onChange={(e) => setShipField('thana', e.target.value)}
-                      autoComplete="address-level3"
-                      placeholder={L('e.g. Mirpur, Savar', 'যেমন: মিরপুর, সাভার')}
-                    />
-                  </Field>
-                </div>
-                <Field label={L('Recipient full address', 'প্রাপকের বিস্তারিত ঠিকানা')} required error={errors.ship_address} htmlFor="shipAddress">
-                  <textarea
-                    id="shipAddress"
-                    rows={2}
-                    className={`${fieldClass(errors.ship_address)} resize-y`}
-                    value={ship.address}
-                    onChange={(e) => setShipField('address', e.target.value)}
-                    placeholder={L('House, road, area', 'বাড়ি, রোড, এলাকা')}
-                  />
-                </Field>
-              </div>
-            )}
           </div>
 
           {/* Delivery charge tiers — auto-calculated from the selected location */}
@@ -712,10 +644,6 @@ export function CheckoutPage() {
               <div className="flex justify-between">
                 <dt className="text-foreground/75">
                   {L('Delivery charge', 'ডেলিভারি চার্জ')}{destDistrict ? ` · ${destDistrict}` : ''}
-                  {subtotal >= FREE_SHIP_AT && <span className="block text-sm text-emerald-600">{L('Free delivery on orders over ৳1,000', '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি')}</span>}
-                  {!freeShipping && subtotal < FREE_SHIP_AT && (
-                    <span className="block text-sm text-emerald-600">{L(`Add ${taka(FREE_SHIP_AT - subtotal)} more for free delivery`, `আরও ${taka(FREE_SHIP_AT - subtotal)} এর পণ্য যোগ করলে ফ্রি ডেলিভারি`)}</span>
-                  )}
                 </dt>
                 <dd>
                   {freeShipping ? (
@@ -757,26 +685,9 @@ export function CheckoutPage() {
               <span>{L('I agree to the terms and refund policy, and I am 18 or older.', 'আমি নিশ্চিত করছি আমার বয়স ১৮ বছর বা তার বেশি এবং আমি শর্তাবলী ও রিফান্ড পলিসি মেনে নিচ্ছি।')}</span>
             </label>
 
-            {/* Above the order limit the order goes through WhatsApp instead of the website */}
-            {isOverLimit ? (
-              <>
-                <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-base font-semibold text-amber-900">
-                  {L(`Orders above ${taka(ORDER_LIMIT)} are taken on WhatsApp. Tap below to send your order details.`, `${taka(ORDER_LIMIT)}-এর বেশি মূল্যের অর্ডার হোয়াটসঅ্যাপে নেওয়া হয়। অর্ডারের তথ্য পাঠাতে নিচে চাপুন।`)}
-                </p>
-                <a
-                  href={whatsappOrderHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-12 w-full items-center justify-center rounded-full bg-[#25D366] text-lg font-semibold text-white hover:opacity-90"
-                >
-                  {L('Order on WhatsApp', 'হোয়াটসঅ্যাপে অর্ডার করুন')}
-                </a>
-              </>
-            ) : (
-              <Button type="submit" size="lg" className="h-12 w-full rounded-full text-lg" disabled={submitting}>
-                {submitting ? L('Placing order...', 'অর্ডার প্রক্রিয়াধীন...') : `${L('Confirm order', 'অর্ডার কনফার্ম করুন')} · ${taka(totals.total)}`}
-              </Button>
-            )}
+            <Button type="submit" size="lg" className="h-12 w-full rounded-full text-lg" disabled={submitting}>
+              {submitting ? (<span className="flex items-center gap-2"><span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />{L('Placing order...', 'অর্ডার প্রক্রিয়াধীন...')}</span>) : `${L('Confirm order', 'অর্ডার কনফার্ম করুন')} · ${taka(totals.total)}`}
+            </Button>
           </aside>
         </div>
       </form>

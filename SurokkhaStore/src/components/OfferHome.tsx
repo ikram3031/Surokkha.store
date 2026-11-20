@@ -18,8 +18,6 @@ import {
   DISCOUNT_TIERS,
   nextTier,
   tierFor,
-  MAX_ORDER_AMOUNT,
-  MAX_QTY_PER_LINE,
   MAX_QTY_PER_ORDER,
   DELIVERY,
   deliveryZone,
@@ -296,11 +294,7 @@ export function OfferHome() {
       const p = products.find((x) => x.id === productId)!
       const v = p.variants?.find((x) => x.id === variantId)
       if (!(v ? v.inStock : p.inStock)) return fail(L('Sorry, this is out of stock right now', 'দুঃখিত, এটি এখন স্টকে নেই'))
-      const price = variantPrice(p, v)
-      if (cur >= MAX_QTY_PER_LINE) return fail(L(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`, `একটি প্রোডাক্ট সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি যোগ করা যাবে`))
       if (count >= MAX_QTY_PER_ORDER) return fail(L(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি আইটেম অর্ডার করা যাবে`))
-      if (subtotal + price > MAX_ORDER_AMOUNT)
-        return fail(L(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`, `${taka(MAX_ORDER_AMOUNT)}-এর বেশি মূল্যের অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`))
     }
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
@@ -345,11 +339,8 @@ export function OfferHome() {
     let n = cur
     if (delta === 1) {
       if (!p.inStock) return fail(L('Sorry, this is out of stock right now', 'দুঃখিত, এটি এখন স্টকে নেই'))
-      if (cur >= MAX_QTY_PER_LINE) return fail(L(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`, `একটি প্রোডাক্ট সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি যোগ করা যাবে`))
       n = cur === 0 ? trialMin : cur + 1
       if (count - cur + n > MAX_QTY_PER_ORDER) return fail(L(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি আইটেম অর্ডার করা যাবে`))
-      if (subtotal + (n - cur) * p.unitPrice > MAX_ORDER_AMOUNT)
-        return fail(L(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`, `${taka(MAX_ORDER_AMOUNT)}-এর বেশি মূল্যের অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`))
       sendAddToCart(p.did, p.slug || p.did, p.name, p.unitPrice, n - cur)
     } else n = cur <= trialMin ? 0 : cur - 1
     setTrialQty((q) => ({ ...q, [id]: n }))
@@ -363,10 +354,8 @@ export function OfferHome() {
   const pickTrial = (id: string, delta: 1 | -1) => {
     const p = trial?.products.find((x) => x.id === id)
     if (!p) return
-    const cur = trialPick[id] ?? 0
     if (delta === 1) {
       if (!p.inStock) return void fail(L('Sorry, this is out of stock right now', 'দুঃখিত, এটি এখন স্টকে নেই'))
-      if (cur + (trialQty[id] ?? 0) >= MAX_QTY_PER_LINE) return void fail(L(`You can add up to ${bn(MAX_QTY_PER_LINE)} of one product`, `একটি প্রোডাক্ট সর্বোচ্চ ${bn(MAX_QTY_PER_LINE)}টি যোগ করা যাবে`))
     }
     setTrialPick((q) => {
       const c = q[id] ?? 0
@@ -385,7 +374,6 @@ export function OfferHome() {
     if (pickedPieces < TRIAL_MIN_PIECES)
       return fail(L(`Pick at least ${bn(TRIAL_MIN_PIECES)} pieces for the Trial Pack (you have ${bn(pickedPieces)})`, `ট্রায়াল প্যাকের জন্য কমপক্ষে ${bn(TRIAL_MIN_PIECES)} পিস বাছাই করুন (আপনি নিয়েছেন ${bn(pickedPieces)})`))
     if (count + pickedPieces > MAX_QTY_PER_ORDER) return fail(L(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি আইটেম অর্ডার করা যাবে`))
-    if (subtotal + pickedAmount > MAX_ORDER_AMOUNT) return fail(L(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`, `${taka(MAX_ORDER_AMOUNT)}-এর বেশি মূল্যের অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`))
     setTrialQty((q) => {
       const next = { ...q }
       for (const [id, n] of Object.entries(trialPick)) next[id] = (next[id] ?? 0) + n

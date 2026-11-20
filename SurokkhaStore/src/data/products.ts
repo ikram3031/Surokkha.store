@@ -68,5 +68,4 @@ export const catBg: Record<ProductCategory, string> = {
   combo: 'bg-muted',
 }
 
-export const FREE_SHIP_AT = 1000
 export const SHIP_FEE = 60
