@@ -15,6 +15,8 @@ export const listItems = async (req, res, next) => {
 
     const queryOptions = method === "POST" ? req.body : req.query;
     const filter = await buildProductFilter(queryOptions);
+    // Shoppers only see active ones; trashed (isActive false) stay hidden
+    filter.isActive = true;
     const sort = buildProductSort(queryOptions);
     const { limit, skip } = parsePagination(queryOptions);
 
@@ -53,6 +55,7 @@ export const getSingleItem = async (req, res, next) => {
     const filter = isObjectId
       ? { $or: [{ _id: identifier }, { slug: identifier }, { did: identifier }] }
       : { $or: [{ slug: identifier }, { did: identifier }] };
+    filter.isActive = true;
 
     const item = await ItemModel.findOne(filter)
       .populate("categories")
