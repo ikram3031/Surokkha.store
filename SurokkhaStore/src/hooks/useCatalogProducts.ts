@@ -46,6 +46,7 @@ function toOfferProduct(p: ApiProduct, entity: 'product' | 'item' = 'product'): 
     id: p.did,
     apiId: p.id ?? p._id ?? '',
     did: p.did,
+    slug: p.slug,
     entity,
     sku: p.did,
     name: p.name ?? p.did,

@@ -14,6 +14,8 @@ export interface OfferProduct {
   id: string
   apiId: string
   did: string
+  /** Catalog slug: the dashboard analytics key, same as the main site */
+  slug?: string
   entity: 'product' | 'item'
   sku: string
   name: string

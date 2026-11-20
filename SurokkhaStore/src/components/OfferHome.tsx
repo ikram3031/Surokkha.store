@@ -261,7 +261,7 @@ export function OfferHome() {
 
   // One dashboard funnel row per product line in the order, like the main checkout sends
   const orderEventLines = (eventType: ProductEventType) => [
-    ...lines.map((l) => ({ eventType, productKey: l.product.id, productName: l.product.name, quantity: l.qty, value: l.unitPrice * l.qty })),
+    ...lines.map((l) => ({ eventType, productKey: l.product.slug || l.product.id, productName: l.product.name, quantity: l.qty, value: l.unitPrice * l.qty })),
     ...trialLines.map((l) => ({ eventType, productKey: l.product.slug || l.product.did, productName: l.product.name, quantity: l.qty, value: l.product.unitPrice * l.qty })),
   ]
 
@@ -279,7 +279,7 @@ export function OfferHome() {
     const contentId = quickView.sku || quickView.id
     const eventId = newEventId('vc')
     trackViewContent({ productDid: contentId, productName: quickView.name, price: quickView.price, eventId })
-    trackProductView(quickView.id, quickView.name)
+    trackProductView(quickView.slug || quickView.id, quickView.name)
     track('ViewContent', { content_ids: [contentId], content_name: quickView.name, content_type: 'product', value: quickView.price, currency: 'BDT' }, eventId)
   }, [quickView])
 
@@ -305,7 +305,7 @@ export function OfferHome() {
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
       const v = p.variants?.find((x) => x.id === variantId)
-      sendAddToCart(v?.sku || p.sku || p.id, p.id, v ? `${p.name} (${v.label})` : p.name, variantPrice(p, v), 1)
+      sendAddToCart(v?.sku || p.sku || p.id, p.slug || p.id, v ? `${p.name} (${v.label})` : p.name, variantPrice(p, v), 1)
     }
     setQty((q) => ({ ...q, [k]: Math.max(0, cur + delta) }))
     return true
