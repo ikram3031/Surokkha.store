@@ -61,15 +61,16 @@ export function PromoBanner() {
       tabIndex={0}
       onClick={openBar}
       onKeyDown={(e) => e.key === 'Enter' && openBar()}
-      className={`group w-full overflow-hidden bg-header text-white/85 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] cursor-pointer`}
+      className={`group w-full overflow-hidden bg-header [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)] cursor-pointer`}
     >
-      <div className="animate-marquee flex w-max py-3 [animation-duration:50s] group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+      <div className="animate-marquee flex h-[60px] w-max items-center md:h-[80px] [animation-duration:50s] group-hover:[animation-play-state:paused] motion-reduce:animate-none">
         {[0, 1].map((half) => (
-          <p key={half} aria-hidden={half === 1 || undefined} className="flex shrink-0 items-center text-sm font-medium tracking-wide whitespace-nowrap md:text-[15px]">
+          <p key={half} aria-hidden={half === 1 || undefined} className="flex shrink-0 items-center text-[28px] leading-none font-semibold text-[#e6c27a] tracking-wide whitespace-nowrap md:text-[40px]">
             {Array.from({ length: REPEAT }).map((_, r) => (
               <span key={r} aria-hidden={r > 0 || undefined} className="flex items-center">
                 {banner.text}
-                <span aria-hidden className="mx-8 text-white/40">•</span>
+                <span aria-hidden className="ml-5 rounded-full bg-[#e6c27a] px-4 py-1.5 text-sm font-bold tracking-normal text-[#1a1208] shadow-[0_0_14px_rgba(230,194,122,0.45)] md:px-5 md:py-2 md:text-lg">রেজিস্টার →</span>
+                <span aria-hidden className="mx-10 text-[#e6c27a]/50">✦</span>
               </span>
             ))}
           </p>
