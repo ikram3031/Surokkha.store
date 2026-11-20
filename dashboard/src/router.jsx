@@ -1062,6 +1062,7 @@ const analyticsRoutes = [
   { path: 'overview', ...lazyPage(() => import('./pages/analytics/overview')) },
   { path: 'conversion', ...lazyPage(() => import('./pages/analytics/conversion')) },
   { path: 'products', ...lazyPage(() => import('./pages/analytics/products')) },
+  { path: 'pages', ...lazyPage(() => import('./pages/analytics/pages')) },
   { path: 'live', ...lazyPage(() => import('./pages/analytics/live')) },
 ];
 
