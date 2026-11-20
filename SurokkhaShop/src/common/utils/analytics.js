@@ -483,14 +483,36 @@ export const resolveCatalogId = (itemOrKey, fallbackObj = null) => {
   return keyStr;
 }
 
+const SKIPPED_PAGE_TYPES = ['product', 'checkout'];
+
+// First-party page view for the dashboard Pages report (never sent to Meta); product and checkout pages are counted by the product funnel
+export const trackSitePage = (pageType = 'home') => {
+  if (!isBrowser || SKIPPED_PAGE_TYPES.includes(pageType)) return;
+  let landing = false;
+  try {
+    landing = !window.sessionStorage.getItem('_sk_landed');
+    window.sessionStorage.setItem('_sk_landed', '1');
+  } catch (_) {}
+  const path = window.location.pathname;
+  const referrer = document.referrer || '';
+  const source = resolveTrafficSource();
+  const visitorId = getExternalId();
+  window.setTimeout(() => {
+    fetch(`${API_BASE_URL}/api/v1/page-views`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, pageType, title: document.title, landing, source, referrer, visitorId }),
+      keepalive: true
+    }).catch(() => {});
+  }, 800);
+};
+
 /**
- * 1. Track PageView (Pixel + CAPI + GA4)
+ * 1. Track a page change: our Pages report and GA4. Meta gets its one PageView from index.html on entry, not on every page change.
  */
 export const trackPageView = (pageName = 'home', path = '/') => {
   if (isDuplicateEvent(`PageView|${path}`)) return;
-  const eventId = generateEventId('pv');
-  fbqTrack('PageView', {}, eventId);
-  sendMetaCAPI({ eventName: 'PageView', eventId });
+  trackSitePage(pageName);
   gtagEvent('page_view', {
     page_title: `${SITE_CONFIG.brandName} - ${pageName}`,
     page_location: isBrowser ? window.location.href : '',

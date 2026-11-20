@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import NotFoundView from './views/NotFoundView';
 import { useStore, parseRouteFromLocation } from './store/useStore';
+import { trackSitePage } from './utils/analytics';
 import Navbar from './components/SurokkhaNavbar';
 import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
@@ -36,6 +37,7 @@ export default function App() {
     if (fetchCategories) fetchCategories();
     if (fetchPopularity) fetchPopularity();
     const initial = parseRouteFromLocation();
+    trackSitePage(initial.view);
     if (initial.openCart) {
       openCartDrawer();
     }
