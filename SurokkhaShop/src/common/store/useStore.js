@@ -26,7 +26,7 @@ export const parseRouteFromLocation = () => {
   if (pathname === '/' || pathname === '') {
     return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
   }
-  if (pathname === '/offers' || pathname === '/shop/offers' || pathname === '/shop/combo' || pathname === '/combo' || pathname === '/products/combo' || pathname.startsWith('/shop/combo') || pathname.startsWith('/offers')) {
+  if (pathname === '/offers' || pathname === '/shop/offers' || pathname === '/shop/combo' || pathname === '/combo' || pathname === '/products/combo' || pathname.startsWith('/offers')) {
     return { view: 'combo', slug: 'mo-micro-thin-latex-contraceptive-20-pcs-combo' };
   }
   if (pathname === '/shop' || pathname === '/products' || pathname === '/store') {
