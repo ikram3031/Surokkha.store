@@ -34,6 +34,8 @@ import { checkPhone } from '@/lib/api/orders'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 import { normalizePhone, toEnDigits } from '@/lib/checkout'
 import { getFbIdentifiers, pixelTrack as track, setPixelUserData } from '@/lib/pixel'
+import { newEventId, trackAddToCart, trackViewContent } from '@/lib/api/events'
+import { trackProductEvents, trackProductView, type ProductEventType } from '@/lib/api/productEvents'
 import { bn, taka } from '@/lib/bn'
 import { L } from '@/lib/i18n'
 
@@ -249,6 +251,38 @@ export function OfferHome() {
   const total = subtotal - discount + shipping
   const topTier = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1]
 
+  // Add to cart, the same way the main site sends it: pixel and server CAPI with one event id, plus dashboard analytics
+  const sendAddToCart = (contentId: string, productKey: string, name: string, unitPrice: number, qtyAdded: number) => {
+    const eventId = newEventId('atc')
+    trackAddToCart({ productDid: contentId, productName: name, price: unitPrice, qty: qtyAdded, eventId })
+    trackProductEvents([{ eventType: 'add_to_cart', productKey, productName: name, quantity: qtyAdded, value: unitPrice * qtyAdded }])
+    track('AddToCart', { content_ids: [contentId], content_name: name, content_type: 'product', value: unitPrice * qtyAdded, currency: 'BDT' }, eventId)
+  }
+
+  // One dashboard funnel row per product line in the order, like the main checkout sends
+  const orderEventLines = (eventType: ProductEventType) => [
+    ...lines.map((l) => ({ eventType, productKey: l.product.id, productName: l.product.name, quantity: l.qty, value: l.unitPrice * l.qty })),
+    ...trialLines.map((l) => ({ eventType, productKey: l.product.slug || l.product.did, productName: l.product.name, quantity: l.qty, value: l.product.unitPrice * l.qty })),
+  ]
+
+  const checkoutTracked = useRef(false)
+  // Dashboard checkout step, once per checkout session
+  const sendCheckoutAnalytics = () => {
+    if (checkoutTracked.current || !count) return
+    checkoutTracked.current = true
+    trackProductEvents(orderEventLines('checkout'))
+  }
+
+  // Opening a product's quick view counts as a product view, as a product page does on the main site
+  useEffect(() => {
+    if (!quickView) return
+    const contentId = quickView.sku || quickView.id
+    const eventId = newEventId('vc')
+    trackViewContent({ productDid: contentId, productName: quickView.name, price: quickView.price, eventId })
+    trackProductView(quickView.id, quickView.name)
+    track('ViewContent', { content_ids: [contentId], content_name: quickView.name, content_type: 'product', value: quickView.price, currency: 'BDT' }, eventId)
+  }, [quickView])
+
   const fail = (message: string) => {
     toast.error(message)
     return false
@@ -271,13 +305,7 @@ export function OfferHome() {
     if (delta > 0) {
       const p = products.find((x) => x.id === productId)!
       const v = p.variants?.find((x) => x.id === variantId)
-      track('AddToCart', {
-        content_ids: [v?.sku || p.sku || p.id],
-        content_name: v ? `${p.name} (${v.label})` : p.name,
-        content_type: 'product',
-        value: variantPrice(p, v),
-        currency: 'BDT',
-      })
+      sendAddToCart(v?.sku || p.sku || p.id, p.id, v ? `${p.name} (${v.label})` : p.name, variantPrice(p, v), 1)
     }
     setQty((q) => ({ ...q, [k]: Math.max(0, cur + delta) }))
     return true
@@ -288,6 +316,7 @@ export function OfferHome() {
     if (!count) return toast.error(L('Please select at least one product first', 'অনুগ্রহ করে আগে অন্তত একটি প্রোডাক্ট নির্বাচন করুন'))
     // Same event id as the main checkout, so the server's CAPI InitiateCheckout merges with this one
     track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count }, `ic_${getCheckoutSessionId()}`)
+    sendCheckoutAnalytics()
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -321,7 +350,7 @@ export function OfferHome() {
       if (count - cur + n > MAX_QTY_PER_ORDER) return fail(L(`You can order up to ${bn(MAX_QTY_PER_ORDER)} items in one order`, `এক অর্ডারে সর্বোচ্চ ${bn(MAX_QTY_PER_ORDER)}টি আইটেম অর্ডার করা যাবে`))
       if (subtotal + (n - cur) * p.unitPrice > MAX_ORDER_AMOUNT)
         return fail(L(`For orders above ${taka(MAX_ORDER_AMOUNT)}, please contact us`, `${taka(MAX_ORDER_AMOUNT)}-এর বেশি মূল্যের অর্ডারের জন্য আমাদের সাথে যোগাযোগ করুন`))
-      track('AddToCart', { content_ids: [p.did], content_name: p.name, content_type: 'product', value: (n - cur) * p.unitPrice, currency: 'BDT' })
+      sendAddToCart(p.did, p.slug || p.did, p.name, p.unitPrice, n - cur)
     } else n = cur <= trialMin ? 0 : cur - 1
     setTrialQty((q) => ({ ...q, [id]: n }))
     return true
@@ -362,7 +391,7 @@ export function OfferHome() {
       for (const [id, n] of Object.entries(trialPick)) next[id] = (next[id] ?? 0) + n
       return next
     })
-    track('AddToCart', { content_ids: [trial.did], content_name: trial.name, content_type: 'product', value: pickedAmount, currency: 'BDT' })
+    sendAddToCart(trial.did, `combo:${trial.slug}`, trial.name, pickedAmount, 1)
     setTrialPick({})
     toast.success(L(`${trial.name} added to your order`, `${trial.name} অর্ডারে যোগ করা হয়েছে`))
     return true
@@ -554,6 +583,9 @@ export function OfferHome() {
         orderNumber || undefined,
       )
       if (orderNumber) trackedOrders.add(orderNumber)
+      sendCheckoutAnalytics()
+      trackProductEvents(orderEventLines('purchase'))
+      checkoutTracked.current = false
       resetCheckoutSession()
       setPlaced(orderNumber)
       setQty({})
