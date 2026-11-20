@@ -183,6 +183,13 @@ export function OrderQuickView({ list }) {
                         <Phone className="size-4 shrink-0 text-muted-foreground" />
                         <a href={`tel:${phone}`} className="font-medium text-primary hover:underline">{phone}</a>
                         <span className="ml-auto flex gap-1">
+                          <a
+                            href={`tel:${phone}`}
+                            className={cn(contactBtn, 'border-sky-500/30 bg-sky-500/10 text-sky-600 hover:bg-sky-500/20 dark:text-sky-400')}
+                            title="Call customer"
+                          >
+                            <Phone className="size-3" />
+                          </a>
                           <button
                             type="button"
                             onClick={() => handleCopyText(phone, 'Phone number')}
