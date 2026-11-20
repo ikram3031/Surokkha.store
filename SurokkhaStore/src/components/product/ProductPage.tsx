@@ -15,6 +15,7 @@ import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
 import { L } from '@/lib/i18n'
+import { withSite } from '@/lib/pageTitle'
 
 const RECENTLY_VIEWED_KEY = 'surokkha_recently_viewed'
 const MAX_RECENTLY_VIEWED = 20
@@ -95,6 +96,7 @@ export function ProductPage({ slug }: { slug: string }) {
         const mapped = mapApiProduct(raw)
         if (cancelled) return
         setProduct(mapped)
+        document.title = withSite(L(`Buy ${mapped.name} online in Bangladesh`, `${mapped.name} কিনুন অনলাইনে`))
         setRecentIds(recordRecentlyViewedId(productIdentifier(mapped)))
         const contentId = mapped.did ?? mapped.slug ?? String(mapped.id)
         const eventId = newEventId('vc')

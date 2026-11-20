@@ -40,6 +40,7 @@ import { BlogPost } from '@/components/blog/BlogPost'
 import { NotFoundPage } from '@/components/pages/NotFoundPage'
 import { categoryPath, navigate, useRoute, type Route } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
+import { staticRouteTitle } from '@/lib/pageTitle'
 import { trackPageView } from '@/lib/api/productEvents'
 import type { ShopFilter } from '@/components/shop/FilterBar'
 
@@ -70,6 +71,12 @@ function AppShell() {
   const searching = query.trim().length > 0 && route.name !== 'checkout' && route.name !== 'confirmation'
   const routeKey =
     route.name === 'product' || route.name === 'category' || route.name === 'group-offer' || route.name === 'blog-post' ? `${route.name}:${route.slug}` : route.name === 'policy' ? `policy:${route.page}` : route.name
+
+  // Every page gets its own title (product, category, blog and 404 pages set theirs from their own data)
+  useEffect(() => {
+    const title = staticRouteTitle(route)
+    if (title) document.title = title
+  }, [routeKey])
 
   // Meta gets one PageView per visit (on entry); every page change is counted only in our own Pages report
   const metaPageViewSent = useRef(false)

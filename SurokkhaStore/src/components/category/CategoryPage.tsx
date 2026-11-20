@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
+import { withSite } from '@/lib/pageTitle'
 import { ProductGrid } from '@/components/shop/ProductGrid'
 import { useCategories } from '@/hooks/useCategories'
 import { useProducts } from '@/hooks/useProducts'
@@ -12,6 +13,10 @@ export function CategoryPage({ slug }: { slug: string }) {
   const { products, loading, error } = useProducts()
 
   const label = categories.find((c) => c.slug === slug)?.label ?? slug.replace(/-/g, ' ')
+  useEffect(() => {
+    document.title = withSite(L(`Buy ${label} online in Bangladesh`, `${label} অনলাইনে কিনুন বাংলাদেশে`))
+  }, [label])
+
   const list = useMemo(() => products.filter((p) => p.categorySlugs?.includes(slug)), [products, slug])
 
   return (
