@@ -58,22 +58,48 @@ function Article({ post }: { post: Post }) {
     const prevDesc = meta?.content
     document.title = `${post.title} | সুরক্ষা ব্লগ`
     if (meta) meta.content = post.excerpt
+    const url = `https://surokkhastore.shop/blog/${encodeURIComponent(post.slug)}`
+    const image = post.image ? `https://surokkhastore.shop${post.image}` : undefined
+    const og = [
+      ['og:type', 'article'],
+      ['og:title', post.title],
+      ['og:description', post.excerpt],
+      ['og:url', url],
+      ['og:image', image],
+      ['twitter:card', 'summary_large_image'],
+    ]
+      .filter((pair): pair is [string, string] => Boolean(pair[1]))
+      .map(([key, value]) => {
+        const tag = document.createElement('meta')
+        tag.setAttribute(key.startsWith('og:') ? 'property' : 'name', key)
+        tag.content = value
+        document.head.appendChild(tag)
+        return tag
+      })
     const ld = document.createElement('script')
     ld.type = 'application/ld+json'
     ld.textContent = JSON.stringify({
       '@context': 'https://schema.org',
-      '@type': 'Article',
+      '@type': 'BlogPosting',
       headline: post.title,
       description: post.excerpt,
+      image: image ? [image] : undefined,
       datePublished: post.date,
+      dateModified: post.date,
+      mainEntityOfPage: url,
       inLanguage: 'bn',
-      author: { '@type': 'Organization', name: 'সুরক্ষা টিম' },
-      publisher: { '@type': 'Organization', name: 'Surokkha' },
+      author: { '@type': 'Organization', name: 'সুরক্ষা টিম', url: 'https://surokkhastore.shop' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Surokkha Store',
+        logo: { '@type': 'ImageObject', url: 'https://surokkhastore.shop/surokkha_store_logo.png' },
+      },
     })
     document.head.appendChild(ld)
     return () => {
       document.title = prevTitle
       if (meta && prevDesc !== undefined) meta.content = prevDesc
+      og.forEach((tag) => tag.remove())
       ld.remove()
     }
   }, [post])

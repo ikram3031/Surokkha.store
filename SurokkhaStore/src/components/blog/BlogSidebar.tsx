@@ -120,6 +120,7 @@ export function BlogSidebar({
               scroll={scroll}
               onClick={onNavigate}
               className="blog-tag-pill"
+              rel="nofollow"
               aria-pressed={filters.tags.includes(t.id)}
             >
               #{t.name}

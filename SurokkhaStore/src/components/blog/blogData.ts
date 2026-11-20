@@ -111,6 +111,7 @@ export const POSTS: BlogPost[] = [
     pop: 98,
     g: 0,
     tone: "light",
+    image: "/blog/safe-relationship-5-things.webp",
     featured: true,
     body: `
 <p>নিরাপদ সম্পর্ক মানে শুধু একটি পণ্য ব্যবহার করা নয়; এটা একটা অভ্যাস। নিচের পাঁচটি বিষয় মনে রাখলে নিজের ও সঙ্গীর সুরক্ষা অনেক বেশি নিশ্চিত হয়।</p>
@@ -138,6 +139,7 @@ export const POSTS: BlogPost[] = [
     pop: 91,
     g: 6,
     tone: "dark",
+    image: "/blog/how-to-use-condom-correctly.webp",
     body: `
 <p>কনডম সঠিকভাবে ব্যবহার করলে গর্ভনিরোধে এটি প্রায় ৯৮% কার্যকর, আর বাস্তব জীবনের সাধারণ ব্যবহারে প্রায় ৮৭%। এই ফাঁকটা আসে মূলত ছোট ছোট ভুল থেকে। চলুন ভুলগুলো এড়ানো শিখি।</p>
 <h2>শুরুর আগে যা দেখবেন</h2>
@@ -170,6 +172,7 @@ export const POSTS: BlogPost[] = [
     pop: 95,
     g: 2,
     tone: "dark",
+    image: "/blog/7-condom-myths.webp",
     body: `
 <p>কনডম নিয়ে সমাজে অনেক কথা চালু আছে। তার বেশিরভাগই গুজব। সত্যটা জেনে নিন।</p>
 <h2>১. “দুটো পরলে বেশি নিরাপদ”</h2>
@@ -198,6 +201,7 @@ export const POSTS: BlogPost[] = [
     pop: 84,
     g: 3,
     tone: "light",
+    image: "/blog/choose-right-condom-size.webp",
     body: `
 <p>কনডমের আকার শুধু আরামের বিষয় নয়, এটা সুরক্ষারও বিষয়। ভুল মাপ মানে খুলে যাওয়া বা ছিঁড়ে যাওয়ার ঝুঁকি।</p>
 <h2>দৈর্ঘ্য নয়, প্রস্থ আসল</h2>
@@ -223,6 +227,7 @@ export const POSTS: BlogPost[] = [
     pop: 88,
     g: 4,
     tone: "dark",
+    image: "/blog/shop-online-discreetly.webp",
     body: `
 <p>অনেকেই দোকানে গিয়ে এসব পণ্য কিনতে অস্বস্তি বোধ করেন। অনলাইনে কেনা হতে পারে সহজ ও সম্মানজনক সমাধান, যদি কয়েকটা বিষয় দেখে নেন।</p>
 <h2>যা দেখে অর্ডার করবেন</h2>
@@ -247,6 +252,7 @@ export const POSTS: BlogPost[] = [
     pop: 79,
     g: 1,
     tone: "light",
+    image: "/blog/which-lubricant-is-safe.webp",
     body: `
 <p>লুব্রিকেন্ট ঘর্ষণ কমায়, আরাম বাড়ায় এবং কনডম ছিঁড়ে যাওয়ার সম্ভাবনা কমাতে সাহায্য করে। কিন্তু সব লুব্রিকেন্ট সব কনডমের জন্য নয়।</p>
 <h2>তিন ধরনের লুব্রিকেন্ট</h2>
@@ -275,6 +281,7 @@ export const POSTS: BlogPost[] = [
     pop: 66,
     g: 5,
     tone: "light",
+    image: "/blog/store-condoms-safely.webp",
     body: `
 <p>একটা ভালো কনডমও ভুলভাবে রাখলে নষ্ট হয়ে যেতে পারে। সংরক্ষণের নিয়ম খুব সহজ।</p>
 <h2>কোথায় রাখবেন</h2>
@@ -304,6 +311,7 @@ export const POSTS: BlogPost[] = [
     pop: 72,
     g: 7,
     tone: "light",
+    image: "/blog/sti-basics-and-condoms.webp",
     body: `
 <p>যৌনবাহিত সংক্রমণ (STI) নিয়ে আমাদের সমাজে লজ্জা আর ভুল ধারণা অনেক। কিন্তু সঠিক তথ্য জানলে প্রতিরোধ ও চিকিৎসা দুটোই সহজ হয়।</p>
 <h2>STI কী</h2>
@@ -333,6 +341,7 @@ export const POSTS: BlogPost[] = [
     pop: 90,
     g: 2,
     tone: "dark",
+    image: "/blog/beginner-condom-buying-guide.webp",
     body: `
 <p>প্রথমবার কিনতে গেলে অনেকে দ্বিধায় পড়েন। বাজারে নানা রকম, কোনটা নেবেন? চিন্তা নেই, কয়েকটা প্রশ্নের উত্তরেই সিদ্ধান্ত সহজ।</p>
 <h2>প্রধান ধরনগুলো</h2>

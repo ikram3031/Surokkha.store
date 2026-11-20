@@ -48,7 +48,7 @@ export function BlogCover({ post, className = 'aspect-[16/10]' }: { post: BlogPo
         <span className="absolute -bottom-12 -left-8 h-44 w-44 rounded-full bg-white/15" />
         <span className="absolute bottom-6 right-10 h-10 w-10 rounded-full bg-white/20" />
         {post.image ? (
-          <img src={post.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={post.image} alt={post.title} width={1200} height={630} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <span className="absolute left-1/2 top-1/2 grid aspect-square h-[34%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/25 backdrop-blur-sm">
             <Icon className="h-1/2 w-1/2" strokeWidth={1.8} />

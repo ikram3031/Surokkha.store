@@ -4,5 +4,9 @@ Disallow: /checkout
 Disallow: /account
 Disallow: /order-confirmed
 Disallow: /home-classic
+Disallow: /blog?*tag=
+Disallow: /*?*fbclid=
+Disallow: /*?*utm_
+Disallow: /*?q=
 
 Sitemap: https://surokkhastore.shop/sitemap.xml
