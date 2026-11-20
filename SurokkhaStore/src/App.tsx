@@ -40,6 +40,7 @@ import { BlogPost } from '@/components/blog/BlogPost'
 import { NotFoundPage } from '@/components/pages/NotFoundPage'
 import { categoryPath, navigate, useRoute, type Route } from '@/lib/router'
 import { pixelTrack } from '@/lib/pixel'
+import { trackPageView } from '@/lib/api/productEvents'
 import type { ShopFilter } from '@/components/shop/FilterBar'
 
 // Ads launch mode: the whole storefront is the single offer page (the /offer page),
@@ -70,9 +71,14 @@ function AppShell() {
   const routeKey =
     route.name === 'product' || route.name === 'category' || route.name === 'group-offer' || route.name === 'blog-post' ? `${route.name}:${route.slug}` : route.name === 'policy' ? `policy:${route.page}` : route.name
 
-  // One PageView per page (the SPA never reloads between routes)
+  // Meta gets one PageView per visit (on entry); every page change is counted only in our own Pages report
+  const metaPageViewSent = useRef(false)
   useEffect(() => {
-    pixelTrack('PageView')
+    if (!metaPageViewSent.current) {
+      metaPageViewSent.current = true
+      pixelTrack('PageView')
+    }
+    trackPageView(route.name)
     // Opening any page (a product from the results, a category...) ends the search
     setQuery('')
   }, [routeKey])

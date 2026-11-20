@@ -62,3 +62,28 @@ export function trackProductView(productKey: string, productName: string) {
   }
   trackProductEvents([{ eventType: 'view', productKey, productName }])
 }
+
+const SKIPPED_PAGE_TYPES = ['product', 'checkout']
+
+/** POST /store/v1/page-views — first-party page view for the dashboard Pages report (not sent to Meta). Product and checkout pages are skipped: the product funnel counts them. */
+export function trackPageView(pageType: string) {
+  if (typeof window === 'undefined' || SKIPPED_PAGE_TYPES.includes(pageType)) return
+  let landing = false
+  try {
+    landing = !sessionStorage.getItem('_sk_landed')
+    sessionStorage.setItem('_sk_landed', '1')
+  } catch {
+    /* storage blocked: not marked as a landing */
+  }
+  const path = window.location.pathname
+  const referrer = document.referrer || ''
+  const source = resolveTrafficSource()
+  const visitorId = getExternalId()
+  window.setTimeout(() => {
+    api
+      .post<void>('/page-views', { path, pageType, title: document.title, landing, source, referrer, visitorId }, { keepalive: true })
+      .catch(() => {
+        /* analytics should never block or surface errors to the user */
+      })
+  }, 800)
+}
