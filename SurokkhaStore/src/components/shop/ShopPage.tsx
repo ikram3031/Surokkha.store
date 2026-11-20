@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { ShopFilters } from '@/components/shop/ShopFilters'
@@ -10,8 +10,6 @@ import { useProducts } from '@/hooks/useProducts'
 import { bn } from '@/lib/bn'
 import { L } from '@/lib/i18n'
 import { navigate, useSearch } from '@/lib/router'
-
-const PAGE_SIZE = 8
 
 type Sort = 'default' | 'price-asc' | 'price-desc'
 
@@ -32,8 +30,6 @@ export const ShopPage = () => {
   const sort: Sort = sortParam && SORTS.includes(sortParam) ? sortParam : 'default'
 
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [visible, setVisible] = useState(PAGE_SIZE)
-  const sentinel = useRef<HTMLDivElement>(null)
 
   const update = (changes: Record<string, string>) => {
     const next = new URLSearchParams(window.location.search)
@@ -72,19 +68,6 @@ export const ShopPage = () => {
     if (sort === 'price-desc') return [...filtered].sort((a, b) => b.price - a.price)
     return filtered
   }, [products, category, minPrice, maxPrice, query, sort])
-
-  const shown = list.slice(0, visible)
-  const hasMore = visible < list.length
-
-  useEffect(() => setVisible(PAGE_SIZE), [category, minPrice, maxPrice, query, sort])
-
-  useEffect(() => {
-    const el = sentinel.current
-    if (!el || !hasMore) return undefined
-    const observer = new IntersectionObserver((entries) => entries[0].isIntersecting && setVisible((v) => v + PAGE_SIZE), { rootMargin: '400px 0px' })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [hasMore, visible])
 
   const filters = (
     <ShopFilters
@@ -162,11 +145,10 @@ export const ShopPage = () => {
           {!loading && !error && list.length > 0 && (
             <>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                {shown.map((product) => (
+                {list.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
-              {hasMore && <div ref={sentinel} className="h-10" aria-hidden="true" />}
             </>
           )}
         </div>
