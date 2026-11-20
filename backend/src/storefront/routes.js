@@ -21,6 +21,7 @@ import pixelEventsRouter from "./routes/PixelEventsRoute.js";
 import locationsRouter from "./routes/LocationsRoute.js";
 import checkoutLeadRouter from "./routes/CheckoutLeadRoute.js";
 import productEventRouter from "./routes/ProductEventRoute.js";
+import pageViewRouter from "./routes/PageViewRoute.js";
 // Same customer accounts (members collection, same token) as the StoreWeb API
 import promoRouter from "../storeWeb/routes/PromoRoute.js";
 import customerAuthRouter from "../storeWeb/routes/CustomerAuthRoute.js";
@@ -49,6 +50,7 @@ storefrontRouter.use("/events", pixelEventsRouter);
 storefrontRouter.use("/locations", locationsRouter);
 storefrontRouter.use("/checkout-leads", checkoutLeadRouter);
 storefrontRouter.use("/product-events", productEventRouter);
+storefrontRouter.use("/page-views", pageViewRouter);
 storefrontRouter.use("/customer-auth", customerAuthRouter);
 storefrontRouter.use("/promo", promoRouter);
 storefrontRouter.get("/search-products", searchProducts);

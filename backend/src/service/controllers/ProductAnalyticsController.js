@@ -16,7 +16,7 @@ const startOfDhakaToday = () => {
 const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ""));
 
 // ?preset=today|yesterday|month|7|15|30  or  ?preset=custom&from=YYYY-MM-DD&to=YYYY-MM-DD (dates are Asia/Dhaka days)
-const rangeOf = (query) => {
+export const rangeOf = (query) => {
   const todayStart = startOfDhakaToday();
   const preset = String(query.preset || "today");
 
@@ -182,7 +182,7 @@ const pad2 = (n) => String(n).padStart(2, "0");
 const dhakaDay = (d) => new Date(d.getTime() + DHAKA_OFFSET_MS).toISOString().slice(0, 10);
 
 // Every hour ("HH:00") or day ("YYYY-MM-DD", Asia/Dhaka) of the range; a range that is still running stops at the current hour
-const bucketKeysOf = (range, hourly) => {
+export const bucketKeysOf = (range, hourly) => {
   if (hourly) {
     const stillRunning = range.to.getTime() >= Date.now() - 1000;
     const last = stillRunning ? new Date(Date.now() + DHAKA_OFFSET_MS).getUTCHours() : 23;
