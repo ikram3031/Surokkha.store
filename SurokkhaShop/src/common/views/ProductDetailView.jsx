@@ -246,7 +246,7 @@ export default function ProductDetailView() {
     if (!p) return false;
     const isOut = Boolean(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
     return !isOut;
-  }).slice(0, 4);
+  }).slice(0, 8); // best sellers first (productKeys are sorted by order count): 2 rows of 4
 
   const handleBuyNow = () => {
     if (isOutOfStock) return;
