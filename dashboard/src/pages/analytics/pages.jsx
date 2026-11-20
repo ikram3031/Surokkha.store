@@ -41,8 +41,11 @@ const PAGE_TYPE_LABELS = {
 // Hour label for a single day, short date otherwise
 const formatBucket = (b, hourly) => (hourly ? b : new Date(`${b}T00:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
 
-// Page title without the brand suffix, falling back to the path
-const pageLabel = (row) => (row.title || '').split(/\s[|–-]\s/)[0].trim() || row.path;
+// Blog posts show their title; other pages may keep the previous page's title, so they are named by type and path
+const pageLabel = (row) => {
+  const title = row.pageType === 'blog-post' ? (row.title || '').split(/\s[|–-]\s/)[0].trim() : '';
+  return title || (row.path === '/' ? PAGE_TYPE_LABELS[row.pageType] || 'Home' : row.path);
+};
 
 // Page views report: which pages people open and which pages they enter the site on
 export default function AnalyticsPages() {
