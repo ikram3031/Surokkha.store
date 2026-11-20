@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiClient } from '@/lib/api-client';
 import {
-  ShoppingCart, Trash2, Phone, Search, Copy, Eye, FilePlus, UserCheck, Mail, MapPin, Package, ExternalLink,
+  ShoppingCart, Trash2, Phone, Search, Copy, Eye, FilePlus, UserCheck, Mail, MapPin, Package, ExternalLink, ShieldAlert,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/error-handler';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -295,6 +296,15 @@ export default function AbandonedCheckouts() {
   const stats = data?.stats;
   const pagination = data?.pagination;
 
+  const spamMutation = useMutation({
+    mutationFn: (lead) => apiClient.post('/api/v1/orders/spam', { phone: lead.phone || '', email: lead.email || '' }),
+    onSuccess: () => {
+      toast.success(t('spam.added_success', 'Added to spam list'));
+      queryClient.invalidateQueries({ queryKey: ['spam-list'] });
+    },
+    onError: (err) => toast.error(getApiErrorMessage(err, t('spam.added_error', 'Failed to add to spam list'))),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       await apiClient.delete(`/api/v1/checkout-leads/${id}`);
@@ -469,6 +479,11 @@ export default function AbandonedCheckouts() {
                           {lead.phone && (
                             <DropdownMenuItem onClick={() => window.open(whatsAppUrl(lead), '_blank')}>
                               <WhatsAppIcon className="size-4" /> WhatsApp
+                            </DropdownMenuItem>
+                          )}
+                          {(lead.phone || lead.email) && (
+                            <DropdownMenuItem disabled={spamMutation.isPending} onClick={() => spamMutation.mutate(lead)}>
+                              <ShieldAlert className="size-4" /> {t('abandoned.add_to_spam', 'Add to spam list')}
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
