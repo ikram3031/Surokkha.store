@@ -31,8 +31,8 @@ export const validateOrderPayload = (body) => {
   const orderPrefix = String(body.orderPrefix || '').trim().toUpperCase();
   // Store (ST) marks email optional, and the Shop (SH) mobile checkout does not ask for it at all
   const isEmailOptional = orderPrefix === 'ST' || orderPrefix === 'SH';
-  // Shop mobile checkout takes district only (delivery charge is by district), so no thana arrives
-  const addressOpts = { areaOptional: orderPrefix === 'SH' };
+  // Shop mobile checkout takes district only and Store checkout treats thana as optional
+  const addressOpts = { areaOptional: orderPrefix === 'SH' || orderPrefix === 'ST' };
 
   // 1. Validate billingInfo (Mandatory for online and custom orders)
   const billing = body.billingInfo || {};

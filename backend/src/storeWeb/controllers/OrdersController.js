@@ -4,8 +4,6 @@ import mongoose from 'mongoose';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { buildOrderTracking } from '../../common/helper/visitorTracking.js';
 import { OrderModel } from '../../common/models/order.model.js';
-import { ProductModel } from '../../common/models/product.model.js';
-import { ItemModel } from '../../common/models/item.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
@@ -108,78 +106,19 @@ export const createOrder = async (req, res, next) => {
       }
     }
 
-    // Backend validation: Verify product/item exists and is in stock
+    // Order items
     const items = Array.isArray(payload.items) ? payload.items : [];
 
-    // Block bulk/troll orders: cap quantity per item and per order
-    const MAX_QTY_PER_ITEM = 10;
+    // Block bulk/troll orders: cap total quantity per order
     const MAX_QTY_PER_ORDER = 20;
     const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
-    const overItem = items.find((item) => Number(item.quantity || 1) > MAX_QTY_PER_ITEM);
-    // Orders above this amount must be placed by contacting support
-    const MAX_ORDER_AMOUNT = 3000; // above this, order on WhatsApp
-    const itemsSubtotal = items.reduce(
-      (sum, item) => sum + Number(item.unitPrice ?? item.price ?? 0) * Number(item.quantity || 1),
-      0
-    );
-    if (Math.max(itemsSubtotal, Number(payload.subtotal || 0)) > MAX_ORDER_AMOUNT) {
-      return res.status(400).json({
-        status: 'error',
-        code: 'CONTACT_REQUIRED',
-        reason: 'amount_limit',
-        message: 'Please contact us to order these items',
-      });
-    }
 
-    if (overItem || totalQty > MAX_QTY_PER_ORDER) {
+    if (totalQty > MAX_QTY_PER_ORDER) {
       return res.status(400).json({
         status: 'error',
-        message: `একটি পণ্য সর্বোচ্চ ${MAX_QTY_PER_ITEM}টি এবং এক অর্ডারে মোট সর্বোচ্চ ${MAX_QTY_PER_ORDER}টি অর্ডার করা যাবে। বেশি পরিমাণে কিনতে আমাদের সাথে যোগাযোগ করুন।`,
+        message: `এক অর্ডারে মোট সর্বোচ্চ ${MAX_QTY_PER_ORDER}টি অর্ডার করা যাবে। বেশি পরিমাণে কিনতে আমাদের সাথে যোগাযোগ করুন।`,
         errors: ['Order quantity exceeds the allowed limit.'],
       });
-    }
-
-    if (items.length > 0) {
-      for (const item of items) {
-        const productRef = item.productId || item.itemId || item.productDid || item.id || item._id;
-        const productName = item.name || item.productName || 'Product';
-        
-        let productDoc = null;
-        if (productRef) {
-          if (mongoose.Types.ObjectId.isValid(productRef)) {
-            productDoc = await ProductModel.findById(productRef).select('name stockStatus isActive').lean();
-            if (!productDoc) {
-              productDoc = await ItemModel.findById(productRef).select('name stockStatus isActive').lean();
-            }
-          }
-          if (!productDoc) {
-            productDoc = await ProductModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
-          }
-          if (!productDoc) {
-            productDoc = await ItemModel.findOne({ did: productRef }).select('name stockStatus isActive').lean();
-          }
-          if (!productDoc) {
-            productDoc = await ProductModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
-          }
-          if (!productDoc) {
-            productDoc = await ItemModel.findOne({ slug: productRef }).select('name stockStatus isActive').lean();
-          }
-        }
-        if (!productDoc && productName) {
-          productDoc = await ProductModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
-          if (!productDoc) {
-            productDoc = await ItemModel.findOne({ name: productName }).select('name stockStatus isActive').lean();
-          }
-        }
-
-        if (productDoc) {
-          if (productDoc.isActive === false) {
-            validationErrors.push(`"${productDoc.name || productName}" is currently unavailable.`);
-          } else if (String(productDoc.stockStatus || '').toLowerCase().trim() === 'outofstock') {
-            validationErrors.push(`"${productDoc.name || productName}" is currently out of stock.`);
-          }
-        }
-      }
     }
 
     // Verification against fake orders database (Fake Order Prevention)

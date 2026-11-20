@@ -125,7 +125,7 @@
   },
   "checkout": {
     "requireArea": true,
-    "minAddressLength": 10
+    "minAddressLength": 5
   },
   "cloudflare": {
     "isEnabled": true,
