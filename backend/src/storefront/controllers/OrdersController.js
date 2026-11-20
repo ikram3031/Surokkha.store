@@ -10,7 +10,8 @@ import { ItemModel } from '../../common/models/item.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
 import { PaymentModel } from '../../common/models/payment.model.js';
 import { FakeOrderModel } from '../../common/models/fakeOrder.model.js';
-import { SpamListModel } from '../../common/models/spamList.model.js';
+import { findSpamEntry, notifySpamCheckout } from '../../common/utils/spamCheckoutAlert.js';
+import { seenRecently } from '../../common/utils/recentEvents.js';
 import { StoreSettingsModel } from '../../common/models/storeSettings.model.js';
 import {
   buildOrderDocument,
@@ -29,19 +30,6 @@ import { broadcastLiveNotification } from '../../common/websocket.js';
 import { upsertCustomerFromOrder } from '../../common/services/customer.service.js';
 
 const { Types } = mongoose;
-
-const escapeRegex = (s) => String(s).replace(/[^0-9]/g, "");
-
-// Spam list lookup by phone (last 10 digits) or email; never by IP
-const findSpamEntry = async ({ phone, email } = {}) => {
-  const or = [];
-  const corePhone = String(phone || '').replace(/\D/g, '').slice(-10);
-  if (corePhone.length === 10) or.push({ phone: { $regex: escapeRegex(corePhone) } });
-  const cleanEmail = String(email || '').trim().toLowerCase();
-  if (cleanEmail) or.push({ email: cleanEmail });
-  if (!or.length) return null;
-  return SpamListModel.findOne({ $or: or }).lean();
-};
 
 // Create a new order from checkout payload and sync related payment/member data
 export const createOrder = async (req, res, next) => {
@@ -62,6 +50,24 @@ export const createOrder = async (req, res, next) => {
     // shared IP, so an IP match would block genuine buyers.
     const isSpammer = await findSpamEntry({ phone: clientPhone, email: clientEmail });
     if (isSpammer) {
+      const alertKey = String(clientPhone || clientEmail || '').replace(/\s/g, '').toLowerCase();
+      if (!seenRecently(`spam-order:${alertKey}`, 60 * 60 * 1000)) {
+        const info = payload.shippingInfo || payload.billingInfo || payload.customerInfo || {};
+        notifySpamCheckout({
+          entry: isSpammer,
+          stage: 'order',
+          info: {
+            name: info.fullName || info.name || payload.billingInfo?.fullName || '',
+            phone: clientPhone || '',
+            email: clientEmail || '',
+            address: [info.address, info.thana, info.district].filter(Boolean).join(', '),
+            items: (payload.items || payload.cart || []).map((i) => ({ name: i.name || i.title, slug: i.slug, quantity: i.quantity, unitPrice: i.price || i.unitPrice })),
+            total: payload.total || payload.grandTotal || 0,
+            sourceUrl: req.headers?.referer || '',
+            ip: clientIp,
+          },
+        });
+      }
       return res.status(403).json({
         success: false,
         code: 'CONTACT_REQUIRED',

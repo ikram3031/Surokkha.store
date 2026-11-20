@@ -36,6 +36,8 @@ const checkoutLeadSchema = new Schema(
     convertedAt: { type: Date },
     // InitiateCheckout is sent to Meta once per lead, as soon as a phone number is known
     metaSent: { type: Boolean, default: false },
+    // Spam list alert already sent for this checkout session
+    spamAlerted: { type: Boolean, default: false },
     lastActivityAt: { type: Date, default: Date.now, index: true },
   },
   { timestamps: true, versionKey: false }

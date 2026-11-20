@@ -2,6 +2,7 @@ import { CheckoutLeadModel } from "../../common/models/checkoutLead.model.js";
 import { sendServerInitiateCheckoutEvent, extractClientIp } from "../../common/services/facebookCapi.service.js";
 import { logger } from "../../common/config/logger.js";
 import { seenRecently } from "../../common/utils/recentEvents.js";
+import { findSpamEntry, notifySpamCheckout } from "../../common/utils/spamCheckoutAlert.js";
 import { toLocalBdPhone, isValidBdPhone } from "../../common/utils/phone.js";
 
 const str = (v, max = 300) => String(v ?? "").trim().slice(0, max);
@@ -109,6 +110,33 @@ export const saveCheckoutLead = async (req, res) => {
       { $set: set, $setOnInsert: { status: "open" } },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
+
+    // Spam list customer typed their details: one alert per checkout session (bell + Webmail inbox)
+    if (!lead.spamAlerted) {
+      const entry = await findSpamEntry({ phone: phoneKey, email });
+      if (entry) {
+        const claimed = await CheckoutLeadModel.findOneAndUpdate(
+          { _id: lead._id, spamAlerted: { $ne: true } },
+          { $set: { spamAlerted: true } }
+        );
+        if (claimed) {
+          notifySpamCheckout({
+            entry,
+            stage: "checkout",
+            info: {
+              name: fullName,
+              phone: set.phone,
+              email,
+              address: [set.address, set.thana, set.district].filter(Boolean).join(", "),
+              items,
+              total: set.cartTotal,
+              sourceUrl: set.sourceUrl,
+              ip: set.ipAddress,
+            },
+          });
+        }
+      }
+    }
 
     // One InitiateCheckout per lead, with customer data, once the phone is known.
     // Same event_id as the browser pixel event so Meta merges the pair.
