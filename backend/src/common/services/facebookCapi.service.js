@@ -304,7 +304,7 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
     }
     recentServerPurchases.set(dedupKey, now);
 
-    const site = isStoreRequest(req ? order : order?.siteKey, req) ? "store" : "shop";
+    const site = isStoreRequest(req ? order : order?.metaSite || order?.siteKey, req) ? "store" : "shop";
     const eventId = `${eventIdPrefix}${resolvedOrderNumber}`;
     const metaConfig = await getMetaPixelConfig(site);
     const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
@@ -537,7 +537,7 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
       event_time: Math.floor(Date.now() / 1000),
       event_id: eventId,
       action_source: actionSource,
-      event_source_url: actionSource !== "website" ? undefined : req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || tracking.pageUrl || undefined,
+      event_source_url: req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || tracking.pageUrl || clientConfig?.sites?.[site]?.storefrontUrl || undefined,
       user_data: userData,
       custom_data: customData,
     };
@@ -570,11 +570,7 @@ export const sendServerConfirmedOrderEvent = (order) => {
   const isWebsiteOrder = (order.orderType || "online") === "online" && !String(order.orderNumber || "").startsWith("CO");
   const isReportedCustomOrder = order.orderType === "custom" && order.reportToMeta === true;
   if (!isWebsiteOrder && !isReportedCustomOrder) return;
-  return sendServerPurchaseEvent(order, null, {
-    eventName: "ConfirmedOrder",
-    eventIdPrefix: "confirmed_",
-    actionSource: isReportedCustomOrder ? "chat" : "website",
-  });
+  return sendServerPurchaseEvent(order, null, { eventName: "ConfirmedOrder", eventIdPrefix: "confirmed_" });
 };
 
 // Sends server-side ViewContent event to Meta Conversions API asynchronously with IPv6 preservation

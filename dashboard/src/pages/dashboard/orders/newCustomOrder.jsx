@@ -536,6 +536,7 @@ const NewCustomOrderPage = () => {
   // Order Notes & Payment
   const [orderNotes, setOrderNotes] = useState("");
   const [reportToMeta, setReportToMeta] = useState(false);
+  const [metaSite, setMetaSite] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [paidAmount, setPaidAmount] = useState("");
 
@@ -836,6 +837,10 @@ const NewCustomOrderPage = () => {
       toast.error(t("orders.cart_empty", "Cart is empty. Add at least one product."));
       return;
     }
+    if (reportToMeta && !metaSite) {
+      toast.error("Choose Store or Shop for the Meta report.");
+      return;
+    }
     const outOfStockLines = cart.filter((c) => c.outOfStock);
     if (outOfStockLines.length > 0) {
       toast.error(`Out of stock: ${outOfStockLines.map((c) => c.name).join(", ")}. Remove them or restock first.`);
@@ -925,6 +930,7 @@ const NewCustomOrderPage = () => {
         shipToDifferentAddress: shipToDifferent,
         orderNotes: orderNotes.trim(),
         reportToMeta,
+        metaSite: reportToMeta ? metaSite : null,
         giftWrap: false,
         items: cart.map((item) => ({
           name: item.name,
@@ -1051,6 +1057,7 @@ const NewCustomOrderPage = () => {
     setPaidAmount("");
     setOrderNotes("");
     setReportToMeta(false);
+    setMetaSite("");
   };
 
   return (
@@ -2022,6 +2029,22 @@ const NewCustomOrderPage = () => {
                 </span>
               </span>
             </label>
+            {reportToMeta && (
+              <div className="mt-3 pl-6 space-y-1.5">
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                  Which site's Meta pixel?
+                </label>
+                <select
+                  value={metaSite}
+                  onChange={(e) => setMetaSite(e.target.value)}
+                  className="w-full text-xs bg-background border border-input rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                >
+                  <option value="">Select a site…</option>
+                  <option value="store">Store</option>
+                  <option value="shop">Shop</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
 

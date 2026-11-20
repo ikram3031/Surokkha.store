@@ -186,6 +186,8 @@ const orderSchema = new Schema(
     metaConfirmedSentAt: { type: Date, default: null },
     // Staff opted this custom (inbox / catalog) order into the Meta ConfirmedOrder signal
     reportToMeta: { type: Boolean, default: false },
+    // Which site's Meta pixel a reported custom order belongs to; custom orders are otherwise filed under the shop
+    metaSite: { type: String, enum: ["store", "shop", null], default: null },
     // Storefront checkout fingerprint: browser visitor id plus the device it was placed from
     tracking: {
       type: new Schema(
