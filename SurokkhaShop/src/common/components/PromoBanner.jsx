@@ -50,15 +50,16 @@ export default function PromoBanner() {
         e.preventDefault();
         navigateTo('account', 'signup');
       }}
-      className="group block w-full !mt-0 overflow-hidden bg-[#0b0a0e] text-rose-50/85 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
+      className="group block w-full !mt-0 overflow-hidden bg-[#0b0a0e] [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
     >
-      <div className="flex w-max animate-marquee [animation-duration:50s] group-hover:[animation-play-state:paused] motion-reduce:animate-none py-3">
+      <div className="flex w-max animate-marquee [animation-duration:50s] group-hover:[animation-play-state:paused] motion-reduce:animate-none h-[60px] md:h-[80px] items-center">
         {[0, 1].map((half) => (
-          <p key={half} aria-hidden={half === 1 || undefined} className="flex shrink-0 items-center whitespace-nowrap text-sm sm:text-[15px] font-medium tracking-wide">
+          <p key={half} aria-hidden={half === 1 || undefined} className="flex shrink-0 items-center whitespace-nowrap text-[28px] leading-none md:text-[40px] font-semibold text-[#e6c27a] tracking-wide">
             {Array.from({ length: REPEAT }).map((_, r) => (
               <span key={r} aria-hidden={r > 0 || undefined} className="flex items-center">
                 {banner.text}
-                <span aria-hidden className="mx-8 text-rose-300/60">•</span>
+                <span aria-hidden className="ml-5 rounded-full bg-[#e6c27a] px-4 py-1.5 text-sm font-bold tracking-normal text-[#1a1208] shadow-[0_0_14px_rgba(230,194,122,0.45)] md:px-5 md:py-2 md:text-lg">রেজিস্টার →</span>
+                <span aria-hidden className="mx-10 text-[#e6c27a]/50">✦</span>
               </span>
             ))}
           </p>
