@@ -1,8 +1,8 @@
-.skh-i-white{background-image:url('/special-offer/white.webp')}
-.skh-i-pink{background-image:url('/special-offer/pink.webp')}
-.skh-i-blue{background-image:url('/special-offer/blue.webp')}
-.skh-i-photo{background-image:url('/special-offer/photo.webp')}
-.skh-i-thumb{background-image:url('/special-offer/thumb.webp')}
+.skh-i-white{background-image:url('/special-offer-img/white.webp')}
+.skh-i-pink{background-image:url('/special-offer-img/pink.webp')}
+.skh-i-blue{background-image:url('/special-offer-img/blue.webp')}
+.skh-i-photo{background-image:url('/special-offer-img/photo.webp')}
+.skh-i-thumb{background-image:url('/special-offer-img/thumb.webp')}
 
 :root{
   --red:#e11d48; --red-2:#be123c; --pink:#fb7185; --wine:#2a0f1c; --ink:#1a0b12;
