@@ -505,6 +505,10 @@ export const isCourierDeliveredLocked = (order) => {
   return Boolean(c.consignmentId) && Boolean(c.deliveredAt || String(c.category || '').toLowerCase() === 'delivered');
 };
 
+// True when an edit changed any customer field on the order's billing info
+const customerInfoChanged = (before = {}, after = {}) =>
+  ['fullName', 'phone', 'email', 'address', 'thana', 'district', 'zip'].some((k) => String(before?.[k] || '') !== String(after?.[k] || ''));
+
 export const updateOrder = async (req, res, next) => {
   try {
     const { orderId } = req.params;
@@ -625,6 +629,8 @@ export const updateOrder = async (req, res, next) => {
     // Cancel / return / fake / restore changes whether the order still counts for its customer
     if (isLiveOrder(existingOrder) !== isLiveOrder(order)) {
       await reconcileCustomerForOrder({ order, updatedBy: req.user?.name || req.user?.did || 'staff' });
+    } else if (isLiveOrder(order) && customerInfoChanged(existingOrder.billingInfo, order.billingInfo)) {
+      await upsertCustomerFromOrder({ order, updatedBy: req.user?.name || req.user?.did || 'staff' });
     }
 
     await syncPaymentDocument(order, payload);

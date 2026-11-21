@@ -389,83 +389,6 @@ const resolveLeadItem = async (leadItem) => {
   };
 };
 
-// Looks a previous order's line up by its id/did, in the catalogue it came from first
-const fetchOrderLineEntry = async (orderItem) => {
-  const ref = orderItem.itemType === "item" ? orderItem.itemId || orderItem.productDid : orderItem.productId || orderItem.productDid;
-  if (!ref) return null;
-  const order = orderItem.itemType === "item" ? [["items", "item"], ["products", "product"]] : [["products", "product"], ["items", "item"]];
-  for (const [path, itemType] of order) {
-    try {
-      const res = await apiClient.get(`/api/v1/${path}/${encodeURIComponent(ref)}`);
-      const entry = res.data?.data || res.data;
-      if (entry && (entry.id || entry._id)) return { entry, itemType };
-    } catch (_) {
-      // try the next catalogue
-    }
-  }
-  return null;
-};
-
-// Turns one line of a previous order into a cart line; out-of-stock lines are kept but flagged
-const resolveReorderItem = async (orderItem) => {
-  const quantity = Math.max(1, Number(orderItem.quantity) || 1);
-  const oldPrice = Number(orderItem.unitPrice) || 0;
-  const label = orderItem.size && !String(orderItem.name).includes(`(${orderItem.size})`) ? `${orderItem.name} (${orderItem.size})` : orderItem.name;
-
-  if (orderItem.itemType === "custom") {
-    return {
-      line: {
-        id: `custom-${String(orderItem.name).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${oldPrice}`,
-        name: orderItem.name,
-        price: oldPrice,
-        quantity,
-        image: orderItem.image || undefined,
-        itemType: "custom",
-        isCustom: true,
-        size: orderItem.size || "",
-        sku: orderItem.sku || "",
-      },
-    };
-  }
-
-  const found = await fetchOrderLineEntry(orderItem);
-  if (!found) return { unavailable: { name: label, reason: "not_found" } };
-  const { entry, itemType } = found;
-  if (entry.type === "group") return { unavailable: { name: label, reason: "bundle" } };
-  if (entry.isActive === false) return { unavailable: { name: label, reason: "inactive" } };
-
-  let variant = null;
-  if (entry.type === "variant" && (entry.variants?.length ?? 0) > 0) {
-    variant = entry.variants.find((v) => String(v.size).toLowerCase() === String(orderItem.size || "").toLowerCase());
-    if (!variant) return { unavailable: { name: label, reason: "variation_missing" } };
-  }
-
-  const source = variant || entry;
-  const price = effectivePrice(Number(source.price) || 0, source.offerPrice ?? null);
-  const rawId = entry.id || entry._id || "";
-  const isItem = itemType === "item";
-  const outOfStock = isOutOfStockStatus(entry.stockStatus) || (variant ? isOutOfStockStatus(variant.stockStatus) : false);
-
-  return {
-    line: {
-      id: variant ? `${rawId}__${variant.size}` : rawId,
-      name: variant ? `${entry.name} (${variant.size})` : entry.name,
-      price,
-      quantity,
-      image: resolveImageUrl(entry.imageUrl || entry.thumbnailUrl) || orderItem.image || undefined,
-      sku: (variant && variant.sku) || entry.sku || "",
-      size: variant ? variant.size : "",
-      productId: !isItem ? rawId : "",
-      itemId: isItem ? rawId : "",
-      itemType: isItem ? "item" : "product",
-      productDid: entry.did || entry.sku || "",
-      outOfStock,
-      isCombo: entry.type === "combo",
-    },
-    priceChanged: oldPrice > 0 && oldPrice !== price ? { name: label, from: oldPrice, to: price } : null,
-  };
-};
-
 // Main container component for Creating Custom Orders
 const NewCustomOrderPage = () => {
   const { t } = useTranslation();
@@ -484,6 +407,7 @@ const NewCustomOrderPage = () => {
     search: searchQuery || undefined,
     category: categoryFilter !== "All" ? categoryFilter : undefined,
     brand: brandFilter !== "All" ? brandFilter : undefined,
+    limit: 100,
   });
   // Out of stock products can't be ordered, so they are left out of the catalogue
   const isInStock = (p) => !(p.status === "Out of Stock" || p.stockStatus === "outofstock" || p.stockStatus === "out_of_stock");
@@ -647,7 +571,7 @@ const NewCustomOrderPage = () => {
     loadLead();
   }, [leadId]);
 
-  // Opened with "Reorder": ?reorder=<orderId> copies that order's customer and products
+  // Opened with "Reorder": ?reorder=<orderId> loads only that order's customer, with their latest saved info
   const reorderId = searchParams.get("reorder");
   const [reorderInfo, setReorderInfo] = useState(null);
   const reorderLoadedRef = useRef(false);
@@ -655,28 +579,47 @@ const NewCustomOrderPage = () => {
   useEffect(() => {
     if (!reorderId || leadId || reorderLoadedRef.current) return;
     reorderLoadedRef.current = true;
-    setReorderInfo({ loading: true, unavailable: [], priceChanged: [], outOfStock: [] });
+    setReorderInfo({ loading: true });
 
     const loadReorder = async () => {
       try {
         const res = await apiClient.get(`/api/v1/orders/${encodeURIComponent(reorderId)}`);
         const source = res.data?.data || res.data;
-        if (!source?.items) throw new Error("missing");
+        if (!source?.orderNumber) throw new Error("missing");
 
-        const bill = source.billingInfo || {};
+        const orderBill = source.billingInfo || {};
         const ship = source.shippingInfo || {};
+        let saved = null;
+        if (orderBill.phone || orderBill.email) {
+          try {
+            const lookup = await apiClient.get("/api/v1/customers/lookup", { params: { phone: orderBill.phone || "", email: orderBill.email || "" } });
+            saved = lookup.data?.data || null;
+          } catch (_) {
+            saved = null;
+          }
+        }
+        if (saved) setSelectedCustomer(saved);
+
+        const bill = {
+          fullName: saved?.fullName || orderBill.fullName || "",
+          phone: saved?.phone || orderBill.phone || "",
+          email: saved?.email || orderBill.email || "",
+          address: saved?.address || orderBill.address || "",
+          district: saved?.district || orderBill.district || "",
+          thana: saved?.thana || orderBill.thana || "",
+        };
         if (bill.fullName) setCustomerName(bill.fullName);
         if (bill.phone) setCustomerPhone(formatPhoneForOrderInput(bill.phone, 11));
-        if (bill.email && !String(bill.email).includes("instore@")) setCustomerEmail(bill.email);
-        if (bill.address) setBillingAddress(bill.address);
+        if (bill.email && !String(bill.email).includes("instore@") && !String(bill.email).includes("@local")) setCustomerEmail(bill.email);
+        if (bill.address && bill.address !== "In-Store") setBillingAddress(bill.address);
         if (bill.district) setBillingDistrict(bill.district);
         if (bill.thana) setBillingThana(bill.thana);
 
         const differentShipping =
           ship.address &&
-          (String(ship.address).trim() !== String(bill.address || "").trim() ||
-            String(ship.phone || "").replace(/\D/g, "").slice(-10) !== String(bill.phone || "").replace(/\D/g, "").slice(-10) ||
-            String(ship.fullName || "").trim() !== String(bill.fullName || "").trim());
+          (String(ship.address).trim() !== String(orderBill.address || "").trim() ||
+            String(ship.phone || "").replace(/\D/g, "").slice(-10) !== String(orderBill.phone || "").replace(/\D/g, "").slice(-10) ||
+            String(ship.fullName || "").trim() !== String(orderBill.fullName || "").trim());
         if (differentShipping) {
           setShipToDifferent(true);
           setShipRecipientName(ship.fullName || "");
@@ -686,50 +629,15 @@ const NewCustomOrderPage = () => {
           setShipThana(ship.thana || "");
         }
 
-        if (bill.phone) {
-          try {
-            const lookup = await apiClient.get("/api/v1/customers/lookup", { params: { phone: bill.phone } });
-            if (lookup.data?.data) setSelectedCustomer(lookup.data.data);
-          } catch (_) {
-            // a reorder works without a saved customer
-          }
-        }
-
-        const resolved = await Promise.all((source.items || []).map(resolveReorderItem));
-        const lines = [];
-        const merged = new Map();
-        resolved.forEach((r) => {
-          if (!r.line) return;
-          const existing = merged.get(r.line.id);
-          if (existing) existing.quantity += r.line.quantity;
-          else {
-            merged.set(r.line.id, r.line);
-            lines.push(r.line);
-          }
-        });
-        setCart(lines);
-
-        const unavailable = resolved.filter((r) => r.unavailable).map((r) => r.unavailable);
-        const priceChanged = resolved.map((r) => r.priceChanged).filter(Boolean);
-        const outOfStock = lines.filter((l) => l.outOfStock).map((l) => l.name);
         setReorderInfo({
           loading: false,
           orderId: source.id || source._id || reorderId,
           orderNumber: source.orderNumber,
           customerName: bill.fullName || bill.phone || "",
-          total: lines.length,
-          unavailable,
-          priceChanged,
-          outOfStock,
         });
-
-        if (outOfStock.length > 0 || unavailable.length > 0) {
-          toast.warning(`Order #${source.orderNumber} copied. Some products need attention.`);
-        } else {
-          toast.success(`Order #${source.orderNumber} copied into a new order`);
-        }
+        toast.success(`Customer from order #${source.orderNumber} loaded into a new order`);
       } catch (err) {
-        setReorderInfo({ loading: false, failed: true, unavailable: [], priceChanged: [], outOfStock: [] });
+        setReorderInfo({ loading: false, failed: true });
         toast.error("Could not load the order to reorder.");
       }
     };
@@ -1137,41 +1045,8 @@ const NewCustomOrderPage = () => {
               <Link to={`/dashboard/orders/${reorderInfo.orderId}`} className="text-primary hover:underline">#{reorderInfo.orderNumber}</Link>
               {reorderInfo.customerName ? ` · ${reorderInfo.customerName}` : ""}
             </span>
-            <span className="text-xs text-muted-foreground">Prices are today's prices. Check quantities and delivery before placing it.</span>
+            <span className="text-xs text-muted-foreground">Customer details are loaded with their latest saved info. Add the products for this order below.</span>
           </div>
-          {reorderInfo.outOfStock.length > 0 && (
-            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
-              <div className="flex items-center gap-1.5 font-semibold">
-                <AlertTriangle className="h-4 w-4" />
-                {reorderInfo.outOfStock.length} product(s) are out of stock right now
-              </div>
-              <p className="mt-1">{reorderInfo.outOfStock.join(", ")}. They are in the cart marked "Out of stock"; remove them or restock before placing the order.</p>
-            </div>
-          )}
-          {reorderInfo.unavailable.length > 0 && (
-            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 space-y-1">
-              <div className="flex items-center gap-1.5 font-semibold text-destructive">
-                <AlertTriangle className="h-4 w-4" />
-                {reorderInfo.unavailable.length} product(s) could not be added
-              </div>
-              <ul className="list-disc pl-6 text-xs text-destructive">
-                {reorderInfo.unavailable.map((u, idx) => (
-                  <li key={`${u.name}-${idx}`}>
-                    {u.name} — {LEAD_REASONS[u.reason] || "Not available"}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {reorderInfo.priceChanged.length > 0 && (
-            <ul className="list-disc pl-6 text-xs text-muted-foreground">
-              {reorderInfo.priceChanged.map((p, idx) => (
-                <li key={`${p.name}-${idx}`}>
-                  {p.name}: price is now {formatBDT(p.to)} (was {formatBDT(p.from)} in #{reorderInfo.orderNumber})
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       )}
 
