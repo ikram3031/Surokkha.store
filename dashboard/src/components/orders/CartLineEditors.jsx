@@ -103,7 +103,10 @@ const buildCustomLine = (name, price, quantity, pieces = []) => {
 };
 
 
-// Searches stock items (products are already pickable above) so a custom line can take real pieces out of inventory
+// Builds the display label of an inventory stock item from its short name and full name
+const stockItemLabel = (row) => (row.name ? `${row.shortName} · ${row.name}` : row.shortName);
+
+// Searches inventory stock items so a custom line can take real pieces out of inventory
 const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
@@ -114,27 +117,22 @@ const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
   }, [search]);
 
   const { data: results = [], isFetching } = useQuery({
-    queryKey: ["custom-line-inventory", q],
+    queryKey: ["custom-line-stock-items", q],
     enabled: q.length > 0,
     queryFn: async () => {
-      const fetchEntity = async (entity) => {
-        const params = new URLSearchParams({ entity, status: "all", limit: "6", search: q });
-        const res = await apiClient.get(`/api/v1/inventory?${params.toString()}`);
-        return res.data?.data || [];
-      };
-      return fetchEntity("item");
+      const params = new URLSearchParams({ status: "active", search: q });
+      const res = await apiClient.get(`/api/v1/stock-items?${params.toString()}`);
+      return (res.data?.data || []).slice(0, 8);
     },
   });
 
   const addPiece = (row) => {
-    if (pieces.some((p) => p.refId === row.id && p.entity === row.entity)) {
-      toast.info(`"${row.name}" is already added.`);
+    const label = stockItemLabel(row);
+    if (pieces.some((p) => p.refId === row.id && p.entity === "stockItem")) {
+      toast.info(`"${label}" is already added.`);
       return;
     }
-    const regular = Number(row.price) || 0;
-    const offer = Number(row.offerPrice);
-    const unitPrice = offer > 0 && offer < regular ? offer : regular;
-    onChange([...pieces, { entity: row.entity, refId: row.id, name: row.name, quantity: "1", stock: row.stockAmount, unitPrice }]);
+    onChange([...pieces, { entity: "stockItem", refId: row.id, name: label, quantity: "1", stock: Number(row.quantity) || 0, unit: row.unit || "pcs", unitPrice: 0 }]);
     setSearch("");
     setQ("");
   };
@@ -156,7 +154,7 @@ const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
 
       <div className="relative">
         <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search stock items by name or SKU" className="h-9 text-sm pl-8" />
+        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search inventory items by short name or name" className="h-9 text-sm pl-8" />
         {q && (
           <div className="absolute z-30 left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-lg border bg-popover shadow-lg">
             {isFetching && results.length === 0 ? (
@@ -167,16 +165,16 @@ const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
               results.map((row) => (
                 <button
                   type="button"
-                  key={`${row.entity}-${row.id}`}
+                  key={row.id}
                   onClick={() => addPiece(row)}
                   className="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-muted cursor-pointer"
                 >
                   <span className="min-w-0">
-                    <span className="block text-sm font-medium truncate">{row.name}</span>
-                    <span className="block text-[11px] text-muted-foreground">{row.entity === "item" ? "Item" : "Product"}{row.sku ? ` · ${row.sku}` : ""}</span>
+                    <span className="block text-sm font-medium truncate">{row.shortName}</span>
+                    {row.name && <span className="block text-[11px] text-muted-foreground truncate">{row.name}</span>}
                   </span>
-                  <span className={`shrink-0 text-xs font-semibold ${row.stockAmount > 0 ? "text-emerald-600" : "text-destructive"}`}>
-                    Stock: {row.stockAmount}
+                  <span className={`shrink-0 text-xs font-semibold ${row.quantity > 0 ? "text-emerald-600" : "text-destructive"}`}>
+                    Stock: {Number(row.quantity) || 0} {row.unit || "pcs"}
                   </span>
                 </button>
               ))
@@ -196,7 +194,7 @@ const InventoryPiecesPicker = ({ pieces, onChange, lineQty }) => {
                   <p className="text-sm font-medium truncate">{p.name}</p>
                   {typeof p.stock === "number" && (
                     <p className={`text-[11px] ${short ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
-                      Stock {p.stock} · this order takes {need}{short ? " (not enough stock)" : ""}
+                      Stock {p.stock}{p.unit ? ` ${p.unit}` : ""} · this order takes {need}{short ? " (not enough stock)" : ""}
                     </p>
                   )}
                 </div>
