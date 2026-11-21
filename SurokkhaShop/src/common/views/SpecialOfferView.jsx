@@ -158,7 +158,7 @@ const SpecialOfferView = () => {
     setErrors(bad);
     const first = Object.keys(bad).find((k) => bad[k]);
     if (first) {
-      fieldRefs.current[first]?.focus();
+      fieldRefs.current[first]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return null;
     }
     return v;
