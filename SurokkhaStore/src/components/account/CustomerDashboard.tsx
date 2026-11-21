@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   LayoutGrid,
   LogOut,
   MapPin,
@@ -81,16 +83,8 @@ const isActive = (o: CustomerOrder) => ['pending', 'confirmed', 'shipped', 'out'
 const payLabel = (o: CustomerOrder) =>
   o.paymentMethod === 'cod' || !o.paymentMethod ? L('Cash on Delivery', 'ক্যাশ অন ডেলিভারি') : o.paymentMethod.toUpperCase()
 
-
-const FILTER_OPTIONS: [string, string][] = [
-  ['all', L('All', 'সব')],
-  ['pending', L('Pending', 'অপেক্ষমাণ')],
-  ['confirmed', L('Confirmed', 'কনফার্মড')],
-  ['out', L('Out for Delivery', 'ডেলিভারির পথে')],
-  ['delivered', L('Delivered', 'ডেলিভারি সম্পন্ন')],
-  ['cancelled', L('Cancelled', 'বাতিল')],
-  ['returned', L('Returned', 'ফেরত')],
-]
+const ORDERS_PER_PAGE = 10
+const orderTime = (o: CustomerOrder) => new Date(o.updatedAt || o.createdAt || 0).getTime()
 
 
 const ADDR_LABELS: Record<string, string> = { Home: L('Home', 'বাসা'), Office: L('Office', 'অফিস'), Other: L('Other', 'অন্যান্য') }
@@ -130,7 +124,7 @@ export function CustomerDashboard({
 }) {
   const [tab, setTab] = useState<Tab>('overview')
   const [orderSearch, setOrderSearch] = useState('')
-  const [activeFilter, setActiveFilter] = useState('all')
+  const [orderPage, setOrderPage] = useState(1)
   const [trackInput, setTrackInput] = useState('')
   const [trackedOrderId, setTrackedOrderId] = useState('')
   const [orders, setOrders] = useState<CustomerOrder[]>([])
@@ -206,12 +200,22 @@ export function CustomerDashboard({
 
   const filteredOrders = useMemo(() => {
     const q = orderSearch.trim().toLowerCase()
-    return orders.filter(
-      (o) =>
-        (activeFilter === 'all' || o.status === activeFilter) &&
-        (!q || o.id.toLowerCase().includes(q) || o.items.some((i) => i.name.toLowerCase().includes(q))),
-    )
-  }, [activeFilter, orderSearch, orders])
+    return orders
+      .filter((o) => !q || o.id.toLowerCase().includes(q) || o.items.some((i) => i.name.toLowerCase().includes(q)))
+      .sort((a, b) => orderTime(b) - orderTime(a))
+  }, [orderSearch, orders])
+
+  // Newest updated first, 10 per page
+  const orderPages = Math.max(1, Math.ceil(filteredOrders.length / ORDERS_PER_PAGE))
+  const currentOrderPage = Math.min(orderPage, orderPages)
+  const pagedOrders = filteredOrders.slice(
+    (currentOrderPage - 1) * ORDERS_PER_PAGE,
+    currentOrderPage * ORDERS_PER_PAGE,
+  )
+  const goToOrderPage = (p: number) => {
+    setOrderPage(p)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const trackedOrder = useMemo(() => {
     const clean = trackedOrderId.trim().toLowerCase().replace(/^#/, '')
@@ -326,7 +330,7 @@ export function CustomerDashboard({
           <h1 className="font-serif text-3xl sm:text-4xl mt-1 tracking-tight">{L('Welcome back', 'আবার স্বাগতম')}, {firstName}</h1>
         </div>
 
-        <div className="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-8">
+        <div className="grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[260px_1fr] gap-6 lg:gap-8">
           {/* ============ SIDEBAR ============ */}
           <aside>
             {/* Profile card (desktop) */}
@@ -347,7 +351,7 @@ export function CustomerDashboard({
             </div>
 
             {/* Nav: horizontal on mobile, vertical on desktop */}
-            <nav className="flex lg:flex-col gap-2 overflow-x-auto pb-1 lg:pb-2 lg:bg-white lg:rounded-2xl lg:shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] lg:border lg:border-[#EADFD0] lg:p-2">
+            <nav className="flex lg:flex-col gap-2 lg:pb-2 lg:bg-white lg:rounded-2xl lg:shadow-[0_1px_2px_rgba(28,18,21,.04),0_8px_24px_-12px_rgba(28,18,21,.12)] lg:border lg:border-[#EADFD0] lg:p-2">
               {navItems.map((item) => {
                 const active = tab === item.id
                 return (
@@ -355,17 +359,25 @@ export function CustomerDashboard({
                     key={item.id}
                     type="button"
                     onClick={() => switchTab(item.id)}
-                    className={`shrink-0 flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
+                    aria-label={item.label}
+                    className={`group relative flex-1 lg:flex-none flex items-center justify-center lg:justify-start gap-3 px-0 lg:px-4 py-3 lg:py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
                       active
                         ? 'bg-[#1C1215] text-[#FAF6F0]'
                         : 'bg-white lg:bg-transparent border border-[#EADFD0] lg:border-0 text-[#5E4E52] hover:bg-[#F4EDE3] hover:text-[#1C1215]'
                     }`}
                   >
                     {item.icon}
-                    <span>{item.label}</span>
+                    <span className="hidden lg:inline">{item.label}</span>
+                    {/* Tooltip: mobile only, desktop already shows the label */}
+                    <span
+                      role="tooltip"
+                      className="lg:hidden pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-2 z-20 whitespace-nowrap rounded-lg bg-[#1C1215] px-2.5 py-1.5 text-xs font-medium text-[#FAF6F0] shadow-lg opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 before:absolute before:bottom-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-[#1C1215] before:content-['']"
+                    >
+                      {item.label}
+                    </span>
                     {item.badge !== undefined && (
                       <span
-                        className={`ml-auto text-[11px] px-2 py-0.5 rounded-full ${
+                        className={`absolute top-1 right-1 lg:static lg:ml-auto text-[10px] lg:text-[11px] leading-none px-1.5 lg:px-2 py-0.5 rounded-full ${
                           active ? 'bg-white/15 text-[#FAF6F0]' : 'bg-[#FBEEF1] text-[#6B1028]'
                         }`}
                       >
@@ -598,46 +610,25 @@ export function CustomerDashboard({
                     <input
                       type="text"
                       value={orderSearch}
-                      onChange={(e) => setOrderSearch(e.target.value)}
+                      onChange={(e) => {
+                        setOrderSearch(e.target.value)
+                        setOrderPage(1)
+                      }}
                       placeholder={L('Search by order ID or product', 'অর্ডার আইডি বা প্রোডাক্ট দিয়ে খুঁজুন')}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#EADFD0] bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#6B1028]/20 focus:border-[#6B1028]"
                     />
                   </div>
                 </div>
 
-                {/* Filter chips */}
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {FILTER_OPTIONS.map(([key, label]) => {
-                    const count =
-                      key === 'all' ? orders.length : orders.filter((o) => o.status === key).length
-                    const on = key === activeFilter
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setActiveFilter(key)}
-                        className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition cursor-pointer ${
-                          on
-                            ? 'bg-[#6B1028] text-[#FAF6F0] border-[#6B1028]'
-                            : 'bg-white text-[#5E4E52] border-[#EADFD0] hover:text-[#1C1215]'
-                        }`}
-                      >
-                        {label}{' '}
-                        <span className={on ? 'text-[#FAF6F0]/80' : 'text-[#5E4E52]/70'}>{bn(count)}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-
                 {/* Orders list */}
                 {filteredOrders.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-[#EADFD0] p-10 text-center">
                     <p className="font-serif text-xl">{L('No orders found', 'কোনো অর্ডার পাওয়া যায়নি')}</p>
-                    <p className="text-sm text-[#5E4E52] mt-1">{L('Try a different filter or search term.', 'অন্য ফিল্টার বা শব্দ দিয়ে চেষ্টা করুন।')}</p>
+                    <p className="text-sm text-[#5E4E52] mt-1">{L('Try a different search term.', 'অন্য শব্দ দিয়ে খুঁজে দেখুন।')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {filteredOrders.map((o) => {
+                    {pagedOrders.map((o) => {
                       const trackable = !['cancelled', 'returned'].includes(o.status)
                       return (
                         <article
@@ -707,6 +698,36 @@ export function CustomerDashboard({
                       )
                     })}
                   </div>
+                )}
+
+                {/* Pagination: only when more than 10 orders */}
+                {orderPages > 1 && (
+                  <nav
+                    aria-label={L('Order pages', 'অর্ডারের পেজ')}
+                    className="flex items-center justify-between gap-3 pt-1"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => goToOrderPage(currentOrderPage - 1)}
+                      disabled={currentOrderPage === 1}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#EADFD0] bg-white text-sm font-semibold text-[#1C1215] hover:bg-[#F4EDE3] disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      {L('Previous', 'আগের')}
+                    </button>
+                    <p className="text-sm text-[#5E4E52]">
+                      {L('Page', 'পেজ')} {bn(currentOrderPage)} / {bn(orderPages)}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => goToOrderPage(currentOrderPage + 1)}
+                      disabled={currentOrderPage === orderPages}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#EADFD0] bg-white text-sm font-semibold text-[#1C1215] hover:bg-[#F4EDE3] disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    >
+                      {L('Next', 'পরের')}
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </nav>
                 )}
               </div>
             )}
