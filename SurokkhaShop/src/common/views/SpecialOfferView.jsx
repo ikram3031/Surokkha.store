@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './specialOffer.css';
+import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from '../asset/surokkha_logo_dark.png';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICTS } from '../data/districts';
@@ -39,6 +40,22 @@ const toEnDigits = (s) => s.replace(/[০-৯]/g, (d) => '০১২৩৪৫৬�
 const cleanPhone = (v) => {
   const p = toEnDigits(v).replace(/[^\d]/g, '');
   return p.startsWith('880') ? p.slice(2) : p;
+};
+
+// Tells whether each mandatory field value is acceptable
+const FIELD_OK = {
+  name: (v) => v.trim().length >= 2,
+  phone: (v) => /^01[3-9]\d{8}$/.test(cleanPhone(v)),
+  email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+  district: (v) => DISTRICT_NAMES.includes(v),
+  address: (v) => v.trim().length >= 5,
+};
+
+// Flags a phone number that is already wrong while it is still being typed
+const phoneWrongSoFar = (v) => {
+  const p = cleanPhone(v);
+  if (!p || '880'.startsWith(p)) return false;
+  return !/^0(1([3-9]\d{0,8})?)?$/.test(p);
 };
 
 // Builds a WhatsApp chat link with a prefilled message
@@ -97,6 +114,7 @@ const SpecialOfferView = () => {
   const heroRef = useRef(null);
   const orderRef = useRef(null);
   const fieldRefs = useRef({});
+  const touchedRef = useRef({});
 
   const addonTotal = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.price, 0);
   const addonPcs = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.pcs, 0);
@@ -127,10 +145,19 @@ const SpecialOfferView = () => {
     if (delta > 0) track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
   };
 
-  // Updates one form field and clears its error
+  // Updates one form field and re-checks it live once touched, or at once for a wrong phone prefix
   const setField = (k, v) => {
     setForm((prev) => ({ ...prev, [k]: v }));
-    if (errors[k]) setErrors((prev) => ({ ...prev, [k]: false }));
+    if (!FIELD_OK[k]) return;
+    const bad = touchedRef.current[k] ? !FIELD_OK[k](v) : k === 'phone' && phoneWrongSoFar(v);
+    if (bad !== !!errors[k]) setErrors((prev) => ({ ...prev, [k]: bad }));
+  };
+
+  // Checks a field when the customer leaves it
+  const onFieldBlur = (k) => {
+    touchedRef.current[k] = true;
+    const bad = !FIELD_OK[k](form[k]);
+    if (bad !== !!errors[k]) setErrors((prev) => ({ ...prev, [k]: bad }));
   };
 
   // Fires InitiateCheckout the first time the form gets focus
@@ -149,13 +176,8 @@ const SpecialOfferView = () => {
       district: form.district,
       address: form.address.trim(),
     };
-    const bad = {
-      name: v.name.length < 2,
-      phone: !/^01[3-9]\d{8}$/.test(v.phone),
-      email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email),
-      district: !DISTRICT_NAMES.includes(v.district),
-      address: v.address.length < 5,
-    };
+    const bad = Object.fromEntries(Object.keys(FIELD_OK).map((k) => [k, !FIELD_OK[k](form[k])]));
+    Object.keys(FIELD_OK).forEach((k) => { touchedRef.current[k] = true; });
     setErrors(bad);
     const first = Object.keys(bad).find((k) => bad[k]);
     if (first) {
@@ -242,6 +264,7 @@ const SpecialOfferView = () => {
       }
       setSuccess({ phone: v.phone, orderNumber });
       setForm(EMPTY_FORM);
+      touchedRef.current = {};
       setQty(1);
       setAddonQty({ white: 0, pink: 0, blue: 0 });
     } catch (err) {
@@ -453,30 +476,27 @@ const SpecialOfferView = () => {
                 <div className="fields">
                   <div className={`field${errors.name ? ' err' : ''}`}>
                     <label htmlFor="fName">আপনার নাম <em>*</em></label>
-                    <input id="fName" ref={reg('name')} autoComplete="name" placeholder="যেমন: রাকিব হাসান" value={form.name} onChange={(e) => setField('name', e.target.value)} />
+                    <input id="fName" ref={reg('name')} onBlur={() => onFieldBlur('name')} autoComplete="name" placeholder="যেমন: রাকিব হাসান" value={form.name} onChange={(e) => setField('name', e.target.value)} />
                     <div className="msg">আপনার নাম লিখুন</div>
                   </div>
                   <div className={`field${errors.phone ? ' err' : ''}`}>
                     <label htmlFor="fPhone">মোবাইল নম্বর <em>*</em></label>
-                    <input id="fPhone" ref={reg('phone')} type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={14} value={form.phone} onChange={(e) => setField('phone', e.target.value)} />
+                    <input id="fPhone" ref={reg('phone')} onBlur={() => onFieldBlur('phone')} type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={14} value={form.phone} onChange={(e) => setField('phone', e.target.value)} />
                     <div className="msg">সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (01 দিয়ে শুরু)</div>
                   </div>
                   <div className={`field${errors.email ? ' err' : ''}`}>
                     <label htmlFor="fEmail">ইমেইল <em>*</em></label>
-                    <input id="fEmail" ref={reg('email')} type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={(e) => setField('email', e.target.value)} />
+                    <input id="fEmail" ref={reg('email')} onBlur={() => onFieldBlur('email')} type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={(e) => setField('email', e.target.value)} />
                     <div className="msg">সঠিক ইমেইল ঠিকানা দিন</div>
                   </div>
                   <div className={`field${errors.district ? ' err' : ''}`}>
                     <label htmlFor="fDistrict">জেলা <em>*</em></label>
-                    <select id="fDistrict" ref={reg('district')} value={form.district} onChange={(e) => setField('district', e.target.value)}>
-                      <option value="">জেলা নির্বাচন করুন</option>
-                      {DISTRICT_NAMES.map((d) => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                    <DistrictPicker id="fDistrict" ref={reg('district')} value={form.district} options={DISTRICT_NAMES} onSelect={(d) => setField('district', d)} onDismiss={() => onFieldBlur('district')} />
                     <div className="msg">তালিকা থেকে আপনার জেলা নির্বাচন করুন</div>
                   </div>
                   <div className={`field${errors.address ? ' err' : ''}`}>
                     <label htmlFor="fAddress">সম্পূর্ণ ঠিকানা <em>*</em></label>
-                    <textarea id="fAddress" ref={reg('address')} autoComplete="street-address" placeholder="বাসা/রোড, এলাকা, থানা" value={form.address} onChange={(e) => setField('address', e.target.value)} />
+                    <textarea id="fAddress" ref={reg('address')} onBlur={() => onFieldBlur('address')} autoComplete="street-address" placeholder="বাসা/রোড, এলাকা, থানা" value={form.address} onChange={(e) => setField('address', e.target.value)} />
                     <div className="msg">ঠিকানা কমপক্ষে ৫ অক্ষরের লিখুন</div>
                   </div>
                   <div className="field">
@@ -488,7 +508,7 @@ const SpecialOfferView = () => {
                 <button type="submit" className={`btn btn-primary submit${sending ? ' loading' : ''}`} disabled={sending}>
                   <span className="spinner" />
                   <span className="btn-ico" style={{ display: 'inline-flex' }}><IconCheck w={2.2} /></span>
-                  <span>অর্ডার কনফার্ম করুন · {tk(total)}</span>
+                  <span>অর্ডার কনফার্ম করুন</span>
                 </button>
                 <div className={`form-err${failed ? ' show' : ''}`}>দুঃখিত, অর্ডার পাঠানো যায়নি। আবার চেষ্টা করুন, অথবা <a href={failed || '#'} target="_blank" rel="noopener noreferrer">WhatsApp-এ অর্ডার দিন</a>।</div>
                 <p className="form-foot">অর্ডার করতে সমস্যা? কল বা WhatsApp করুন: <a href="tel:+8801600905774"><b>{PHONE_DISPLAY}</b></a></p>
