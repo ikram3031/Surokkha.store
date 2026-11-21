@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './specialOffer.css';
+import logoImg from '../asset/surokkha_logo_dark.png';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICTS } from '../data/districts';
 import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase } from '../utils/analytics';
@@ -7,8 +8,8 @@ import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trac
 const OFFER = {
   did: 'd5a81e97721c8101',
   name: 'MO 3-in-1 Smart Pack (15 Pcs)',
-  regularPrice: 675,
-  offerPrice: 650,
+  regularPrice: 810,
+  offerPrice: 720,
   pcs: 15,
   maxQty: 5,
 };
@@ -51,12 +52,12 @@ const track = (ev, data) => {
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
   useEffect(() => {
-    document.title = 'MO Smart Pack — ৩ ধরনের ১৫ পিস, মাত্র ৳৬৫০ | Surokkha';
+    document.title = 'MO Smart Pack — ৩ ধরনের ১৫ পিস, মাত্র ৳৭২০ | Surokkha';
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
     link.id = 'so-fonts';
     link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,800;1,700&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,800;1,700&display=swap';
     document.head.appendChild(link);
   }, []);
 };
@@ -255,11 +256,11 @@ const SpecialOfferView = () => {
 
   return (
     <>
-      <div className="topbar">আজকের অফার: MO Smart Pack <b>৳৬৫০</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
+      <div className="topbar">আজকের অফার: MO Smart Pack <b>৳৭২০</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
 
       <header className="hero" ref={heroRef}>
         <div className="container">
-          <div className="hero-logo">Surokkha<span>.</span></div>
+          <div className="hero-logo"><img src={logoImg} alt="Surokkha" /></div>
           <div className="hero-grid">
             <div>
               <span className="eyebrow"><b>NEW</b> MO প্রথমবার? এই প্যাক দিয়ে শুরু করুন</span>
@@ -278,10 +279,10 @@ const SpecialOfferView = () => {
               </div>
 
               <div className="price-row">
-                <div className="price-now"><sup>৳</sup>৬৫০</div>
-                <div className="price-tags"><span className="price-old">৳৬৭৫</span></div>
+                <div className="price-now"><sup>৳</sup>৭২০</div>
+                <div className="price-tags"><span className="price-old">৳৮১০</span></div>
                 <div className="price-tags">
-                  <span className="ptag ptag-save">৳২৫ সেভ</span>
+                  <span className="ptag ptag-save">৳৯০ সেভ</span>
                   <span className="ptag ptag-free"><IconCheck />ফ্রি ডেলিভারি</span>
                 </div>
               </div>
@@ -358,7 +359,7 @@ const SpecialOfferView = () => {
             </div>
             <div className="why-grid">
               <div className="why-card"><div className="why-ic"><IconGrid /></div><h3>এক বক্সে ৩ রকম</h3><p>আলাদা আলাদা প্যাক কিনতে হবে না। Ultra Ribbed, Dotted আর Ultra Thin সব একসাথে।</p></div>
-              <div className="why-card"><div className="why-ic"><IconTag /></div><h3>অফার প্রাইসে সেভ</h3><p>নিয়মিত দাম ৳৬৭৫, অফারে মাত্র ৳৬৫০। সাথে ডেলিভারি চার্জও লাগছে না।</p></div>
+              <div className="why-card"><div className="why-ic"><IconTag /></div><h3>অফার প্রাইসে সেভ</h3><p>নিয়মিত দাম ৳৮১০, অফারে মাত্র ৳৭২০। সাথে ডেলিভারি চার্জও লাগছে না।</p></div>
               <div className="why-card"><div className="why-ic"><IconShield /></div><h3>১০০% অরিজিনাল MO</h3><p>সরাসরি আসল MO প্রোডাক্ট, কোনো নকল বা রিপ্যাক নয়।</p></div>
               <div className="why-card"><div className="why-ic"><IconCash /></div><h3>হাতে পেয়ে টাকা দিন</h3><p>অগ্রিম কিছু দিতে হবে না। প্রোডাক্ট হাতে পেয়ে ক্যাশ অন ডেলিভারিতে পেমেন্ট।</p></div>
             </div>
@@ -431,7 +432,7 @@ const SpecialOfferView = () => {
                   </div>
                 </div>
                 <div className="lines">
-                  <div className="line"><span>দাম ({bn(qty)} × ৳৬৫০)</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
+                  <div className="line"><span>দাম ({bn(qty)} × ৳৭২০)</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
                   {ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => (
                     <div key={a.key} className="line line-add"><span>{a.name} {bn(addonQty[a.key] * a.pcs)} পিস</span><b>{tk(addonQty[a.key] * a.price)}</b></div>
                   ))}
@@ -515,7 +516,7 @@ const SpecialOfferView = () => {
 
         <section className="sec final">
           <div className="container">
-            <h2>৩ ধরনের MO, ১৫ পিস, মাত্র <span>৳৬৫০</span></h2>
+            <h2>৩ ধরনের MO, ১৫ পিস, মাত্র <span>৳৭২০</span></h2>
             <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · গোপনীয় প্যাকেজিং</p>
             <div className="ctas">
               <a href="#order" className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
@@ -536,7 +537,7 @@ const SpecialOfferView = () => {
       <a className="wa-float" href={waOrderLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ মেসেজ দিন"><IconWa /></a>
 
       <div className={`sticky${showSticky ? ' show' : ''}`}>
-        <div className="sp"><b>৳৬৫০</b><small><s>৳৬৭৫</s> ফ্রি ডেলিভারি</small></div>
+        <div className="sp"><b>৳৭২০</b><small><s>৳৮১০</s> ফ্রি ডেলিভারি</small></div>
         <a href="#order" className="btn btn-primary">অর্ডার করুন</a>
       </div>
 
