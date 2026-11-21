@@ -58,7 +58,8 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
 
   useEffect(() => {
     if (!open) return
-    searchRef.current?.focus()
+    if (window.matchMedia?.('(pointer: fine)').matches) searchRef.current?.focus()
+    else wrapRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
     const onDown = (e: MouseEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) close()
     }
@@ -76,7 +77,7 @@ export function SearchableSelect({ value, options, onChange, placeholder, disabl
   }, [disabled])
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div ref={wrapRef} className="relative scroll-mt-4">
       <button
         id={triggerId}
         type="button"

@@ -56,9 +56,10 @@ export default function LocationSelect({
     const idx = Math.max(0, options.indexOf(value))
     setActive(idx)
     requestAnimationFrame(() => {
-      searchRef.current?.focus({ preventScroll: true })
+      const finePointer = window.matchMedia?.('(pointer: fine)').matches
+      if (finePointer) searchRef.current?.focus({ preventScroll: true })
       listRef.current?.querySelector<HTMLElement>(`[data-idx="${idx}"]`)?.scrollIntoView({ block: 'center' })
-      rootRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      rootRef.current?.scrollIntoView({ block: finePointer ? 'nearest' : 'start', behavior: 'smooth' })
     })
     const onDown = (e: MouseEvent | TouchEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
@@ -82,7 +83,7 @@ export default function LocationSelect({
   const label = (o: string) => (DISTRICT_BN[o] ? `${DISTRICT_BN[o]} (${o})` : o)
 
   return (
-    <div ref={rootRef} className={`relative ${isOpen ? 'z-50' : 'z-20'}`}>
+    <div ref={rootRef} className={`relative scroll-mt-24 ${isOpen ? 'z-50' : 'z-20'}`}>
       <button
         type="button"
         id={id}
