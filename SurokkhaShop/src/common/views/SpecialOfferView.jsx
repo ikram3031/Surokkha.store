@@ -8,17 +8,17 @@ import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trac
 
 const OFFER = {
   did: 'd5a81e97721c8101',
-  name: 'MO 3-in-1 Smart Pack (15 Pcs)',
+  name: 'MO 3-in-1 Smart Pack (18 Pcs)',
   regularPrice: 810,
   offerPrice: 720,
-  pcs: 15,
+  pcs: 18,
   maxQty: 5,
 };
 
 const ADDONS = [
-  { key: 'white', did: '091bfca429b96b19', name: 'Ultra Ribbed', fullName: 'Mo White 5 Pcs', pcs: 5, price: 200, img: 'skh-i-white', color: '#f1f5f9' },
-  { key: 'pink', did: '6bb5a600017c619b', name: 'Dotted', fullName: 'Mo Pink 5 Pcs', pcs: 5, price: 200, img: 'skh-i-pink', color: '#f4a7c4' },
-  { key: 'blue', did: '1c54b907d7a216dc', name: 'Ultra Thin', fullName: 'Mo Blue 5 Pcs', pcs: 5, price: 200, img: 'skh-i-blue', color: '#38bdf8' },
+  { key: 'white', did: '091bfca429b96b19', name: 'Ultra Ribbed', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
+  { key: 'pink', did: '6bb5a600017c619b', name: 'Dotted', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
+  { key: 'blue', did: '1c54b907d7a216dc', name: 'Ultra Thin', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
 ];
 
 const MAX_ADDON = 5;
@@ -69,7 +69,7 @@ const track = (ev, data) => {
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
   useEffect(() => {
-    document.title = 'MO Smart Pack — ৩ ধরনের ১৫ পিস, মাত্র ৳৭২০ | Surokkha';
+    document.title = 'MO Smart Pack — ৩ ধরনের ১৮ পিস, মাত্র ৳৭২০ | Surokkha';
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
     link.id = 'so-fonts';
@@ -122,7 +122,7 @@ const SpecialOfferView = () => {
   const save = qty * (OFFER.regularPrice - OFFER.offerPrice) + NORMAL_DELIVERY;
   const total = sub;
 
-  const waOrderLink = useMemo(() => waLink(`আমি MO Smart Pack (১৫ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
+  const waOrderLink = useMemo(() => waLink(`আমি MO Smart Pack (১৮ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
 
   useEffect(() => {
     track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: OFFER.offerPrice, currency: 'BDT' });
@@ -191,7 +191,7 @@ const SpecialOfferView = () => {
   const buildItems = () => [
     { productDid: OFFER.did, itemType: 'product', name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice, size: 'Special Offer' },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({
-      productDid: a.did, itemType: 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: 'Special Offer Add-on',
+      productDid: a.did, itemType: 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: 'Special Offer Add-on (2 Pcs)',
     })),
   ];
 
@@ -289,16 +289,16 @@ const SpecialOfferView = () => {
               <span className="eyebrow"><b>NEW</b> MO প্রথমবার? এই প্যাক দিয়ে শুরু করুন</span>
               <div className="brandline">MO Condoms</div>
               <h1 className="hero-title">Smart <em>Pack</em></h1>
-              <p className="hero-sub">এক বক্সে <strong>MO-এর ৩ ধরনের কনডম</strong>, প্রতিটা ৫ পিস করে। তিনটাই ট্রাই করে দেখুন MO কেমন, তারপর বেছে নিন আপনার পছন্দেরটা।</p>
+              <p className="hero-sub">এক বক্সে <strong>MO-এর ৩ ধরনের কনডম</strong>, প্রতিটা ৬ পিস করে। তিনটাই ট্রাই করে দেখুন MO কেমন, তারপর বেছে নিন আপনার পছন্দেরটা।</p>
 
               <div className="mix">
-                <span className="chip"><i style={{ background: '#f1f5f9' }} />Ultra Ribbed <small>× ৫</small></span>
+                <span className="chip"><i style={{ background: '#f1f5f9' }} />Ultra Ribbed <small>× ৬</small></span>
                 <span className="op">+</span>
-                <span className="chip"><i style={{ background: '#f4a7c4' }} />Dotted <small>× ৫</small></span>
+                <span className="chip"><i style={{ background: '#f4a7c4' }} />Dotted <small>× ৬</small></span>
                 <span className="op">+</span>
-                <span className="chip"><i style={{ background: '#38bdf8' }} />Ultra Thin <small>× ৫</small></span>
+                <span className="chip"><i style={{ background: '#38bdf8' }} />Ultra Thin <small>× ৬</small></span>
                 <span className="op">=</span>
-                <span className="total">১৫ <small>পিস</small></span>
+                <span className="total">১৮ <small>পিস</small></span>
               </div>
 
               <div className="price-row">
@@ -327,9 +327,9 @@ const SpecialOfferView = () => {
               <Stack cls="s-white" img="skh-i-white" />
               <Stack cls="s-pink" img="skh-i-pink" />
               <Stack cls="s-blue" img="skh-i-blue" />
-              <span className="count c-white"><i style={{ background: '#f1f5f9' }} />× ৫</span>
-              <span className="count c-pink"><i style={{ background: '#f4a7c4' }} />× ৫</span>
-              <span className="count c-blue"><i style={{ background: '#38bdf8' }} />× ৫</span>
+              <span className="count c-white"><i style={{ background: '#f1f5f9' }} />× ৬</span>
+              <span className="count c-pink"><i style={{ background: '#f4a7c4' }} />× ৬</span>
+              <span className="count c-blue"><i style={{ background: '#38bdf8' }} />× ৬</span>
               <div className="seal"><div><b>৩ in ১</b>স্মার্ট প্যাক</div></div>
               <div className="ftag">
                 <div className="ic"><IconBox /></div>
@@ -345,30 +345,30 @@ const SpecialOfferView = () => {
           <div className="container">
             <div className="sec-head">
               <span className="kicker">বক্সে যা আছে</span>
-              <h2 className="sec-title">৩ ধরনের MO, প্রতিটা ৫ পিস</h2>
+              <h2 className="sec-title">৩ ধরনের MO, প্রতিটা ৬ পিস</h2>
               <p className="sec-sub">একটা কিনে ভালো না লাগার ঝুঁকি নেই। তিন রকম অনুভূতি একসাথে ট্রাই করুন, তারপর ঠিক করুন কোনটা আপনার।</p>
             </div>
             <div className="inside-grid">
-              <div className="photo skh-i-photo" role="img" aria-label="MO Smart Pack-এর ১৫টি প্যাকেট">
-                <div className="photo-badge">MO 3-in-1 Smart Pack<small>১৫ পিস · ৩ ভ্যারিয়েন্ট</small></div>
+              <div className="photo skh-i-photo" role="img" aria-label="MO Smart Pack-এর ১৮টি প্যাকেট">
+                <div className="photo-badge">MO 3-in-1 Smart Pack<small>১৮ পিস · ৩ ভ্যারিয়েন্ট</small></div>
               </div>
               <div className="variants">
                 <div className="variant">
                   <div className="v-img skh-img skh-i-white" style={{ '--bg': '#eef1f6' }} />
                   <div><div className="v-name"><i style={{ background: '#f1f5f9' }} />Ultra Ribbed</div><p className="v-desc">রিবড টেক্সচার, যারা বাড়তি অনুভূতি চান তাদের জন্য।</p></div>
-                  <span className="v-qty">× ৫ পিস</span>
+                  <span className="v-qty">× ৬ পিস</span>
                 </div>
                 <div className="variant">
                   <div className="v-img skh-img skh-i-pink" style={{ '--bg': '#fde7ef' }} />
                   <div><div className="v-name"><i style={{ background: '#f4a7c4' }} />Dotted</div><p className="v-desc">ডট টেক্সচার, একটু আলাদা অভিজ্ঞতার জন্য।</p></div>
-                  <span className="v-qty">× ৫ পিস</span>
+                  <span className="v-qty">× ৬ পিস</span>
                 </div>
                 <div className="variant">
                   <div className="v-img skh-img skh-i-blue" style={{ '--bg': '#e0f2fe' }} />
                   <div><div className="v-name"><i style={{ background: '#38bdf8' }} />Ultra Thin</div><p className="v-desc">অতি পাতলা, যতটা সম্ভব ন্যাচারাল অনুভূতির জন্য।</p></div>
-                  <span className="v-qty">× ৫ পিস</span>
+                  <span className="v-qty">× ৬ পিস</span>
                 </div>
-                <div className="inside-total"><span>মোট এক বক্সে</span><b>১৫ পিস</b></div>
+                <div className="inside-total"><span>মোট এক বক্সে</span><b>১৮ পিস</b></div>
               </div>
             </div>
           </div>
@@ -419,7 +419,7 @@ const SpecialOfferView = () => {
               <aside className="summary">
                 <div className="sum-prod">
                   <div className="sum-thumb skh-i-thumb" />
-                  <div><h3>MO 3-in-1 Smart Pack</h3><p>১৫ পিস · Ultra Ribbed, Dotted, Ultra Thin</p></div>
+                  <div><h3>MO 3-in-1 Smart Pack</h3><p>১৮ পিস · Ultra Ribbed, Dotted, Ultra Thin</p></div>
                 </div>
                 <div className="qty">
                   <label htmlFor="qtyOut">পরিমাণ (বক্স)</label>
@@ -430,7 +430,7 @@ const SpecialOfferView = () => {
                   </div>
                 </div>
                 <div className="addons">
-                  <div className="addons-head">সাথে আরও নিন <small>প্রতি ৫ পিস ৳২০০</small></div>
+                  <div className="addons-head">সাথে আরও নিন <small>প্রতি ২ পিস ৳৭০</small></div>
                   <div className="addon-list">
                     {ADDONS.map((a) => {
                       const n = addonQty[a.key];
@@ -529,14 +529,14 @@ const SpecialOfferView = () => {
               <details><summary>পেমেন্ট কীভাবে করব?</summary><p>ক্যাশ অন ডেলিভারি। প্রোডাক্ট হাতে পেয়ে ডেলিভারিম্যানকে টাকা দেবেন, আগে কিছু দিতে হবে না।</p></details>
               <details><summary>ডেলিভারি চার্জ কত?</summary><p>এই অফারে ডেলিভারি সম্পূর্ণ ফ্রি, ঢাকার ভেতরে (সাধারণত ৳৭০) এবং ঢাকার বাইরে (সাধারণত ৳১২০) দুই জায়গাতেই।</p></details>
               <details><summary>অর্ডারের পর কী হবে?</summary><p>আমাদের টিম আপনার দেওয়া নম্বরে কল করে অর্ডার কনফার্ম করবে এবং ডেলিভারির সময় জানিয়ে দেবে।</p></details>
-              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>Ultra Ribbed-এ রিবড টেক্সচার, Dotted-এ ডট টেক্সচার, আর Ultra Thin অতি পাতলা। Smart Pack-এ তিনটাই ৫ পিস করে আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
+              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>Ultra Ribbed-এ রিবড টেক্সচার, Dotted-এ ডট টেক্সচার, আর Ultra Thin অতি পাতলা। Smart Pack-এ তিনটাই ৬ পিস করে আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
             </div>
           </div>
         </section>
 
         <section className="sec final">
           <div className="container">
-            <h2>৩ ধরনের MO, ১৫ পিস, মাত্র <span>৳৭২০</span></h2>
+            <h2>৩ ধরনের MO, ১৮ পিস, মাত্র <span>৳৭২০</span></h2>
             <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · গোপনীয় প্যাকেজিং</p>
             <div className="ctas">
               <a href="#order" className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
