@@ -136,6 +136,10 @@ const deductForOrder = async (order, actor) => {
         for (const piece of line.pieces || []) {
           const pieceQty = (Number(piece.quantity) || 0) * qty;
           if (!piece.refId || pieceQty <= 0) continue;
+          if (piece.entity === "stockItem") {
+            await takeOutStockItem({ stockItemId: String(piece.refId), qty: pieceQty, order, actor, note: `Custom: ${line.name}` }, ledger);
+            continue;
+          }
           await takeOutLinked({ entity: piece.entity === "item" ? "item" : "product", filter: { _id: piece.refId }, qty: pieceQty, order, actor, note: `Custom: ${line.name}` }, ledger);
         }
         continue;

@@ -62,7 +62,7 @@ const normalizeCustomPieces = (pieces) => {
   const clean = (Array.isArray(pieces) ? pieces : [])
     .filter((p) => p && Types.ObjectId.isValid(String(p.refId)) && Number(p.quantity) >= 1)
     .map((p) => ({
-      entity: p.entity === 'item' ? 'item' : 'product',
+      entity: ['item', 'stockItem'].includes(p.entity) ? p.entity : 'product',
       refId: String(p.refId),
       name: String(p.name || '').slice(0, 200),
       quantity: Math.floor(Number(p.quantity)),

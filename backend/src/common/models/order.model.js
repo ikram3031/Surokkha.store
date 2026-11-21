@@ -22,7 +22,7 @@ const orderItemSchema = new Schema(
       type: [
         new Schema(
           {
-            entity: { type: String, enum: ["product", "item"], required: true },
+            entity: { type: String, enum: ["product", "item", "stockItem"], required: true },
             refId: { type: Schema.Types.ObjectId, required: true },
             name: { type: String, trim: true, default: "" },
             quantity: { type: Number, required: true, min: 1 },
