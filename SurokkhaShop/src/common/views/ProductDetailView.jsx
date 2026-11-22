@@ -74,13 +74,11 @@ export default function ProductDetailView() {
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
   const isLowStock = !isOutOfStock && stockAmount > 0 && stockAmount <= 10;
 
-  const currentRegularPrice = Number(product?.price != null ? product.price : (product?.regularPrice || 0));
+  const currentRegularPrice = Math.max(Number(product?.regularPrice) || 0, Number(product?.price) || 0);
   const hasOfferPrice = product?.offerPrice != null && !isNaN(Number(product.offerPrice)) && Number(product.offerPrice) > 0 && Number(product.offerPrice) < currentRegularPrice;
   const currentOfferPrice = hasOfferPrice ? Number(product.offerPrice) : currentRegularPrice;
 
   const hasDiscount = hasOfferPrice;
-  const savingsAmount = hasDiscount ? currentRegularPrice - currentOfferPrice : 0;
-  const discountPercent = hasDiscount && currentRegularPrice > 0 ? Math.round((savingsAmount / currentRegularPrice) * 100) : 0;
 
   let displayRegularPrice = currentRegularPrice;
   let displayOfferPrice = currentOfferPrice;
@@ -390,55 +388,6 @@ export default function ProductDetailView() {
               sizeClass="w-full h-full aspect-square"
               imgClassName="w-full h-full object-cover object-center"
             />
-            {/* Discount Ribbon Badge */}
-            {hasDiscount && discountPercent > 0 && (
-              <div
-                className="absolute top-0 left-3 sm:left-4 z-20 pointer-events-none select-none drop-shadow-md"
-                title={`${discountPercent}% Discount`}
-              >
-                <svg
-                  viewBox="0 0 70 65"
-                  className="w-11 sm:w-13 h-auto overflow-visible"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <defs>
-                    <linearGradient id={`detailDiscountGrad-${product?.id || 'detail'}`} x1="29" y1="0" x2="29" y2="64" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#FF0D1B" />
-                      <stop offset="45%" stopColor="#EE000A" />
-                      <stop offset="100%" stopColor="#C00003" />
-                    </linearGradient>
-                    <linearGradient id={`detailFoldGrad-${product?.id || 'detail'}`} x1="58" y1="0" x2="70" y2="13" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#B30005" />
-                      <stop offset="100%" stopColor="#660002" />
-                    </linearGradient>
-                  </defs>
-                  {/* 3D Fold tab at top right */}
-                  <path d="M58 0 C65 0 70 2 70 5 C70 8.5 65 13 58 13 Z" fill={`url(#detailFoldGrad-${product?.id || 'detail'})`} />
-                  {/* Main Ribbon Body */}
-                  <path d="M4 0 H58 V52 L29 64 L0 52 V4 Q0 0 4 0 Z" fill={`url(#detailDiscountGrad-${product?.id || 'detail'})`} />
-                  {/* Top inner highlight sheen */}
-                  <path d="M4 1.5 H57" stroke="#FFFFFF" strokeOpacity="0.4" strokeWidth="1.2" strokeLinecap="round" />
-                  {/* White Bold Text: -<percent>% */}
-                  <text
-                    x="29"
-                    y="27"
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fill="#FFFFFF"
-                    style={{
-                      fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                      fontSize: String(discountPercent).length > 2 ? '17px' : '19px',
-                      fontWeight: 900,
-                      letterSpacing: '-0.5px'
-                    }}
-                  >
-                    -{discountPercent}%
-                  </text>
-                </svg>
-              </div>
-            )}
-
             {isOutOfStock && (
               <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center pointer-events-none z-10">
                 <span className="bg-rose-600 text-white text-xs sm:text-sm font-black px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wider">
@@ -520,7 +469,7 @@ export default function ProductDetailView() {
             {isBn ? '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি' : 'Free delivery on orders over ৳1,000'}
           </div>
 
-          {/* Price display with Offer Price, Regular Price and Right-aligned Savings Badge */}
+          {/* Price display with Offer Price and struck-through Regular Price */}
           <div className="border-y border-slate-200/80 py-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-wrap items-baseline gap-3 sm:gap-4">
@@ -538,22 +487,14 @@ export default function ProductDetailView() {
                 )}
               </div>
 
-              {/* Right Side: Savings Badge / Out of Stock Badge */}
+              {/* Right Side: Out of Stock Badge */}
               <div className="flex-shrink-0">
                 {isOutOfStock ? (
                   <span className="text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-300 px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-2xs">
                     <span>🚫</span>
                     <span>{isBn ? 'বর্তমানে আউট অব স্টক' : 'Currently Out of Stock'}</span>
                   </span>
-                ) : (
-                  hasDiscount && (
-                    <span className="text-xs sm:text-sm font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shadow-2xs whitespace-nowrap">
-                      {isBn
-                        ? `${formatPrice(savingsAmount)} সাশ্রয় (${formatNumber(discountPercent)}% ছাড়)`
-                        : `Save ${formatPrice(savingsAmount)} (${discountPercent}% OFF)`}
-                    </span>
-                  )
-                )}
+                ) : null}
               </div>
             </div>
           </div>
