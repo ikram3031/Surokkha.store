@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useStore } from '../store/useStore';
 
-export default function RefundView() {
+// Return and refund policy view outlining eligible return scenarios and claims
+const RefundView = () => {
   const navigateTo = useStore((state) => state.navigateTo);
 
   useEffect(() => {
@@ -10,13 +11,11 @@ export default function RefundView() {
 
   return (
     <div className="bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 min-h-screen text-slate-800 pb-16">
-      {/* Header Banner */}
       <div className="max-md:hidden bg-gradient-to-r from-[#200b14] via-[#15050d] to-[#200b14] text-white py-12 sm:py-16 border-b border-rose-950/80 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          {/* Breadcrumb */}
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-rose-200/70 mb-4">
             <button onClick={() => navigateTo('home')} className="hover:text-amber-400 transition cursor-pointer">
               Home
@@ -37,22 +36,19 @@ export default function RefundView() {
         </div>
       </div>
 
-      {/* Content Container */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
         <div className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200/80 shadow-sm space-y-8 text-sm leading-relaxed text-slate-700">
 
-          {/* Intimate Health Notice */}
           <div className="p-4 bg-amber-50/80 rounded-xl border border-amber-200 flex items-start gap-3">
             <span className="text-xl">⚠️</span>
             <div>
               <h3 className="font-bold text-amber-950 text-sm">Health & Hygiene Standard</h3>
               <p className="text-xs text-amber-900 mt-1">
-                Due to the intimate, medical, and personal nature of contraceptive healthcare supplies, opened retail boxes or tampered seals cannot be returned or restocked for health and safety regulations.
+                Due to health, hygiene and personal safety regulations for wellness supplies, opened retail boxes or tampered seals cannot be returned or restocked.
               </p>
             </div>
           </div>
 
-          {/* Section 1: Eligible Scenarios for Replacement / Refund */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">1</span>
@@ -68,7 +64,6 @@ export default function RefundView() {
             </ul>
           </section>
 
-          {/* Section 2: Reporting Window (24 - 48 Hours) */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">2</span>
@@ -79,7 +74,6 @@ export default function RefundView() {
             </p>
           </section>
 
-          {/* Section 3: Replacement Process */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">3</span>
@@ -101,20 +95,18 @@ export default function RefundView() {
             </div>
           </section>
 
-          {/* Section 4: Non-Eligible Items */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">4</span>
               Non-Refundable Items
             </h2>
             <ul className="list-disc list-inside space-y-1 pl-2 text-slate-600">
-              <li>Individual foils that have been opened, unsealed, or used.</li>
+              <li>Individual inner packs or items that have been opened, unsealed, or used.</li>
               <li>Products returned without prior notification after the 48-hour window.</li>
               <li>Change of mind after breaking the product factory safety seal.</li>
             </ul>
           </section>
 
-          {/* Section 5: How to Claim */}
           <section className="space-y-3 pt-4 border-t border-slate-200">
             <h2 className="text-base sm:text-lg font-bold text-slate-900">How to Initiate a Claim</h2>
             <p>
@@ -131,4 +123,6 @@ export default function RefundView() {
       </div>
     </div>
   );
-}
+};
+
+export default RefundView;

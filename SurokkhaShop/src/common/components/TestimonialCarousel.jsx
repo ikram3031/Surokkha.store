@@ -3,6 +3,7 @@ import { useTranslation } from '../i18n/useTranslation';
 import { testimonials } from '../data/testimonials';
 
 export default function TestimonialCarousel({ theme = 'light' }) {
+  return null;
   const { t, isBn } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -112,7 +113,7 @@ export default function TestimonialCarousel({ theme = 'light' }) {
         <p className={`text-xs sm:text-sm mt-1 max-w-lg mx-auto leading-relaxed ${
           isDark ? 'text-slate-300' : 'text-slate-800'
         }`}>
-          {t('testimonials.subtitle', 'সারা বাংলাদেশ থেকে সংগৃহীত প্রকৃত ক্রেতাদের বিশ্বস্ত ও গোপনীয় অভিজ্ঞতার গল্প।')}
+          {t('testimonials.subtitle', 'সারা বাংলাদেশ থেকে সংগৃহীত প্রকৃত ক্রেতাদের বিশ্বস্ত অভিজ্ঞতার গল্প।')}
         </p>
       </div>
 
@@ -143,16 +144,7 @@ export default function TestimonialCarousel({ theme = 'light' }) {
         <div className="flex items-center gap-2 text-xs font-semibold">
           <span className="text-emerald-400">✓</span>
           <span className={isDark ? 'text-slate-200' : 'text-slate-700'}>
-            {isBn ? '১০০% ভেরিফায়েড পার্সেল' : '100% Verified Delivery'}
-          </span>
-        </div>
-
-        <div className={`hidden md:block w-px h-6 ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}></div>
-
-        <div className="flex items-center gap-2 text-xs font-semibold">
-          <span className="text-rose-400">🔒</span>
-          <span className={isDark ? 'text-slate-200' : 'text-slate-700'}>
-            {isBn ? '১০০% গোপনীয় আনলেবেলড মোড়ক' : '100% Confidential Packaging'}
+            {isBn ? '১০০% ভেরিফায়েড ডেলিভারি' : '100% Verified Delivery'}
           </span>
         </div>
       </div>

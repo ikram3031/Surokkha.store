@@ -67,10 +67,10 @@ export default function CartDrawer() {
   const effectiveCoupon = totals.appliedCoupon || appliedCoupon;
   const cartKeys = Object.keys(cart).filter((k) => cart[k] > 0);
   const hasComboInCart = cartKeys.some(
-    (k) => k.includes('combo') || k === 'variety-condoms-30pcs-combo' || k === 'combo-26'
+    (k) => k.includes('combo') || k.includes('smart')
   );
   
-  const comboProd = getFeaturedCombo(products) || products['variety-condoms-30pcs-combo'] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['combo-26'];
+  const comboProd = getFeaturedCombo(products) || products['mo-smart-pack-18-pcs'] || products['mo-combo-pack'];
 
   const isComboInStock = Boolean(comboProd && !comboProd.isOutOfStock && comboProd.stockStatus !== 'outofstock' && comboProd.stockStatus !== 'out_of_stock' && comboProd.stockAmount !== 0);
   const comboOfferPrice = Number(comboProd?.offerPrice || comboProd?.price || 0);
@@ -525,7 +525,7 @@ export default function CartDrawer() {
                 <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
-                <span>{isBn ? '১০০% গোপনীয় আনলেবেলড পার্সেল • ক্যাশ অন ডেলিভারি' : '100% Discreet Packaging • Cash on Delivery'}</span>
+                <span>{isBn ? 'নিরাপদ প্যাকেজিং • দ্রুত ডেলিভারি' : 'Safe Packaging • Fast Delivery'}</span>
               </p>
             </div>
           )}

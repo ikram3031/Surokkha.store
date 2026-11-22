@@ -4,16 +4,16 @@ import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
 import { isMoProduct } from '../utils/moProducts';
 
-// MO combos left out of the lineup (matched by slug prefix): 30 pcs Micro Thin, 30 pcs Micro Ribbed,
-// and the Ultimate 3-in-1 combo
+// MO combos left out of the lineup (matched by slug prefix or combo category)
 const EXCLUDED_SLUG_PREFIXES = [
-  '30-pieces-of-micro-thin-latex-contracept',
-  'mico-ribbed-30-pcs',
-  'mo-ultimate-3-in-1-latex-contraceptive',
+  '30-pieces',
+  'mo-combo',
+  'care-combo',
 ];
 
 const isExcluded = (p, key) => {
   const slug = String(p?.slug || key || '').toLowerCase();
+  if (p?.categorySlug === 'combo' || slug.includes('combo')) return true;
   return EXCLUDED_SLUG_PREFIXES.some((prefix) => slug.startsWith(prefix));
 };
 

@@ -4,7 +4,7 @@ import { useTranslation } from '../i18n/useTranslation';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha.store';
 
-// 15-piece Smart Pack: 5x Ultra Thin + 5x Dotted + 5x Ribbed.
+// 15-piece Smart Pack: 5x Ultra Thin + 5x Textured + 5x Contour.
 // The product is looked up by slug/name ("smart"), so the banner follows the dashboard product and its image.
 const findSmartPack = (products) =>
   Object.values(products).find((p) => p && p.isActive !== false && `${p.slug || ''} ${p.name || ''}`.toLowerCase().includes('smart')) || null;
@@ -23,8 +23,8 @@ export default function SmartPackHero() {
 
   const boxChips = [
     { label: isBn ? '৫ পিস আল্ট্রা থিন' : '5x Ultra Thin', dot: 'bg-sky-400' },
-    { label: isBn ? '৫ পিস ডটেড' : '5x Dotted', dot: 'bg-pink-400' },
-    { label: isBn ? '৫ পিস রিবড' : '5x Ribbed', dot: 'bg-slate-400' },
+    { label: isBn ? '৫ পিস টেক্সচার্ড' : '5x Textured', dot: 'bg-pink-400' },
+    { label: isBn ? '৫ পিস কনট্যুর' : '5x Contour', dot: 'bg-slate-400' },
   ];
 
   return (
@@ -53,13 +53,13 @@ export default function SmartPackHero() {
           <p className="mt-4 md:mt-6 font-['Plus_Jakarta_Sans'] font-bold text-[11px] sm:text-sm lg:text-base tracking-[0.25em] md:tracking-[0.3em] text-[#3d0c18] uppercase flex items-center justify-center md:justify-start gap-2 md:gap-3">
             <span>Ultra Thin</span>
             <span className="w-1.5 h-1.5 rounded-full bg-[#e05578]" />
-            <span>Dotted</span>
+            <span>Textured</span>
             <span className="w-1.5 h-1.5 rounded-full bg-[#e05578]" />
-            <span>Ribbed</span>
+            <span>Contour</span>
           </p>
 
           <p className="mt-2 md:mt-3 text-base sm:text-lg lg:text-xl font-semibold text-[#5a2a35] font-bengali">
-            তিন ধরনের ১৫ পিস — আল্ট্রা থিন, ডটেড ও রিবড এক প্যাকে
+            তিন ধরনের ১৫ পিস — আল্ট্রা থিন, টেক্সচার্ড ও কনট্যুর এক প্যাকে
           </p>
 
           {/* Boxes included */}
@@ -77,7 +77,7 @@ export default function SmartPackHero() {
         <div className="flex justify-center items-center md:col-start-2 md:row-start-1 md:row-span-2">
           {imageUrl && <img
             src={imageUrl}
-            alt="MO 3-in-1 Smart Pack — Ultra Thin, Dotted and Ribbed"
+            alt="MO 3-in-1 Smart Pack — Ultra Thin, Textured and Contour"
             onClick={() => openProduct(ULTIMATE_COMBO_SLUG)}
             className="w-full max-w-[340px] md:max-w-[480px] aspect-square object-cover rounded-3xl ring-4 ring-rose-200/70 shadow-2xl shadow-rose-900/20 cursor-pointer"
             loading="eager"
@@ -109,10 +109,6 @@ export default function SmartPackHero() {
                 : '30 pieces in total — 3 types, 10 of each'}
             </div>
           </div>
-
-          <p className="mt-4 md:mt-6 text-xs text-slate-500">
-            {isBn ? 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)' : 'For adults only (18+)'}
-          </p>
         </div>
       </div>
     </section>

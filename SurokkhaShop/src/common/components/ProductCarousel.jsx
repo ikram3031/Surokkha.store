@@ -27,9 +27,8 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
     const seenIds = new Set();
     const collected = [];
     const mo3Keys = new Set([
-      'mo-multi-textured-latex-contraceptive-10-pcs',
-      'mo-micro-thin-latex-contraceptive-10-pcs',
-      'mo-micro-ribbed-natural-latex-contraceptive-10-pcs'
+      'mo-smart-pack-18-pcs',
+      'mo-smart-pack-15-pcs'
     ]);
 
     const isComboProduct = (p, key) => Boolean(
@@ -193,11 +192,11 @@ const ProductCarousel = ({ maxItems = 10, mode = 'default' }) => {
             <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
               {isComboMode
                 ? (isBn
-                    ? 'একাধিক ভ্যারিয়েন্ট একসাথে — বেশি পরিমাণ, নিশ্চিত সাশ্রয় ও ১০০% গোপনীয় ডেলিভারি।'
-                    : 'Multiple variants bundled together — more quantity, bigger savings, 100% discreet delivery.')
+                    ? 'একাধিক ভ্যারিয়েন্ট একসাথে — বেশি পরিমাণ ও নিশ্চিত সাশ্রয়।'
+                    : 'Multiple variants bundled together — more quantity, bigger savings.')
                 : (isBn
-                    ? 'আপনার পছন্দ অনুযায়ী বাছাইকৃত প্রিমিয়াম কনট্রাসেপটিভ, পার্সোনাল লুব্রিকেন্ট ও সুরক্ষা সামগ্রী।'
-                    : 'Browse our curated collection of personal wellness, lubricants, and barrier contraceptives.')}
+                    ? 'আপনার পছন্দ অনুযায়ী বাছাইকৃত প্রিমিয়াম স্বাস্থ্য, পার্সোনাল কেয়ার ও ওয়েলনেস সামগ্রী।'
+                    : 'Browse our curated collection of personal wellness and premium care essentials.')}
             </p>
           </div>
 

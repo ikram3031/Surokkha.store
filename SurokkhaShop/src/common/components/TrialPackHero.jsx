@@ -4,7 +4,7 @@ import { useTranslation } from '../i18n/useTranslation';
 
 // Home hero banner promoting the MO Trial Pack (mirrors the Trial Pack social creative).
 // Mobile stacks like the poster (copy → packets → CTA); desktop puts the packets on the right.
-// Fixed 6-piece pack: 2x Ultra Thin + 2x Ribbed + 2x Dotted
+// Fixed 6-piece pack: 2x Ultra Thin + 2x Contour + 2x Textured
 const TRIAL_PACK_SLUG = 'mo-trial-pack-6-pcs';
 
 export default function TrialPackHero() {
@@ -13,8 +13,8 @@ export default function TrialPackHero() {
 
   const variantChips = [
     { label: isBn ? '২ পিস আল্ট্রা থিন' : '2x Ultra Thin', dot: 'bg-sky-500' },
-    { label: isBn ? '২ পিস ডটেড' : '2x Dotted', dot: 'bg-pink-500' },
-    { label: isBn ? '২ পিস রিবড' : '2x Ribbed', dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
+    { label: isBn ? '২ পিস টেক্সচার্ড' : '2x Textured', dot: 'bg-pink-500' },
+    { label: isBn ? '২ পিস কনট্যুর' : '2x Contour', dot: 'bg-slate-300 ring-1 ring-slate-400/60' },
   ];
 
   return (
@@ -67,7 +67,7 @@ export default function TrialPackHero() {
         <div className="flex justify-center items-center md:col-start-2 md:row-start-1 md:row-span-2">
           <img
             src="/banners/trial-pack-packets.webp"
-            alt="MO Trial Pack — Ultra Thin, Dotted and Ribbed"
+            alt="MO Trial Pack — Ultra Thin, Textured and Contour"
             onClick={() => openProduct(TRIAL_PACK_SLUG)}
             className="w-full max-w-[420px] md:max-w-[600px] h-auto cursor-pointer"
             loading="eager"
@@ -99,10 +99,6 @@ export default function TrialPackHero() {
                 : '6 pieces in total — 3 types, 2 of each'}
             </div>
           </div>
-
-          <p className="mt-4 md:mt-6 text-xs text-slate-500">
-            {isBn ? 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)' : 'For adults only (18+)'}
-          </p>
         </div>
       </div>
     </section>

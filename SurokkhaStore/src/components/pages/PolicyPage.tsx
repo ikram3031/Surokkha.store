@@ -66,9 +66,9 @@ const POLICIES_EN: Record<'terms' | 'privacy' | 'refund', Policy> = {
     intro: 'Please read these terms before you place an order on Surokkha Store.',
     sections: [
       {
-        title: 'Age requirement',
+        title: 'Order eligibility',
         paragraphs: [
-          'By ordering you confirm that you are at least 18 years old. Our products are intended for adults only; we do not sell to minors.',
+          'By ordering you confirm that you accept these terms and conditions.',
         ],
       },
       {
@@ -199,9 +199,9 @@ const POLICIES_BN: Record<'terms' | 'privacy' | 'refund', Policy> = {
     intro: 'সুরক্ষা স্টোরে অর্ডার করার আগে অনুগ্রহ করে এই শর্তাবলী পড়ে নিন।',
     sections: [
       {
-        title: 'বয়সসীমা',
+        title: 'অর্ডারের যোগ্যতা',
         paragraphs: [
-          'অর্ডার করার মাধ্যমে আপনি নিশ্চিত করছেন যে আপনার বয়স কমপক্ষে ১৮ বছর। আমাদের পণ্য শুধুমাত্র প্রাপ্তবয়স্কদের জন্য; অপ্রাপ্তবয়স্কদের কাছে আমরা বিক্রি করি না।',
+          'অর্ডার করার মাধ্যমে আপনি আমাদের শর্তাবলীর সাথে সম্মতি প্রকাশ করছেন। আমাদের পণ্য পরিবার পরিকল্পনা ও স্বাস্থ্য সুরক্ষায় নির্ভরযোগ্য।',
         ],
       },
       {

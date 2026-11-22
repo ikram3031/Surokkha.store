@@ -379,7 +379,6 @@ window.SB = (() => {
   <p class="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-0.5 px-4 py-2 text-center text-xs font-medium sm:text-sm">
     <span class="inline-flex items-center gap-1.5">${icon('lock', 'h-3.5 w-3.5')} গোপন প্যাকেজিং</span>
     <span class="inline-flex items-center gap-1.5">${icon('truck', 'h-3.5 w-3.5')} ক্যাশ অন ডেলিভারি</span>
-    <span class="hidden opacity-80 sm:inline">১৮+ প্রাপ্তবয়স্কদের জন্য</span>
   </p>
 </div>
 <header class="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
@@ -426,7 +425,7 @@ window.SB = (() => {
     </div>
   </div>
   <div class="border-t border-white/15 px-4 py-5 text-center text-xs opacity-60">
-    <p>এই সাইটের পণ্য শুধুমাত্র ১৮ বছর বা তার বেশি বয়সীদের জন্য। এই ব্লগের লেখা সাধারণ তথ্যের জন্য, চিকিৎসা পরামর্শের বিকল্প নয়।</p>
+    <p>এই ব্লগের লেখা সাধারণ তথ্যের জন্য, চিকিৎসা পরামর্শের বিকল্প নয়।</p>
     <p class="mt-1">&copy; ২০২৬ Surokkha Store. সর্বস্বত্ব সংরক্ষিত।</p>
   </div>
 </footer>

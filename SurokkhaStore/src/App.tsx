@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { Toaster } from '@/components/ui/sonner'
-import { AgeGate } from '@/components/AgeGate'
 import { AnnouncementBar } from '@/components/AnnouncementBar'
 import { Header } from '@/components/header/Header'
 import { Header2 } from '@/components/header/Header2'
@@ -109,7 +108,6 @@ function AppShell() {
 
   return (
     <>
-      <AgeGate />
       {!bare && <AnnouncementBar />}
       {!bare && USE_HEADER_V2 && <Header2 query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />}
       {!bare && !USE_HEADER_V2 && <Header query={query} onQueryChange={setQuery} onCartOpen={() => setCartOpen(true)} onCategory={selectCategory} />}

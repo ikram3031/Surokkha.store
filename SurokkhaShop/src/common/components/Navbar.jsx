@@ -15,10 +15,10 @@ const Navbar = () => {
   const products = useStore((state) => state.products);
   const { t, isBn, formatPrice } = useTranslation();
 
-  // Marquee offer shows the site-wide featured combo (Ultimate 3-in-1 30 pcs)
+  // Marquee offer shows the site-wide featured combo (Smart Pack / Combo Pack)
   const combo30Prod = getFeaturedCombo(products);
 
-  const comboKey = combo30Prod?.slug || combo30Prod?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const comboKey = combo30Prod?.slug || combo30Prod?.id || 'mo-combo-pack';
   const comboPrice = combo30Prod ? (combo30Prod.offerPrice || combo30Prod.price) : null;
   const comboRegularPrice = combo30Prod ? (combo30Prod.regularPrice || combo30Prod.price) : null;
   const comboDiscountPct = (comboRegularPrice && comboPrice && comboRegularPrice > comboPrice)

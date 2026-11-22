@@ -6,7 +6,8 @@ import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import PromoComboBanner from '../components/PromoComboBanner';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 
-export default function ShopView() {
+// Shop view for browsing, filtering, and searching products
+const ShopView = () => {
   const navigateTo = useStore((state) => state.navigateTo);
   const isLoadingProducts = useStore((state) => state.isLoadingProducts);
   const products = useStore((state) => state.products);
@@ -15,7 +16,7 @@ export default function ShopView() {
 
   const { t, isBn, formatNumber } = useTranslation();
 
-  // 1. Dynamic category filter ('all' or specific slug like 'combo', 'contraceptive', 'lubricant', etc.)
+  // Dynamic category filter ('all' or specific slug like 'combo', 'wellness', 'personal-care', etc.)
   const shopCategory = useStore((state) => state.shopCategory);
   const [category, setCategory] = useState(shopCategory || 'all');
   // Follow category picks from the menu while the shop page is already open
@@ -222,8 +223,8 @@ export default function ShopView() {
 
           <p className="text-xs sm:text-sm md:text-base text-slate-300 max-w-2xl mx-auto mt-3 leading-relaxed">
             {isBn
-              ? 'MO, Durex, Skore সহ বিশ্বস্ত ব্র্যান্ডের ১০০% আসল প্রোডাক্ট ও কম্বো প্যাক। গোপনীয় প্যাকেজিং, সারা দেশে ক্যাশ অন ডেলিভারি।'
-              : '100% genuine products and combo packs from trusted brands like MO, Durex and Skore. Discreet packaging, cash on delivery nationwide.'}
+              ? 'বিশ্বস্ত ব্র্যান্ডের ১০০% আসল স্বাস্থ্য ও পার্সোনাল কেয়ার পণ্য।'
+              : '100% genuine health, wellness and personal care products.'}
           </p>
 
         </div>
@@ -540,6 +541,8 @@ export default function ShopView() {
 
     </div>
   );
-}
+};
+
+export default ShopView;
 
 

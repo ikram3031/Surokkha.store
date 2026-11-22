@@ -305,7 +305,7 @@ export function CheckoutPage() {
     }
     if (totals.groupShort)
       return toast.error(L(`${totals.groupShort.rule.name} needs at least ${taka(totals.groupShort.rule.minOrderAmount)} in pieces. Add more or remove it from your cart.`, `${totals.groupShort.rule.name}-এর জন্য কমপক্ষে ${taka(totals.groupShort.rule.minOrderAmount)} মূল্যের পিস প্রয়োজন। আরও যোগ করুন বা কার্ট থেকে মুছে ফেলুন।`))
-    if (!agreed) return toast.error(L('Please accept the terms to continue', 'অর্ডার করতে বয়স ১৮+ ও শর্তাবলীতে সম্মতি প্রদান করুন।'))
+    if (!agreed) return toast.error(L('Please accept the terms to continue', 'অর্ডার করতে শর্তাবলীতে সম্মতি প্রদান করুন।'))
 
     submittingRef.current = true
     setSubmitting(true)
@@ -682,7 +682,7 @@ export function CheckoutPage() {
 
             <label className="flex cursor-pointer select-none items-start gap-3 text-base">
               <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-primary" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-              <span>{L('I agree to the terms and refund policy, and I am 18 or older.', 'আমি নিশ্চিত করছি আমার বয়স ১৮ বছর বা তার বেশি এবং আমি শর্তাবলী ও রিফান্ড পলিসি মেনে নিচ্ছি।')}</span>
+              <span>{L('I agree to the terms and refund policy.', 'আমি নিশ্চিত করছি যে আমি শর্তাবলী ও রিফান্ড পলিসি মেনে নিচ্ছি।')}</span>
             </label>
 
             <Button type="submit" size="lg" className="h-12 w-full rounded-full text-lg" disabled={submitting}>

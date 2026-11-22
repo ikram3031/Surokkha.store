@@ -8,7 +8,8 @@ import { useTranslation } from '../i18n/useTranslation';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { getCustomerToken } from '../utils/customerAuth';
 
-export default function CheckoutView() {
+// Checkout view handling customer details, shipping address, coupon codes, and order placement
+const CheckoutView = () => {
   const { t, isBn } = useTranslation();
   const cart = useStore((state) => state.cart);
   const products = useStore((state) => state.products);
@@ -41,7 +42,7 @@ export default function CheckoutView() {
   const isSubmittingRef = useRef(false);
   const phoneTimerRef = useRef(null);
   const emailTimerRef = useRef(null);
-  const [agreedToTerms, setAgreedToTerms] = useState(true); // 18+ already confirmed at the age gate
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
   const [isDistrictOpen, setIsDistrictOpen] = useState(false);
   const [isShipDistrictOpen, setIsShipDistrictOpen] = useState(false);
   const [isThanaOpen, setIsThanaOpen] = useState(false);
@@ -1079,4 +1080,6 @@ export default function CheckoutView() {
 
     </div>
   );
-}
+};
+
+export default CheckoutView;

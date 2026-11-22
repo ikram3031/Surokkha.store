@@ -36,8 +36,6 @@ export default function ProductArtwork({
   const p = (typeof productKey === 'object' && productKey !== null)
     ? productKey
     : (storeProducts[productKey] ||
-      (typeof productKey === 'string' && storeProducts[productKey.replace(/-condom$/, '')]) ||
-      (typeof productKey === 'string' && storeProducts[`${productKey}-condom`]) ||
       (typeof productKey === 'string' && Object.values(storeProducts).find(item => item?.id === productKey || item?.slug === productKey || item?.did === productKey || item?._id === productKey)) ||
       null);
 
@@ -141,24 +139,24 @@ export default function ProductArtwork({
   const brandName = (p?.brand || (p?.name ? p.name.split(' ')[0] : 'MO')).toUpperCase();
   const slugKey = String(p?.slug || productKey || '').toLowerCase();
   const prodName = String(p?.name || '').toLowerCase();
-  const isLubricant = prodName.includes('jelly') || prodName.includes('gel') || prodName.includes('lubricant') || slugKey.includes('jelly') || slugKey.includes('lubricant') || p?.iconType === 'lubricant';
-  const isDelay = prodName.includes('long love') || prodName.includes('delay') || slugKey.includes('long-love');
+  const isHydrationGel = prodName.includes('jelly') || prodName.includes('gel') || slugKey.includes('jelly') || slugKey.includes('gel') || p?.iconType === 'care';
+  const isEndurance = prodName.includes('endurance') || prodName.includes('smart') || slugKey.includes('smart');
   const isGold = prodName.includes('gold') || slugKey.includes('gold');
   const isBlack = prodName.includes('black') || slugKey.includes('black');
-  const isDotted = p?.iconType === 'dotted' || slugKey.includes('dotted') || prodName.includes('dotted') || prodName.includes('textured');
+  const isTextured = p?.iconType === 'texture' || slugKey.includes('textured') || prodName.includes('textured');
   const isThin = p?.iconType === 'thin' || slugKey.includes('thin') || prodName.includes('thin');
-  const isCombo = p?.iconType === 'combo' || slugKey.includes('combo') || slugKey.includes('20pcs') || slugKey.includes('30pcs') || prodName.includes('combo');
+  const isCombo = p?.iconType === 'combo' || slugKey.includes('combo') || slugKey.includes('20pcs') || slugKey.includes('30pcs') || slugKey.includes('18pcs') || prodName.includes('combo');
 
   let boxGradient = null;
   let patternSvg = null;
-  let accentBadge = 'MEDICAL GRADE BARRIER';
-  let variantLabel = 'PREMIUM PROTECTION';
+  let accentBadge = 'PREMIUM QUALITY STANDARD';
+  let variantLabel = 'PREMIUM WELLNESS CARE';
   let foilColor = '#FDA4AF';
   let badgeBg = '#9F1239';
-  let classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+  let classLabel = 'PREMIUM WELLNESS CARE';
 
-  if (isLubricant) {
-    classLabel = 'PERSONAL LUBRICANT GEL';
+  if (isHydrationGel) {
+    classLabel = 'PERSONAL CARE HYDRATION GEL';
     variantLabel = prodName.includes('strawberry') ? 'STRAWBERRY FLAVOR (100ml)' : 'WATER BASED MOISTURE (50g)';
     accentBadge = 'PH BALANCED • DERMA TESTED';
     foilColor = prodName.includes('strawberry') ? '#FDA4AF' : '#7DD3FC';
@@ -182,9 +180,9 @@ export default function ProductArtwork({
       </g>
     );
   } else if (isGold) {
-    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    classLabel = 'PREMIUM WELLNESS CARE';
     variantLabel = 'EXOTIC METALLIC GOLD';
-    accentBadge = 'VANILLA SCENTED BARRIER';
+    accentBadge = 'NATURAL BOTANICAL EXTRACT';
     foilColor = '#FDE68A';
     badgeBg = '#78350F';
     boxGradient = (
@@ -202,9 +200,9 @@ export default function ProductArtwork({
       </g>
     );
   } else if (isBlack) {
-    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
+    classLabel = 'PREMIUM WELLNESS CARE';
     variantLabel = 'EXOTIC OBSIDIAN BLACK';
-    accentBadge = 'PREMIUM SMOOTH BARRIER';
+    accentBadge = 'PREMIUM COMFORT FORMULA';
     foilColor = '#E2E8F0';
     badgeBg = '#27272A';
     boxGradient = (
@@ -220,10 +218,10 @@ export default function ProductArtwork({
         <line x1="105" y1="187" x2="195" y2="187" stroke="#F8FAFC" strokeWidth="3" />
       </g>
     );
-  } else if (isDelay) {
-    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
-    variantLabel = 'LONG LOVE (4.5% BENZOCAINE)';
-    accentBadge = 'EXTENDED CLIMAX CONTROL';
+  } else if (isEndurance) {
+    classLabel = 'PREMIUM WELLNESS CARE';
+    variantLabel = 'BALANCED ENDURANCE CARE';
+    accentBadge = 'LONG LASTING COMFORT CARE';
     foilColor = '#FEF08A';
     badgeBg = '#713F12';
     boxGradient = (
@@ -240,10 +238,10 @@ export default function ProductArtwork({
         <circle cx="105" cy="215" r="4" /> <circle cx="135" cy="215" r="4" /> <circle cx="165" cy="215" r="4" /> <circle cx="195" cy="215" r="4" />
       </g>
     );
-  } else if (isDotted) {
-    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
-    variantLabel = 'TEXTURED MATRIX';
-    accentBadge = 'CERTIFIED SAFETY BARRIER';
+  } else if (isTextured) {
+    classLabel = 'PREMIUM WELLNESS CARE';
+    variantLabel = 'TEXTURED WELLNESS';
+    accentBadge = 'CERTIFIED WELLNESS STANDARD';
     foilColor = '#FECDD3';
     badgeBg = '#4C0519';
     boxGradient = (
@@ -263,9 +261,9 @@ export default function ProductArtwork({
       </g>
     );
   } else if (isThin) {
-    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
-    variantLabel = 'ULTRA THIN (0.045mm)';
-    accentBadge = 'NATURAL LATEX BARRIER';
+    classLabel = 'PREMIUM WELLNESS CARE';
+    variantLabel = 'ULTRA THIN COMFORT';
+    accentBadge = 'ULTRA SOFT COMFORT CARE';
     foilColor = '#93C5FD';
     badgeBg = '#172554';
     boxGradient = (
@@ -284,7 +282,7 @@ export default function ProductArtwork({
       </g>
     );
   } else if (isCombo) {
-    classLabel = 'CONTRACEPTIVE VALUE PACK';
+    classLabel = 'WELLNESS VALUE PACK';
     variantLabel = 'MULTI-PACK VALUE BUNDLE';
     accentBadge = 'CERTIFIED VALUE BUNDLE';
     foilColor = '#FDE047';
@@ -301,15 +299,15 @@ export default function ProductArtwork({
         <rect x="65" y="145" width="75" height="105" rx="8" fill="#1E3A8A" stroke="#93C5FD" strokeWidth="2" />
         <text x="102" y="185" fill="#FFF" fontSize="12" fontWeight="800" textAnchor="middle">THIN</text>
         <rect x="160" y="145" width="75" height="105" rx="8" fill="#881337" stroke="#FECDD3" strokeWidth="2" />
-        <text x="197" y="185" fill="#FFF" fontSize="12" fontWeight="800" textAnchor="middle">BARRIER</text>
+        <text x="197" y="185" fill="#FFF" fontSize="12" fontWeight="800" textAnchor="middle">WELLNESS</text>
         <rect x="95" y="260" width="110" height="20" rx="10" fill="#EAB308" />
         <text x="150" y="274" fill="#09090B" fontSize="10" fontWeight="900" textAnchor="middle" letterSpacing="0.5">SAVER PACK</text>
       </g>
     );
   } else {
-    classLabel = 'LATEX CONTRACEPTIVE BARRIER';
-    variantLabel = 'CONTOURED RIDGES';
-    accentBadge = '52mm ERGONOMIC BARRIER';
+    classLabel = 'PREMIUM WELLNESS CARE';
+    variantLabel = 'COMFORT WELLNESS';
+    accentBadge = 'ERGONOMIC COMFORT DESIGN';
     foilColor = '#E2E8F0';
     badgeBg = '#0F172A';
     boxGradient = (
@@ -351,10 +349,6 @@ export default function ProductArtwork({
 
         {/* Brand Name Dynamic */}
         <text x="56" y="82" fontFamily="'Plus Jakarta Sans', sans-serif" fontWeight="900" fontSize={brandName.length > 6 ? "28" : "36"} fill="#FFFFFF" letterSpacing="1.5">{brandName}</text>
-
-        {/* Strict 18+ Age Gating Stamp on Packaging */}
-        <circle cx="155" cy="68" r="13" fill="#000000" fillOpacity="0.5" stroke={foilColor} strokeWidth="1.2" />
-        <text x="155" y="73" fontFamily="Inter, sans-serif" fontSize="10" fontWeight="900" fill="#FFFFFF" textAnchor="middle">18+</text>
 
         {/* Compliance Pill */}
         <rect x="178" y="56" width="76" height="24" rx="12" fill={badgeBg} fillOpacity="0.85" stroke={foilColor} strokeWidth="1" />

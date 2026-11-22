@@ -110,6 +110,7 @@ Every git commit must strictly adhere to the format:
 ---
 
 ## 10. Working Rules for Every AI Agent (Claude Code, Antigravity, Gemini)
+- **Zero unsolicited work, analysis, or looping (STRICT)**: NEVER start working, analyzing, editing files, or running commands without the user's explicit permission. Talk to the user first. NEVER self-iterate, over-analyze, or run endless chains of commands in the background.
 - **Discuss before implementing**: explain the plan and wait for the user's explicit go-ahead before writing code.
 - **Bangla font**: use **Noto Sans Bengali** for Bangla text. Never Hind Siliguri (its ১ is unreadable).
 - **Meta-safe condom copy**: in ads, blogs and banners never use Dotted / pleasure / sensation words; say "MO Multi-Texture".

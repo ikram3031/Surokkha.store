@@ -5,9 +5,9 @@ import ProductArtwork from './ProductArtwork';
 
 // The three single 10-pc products the combo bundles; their own product photos are shown in the banner
 const COMBO_PACK_SLUGS = {
-  textured: 'mo-multi-textured-latex-contraceptive-10-pcs',
-  thin: 'mo-micro-thin-latex-contraceptive-10-pcs',
-  ribbed: 'mo-micro-ribbed-natural-latex-contraceptive-10-pcs',
+  textured: 'mo-textured-care-10-pcs',
+  thin: 'mo-ultra-thin-care-10-pcs',
+  contour: 'mo-contour-care-10-pcs',
 };
 
 export default function PromoComboBanner() {
@@ -17,11 +17,11 @@ export default function PromoComboBanner() {
   const products = useStore((state) => state.products);
   const { isBn, formatPrice, formatNumber, getLocalizedName } = useTranslation();
 
-  // Site-wide featured combo (Ultimate 3-in-1 30 pcs)
+  // Site-wide featured combo (Smart Pack / Combo Pack)
   const activeCombo = getFeaturedCombo(products);
 
-  const comboKey = activeCombo?.slug || activeCombo?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
-  const comboProd = activeCombo || products[comboKey] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
+  const comboKey = activeCombo?.slug || activeCombo?.id || 'mo-smart-pack-18-pcs';
+  const comboProd = activeCombo || products[comboKey] || products['mo-smart-pack-18-pcs'] || products['mo-combo-pack'];
 
   if (!comboProd || comboProd.isActive === false || comboProd.isOutOfStock || comboProd.stockStatus === 'outofstock' || comboProd.stockStatus === 'out_of_stock' || comboProd.stockAmount === 0) {
     return null;
@@ -106,7 +106,7 @@ export default function PromoComboBanner() {
                 title={isBn ? 'MO কনট্যুরড রিজ (১০ পিস)' : 'MO Contoured Ridges (10 pcs)'}
               >
                 <div className="bg-slate-900/90 rounded-2xl p-1.5 border border-purple-500/40 shadow-xl overflow-hidden">
-                  <ProductArtwork productKey={products[COMBO_PACK_SLUGS.ribbed] || COMBO_PACK_SLUGS.ribbed} sizeClass="w-full h-32 sm:h-44" imgClassName="w-full h-full object-cover object-center rounded-xl" />
+                  <ProductArtwork productKey={products[COMBO_PACK_SLUGS.contour] || COMBO_PACK_SLUGS.contour} sizeClass="w-full h-32 sm:h-44" imgClassName="w-full h-full object-cover object-center rounded-xl" />
                 </div>
                 <div className="text-center mt-1.5">
                   <span className="text-[10px] sm:text-xs font-bold text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded-md border border-purple-800/60">

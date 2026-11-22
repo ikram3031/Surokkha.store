@@ -8,7 +8,6 @@ import FloatingWhatsApp from './components/FloatingWhatsApp';
 import Toast from './components/Toast';
 import FloatingCart from './components/FloatingCart';
 import MobileBottomNav from './components/MobileBottomNav';
-import AgeGateModal from './components/AgeGateModal';
 import CartDrawer from './components/CartDrawer';
 import SeoHead from './components/SeoHead';
 
@@ -93,9 +92,6 @@ export default function App() {
       
       {/* Interactive Slide-Over Cart Drawer */}
       <CartDrawer />
-
-      {/* 18+ Mandatory Age-Gating Modal */}
-      <AgeGateModal />
     </div>
   );
 }

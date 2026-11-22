@@ -1,6 +1,6 @@
 {
-  "name": "Surokkha Store",
-  "description": "Personal wellness products storefront.",
+  "name": "Surokkha Shop",
+  "description": "Health, wellness and personal care products storefront.",
   "capabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]

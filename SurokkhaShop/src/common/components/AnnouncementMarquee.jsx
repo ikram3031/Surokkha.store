@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore, TRIAL_PACK_SLUG } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 
-const MEGA_COMBO_SLUG = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+const MEGA_COMBO_SLUG = 'mo-combo-pack';
 
 // Scrolling offer ticker above the header. Pauses on hover; each message opens its product.
 export default function AnnouncementMarquee() {
@@ -16,7 +16,8 @@ export default function AnnouncementMarquee() {
   const trialOnSale = Boolean(trial?.freeDelivery) && trial.isActive !== false && !trial.isOutOfStock &&
     trial.stockStatus !== 'outofstock' && trial.stockStatus !== 'out_of_stock' && trial.stockAmount !== 0;
   const trialPrice = trial ? Number(trial.offerPrice || trial.price || 0) : 0;
-  const mega = products[MEGA_COMBO_SLUG];
+  const mega = products[MEGA_COMBO_SLUG] || products['mo-smart-pack-18-pcs'] || Object.values(products).find(p => p && (p.slug?.includes('combo') || p.name?.toLowerCase().includes('combo'))) || null;
+  const megaKey = mega?.slug || MEGA_COMBO_SLUG;
   const megaPrice = Number(mega?.offerPrice || 950);
   const megaOld = Math.max(1350, Number(mega?.price || 0), Number(mega?.regularPrice || 0));
   const megaPct = megaOld > megaPrice ? Math.round(((megaOld - megaPrice) / megaOld) * 100) : 0;
@@ -36,19 +37,7 @@ export default function AnnouncementMarquee() {
         ? `৩০ পিসের মেগা কম্বো, ৳${megaOld} এর বদলে মাত্র ৳${megaPrice}`
         : `30 piece Mega Combo, only ৳${megaPrice} instead of ৳${megaOld}`,
       action: isBn ? 'অফারটি দেখুন →' : 'See offer →',
-      onClick: () => openProduct(MEGA_COMBO_SLUG),
-    },
-    {
-      lead: isBn ? '🚚 ফ্রি ডেলিভারি!' : '🚚 Free Delivery!',
-      text: isBn ? '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি' : 'Free delivery on orders over ৳1,000',
-      action: isBn ? 'শপ দেখুন →' : 'Shop now →',
-      onClick: () => navigateTo('shop'),
-    },
-    {
-      lead: isBn ? '📦 ১০০% গোপনীয়' : '📦 100% Discreet',
-      text: isBn ? 'লেবেল ছাড়া সিল করা পার্সেল, ক্যাশ অন ডেলিভারি' : 'Unlabelled sealed parcel, cash on delivery',
-      action: isBn ? 'শপ দেখুন →' : 'Shop now →',
-      onClick: () => navigateTo('shop'),
+      onClick: () => openProduct(megaKey),
     },
   ].filter(Boolean);
 

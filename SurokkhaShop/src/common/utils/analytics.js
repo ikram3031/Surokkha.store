@@ -442,26 +442,15 @@ export const gtagEvent = (eventName, params = {}) => {
 
 // Canonical Catalog DID Lookup Mapping for 100% Meta Catalog Match Rate
 const CATALOG_DID_MAP = {
-  // Canonical Full Product Slugs
-  'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo': '3c9a5f2e8b1d704e',
-  'mo-multi-textured-latex-contraceptive-10-pcs': 'b9de8b186df2b554',
-  'mo-micro-thin-latex-contraceptive-10-pcs': '788b855254ac89fa',
-  'mo-micro-ribbed-natural-latex-contraceptive-10-pcs': '68c019a9c15c38dc',
-  'mo-multi-textured-latex-contraceptive-20-pcs-combo': '9e0ce2f921b03ba7',
-  'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo': '855cf887fda956ad',
-  'mo-micro-thin-latex-contraceptive-20-pcs-combo': '11660f3830f449eb',
-  // Short Slugs & Catalog Links
-  'dotted-condoms-20pcs-combo': '9e0ce2f921b03ba7',
-  'ribbed-condoms-20pcs-combo': '855cf887fda956ad',
-  'ultra-thin-condoms-20pcs-combo': '11660f3830f449eb',
-  'mo-dotted-condom': 'b9de8b186df2b554',
-  'mo-ultra-thin-condom': '788b855254ac89fa',
-  'mo-ultra-ribbed-condom': '68c019a9c15c38dc',
-  'variety-condoms-30pcs-combo': '3c9a5f2e8b1d704e',
-  // Legacy aliases
-  'mo-dotted': 'b9de8b186df2b554',
-  'mo-ultra-thin': '788b855254ac89fa',
-  'mo-ultra-ribbed': '68c019a9c15c38dc',
+  // Canonical Wellness Product Slugs
+  'mo-smart-pack-18-pcs': '3c9a5f2e8b1d704e',
+  'mo-smart-pack-15-pcs': '3c9a5f2e8b1d704e',
+  'mo-combo-pack': '3c9a5f2e8b1d704e',
+  'nobodompoti-gift-box-60-pcs-combo': '3c9a5f2e8b1d704e',
+  'protection-combo-20-pcs-50gm-gel': '9e0ce2f921b03ba7',
+  'care-combo-one': '3c9a5f2e8b1d704e',
+  'care-combo-two': '9e0ce2f921b03ba7',
+  'care-combo-three': '855cf887fda956ad',
   'combo-26': '3c9a5f2e8b1d704e',
   'combo-duo-passion': '9e0ce2f921b03ba7',
   'combo-duo-intensity': '855cf887fda956ad'
@@ -689,7 +678,7 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
   const eventId = generateEventId('atc_combo');
 
   const customData = {
-    content_name: 'MO Ultimate 3-in-1 Latex Contraceptive (30 Pcs Combo)',
+    content_name: 'MO Ultimate 3-in-1 Wellness Pack (30 Pcs Combo)',
     content_ids: [comboCatalogId],
     contents: [
       {
@@ -717,7 +706,7 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         productDid: comboCatalogId,
-        productName: 'MO Ultimate 3-in-1 Latex Contraceptive (30 Pcs Combo)',
+        productName: 'MO Ultimate 3-in-1 Wellness Pack (30 Pcs Combo)',
         price: price,
         quantity: 1,
         currency: 'BDT',
@@ -740,7 +729,7 @@ export const trackAddComboToCart = (products = {}, productKeys = [], price = 800
     items: [
       {
         item_id: comboCatalogId,
-        item_name: 'MO Ultimate 3-in-1 Latex Contraceptive (30 Pcs Combo)',
+        item_name: 'MO Ultimate 3-in-1 Wellness Pack (30 Pcs Combo)',
         price: price,
         item_brand: 'MO',
         quantity: 1

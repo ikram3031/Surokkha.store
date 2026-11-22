@@ -18,24 +18,6 @@ export default function Footer() {
     <footer className="hidden md:block bg-gradient-to-b from-[#0b0a0e] via-[#18050e] to-[#0b0a0e] text-white pt-12 pb-12 border-t border-rose-950/80 mt-16 text-sm text-left">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Top 18+ Age Notice Strip */}
-        <div className="mb-8 p-3.5 rounded-2xl bg-rose-950/70 border border-rose-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white">
-          <div className="flex items-center gap-2.5">
-            <span className="w-7 h-7 rounded-lg bg-rose-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">
-              18+
-            </span>
-            <span className="text-white font-medium">
-              {isBn 
-                ? '🔞 শুধুমাত্র ১৮+ প্রাপ্তবয়স্ক ও বিবাহিত দম্পতিদের পরিবার পরিকল্পনার জন্য উদ্দিষ্ট।' 
-                : '🔞 Intended strictly for legal adults aged 18+ and family planning.'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-white font-semibold text-[11px]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>{isBn ? '১০০% গোপনীয় আনলেবেলড ডেলিভারি' : '100% Discreet Unlabeled Delivery'}</span>
-          </div>
-        </div>
-
         {/* 3-Column Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 pb-10 border-b border-rose-900/40">
           

@@ -2,7 +2,7 @@ const en = {
   navbar: {
     home_nav: 'Home',
     shop_nav: 'Shop',
-    combo_nav: 'Family Planning Bundles',
+    combo_nav: 'Wellness Bundles',
     combo_banner_lead: 'Special Discount!',
     combo_banner_text: 'Get 30 Pcs MO Combo Pack with Special Savings',
     combo_banner_action: 'View Offer →',
@@ -16,7 +16,7 @@ const en = {
     switch_lang: 'Switch Language',
     lang_bn: 'বাংলা',
     lang_en: 'English',
-    age_badge: '18+ Adults Only'
+    age_badge: 'Certified Products'
   },
   common: {
     currency: '৳',
@@ -38,23 +38,23 @@ const en = {
     price: 'Price',
     items: 'items',
     pack: 'Pack',
-    age_restricted: 'Strictly 18+ Adult Device'
+    age_restricted: 'Certified Personal Care'
   },
   hero: {
-    top_badge: '18+ Certified Family Planning & Reproductive Healthcare',
+    top_badge: 'Certified Health & Personal Wellness Essentials',
     title: 'Premium Quality, 100% Discreet Packaging',
     subtitle: 'Get the exclusive 30-piece combo pack of the top 3 variants at a special discount',
     offers_btn: '🔥 Order 30pcs Combo',
     shop_btn: 'All Products',
     badge_private: '100% Private',
     badge_cod: 'Cash on Delivery',
-    badge_quality: 'ISO 4074 Quality'
+    badge_quality: 'Premium Quality Tested'
   },
   home: {
     featured_badge: 'Certified Collection',
-    lineup_title: 'The MO Contraceptive Lineup',
-    lineup_desc: 'Authentic ISO-certified barrier devices engineered for reliable family planning.',
-    combo_badge: '✨ Family Planning Value Bundle',
+    lineup_title: 'The MO Wellness Lineup',
+    lineup_desc: 'Authentic certified personal care essentials engineered for daily wellness and protection.',
+    combo_badge: '✨ Premium Wellness Value Bundle',
     combo_title: 'MO Combo Pack — All 3 Packs Bundle',
     combo_desc: 'Comprehensive 3-variant supply: Textured Matrix, Ultra Thin, and Contoured Ridges.',
     combo_save: 'Special Savings Bundle',
@@ -62,22 +62,22 @@ const en = {
     combo_subtext: 'Plain unmarked parcel • Cash on delivery',
     standards_badge: 'Surokkha Healthcare Standards',
     standards_title: 'Why Choose Surokkha.shop?',
-    standards_desc: 'Reliable, confidential family planning healthcare supplies delivered nationwide.',
+    standards_desc: 'Reliable health and personal care essentials delivered nationwide.',
     authentic_title: '100% Authentic Quality',
-    authentic_desc: 'Direct authentic MO devices adhering to ISO 4074 electronic pinhole testing standards.',
+    authentic_desc: 'Direct authentic MO products adhering to rigorous international quality and lab testing standards.',
     discreet_title: 'Discreet Delivery',
     discreet_desc: '100% plain, sealed unbranded parcels. No product names or descriptions mentioned on the outer box.',
     online_title: 'Convenient Online Ordering',
     online_desc: 'Order within seconds without lengthy sign-up procedures or mandatory account registrations.',
     options_title: 'Multiple Product Options',
-    options_desc: 'Select between Textured Matrix, Ultra Thin, or Contoured Ridges according to medical fit.',
+    options_desc: 'Select between Textured Matrix, Ultra Thin, or Contoured Ridges according to your wellness preference.',
     checkout_title: 'Easy Checkout',
     checkout_desc: 'Designed specifically for Bangladesh with simple address fields and fast order completion.',
     cod_title: 'Cash on Delivery',
     cod_desc: 'Pay conveniently in Bangladeshi Taka (৳) directly to the delivery person once your parcel arrives.',
     spotlight_badge: 'Technical Specifications',
     spotlight_title: 'Verified Technical Features',
-    spotlight_desc: 'Detailed look at latex thickness, nominal width, and barrier standards.',
+    spotlight_desc: 'Detailed look at precision design, premium materials, and quality standards.',
     characteristics_title: 'Key Characteristics'
   },
   product_detail: {
@@ -90,7 +90,7 @@ const en = {
     description_title: 'Product Description',
     specs_title: 'Technical & Quality Specifications',
     qty_label: 'Select Quantity',
-    discreet_title: '100% Discreet & Confidential Packaging',
+    discreet_title: '100% Secure Packaging',
     discreet_text: 'Every order is packed inside a plain, unbranded delivery box. No product names, categories, or descriptions appear anywhere on the external label.',
     discreet_box: 'Discreet Box Guarantee',
     complementary_title: 'Our Other Products',
@@ -103,10 +103,10 @@ const en = {
     browse_btn: 'Browse MO Products',
     add_combo_btn: 'Add Combo Pack',
     cart_title: 'Shopping Cart',
-    cart_desc: 'Review your items before confidential checkout',
+    cart_desc: 'Review your items before checkout',
     continue_shopping: '← Continue Shopping',
     unit_label: 'Unit:',
-    combo_nudge_text: 'Need all 3 MO variants? Get the complete family planning bundle and enjoy special savings!',
+    combo_nudge_text: 'Need all 3 MO variants? Get the complete wellness bundle and enjoy special savings!',
     combo_nudge_btn: 'Add Combo Pack',
     summary_title: 'Order Summary',
     subtotal_items: 'Total Items',
@@ -167,7 +167,7 @@ const en = {
     delivery_charge: 'Delivery Fee',
     grand_total: 'Total Payable',
     advance_warning: 'Inside Dhaka delivery within 1-2 days, and outside Dhaka within 2-3 days.',
-    terms_agree: 'I confirm that I am 18 years of age or older and agree to the Terms of Service & Privacy Policy',
+    terms_agree: 'I agree to the Terms of Service & Privacy Policy',
     confirm_order: 'Confirm Order',
     confirm_order_btn: 'Confirm Order',
     placing_order_btn: 'Processing Order...',
@@ -175,7 +175,7 @@ const en = {
     err_email_invalid: 'Please provide a valid email address.',
     err_phone_required: 'Mobile phone number is required.',
     err_phone_invalid: 'Please provide a valid 11-digit Bangladeshi mobile number (e.g., 01XXXXXXXXX).',
-    err_agree_terms: 'You must confirm you are 18+ and accept terms to proceed.',
+    err_agree_terms: 'You must accept the terms to proceed.',
     err_fill_required: 'Please fill in all required fields.',
     err_thana_required: 'Please select or enter your Thana/Upazila.',
     err_recipient_required: 'Please fill in recipient contact details.',
@@ -187,7 +187,7 @@ const en = {
     return_home: 'Return to Home',
     order_confirmed_badge: 'Order Confirmed',
     thank_you_title: 'Thank You for Your Order!',
-    order_recorded_desc: 'Your order has been recorded. Our fulfillment team is packaging your order with strict confidentiality.',
+    order_recorded_desc: 'Your order has been recorded. Our fulfillment team is packaging your order with care.',
     order_ref: 'Order Reference #',
     date_label: 'Date',
     payment_method: 'Payment Method',
@@ -199,7 +199,7 @@ const en = {
     shipping_destination: 'Shipping Destination:',
     delivery_option_same: 'Billing & shipping address are identical',
     order_note: 'Order Note:',
-    discreet_box_title: 'Confidential Delivery Assurance',
+    discreet_box_title: 'Safe Delivery Assurance',
     discreet_box_desc: 'Your package is dispatched in a plain, sealed carton with zero external markings.',
     return_btn: 'Continue Shopping',
     name_label: 'Name:',
@@ -211,17 +211,17 @@ const en = {
     phone_label: 'Phone:'
   },
   footer: {
-    about_desc: 'By your side for safe and reliable protection. Premium quality and 100% confidential doorstep delivery service.',
+    about_desc: 'By your side for everyday wellness and reliable protection. Premium quality and fast doorstep delivery service.',
     contact_title: 'Contact & Social Support',
     guarantee_title: 'Service Commitments',
     g1: '100% Discreet & Unbranded Packaging',
-    g2: '  Medical Quality Certified',
+    g2: 'Certified Quality Tested',
     g3: 'Cash on Delivery Across Bangladesh',
-    g4: '18+ Adult Family Planning Device',
+    g4: 'Certified Health & Wellness Care',
     copyright: '© 2026 Surokkha.shop. Developed by Plexivia'
   },
   whatsapp: {
-    inquiry_msg: 'Hello Surokkha, I would like to inquire about MO family planning products.'
+    inquiry_msg: 'Hello Surokkha, I would like to inquire about MO wellness products.'
   },
   toast: {
     added_to_cart: 'Added {name} to cart',
@@ -232,7 +232,7 @@ const en = {
     title: 'Customer Experiences',
     subtitle: 'Real reviews from verified customers across Bangladesh regarding service and discretion.',
     verified_buyer: 'Verified Buyer',
-    discreet_guaranteed: '100% Confidential',
+    discreet_guaranteed: '100% Authentic',
     rating_summary: '4.9/5 Overall Satisfaction (Based on 1,250+ deliveries)',
     prev: 'Previous Review',
     next: 'Next Review'

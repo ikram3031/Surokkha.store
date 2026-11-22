@@ -94,7 +94,7 @@ const localPhone = (value) => {
   return n ? '0' + n.slice(4) : toEnDigits(value || '').replace(/[^\d+]/g, '');
 };
 
-function Field({ label, hint, children }) {
+const Field = ({ label, hint, children }) => {
   return (
     <label className="block space-y-1.5">
       <span className="text-sm font-semibold text-slate-800">{label}</span>
@@ -102,9 +102,9 @@ function Field({ label, hint, children }) {
       {hint && <span className="block text-xs text-slate-500">{hint}</span>}
     </label>
   );
-}
+};
 
-function PasswordInput({ value, onChange, autoComplete, t }) {
+const PasswordInput = ({ value, onChange, autoComplete, t }) => {
   const [shown, setShown] = useState(false);
   return (
     <div className="relative">
@@ -125,9 +125,10 @@ function PasswordInput({ value, onChange, autoComplete, t }) {
       </button>
     </div>
   );
-}
+};
 
-export default function AccountView() {
+// Account view handling user authentication, registration, password recovery, and profile view
+const AccountView = () => {
   const { isBn } = useTranslation();
   const t = isBn ? TEXT.bn : TEXT.en;
   const navigateTo = useStore((state) => state.navigateTo);
@@ -507,4 +508,6 @@ export default function AccountView() {
       </div>
     </div>
   );
-}
+};
+
+export default AccountView;

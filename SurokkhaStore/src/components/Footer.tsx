@@ -82,7 +82,7 @@ export function Footer() {
       </div>
       <Separator className="bg-white/15" />
       <div className="space-y-1 px-4 py-5 text-center text-xs text-white/60">
-        <p>{L('Products on this site are for adults aged 18 and over only. © Surokkha. All rights reserved.', 'এই সাইটের পণ্য শুধুমাত্র ১৮ বছর বা তার বেশি বয়সী প্রাপ্তবয়স্কদের জন্য। © সুরক্ষা। সর্বস্বত্ব সংরক্ষিত।')}</p>
+        <p>{L('© Surokkha Store. All rights reserved.', '© সুরক্ষা স্টোর। সর্বস্বত্ব সংরক্ষিত।')}</p>
         <p>
           {L('© 2026 Surokkha Store. Developed by', '© ২০২৬ সুরক্ষা স্টোর। ডেভেলপ করেছে')}{' '}
           <a

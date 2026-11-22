@@ -2,7 +2,8 @@ import React from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 
-export default function ConfirmationView() {
+// Order confirmation view displaying order summary, delivery details, and discreet reassurance
+const ConfirmationView = () => {
   const { t, isBn } = useTranslation();
   const lastOrder = useStore((state) => state.lastOrder);
   const navigateTo = useStore((state) => state.navigateTo);
@@ -179,5 +180,7 @@ export default function ConfirmationView() {
       </div>
     </div>
   );
-}
+};
+
+export default ConfirmationView;
 

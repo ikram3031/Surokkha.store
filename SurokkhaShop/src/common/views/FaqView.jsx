@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 
-export default function FaqView() {
+// FAQ view providing answers to delivery, payment, quality, and return inquiries
+const FaqView = () => {
   const navigateTo = useStore((state) => state.navigateTo);
   const [openIndex, setOpenIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -14,7 +15,7 @@ export default function FaqView() {
     {
       category: 'delivery',
       question: 'Is the packaging 100% discreet? Will anyone know what is inside?',
-      answer: 'Yes, absolutely! Every order is dispatched inside a completely plain, unbranded box or opaque poly envelope with zero medical descriptions, product names, or sensitive branding. The courier rider and family members will have zero indication of what is inside.'
+      answer: 'Yes, absolutely! Every order is dispatched inside a completely plain, unbranded box or opaque poly envelope with zero sensitive descriptions, product names, or branding. The courier rider and family members will have zero indication of what is inside.'
     },
     {
       category: 'delivery',
@@ -29,7 +30,7 @@ export default function FaqView() {
     {
       category: 'payment',
       question: 'Can I pay via Cash on Delivery (COD)?',
-      answer: 'Yes! We support nationwide Cash on Delivery (COD). You simply pay the exact invoice amount in cash to the delivery person once your confidential parcel arrives.'
+      answer: 'Yes! We support nationwide Cash on Delivery (COD). You simply pay the exact invoice amount in cash to the delivery person once your parcel arrives.'
     },
     {
       category: 'payment',
@@ -39,17 +40,17 @@ export default function FaqView() {
     {
       category: 'products',
       question: 'Are MO products genuine and safety certified?',
-      answer: 'Yes! All MO personal healthcare products are 100% authentic, imported in factory-sealed boxes, and comply with international medical device standards (ISO 4074) with 100% electronic pinhole quality testing.'
+      answer: 'Yes! All MO personal healthcare products are 100% authentic, imported in factory-sealed boxes, and comply with international quality standards with 100% electronic quality testing.'
     },
     {
       category: 'products',
-      question: 'What is the difference between MO Ultra Thin, Dotted, and Ribbed?',
-      answer: '• Ultra Thin (0.045mm): Engineered for high sensitivity and skin-on-skin feel.\n• Textured Matrix (Dotted): Raised micro-dots for enhanced sensation.\n• Contoured Ridges (Ribbed): Ergonomic ribbed ridges for anatomical grip and fit.\n• Combo Pack: Contains all 3 variants at a special discounted price!'
+      question: 'What is the difference between MO variants (Ultra Thin, Multi-Texture, and Smooth Comfort)?',
+      answer: '• Ultra Thin: Engineered for premium lightweight comfort and a natural feel.\n• Multi-Texture: Advanced textured matrix for enhanced tactile comfort.\n• Smooth Comfort: Ergonomic contoured design for a secure, smooth fit.\n• Smart Combo: Contains all 3 variants at a special discounted price!'
     },
     {
       category: 'products',
-      question: 'How should contraceptive products be stored?',
-      answer: 'Store them in a cool, dry place away from direct sunlight, excessive heat, and sharp objects. Avoid storing them in car glove compartments or tight back pockets for extended periods.'
+      question: 'How should wellness and healthcare products be stored?',
+      answer: 'Store them in a cool, dry place away from direct sunlight, excessive heat, and sharp objects. Avoid leaving them in high-temperature environments for extended periods.'
     },
     {
       category: 'returns',
@@ -69,13 +70,11 @@ export default function FaqView() {
 
   return (
     <div className="bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 min-h-screen text-slate-800 pb-16">
-      {/* Header Banner */}
       <div className="max-md:hidden bg-gradient-to-r from-[#200b14] via-[#15050d] to-[#200b14] text-white py-12 sm:py-16 border-b border-rose-950/80 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          {/* Breadcrumb */}
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-rose-200/70 mb-4">
             <button onClick={() => navigateTo('home')} className="hover:text-amber-400 transition cursor-pointer">
               Home
@@ -96,10 +95,7 @@ export default function FaqView() {
         </div>
       </div>
 
-      {/* Content Container */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-        
-        {/* Category Filter Pills */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
           {[
             { id: 'all', label: 'All Questions' },
@@ -125,7 +121,6 @@ export default function FaqView() {
           ))}
         </div>
 
-        {/* Accordion List */}
         <div className="space-y-3">
           {filteredFaqs.map((faq, idx) => {
             const isOpen = openIndex === idx;
@@ -158,11 +153,10 @@ export default function FaqView() {
           })}
         </div>
 
-        {/* Still Have Questions Box */}
-        <div className="mt-10 p-6 rounded-2xl bg-gradient-to-r from-rose-950 to-[#1e0813] text-white text-center space-y-3">
+        <div className="mt-10 p-6 rounded-2xl bg-gradient-r from-rose-950 to-[#1e0813] text-white text-center space-y-3">
           <h3 className="font-bold text-base text-amber-300">Still have questions?</h3>
           <p className="text-xs text-rose-100/80 max-w-md mx-auto">
-            Our confidential support team is available 7 days a week to answer your inquiries with complete discretion.
+            Our support team is available 7 days a week to answer your inquiries.
           </p>
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
             <a
@@ -185,4 +179,6 @@ export default function FaqView() {
       </div>
     </div>
   );
-}
+};
+
+export default FaqView;

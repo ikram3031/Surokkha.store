@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { SITE_CONFIG } from '../config/siteConfig';
 
-export default function ContactView() {
+// Contact view providing customer support channels and confidential inquiry form
+const ContactView = () => {
   const navigateTo = useStore((state) => state.navigateTo);
   const showToast = useStore((state) => state.showToast);
 
@@ -68,14 +69,11 @@ export default function ContactView() {
             <span className="text-amber-300">Contact Us</span>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold mb-3">
-            <span>📞</span> 100% Confidential Support
-          </span>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
             Contact & Support
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-rose-100/70 max-w-xl mx-auto">
-            We are here to assist you with order inquiries, product guidance, and confidential delivery support.
+            We are here to assist you with order inquiries, product guidance, and delivery support.
           </p>
         </div>
       </div>
@@ -101,7 +99,7 @@ export default function ContactView() {
                 <div>
                   <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Fastest Response</span>
                   <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">WhatsApp Support</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Instant chat assistance & confidential inquiries</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Instant chat assistance & order inquiries</p>
                   <p className="text-xs font-bold text-slate-800 mt-2 font-mono">01600-905774</p>
                 </div>
               </div>
@@ -177,9 +175,9 @@ export default function ContactView() {
           {/* Right Column: Confidential Message Form (7 cols) */}
           <div className="lg:col-span-7">
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-sm">
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900">Send a Confidential Message</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900">Send a Message</h2>
               <p className="text-xs text-slate-500 mt-1 mb-6">
-                Your message is confidential. We will never share your inquiry with third parties.
+                We will never share your inquiry with third parties.
               </p>
 
               {submitted ? (
@@ -299,4 +297,6 @@ export default function ContactView() {
       </div>
     </div>
   );
-}
+};
+
+export default ContactView;

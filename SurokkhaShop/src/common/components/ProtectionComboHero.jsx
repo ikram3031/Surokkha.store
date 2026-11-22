@@ -4,7 +4,7 @@ import { useTranslation } from '../i18n/useTranslation';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'https://api.surokkha.store';
 
-// 20 condoms + 50gm lubricant gel combo
+// 20 pcs wellness pack + 50gm hydration care gel combo
 const PROTECTION_COMBO_SLUG = 'protection-combo-20-pcs-50gm-gel';
 const FALLBACK_IMAGE = '/uploads/2610/261018/product_protection_combo_20pcs_50g.webp';
 
@@ -20,8 +20,8 @@ export default function ProtectionComboHero() {
   const imageUrl = imagePath.startsWith('http') ? imagePath : `${API_BASE_URL}${imagePath}`;
 
   const boxChips = [
-    { label: isBn ? '২০ পিস কনডম' : '20 pcs Condoms', dot: 'bg-sky-400' },
-    { label: isBn ? '৫০ গ্রাম জেল' : '50gm Gel', dot: 'bg-pink-400' },
+    { label: isBn ? '২০ পিস ওয়েলনেস প্যাক' : '20 pcs Wellness Pack', dot: 'bg-sky-400' },
+    { label: isBn ? '৫০ গ্রাম কেয়ার জেল' : '50gm Care Gel', dot: 'bg-pink-400' },
   ];
 
   return (
@@ -55,7 +55,7 @@ export default function ProtectionComboHero() {
           </p>
 
           <p className="mt-2 md:mt-3 text-base sm:text-lg lg:text-xl font-semibold text-[#5a2a35] font-bengali">
-            ২০ পিস কনডম আর ৫০ গ্রাম জেল — সব একসাথে এক প্যাকেজে
+            ২০ পিস ওয়েলনেস প্যাক ও ৫০ গ্রাম ময়েশ্চারাইজার কেয়ার জেল — সব একসাথে এক প্যাকেজে
           </p>
 
           {/* Boxes included */}
@@ -73,7 +73,7 @@ export default function ProtectionComboHero() {
         <div className="order-first md:order-none flex justify-center items-center md:col-start-2 md:row-start-1 md:row-span-2">
           <img
             src={imageUrl}
-            alt="Protection Combo — 20 pcs condoms and 50gm gel"
+            alt="Protection Combo — 20 pcs wellness pack and 50gm care gel"
             onClick={() => openProduct(PROTECTION_COMBO_SLUG)}
             className="w-full max-w-[340px] md:max-w-[min(380px,52vh)] aspect-square object-cover rounded-3xl ring-4 ring-rose-200/70 shadow-2xl shadow-rose-900/20 cursor-pointer"
             loading="eager"
@@ -101,14 +101,10 @@ export default function ProtectionComboHero() {
 
             <div className="text-sm font-semibold text-[#5a2a35] leading-snug">
               {isBn
-                ? '২০ পিস কনডম + ৫০ গ্রাম জেল, একসাথে এক প্যাকেজে'
-                : '20 condoms + 50gm gel in one pack'}
+                ? '২০ পিস ওয়েলনেস প্যাক + ৫০ গ্রাম কেয়ার জেল, একসাথে এক প্যাকেজে'
+                : '20 pcs Wellness Pack + 50gm Care Gel in one pack'}
             </div>
           </div>
-
-          <p className="mt-4 md:mt-6 text-xs text-slate-500">
-            {isBn ? 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)' : 'For adults only (18+)'}
-          </p>
         </div>
       </div>
     </section>

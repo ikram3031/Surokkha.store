@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useStore } from '../store/useStore';
 
-export default function PrivacyView() {
+// Privacy Policy view outlining user data protection and discreet handling guarantees
+const PrivacyView = () => {
   const navigateTo = useStore((state) => state.navigateTo);
 
   useEffect(() => {
@@ -10,13 +11,11 @@ export default function PrivacyView() {
 
   return (
     <div className="bg-gradient-to-b from-[#faf5f6]/50 via-white to-[#faf5f6]/40 min-h-screen text-slate-800 pb-16">
-      {/* Header Banner */}
       <div className="max-md:hidden bg-gradient-to-r from-[#200b14] via-[#15050d] to-[#200b14] text-white py-12 sm:py-16 border-b border-rose-950/80 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          {/* Breadcrumb */}
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-rose-200/70 mb-4">
             <button onClick={() => navigateTo('home')} className="hover:text-amber-400 transition cursor-pointer">
               Home
@@ -26,33 +25,30 @@ export default function PrivacyView() {
           </div>
 
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold mb-3">
-            <span>🔒</span> 100% Confidentiality & Data Protection
+            <span>🔒</span> 100% Privacy & Data Protection
           </span>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
             Privacy Policy
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-rose-100/70 max-w-xl mx-auto">
-            Your personal privacy and order confidentiality are our highest priority.
+            Your personal privacy and data protection are our highest priority.
           </p>
         </div>
       </div>
 
-      {/* Content Container */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
         <div className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-200/80 shadow-sm space-y-8 text-sm leading-relaxed text-slate-700">
 
-          {/* Privacy Commitment Banner */}
           <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-start gap-3">
             <span className="text-xl">🛡️</span>
             <div>
               <h3 className="font-bold text-emerald-950 text-sm">Our 100% Discretion Guarantee</h3>
               <p className="text-xs text-emerald-800 mt-1">
-                We will never disclose, share, or sell your identity, contact information, or purchasing history. All shipments are packaged in unmarked boxes with zero reference to family planning products.
+                We will never disclose, share, or sell your identity, contact information, or purchasing history. All shipments are packaged in unmarked boxes with zero reference to product names or specific contents.
               </p>
             </div>
           </div>
 
-          {/* Section 1: Information We Collect */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">1</span>
@@ -69,7 +65,6 @@ export default function PrivacyView() {
             </ul>
           </section>
 
-          {/* Section 2: How We Use Your Information */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">2</span>
@@ -77,7 +72,7 @@ export default function PrivacyView() {
             </h2>
             <p>Your details are used strictly for:</p>
             <ul className="list-disc list-inside space-y-1 pl-2 text-slate-600">
-              <li>Processing and dispatching your confidential order to your destination.</li>
+              <li>Processing and dispatching your order to your destination.</li>
               <li>Sending SMS or WhatsApp delivery tracking updates regarding parcel movement.</li>
               <li>Contacting you if there are address ambiguities or courier routing issues.</li>
               <li>Preventing fraudulent orders and maintaining service integrity.</li>
@@ -87,7 +82,6 @@ export default function PrivacyView() {
             </p>
           </section>
 
-          {/* Section 3: Third-Party Courier Discretion */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">3</span>
@@ -98,12 +92,11 @@ export default function PrivacyView() {
             </p>
             <ul className="list-disc list-inside space-y-1.5 pl-2 text-slate-600">
               <li>Courier waybills display only your Name, Phone Number, and Address alongside a neutral generic merchant identifier.</li>
-              <li>No medical descriptions, contraceptive variant names, or brand logos appear on courier invoices.</li>
+              <li>No sensitive item descriptions, product names or variant details, or brand logos appear on courier invoices.</li>
               <li>Delivery riders are strictly bound to deliver sealed packages without opening or inspecting inner contents.</li>
             </ul>
           </section>
 
-          {/* Section 4: Data Security & Storage */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">4</span>
@@ -114,7 +107,6 @@ export default function PrivacyView() {
             </p>
           </section>
 
-          {/* Section 5: Your Privacy Rights */}
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">5</span>
@@ -125,7 +117,6 @@ export default function PrivacyView() {
             </p>
           </section>
 
-          {/* Section 6: Contact Information */}
           <section className="space-y-3 pt-4 border-t border-slate-200">
             <h2 className="text-base sm:text-lg font-bold text-slate-900">Privacy Support</h2>
             <p>
@@ -141,4 +132,6 @@ export default function PrivacyView() {
       </div>
     </div>
   );
-}
+};
+
+export default PrivacyView;

@@ -17,10 +17,10 @@ const HeroSlider = () => {
   const products = useStore((state) => state.products);
   const { t, isBn, formatPrice } = useTranslation();
 
-  // Hero combo offer shows the site-wide featured combo (Ultimate 3-in-1 30 pcs)
+  // Hero combo offer shows the site-wide featured combo (Smart Pack / Combo Pack)
   const combo30Prod = getFeaturedCombo(products);
 
-  const comboKey = combo30Prod?.slug || combo30Prod?.id || 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+  const comboKey = combo30Prod?.slug || combo30Prod?.id || 'mo-combo-pack';
   const comboPrice = combo30Prod ? (combo30Prod.offerPrice || combo30Prod.price) : null;
 
   // Open the pinned combo product when available, otherwise fall back to the combo view.
@@ -84,7 +84,7 @@ const HeroSlider = () => {
           <div className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-wide uppercase mb-4 backdrop-blur-md shadow-md ${
             'bg-black/60 border border-white/30 text-white'
           }`}>
-            <span>{t('hero.top_badge', '১৮+ সার্টিফাইড স্বাস্থ্য ও পরিবার পরিকল্পনা সামগ্রী')}</span>
+            <span>{t('hero.top_badge', 'সার্টিফাইড স্বাস্থ্য ও পার্সোনাল কেয়ার সামগ্রী')}</span>
           </div>
 
           <h1 className={`text-2xl sm:text-4xl md:text-5xl lg:text-[44px] font-heading font-extrabold tracking-tight leading-snug md:leading-tight mb-4 max-w-3xl ${

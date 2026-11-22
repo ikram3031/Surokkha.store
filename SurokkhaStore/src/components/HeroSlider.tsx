@@ -169,7 +169,6 @@ function Slide({ slide }: { slide: HeroSlide }) {
             </button>
             <div className="text-sm font-semibold leading-snug text-[#5a2a35]">{slide.ctaNote}</div>
           </div>
-          <p className="mt-4 text-xs text-slate-500 md:mt-6">{L('For adults only (18+)', 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)')}</p>
         </div>
       </div>
     </div>

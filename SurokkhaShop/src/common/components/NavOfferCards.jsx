@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 
-const RIBBED_30_SLUG = 'mico-ribbed-30-pcs';
+const SMART_PACK_SLUG = 'mo-smart-pack-18-pcs';
 const PROTECTION_COMBO_SLUG = 'protection-combo-20-pcs-50gm-gel';
 const bn = (n) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d]);
 
@@ -16,15 +16,15 @@ const priceInfo = (p) => {
 };
 
 // Two offer cards for the menus (desktop Shop dropdown + mobile drawer):
-// 30 pcs Micro Ribbed with its discount as the main focus, and the Protection Combo.
+// MO Smart Pack with its discount as the main focus, and the Protection Combo.
 export default function NavOfferCards({ onNavigate, compact = false }) {
   const openProduct = useStore((state) => state.openProduct);
   const products = useStore((state) => state.products);
   const { isBn } = useTranslation();
 
-  const ribbed = products[RIBBED_30_SLUG];
+  const smart = products[SMART_PACK_SLUG];
   const protection = products[PROTECTION_COMBO_SLUG];
-  const r = priceInfo(ribbed);
+  const r = priceInfo(smart);
   const pc = priceInfo(protection);
 
   const open = (slug) => {
@@ -35,10 +35,10 @@ export default function NavOfferCards({ onNavigate, compact = false }) {
 
   return (
     <div className={`grid grid-cols-2 ${compact ? 'gap-2' : 'gap-4'}`}>
-      {/* 30 pcs Micro Ribbed: discount first */}
+      {/* MO Smart Pack: discount first */}
       <button
         type="button"
-        onClick={() => open(RIBBED_30_SLUG)}
+        onClick={() => open(SMART_PACK_SLUG)}
         className={`flex flex-col items-start rounded-2xl bg-gradient-to-br from-rose-600 to-[#4a0d24] text-left text-white cursor-pointer hover:brightness-110 transition ${compact ? 'p-3' : 'p-5'}`}
       >
         {r.pct > 0 && (
@@ -47,7 +47,7 @@ export default function NavOfferCards({ onNavigate, compact = false }) {
           </span>
         )}
         <span className={`mt-2 font-extrabold leading-tight ${compact ? 'text-sm' : 'text-xl'}`}>
-          {isBn ? '৩০ পিস মাইক্রো রিবড' : '30 pcs Micro Ribbed'}
+          {isBn ? 'এমও স্মার্ট প্যাক' : 'MO Smart Pack'}
         </span>
         {r.price > 0 && (
           <span className={`mt-1 flex items-baseline gap-1.5 ${compact ? '' : 'mt-2'}`}>

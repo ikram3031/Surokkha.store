@@ -20,44 +20,44 @@ const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
 // Parse initial view and slug from real browser URL pathname
 export const parseRouteFromLocation = () => {
-  if (typeof window === 'undefined') return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+  if (typeof window === 'undefined') return { view: 'home', slug: 'mo-smart-pack-18-pcs' };
   const pathname = window.location.pathname.replace(/\/$/, '') || '/';
 
   if (pathname === '/' || pathname === '') {
-    return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'home', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/offers' || pathname === '/shop/offers' || pathname === '/shop/combo' || pathname === '/combo' || pathname === '/products/combo' || pathname.startsWith('/offers')) {
-    return { view: 'combo', slug: 'mo-micro-thin-latex-contraceptive-20-pcs-combo' };
+    return { view: 'combo', slug: 'mo-combo-pack' };
   }
   if (pathname === '/shop' || pathname === '/products' || pathname === '/store') {
     return { view: 'shop', slug: 'all' };
   }
   if (pathname === '/cart') {
-    return { view: 'home', slug: 'mo-multi-textured-latex-contraceptive-10-pcs', openCart: true };
+    return { view: 'home', slug: 'mo-smart-pack-18-pcs', openCart: true };
   }
   if (pathname === '/checkout') {
-    return { view: 'checkout', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'checkout', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/confirmation') {
-    return { view: 'confirmation', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'confirmation', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/terms' || pathname === '/terms-and-conditions' || pathname === '/terms-conditions' || pathname === '/tos') {
-    return { view: 'terms', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'terms', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/privacy' || pathname === '/privacy-policy') {
-    return { view: 'privacy', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'privacy', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/refund' || pathname === '/return-and-refund' || pathname === '/return-refund' || pathname === '/refund-policy' || pathname === '/returns') {
-    return { view: 'refund', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'refund', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/faq' || pathname === '/faqs' || pathname === '/help') {
-    return { view: 'faq', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'faq', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/contact' || pathname === '/contact-us' || pathname === '/support') {
-    return { view: 'contact', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'contact', slug: 'mo-smart-pack-18-pcs' };
   }
   if (pathname === '/account' || pathname === '/login' || pathname === '/register' || pathname === '/signup') {
-    return { view: 'account', slug: 'mo-multi-textured-latex-contraceptive-10-pcs' };
+    return { view: 'account', slug: 'mo-smart-pack-18-pcs' };
   }
 
   // Handle /product/:slug or /products/:slug dynamically
@@ -75,7 +75,7 @@ export const parseRouteFromLocation = () => {
       return { view: 'product', slug };
     } else if (parts.length === 2) {
       const segment = parts[1];
-      const categories = ['all', 'wellness', 'contraceptive', 'combo', 'combo-pack', 'contraceptive-barrier-device'];
+      const categories = ['all', 'wellness', 'personal-care', 'combo', 'combo-pack'];
       if (!categories.includes(segment)) {
         return { view: 'product', slug: segment };
       }
@@ -172,9 +172,9 @@ export const groupOfferDiscount = (rule, amount) => {
 
 export const isTrialPackSlug = (slug) => Boolean(slug) && (TRIAL_PACK_SLUGS.includes(slug) || String(slug).startsWith('surokkha-trial-pack'));
 
-// Site-wide featured combo (announcement bar, promo banner, cart upsell): the Ultimate 3-in-1 30 pcs combo.
-// Falls back to any in-stock 30-pcs combo, then any in-stock combo, while it's unavailable.
-export const FEATURED_COMBO_SLUG = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
+// Site-wide featured combo (announcement bar, promo banner, cart upsell): the Smart Pack / Combo Pack.
+// Falls back to any in-stock combo, then any in-stock product, while it's unavailable.
+export const FEATURED_COMBO_SLUG = 'mo-smart-pack-18-pcs';
 
 const isAvailableForSale = (p) => Boolean(p) && p.isActive !== false &&
   !(p.isOutOfStock || p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || p.stockAmount === 0);
@@ -182,10 +182,10 @@ const isAvailableForSale = (p) => Boolean(p) && p.isActive !== false &&
 const isComboProduct = (p) => p.categorySlug === 'combo' || (p.slug && p.slug.includes('combo')) || (p.name && p.name.toLowerCase().includes('combo'));
 
 export const getFeaturedCombo = (products) => {
-  const featured = products[FEATURED_COMBO_SLUG];
+  const featured = products[FEATURED_COMBO_SLUG] || products['mo-smart-pack-18-pcs'] || products['mo-combo-pack'];
   if (isAvailableForSale(featured)) return featured;
   const available = Object.values(products).filter((p) => isAvailableForSale(p) && isComboProduct(p));
-  return available.find((p) => (p.slug && p.slug.includes('30')) || (p.name && p.name.includes('30'))) || available[0] || null;
+  return available.find((p) => (p.slug && (p.slug.includes('30') || p.slug.includes('18'))) || (p.name && (p.name.includes('30') || p.name.includes('18')))) || available[0] || null;
 };
 
 // Single-product slugs that 404ed on both products and items endpoints
@@ -402,50 +402,41 @@ export const useStore = create((set, get) => ({
     }
   },
 
-  // Fetch Dynamic Products and Items directly from API simultaneously
+  // Fetch Dynamic Products directly from API
   fetchProducts: async (singleSlug = null, itemType = null) => {
-    // A slug that matched neither products nor items is not retried, otherwise effects keyed on products loop forever
     if (singleSlug && missingSingleSlugs.has(singleSlug)) return;
     set({ isLoadingProducts: true, productsError: null });
     try {
       const cleanBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
       
       let productsResult = { status: 'rejected' };
-      let itemsResult = { status: 'rejected' };
+      const itemsResult = { status: 'fulfilled', value: [] };
 
       if (singleSlug) {
         if (itemType === 'item') {
-          itemsResult = { status: 'fulfilled', value: await fetch(`${cleanBase}/api/v1/items/${singleSlug}`).then(res => res.ok ? res.json().then(j => [j?.data || j]) : []) };
-        } else if (itemType === 'product') {
-          productsResult = { status: 'fulfilled', value: await fetch(`${cleanBase}/api/v1/products/${singleSlug}`).then(res => res.ok ? res.json().then(j => [j?.data || j]) : []) };
+          // Items collection is disabled; return empty
         } else {
-          // Unknown type: sequential fallback to avoid unnecessary parallel 404s
           const pRes = await fetch(`${cleanBase}/api/v1/products/${singleSlug}`);
           if (pRes.ok) {
             productsResult = { status: 'fulfilled', value: await pRes.json().then(j => [j?.data || j]) };
           } else {
-            const iRes = await fetch(`${cleanBase}/api/v1/items/${singleSlug}`);
-            if (iRes.ok) itemsResult = { status: 'fulfilled', value: await iRes.json().then(j => [j?.data || j]) };
-            else missingSingleSlugs.add(singleSlug);
+            missingSingleSlugs.add(singleSlug);
           }
         }
       } else {
-        // Fetch all
         set({ hasFetchedAllProducts: true });
-        [productsResult, itemsResult] = await Promise.allSettled([
-          fetch(`${cleanBase}/api/v1/products?limit=1000`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
-            if (!res.ok) return [];
+        try {
+          const res = await fetch(`${cleanBase}/api/v1/products?limit=1000`, { headers: { 'Accept': 'application/json' } });
+          if (res.ok) {
             const json = await res.json();
             const data = json?.data || json?.products || json?.result || json;
-            return Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
-          }),
-          fetch(`${cleanBase}/api/v1/items?limit=1000`, { headers: { 'Accept': 'application/json' } }).then(async (res) => {
-            if (!res.ok) return [];
-            const json = await res.json();
-            const data = json?.data || json?.items || json?.result || json;
-            return Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []);
-          }),
-        ]);
+            productsResult = { status: 'fulfilled', value: Array.isArray(data) ? data : (data && typeof data === 'object' ? [data] : []) };
+          } else {
+            productsResult = { status: 'fulfilled', value: [] };
+          }
+        } catch {
+          productsResult = { status: 'rejected' };
+        }
       }
 
       const rawProducts = (productsResult.status === 'fulfilled' && Array.isArray(productsResult.value))
@@ -766,8 +757,8 @@ export const useStore = create((set, get) => ({
             benefits_bn: benefitsBn,
             features: features,
             features_bn: featuresBn,
-            badgeColor: p.badgeColor || (key.includes('dotted') ? 'bg-rose-50 text-rose-800 border-rose-200' : key.includes('ribbed') ? 'bg-purple-50 text-purple-900 border-purple-200' : key.includes('variety') ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-brand-50 text-brand-800 border-brand-200'),
-            iconType: p.iconType || (key.includes('thin') ? 'thin' : key.includes('ribbed') ? 'ribbed' : key.includes('dotted') ? 'dotted' : key.includes('combo') ? 'combo' : (key.includes('gelly') || key.includes('jelly') || key.includes('lubricant') ? 'lubricant' : 'standard')),
+            badgeColor: p.badgeColor || (key.includes('texture') ? 'bg-rose-50 text-rose-800 border-rose-200' : key.includes('smart') || key.includes('variety') ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-brand-50 text-brand-800 border-brand-200'),
+            iconType: p.iconType || (key.includes('thin') ? 'thin' : key.includes('texture') ? 'texture' : key.includes('combo') ? 'combo' : (key.includes('gel') || key.includes('care')) ? 'care' : 'standard'),
             imageUrl: primaryImg,
             image_url: primaryImg,
             featuredImage: primaryImg,
@@ -792,27 +783,16 @@ export const useStore = create((set, get) => ({
           }
         });
 
-        // Add legacy aliases mapping to new canonical slugs
-        const legacyAliases = {
-          'dotted-condoms-20pcs-combo': 'mo-multi-textured-latex-contraceptive-20-pcs-combo',
-          'ribbed-condoms-20pcs-combo': 'mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo',
-          'ultra-thin-condoms-20pcs-combo': 'mo-micro-thin-latex-contraceptive-20-pcs-combo',
-          'variety-condoms-30pcs-combo': 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo',
-          'combo-26': 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo',
-          'mo-dotted-condom': 'mo-multi-textured-latex-contraceptive-10-pcs',
-          'mo-dotted': 'mo-multi-textured-latex-contraceptive-10-pcs',
-          'mo-ultra-thin-condom': 'mo-micro-thin-latex-contraceptive-10-pcs',
-          'mo-ultra-thin': 'mo-micro-thin-latex-contraceptive-10-pcs',
-          'mo-ultra-ribbed-condom': 'mo-micro-ribbed-natural-latex-contraceptive-10-pcs',
-          'mo-ultra-ribbed': 'mo-micro-ribbed-natural-latex-contraceptive-10-pcs',
+        // Ensure canonical wellness combo and smart pack aliases resolve
+        const wellnessAliases = {
+          'mo-combo-pack': 'mo-smart-pack-18-pcs',
+          'mo-smart-pack-15-pcs': 'mo-smart-pack-18-pcs',
+          'combo-26': 'mo-smart-pack-18-pcs'
         };
 
-        Object.entries(legacyAliases).forEach(([legacyKey, canonicalKey]) => {
-          if (normalized[canonicalKey] && !normalized[legacyKey]) {
-            normalized[legacyKey] = normalized[canonicalKey];
-          }
-          if (normalized[legacyKey] && !normalized[canonicalKey]) {
-            normalized[canonicalKey] = normalized[legacyKey];
+        Object.entries(wellnessAliases).forEach(([aliasKey, targetKey]) => {
+          if (normalized[targetKey] && !normalized[aliasKey]) {
+            normalized[aliasKey] = normalized[targetKey];
           }
         });
 
@@ -820,7 +800,7 @@ export const useStore = create((set, get) => ({
         const resolvedCurrent = (currentSlug && normalized[currentSlug] && !normalized[currentSlug].isOutOfStock)
           ? (normalized[currentSlug].slug || currentSlug)
           : null;
-        const finalSelectedSlug = resolvedCurrent || keys[0] || 'mo-multi-textured-latex-contraceptive-10-pcs';
+        const finalSelectedSlug = resolvedCurrent || keys[0] || 'mo-smart-pack-18-pcs';
 
         set((state) => {
           const newProducts = singleSlug ? { ...state.products, ...normalized } : { ...normalized };
@@ -845,7 +825,7 @@ export const useStore = create((set, get) => ({
   },
 
   // Navigation with true Browser URL History Sync
-  navigateToCombo: () => get().navigateTo('product', 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'),
+  navigateToCombo: () => get().navigateTo('product', 'mo-combo-pack'),
   navigateTo: (view, param = null, replaceHistory = false) => {
     // If cart navigation is requested, open the drawer instead of switching view
     if (view === 'cart') {
@@ -873,7 +853,7 @@ export const useStore = create((set, get) => ({
     if (typeof window !== 'undefined') {
       let targetPath = '/';
       if (view === 'product') {
-        const rawSlug = param || get().selectedProductSlug || 'mo-multi-textured-latex-contraceptive-10-pcs';
+        const rawSlug = param || get().selectedProductSlug || 'mo-smart-pack-18-pcs';
         const productsMap = get().products || {};
         const prod = productsMap[rawSlug] || (typeof productsMap === 'object' && Object.values(productsMap).find(p => p.slug === rawSlug || p.id === rawSlug || p.did === rawSlug));
         const finalSlug = prod?.slug || rawSlug;
@@ -921,7 +901,7 @@ export const useStore = create((set, get) => ({
   },
 
   navigateToCombo: () => {
-    get().navigateTo('product', 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo');
+    get().navigateTo('product', 'mo-combo-pack');
   },
 
   // Slider actions
@@ -1032,7 +1012,7 @@ export const useStore = create((set, get) => ({
       targetComboKey = activeCombo?.slug || activeCombo?.id || preferredKey || FEATURED_COMBO_SLUG;
     }
 
-    const comboProd = products[targetComboKey] || products['mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo'] || products['variety-condoms-30pcs-combo'] || products['combo-26'];
+    const comboProd = products[targetComboKey] || getFeaturedCombo(products) || products['mo-combo-pack'] || products['mo-smart-pack-18-pcs'];
     if (!comboProd) {
       const isBn = get().language === 'bn';
       get().showToast(isBn ? `দুঃখিত, কোনো কম্বো প্যাক পাওয়া যায়নি!` : `Sorry, no combo pack found!`);

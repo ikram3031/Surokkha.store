@@ -12,20 +12,19 @@ const API_BASE_URL = SITE_CONFIG.apiBaseUrl.replace(/\/$/, '');
 const CACHE_KEY = 'cms_hero_slider_v1';
 const DEFAULT_SETTINGS = { autoplay: true, speedMs: 5000, transitionMs: 700, pauseOnHover: true, showArrows: true, showDots: true };
 
-// Special Combo: 30 pieces MO Micro Ribbed Pack (product 6aeafa497b0cbb4ad68d387d)
+// Special Combo: 30 pieces MO Wellness Pack
 const SPECIAL_COMBO_SLIDE = {
   badge: 'Special Combo',
   titleDark: '30 Pieces',
-  titleAccent: 'MO Micro Ribbed',
+  titleAccent: 'MO Wellness Pack',
   tagline: ['3 Full Boxes', 'Bundle Price'],
   subtitle: '৩০ পিস স্পেশাল কম্বো — বিশেষ ছাড়ে',
-  chips: [{ label: 'Micro Ribbed', color: '#94a3b8' }, { label: '100% Confidential', color: '#e05578' }],
-  image: '/uploads/2611/261104/special-combo-30-pieces-mo-micro-ribbed-pack_main_1793784339568.webp',
-  imageAlt: 'Special Combo: 30 pieces MO Micro Ribbed Pack',
+  chips: [{ label: 'Contour Care', color: '#94a3b8' }, { label: '100% Authentic', color: '#e05578' }],
+  image: '/uploads/2611/261116/mo-smart-pack-15-pcs_main_1794796181110.webp',
+  imageAlt: 'Special Combo: 30 pieces MO Wellness Pack',
   ctaLabel: 'Order Now',
   ctaNote: '৳1000 (ছিল ৳1350)',
-  ctaLink: 'special-combo-30-pieces-mo-micro-ribbed-pack',
-  footnote: 'শুধুমাত্র প্রাপ্তবয়স্কদের জন্য (১৮+)',
+  ctaLink: 'mo-smart-pack-18-pcs',
 };
 
 // Built-in coded banners, shown only when the dashboard has no slider saved (or the API is unreachable).

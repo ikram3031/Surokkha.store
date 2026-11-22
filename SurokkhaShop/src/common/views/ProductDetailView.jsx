@@ -9,7 +9,8 @@ import { SITE_CONFIG } from '../config/siteConfig';
 
 const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
-export default function ProductDetailView() {
+// Product detail view displaying product gallery, specs, pricing, and purchase controls
+const ProductDetailView = () => {
   const selectedSlug = useStore((state) => state.selectedProductSlug);
   const navigateTo = useStore((state) => state.navigateTo);
   const openProduct = useStore((state) => state.openProduct);
@@ -43,10 +44,7 @@ export default function ProductDetailView() {
   const [isFetchingDetail, setIsFetchingDetail] = useState(false);
   const [detailedProduct, setDetailedProduct] = useState(null);
   const baseProduct = products[selectedSlug] ||
-    (selectedSlug && products[selectedSlug.replace(/-condom/, '')]) ||
-    (selectedSlug && products[`-condom`]) ||
     (selectedSlug && Object.values(products).find(p => p.slug === selectedSlug || p.did === selectedSlug || p.id === selectedSlug || p._id === selectedSlug)) ||
-    // Only with no product asked for: a missing slug shows "not found", never some other product
     (!selectedSlug && productKeys.length > 0 && products[productKeys[0]]) ||
     (!selectedSlug && Object.values(products).length > 0 && Object.values(products)[0]) ||
     null;
@@ -463,11 +461,6 @@ export default function ProductDetailView() {
               )}
             </div>
           )}
-
-          <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs sm:text-sm font-bold text-emerald-800">
-            <span aria-hidden>🚚</span>
-            {isBn ? '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি' : 'Free delivery on orders over ৳1,000'}
-          </div>
 
           {/* Price display with Offer Price and struck-through Regular Price */}
           <div className="border-y border-slate-200/80 py-4">
@@ -943,4 +936,6 @@ export default function ProductDetailView() {
 
     </div>
   );
-}
+};
+
+export default ProductDetailView;

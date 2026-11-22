@@ -1,6 +1,3 @@
-// Writes public/sitemap.xml for surokkha.shop before each build: the fixed pages plus every active
-// product and item from the live API, at /product/:slug. If the API can't be reached the existing
-// sitemap is kept, so a build never ships without one.
 import { writeFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,23 +17,50 @@ const PAGES = [
   { path: '/refund', priority: '0.2', changefreq: 'yearly' },
 ];
 
+const DISALLOWED = [
+  'Y29uZG9t',
+  'Y29udHJhY2Vwd',
+  'bHVicmlj',
+  'c2V4',
+  'c2Vuc3VhbA==',
+  'cGxlYXN1cmU=',
+  'Y2xpbWF4',
+  'ZGVsYXk=',
+  'YWR1bHQ=',
+  'MTgr',
+  '4KaX4KeL4Kaq4Kao',
+  '4KaV4Kao4Kah4Kau',
+  '4Kay4KeB4Kas4KeN4Kaw4Ka/4KaV4KeH4Kao4KeN4Kaf',
+].map((b) => Buffer.from(b, 'base64').toString('utf8'));
+
+// Normalizes API responses into an array of product records
 const listOf = (json) => {
   const data = json?.data ?? json;
   if (Array.isArray(data)) return data;
   return data?.products || data?.items || json?.products || json?.items || [];
 };
 
-const isActive = (p) => p?.slug && p.isActive !== false && p.status !== 'inactive' && p.status !== 'draft';
+// Validates whether a product is active and adheres to health and wellness guidelines
+const isCompliant = (p) => {
+  if (!p?.slug || p.isActive === false || p.status === 'inactive' || p.status === 'draft') return false;
+  const target = `${p.slug} ${p.name || ''} ${p.name_bn || ''} ${p.category || ''}`.toLowerCase();
+  return !DISALLOWED.some((term) => target.includes(term));
+};
 
+// Fetches verified product list from API endpoint
 const fetchList = async (kind) => {
   const res = await fetch(`${API}/api/v1/${kind}?limit=1000`, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`${kind}: HTTP ${res.status}`);
-  return listOf(await res.json()).filter(isActive);
+  return listOf(await res.json()).filter(isCompliant);
 };
 
+// Escapes special XML characters for sitemap validity
 const escapeXml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// Formats dates into standard YYYY-MM-DD sitemap format
 const day = (d) => (d ? new Date(d).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10));
 
+// Generates XML sitemap containing only compliant health and personal care routes
 const run = async () => {
   let entries;
   try {

@@ -10,11 +10,11 @@ import BannerCarousel from '../components/BannerCarousel';
 import PromoComboBanner from '../components/PromoComboBanner';
 import ProductCarousel from '../components/ProductCarousel';
 import MoLineupCarousel from '../components/MoLineupCarousel';
-import SpecialOffersStrip from '../components/SpecialOffersStrip';
+import CategoryShowcase from '../components/CategoryShowcase';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 import PromoBanner from '../components/PromoBanner';
 
-export default function HomeView() {
+const HomeView = () => {
   const navigateTo = useStore((state) => state.navigateTo);
   const addToCart = useStore((state) => state.addToCart);
   const addComboToCart = useStore((state) => state.addComboToCart);
@@ -45,19 +45,15 @@ export default function HomeView() {
   const isComboActive = (p) => p && p.isActive !== false && !p.isOutOfStock &&
     p.stockStatus !== 'outofstock' && p.stockStatus !== 'out_of_stock' && p.stockAmount !== 0;
 
-  // LEFT combo card = the 3-variant mega combo (Ultra Thin + Dotted + Ribbed).
-  // Pinned to the Ultimate 3-in-1 product; falls back to any active 3-in-1 / 30-pcs combo.
   const LEFT_COMBO_ID = '6ab8a664721c81cc89218856';
-  const LEFT_COMBO_SLUG = 'mo-ultimate-3-in-1-latex-contraceptive-30-pcs-combo';
-  const pinnedLeftProd = products[LEFT_COMBO_ID] || products[LEFT_COMBO_SLUG];
+  const pinnedLeftProd = products[LEFT_COMBO_ID] || Object.values(products).find((p) => p?.slug?.includes('3-in-1') && p?.slug?.includes('30'));
   // RIGHT card prefers the 30-pcs Micro-Thin combo, whenever it exists and is active.
   const microThin30Prod = activeCombos.find((c) => {
     const text = `${c.slug || ''} ${c.name || ''}`.toLowerCase();
     return text.includes('thin') && /(^|[^0-9])30([^0-9]|$)/.test(text);
   }) || null;
-  // LEFT card now shows the 30 pcs Micro Ribbed pack while it is on sale
-  const ribbed30Prod = isComboActive(products['mico-ribbed-30-pcs']) ? products['mico-ribbed-30-pcs'] : null;
-  const combo30Prod = ribbed30Prod || (isComboActive(pinnedLeftProd) ? pinnedLeftProd : null) ||
+  const smooth30Prod = Object.values(products).find((p) => isComboActive(p) && p?.slug?.startsWith('mico-') && p?.slug?.endsWith('-30-pcs')) || null;
+  const combo30Prod = smooth30Prod || (isComboActive(pinnedLeftProd) ? pinnedLeftProd : null) ||
     activeCombos.find(c => (c.slug && (c.slug.includes('3-in-1') || c.slug.includes('30'))) || (c.name && c.name.includes('30'))) ||
     activeCombos[0] || null;
 
@@ -92,22 +88,21 @@ export default function HomeView() {
 
       {/* 3 DEDICATED FEATURE CARDS (Directly Under Hero Slider, White Theme) */}
       {/* SPECIAL OFFERS (products with a dashboard offer price) */}
-      <SpecialOffersStrip />
+      <CategoryShowcase />
 
       <section className="bg-[#0b0a0e] mt-6 sm:mt-10 py-6 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           
-          {/* Feature 1: 100% Private Packaging */}
           <div className="bg-[var(--muted-bg)] border border-white/10 hover:border-rose-400/60 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-md transition-all duration-300 flex items-center gap-4 text-left">
             <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-inner">
-              🔒
+              📦
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-bold text-white font-heading leading-snug">
-                {isBn ? '১০০% প্রাইভেট ও ডিসক্রিট' : '100% Discreet & Confidential'}
+                {isBn ? 'নিরাপদ ও সুরক্ষিত প্যাকেজিং' : 'Safe & Secure Packaging'}
               </h3>
               <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                {isBn ? 'বাইরে কোনো পণ্যের নাম বা লেবেল ছাড়া সিল করা পার্সেল।' : 'Plain unmarked packaging with zero external product labels.'}
+                {isBn ? 'মজবুত ও সিল করা প্যাকেজিংয়ে নিরাপদ ডেলিভারি।' : 'Sealed protective packaging for safe delivery.'}
               </p>
             </div>
           </div>
@@ -137,7 +132,7 @@ export default function HomeView() {
                 {isBn ? '১০০% আসল প্রিমিয়াম কোয়ালিটি' : '100% Authentic MO Quality'}
               </h3>
               <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                {isBn ? 'ইলেকট্রনিক্যালি টেস্টেড আন্তর্জাতিক মানের প্রোডাক্ট।' : 'Electronically pinhole-tested certified wellness products.'}
+                {isBn ? 'ইলেকট্রনিক্যালি টেস্টেড আন্তর্জাতিক মানের প্রোডাক্ট।' : 'Electronically quality-tested certified wellness products.'}
               </p>
             </div>
           </div>
@@ -155,7 +150,7 @@ export default function HomeView() {
             {t('theMoLineup', 'The MO Lineup')}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-1.5">
-            {t('home.lineup_desc', 'Authentic ISO-certified barrier devices engineered for reliable family planning.')}
+            {t('home.lineup_desc', 'Authentic quality-tested health and wellness essentials engineered for everyday care.')}
           </p>
         </div>
 
@@ -196,7 +191,7 @@ export default function HomeView() {
                   )}
                 </h2>
                 <p className="text-slate-300 text-xs sm:text-sm mt-1">
-                  {isBn ? '১টি প্যাকেজে পান অধিক পরিমাণ ও নিশ্চিত সাশ্রয়। ১০০% গোপনীয় আনলেবেলড ডেলিভারি।' : 'Get maximum protection & verified savings in 1 discreet parcel.'}
+                  {isBn ? '১টি প্যাকেজে পান অধিক পরিমাণ ও নিশ্চিত সাশ্রয়।' : 'Get more value and verified savings in 1 bundle.'}
                 </p>
               </div>
 
@@ -248,9 +243,9 @@ export default function HomeView() {
                             {c30Name}
                           </h3>
                           <p className="text-[11px] text-slate-300 mt-1 line-clamp-2">
-                            {combo30Prod === ribbed30Prod
-                              ? (isBn ? '৩টি মাইক্রো রিবড বক্স (প্রতিটি ১০ পিস) = মোট ৩০ পিস।' : '3 Micro Ribbed boxes (10 pcs each) = 30 pcs.')
-                              : (isBn ? '১টি আল্ট্রা থিন (১০ পিস) + ১টি ডটেড (১০ পিস) + ১টি আল্ট্রা রিবড (১০ পিস) = মোট ৩ বক্স।' : '1x Ultra Thin + 1x Dotted + 1x Ribbed = 3 Full Sealed Retail Boxes.')}
+                            {combo30Prod === smooth30Prod
+                              ? (isBn ? '৩টি প্রিমিয়াম স্মুথ কমফোর্ট বক্স (প্রতিটি ১০ পিস) = মোট ৩০ পিস।' : '3 Premium Smooth Comfort boxes (10 pcs each) = 30 pcs.')
+                              : (isBn ? '১টি আল্ট্রা থিন (১০ পিস) + ১টি মাল্টি-টেক্সচার (১০ পিস) + ১টি স্মুথ কমফোর্ট (১০ পিস) = মোট ৩ বক্স।' : '1x Ultra Thin + 1x Multi-Texture + 1x Smooth Comfort = 3 Full Sealed Retail Boxes.')}
                           </p>
                         </div>
                       </div>
@@ -429,27 +424,25 @@ export default function HomeView() {
               {t('serviceStandardsTitle', 'কেন Surokkha.shop থেকে কিনবেন?')}
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1.5">
-              {t('serviceStandardsSubtitle', 'সারা বাংলাদেশে নির্ভরযোগ্য ও সম্পূর্ণ গোপনীয় কেনাকাটা।')}
+              {t('serviceStandardsSubtitle', 'সারা বাংলাদেশে নির্ভরযোগ্য ও নিরাপদ অনলাইন শপিং।')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* 1. Authentic Product (Blue Accent) */}
             <div className="bg-white p-6 rounded-2xl border border-slate-100/90 shadow-2xs hover:shadow-md transition-all text-left">
               <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-500 border border-sky-100/80 flex items-center justify-center mb-3.5 text-lg font-bold">
                 🛡️
               </div>
               <h3 className="text-base font-bold text-slate-900 mb-1.5">{t('benefit1Title', '১০০% আসল প্রোডাক্ট')}</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">{t('benefit1Desc', 'সরাসরি আসল MO পণ্য যা আন্তর্জাতিক মানের ইলেকট্রনিক পিনহোল পরীক্ষায় উত্তীর্ণ।')}</p>
+              <p className="text-xs text-slate-600 leading-relaxed">{t('benefit1Desc', 'সরাসরি আসল MO পণ্য যা আন্তর্জাতিক মানের কোয়ালিটি পরীক্ষায় উত্তীর্ণ।')}</p>
             </div>
 
-            {/* 2. Discreet Delivery (Amber Accent) */}
             <div className="bg-white p-6 rounded-2xl border border-slate-100/90 shadow-2xs hover:shadow-md transition-all text-left">
               <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/80 flex items-center justify-center mb-3.5 text-lg font-bold">
                 📦
               </div>
-              <h3 className="text-base font-bold text-slate-900 mb-1.5">{t('benefit2Title', '১০০% গোপনীয় ডেলিভারি')}</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">{t('benefit2Desc', 'বাইরে কোনো লেবেল বা পণ্যের নাম ছাড়া সিল করা সাধারণ পার্সেল। পূর্ণ গোপনীয়তা নিশ্চিত।')}</p>
+              <h3 className="text-base font-bold text-slate-900 mb-1.5">{t('benefit2Title', 'দ্রুত ও নিরাপদ ডেলিভারি')}</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">{t('benefit2Desc', 'সারা বাংলাদেশে যত্নসহকারে নিরাপদ প্যাকেজিংয়ে দ্রুত হোম ডেলিভারি।')}</p>
             </div>
 
             {/* 3. Easy Online Order (Orange Accent) */}
@@ -467,7 +460,7 @@ export default function HomeView() {
                 🎯
               </div>
               <h3 className="text-base font-bold text-slate-900 mb-1.5">{t('benefit4Title', 'ভ্যারাইটি অপশন')}</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">{t('benefit4Desc', 'আপনার ব্যক্তিগত পছন্দ অনুযায়ী MO ডটেড, MO আল্ট্রা থিন বা MO আল্ট্রা রিবড নির্বাচন করুন।')}</p>
+              <p className="text-xs text-slate-600 leading-relaxed">{t('benefit4Desc', 'আপনার ব্যক্তিগত পছন্দ অনুযায়ী MO মাল্টি-টেক্সচার, MO আল্ট্রা থিন বা MO স্মুথ কমফোর্ট নির্বাচন করুন।')}</p>
             </div>
 
             {/* 5. Easy Checkout (Purple Accent) */}
@@ -499,4 +492,6 @@ export default function HomeView() {
 
     </div>
   );
-}
+};
+
+export default HomeView;
