@@ -5,7 +5,7 @@ const STORAGE_KEY = 'surokkha-18'
 export function useAgeGate() {
   const [verified, setVerified] = useState<boolean>(() => {
     try {
-      return sessionStorage.getItem(STORAGE_KEY) === '1'
+      return localStorage.getItem(STORAGE_KEY) === '1'
     } catch {
       return false
     }
@@ -14,7 +14,7 @@ export function useAgeGate() {
   useEffect(() => {
     if (verified) {
       try {
-        sessionStorage.setItem(STORAGE_KEY, '1')
+        localStorage.setItem(STORAGE_KEY, '1')
       } catch {
         /* ignore storage errors */
       }
