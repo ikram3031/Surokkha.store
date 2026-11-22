@@ -4,10 +4,11 @@ import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from '../asset/surokkha_logo_dark.png';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICTS } from '../data/districts';
-import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage } from '../utils/analytics';
+import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents } from '../utils/analytics';
 
 const OFFER = {
   did: 'd5a81e97721c8101',
+  slug: 'mo-smart-pack-18-pcs',
   name: 'MO 3-in-1 Smart Pack (18 Pcs)',
   regularPrice: 810,
   offerPrice: 720,
@@ -16,9 +17,9 @@ const OFFER = {
 };
 
 const ADDONS = [
-  { key: 'white', did: '091bfca429b96b19', name: 'Ultra Ribbed', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
-  { key: 'pink', did: '6bb5a600017c619b', name: 'Dotted', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
-  { key: 'blue', did: '1c54b907d7a216dc', name: 'Ultra Thin', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
+  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'Ultra Ribbed', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
+  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'Dotted', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
+  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'Ultra Thin', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
 ];
 
 const MAX_ADDON = 5;
@@ -60,6 +61,17 @@ const phoneWrongSoFar = (v) => {
 
 const SPAM_PHONE_MSG = 'আপনার এই নম্বরটি আমাদের স্প্যাম লিস্টে আছে। দয়া করে আমাদের সাথে যোগাযোগ করুন।';
 const FAKE_PHONE_MSG = 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।';
+
+// Records one Smart Pack view per visitor per 30 minutes in the dashboard product funnel
+const trackSmartPackView = () => {
+  const key = `_sk_pv_${OFFER.slug}`;
+  try {
+    const last = Number(window.sessionStorage.getItem(key) || 0);
+    if (last && Date.now() - last < 30 * 60 * 1000) return;
+    window.sessionStorage.setItem(key, String(Date.now()));
+  } catch (_) { return; }
+  trackProductEvents([{ eventType: 'view', productKey: OFFER.slug, productName: OFFER.name }]);
+};
 
 // Builds a WhatsApp chat link with a prefilled message
 const waLink = (text) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
@@ -133,6 +145,7 @@ const SpecialOfferView = () => {
 
   useEffect(() => {
     trackSitePage('special-offer');
+    trackSmartPackView();
     track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: OFFER.offerPrice, currency: 'BDT' });
   }, []);
 
@@ -150,7 +163,10 @@ const SpecialOfferView = () => {
   // Changes one add-on count within its limits and tracks additions
   const changeAddon = (a, delta) => {
     setAddonQty((prev) => ({ ...prev, [a.key]: Math.max(0, Math.min(MAX_ADDON, prev[a.key] + delta)) }));
-    if (delta > 0) track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
+    if (delta > 0) {
+      track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
+      trackProductEvents([{ eventType: 'add_to_cart', productKey: a.slug, productName: a.fullName, quantity: 1, value: a.price }]);
+    }
   };
 
   // Asks the backend whether a complete phone number is on the spam / fake list
@@ -187,6 +203,7 @@ const SpecialOfferView = () => {
     if (cartedRef.current) return;
     cartedRef.current = true;
     track('AddToCart', { value: OFFER.offerPrice, currency: 'BDT', content_ids: [OFFER.did], content_name: OFFER.name, content_type: 'product' });
+    trackProductEvents([{ eventType: 'add_to_cart', productKey: OFFER.slug, productName: OFFER.name, quantity: 1, value: OFFER.offerPrice }]);
   };
 
   // Fires InitiateCheckout the first time the form gets focus
@@ -194,6 +211,10 @@ const SpecialOfferView = () => {
     if (startedRef.current) return;
     startedRef.current = true;
     track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [OFFER.did], content_type: 'product' });
+    trackProductEvents([
+      { eventType: 'checkout', productKey: OFFER.slug, productName: OFFER.name, quantity: qty, value: qty * OFFER.offerPrice },
+      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ eventType: 'checkout', productKey: a.slug, productName: a.fullName, quantity: addonQty[a.key], value: addonQty[a.key] * a.price })),
+    ]);
   };
 
   // Checks every mandatory field and focuses the first invalid one
@@ -283,11 +304,11 @@ const SpecialOfferView = () => {
       const orderNumber = String(json?.data?.orderNumber || json?.data?.id || json?.orderNumber || '').trim();
       if (orderNumber) {
         const items = { [OFFER.did]: qty };
-        const products = { [OFFER.did]: { did: OFFER.did, name: OFFER.name, price: OFFER.offerPrice } };
+        const products = { [OFFER.did]: { did: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice } };
         ADDONS.forEach((a) => {
           if (addonQty[a.key] > 0) {
             items[a.did] = addonQty[a.key];
-            products[a.did] = { did: a.did, name: a.fullName, price: a.price };
+            products[a.did] = { did: a.did, slug: a.slug, name: a.fullName, price: a.price };
           }
         });
         trackPurchase({
