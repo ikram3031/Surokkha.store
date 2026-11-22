@@ -1,5 +1,8 @@
 import { api } from '@/lib/api/client'
 
+export const STORE_WHATSAPP_NUMBER = '8801857245857'
+export const STORE_WHATSAPP_URL = `https://wa.me/${STORE_WHATSAPP_NUMBER}`
+
 /** CMS-driven data the storefront needs before it first renders (GET /store/v1/site-config). */
 export interface SiteConfig {
   cms: {

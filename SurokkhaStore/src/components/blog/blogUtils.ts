@@ -1,7 +1,8 @@
 import { CATS, POSTS, TAGS, type BlogCategory, type BlogCategoryId, type BlogPost, type BlogTag, type BlogTagId } from '@/components/blog/blogData'
 import { blogPath } from '@/lib/router'
+import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig'
 
-export const WHATSAPP_NUMBER = '8801600905774'
+export const WHATSAPP_NUMBER = STORE_WHATSAPP_NUMBER
 /** In launch mode the offer page is the shop. */
 export const SHOP_PATH = '/offer'
 

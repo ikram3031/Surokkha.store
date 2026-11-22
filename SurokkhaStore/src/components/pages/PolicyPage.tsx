@@ -13,7 +13,7 @@ interface Policy {
   sections: Section[]
 }
 
-const WHATSAPP = '+880 1600-905774'
+const WHATSAPP = 'WhatsApp'
 const EMAIL = 'surokkha.store@gmail.com'
 
 const POLICIES_EN: Record<'terms' | 'privacy' | 'refund', Policy> = {

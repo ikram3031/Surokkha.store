@@ -4,8 +4,9 @@ import { navigate, useRoute } from '@/lib/router'
 import { useCart } from '@/context/CartContext'
 import { bn } from '@/lib/bn'
 import { L } from '@/lib/i18n'
+import { STORE_WHATSAPP_URL } from '@/lib/siteConfig'
 
-const WHATSAPP_URL = 'https://wa.me/8801600905774'
+const WHATSAPP_URL = STORE_WHATSAPP_URL
 
 /**
  * Sticky bottom navigation for mobile only (hidden from md up, where the

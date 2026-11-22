@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './specialOffer.css';
 import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from './logo.png';
+import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
 import { SITE_CONFIG, DISTRICTS, getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, pixelTrack, saveCheckoutLead, resetCheckoutSession } from './storeCompat.js';
 
 const OFFER = {
@@ -15,15 +16,14 @@ const OFFER = {
 };
 
 const ADDONS = [
-  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'Ultra Ribbed', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
-  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'Dotted', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
-  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'Ultra Thin', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
+  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
+  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
+  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
 ];
 
 const MAX_ADDON = 5;
 const NORMAL_DELIVERY = 120;
-const WHATSAPP = '8801600905774';
-const PHONE_DISPLAY = '01600-905774';
+const WHATSAPP = STORE_WHATSAPP_NUMBER;
 const DISTRICT_NAMES = DISTRICTS.map((d) => d.name).sort((a, b) => a.localeCompare(b));
 
 // Converts western digits in a value to Bangla digits
@@ -375,16 +375,16 @@ const SpecialOfferView = () => {
           <div className="hero-grid">
             <div>
               <span className="eyebrow"><b>NEW</b> MO প্রথমবার? এই প্যাক দিয়ে শুরু করুন</span>
-              <div className="brandline">MO Condoms</div>
+              <div className="brandline">MO Personal Care</div>
               <h1 className="hero-title">Smart <em>Pack</em></h1>
-              <p className="hero-sub">এক বক্সে <strong>MO-এর ৩ ধরনের কনডম</strong>, প্রতিটা ৬ পিস করে। তিনটাই ট্রাই করে দেখুন MO কেমন, তারপর বেছে নিন আপনার পছন্দেরটা।</p>
+              <p className="hero-sub">এক বক্সে <strong>MO-এর তিনটি ভ্যারিয়েন্ট</strong>, প্রতিটি ৬ পিস করে। তিনটাই ট্রাই করে দেখুন কেমন, তারপর বেছে নিন আপনার পছন্দেরটা।</p>
 
               <div className="mix">
-                <span className="chip"><i style={{ background: '#f1f5f9' }} />Ultra Ribbed <small>× ৬</small></span>
+                <span className="chip"><i style={{ background: '#f1f5f9' }} />MO White <small>× ৬</small></span>
                 <span className="op">+</span>
-                <span className="chip"><i style={{ background: '#f4a7c4' }} />Dotted <small>× ৬</small></span>
+                <span className="chip"><i style={{ background: '#f4a7c4' }} />MO Pink <small>× ৬</small></span>
                 <span className="op">+</span>
-                <span className="chip"><i style={{ background: '#38bdf8' }} />Ultra Thin <small>× ৬</small></span>
+                <span className="chip"><i style={{ background: '#38bdf8' }} />MO Blue <small>× ৬</small></span>
                 <span className="op">=</span>
                 <span className="total">১৮ <small>পিস</small></span>
               </div>
@@ -404,9 +404,9 @@ const SpecialOfferView = () => {
               </div>
 
               <div className="trust">
-                <span><IconLock />গোপনীয় প্যাকেজিং</span>
+                <span><IconBox />বেস্ট প্যাকেজিং</span>
                 <span><IconTruck />ক্যাশ অন ডেলিভারি</span>
-                <span><IconShield />১০০% অরিজিনাল</span>
+                <span><IconShield />১০০% অথেন্টিক</span>
               </div>
             </div>
 
@@ -421,7 +421,7 @@ const SpecialOfferView = () => {
               <div className="seal"><div><b>৩ in ১</b>স্মার্ট প্যাক</div></div>
               <div className="ftag">
                 <div className="ic"><IconBox /></div>
-                <div><b>প্লেইন বক্সে ডেলিভারি</b><small>বাইরে থেকে কিছু বোঝা যাবে না</small></div>
+                <div><b>প্রিমিয়াম প্যাকেজিং</b><small>ডেলিভারিতে কোনো ড্যামেজ হবে না</small></div>
               </div>
             </div>
           </div>
@@ -434,7 +434,6 @@ const SpecialOfferView = () => {
             <div className="sec-head">
               <span className="kicker">বক্সে যা আছে</span>
               <h2 className="sec-title">৩ ধরনের MO, প্রতিটা ৬ পিস</h2>
-              <p className="sec-sub">একটা কিনে ভালো না লাগার ঝুঁকি নেই। তিন রকম অনুভূতি একসাথে ট্রাই করুন, তারপর ঠিক করুন কোনটা আপনার।</p>
             </div>
             <div className="inside-grid">
               <div className="photo skh-i-photo" role="img" aria-label="MO Smart Pack-এর ১৮টি প্যাকেট">
@@ -443,17 +442,17 @@ const SpecialOfferView = () => {
               <div className="variants">
                 <div className="variant">
                   <div className="v-img skh-img skh-i-white" style={{ '--bg': '#eef1f6' }} />
-                  <div><div className="v-name"><i style={{ background: '#f1f5f9' }} />Ultra Ribbed</div><p className="v-desc">রিবড টেক্সচার, যারা বাড়তি অনুভূতি চান তাদের জন্য।</p></div>
+                  <div><div className="v-name"><i style={{ background: '#f1f5f9' }} />MO White</div></div>
                   <span className="v-qty">× ৬ পিস</span>
                 </div>
                 <div className="variant">
                   <div className="v-img skh-img skh-i-pink" style={{ '--bg': '#fde7ef' }} />
-                  <div><div className="v-name"><i style={{ background: '#f4a7c4' }} />Dotted</div><p className="v-desc">ডট টেক্সচার, একটু আলাদা অভিজ্ঞতার জন্য।</p></div>
+                  <div><div className="v-name"><i style={{ background: '#f4a7c4' }} />MO Pink</div></div>
                   <span className="v-qty">× ৬ পিস</span>
                 </div>
                 <div className="variant">
                   <div className="v-img skh-img skh-i-blue" style={{ '--bg': '#e0f2fe' }} />
-                  <div><div className="v-name"><i style={{ background: '#38bdf8' }} />Ultra Thin</div><p className="v-desc">অতি পাতলা, যতটা সম্ভব ন্যাচারাল অনুভূতির জন্য।</p></div>
+                  <div><div className="v-name"><i style={{ background: '#38bdf8' }} />MO Blue</div></div>
                   <span className="v-qty">× ৬ পিস</span>
                 </div>
                 <div className="inside-total"><span>মোট এক বক্সে</span><b>১৮ পিস</b></div>
@@ -462,35 +461,16 @@ const SpecialOfferView = () => {
           </div>
         </section>
 
-        <section className="sec why">
-          <div className="container">
-            <div className="sec-head">
-              <span className="kicker">কেন Smart Pack</span>
-              <h2 className="sec-title">MO চেনার সবচেয়ে সহজ উপায়</h2>
-            </div>
-            <div className="why-grid">
-              <div className="why-card"><div className="why-ic"><IconGrid /></div><h3>এক বক্সে ৩ রকম</h3><p>আলাদা আলাদা প্যাক কিনতে হবে না। Ultra Ribbed, Dotted আর Ultra Thin সব একসাথে।</p></div>
-              <div className="why-card"><div className="why-ic"><IconTag /></div><h3>অফার প্রাইসে সেভ</h3><p>নিয়মিত দাম ৳৮১০, অফারে মাত্র ৳৭২০। সাথে ডেলিভারি চার্জও লাগছে না।</p></div>
-              <div className="why-card"><div className="why-ic"><IconShield /></div><h3>১০০% অরিজিনাল MO</h3><p>সরাসরি আসল MO প্রোডাক্ট, কোনো নকল বা রিপ্যাক নয়।</p></div>
-              <div className="why-card"><div className="why-ic"><IconCash /></div><h3>হাতে পেয়ে টাকা দিন</h3><p>অগ্রিম কিছু দিতে হবে না। প্রোডাক্ট হাতে পেয়ে ক্যাশ অন ডেলিভারিতে পেমেন্ট।</p></div>
-            </div>
-          </div>
-        </section>
-
         <section className="sec">
           <div className="container">
-            <div className="sec-head">
-              <span className="kicker">কীভাবে পাবেন</span>
-              <h2 className="sec-title">অর্ডার থেকে ডেলিভারি, পুরোটাই গোপনীয়</h2>
-            </div>
             <div className="steps">
               <div className="step"><div className="step-n">১</div><h3>অর্ডার করুন</h3><p>নিচের ফর্মে নাম, নম্বর আর ঠিকানা দিন। এক মিনিটও লাগবে না।</p></div>
               <div className="step"><div className="step-n">২</div><h3>কলে কনফার্ম</h3><p>আমাদের টিম আপনার নম্বরে কল করে অর্ডারটা কনফার্ম করবে।</p></div>
-              <div className="step"><div className="step-n">৩</div><h3>প্লেইন বক্সে ডেলিভারি</h3><p>সাধারণ প্যাকেটে আপনার ঠিকানায় পৌঁছাবে। হাতে পেয়ে টাকা দিন।</p></div>
+              <div className="step"><div className="step-n">৩</div><h3>প্রিমিয়াম প্যাকেজিংয়ে ডেলিভারি</h3><p>খুব ভালোভাবে প্রিমিয়াম প্যাকেজিংয়ে আপনার ঠিকানায় পৌঁছাবে, ডেলিভারিতে কোনো ড্যামেজ হবে না। হাতে পেয়ে টাকা দিন।</p></div>
             </div>
             <div className="privacy">
-              <div className="ic"><IconLock /></div>
-              <p><b>প্যাকেটের বাইরে প্রোডাক্টের নাম বা ছবি থাকে না।</b> ডেলিভারিম্যান বা আশেপাশের কেউ বুঝবে না ভেতরে কী আছে।</p>
+              <div className="ic"><IconBox /></div>
+              <p><b>বেস্ট প্যাকেজিং গ্যারান্টি:</b> আমরা প্রতিটি প্রোডাক্ট খুব যত্নসহকারে প্রিমিয়াম প্যাকেজিং করি, যাতে হোম ডেলিভারি বা কুরিয়ার সার্ভিসে আমাদের প্রোডাক্টের কোনো ধরনের ড্যামেজ বা কোনো সমস্যা না হয়।</p>
             </div>
           </div>
         </section>
@@ -507,7 +487,7 @@ const SpecialOfferView = () => {
               <aside className="summary">
                 <div className="sum-prod">
                   <div className="sum-thumb skh-i-thumb" />
-                  <div><h3>MO 3-in-1 Smart Pack</h3><p>১৮ পিস · Ultra Ribbed, Dotted, Ultra Thin</p></div>
+                  <div><h3>MO 3-in-1 Smart Pack</h3><p>১৮ পিস · MO White, MO Pink, MO Blue</p></div>
                 </div>
                 <div className="qty">
                   <label htmlFor="qtyOut">পরিমাণ (বক্স)</label>
@@ -554,7 +534,7 @@ const SpecialOfferView = () => {
                 <div className="grand"><span>সর্বমোট</span><b>{tk(total)}</b></div>
                 <div className="sum-note">
                   <span><IconCash />পণ্য হাতে পেয়ে টাকা পরিশোধ করুন</span>
-                  <span><IconLock />প্লেইন বক্সে গোপনীয় ডেলিভারি</span>
+                  <span><IconBox />সুরক্ষিত প্রিমিয়াম প্যাকেজিং</span>
                 </div>
               </aside>
 
@@ -599,7 +579,7 @@ const SpecialOfferView = () => {
                   <span>অর্ডার কনফার্ম করুন</span>
                 </button>
                 <div className={`form-err${failed ? ' show' : ''}`}>দুঃখিত, অর্ডার পাঠানো যায়নি। আবার চেষ্টা করুন, অথবা <a href={failed || '#'} target="_blank" rel="noopener noreferrer">WhatsApp-এ অর্ডার দিন</a>।</div>
-                <p className="form-foot">অর্ডার করতে সমস্যা? কল বা WhatsApp করুন: <a href="tel:+8801600905774"><b>{PHONE_DISPLAY}</b></a></p>
+                <p className="form-foot">অর্ডার করতে সমস্যা? <a href={waOrderLink} target="_blank" rel="noopener noreferrer"><b>WhatsApp-এ মেসেজ দিন</b></a></p>
               </form>
             </div>
           </div>
@@ -612,12 +592,11 @@ const SpecialOfferView = () => {
               <h2 className="sec-title">যা জানতে চান</h2>
             </div>
             <div className="faq">
-              <details open><summary>প্যাকেটের বাইরে কি লেখা থাকবে ভেতরে কী আছে?</summary><p>না। প্রোডাক্ট সাধারণ প্লেইন প্যাকেটে পাঠানো হয়, বাইরে প্রোডাক্টের নাম বা ছবি থাকে না।</p></details>
-              <details><summary>ডেলিভারিম্যান কি জানতে পারবে?</summary><p>না। ডেলিভারিম্যান শুধু একটা সাধারণ পার্সেল হাতে পায়, ভেতরে কী আছে সেটা তার জানার কথা নয়।</p></details>
+              <details open><summary>প্যাকেজিং কি নিরাপদ ও সুরক্ষিত হবে?</summary><p>হ্যাঁ। আমরা প্রতিটি অর্ডার মজবুত ও প্রিমিয়াম প্যাকেজিংয়ে পাঠাই, যাতে কুরিয়ার বা হোম ডেলিভারিতে পণ্যের কোনো ড্যামেজ না হয়।</p></details>
               <details><summary>পেমেন্ট কীভাবে করব?</summary><p>ক্যাশ অন ডেলিভারি। প্রোডাক্ট হাতে পেয়ে ডেলিভারিম্যানকে টাকা দেবেন, আগে কিছু দিতে হবে না।</p></details>
               <details><summary>ডেলিভারি চার্জ কত?</summary><p>এই অফারে ডেলিভারি সম্পূর্ণ ফ্রি, ঢাকার ভেতরে (সাধারণত ৳৭০) এবং ঢাকার বাইরে (সাধারণত ৳১২০) দুই জায়গাতেই।</p></details>
               <details><summary>অর্ডারের পর কী হবে?</summary><p>আমাদের টিম আপনার দেওয়া নম্বরে কল করে অর্ডার কনফার্ম করবে এবং ডেলিভারির সময় জানিয়ে দেবে।</p></details>
-              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>Ultra Ribbed-এ রিবড টেক্সচার, Dotted-এ ডট টেক্সচার, আর Ultra Thin অতি পাতলা। Smart Pack-এ তিনটাই ৬ পিস করে আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
+              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>Smart Pack-এ MO White, MO Pink এবং MO Blue — তিনটি ভ্যারিয়েন্টই ৬ পিস করে আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
             </div>
           </div>
         </section>
@@ -625,7 +604,7 @@ const SpecialOfferView = () => {
         <section className="sec final">
           <div className="container">
             <h2>৩ ধরনের MO, ১৮ পিস, মাত্র <span>৳৭২০</span></h2>
-            <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · গোপনীয় প্যাকেজিং</p>
+            <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
             <div className="ctas">
               <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
               <a href={waOrderLink} target="_blank" rel="noopener noreferrer" className="btn btn-wa"><IconWa />WhatsApp-এ অর্ডার</a>
@@ -637,7 +616,7 @@ const SpecialOfferView = () => {
       <footer>
         <div className="container">
           <b>Surokkha<span>.</span></b>
-          <span>কল / WhatsApp: <a href="tel:+8801600905774">{PHONE_DISPLAY}</a></span>
+          <a href={waOrderLink} target="_blank" rel="noopener noreferrer">WhatsApp-এ যোগাযোগ</a>
           <span>© {bn(new Date().getFullYear())} Surokkha. সর্বস্বত্ব সংরক্ষিত।</span>
         </div>
       </footer>

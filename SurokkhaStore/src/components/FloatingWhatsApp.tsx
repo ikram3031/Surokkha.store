@@ -1,7 +1,8 @@
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon'
 import { L } from '@/lib/i18n'
+import { STORE_WHATSAPP_URL } from '@/lib/siteConfig'
 
-const WHATSAPP_URL = 'https://wa.me/8801600905774'
+const WHATSAPP_URL = STORE_WHATSAPP_URL
 
 /** Chat shortcut, bottom-right. Desktop only — on mobile the bottom nav carries WhatsApp contact. */
 export function FloatingWhatsApp() {

@@ -1,6 +1,7 @@
 import { Separator } from '@/components/ui/separator'
 import { navigate } from '@/lib/router'
 import { L } from '@/lib/i18n'
+import { STORE_WHATSAPP_URL } from '@/lib/siteConfig'
 
 const QUICK_LINKS = [
   { label: L('Privacy Policy', 'প্রাইভেসি পলিসি'), path: '/privacy-policy' },
@@ -22,8 +23,8 @@ export function Footer() {
           <ul className="mt-3 space-y-2 text-white/70">
             <li>
               {L('WhatsApp:', 'হোয়াটসঅ্যাপ:')}{' '}
-              <a href="https://wa.me/8801600905774" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-                +880 1600-905774
+              <a href={STORE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white underline-offset-4 hover:underline">
+                {L('Message us on WhatsApp', 'WhatsApp-এ মেসেজ দিন')}
               </a>
             </li>
             <li>
