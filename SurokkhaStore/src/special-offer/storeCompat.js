@@ -1,6 +1,6 @@
 import { getExternalId, getFbIdentifiers, pixelTrack, setPixelUserData } from '@/lib/pixel';
 import { trackPageView, trackProductEvents } from '@/lib/api/productEvents';
-import { getCheckoutSessionId } from '@/lib/api/checkoutLeads';
+import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead as storeSaveCheckoutLead } from '@/lib/api/checkoutLeads';
 import { DISTRICT_NAMES, DISTRICT_BN } from '@/data/districts';
 
 // Store versions of the helpers the special offer page was written against in SurokkhaShop
@@ -14,7 +14,7 @@ export const SITE_CONFIG = {
 
 export const DISTRICTS = DISTRICT_NAMES.map((name) => ({ name }));
 
-export { DISTRICT_BN, getCheckoutSessionId, getExternalId, trackProductEvents, pixelTrack };
+export { DISTRICT_BN, getCheckoutSessionId, resetCheckoutSession, getExternalId, trackProductEvents, pixelTrack };
 
 export const getFbp = () => getFbIdentifiers().fbp || '';
 
@@ -46,4 +46,10 @@ export const trackPurchase = (order, products = {}) => {
     quantity: qty,
     value: (Number(products[did]?.price) || 0) * qty,
   })));
+};
+
+// Abandoned-checkout lead with the Meta identifiers the server needs to match this browser
+export const saveCheckoutLead = (details, keepalive = false) => {
+  const { fbp, fbc } = getFbIdentifiers();
+  return storeSaveCheckoutLead({ ...details, fbp, fbc, externalId: getExternalId() }, keepalive);
 };
