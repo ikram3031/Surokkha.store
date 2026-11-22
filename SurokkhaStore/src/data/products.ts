@@ -54,8 +54,8 @@ export const products: Product[] = [
 ]
 
 export const catLabel: Record<ProductCategory, string> = {
-  condom: L('Condoms', 'কনডম'),
-  lube: L('Lubricants', 'লুব্রিকেন্ট'),
+  condom: L('Wellness Care', 'ওয়েলনেস কেয়ার'),
+  lube: L('Personal Care', 'পার্সোনাল কেয়ার'),
   combo: L('Combo Packs', 'কম্বো প্যাক'),
 }
 

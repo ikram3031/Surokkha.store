@@ -5,30 +5,18 @@ import { Header } from '@/components/header/Header'
 import { Header2 } from '@/components/header/Header2'
 import { ShopPage } from '@/components/shop/ShopPage'
 import { OfferProductsPage } from '@/components/offer/OfferProductsPage'
-import { HomeHero } from '@/components/home/HomeHero'
 import { HomeClassic } from '@/components/home/HomeClassic'
-import { IntroProducts } from '@/components/home/IntroProducts'
-import { ShopByNeed } from '@/components/home/ShopByNeed'
 import { CategoryPage } from '@/components/category/CategoryPage'
-import { MoProducts, WellnessProducts } from '@/components/home/CatalogSections'
 import { SearchResults } from '@/components/shop/SearchResults'
 import { FaqPage } from '@/components/pages/FaqPage'
 import { PolicyPage } from '@/components/pages/PolicyPage'
-import { LearnCards } from '@/components/home/LearnCards'
-import { Testimonial } from '@/components/home/Testimonial'
-import { Newsletter } from '@/components/home/Newsletter'
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp'
 import { BottomNav } from '@/components/BottomNav'
-import { ComboOffers } from '@/components/home/ComboOffers'
-import { DeliverySteps } from '@/components/home/DeliverySteps'
-import { TrustStrip } from '@/components/TrustStrip'
-import { Shop } from '@/components/Shop'
 import { Footer } from '@/components/Footer'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { OfferHome } from '@/components/OfferHome'
 import { GroupOfferPage } from '@/components/offer/GroupOfferPage'
 import { OffersPage } from '@/components/offer/OffersPage'
-import { PromoBanner } from '@/components/home/PromoBanner'
 import { ProductPage } from '@/components/product/ProductPage'
 import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ConfirmationPage } from '@/components/checkout/ConfirmationPage'
@@ -125,32 +113,7 @@ function AppShell() {
             showAllProducts={SHOW_ALL_PRODUCTS}
           />
         )}
-        {route.name === 'home' && (
-          <>
-            <HomeHero />
-            <PromoBanner />
-            <IntroProducts />
-            <TrustStrip />
-            {/* Categories right after the best sellers */}
-            {/* Mobile shows the combo offers here instead of "Shop by need"; desktop keeps both in their own places */}
-            <div className="hidden md:block">
-              <ShopByNeed />
-            </div>
-            <div className="md:hidden">
-              <ComboOffers />
-            </div>
-            <MoProducts />
-            <div className="hidden md:block">
-              <ComboOffers />
-            </div>
-            <DeliverySteps />
-            <WellnessProducts />
-            {SHOW_ALL_PRODUCTS && <Shop ref={shopRef} query={query} filter={filter} onFilterChange={setFilter} />}
-            <LearnCards />
-            <Testimonial />
-            <Newsletter />
-          </>
-        )}
+        {route.name === 'home' && <ShopPage />}
         {route.name === 'offer' && <OfferHome />}
         {route.name === 'offers' && <OffersPage />}
         {route.name === 'shop' && <ShopPage />}

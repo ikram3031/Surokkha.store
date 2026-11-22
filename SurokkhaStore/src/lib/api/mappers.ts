@@ -104,8 +104,10 @@ export function mapApiProduct(raw: ApiProduct): Product {
   const visual = DEFAULT_ART_BY_CATEGORY[cat]
   // Same rule as the backend: a sale exists when offerPrice is positive and below price. `price` comes first
   // because some products carry a stale imported `regularPrice` that hid the real offer.
-  const regular = Number(raw.price || raw.regularPrice || 0)
-  const offer = Number(raw.offerPrice) > 0 && Number(raw.offerPrice) < regular ? Number(raw.offerPrice) : 0
+  const listPrice = Number(raw.price || raw.salePrice || raw.regularPrice || 0)
+  const offer = Number(raw.offerPrice) > 0 && Number(raw.offerPrice) < listPrice ? Number(raw.offerPrice) : 0
+  const actualPrice = offer || listPrice
+  const highestRegular = Math.max(Number(raw.regularPrice || 0), listPrice)
 
   const rawDesc = raw.description || raw.shortDescription || ''
 
@@ -116,7 +118,7 @@ export function mapApiProduct(raw: ApiProduct): Product {
     desc: htmlToText(rawDesc),
     descHtml: HTML_TAG_RX.test(rawDesc) ? rawDesc : undefined,
     // Same precedence as SurokkhaShop: active offer price, else list price
-    price: offer || (raw.price ?? raw.salePrice ?? raw.regularPrice ?? 0),
+    price: actualPrice,
     slug: raw.slug,
     categorySlugs: categorySlugsOf(raw),
     apiName: raw.name ?? raw.title,
@@ -125,9 +127,12 @@ export function mapApiProduct(raw: ApiProduct): Product {
     did: raw.did,
     gallery: (raw.gallery ?? []).map((g) => resolveMediaUrl(g)!).filter(Boolean),
     longDescription: raw.longDescription,
-    // Only set when there is a real sale, so the UI can show the strike-through price and discount %
-    regularPrice: offer ? regular : undefined,
-    inStock: String(raw.stockStatus ?? 'instock').toLowerCase() !== 'outofstock',
+    // Show strike-through price whenever regularPrice or list price exceeds the actual selling price
+    regularPrice: highestRegular > actualPrice ? highestRegular : undefined,
+    inStock:
+      raw.isOutOfStock !== true &&
+      raw.stockAmount !== 0 &&
+      !['outofstock', 'out_of_stock'].includes(String(raw.stockStatus ?? 'instock').toLowerCase()),
     freeDelivery: raw.freeDelivery === true || undefined,
     directOffer: raw.directOffer || undefined,
     art: visual.art,

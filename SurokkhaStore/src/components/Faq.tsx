@@ -9,15 +9,15 @@ import { L } from '@/lib/i18n'
 
 export const faqs = [
   {
-    q: L('Will the packaging really be discreet?', 'প্যাকেজিং কি সত্যিই গোপনীয় হবে?'),
-    a: L('Yes. Products ship in plain packaging with no product name or image on the outside. The invoice only shows "Surokkha".', 'হ্যাঁ। পণ্য সাধারণ প্যাকেটে পাঠানো হয়, বাইরে পণ্যের কোনো নাম বা ছবি থাকে না। ইনভয়েসে শুধু "Surokkha" লেখা থাকে।'),
+    q: L('Is the packaging safe and secure?', 'প্যাকেজিং কি নিরাপদ ও সুরক্ষিত হবে?'),
+    a: L('Yes. Products ship in sturdy, sealed packaging so nothing is damaged in transit.', 'হ্যাঁ। পণ্য মজবুত ও সুরক্ষিত প্যাকেজিংয়ে পাঠানো হয়, যাতে ডেলিভারিতে কোনো ক্ষতি না হয়।'),
   },
   {
     q: L('Is cash on delivery available?', 'ক্যাশ অন ডেলিভারি সুবিধা আছে কি?'),
     a: L('Yes. You can also pay in advance with bKash or Nagad if you prefer.', 'হ্যাঁ। চাইলে বিকাশ বা নগদে আগেও পেমেন্ট করতে পারেন।'),
   },
   {
-    q: L('Will my phone number and address stay private?', 'আমার ফোন নম্বর ও ঠিকানা কি গোপন থাকবে?'),
+    q: L('Is my contact information kept safe?', 'আমার ফোন নম্বর ও ঠিকানা কি নিরাপদ থাকবে?'),
     a: L('Your details are used only for delivery and are never shared with anyone.', 'আপনার তথ্য শুধু ডেলিভারির জন্য ব্যবহার হয়, কারো সাথে শেয়ার করা হয় না।'),
   },
   {

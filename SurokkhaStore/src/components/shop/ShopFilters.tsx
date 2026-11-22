@@ -23,18 +23,18 @@ interface Props {
 
 const optionClass = (active: boolean) =>
   `flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
-    active ? 'border-primary bg-secondary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:bg-secondary'
+    active ? 'border-primary bg-secondary font-semibold text-zinc-950' : 'border-transparent text-zinc-900 hover:bg-secondary'
   }`
 
 // Filter panel shared by the desktop sidebar and the mobile sheet
 export const ShopFilters = ({ categories, total, category, minPrice, maxPrice, priceBounds, onCategory, onPrice, onReset }: Props) => (
   <div className="space-y-4">
-    <Button type="button" variant="outline" className="w-full" onClick={onReset}>
+    <Button type="button" variant="outline" className="w-full border-zinc-700 text-zinc-950 font-semibold" onClick={onReset}>
       {L('Reset all filters', 'সব ফিল্টার রিসেট')}
     </Button>
 
-    <section className="rounded-2xl border border-border bg-card p-4">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-foreground">{L('Categories', 'ক্যাটাগরি')}</h2>
+    <section className="rounded-2xl border border-zinc-300 bg-card p-4">
+      <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-950">{L('Categories', 'ক্যাটাগরি')}</h2>
       <div className="space-y-1">
         <button type="button" className={optionClass(category === 'all')} onClick={() => onCategory('all')}>
           <span>{L('All products', 'সব প্রোডাক্ট')}</span>
@@ -50,8 +50,8 @@ export const ShopFilters = ({ categories, total, category, minPrice, maxPrice, p
     </section>
 
     {priceBounds[1] > priceBounds[0] && (
-      <section className="rounded-2xl border border-border bg-card p-4">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-foreground">{L('Price', 'মূল্য')}</h2>
+      <section className="rounded-2xl border border-zinc-300 bg-card p-4">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-950">{L('Price', 'মূল্য')}</h2>
         <div className="flex items-center gap-2">
           <Input
             type="number"
@@ -60,9 +60,10 @@ export const ShopFilters = ({ categories, total, category, minPrice, maxPrice, p
             value={minPrice}
             placeholder={`৳${priceBounds[0]}`}
             aria-label={L('Minimum price', 'সর্বনিম্ন মূল্য')}
+            className="border-zinc-700 text-zinc-950 placeholder:text-zinc-700"
             onChange={(e) => onPrice(e.target.value, maxPrice)}
           />
-          <span className="text-muted-foreground">–</span>
+          <span className="text-zinc-950 font-bold">–</span>
           <Input
             type="number"
             inputMode="numeric"
@@ -70,6 +71,7 @@ export const ShopFilters = ({ categories, total, category, minPrice, maxPrice, p
             value={maxPrice}
             placeholder={`৳${priceBounds[1]}`}
             aria-label={L('Maximum price', 'সর্বোচ্চ মূল্য')}
+            className="border-zinc-700 text-zinc-950 placeholder:text-zinc-700"
             onChange={(e) => onPrice(minPrice, e.target.value)}
           />
         </div>

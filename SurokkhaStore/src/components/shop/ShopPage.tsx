@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { ShopFilters } from '@/components/shop/ShopFilters'
+import { HomeHero } from '@/components/home/HomeHero'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
@@ -84,39 +85,37 @@ export const ShopPage = () => {
   )
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
-      <h1 className="font-display text-3xl font-bold md:text-4xl">{L('Shop', 'শপ')}</h1>
-
-      <div className="mt-6 flex flex-col gap-3 border-b border-border pb-5 md:flex-row md:items-center md:justify-between">
-        {!loading && !error && (
-          <p className="text-sm font-semibold text-muted-foreground">
-            {L('Showing', 'প্রদর্শিত হচ্ছে')} <strong className="text-foreground">{bn(list.length)}</strong> {L('products', 'টি প্রোডাক্ট')}
-          </p>
-        )}
-        <div className="flex flex-1 items-center gap-3 md:max-w-xl md:justify-end">
-          <Input
-            type="search"
-            value={query}
-            placeholder={L('Search products', 'প্রোডাক্ট খুঁজুন')}
-            aria-label={L('Search products', 'প্রোডাক্ট খুঁজুন')}
-            className="h-10 flex-1"
-            onChange={(e) => update({ q: e.target.value })}
-          />
-          <select
-            value={sort}
-            aria-label={L('Sort', 'সাজান')}
-            className="h-10 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground"
-            onChange={(e) => update({ sort: e.target.value })}
-          >
-            <option value="default">{L('Default', 'ডিফল্ট')}</option>
-            <option value="price-asc">{L('Price: low to high', 'দাম: কম থেকে বেশি')}</option>
-            <option value="price-desc">{L('Price: high to low', 'দাম: বেশি থেকে কম')}</option>
-          </select>
-          <Button type="button" variant="outline" className="h-10 lg:hidden" onClick={() => setFiltersOpen(true)}>
-            <SlidersHorizontal className="h-4 w-4" />
-            {L('Filters', 'ফিল্টার')}
-          </Button>
-        </div>
+    <>
+      <HomeHero />
+      <div id="featured" className="mx-auto max-w-7xl px-4 py-6 md:py-10">
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-zinc-300 pb-5 sm:flex-nowrap sm:gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="h-10 shrink-0 border-zinc-700 bg-white text-zinc-950 font-semibold hover:bg-zinc-100 lg:hidden"
+          onClick={() => setFiltersOpen(true)}
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          {L('Filters', 'ফিল্টার')}
+        </Button>
+        <Input
+          type="search"
+          value={query}
+          placeholder={L('Search products', 'প্রোডাক্ট খুঁজুন')}
+          aria-label={L('Search products', 'প্রোডাক্ট খুঁজুন')}
+          className="h-10 min-w-[140px] flex-1 border-zinc-700 bg-white text-zinc-950 placeholder:text-zinc-700"
+          onChange={(e) => update({ q: e.target.value })}
+        />
+        <select
+          value={sort}
+          aria-label={L('Sort', 'সাজান')}
+          className="h-10 shrink-0 rounded-md border border-zinc-700 bg-white px-3 text-sm font-semibold text-zinc-950"
+          onChange={(e) => update({ sort: e.target.value })}
+        >
+          <option value="default">{L('Default', 'ডিফল্ট')}</option>
+          <option value="price-asc">{L('Price: low to high', 'দাম: কম থেকে বেশি')}</option>
+          <option value="price-desc">{L('Price: high to low', 'দাম: বেশি থেকে কম')}</option>
+        </select>
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-4">
@@ -165,5 +164,6 @@ export const ShopPage = () => {
         </SheetContent>
       </Sheet>
     </div>
+    </>
   )
 }

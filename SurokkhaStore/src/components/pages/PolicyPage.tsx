@@ -74,7 +74,7 @@ const POLICIES_EN: Record<'terms' | 'privacy' | 'refund', Policy> = {
       {
         title: 'Products',
         paragraphs: [
-          'All products are genuine and sealed in the manufacturer’s packaging. Barrier contraceptives greatly reduce the risk of pregnancy and many infections, but no method is 100% effective. Always follow the instructions on the pack.',
+          'All products are genuine, sealed in the manufacturer’s packaging, and compliant with quality standards. Always follow the instructions on the pack.',
         ],
       },
       {
@@ -104,7 +104,7 @@ const POLICIES_EN: Record<'terms' | 'privacy' | 'refund', Policy> = {
   refund: {
     title: 'Return & Refund Policy',
     intro:
-      'Every order is confirmed with you before we send it. Because these are intimate-care products, returns are limited and must be approved by us first.',
+      'Every order is confirmed with you before we send it. Because these are personal wellness products, returns are limited and must be approved by us first.',
     sections: [
       {
         title: 'Returns must be verified by us first',
@@ -207,7 +207,7 @@ const POLICIES_BN: Record<'terms' | 'privacy' | 'refund', Policy> = {
       {
         title: 'প্রোডাক্ট',
         paragraphs: [
-          'সব পণ্য আসল এবং প্রস্তুতকারকের সিল করা প্যাকেটে থাকে। বেরিয়ার কন্ট্রাসেপ্টিভ গর্ভধারণ ও অনেক সংক্রমণের ঝুঁকি অনেকটা কমায়, তবে কোনো পদ্ধতিই ১০০% কার্যকর নয়। সবসময় প্যাকের নির্দেশনা মেনে চলুন।',
+          'সব পণ্য আসল, প্রস্তুতকারকের সিল করা প্যাকেটে থাকে এবং আন্তর্জাতিক মান অনুযায়ী পরীক্ষিত। সবসময় প্যাকের নির্দেশনা মেনে চলুন।',
         ],
       },
       {

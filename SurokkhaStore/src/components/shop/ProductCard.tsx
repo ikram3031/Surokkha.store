@@ -63,14 +63,14 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       {/* Fixed-height title block + mt-auto footer keeps every card the same height, whatever the name length */}
       <CardContent className="flex flex-1 flex-col p-3 sm:p-4">
-        <p className="truncate text-xs text-muted-foreground">{catLabel[product.cat]}</p>
-        <h3 className="mt-1 line-clamp-2 min-h-[2.5em] font-product text-sm font-medium leading-tight sm:text-[15px]" title={product.name}>
+        <p className="truncate text-xs font-medium text-zinc-800">{catLabel[product.cat]}</p>
+        <h3 className="mt-1 line-clamp-2 min-h-[2.5em] font-product text-sm font-semibold leading-snug text-zinc-950 sm:text-[15px]" title={product.name}>
           {product.name}
         </h3>
         <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <span className="flex min-w-0 items-baseline gap-x-2">
-            <span className="font-display text-lg font-bold text-price">{taka(product.price)}</span>
-            {onSale && <s className="truncate text-sm text-muted-foreground">{taka(product.regularPrice!)}</s>}
+          <span className="flex min-w-0 items-baseline gap-x-2 tabular-nums">
+            <span className="font-product text-lg font-bold text-zinc-950">{taka(product.price)}</span>
+            {onSale && <s className="truncate font-product text-sm font-semibold text-zinc-800 line-through decoration-red-600 decoration-2">{taka(product.regularPrice!)}</s>}
           </span>
           <Button
             size="icon"

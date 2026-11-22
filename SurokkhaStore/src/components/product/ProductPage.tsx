@@ -92,8 +92,9 @@ export function ProductPage({ slug }: { slug: string }) {
       .catch(() => getItem<unknown>(slug))
       .then((res) => {
         const raw = unwrapOne(res)
-        if (!raw) throw new Error('not found')
+        if (!raw || raw.isActive === false) throw new Error('not found')
         const mapped = mapApiProduct(raw)
+        if (mapped.inStock === false) throw new Error('not found')
         if (cancelled) return
         setProduct(mapped)
         document.title = withSite(L(`Buy ${mapped.name} online in Bangladesh`, `${mapped.name} কিনুন অনলাইনে`))
@@ -207,7 +208,7 @@ export function ProductPage({ slug }: { slug: string }) {
         <div className="mt-4 flex items-baseline gap-3">
           <span className="font-display text-3xl font-bold text-primary">{taka(product.price)}</span>
           {hasDiscount && (
-            <span className="text-lg text-muted-foreground line-through">{taka(product.regularPrice!)}</span>
+            <span className="text-lg font-semibold text-zinc-800 line-through decoration-red-600 decoration-2">{taka(product.regularPrice!)}</span>
           )}
         </div>
 
@@ -229,12 +230,12 @@ export function ProductPage({ slug }: { slug: string }) {
 
         {product.descHtml ? (
           <div
-            className="mt-4 leading-relaxed text-muted-foreground [&_li]:mb-1 [&_p:empty]:hidden [&_p]:mb-2 [&_strong]:text-foreground [&_ul]:list-disc [&_ul]:pl-5"
+            className="mt-4 text-base leading-relaxed text-zinc-900 [&_li]:mb-1.5 [&_p:empty]:hidden [&_p]:mb-2 [&_strong]:text-zinc-950 [&_ul]:list-disc [&_ul]:pl-5"
             // Admin-authored HTML from our own StoreWeb API, same as longDescription below
             dangerouslySetInnerHTML={{ __html: product.descHtml }}
           />
         ) : (
-          product.desc && <p className="mt-4 leading-relaxed text-muted-foreground">{product.desc}</p>
+          product.desc && <p className="mt-4 text-base leading-relaxed text-zinc-900">{product.desc}</p>
         )}
 
         <div className="mt-6 flex items-center gap-4">
@@ -286,9 +287,9 @@ export function ProductPage({ slug }: { slug: string }) {
           </Button>
         </div>
 
-        <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
+        <ul className="mt-6 space-y-2 text-sm text-zinc-900">
           <li className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-primary" />{L('100% discreet packaging, no branding', '১০০% গোপনীয় প্যাকেজিং, কোনো ব্র্যান্ডিং নেই')}
+            <ShieldCheck className="h-4 w-4 text-primary" />{L('Safe & secure packaging', 'নিরাপদ ও প্রিমিয়াম প্যাকেজিং')}
           </li>
           <li className="flex items-center gap-2">
             <Truck className="h-4 w-4 text-primary" />
@@ -320,7 +321,7 @@ export function ProductPage({ slug }: { slug: string }) {
             <h2 className="font-display text-xl font-bold tracking-tight md:text-2xl">
               {L('Recently Viewed Products', 'সম্প্রতি দেখা প্রোডাক্ট')}
             </h2>
-            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+            <p className="mt-1 text-sm text-zinc-900 sm:text-base">
               {L('Products you checked out recently.', 'আপনি সম্প্রতি যে প্রোডাক্টগুলো দেখেছেন।')}
             </p>
           </div>
@@ -341,8 +342,8 @@ export function ProductPage({ slug }: { slug: string }) {
             <h2 className="font-display text-xl font-bold tracking-tight md:text-2xl">
               {L('More Products', 'আরও প্রোডাক্ট')}
             </h2>
-            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-              {L('Explore more discreet essentials and active offers.', 'আরও প্রোডাক্ট ও চলমান অফারগুলো দেখুন।')}
+            <p className="mt-1 text-sm text-zinc-900 sm:text-base">
+              {L('Explore more wellness essentials and active offers.', 'আরও প্রোডাক্ট ও চলমান অফারগুলো দেখুন।')}
             </p>
           </div>
           <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={() => navigate('/shop')}>

@@ -21,7 +21,7 @@ function loadCatalog(): Promise<Product[]> {
         ...(itemsRes.status === 'fulfilled' ? unwrapList<ApiProduct>(itemsRes.value) : []),
       ]
       const seen = new Set<string>()
-      return raw
+      const mapped = raw
         .filter((p) => p.isActive !== false)
         .map(mapApiProduct)
         .filter((p) => p.inStock !== false)
@@ -31,6 +31,23 @@ function loadCatalog(): Promise<Product[]> {
           seen.add(key)
           return true
         })
+
+      // Dynamically calculate 30-pcs combo regularPrice from the 3 individual 10-pcs MO packs if available
+      const mo10Packs = mapped.filter((p) => {
+        const text = `${p.slug || ''} ${p.name || ''}`.toLowerCase()
+        return text.includes('mo') && /\b10\b/.test(text) && !text.includes('combo') && !text.includes('30')
+      })
+      if (mo10Packs.length >= 3) {
+        const sum30Regular = mo10Packs.slice(0, 3).reduce((sum, p) => sum + Number(p.regularPrice || p.price || 0), 0)
+        mapped.forEach((p) => {
+          const text = `${p.slug || ''} ${p.name || ''}`.toLowerCase()
+          if (text.includes('30') && (text.includes('combo') || text.includes('3-in-1')) && sum30Regular > p.price) {
+            p.regularPrice = sum30Regular
+          }
+        })
+      }
+
+      return mapped
     },
   )
   return inflight

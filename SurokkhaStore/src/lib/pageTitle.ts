@@ -3,7 +3,7 @@ import type { Route } from '@/lib/router'
 
 const SITE = () => L('Surokkha Store', 'সুরক্ষা স্টোর')
 
-export const HOME_TITLE = 'সুরক্ষা স্টোর | অরিজিনাল হেলথ ও ওয়েলনেস প্রোডাক্ট, গোপনীয় হোম ডেলিভারি'
+export const HOME_TITLE = 'সুরক্ষা স্টোর | অরিজিনাল হেলথ ও ওয়েলনেস প্রোডাক্ট'
 
 // Builds "<page> | <site>" for any page title
 export const withSite = (page: string) => `${page} | ${SITE()}`
