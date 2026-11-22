@@ -4,7 +4,7 @@ import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from '../asset/surokkha_logo_dark.png';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICTS } from '../data/districts';
-import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase } from '../utils/analytics';
+import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage } from '../utils/analytics';
 
 const OFFER = {
   did: 'd5a81e97721c8101',
@@ -58,6 +58,9 @@ const phoneWrongSoFar = (v) => {
   return !/^0(1([3-9]\d{0,8})?)?$/.test(p);
 };
 
+const SPAM_PHONE_MSG = 'আপনার এই নম্বরটি আমাদের স্প্যাম লিস্টে আছে। দয়া করে আমাদের সাথে যোগাযোগ করুন।';
+const FAKE_PHONE_MSG = 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।';
+
 // Builds a WhatsApp chat link with a prefilled message
 const waLink = (text) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 
@@ -108,13 +111,17 @@ const SpecialOfferView = () => {
   const [errors, setErrors] = useState({});
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState('');
+  const [blockedPhone, setBlockedPhone] = useState(null);
   const [success, setSuccess] = useState(null);
   const [showSticky, setShowSticky] = useState(false);
   const startedRef = useRef(false);
+  const cartedRef = useRef(false);
   const heroRef = useRef(null);
   const orderRef = useRef(null);
   const fieldRefs = useRef({});
   const touchedRef = useRef({});
+
+  const phoneBlocked = blockedPhone && blockedPhone.phone === cleanPhone(form.phone) ? blockedPhone : null;
 
   const addonTotal = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.price, 0);
   const addonPcs = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.pcs, 0);
@@ -125,6 +132,7 @@ const SpecialOfferView = () => {
   const waOrderLink = useMemo(() => waLink(`আমি MO Smart Pack (১৮ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
 
   useEffect(() => {
+    trackSitePage('special-offer');
     track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: OFFER.offerPrice, currency: 'BDT' });
   }, []);
 
@@ -145,9 +153,23 @@ const SpecialOfferView = () => {
     if (delta > 0) track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
   };
 
+  // Asks the backend whether a complete phone number is on the spam / fake list
+  const checkPhoneListed = async (raw) => {
+    const phone = cleanPhone(raw);
+    if (!FIELD_OK.phone(phone)) return;
+    try {
+      const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
+      const res = await fetch(`${base}/api/v1/orders/check-phone?phone=${encodeURIComponent(phone.slice(-10))}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.isFake) setBlockedPhone({ phone, message: json.isSpam ? SPAM_PHONE_MSG : FAKE_PHONE_MSG });
+    } catch (_) { return; }
+  };
+
   // Updates one form field and re-checks it live once touched, or at once for a wrong phone prefix
   const setField = (k, v) => {
     setForm((prev) => ({ ...prev, [k]: v }));
+    if (k === 'phone') checkPhoneListed(v);
     if (!FIELD_OK[k]) return;
     const bad = touchedRef.current[k] ? !FIELD_OK[k](v) : k === 'phone' && phoneWrongSoFar(v);
     if (bad !== !!errors[k]) setErrors((prev) => ({ ...prev, [k]: bad }));
@@ -158,6 +180,13 @@ const SpecialOfferView = () => {
     touchedRef.current[k] = true;
     const bad = !FIELD_OK[k](form[k]);
     if (bad !== !!errors[k]) setErrors((prev) => ({ ...prev, [k]: bad }));
+  };
+
+  // Fires AddToCart for the main pack the first time any order button is pressed
+  const onOrderClick = () => {
+    if (cartedRef.current) return;
+    cartedRef.current = true;
+    track('AddToCart', { value: OFFER.offerPrice, currency: 'BDT', content_ids: [OFFER.did], content_name: OFFER.name, content_type: 'product' });
   };
 
   // Fires InitiateCheckout the first time the form gets focus
@@ -177,6 +206,7 @@ const SpecialOfferView = () => {
       address: form.address.trim(),
     };
     const bad = Object.fromEntries(Object.keys(FIELD_OK).map((k) => [k, !FIELD_OK[k](form[k])]));
+    if (phoneBlocked) bad.phone = true;
     Object.keys(FIELD_OK).forEach((k) => { touchedRef.current[k] = true; });
     setErrors(bad);
     const first = Object.keys(bad).find((k) => bad[k]);
@@ -244,6 +274,11 @@ const SpecialOfferView = () => {
         body: JSON.stringify(payload),
       });
       const json = await res.json().catch(() => null);
+      if (res.status === 403 && json?.code === 'CONTACT_REQUIRED') {
+        setBlockedPhone({ phone: v.phone, message: SPAM_PHONE_MSG });
+        fieldRefs.current.phone?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       if (!res.ok) throw new Error(json?.errors?.join(', ') || json?.message || `HTTP ${res.status}`);
       const orderNumber = String(json?.data?.orderNumber || json?.data?.id || json?.orderNumber || '').trim();
       if (orderNumber) {
@@ -311,7 +346,7 @@ const SpecialOfferView = () => {
               </div>
 
               <div className="ctas">
-                <a href="#order" className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
+                <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
                 <a href="#inside" className="btn btn-ghost">বক্সে কী আছে দেখুন</a>
               </div>
 
@@ -479,10 +514,10 @@ const SpecialOfferView = () => {
                     <input id="fName" ref={reg('name')} onBlur={() => onFieldBlur('name')} autoComplete="name" placeholder="যেমন: রাকিব হাসান" value={form.name} onChange={(e) => setField('name', e.target.value)} />
                     <div className="msg">আপনার নাম লিখুন</div>
                   </div>
-                  <div className={`field${errors.phone ? ' err' : ''}`}>
+                  <div className={`field${errors.phone || phoneBlocked ? ' err' : ''}`}>
                     <label htmlFor="fPhone">মোবাইল নম্বর <em>*</em></label>
                     <input id="fPhone" ref={reg('phone')} onBlur={() => onFieldBlur('phone')} type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={14} value={form.phone} onChange={(e) => setField('phone', e.target.value)} />
-                    <div className="msg">সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (01 দিয়ে শুরু)</div>
+                    <div className="msg">{phoneBlocked ? phoneBlocked.message : 'সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (01 দিয়ে শুরু)'}</div>
                   </div>
                   <div className={`field${errors.email ? ' err' : ''}`}>
                     <label htmlFor="fEmail">ইমেইল <em>*</em></label>
@@ -539,7 +574,7 @@ const SpecialOfferView = () => {
             <h2>৩ ধরনের MO, ১৮ পিস, মাত্র <span>৳৭২০</span></h2>
             <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · গোপনীয় প্যাকেজিং</p>
             <div className="ctas">
-              <a href="#order" className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
+              <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
               <a href={waOrderLink} target="_blank" rel="noopener noreferrer" className="btn btn-wa"><IconWa />WhatsApp-এ অর্ডার</a>
             </div>
           </div>
@@ -558,7 +593,7 @@ const SpecialOfferView = () => {
 
       <div className={`sticky${showSticky ? ' show' : ''}`}>
         <div className="sp"><b>৳৭২০</b><small><s>৳৮১০</s> ফ্রি ডেলিভারি</small></div>
-        <a href="#order" className="btn btn-primary">অর্ডার করুন</a>
+        <a href="#order" onClick={onOrderClick} className="btn btn-primary">অর্ডার করুন</a>
       </div>
 
       <div className={`modal${success ? ' show' : ''}`} role="dialog" aria-modal="true" aria-labelledby="okTitle" onClick={(e) => { if (e.target === e.currentTarget) setSuccess(null); }}>
