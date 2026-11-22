@@ -4,7 +4,7 @@ import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from '../asset/surokkha_logo_dark.png';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICTS } from '../data/districts';
-import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents } from '../utils/analytics';
+import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, saveCheckoutLead, resetCheckoutSession } from '../utils/analytics';
 
 const OFFER = {
   did: 'd5a81e97721c8101',
@@ -140,6 +140,39 @@ const SpecialOfferView = () => {
   const sub = qty * OFFER.offerPrice + addonTotal;
   const save = qty * (OFFER.regularPrice - OFFER.offerPrice) + NORMAL_DELIVERY;
   const total = sub;
+
+  // Keeps what the customer has typed so an abandoned checkout is saved, like the main checkout does
+  const leadRef = useRef(null);
+  const submittingRef = useRef(false);
+  leadRef.current = () => ({
+    fullName: form.name.trim(),
+    phone: cleanPhone(form.phone),
+    email: form.email.trim(),
+    address: form.address.trim(),
+    district: form.district,
+    thana: '',
+    cartTotal: total,
+    items: [
+      { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice },
+      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
+    ],
+  });
+  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, qty, addonQty]);
+  useEffect(() => {
+    if (!form.name.trim() && !form.phone.trim() && !form.email.trim()) return undefined;
+    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 2000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leadSig]);
+  useEffect(() => {
+    const flush = () => {
+      if (submittingRef.current) return;
+      const lead = leadRef.current();
+      if (lead.phone || lead.fullName || lead.email) saveCheckoutLead(lead, true);
+    };
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
+  }, []);
 
   const waOrderLink = useMemo(() => waLink(`আমি MO Smart Pack (১৮ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
 
@@ -287,6 +320,7 @@ const SpecialOfferView = () => {
       createdAt: nowIso,
     };
     setSending(true);
+    submittingRef.current = true;
     try {
       const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
       const res = await fetch(`${base}/api/v1/orders/new-order`, {
@@ -320,6 +354,7 @@ const SpecialOfferView = () => {
       }
       setSuccess({ phone: v.phone, orderNumber });
       setForm(EMPTY_FORM);
+      resetCheckoutSession();
       touchedRef.current = {};
       setQty(1);
       setAddonQty({ white: 0, pink: 0, blue: 0 });
@@ -327,6 +362,7 @@ const SpecialOfferView = () => {
       setFailed(fallbackLink(v));
     } finally {
       setSending(false);
+      submittingRef.current = false;
     }
   };
 
