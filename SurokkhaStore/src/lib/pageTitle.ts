@@ -3,7 +3,7 @@ import type { Route } from '@/lib/router'
 
 const SITE = () => L('Surokkha Store', 'সুরক্ষা স্টোর')
 
-export const HOME_TITLE = 'কনডম ও লুব্রিকেন্ট অনলাইনে কিনুন বাংলাদেশে | সুরক্ষা স্টোর'
+export const HOME_TITLE = 'সুরক্ষা স্টোর | অরিজিনাল হেলথ ও ওয়েলনেস প্রোডাক্ট, গোপনীয় হোম ডেলিভারি'
 
 // Builds "<page> | <site>" for any page title
 export const withSite = (page: string) => `${page} | ${SITE()}`
@@ -15,7 +15,7 @@ export const staticRouteTitle = (route: Route): string | null => {
     case 'home-classic':
       return HOME_TITLE
     case 'shop':
-      return withSite(L('Shop all condoms, lubricants and wellness products', 'সব কনডম, লুব্রিকেন্ট ও ওয়েলনেস প্রোডাক্ট কিনুন'))
+      return withSite(L('Shop all health and wellness products', 'সব হেলথ ও ওয়েলনেস প্রোডাক্ট'))
     case 'offer':
     case 'offers':
       return withSite(L('Combo offers and discount deals', 'কম্বো অফার ও ডিসকাউন্ট ডিল'))
