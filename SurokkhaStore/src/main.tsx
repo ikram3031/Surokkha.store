@@ -7,13 +7,19 @@ import { loadSiteConfig } from '@/lib/siteConfig'
 // after the timeout the app renders and picks the config up as soon as it arrives.
 const SITE_CONFIG_TIMEOUT_MS = 1500
 
-// /special-offer is a standalone campaign page: it loads alone, without the app or its global styles
-const isSpecialOffer = window.location.pathname.replace(/\/$/, '') === '/special-offer'
+// Standalone campaign pages load alone, without the main app or global styles
+const pathname = window.location.pathname.replace(/\/$/, '')
+const isSpecialOffer = pathname === '/special-offer'
+const isThreeInOne = pathname === '/3-in-1'
 
 const loadRoot = async (): Promise<ComponentType> => {
   if (isSpecialOffer) {
     // @ts-ignore -- plain JSX page shared with SurokkhaShop, no type declarations
     return (await import('./special-offer/SpecialOfferView.jsx')).default as ComponentType
+  }
+  if (isThreeInOne) {
+    // @ts-ignore -- plain JSX page, no type declarations
+    return (await import('./three-in-one/ThreeInOneView.jsx')).default as ComponentType
   }
   const [app] = await Promise.all([import('./App.tsx'), import('./index.css')])
   return app.default

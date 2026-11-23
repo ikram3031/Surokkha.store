@@ -54,7 +54,7 @@ const NAV_EVENT = 'surokkha:navigate'
 export const blogPath = (slug?: string) => (slug ? `/blog/${encodeURIComponent(slug)}` : '/blog')
 
 // Standalone pages that main.tsx mounts outside the app, so they need a full page load
-const STANDALONE_PATHS = ['/special-offer']
+const STANDALONE_PATHS = ['/special-offer', '/3-in-1']
 
 // True when the path points to a standalone page the in-app router cannot render
 const isStandalonePath = (path: string) => STANDALONE_PATHS.includes(path.split(/[?#]/)[0].replace(/\/$/, ''))
