@@ -1,6 +1,6 @@
 const items = [
   {
-    title: L('Discreet packaging', 'গোপনীয় প্যাকেজিং'),
+    title: L('Secure packaging', 'নিরাপদ প্যাকেজিং'),
     desc: L('Nothing on the pack gives away the product.', 'প্যাকেটে পণ্যের কোনো পরিচয় থাকে না।'),
     path: 'M20 7.5 12 3 4 7.5v9L12 21l8-4.5v-9ZM4 7.5l8 4.5 8-4.5M12 12v9',
   },

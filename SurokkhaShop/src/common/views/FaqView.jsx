@@ -14,8 +14,8 @@ const FaqView = () => {
   const faqs = [
     {
       category: 'delivery',
-      question: 'Is the packaging 100% discreet? Will anyone know what is inside?',
-      answer: 'Yes, absolutely! Every order is dispatched inside a completely plain, unbranded box or opaque poly envelope with zero sensitive descriptions, product names, or branding. The courier rider and family members will have zero indication of what is inside.'
+      question: 'How is my order packaged for delivery?',
+      answer: 'Every order is dispatched inside a sturdy outer carton or sealed poly envelope, packed carefully so the contents stay protected and arrive intact.'
     },
     {
       category: 'delivery',
@@ -90,7 +90,7 @@ const FaqView = () => {
             Frequently Asked Questions
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-rose-100/70 max-w-xl mx-auto">
-            Everything you need to know about discreet packaging, nationwide delivery, products, and ordering.
+            Everything you need to know about packaging, nationwide delivery, products, and ordering.
           </p>
         </div>
       </div>

@@ -17,14 +17,14 @@ const steps = [
   },
 ]
 
-/** Band explaining the discreet delivery in three steps. */
+/** Band explaining the delivery process in three steps. */
 export function DeliverySteps() {
   return (
     <section id="delivery" className="scroll-mt-20 bg-background py-16 text-foreground md:py-24">
       <div className="mx-auto max-w-7xl px-4">
         <SectionHeading
-          title={L('How private delivery works', 'গোপনীয় ডেলিভারি যেভাবে হয়')}
-          subtitle={L('From checkout to your door, nobody else needs to know what you ordered.', 'অর্ডার থেকে দরজা পর্যন্ত, আপনি কী অর্ডার করেছেন তা আর কেউ জানবে না।')}
+          title={L('How delivery works', 'ডেলিভারি যেভাবে হয়')}
+          subtitle={L('From checkout to your door, three simple steps.', 'অর্ডার থেকে দরজা পর্যন্ত, সহজ তিনটি ধাপ।')}
         />
 
         <ol className="mt-12 grid gap-8 md:grid-cols-3">

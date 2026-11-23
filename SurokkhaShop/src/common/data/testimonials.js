@@ -17,7 +17,7 @@ export const testimonials = [
     date: '2026-03-18',
     verified: true,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80',
-    comment: 'The discreet packaging was completely plain and unlabelled. Received in Dhaka within 24 hours. Premium authentic healthcare essentials and outstanding quality.',
+    comment: 'The packaging was sturdy and well sealed. Received in Dhaka within 24 hours. Premium authentic healthcare essentials and outstanding quality.',
     comment_bn: 'প্যাকেজিং একদম সাধারণ ও পরিচ্ছন্ন ছিল, বাইরের বক্সে পণ্যের কোনো নাম বা বিবরণ ছিল না। ঢাকায় মাত্র ২৪ ঘণ্টার মধ্যে ডেলিভারি পেয়েছি। আসল MO পণ্যের কোয়ালিটি সত্যিই চমৎকার।'
   },
   {
@@ -82,7 +82,7 @@ export const testimonials = [
     verified: true,
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&h=150&q=80',
     comment: 'The delivery rider delivered quietly without asking any unwanted questions. Top grade international quality healthcare essentials. 10/10 service guarantee.',
-    comment_bn: 'রাইডার কোনো অপ্রয়োজনীয় প্রশ্ন ছাড়াই অত্যন্ত বিনয়ের সাথে পার্সেলটি হ্যান্ডওভার করেছেন। ১০০% আন্তর্জাতিক মানের কোয়ালিটি ও ডিসক্রিট ডেলিভারি। ১০/১০ সার্ভিস।'
+    comment_bn: 'রাইডার অত্যন্ত বিনয়ের সাথে সময়মতো পার্সেলটি হ্যান্ডওভার করেছেন। ১০০% আন্তর্জাতিক মানের কোয়ালিটি ও দ্রুত ডেলিভারি। ১০/১০ সার্ভিস।'
   },
   {
     id: 'rev-6',

@@ -52,7 +52,7 @@ window.SB = (() => {
     { id: 'lube', name: 'লুব্রিকেন্ট' },
     { id: 'size', name: 'সাইজ' },
     { id: 'sti', name: 'STI' },
-    { id: 'privacy', name: 'গোপনীয়তা' },
+    { id: 'privacy', name: 'নিরাপদ কেনাকাটা' },
     { id: 'beginner', name: 'নতুনদের জন্য' },
     { id: 'contraception', name: 'গর্ভনিরোধ' },
     { id: 'storage', name: 'সংরক্ষণ' },
@@ -148,21 +148,21 @@ window.SB = (() => {
     },
     {
       slug: 'shop-online-discreetly',
-      title: 'গোপনীয়তা বজায় রেখে অনলাইনে কেনাকাটার উপায়',
-      excerpt: 'দোকানে গিয়ে কিনতে অস্বস্তি? গোপন প্যাকেজিং আর ক্যাশ অন ডেলিভারিতে নিশ্চিন্তে অর্ডার করার গাইড।',
+      title: 'অনলাইনে নিরাপদে কেনাকাটার উপায়',
+      excerpt: 'অর্ডার করার আগে কোন বিষয়গুলো যাচাই করবেন, ক্যাশ অন ডেলিভারিতে নিশ্চিন্তে কেনাকাটার গাইড।',
       cat: 'safety', tags: ['privacy', 'beginner'], date: '2026-09-28', read: 3, pop: 88, g: 4, tone: 'dark',
       body: `
-<p>অনেকেই দোকানে গিয়ে এসব পণ্য কিনতে অস্বস্তি বোধ করেন। অনলাইনে কেনা হতে পারে সহজ ও সম্মানজনক সমাধান, যদি কয়েকটা বিষয় দেখে নেন।</p>
+<p>অনলাইনে স্বাস্থ্য ও সুস্থতার পণ্য কেনা এখন সহজ, তবে অর্ডার করার আগে কয়েকটা বিষয় দেখে নিলে প্রতারিত হওয়ার সম্ভাবনা কমে যায়।</p>
 <h2>যা দেখে অর্ডার করবেন</h2>
 <ul class="checklist">
-<li><strong>গোপন প্যাকেজিং:</strong> বাইরে থেকে ভেতরের পণ্য বোঝা যাবে না</li>
+<li><strong>আসল পণ্য:</strong> ব্র্যান্ডের অনুমোদিত সোর্স ও মেয়াদের তারিখ যাচাই করুন</li>
 <li><strong>ক্যাশ অন ডেলিভারি:</strong> আগে টাকা দেওয়ার ঝুঁকি নেই</li>
 <li><strong>সরাসরি যোগাযোগের মাধ্যম:</strong> প্রশ্ন থাকলে WhatsApp-এ জানা যায়</li>
 <li><strong>অপ্রয়োজনীয় তথ্য চায় না:</strong> শুধু ডেলিভারির জন্য যতটুকু লাগে</li>
 </ul>
 <h2>নিজের দিক থেকে যা করবেন</h2>
 <p>ডেলিভারির সময় নিজে বা বিশ্বস্ত কেউ যেন ফোন ধরতে পারেন, ঠিকানা স্পষ্ট দিন। পণ্য হাতে পেয়ে মেয়াদের তারিখ আর প্যাকেট অক্ষত কিনা দেখে নিন।</p>
-<blockquote>গোপনীয়তা আপনার অধিকার। সংকোচের কিছু নেই।</blockquote>`,
+<blockquote>সঠিক তথ্য জেনে কেনাই সবচেয়ে বুদ্ধিমান সিদ্ধান্ত।</blockquote>`,
     },
     {
       slug: 'which-lubricant-is-safe',
@@ -340,7 +340,7 @@ window.SB = (() => {
   };
 
   /* ───────── CTA ব্লক ───────── */
-  const benefits = ['গোপন প্যাকেজিং', 'ক্যাশ অন ডেলিভারি', 'bKash / Nagad পেমেন্ট', 'WhatsApp-এ সরাসরি সাহায্য'];
+  const benefits = ['নিরাপদ প্যাকেজিং', 'ক্যাশ অন ডেলিভারি', 'bKash / Nagad পেমেন্ট', 'WhatsApp-এ সরাসরি সাহায্য'];
   const cta = (variant = 'end', ctx = '') => {
     const msg = ctx ? `আসসালামু আলাইকুম, "${ctx}" লেখাটা পড়ে অর্ডার করতে চাই।` : '';
     if (variant === 'inline') {
@@ -349,7 +349,7 @@ window.SB = (() => {
           <div>
             <p class="text-xs font-semibold uppercase tracking-wider text-primary">সুরক্ষা শপ</p>
             <p class="font-display mt-1 text-xl font-bold leading-snug">নিরাপদ থাকতে ঠিক পণ্যটা হাতের কাছে রাখুন</p>
-            <p class="mt-1 text-sm text-muted-foreground">গোপন প্যাকেজিংয়ে ঘরে বসে অর্ডার, ক্যাশ অন ডেলিভারি।</p>
+            <p class="mt-1 text-sm text-muted-foreground">নিরাপদ প্যাকেজিংয়ে ঘরে বসে অর্ডার, ক্যাশ অন ডেলিভারি।</p>
           </div>
           <a href="${SITE.shop}" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:scale-105 active:scale-95">পণ্য দেখুন ${icon('arrow', 'h-4 w-4')}</a>
         </div></aside>`;
@@ -377,7 +377,7 @@ window.SB = (() => {
   const header = () => `
 <div class="bg-primary text-primary-foreground">
   <p class="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-0.5 px-4 py-2 text-center text-xs font-medium sm:text-sm">
-    <span class="inline-flex items-center gap-1.5">${icon('lock', 'h-3.5 w-3.5')} গোপন প্যাকেজিং</span>
+    <span class="inline-flex items-center gap-1.5">${icon('lock', 'h-3.5 w-3.5')} নিরাপদ প্যাকেজিং</span>
     <span class="inline-flex items-center gap-1.5">${icon('truck', 'h-3.5 w-3.5')} ক্যাশ অন ডেলিভারি</span>
   </p>
 </div>
@@ -480,7 +480,7 @@ window.SB = (() => {
   <section class="relative overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground">
     <span class="floaty pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10"></span>
     <p class="relative text-xs font-semibold uppercase tracking-wider opacity-80">সুরক্ষা শপ</p>
-    <p class="font-display relative mt-1 text-xl font-bold leading-snug">গোপন প্যাকেজিংয়ে, ক্যাশ অন ডেলিভারি</p>
+    <p class="font-display relative mt-1 text-xl font-bold leading-snug">নিরাপদ প্যাকেজিংয়ে, ক্যাশ অন ডেলিভারি</p>
     <a href="${SITE.shop}" class="relative mt-4 flex h-12 items-center justify-center gap-2 rounded-full bg-card font-bold text-primary transition hover:scale-[1.03] active:scale-95">পণ্য দেখুন ${icon('arrow', 'h-4 w-4')}</a>
     <a href="${waLink()}" target="_blank" rel="noopener" class="relative mt-2 flex h-11 items-center justify-center gap-2 rounded-full border border-white/40 text-sm font-semibold transition hover:bg-white/10">${icon('chat', 'h-4 w-4')} WhatsApp-এ অর্ডার</a>
   </section>

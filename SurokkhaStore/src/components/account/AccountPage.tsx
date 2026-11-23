@@ -235,7 +235,7 @@ export function AccountPage() {
 
   const heading: Record<View, { title: string; sub: string }> = {
     login: { title: L('Welcome back', 'আবার স্বাগতম'), sub: L('Log in to your Surokkha account.', 'আপনার সুরক্ষা অ্যাকাউন্টে লগইন করুন।') },
-    signup: { title: L('Create your account', 'অ্যাকাউন্ট তৈরি করুন'), sub: L('Quick to set up, and your details stay private.', 'দ্রুত তৈরি করুন, আপনার তথ্য গোপন থাকবে।') },
+    signup: { title: L('Create your account', 'অ্যাকাউন্ট তৈরি করুন'), sub: L('Quick to set up, and your details stay secure.', 'দ্রুত তৈরি করুন, আপনার তথ্য সুরক্ষিত থাকবে।') },
     verify: { title: L('Verify your email', 'ইমেইল যাচাই করুন'), sub: L('Enter the 6-digit code we sent to your email.', 'আপনার ইমেইলে পাঠানো ৬ ডিজিটের কোডটি লিখুন।') },
     forgot: { title: L('Forgot your password?', 'পাসওয়ার্ড ভুলে গেছেন?'), sub: L('Enter your email and we\'ll send you a 6-digit code.', 'আপনার ইমেইল লিখুন, আমরা একটি ৬ ডিজিটের কোড পাঠাব।') },
     reset: { title: L('Reset your password', 'পাসওয়ার্ড রিসেট করুন'), sub: L('Enter the code we emailed you and choose a new password.', 'ইমেইলে পাঠানো কোডটি লিখে নতুন পাসওয়ার্ড দিন।') },
@@ -280,7 +280,7 @@ export function AccountPage() {
           <img src="/surokkha_store_logo_dark.png" alt={L('Surokkha Store', 'সুরক্ষা স্টোর')} className="h-12 w-auto self-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]" />
           <div>
             <p className="font-display text-3xl font-bold leading-snug">{L('Safe today, tomorrow too.', 'আজও নিরাপদ, আগামীকালও।')}</p>
-            <p className="mt-2 max-w-sm text-white/80">{L('Discreet packaging, genuine products and cash on delivery.', 'গোপনীয় প্যাকেজিং, আসল প্রোডাক্ট ও ক্যাশ অন ডেলিভারি।')}</p>
+            <p className="mt-2 max-w-sm text-white/80">{L('Secure packaging, genuine products and cash on delivery.', 'নিরাপদ প্যাকেজিং, আসল প্রোডাক্ট ও ক্যাশ অন ডেলিভারি।')}</p>
           </div>
         </div>
       </aside>

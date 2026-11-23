@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useStore } from '../store/useStore';
 
-// Privacy Policy view outlining user data protection and discreet handling guarantees
+// Privacy Policy view outlining user data protection and order handling guarantees
 const PrivacyView = () => {
   const navigateTo = useStore((state) => state.navigateTo);
 
@@ -44,7 +44,7 @@ const PrivacyView = () => {
             <div>
               <h3 className="font-bold text-emerald-950 text-sm">Our 100% Discretion Guarantee</h3>
               <p className="text-xs text-emerald-800 mt-1">
-                We will never disclose, share, or sell your identity, contact information, or purchasing history. All shipments are packaged in unmarked boxes with zero reference to product names or specific contents.
+                We will never disclose, share, or sell your identity, contact information, or purchasing history. All shipments are packed in sturdy, sealed cartons so your order arrives intact.
               </p>
             </div>
           </div>

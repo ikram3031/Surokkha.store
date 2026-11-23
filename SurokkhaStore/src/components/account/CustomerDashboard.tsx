@@ -50,7 +50,7 @@ const STATUS_META: Record<OrderStatus, { label: string; cls: string; step: numbe
 const TRACK_STEPS = [
   { t: L('Order Placed', 'অর্ডার গ্রহণ'), d: L('We have received your order.', 'আমরা আপনার অর্ডার পেয়েছি।') },
   { t: L('Order Confirmed', 'অর্ডার কনফার্মড'), d: L('Confirmed by phone call with our team.', 'আমাদের টিম ফোনে কনফার্ম করেছে।') },
-  { t: L('Packed Discreetly', 'গোপনীয়ভাবে প্যাক করা'), d: L('Sealed in plain packaging, no product name outside.', 'সাধারণ প্যাকেটে সিল করা, বাইরে পণ্যের নাম নেই।') },
+  { t: L('Packed Securely', 'নিরাপদভাবে প্যাক করা'), d: L('Sealed in sturdy packaging so it arrives intact.', 'মজবুত প্যাকেটে সিল করা, অক্ষত অবস্থায় পৌঁছাবে।') },
   { t: L('Handed to Courier', 'কুরিয়ারে হস্তান্তর'), d: L('Picked up by the courier partner.', 'কুরিয়ার পার্টনার পার্সেল সংগ্রহ করেছে।') },
   { t: L('Out for Delivery', 'ডেলিভারির পথে'), d: L('Rider is on the way to your address.', 'রাইডার আপনার ঠিকানার পথে আছেন।') },
   { t: L('Delivered', 'ডেলিভারি সম্পন্ন'), d: L('Parcel received and payment collected.', 'পার্সেল গ্রহণ ও পেমেন্ট সম্পন্ন হয়েছে।') },
@@ -588,7 +588,7 @@ export function CustomerDashboard({
                       <div className="mt-5 flex items-start gap-3 rounded-xl bg-[#FAF6F0] p-3">
                         <ShieldCheck className="w-5 h-5 text-[#B8955A] shrink-0 mt-0.5" strokeWidth={1.7} />
                         <p className="text-xs text-[#5E4E52] leading-relaxed">
-                          {L('All parcels are packed discreetly with no product name on the outside.', 'সব পার্সেল গোপনীয়ভাবে প্যাক করা হয়, বাইরে পণ্যের কোনো নাম থাকে না।')}
+                          {L('All parcels are packed securely in sturdy sealed cartons.', 'সব পার্সেল মজবুত কার্টনে যত্নসহকারে সিল করে প্যাক করা হয়।')}
                         </p>
                       </div>
                     </div>

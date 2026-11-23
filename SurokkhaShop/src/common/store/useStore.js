@@ -744,7 +744,7 @@ export const useStore = create((set, get) => ({
             expiryDate: p.expiryDate || '',
             tagline: englishTagline || 'Premium personal wellness standard',
             tagline_bn: taglineBn || englishTagline,
-            description: englishDescription || 'Premium discreet personal wellness product engineered under strict quality testing.',
+            description: englishDescription || 'Premium personal wellness product engineered under strict quality testing.',
             description_bn: descriptionBn || englishDescription,
             shortDescription: englishShortDescription,
             shortDescription_bn: shortDescriptionBn,

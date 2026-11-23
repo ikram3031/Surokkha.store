@@ -90,7 +90,7 @@ const HeroSlider = () => {
           <h1 className={`text-2xl sm:text-4xl md:text-5xl lg:text-[44px] font-heading font-extrabold tracking-tight leading-snug md:leading-tight mb-4 max-w-3xl ${
             'text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]'
           }`}>
-            {t('hero.title', 'প্রিমিয়াম কোয়ালিটি, ১০০% ডিসক্রিট প্যাকেজিং')}
+            {t('hero.title', 'প্রিমিয়াম কোয়ালিটি, সারা দেশে দ্রুত ডেলিভারি')}
           </h1>
 
           <p className={`text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 ${

@@ -674,7 +674,7 @@ export function OfferHome() {
         <section className="bg-rose-50">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 py-8 sm:grid-cols-3">
             {[
-              { icon: Lock, t: L('Discreet packaging', 'গোপনীয় প্যাকেজিং'), d: L('Nobody can tell what is inside', 'ভেতরে কী আছে কেউ বুঝতে পারবে না') },
+              { icon: Lock, t: L('Secure packaging', 'নিরাপদ প্যাকেজিং'), d: L('Sealed so it arrives intact', 'সিল করা, অক্ষত অবস্থায় পৌঁছাবে') },
               { icon: Truck, t: L('Nationwide delivery', 'সারা দেশে ডেলিভারি'), d: L(`${taka(DELIVERY.dhakaCity)} in Dhaka, ${taka(DELIVERY.outsideDhaka)} elsewhere`, `ঢাকায় ${taka(DELIVERY.dhakaCity)}, অন্যত্র ${taka(DELIVERY.outsideDhaka)}`) },
               { icon: Wallet, t: L('Cash on delivery', 'ক্যাশ অন ডেলিভারি'), d: L('Pay when you receive the product', 'পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন') },
             ].map(({ icon: Icon, t, d }) => (

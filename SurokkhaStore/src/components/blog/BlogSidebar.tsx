@@ -147,7 +147,7 @@ export function BlogSidebar({
       <section className="relative overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground">
         <span className="blog-floaty pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
         <p className="relative text-xs font-semibold uppercase tracking-wider opacity-80">সুরক্ষা শপ</p>
-        <p className="relative mt-1 font-display text-xl font-bold leading-snug">গোপন প্যাকেজিংয়ে, ক্যাশ অন ডেলিভারি</p>
+        <p className="relative mt-1 font-display text-xl font-bold leading-snug">নিরাপদ প্যাকেজিংয়ে, ক্যাশ অন ডেলিভারি</p>
         <BlogLink
           href={SHOP_PATH}
           onClick={onNavigate}

@@ -42,9 +42,9 @@ const POLICIES_EN: Record<'terms' | 'privacy' | 'refund', Policy> = {
         paragraphs: ['We do not make marketing calls or send spam.'],
       },
       {
-        title: 'Couriers and discreet packaging',
+        title: 'Couriers and packaging',
         paragraphs: [
-          'Parcels go out in plain, unmarked packaging. The courier slip shows only your name, phone number and address, with no product names, descriptions or logos.',
+          'Parcels go out in sturdy, sealed packaging. The courier slip shows only your name, phone number and address.',
         ],
       },
       {
@@ -152,7 +152,7 @@ const POLICIES_EN: Record<'terms' | 'privacy' | 'refund', Policy> = {
 const POLICIES_BN: Record<'terms' | 'privacy' | 'refund', Policy> = {
   privacy: {
     title: 'প্রাইভেসি পলিসি',
-    intro: 'আপনার গোপনীয়তা ও অর্ডারের গোপনীয়তা আমাদের প্রথম অগ্রাধিকার। আপনি কে বা কী কিনেছেন তা আমরা কখনো শেয়ার, বিক্রি বা প্রকাশ করি না।',
+    intro: 'আপনার তথ্যের সুরক্ষা আমাদের প্রথম অগ্রাধিকার। আপনার পরিচয় বা অর্ডারের তথ্য আমরা কখনো শেয়ার বা বিক্রি করি না।',
     sections: [
       {
         title: 'আমরা যে তথ্য সংগ্রহ করি',
@@ -175,7 +175,7 @@ const POLICIES_BN: Record<'terms' | 'privacy' | 'refund', Policy> = {
         paragraphs: ['আমরা কোনো মার্কেটিং কল করি না বা স্প্যাম পাঠাই না।'],
       },
       {
-        title: 'কুরিয়ার ও গোপনীয় প্যাকেজিং',
+        title: 'কুরিয়ার ও প্যাকেজিং',
         paragraphs: [
           'পার্সেল সাধারণ, চিহ্নহীন প্যাকেটে পাঠানো হয়। কুরিয়ার স্লিপে শুধু আপনার নাম, ফোন নম্বর ও ঠিকানা থাকে; পণ্যের নাম, বিবরণ বা লোগো থাকে না।',
         ],

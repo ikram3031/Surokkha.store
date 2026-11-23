@@ -197,7 +197,7 @@ export const buildSurokkhaOrderInvoiceHtml = ({ order = {}, logoUrl }) => {
 
     <div class="note">
       <span>📦</span>
-      <div><b>Discreetly packed.</b> Plain outer packaging, no product names on the parcel.</div>
+      <div><b>Packed with care.</b> Sturdy sealed packaging so your order arrives intact.</div>
     </div>
   </div>
 

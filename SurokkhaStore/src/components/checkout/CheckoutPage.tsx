@@ -676,7 +676,7 @@ export function CheckoutPage() {
               <ol className="list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-foreground/75">
                 <li>{L('Please check the product before paying the delivery man. Once received, the product cannot be returned.', 'ডেলিভারিম্যানকে টাকা দেওয়ার আগে পণ্য দেখে নিন। গ্রহণ করার পর পণ্য ফেরত নেওয়া হবে না।')}</li>
                 <li>{L('Products sold loose (not as a full sealed pack) are not eligible for return.', 'খুচরা বিক্রিত পণ্য (সম্পূর্ণ সিল করা প্যাক নয়) ফেরতযোগ্য নয়।')}</li>
-                <li>{L('Your package is shipped fully discreetly.', 'আপনার পার্সেল সম্পূর্ণ গোপনীয়ভাবে পাঠানো হয়।')}</li>
+                <li>{L('Your package is sealed and shipped with care.', 'আপনার পার্সেল যত্নসহকারে সিল করে পাঠানো হয়।')}</li>
               </ol>
             </div>
 

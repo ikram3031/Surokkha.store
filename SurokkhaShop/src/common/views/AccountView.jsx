@@ -20,7 +20,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TEXT = {
   en: {
     login: 'Log in', signup: 'Sign up', logout: 'Log out', home: 'Home', account: 'My Account',
-    tagline: 'Safe today, tomorrow too.', taglineSub: 'Discreet packaging, genuine products and cash on delivery.',
+    tagline: 'Safe today, tomorrow too.', taglineSub: 'Secure packaging, genuine products and cash on delivery.',
     welcomeBack: 'Welcome back', welcomeSub: 'Log in to your Surokkha account.',
     createTitle: 'Create your account', createSub: 'Quick to set up, and your details stay private.',
     forgotTitle: 'Forgot your password?', forgotSub: "Enter your email and we'll send you a 6-digit code.",
@@ -45,9 +45,9 @@ const TEXT = {
   },
   bn: {
     login: 'লগ ইন', signup: 'সাইন আপ', logout: 'লগ আউট', home: 'হোম', account: 'আমার অ্যাকাউন্ট',
-    tagline: 'আজ নিরাপদ, আগামীতেও।', taglineSub: 'গোপন প্যাকেজিং, আসল পণ্য এবং ক্যাশ অন ডেলিভারি।',
+    tagline: 'আজ নিরাপদ, আগামীতেও।', taglineSub: 'নিরাপদ প্যাকেজিং, আসল পণ্য এবং ক্যাশ অন ডেলিভারি।',
     welcomeBack: 'আবার স্বাগতম', welcomeSub: 'আপনার সুরক্ষা অ্যাকাউন্টে লগ ইন করুন।',
-    createTitle: 'অ্যাকাউন্ট তৈরি করুন', createSub: 'কয়েক সেকেন্ডেই হয়ে যাবে, আপনার তথ্য গোপন থাকবে।',
+    createTitle: 'অ্যাকাউন্ট তৈরি করুন', createSub: 'কয়েক সেকেন্ডেই হয়ে যাবে, আপনার তথ্য সুরক্ষিত থাকবে।',
     forgotTitle: 'পাসওয়ার্ড ভুলে গেছেন?', forgotSub: 'ইমেইল দিন, আমরা ৬ ডিজিটের একটি কোড পাঠাব।',
     resetTitle: 'পাসওয়ার্ড রিসেট', resetSub: 'ইমেইলে পাঠানো কোড দিয়ে নতুন পাসওয়ার্ড দিন।',
     hello: 'হ্যালো', loggedIn: 'আপনি লগ ইন করা আছেন।',

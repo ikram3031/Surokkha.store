@@ -1,23 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://surokkha.shop/</loc><lastmod>2026-11-22</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://surokkha.shop/shop</loc><lastmod>2026-11-22</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://surokkha.shop/offers</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/faq</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://surokkha.shop/contact</loc><lastmod>2026-11-22</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://surokkha.shop/terms</loc><lastmod>2026-11-22</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://surokkha.shop/privacy</loc><lastmod>2026-11-22</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
-  <url><loc>https://surokkha.shop/refund</loc><lastmod>2026-11-22</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://surokkha.shop/</loc><lastmod>2026-11-23</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://surokkha.shop/shop</loc><lastmod>2026-11-23</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://surokkha.shop/offers</loc><lastmod>2026-11-23</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/faq</loc><lastmod>2026-11-23</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://surokkha.shop/contact</loc><lastmod>2026-11-23</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://surokkha.shop/terms</loc><lastmod>2026-11-23</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://surokkha.shop/privacy</loc><lastmod>2026-11-23</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://surokkha.shop/refund</loc><lastmod>2026-11-23</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://surokkha.shop/product/mo-mini-pack</loc><lastmod>2026-11-23</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://surokkha.shop/product/nobodompoti-gift-box-60-pcs-combo</loc><lastmod>2026-11-21</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/care-combo-three</loc><lastmod>2026-11-21</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/care-combo-two</loc><lastmod>2026-11-21</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/care-combo-one</loc><lastmod>2026-11-21</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/mico-ribbed-30-pcs</loc><lastmod>2026-11-20</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/mo-white-5-pcs</loc><lastmod>2026-11-18</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/mo-pink-5-pcs</loc><lastmod>2026-11-21</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/care-combo-three</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/care-combo-two</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/care-combo-one</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/30-piece-combo-mo-micro-ribbed</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/mo-white-5-pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/mo-pink-5-pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://surokkha.shop/product/mo-blue-5-pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/mo-smart-pack-18-pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://surokkha.shop/product/protection-combo-20-pcs-50gm-gel</loc><lastmod>2026-11-20</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/3-in-1-smart-pack-18-pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/protection-combo-20-pcs-50gm</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/30-pieces-combo-mo-micro-thin</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/20-pcs-combo-mo-pink</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/20-pcs-combo-mo-white</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/20-pcs-combo-mo-blue</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/micro-ribbed10-pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/micro-thin-10pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://surokkha.shop/product/ultimate-3-in-1-pack-30-pcs</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://surokkha.shop/product/surokkha-trial-pack-2</loc><lastmod>2026-11-22</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://surokkha.shop/product/btech-expert-virgin-stretch-mark-lotion-100ml</loc><lastmod>2026-11-07</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://surokkha.shop/product/parasoft-ointment-100g</loc><lastmod>2026-11-07</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>

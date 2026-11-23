@@ -19,6 +19,7 @@ const ADDONS = [
   { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
   { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
   { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
+  { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 300, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
 ];
 
 const MAX_ADDON = 5;
@@ -114,7 +115,7 @@ const EMPTY_FORM = { name: '', phone: '', email: '', district: '', address: '', 
 const SpecialOfferView = () => {
   useCampaignFonts();
   const [qty, setQty] = useState(1);
-  const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0 });
+  const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0, ky: 0 });
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [sending, setSending] = useState(false);
@@ -271,7 +272,7 @@ const SpecialOfferView = () => {
   const buildItems = () => [
     { productDid: OFFER.did, itemType: 'product', name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice, size: 'Special Offer' },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({
-      productDid: a.did, itemType: 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: 'Special Offer Add-on (2 Pcs)',
+      productDid: a.did, itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Special Offer Add-on (2 Pcs)',
     })),
   ];
 
@@ -353,7 +354,7 @@ const SpecialOfferView = () => {
       resetCheckoutSession();
       touchedRef.current = {};
       setQty(1);
-      setAddonQty({ white: 0, pink: 0, blue: 0 });
+      setAddonQty({ white: 0, pink: 0, blue: 0, ky: 0 });
     } catch (err) {
       setFailed(fallbackLink(v));
     } finally {
@@ -498,7 +499,7 @@ const SpecialOfferView = () => {
                   </div>
                 </div>
                 <div className="addons">
-                  <div className="addons-head">সাথে আরও নিন <small>প্রতি ২ পিস ৳৭০</small></div>
+                  <div className="addons-head">সাথে আরও নিন <small>অফার মূল্যে</small></div>
                   <div className="addon-list">
                     {ADDONS.map((a) => {
                       const n = addonQty[a.key];

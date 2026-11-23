@@ -13,7 +13,7 @@ export function Hero() {
             {L('without hesitation', 'কোনো দ্বিধা ছাড়াই')}
           </h1>
           <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
-            {L('Order condoms and lubricants from home. They arrive at your door in plain packaging that gives nothing away.', 'ঘরে বসেই কনডম ও লুব্রিকেন্ট অর্ডার করুন। সাধারণ প্যাকেটে দরজায় পৌঁছে যাবে, বাইরে থেকে কিছুই বোঝা যাবে না।')}
+            {L('Order your everyday health and wellness essentials from home. Sealed with care and delivered to your door.', 'ঘরে বসেই আপনার প্রতিদিনের স্বাস্থ্য ও সুস্থতার সামগ্রী অর্ডার করুন। যত্নসহকারে সিল করা পার্সেল দরজায় পৌঁছে যাবে।')}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg" className="rounded-full px-7">

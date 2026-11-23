@@ -233,7 +233,7 @@ export const paymentBox = ({ totalAmount = 0, paymentMethod = "Cash on Delivery"
 export const discreetNote = () => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;border-collapse:separate">
     <tr><td style="border:1px dashed ${BRAND.line};border-radius:10px;padding:10px 14px;font-family:${SANS};font-size:11.5px;color:${BRAND.muted}">
-      &#128230; <b style="color:${BRAND.ink}">Discreetly packed.</b> Plain outer packaging, no product names on the parcel.
+      &#128230; <b style="color:${BRAND.ink}">Packed with care.</b> Sturdy sealed packaging so your order arrives intact.
     </td></tr>
   </table>`;
 

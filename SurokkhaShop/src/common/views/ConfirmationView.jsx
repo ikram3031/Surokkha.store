@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../store/useStore';
 import { useTranslation } from '../i18n/useTranslation';
 
-// Order confirmation view displaying order summary, delivery details, and discreet reassurance
+// Order confirmation view displaying order summary, delivery details, and packaging reassurance
 const ConfirmationView = () => {
   const { t, isBn } = useTranslation();
   const lastOrder = useStore((state) => state.lastOrder);
@@ -158,7 +158,7 @@ const ConfirmationView = () => {
           </div>
         )}
 
-        {/* Discreet packaging note */}
+        {/* Secure packaging note */}
         <div className="bg-brand-50/70 border border-brand-200/80 rounded-2xl p-4 text-xs text-brand-950 flex items-start gap-3">
           <span className="text-brand-800 font-bold text-sm">📦</span>
           <p className="leading-relaxed">

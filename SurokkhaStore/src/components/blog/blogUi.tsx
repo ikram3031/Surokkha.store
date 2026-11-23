@@ -89,7 +89,7 @@ export function PostCard({ post, index = 0 }: { post: BlogPost; index?: number }
   )
 }
 
-const BENEFITS = ['গোপন প্যাকেজিং', 'ক্যাশ অন ডেলিভারি', 'bKash / Nagad পেমেন্ট', 'WhatsApp-এ সরাসরি সাহায্য']
+const BENEFITS = ['নিরাপদ প্যাকেজিং', 'ক্যাশ অন ডেলিভারি', 'bKash / Nagad পেমেন্ট', 'WhatsApp-এ সরাসরি সাহায্য']
 
 /** Conversion blocks: "inline" sits mid-article, "end" closes the page. */
 export function BlogCta({ variant = 'end', context }: { variant?: 'inline' | 'end'; context?: string }) {
@@ -104,7 +104,7 @@ export function BlogCta({ variant = 'end', context }: { variant?: 'inline' | 'en
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-primary">সুরক্ষা শপ</p>
             <p className="mt-1 font-display text-xl font-bold leading-snug">নিরাপদ থাকতে ঠিক পণ্যটা হাতের কাছে রাখুন</p>
-            <p className="mt-1 text-sm text-muted-foreground">গোপন প্যাকেজিংয়ে ঘরে বসে অর্ডার, ক্যাশ অন ডেলিভারি।</p>
+            <p className="mt-1 text-sm text-muted-foreground">নিরাপদ প্যাকেজিংয়ে ঘরে বসে অর্ডার, ক্যাশ অন ডেলিভারি।</p>
           </div>
           <BlogLink
             href={SHOP_PATH}

@@ -682,13 +682,13 @@ const ProductDetailView = () => {
             </div>
           </div>
 
-          {/* Discreet Packaging Box */}
+          {/* Secure Packaging Box */}
           <div className="bg-brand-50/50 border border-brand-100 p-3.5 rounded-xl flex items-center gap-3 text-xs text-black">
             <svg className="w-5 h-5 text-brand-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
             <span>
-              <strong className="font-bold text-slate-900">{t('discreetAssuranceLabel', 'Discreet Assurance:')}</strong> {t('discreetAssuranceText', 'Shipped in completely unmarked, unprinted parcel bags. Zero personal wellness labels on outer packaging.')}
+              <strong className="font-bold text-slate-900">{t('discreetAssuranceLabel', 'Secure Packaging Assurance:')}</strong> {t('discreetAssuranceText', 'Shipped in sturdy, carefully sealed parcel packaging so your order arrives intact.')}
             </span>
           </div>
 
@@ -914,7 +914,7 @@ const ProductDetailView = () => {
                 {t('addComplementaryHeading', 'Add Complementary Products')}
               </h3>
               <p className="text-xs text-black">
-                {t('addComplementarySubtitle', 'Combine multiple products together in one discreet shipment.')}
+                {t('addComplementarySubtitle', 'Combine multiple products together in one shipment.')}
               </p>
             </div>
             <button

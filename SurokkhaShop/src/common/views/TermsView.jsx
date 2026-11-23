@@ -85,13 +85,13 @@ const TermsView = () => {
           <section className="space-y-3">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-black shrink-0">4</span>
-              100% Secure Packaging Guarantee
+              Secure Packaging Guarantee
             </h2>
             <p>
-              We respect your utmost privacy. Every parcel dispatched by Surokkha.shop is packed inside a completely plain, unbranded outer cardboard box or opaque poly envelope.
+              Every parcel dispatched by Surokkha.shop is packed inside a sturdy outer cardboard box or sealed poly envelope.
             </p>
             <p>
-              <strong>Zero Identifying Marks:</strong> No product names, category classifications, brand names, or logos appear anywhere on the external shipping label. The courier rider and any third party will have zero knowledge of the contents.
+              <strong>Protected In Transit:</strong> Parcels are sealed and cushioned so the contents stay protected throughout the courier journey and reach you intact.
             </p>
           </section>
 
