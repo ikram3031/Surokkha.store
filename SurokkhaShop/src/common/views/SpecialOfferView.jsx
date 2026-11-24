@@ -4,27 +4,68 @@ import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from '../asset/surokkha_logo_dark.png';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICTS } from '../data/districts';
+import { getDeliveryCharge } from '../utils/deliveryCharge';
+import { forgotPassword, verifyEmail } from '../utils/customerAuth';
 import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, saveCheckoutLead, resetCheckoutSession } from '../utils/analytics';
 
-const OFFER = {
-  did: 'd5a81e97721c8101',
-  slug: 'mo-smart-pack-18-pcs',
-  name: 'MO 3-in-1 Smart Pack (18 Pcs)',
-  regularPrice: 810,
-  offerPrice: 720,
-  pcs: 18,
-  maxQty: 5,
-};
-
-const ADDONS = [
-  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
-  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
-  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
-  { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 300, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
+const PACKS = [
+  {
+    key: '12',
+    did: 'd5a81e97721c8101',
+    slug: 'mo-smart-pack-18-pcs',
+    name: 'MO 3-in-1 Smart Pack (12 Pcs)',
+    titleBn: '১২ পিস',
+    boxLabelBn: '১২ পিসের বক্স',
+    subBn: 'MO White ৪ + MO Pink ৪ + MO Blue ৪',
+    perVariant: 4,
+    pcs: 12,
+    regularPrice: 540,
+    offerPrice: 450,
+    freeDelivery: false,
+    maxQty: 5,
+  },
+  {
+    key: '18',
+    did: 'd5a81e97721c8101',
+    slug: 'mo-smart-pack-18-pcs',
+    name: 'MO 3-in-1 Smart Pack (18 Pcs)',
+    titleBn: '১৮ পিস',
+    boxLabelBn: '১৮ পিসের বক্স',
+    subBn: 'MO White ৬ + MO Pink ৬ + MO Blue ৬',
+    perVariant: 6,
+    pcs: 18,
+    regularPrice: 900,
+    offerPrice: 800,
+    freeDelivery: true,
+    maxQty: 5,
+  },
+  {
+    key: '30',
+    did: 'd5a81e97721c8101',
+    slug: 'mo-smart-pack-18-pcs',
+    name: 'MO 3-in-1 Smart Pack (30 Pcs)',
+    titleBn: '৩০ পিস',
+    boxLabelBn: '৩০ পিসের বক্স',
+    subBn: 'MO White ১০ + MO Pink ১০ + MO Blue ১০',
+    perVariant: 10,
+    pcs: 30,
+    regularPrice: 1350,
+    offerPrice: 980,
+    freeDelivery: false,
+    maxQty: 5,
+  },
 ];
 
+const ADDONS = [
+  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 2 Pcs', pcs: 2, price: 60, img: 'skh-i-white', color: '#f1f5f9' },
+  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 60, img: 'skh-i-pink', color: '#f4a7c4' },
+  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 60, img: 'skh-i-blue', color: '#38bdf8' },
+  { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 270, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
+];
+
+const DEFAULT_PACK = PACKS[1];
 const MAX_ADDON = 5;
-const NORMAL_DELIVERY = 120;
+const FREE_DELIVERY_MIN = 1500;
 const WHATSAPP = '8801600905774';
 const PHONE_DISPLAY = '01600-905774';
 const DISTRICT_NAMES = DISTRICTS.map((d) => d.name).sort((a, b) => a.localeCompare(b));
@@ -65,13 +106,13 @@ const FAKE_PHONE_MSG = 'অনুগ্রহ করে অন্য একট�
 
 // Records one Smart Pack view per visitor per 30 minutes in the dashboard product funnel
 const trackSmartPackView = () => {
-  const key = `_sk_pv_${OFFER.slug}`;
+  const key = `_sk_pv_${DEFAULT_PACK.slug}`;
   try {
     const last = Number(window.sessionStorage.getItem(key) || 0);
     if (last && Date.now() - last < 30 * 60 * 1000) return;
     window.sessionStorage.setItem(key, String(Date.now()));
   } catch (_) { return; }
-  trackProductEvents([{ eventType: 'view', productKey: OFFER.slug, productName: OFFER.name }]);
+  trackProductEvents([{ eventType: 'view', productKey: DEFAULT_PACK.slug, productName: DEFAULT_PACK.name }]);
 };
 
 // Builds a WhatsApp chat link with a prefilled message
@@ -85,7 +126,7 @@ const track = (ev, data) => {
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
   useEffect(() => {
-    document.title = 'MO Smart Pack — ৩ ধরনের ১৮ পিস, মাত্র ৳৭২০ | Surokkha';
+    document.title = 'MO 3-in-1 Smart Pack | Surokkha';
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
     link.id = 'so-fonts';
@@ -95,15 +136,22 @@ const useCampaignFonts = () => {
   }, []);
 };
 
+// Renders a shopping cart icon
 const IconCart = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>);
+
+// Renders a check mark icon
 const IconCheck = ({ w = 2.4 }) => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>);
-const IconLock = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>);
+
+// Renders a delivery truck icon
 const IconTruck = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>);
+
+// Renders a shield icon
 const IconShield = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>);
-const IconCash = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>);
+
+// Renders a package box icon
 const IconBox = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/></svg>);
-const IconGrid = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>);
-const IconTag = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>);
+
+// Renders a WhatsApp icon
 const IconWa = () => (<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.8-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.4-.5c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>);
 
 // Renders five stacked pack images for the hero visual
@@ -115,9 +163,10 @@ const Stack = ({ cls, img }) => (
 
 const EMPTY_FORM = { name: '', phone: '', email: '', district: '', address: '', note: '' };
 
-// Standalone MO Smart Pack campaign page with its own order form and free delivery
+// Standalone MO Smart Pack campaign page with multi-pack options, add-ons, and OTP discount verification
 const SpecialOfferView = () => {
   useCampaignFonts();
+  const [packKey, setPackKey] = useState('18');
   const [qty, setQty] = useState(1);
   const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0, ky: 0 });
   const [form, setForm] = useState(EMPTY_FORM);
@@ -126,6 +175,11 @@ const SpecialOfferView = () => {
   const [failed, setFailed] = useState('');
   const [blockedPhone, setBlockedPhone] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpBusy, setOtpBusy] = useState(false);
+  const [otpErr, setOtpErr] = useState('');
+  const [otpSentMsg, setOtpSentMsg] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
   const startedRef = useRef(false);
   const cartedRef = useRef(false);
@@ -134,15 +188,17 @@ const SpecialOfferView = () => {
   const fieldRefs = useRef({});
   const touchedRef = useRef({});
 
+  const activePack = PACKS.find((p) => p.key === packKey) || DEFAULT_PACK;
   const phoneBlocked = blockedPhone && blockedPhone.phone === cleanPhone(form.phone) ? blockedPhone : null;
 
   const addonTotal = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.price, 0);
   const addonPcs = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.pcs, 0);
-  const sub = qty * OFFER.offerPrice + addonTotal;
-  const save = qty * (OFFER.regularPrice - OFFER.offerPrice) + NORMAL_DELIVERY;
-  const total = sub;
+  const sub = qty * activePack.offerPrice + addonTotal;
+  const isFreeDelivery = Boolean(activePack.freeDelivery || sub >= FREE_DELIVERY_MIN);
+  const hasDeliveryInfo = Boolean(form.district && form.address.trim());
+  const deliveryCharge = isFreeDelivery ? 0 : (hasDeliveryInfo ? getDeliveryCharge(form.district, form.address) : 0);
+  const total = sub + deliveryCharge;
 
-  // Keeps what the customer has typed so an abandoned checkout is saved, like the main checkout does
   const leadRef = useRef(null);
   const submittingRef = useRef(false);
   leadRef.current = () => ({
@@ -154,16 +210,15 @@ const SpecialOfferView = () => {
     thana: '',
     cartTotal: total,
     items: [
-      { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice },
+      { slug: activePack.slug, name: activePack.name, quantity: qty, unitPrice: activePack.offerPrice },
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
   });
-  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, qty, addonQty]);
+  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, packKey, qty, addonQty]);
   useEffect(() => {
     if (!form.name.trim() && !form.phone.trim() && !form.email.trim()) return undefined;
     const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 2000);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leadSig]);
   useEffect(() => {
     const flush = () => {
@@ -175,12 +230,12 @@ const SpecialOfferView = () => {
     return () => window.removeEventListener('pagehide', flush);
   }, []);
 
-  const waOrderLink = useMemo(() => waLink(`আমি MO Smart Pack (১৮ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
+  const waOrderLink = useMemo(() => waLink(`আমি ${activePack.name} অর্ডার করতে চাই।`), [activePack.name]);
 
   useEffect(() => {
     trackSitePage('special-offer');
     trackSmartPackView();
-    track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: OFFER.offerPrice, currency: 'BDT' });
+    track('ViewContent', { content_ids: [DEFAULT_PACK.did], content_type: 'product', content_name: DEFAULT_PACK.name, value: DEFAULT_PACK.offerPrice, currency: 'BDT' });
   }, []);
 
   useEffect(() => {
@@ -201,6 +256,12 @@ const SpecialOfferView = () => {
       track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
       trackProductEvents([{ eventType: 'add_to_cart', productKey: a.slug, productName: a.fullName, quantity: 1, value: a.price }]);
     }
+  };
+
+  // Selects a pack option from the box breakdown section and scrolls to checkout
+  const chooseBoxPack = (key) => {
+    setPackKey(key);
+    orderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   // Asks the backend whether a complete phone number is on the spam / fake list
@@ -236,17 +297,17 @@ const SpecialOfferView = () => {
   const onOrderClick = () => {
     if (cartedRef.current) return;
     cartedRef.current = true;
-    track('AddToCart', { value: OFFER.offerPrice, currency: 'BDT', content_ids: [OFFER.did], content_name: OFFER.name, content_type: 'product' });
-    trackProductEvents([{ eventType: 'add_to_cart', productKey: OFFER.slug, productName: OFFER.name, quantity: 1, value: OFFER.offerPrice }]);
+    track('AddToCart', { value: activePack.offerPrice, currency: 'BDT', content_ids: [activePack.did], content_name: activePack.name, content_type: 'product' });
+    trackProductEvents([{ eventType: 'add_to_cart', productKey: activePack.slug, productName: activePack.name, quantity: 1, value: activePack.offerPrice }]);
   };
 
   // Fires InitiateCheckout the first time the form gets focus
   const onFormFocus = () => {
     if (startedRef.current) return;
     startedRef.current = true;
-    track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [OFFER.did], content_type: 'product' });
+    track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [activePack.did], content_type: 'product' });
     trackProductEvents([
-      { eventType: 'checkout', productKey: OFFER.slug, productName: OFFER.name, quantity: qty, value: qty * OFFER.offerPrice },
+      { eventType: 'checkout', productKey: activePack.slug, productName: activePack.name, quantity: qty, value: qty * activePack.offerPrice },
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ eventType: 'checkout', productKey: a.slug, productName: a.fullName, quantity: addonQty[a.key], value: addonQty[a.key] * a.price })),
     ]);
   };
@@ -274,7 +335,7 @@ const SpecialOfferView = () => {
 
   // Builds the order line items for the backend
   const buildItems = () => [
-    { productDid: OFFER.did, itemType: 'product', name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice, size: 'Special Offer' },
+    { productDid: activePack.did, itemType: 'product', name: activePack.name, quantity: qty, unitPrice: activePack.offerPrice, size: `${activePack.pcs} Pcs Special Offer` },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({
       productDid: a.did, itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Special Offer Add-on (2 Pcs)',
     })),
@@ -282,17 +343,22 @@ const SpecialOfferView = () => {
 
   // Builds a WhatsApp fallback message from the current order
   const fallbackLink = (v) => waLink(
-    `অর্ডার: MO Smart Pack × ${qty}${ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => `\n+ ${a.fullName} × ${addonQty[a.key]}`).join('')}\nনাম: ${v.name}\nফোন: ${v.phone}\nইমেইল: ${v.email}\nজেলা: ${v.district}\nঠিকানা: ${v.address}\nমোট: ৳${total}`,
+    `অর্ডার: ${activePack.name} × ${qty}${ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => `\n+ ${a.fullName} × ${addonQty[a.key]}`).join('')}\nনাম: ${v.name}\nফোন: ${v.phone}\nইমেইল: ${v.email}\nজেলা: ${v.district}\nঠিকানা: ${v.address}\nমোট: ৳${total}`,
   );
 
-  // Sends the order to the shop order API with free delivery
+  // Sends the order to the shop order API and triggers membership OTP verification email
   const onSubmit = async (e) => {
     e.preventDefault();
     if (sending) return;
     setFailed('');
     const v = validate();
     if (!v) return;
+    const finalDelivery = isFreeDelivery ? 0 : getDeliveryCharge(v.district, v.address);
+    const finalTotal = sub + finalDelivery;
     const nowIso = new Date().toISOString();
+    const orderNoteTag = isFreeDelivery
+      ? `Special offer page (${activePack.pcs} pcs - free delivery)`
+      : `Special offer page (${activePack.pcs} pcs)`;
     const payload = {
       checkoutSessionId: getCheckoutSessionId(),
       billingInfo: { fullName: v.name, phone: v.phone, email: v.email, address: v.address, city: v.district, thana: '', district: v.district, state: v.district, division: v.district, zip: '' },
@@ -306,15 +372,15 @@ const SpecialOfferView = () => {
       clientDomain: SITE_CONFIG.domain,
       orderPrefix: SITE_CONFIG.orderPrefix,
       giftWrap: false,
-      orderNotes: [form.note.trim(), 'Special offer page (free delivery)'].filter(Boolean).join(' | '),
+      orderNotes: [form.note.trim(), orderNoteTag].filter(Boolean).join(' | '),
       paymentMethod: 'cod',
       subtotal: sub,
-      shippingFee: 0,
-      shippingTotalAmount: 0,
+      shippingFee: finalDelivery,
+      shippingTotalAmount: finalDelivery,
       tax: 0,
       discountTotalAmount: 0,
       couponCode: null,
-      total,
+      total: finalTotal,
       items: buildItems(),
       paymentDetails: null,
       timestamp: nowIso,
@@ -338,8 +404,8 @@ const SpecialOfferView = () => {
       if (!res.ok) throw new Error(json?.errors?.join(', ') || json?.message || `HTTP ${res.status}`);
       const orderNumber = String(json?.data?.orderNumber || json?.data?.id || json?.orderNumber || '').trim();
       if (orderNumber) {
-        const items = { [OFFER.did]: qty };
-        const products = { [OFFER.did]: { did: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice } };
+        const items = { [activePack.did]: qty };
+        const products = { [activePack.did]: { did: activePack.did, slug: activePack.slug, name: activePack.name, price: activePack.offerPrice } };
         ADDONS.forEach((a) => {
           if (addonQty[a.key] > 0) {
             items[a.did] = addonQty[a.key];
@@ -349,11 +415,25 @@ const SpecialOfferView = () => {
         trackPurchase({
           orderNumber,
           items,
-          totals: { subtotal: sub, grandTotal: total },
+          totals: { subtotal: sub, grandTotal: finalTotal },
           customer: { name: v.name, mobile: v.phone, email: v.email, district: v.district, address: v.address },
         }, products);
       }
-      setSuccess({ phone: v.phone, orderNumber });
+      const discountAmount = Number(json?.data?.memberBonus?.amount) || Math.round(sub * 0.05);
+      setOtpCode('');
+      setOtpErr('');
+      setOtpSentMsg('');
+      setOtpVerified(false);
+      setSuccess({
+        phone: v.phone,
+        email: v.email,
+        orderNumber,
+        total: finalTotal,
+        sub,
+        discountAmount,
+        discountedTotal: Math.max(0, finalTotal - discountAmount),
+      });
+      forgotPassword(v.email).catch(() => null);
       setForm(EMPTY_FORM);
       resetCheckoutSession();
       touchedRef.current = {};
@@ -367,12 +447,50 @@ const SpecialOfferView = () => {
     }
   };
 
+  // Verifies the 6-digit OTP code from the customer's email to unlock the extra 5% discount
+  const onVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (otpBusy || !success?.email) return;
+    const cleanOtp = toEnDigits(otpCode).replace(/\D/g, '');
+    if (!/^\d{6}$/.test(cleanOtp)) {
+      setOtpErr('আপনার ইমেইলে পাঠানো ৬ ডিজিটের ওটিপি কোডটি দিন।');
+      return;
+    }
+    setOtpBusy(true);
+    setOtpErr('');
+    try {
+      await verifyEmail({ email: success.email, otp: cleanOtp });
+      setOtpVerified(true);
+      setOtpSentMsg('');
+    } catch (err) {
+      setOtpErr(err?.message || 'ওটিপি কোডটি সঠিক নয় বা মেয়াদ শেষ হয়ে গেছে।');
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  // Resends the 6-digit OTP verification email for the current order
+  const onResendOtp = async () => {
+    if (otpBusy || !success?.email) return;
+    setOtpBusy(true);
+    setOtpErr('');
+    setOtpSentMsg('');
+    try {
+      await forgotPassword(success.email);
+      setOtpSentMsg('আপনার ইমেইলে নতুন ওটিপি কোড পাঠানো হয়েছে।');
+    } catch (err) {
+      setOtpErr(err?.message || 'ওটিপি পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
   // Registers a form control so validation can focus it
   const reg = (k) => (el) => { fieldRefs.current[k] = el; };
 
   return (
     <>
-      <div className="topbar">আজকের অফার: MO Smart Pack <b>৳৭২০</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
+      <div className="topbar">স্পেশাল অফার: <b>MO 3-in-1 Smart Pack</b> — এক বক্সে ৩ ভ্যারিয়েন্ট · সারা বাংলাদেশে হোম ডেলিভারি</div>
 
       <header className="hero" ref={heroRef}>
         <div className="container">
@@ -382,30 +500,11 @@ const SpecialOfferView = () => {
               <span className="eyebrow"><b>NEW</b> MO প্রথমবার? এই প্যাক দিয়ে শুরু করুন</span>
               <div className="brandline">MO Personal Care</div>
               <h1 className="hero-title">Smart <em>Pack</em></h1>
-              <p className="hero-sub">এক বক্সে <strong>MO-এর তিনটি ভ্যারিয়েন্ট</strong>, প্রতিটি ৬ পিস করে। তিনটাই ট্রাই করে দেখুন কেমন, তারপর বেছে নিন আপনার পছন্দেরটা।</p>
-
-              <div className="mix">
-                <span className="chip"><i style={{ background: '#f1f5f9' }} />MO White <small>× ৬</small></span>
-                <span className="op">+</span>
-                <span className="chip"><i style={{ background: '#f4a7c4' }} />MO Pink <small>× ৬</small></span>
-                <span className="op">+</span>
-                <span className="chip"><i style={{ background: '#38bdf8' }} />MO Blue <small>× ৬</small></span>
-                <span className="op">=</span>
-                <span className="total">১৮ <small>পিস</small></span>
-              </div>
-
-              <div className="price-row">
-                <div className="price-now"><sup>৳</sup>৭২০</div>
-                <div className="price-tags"><span className="price-old">৳৮১০</span></div>
-                <div className="price-tags">
-                  <span className="ptag ptag-save">৳৯০ সেভ</span>
-                  <span className="ptag ptag-free"><IconCheck />ফ্রি ডেলিভারি</span>
-                </div>
-              </div>
+              <p className="hero-sub">একই কম্বোতে <strong>MO-এর তিনটি ভ্যারিয়েন্ট</strong>: MO White, MO Pink এবং MO Blue। <strong>২৫% পর্যন্ত ছাড়!</strong></p>
 
               <div className="ctas">
                 <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
-                <a href="#inside" className="btn btn-ghost">বক্সে কী আছে দেখুন</a>
+                <a href="#inside" className="btn btn-ghost">অপশন বেছে নিন</a>
               </div>
 
               <div className="trust">
@@ -420,9 +519,9 @@ const SpecialOfferView = () => {
               <Stack cls="s-white" img="skh-i-white" />
               <Stack cls="s-pink" img="skh-i-pink" />
               <Stack cls="s-blue" img="skh-i-blue" />
-              <span className="count c-white"><i style={{ background: '#f1f5f9' }} />× ৬</span>
-              <span className="count c-pink"><i style={{ background: '#f4a7c4' }} />× ৬</span>
-              <span className="count c-blue"><i style={{ background: '#38bdf8' }} />× ৬</span>
+              <span className="count c-white"><i style={{ background: '#f1f5f9' }} />MO White</span>
+              <span className="count c-pink"><i style={{ background: '#f4a7c4' }} />MO Pink</span>
+              <span className="count c-blue"><i style={{ background: '#38bdf8' }} />MO Blue</span>
               <div className="seal"><div><b>৩ in ১</b>স্মার্ট প্যাক</div></div>
               <div className="ftag">
                 <div className="ic"><IconBox /></div>
@@ -438,29 +537,38 @@ const SpecialOfferView = () => {
           <div className="container">
             <div className="sec-head">
               <span className="kicker">বক্সে যা আছে</span>
-              <h2 className="sec-title">৩ ধরনের MO, প্রতিটা ৬ পিস</h2>
+              <h2 className="sec-title">৩ ধরনের MO</h2>
             </div>
             <div className="inside-grid">
-              <div className="photo skh-i-photo" role="img" aria-label="MO Smart Pack-এর ১৮টি প্যাকেট">
-                <div className="photo-badge">MO 3-in-1 Smart Pack<small>১৮ পিস · ৩ ভ্যারিয়েন্ট</small></div>
+              <div className="photo skh-i-photo" role="img" aria-label="MO Smart Pack-এর প্যাকেটসমূহ">
+                <div className="photo-badge">MO 3-in-1 Smart Pack<small>১২, ১৮ ও ৩০ পিস · ৩ ভ্যারিয়েন্ট</small></div>
               </div>
               <div className="variants">
-                <div className="variant">
-                  <div className="v-img skh-img skh-i-white" style={{ '--bg': '#eef1f6' }} />
-                  <div><div className="v-name"><i style={{ background: '#f1f5f9' }} />MO White</div></div>
-                  <span className="v-qty">× ৬ পিস</span>
+                <div className="variants-cols">
+                  <div className="variant-col">
+                    <div className="v-img skh-img skh-i-white" style={{ '--bg': '#eef1f6' }} />
+                    <div className="v-name"><i style={{ background: '#f1f5f9' }} />MO White</div>
+                  </div>
+                  <div className="variant-col">
+                    <div className="v-img skh-img skh-i-pink" style={{ '--bg': '#fde7ef' }} />
+                    <div className="v-name"><i style={{ background: '#f4a7c4' }} />MO Pink</div>
+                  </div>
+                  <div className="variant-col">
+                    <div className="v-img skh-img skh-i-blue" style={{ '--bg': '#e0f2fe' }} />
+                    <div className="v-name"><i style={{ background: '#38bdf8' }} />MO Blue</div>
+                  </div>
                 </div>
-                <div className="variant">
-                  <div className="v-img skh-img skh-i-pink" style={{ '--bg': '#fde7ef' }} />
-                  <div><div className="v-name"><i style={{ background: '#f4a7c4' }} />MO Pink</div></div>
-                  <span className="v-qty">× ৬ পিস</span>
+                <div className="box-options">
+                  {PACKS.map((p) => (
+                    <button key={p.key} type="button" className={`box-opt${packKey === p.key ? ' on' : ''}`} onClick={() => chooseBoxPack(p.key)}>
+                      <div>
+                        <div className="box-title">{p.boxLabelBn}</div>
+                        <div className="box-sub">{p.subBn}</div>
+                      </div>
+                      <span className="box-pcs">{tk(p.offerPrice)}</span>
+                    </button>
+                  ))}
                 </div>
-                <div className="variant">
-                  <div className="v-img skh-img skh-i-blue" style={{ '--bg': '#e0f2fe' }} />
-                  <div><div className="v-name"><i style={{ background: '#38bdf8' }} />MO Blue</div></div>
-                  <span className="v-qty">× ৬ পিস</span>
-                </div>
-                <div className="inside-total"><span>মোট এক বক্সে</span><b>১৮ পিস</b></div>
               </div>
             </div>
           </div>
@@ -490,16 +598,30 @@ const SpecialOfferView = () => {
 
             <div className="order-card">
               <aside className="summary">
-                <div className="sum-prod">
-                  <div className="sum-thumb skh-i-thumb" />
-                  <div><h3>MO 3-in-1 Smart Pack</h3><p>১৮ পিস · MO White, MO Pink, MO Blue</p></div>
+                <div className="pack-pick">
+                  <div className="pack-pick-head">প্যাক অপশন বেছে নিন <small>(যেকোনো ১টি)</small></div>
+                  <div className="pack-list">
+                    {PACKS.map((p) => {
+                      const active = packKey === p.key;
+                      return (
+                        <label key={p.key} className={`pack-opt${active ? ' on' : ''}`}>
+                          <input type="checkbox" checked={active} onChange={() => setPackKey(p.key)} />
+                          <span className="pack-box" aria-hidden="true">{active ? <IconCheck w={2.8} /> : null}</span>
+                          <span className="pack-info">
+                            <strong>{p.titleBn}</strong>
+                          </span>
+                          <span className="pack-price">{tk(p.offerPrice)}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="qty">
                   <label htmlFor="qtyOut">পরিমাণ (বক্স)</label>
                   <div className="qty-ctl">
                     <button type="button" aria-label="কমান" onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
                     <output id="qtyOut">{bn(qty)}</output>
-                    <button type="button" aria-label="বাড়ান" onClick={() => setQty((q) => Math.min(OFFER.maxQty, q + 1))}>+</button>
+                    <button type="button" aria-label="বাড়ান" onClick={() => setQty((q) => Math.min(activePack.maxQty, q + 1))}>+</button>
                   </div>
                 </div>
                 <div className="addons">
@@ -528,18 +650,23 @@ const SpecialOfferView = () => {
                   </div>
                 </div>
                 <div className="lines">
-                  <div className="line"><span>দাম ({bn(qty)} × ৳৭২০)</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
+                  <div className="line"><span>দাম ({bn(qty)} × {tk(activePack.offerPrice)})</span><b>{tk(qty * activePack.offerPrice)}</b></div>
                   {ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => (
                     <div key={a.key} className="line line-add"><span>{a.name} {bn(addonQty[a.key] * a.pcs)} পিস</span><b>{tk(addonQty[a.key] * a.price)}</b></div>
                   ))}
-                  <div className="line"><span>মোট পিস</span><b>{bn(qty * OFFER.pcs + addonPcs)} পিস</b></div>
-                  <div className="line"><span>ডেলিভারি চার্জ</span><span><s>{tk(NORMAL_DELIVERY)}</s><span className="free">ফ্রি</span></span></div>
-                  <div className="line line-save"><span>আপনার সেভ</span><b>{tk(save)}</b></div>
+                  <div className="line"><span>মোট পিস</span><b>{bn(qty * activePack.pcs + addonPcs)} পিস</b></div>
+                  {isFreeDelivery ? (
+                    <div className="line"><span>ডেলিভারি চার্জ</span><span className="free">ফ্রি</span></div>
+                  ) : hasDeliveryInfo ? (
+                    <div className="line"><span>ডেলিভারি চার্জ</span><b>{tk(deliveryCharge)}</b></div>
+                  ) : null}
                 </div>
-                <div className="grand"><span>সর্বমোট</span><b>{tk(total)}</b></div>
-                <div className="sum-note">
-                  <span><IconCash />পণ্য হাতে পেয়ে টাকা পরিশোধ করুন</span>
-                  <span><IconBox />সুরক্ষিত প্রিমিয়াম প্যাকেজিং</span>
+                <div className="grand">
+                  <span>সর্বমোট</span>
+                  <b>
+                    {tk(total)}
+                    {!isFreeDelivery && !hasDeliveryInfo ? <small className="grand-plus"> + ডেলিভারি চার্জ</small> : null}
+                  </b>
                 </div>
               </aside>
 
@@ -599,17 +726,17 @@ const SpecialOfferView = () => {
             <div className="faq">
               <details open><summary>প্যাকেজিং কি নিরাপদ ও সুরক্ষিত হবে?</summary><p>হ্যাঁ। আমরা প্রতিটি অর্ডার মজবুত ও প্রিমিয়াম প্যাকেজিংয়ে পাঠাই, যাতে কুরিয়ার বা হোম ডেলিভারিতে পণ্যের কোনো ড্যামেজ না হয়।</p></details>
               <details><summary>পেমেন্ট কীভাবে করব?</summary><p>ক্যাশ অন ডেলিভারি। প্রোডাক্ট হাতে পেয়ে ডেলিভারিম্যানকে টাকা দেবেন, আগে কিছু দিতে হবে না।</p></details>
-              <details><summary>ডেলিভারি চার্জ কত?</summary><p>এই অফারে ডেলিভারি সম্পূর্ণ ফ্রি, ঢাকার ভেতরে (সাধারণত ৳৭০) এবং ঢাকার বাইরে (সাধারণত ৳১২০) দুই জায়গাতেই।</p></details>
+              <details><summary>ডেলিভারি চার্জ কত?</summary><p>১৮ পিস Smart Pack অথবা ৳১,৫০০+ অর্ডারে ডেলিভারি সম্পূর্ণ ফ্রি। ১২ পিস ও ৩০ পিস প্যাকে ঢাকার ভেতরে ৳৭০ এবং ঢাকার বাইরে ৳১২০ ডেলিভারি চার্জ প্রযোজ্য।</p></details>
               <details><summary>অর্ডারের পর কী হবে?</summary><p>আমাদের টিম আপনার দেওয়া নম্বরে কল করে অর্ডার কনফার্ম করবে এবং ডেলিভারির সময় জানিয়ে দেবে।</p></details>
-              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>Smart Pack-এ MO White, MO Pink এবং MO Blue — তিনটি ভ্যারিয়েন্টই ৬ পিস করে আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
+              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>Smart Pack-এ MO White, MO Pink এবং MO Blue — তিনটি ভ্যারিয়েন্টই সমান পিসে (৪, ৬ বা ১০ পিস করে) আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
             </div>
           </div>
         </section>
 
         <section className="sec final">
           <div className="container">
-            <h2>৩ ধরনের MO, ১৮ পিস, মাত্র <span>৳৭২০</span></h2>
-            <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
+            <h2>৩ ধরনের MO, এক বক্সে <span>Smart Pack</span></h2>
+            <p>১২ পিস, ১৮ পিস বা ৩০ পিস · ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
             <div className="ctas">
               <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
               <a href={waOrderLink} target="_blank" rel="noopener noreferrer" className="btn btn-wa"><IconWa />WhatsApp-এ অর্ডার</a>
@@ -629,7 +756,7 @@ const SpecialOfferView = () => {
       <a className="wa-float" href={waOrderLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ মেসেজ দিন"><IconWa /></a>
 
       <div className={`sticky${showSticky ? ' show' : ''}`}>
-        <div className="sp"><b>৳৭২০</b><small><s>৳৮১০</s> ফ্রি ডেলিভারি</small></div>
+        <div className="sp"><b>MO 3-in-1 Smart Pack</b><small>১২ / ১৮ / ৩০ পিস প্যাক</small></div>
         <a href="#order" onClick={onOrderClick} className="btn btn-primary">অর্ডার করুন</a>
       </div>
 
@@ -639,6 +766,47 @@ const SpecialOfferView = () => {
           <h3 id="okTitle">ধন্যবাদ, অর্ডার পেয়েছি!</h3>
           <p>আমাদের টিম শীঘ্রই <b>{success ? bn(success.phone) : ''}</b> নম্বরে কল করে আপনার অর্ডার কনফার্ম করবে। ফোনটা কাছে রাখুন।</p>
           {success?.orderNumber ? <div className="order-id">অর্ডার আইডি: <b>{success.orderNumber}</b></div> : null}
+
+          {success?.email ? (
+            <div className="otp-card">
+              {otpVerified ? (
+                <div className="otp-ok">
+                  <b>মেম্বারশিপ ভেরিফাইড! আপনার অর্ডারে অতিরিক্ত ৫% ({tk(success.discountAmount)}) ছাড় যুক্ত হয়েছে।</b>
+                  <p>খুব শীঘ্রই আপনার আপডেটেড প্রাইসিং আপনাকে জানানো হবে।</p>
+                </div>
+              ) : (
+                <form onSubmit={onVerifyOtp}>
+                  <h4>আপনার মেম্বারশিপ কনফার্ম করে অতিরিক্ত ৫% ছাড় নিন</h4>
+                  <p className="otp-desc">
+                    আপনার {tk(success.total)} অর্ডারে আরও <b>{tk(success.discountAmount)}</b> ছাড় পাবেন (ছাড়ের পর মোট: <b>{tk(success.discountedTotal)}</b>)।
+                  </p>
+                  <p className="otp-email">
+                    <b>{success.email}</b> ইমেইলে পাঠানো ৬ ডিজিটের ওটিপি (OTP) কোডটি দিন:
+                  </p>
+                  <div className="otp-row">
+                    <input
+                      className="otp-input"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="৬ ডিজিটের ওটিপি"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                    />
+                    <button type="submit" className="btn btn-primary otp-btn" disabled={otpBusy}>
+                      {otpBusy ? 'যাচাই হচ্ছে...' : 'ওটিপি ভেরিফাই করুন'}
+                    </button>
+                  </div>
+                  {otpErr ? <div className="otp-err">{otpErr}</div> : null}
+                  {otpSentMsg ? <div className="otp-sent">{otpSentMsg}</div> : null}
+                  <button type="button" className="otp-resend" onClick={onResendOtp} disabled={otpBusy}>
+                    আবার ওটিপি পাঠান
+                  </button>
+                </form>
+              )}
+            </div>
+          ) : null}
+
           <button type="button" className="btn btn-primary" onClick={() => setSuccess(null)}>ঠিক আছে</button>
         </div>
       </div>
