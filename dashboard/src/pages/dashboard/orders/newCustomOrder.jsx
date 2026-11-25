@@ -522,6 +522,11 @@ const NewCustomOrderPage = () => {
         if (lead.district) setBillingDistrict(lead.district);
         if (lead.thana) setBillingThana(lead.thana);
 
+        const srcUrl = String(lead.sourceUrl || "").toLowerCase();
+        const detectedSite = srcUrl.includes("surokkha.shop") ? "shop" : "store";
+        setReportToMeta(true);
+        setMetaSite(detectedSite);
+
         if (lead.customer?.phone) {
           try {
             const lookup = await apiClient.get("/api/v1/customers/lookup", { params: { phone: lead.customer.phone } });
@@ -839,6 +844,7 @@ const NewCustomOrderPage = () => {
         orderNotes: orderNotes.trim(),
         reportToMeta,
         metaSite: reportToMeta ? metaSite : null,
+        ...(leadId ? { checkoutLeadId: leadId } : {}),
         giftWrap: false,
         items: cart.map((item) => ({
           name: item.name,
@@ -1887,40 +1893,6 @@ const NewCustomOrderPage = () => {
               className="w-full text-xs bg-background border border-input rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition resize-y"
             />
           </div>
-
-          {/* Report to Meta (inbox / catalog orders) */}
-          <div className="bg-card border rounded-2xl p-5 shadow-xs">
-            <label className="flex items-start gap-2.5 text-xs text-foreground cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={reportToMeta}
-                onChange={(e) => setReportToMeta(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary accent-primary cursor-pointer"
-              />
-              <span>
-                <span className="block font-semibold uppercase tracking-wider">Report to Meta as a confirmed order</span>
-                <span className="block text-[11px] text-muted-foreground mt-0.5">
-                  For orders from the Facebook inbox or catalog. Sends one ConfirmedOrder event (server only, no Purchase) once the order is processing.
-                </span>
-              </span>
-            </label>
-            {reportToMeta && (
-              <div className="mt-3 pl-6 space-y-1.5">
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-foreground">
-                  Which site's Meta pixel?
-                </label>
-                <select
-                  value={metaSite}
-                  onChange={(e) => setMetaSite(e.target.value)}
-                  className="w-full text-xs bg-background border border-input rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
-                >
-                  <option value="">Select a site…</option>
-                  <option value="store">Store</option>
-                  <option value="shop">Shop</option>
-                </select>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Right Column: Delivery Tier, Custom Discount, Payment & Order Summary */}
@@ -2083,6 +2055,39 @@ const NewCustomOrderPage = () => {
                 {formatBDT(pendingAmount)}
               </span>
             </div>
+          </div>
+
+          <div className="bg-card border border-primary/30 rounded-2xl p-5 shadow-xs">
+            <label className="flex items-start gap-2.5 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={reportToMeta}
+                onChange={(e) => setReportToMeta(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary accent-primary cursor-pointer"
+              />
+              <span>
+                <span className="block font-semibold uppercase tracking-wider">Report to Meta on Confirmation</span>
+                <span className="block text-[11px] text-muted-foreground mt-0.5">
+                  Sends a server-side CAPI <strong>Purchase</strong> (Store) or <strong>ConfirmedOrder</strong> (Shop) once this order is moved to Processing. Auto-enabled for abandoned checkouts.
+                </span>
+              </span>
+            </label>
+            {reportToMeta && (
+              <div className="mt-3 pl-6 space-y-1.5">
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                  Which site&apos;s Meta pixel?
+                </label>
+                <select
+                  value={metaSite}
+                  onChange={(e) => setMetaSite(e.target.value)}
+                  className="w-full text-xs bg-background border border-input rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                >
+                  <option value="">Select a site…</option>
+                  <option value="store">Surokkha.store (sends Purchase)</option>
+                  <option value="shop">Surokkha.shop (sends ConfirmedOrder)</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Order Summary & Confirm Action */}

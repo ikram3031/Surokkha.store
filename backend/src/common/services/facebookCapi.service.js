@@ -573,12 +573,16 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
   }
 };
 
-// Sends the server-only ConfirmedOrder event for a website order, or a custom inbox order staff opted in, once it is processing
+// Sends Meta conversion once an order is processing: Purchase for Surokkha.store, ConfirmedOrder for Shop
 export const sendServerConfirmedOrderEvent = (order) => {
   if (!order) return;
   const isWebsiteOrder = (order.orderType || "online") === "online" && !String(order.orderNumber || "").startsWith("CO");
   const isReportedCustomOrder = order.orderType === "custom" && order.reportToMeta === true;
   if (!isWebsiteOrder && !isReportedCustomOrder) return;
+  const site = (order.metaSite || order.siteKey) === "store" ? "store" : "shop";
+  if (site === "store") {
+    return sendServerPurchaseEvent(order, null, { eventName: "Purchase", eventIdPrefix: "purchase_" });
+  }
   return sendServerPurchaseEvent(order, null, { eventName: "ConfirmedOrder", eventIdPrefix: "confirmed_" });
 };
 

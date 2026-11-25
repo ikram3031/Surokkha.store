@@ -5,6 +5,7 @@ import { BillingModel } from '../../common/models/billing.model.js';
 import { BillTypeModel } from '../../common/models/billType.model.js';
 import { validateOrderPayload } from '../../common/helper/orderHelper.js';
 import { OrderModel } from '../../common/models/order.model.js';
+import { CheckoutLeadModel } from '../../common/models/checkoutLead.model.js';
 import { ProductModel } from '../../common/models/product.model.js';
 import { ItemModel } from '../../common/models/item.model.js';
 import { CouponModel } from '../../common/models/coupon.model.js';
@@ -175,6 +176,20 @@ export const createOrder = async (req, res, next) => {
     }
 
     const orderData = await buildOrderDocument(payload, req);
+    if (payload.checkoutLeadId && Types.ObjectId.isValid(payload.checkoutLeadId)) {
+      const lead = await CheckoutLeadModel.findById(payload.checkoutLeadId).select('fbp fbc ipAddress userAgent sourceUrl').lean().catch(() => null);
+      if (lead) {
+        orderData.tracking = {
+          ...(orderData.tracking || {}),
+          fbp: lead.fbp || '',
+          fbc: lead.fbc || '',
+          ipAddress: lead.ipAddress || orderData.ipAddress || null,
+          userAgent: lead.userAgent || '',
+          pageUrl: lead.sourceUrl || '',
+        };
+        if (lead.ipAddress) orderData.ipAddress = lead.ipAddress;
+      }
+    }
     const createdOrder = await OrderModel.create(orderData);
 
     await syncOrderStock(createdOrder, { init: true, actor: req.user?.name || req.user?.did || 'staff' });

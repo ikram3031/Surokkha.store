@@ -211,7 +211,7 @@ export const createOrder = async (req, res, next) => {
       String(createdOrder.orderNumber || "").startsWith("CO");
 
     if (!isInstoreOrder && !isCustomOrder) {
-      sendServerPurchaseEvent(createdOrder, req);
+      sendServerPurchaseEvent(createdOrder, req, { eventName: "OrderPlaced", eventIdPrefix: "placed_" });
       sendTikTokServerPurchaseEvent(createdOrder, req);
     }
 

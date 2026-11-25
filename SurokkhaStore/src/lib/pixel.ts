@@ -146,7 +146,24 @@ export const pixelTrack = (event: string, data?: Record<string, unknown>, eventI
       window.fbq?.(...args)
     }
   } catch {
-    /* tracking must never break the storefront */
+    return
+  }
+}
+
+// Tracks a custom Meta pixel event (e.g. OrderPlaced) with optional deduplication eventID
+export const pixelTrackCustom = (event: string, data?: Record<string, unknown>, eventId?: string) => {
+  try {
+    const args: unknown[] = eventId
+      ? ['trackCustom', event, data ?? {}, { eventID: eventId }]
+      : ['trackCustom', event, data ?? {}]
+    if (pending) {
+      pending.push(args)
+      initPixel()
+    } else {
+      window.fbq?.(...args)
+    }
+  } catch {
+    return
   }
 }
 

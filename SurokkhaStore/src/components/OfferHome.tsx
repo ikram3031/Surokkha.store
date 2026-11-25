@@ -31,7 +31,7 @@ import { api, ApiError } from '@/lib/api/client'
 import { checkPhone } from '@/lib/api/orders'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 import { normalizePhone, toEnDigits } from '@/lib/checkout'
-import { getFbIdentifiers, pixelTrack as track, setPixelUserData } from '@/lib/pixel'
+import { getFbIdentifiers, pixelTrack as track, pixelTrackCustom as trackCustom, setPixelUserData } from '@/lib/pixel'
 import { newEventId, trackAddToCart, trackViewContent } from '@/lib/api/events'
 import { trackProductEvents, trackProductView, type ProductEventType } from '@/lib/api/productEvents'
 import { bn, taka } from '@/lib/bn'
@@ -555,9 +555,8 @@ export function OfferHome() {
       })
       const orderNumber = res?.data?.orderNumber ?? ''
       setPixelUserData(info)
-      // Fire Purchase once per order; the eventID matches the server CAPI event_id so Meta dedupes the pair
-      if (!orderNumber || !trackedOrders.has(orderNumber)) track(
-        'Purchase',
+      if (!orderNumber || !trackedOrders.has(orderNumber)) trackCustom(
+        'OrderPlaced',
         {
           content_ids: [...lines.map((l) => l.product.did || l.variant?.sku || l.product.sku || l.product.id), ...trialLines.map((l) => l.product.did)],
           contents: [
@@ -569,7 +568,7 @@ export function OfferHome() {
           value: total,
           currency: 'BDT',
         },
-        orderNumber || undefined,
+        orderNumber ? `placed_${orderNumber}` : undefined,
       )
       if (orderNumber) trackedOrders.add(orderNumber)
       sendCheckoutAnalytics()

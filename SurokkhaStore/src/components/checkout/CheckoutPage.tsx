@@ -31,7 +31,7 @@ import {
 } from '@/lib/checkout'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
-import { getFbIdentifiers, pixelTrack, setPixelUserData } from '@/lib/pixel'
+import { getFbIdentifiers, pixelTrack, pixelTrackCustom, setPixelUserData } from '@/lib/pixel'
 import { productKeyOf, trackProductEvents, type ProductEventType } from '@/lib/api/productEvents'
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 import { L } from '@/lib/i18n'
@@ -404,8 +404,8 @@ export function CheckoutPage() {
       })
       const orderNumber = String(res.data?.orderNumber ?? '')
       setPixelUserData(billing)
-      pixelTrack(
-        'Purchase',
+      pixelTrackCustom(
+        'OrderPlaced',
         {
           content_ids: lines.map((l) => l.product.did ?? l.product.slug ?? String(l.product.id)),
           contents: lines.map((l) => ({
@@ -418,7 +418,7 @@ export function CheckoutPage() {
           value: totals.total,
           currency: 'BDT',
         },
-        orderNumber || undefined,
+        orderNumber ? `placed_${orderNumber}` : undefined,
       )
       trackProductEvents(productEventLines('purchase'))
       resetCheckoutSession()
