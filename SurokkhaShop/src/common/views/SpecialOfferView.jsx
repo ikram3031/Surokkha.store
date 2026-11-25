@@ -64,6 +64,26 @@ const ADDONS = [
 ];
 
 const DEFAULT_PACK = PACKS[1];
+const INSIDE_SLIDES = [
+  {
+    key: '12',
+    src: 'https://admin.surokkha.store/uploads/2611/261124/mo-3-in-1-smart-pack-12-pcs_main_1795553637729.webp',
+    alt: 'MO 3-in-1 Smart Pack ১২ পিসের বক্স',
+    label: '১২ পিসের বক্স · ৩ ভ্যারিয়েন্ট',
+  },
+  {
+    key: '18',
+    src: '/special-offer-img/photo.webp',
+    alt: 'MO 3-in-1 Smart Pack ১৮ পিসের বক্স',
+    label: '১৮ পিসের বক্স · ৩ ভ্যারিয়েন্ট',
+  },
+  {
+    key: '30',
+    src: 'https://admin.surokkha.store/uploads/2611/261124/ultimate-3-in-1-pack-30-pcs_main_1795553759468.webp',
+    alt: 'MO 3-in-1 Smart Pack ৩০ পিসের বক্স',
+    label: '৩০ পিসের বক্স · ৩ ভ্যারিয়েন্ট',
+  },
+];
 const MAX_ADDON = 5;
 const FREE_DELIVERY_MIN = 1500;
 const WHATSAPP = '8801600905774';
@@ -180,6 +200,8 @@ const SpecialOfferView = () => {
   const [otpErr, setOtpErr] = useState('');
   const [otpSentMsg, setOtpSentMsg] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [slideInstant, setSlideInstant] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
   const startedRef = useRef(false);
   const cartedRef = useRef(false);
@@ -248,6 +270,22 @@ const SpecialOfferView = () => {
     if (orderRef.current) o2.observe(orderRef.current);
     return () => { o1.disconnect(); o2.disconnect(); };
   }, []);
+
+  useEffect(() => {
+    if (slideInstant) return undefined;
+    const timer = setTimeout(() => {
+      setSlideIdx((i) => (i >= INSIDE_SLIDES.length ? 1 : i + 1));
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [slideIdx, slideInstant]);
+
+  useEffect(() => {
+    if (!slideInstant) return undefined;
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setSlideInstant(false)));
+    return () => cancelAnimationFrame(id);
+  }, [slideInstant]);
+
+  const activeSlide = slideIdx % INSIDE_SLIDES.length;
 
   // Changes one add-on count within its limits and tracks additions
   const changeAddon = (a, delta) => {
@@ -540,8 +578,36 @@ const SpecialOfferView = () => {
               <h2 className="sec-title">৩ ধরনের MO</h2>
             </div>
             <div className="inside-grid">
-              <div className="photo skh-i-photo" role="img" aria-label="MO Smart Pack-এর প্যাকেটসমূহ">
-                <div className="photo-badge">MO 3-in-1 Smart Pack<small>১২, ১৮ ও ৩০ পিস · ৩ ভ্যারিয়েন্ট</small></div>
+              <div className="photo" aria-label="MO Smart Pack-এর প্যাকেটসমূহ">
+                <div
+                  className="photo-track"
+                  style={{ transform: `translateX(-${slideIdx * 100}%)`, transition: slideInstant ? 'none' : undefined }}
+                  onTransitionEnd={() => {
+                    if (slideIdx >= INSIDE_SLIDES.length) {
+                      setSlideInstant(true);
+                      setSlideIdx(0);
+                    }
+                  }}
+                >
+                  {[...INSIDE_SLIDES, INSIDE_SLIDES[0]].map((s, idx) => (
+                    <img key={`${s.key}-${idx}`} className="photo-slide" src={s.src} alt={s.alt} loading="eager" />
+                  ))}
+                </div>
+                <div className="photo-badge">
+                  MO 3-in-1 Smart Pack
+                  <small>{INSIDE_SLIDES[activeSlide].label}</small>
+                </div>
+                <div className="photo-dots" role="tablist" aria-label="প্যাকের ছবি">
+                  {INSIDE_SLIDES.map((s, idx) => (
+                    <button
+                      key={s.key}
+                      type="button"
+                      className={`photo-dot${activeSlide === idx ? ' on' : ''}`}
+                      aria-label={s.alt}
+                      onClick={() => { setSlideInstant(false); setSlideIdx(idx); }}
+                    />
+                  ))}
+                </div>
               </div>
               <div className="variants">
                 <div className="variants-cols">

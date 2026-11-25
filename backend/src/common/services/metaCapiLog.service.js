@@ -3,7 +3,7 @@ import { notifyOwners, buildNotificationHtml, rowsToText, formatWhen } from "./n
 import { logger } from "../config/logger.js";
 import { config } from "../config/index.js";
 
-const GRAPH_VERSION = "v19.0";
+const GRAPH_VERSION = "v21.0";
 const RETRY_DELAYS_MIN = [1, 5, 15, 60, 180, 360];
 const ALERT_THROTTLE_MS = 30 * 60 * 1000;
 

@@ -511,6 +511,7 @@ export function OfferHome() {
         orderPrefix: 'ST',
         paymentMethod: 'Cash on Delivery',
         ...getFbIdentifiers(),
+        eventSourceUrl: window.location.href,
         checkoutSessionId: getCheckoutSessionId(),
         turnstileToken: captcha,
         billingInfo: info,
@@ -558,9 +559,9 @@ export function OfferHome() {
       if (!orderNumber || !trackedOrders.has(orderNumber)) track(
         'Purchase',
         {
-          content_ids: [...lines.map((l) => l.variant?.sku || l.product.sku || l.product.id), ...trialLines.map((l) => l.product.did)],
+          content_ids: [...lines.map((l) => l.product.did || l.variant?.sku || l.product.sku || l.product.id), ...trialLines.map((l) => l.product.did)],
           contents: [
-            ...lines.map((l) => ({ id: l.variant?.sku || l.product.sku || l.product.id, quantity: l.qty, item_price: l.unitPrice })),
+            ...lines.map((l) => ({ id: l.product.did || l.variant?.sku || l.product.sku || l.product.id, quantity: l.qty, item_price: l.unitPrice })),
             ...trialLines.map((l) => ({ id: l.product.did, quantity: l.qty, item_price: l.product.unitPrice })),
           ],
           content_type: 'product',
@@ -745,7 +746,7 @@ export function OfferHome() {
                           className="w-full min-w-0 bg-transparent px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400" />
                       </div>
                     </Field>
-                    <Field label={L('Email', 'ইমেইল')} error={errors.email}>
+                    <Field label={L('Email', 'ইমেইল')} required error={errors.email}>
                       <input type="email" autoComplete="email" placeholder="you@example.com" value={form.email}
                         onChange={(e) => setField('email', e.target.value)} onBlur={() => validate('email')}
                         className={inputCls(!!errors.email)} />
@@ -778,7 +779,7 @@ export function OfferHome() {
                         className={`${inputCls(!!errors.address)} resize-none`} />
                     </Field>
                     <Field label={L('Special instructions', 'বিশেষ নির্দেশনা')} optional className="sm:col-span-2">
-                      <input value={form.note} placeholder={L('e.g. Deliver in the afternoon', 'যেমন: বিকেলে ডেলিভারি দিন')} onChange={(e) => setField('note', e.target.value)}
+                      <input value={form.note} onChange={(e) => setField('note', e.target.value)}
                         className={inputCls(false)} />
                     </Field>
                   </div>

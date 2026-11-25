@@ -8,12 +8,21 @@ import { MemberModel } from "../models/member.model.js";
 import { ProductModel } from "../models/product.model.js";
 import { dispatchCapiEvent, recordCapiSkip } from "./metaCapiLog.service.js";
 
+const GRAPH_VERSION = "v21.0";
+
 // Computes SHA-256 hash for CAPI user data normalization
 const sha256 = (value) => {
   if (!value || typeof value !== "string") return "";
   const cleanVal = value.trim().toLowerCase();
   if (!cleanVal) return "";
   return crypto.createHash("sha256").update(cleanVal).digest("hex");
+};
+
+// Normalizes city/state for Meta CAPI (lowercase letters only, skipping non-geographic placeholders)
+const normalizeLocation = (value) => {
+  const clean = String(value || "").toLowerCase().replace(/[^a-z]/g, "");
+  if (!clean || clean === "outsidedhaka") return "";
+  return clean;
 };
 
 // Bangladeshi phone as 8801XXXXXXXXX digits for hashed matching
@@ -126,7 +135,7 @@ export const testMetaCapiConnection = async ({ pixelId, accessToken, testEventCo
     };
   }
 
-  const endpoint = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
+  const endpoint = `https://graph.facebook.com/${GRAPH_VERSION}/${pixelId}/events?access_token=${accessToken}`;
   const testPayload = {
     data: [
       {
@@ -388,9 +397,9 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
         customer.thana ||
         req?.body?.billingInfo?.city ||
         req?.body?.billingInfo?.district ||
-        "dhaka"
+        ""
       );
-      const hashedCity = sha256(rawCity);
+      const hashedCity = sha256(normalizeLocation(rawCity));
 
       const rawState = (
         customer.state ||
@@ -402,9 +411,9 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
         req?.body?.state ||
         req?.body?.division ||
         req?.body?.district ||
-        "dhaka"
+        ""
       );
-      const hashedState = sha256(rawState);
+      const hashedState = sha256(normalizeLocation(rawState));
 
       const rawZip = customer.zip || req?.body?.billingInfo?.zip || "";
       const hashedCountry = sha256("bd");
@@ -626,8 +635,10 @@ export const sendServerViewContentEvent = async ({
         if (user.ln) userData.ln = [sha256(user.ln)];
       }
 
-      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
-      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      const normCt = normalizeLocation(user.city || user.district);
+      const normSt = normalizeLocation(user.state || user.division || user.district);
+      if (normCt) userData.ct = [sha256(normCt)];
+      if (normSt) userData.st = [sha256(normSt)];
       userData.country = [sha256("bd")];
     }
 
@@ -676,7 +687,7 @@ export const sendServerViewContentEvent = async ({
       ...(testEventCode ? { test_event_code: testEventCode } : {}),
     };
 
-    const endpoint = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
+    const endpoint = `https://graph.facebook.com/${GRAPH_VERSION}/${pixelId}/events?access_token=${accessToken}`;
 
     fetch(endpoint, {
       method: "POST",
@@ -754,8 +765,10 @@ export const sendServerAddToCartEvent = async ({
         if (user.ln) userData.ln = [sha256(user.ln)];
       }
 
-      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
-      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      const normCt = normalizeLocation(user.city || user.district);
+      const normSt = normalizeLocation(user.state || user.division || user.district);
+      if (normCt) userData.ct = [sha256(normCt)];
+      if (normSt) userData.st = [sha256(normSt)];
       userData.country = [sha256("bd")];
     }
 
@@ -806,7 +819,7 @@ export const sendServerAddToCartEvent = async ({
       ...(testEventCode ? { test_event_code: testEventCode } : {}),
     };
 
-    const endpoint = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
+    const endpoint = `https://graph.facebook.com/${GRAPH_VERSION}/${pixelId}/events?access_token=${accessToken}`;
 
     fetch(endpoint, {
       method: "POST",
@@ -869,8 +882,10 @@ export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, 
         if (user.ln) userData.ln = [sha256(user.ln)];
       }
 
-      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
-      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      const normCt = normalizeLocation(user.city || user.district);
+      const normSt = normalizeLocation(user.state || user.division || user.district);
+      if (normCt) userData.ct = [sha256(normCt)];
+      if (normSt) userData.st = [sha256(normSt)];
       userData.country = [sha256('bd')];
     }
 
@@ -891,7 +906,7 @@ export const sendServerInitiateCheckoutEvent = async ({ customData, req = null, 
       ...(testEventCode ? { test_event_code: testEventCode } : {}),
     };
 
-    fetch(`https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`, {
+    fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${pixelId}/events?access_token=${accessToken}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -950,8 +965,10 @@ export const sendServerAddPaymentInfoEvent = async ({ customData, req = null, ev
         if (user.ln) userData.ln = [sha256(user.ln)];
       }
 
-      if (user.city || user.district) userData.ct = [sha256(user.city || user.district)];
-      if (user.state || user.division || user.district) userData.st = [sha256(user.state || user.division || user.district)];
+      const normCt = normalizeLocation(user.city || user.district);
+      const normSt = normalizeLocation(user.state || user.division || user.district);
+      if (normCt) userData.ct = [sha256(normCt)];
+      if (normSt) userData.st = [sha256(normSt)];
       userData.country = [sha256('bd')];
     }
 
@@ -972,7 +989,7 @@ export const sendServerAddPaymentInfoEvent = async ({ customData, req = null, ev
       ...(testEventCode ? { test_event_code: testEventCode } : {}),
     };
 
-    fetch(`https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`, {
+    fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${pixelId}/events?access_token=${accessToken}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

@@ -132,20 +132,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     toast.success(`${rule.name} added to cart`)
     // Dashboard analytics: one add-to-cart per combo, however many products were picked
     const picked = picks.filter((x) => x.qty > 0)
+    const groupValue = picked.reduce((s, x) => s + x.product.unitPrice * x.qty, 0)
+    const eventId = newEventId('atc')
+    trackAddToCart({ productDid: picked[0]?.product.did || rule.slug, productName: rule.name, price: groupValue, qty: 1, eventId })
     trackProductEvents([{
       eventType: 'add_to_cart',
       productKey: `combo:${rule.slug}`,
       productName: rule.name,
       quantity: 1,
-      value: picked.reduce((s, x) => s + x.product.unitPrice * x.qty, 0),
+      value: groupValue,
     }])
     pixelTrack('AddToCart', {
-      content_ids: picks.filter((x) => x.qty > 0).map((x) => x.product.did),
+      content_ids: picked.map((x) => x.product.did),
       content_name: rule.name,
       content_type: 'product',
-      value: picks.reduce((s, x) => s + x.product.unitPrice * x.qty, 0),
+      value: groupValue,
       currency: 'BDT',
-    })
+    }, eventId)
   }
   const clear = () => setCart({})
   const inc = (id: number) =>

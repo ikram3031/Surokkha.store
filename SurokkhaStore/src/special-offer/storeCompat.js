@@ -1,4 +1,5 @@
 import { getExternalId, getFbIdentifiers, pixelTrack, setPixelUserData } from '@/lib/pixel';
+import { newEventId, trackAddToCart, trackViewContent } from '@/lib/api/events';
 import { trackPageView, trackProductEvents } from '@/lib/api/productEvents';
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead as storeSaveCheckoutLead } from '@/lib/api/checkoutLeads';
 import { DISTRICT_NAMES, DISTRICT_BN } from '@/data/districts';
@@ -14,7 +15,7 @@ export const SITE_CONFIG = {
 
 export const DISTRICTS = DISTRICT_NAMES.map((name) => ({ name }));
 
-export { DISTRICT_BN, getCheckoutSessionId, resetCheckoutSession, getExternalId, trackProductEvents, pixelTrack };
+export { DISTRICT_BN, getCheckoutSessionId, resetCheckoutSession, getExternalId, trackProductEvents, pixelTrack, newEventId, trackAddToCart, trackViewContent };
 
 export const getFbp = () => getFbIdentifiers().fbp || '';
 

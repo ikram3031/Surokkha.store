@@ -1,6 +1,10 @@
 import { StrictMode, type ComponentType } from 'react'
 import { createRoot } from 'react-dom/client'
 import { loadSiteConfig } from '@/lib/siteConfig'
+import { captureFbclid, initPixel } from '@/lib/pixel'
+
+captureFbclid()
+initPixel()
 
 // The site config (CMS content) loads before anything else renders, so CMS images are
 // there on the first paint. A slow API never blocks the site for more than a moment:

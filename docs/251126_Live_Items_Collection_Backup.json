@@ -1,0 +1,4824 @@
+[
+  {
+    "_id": {
+      "$oid": "6ac673a4721c81cc89341d1d"
+    },
+    "slug": "ky-jelly-personal-lubricant-gel-50g",
+    "benefits": [
+      {
+        "title": "Water-Based & Soluble",
+        "desc": "Washes away easily with warm water without staining bedsheets or clothing.",
+        "icon": "droplet"
+      },
+      {
+        "title": "Fragrance & Color Free",
+        "desc": "Hypoallergenic, transparent, and unscented to prevent irritation on delicate tissue.",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Condom & Toy Compatible",
+        "desc": "100% safe to pair with natural latex, polyisoprene, and silicone intimate products.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Doctor Recommended",
+        "desc": "Trusted clinical formulation used worldwide in hospitals and homes for gentle lubrication.",
+        "icon": "award"
+      }
+    ],
+    "bn": {},
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac06c4a48d37618fae36c3a"
+      }
+    ],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1791390628854"
+      }
+    },
+    "createdBy": null,
+    "description": "K-Y Jelly Personal Lubricant is globally recognized by healthcare professionals as the standard for gentle, safe lubrication. Formulated with a clear, water-soluble, non-greasy base, it replicates natural moisture, alleviating intimate discomfort and friction. Completely safe for use with latex and polyisoprene contraceptives.",
+    "did": "5f3afc27eaaef962",
+    "excludeFromMetaCatalog": false,
+    "expiryDate": "Valid until 2028 (3 Years from MFG)",
+    "imageUrl": "/uploads/2610/261029/ky-jelly-personal-lubricant-gel-50g_main_1793297012453.webp",
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "name": "KY Jelly Personal Lubricant Gel 50g",
+    "offerPrice": {
+      "$numberInt": "370"
+    },
+    "origin": "Reckitt Benckiser",
+    "packSize": "50g Tube",
+    "packageContents": "1 Sterile Tube of K-Y Jelly (50g)",
+    "price": {
+      "$numberInt": "450"
+    },
+    "sections": [
+      {
+        "title": "How to Apply",
+        "content": "Squeeze desired amount directly onto intimate areas or onto the outside of a fitted contraceptive. Reapply as needed for continued comfort."
+      }
+    ],
+    "sku": "SKU-3154",
+    "specifications": [
+      {
+        "key": "Base Type",
+        "value": "Water-Based Gel"
+      },
+      {
+        "key": "Net Weight",
+        "value": "50 grams"
+      },
+      {
+        "key": "Color & Aroma",
+        "value": "Clear / Unscented"
+      },
+      {
+        "key": "Latex Friendly",
+        "value": "Yes, 100% Compatible"
+      },
+      {
+        "key": "Packaging",
+        "value": "Sealed Squeeze Tube"
+      }
+    ],
+    "stockAmount": {
+      "$numberInt": "50"
+    },
+    "stockStatus": "outofstock",
+    "tags": [
+      "ky jelly",
+      "personal lubricant",
+      "water based",
+      "intimate gel",
+      "sterile"
+    ],
+    "thumbnailUrl": "/uploads/2610/261029/ky-jelly-personal-lubricant-gel-50g_main_1793297012453.webp",
+    "type": "simple",
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367689584"
+      }
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "gallery": [
+      "/uploads/2610/261025/ky-jelly-personal-lubricant-gel-50g_main_1792935901502.webp"
+    ],
+    "longDescription": "",
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "stockItem": {
+      "$oid": "6af0c58446840d9801cfae6e"
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ac8dd82721398f2bcc939dc"
+    },
+    "name": "Durex Bubblegum - Extra Thin Premium Natural Latex - 12 Pcs Pack",
+    "slug": "durex-extra-thin-premium-natural-latex-12-pcs",
+    "did": "3f67604ac84f1d82",
+    "price": {
+      "$numberInt": "550"
+    },
+    "offerPrice": {
+      "$numberInt": "480"
+    },
+    "type": "simple",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "description": "<p>Designed for high sensitivity and a deep connection, these extra thin items offer a natural feel without compromising on protection. Made from transparent, lubricated natural latex with a straight-walled fit for optimal comfort.</p>",
+    "longDescription": "<p><strong>Product Details:</strong></p><ul><li><strong>Design:</strong> Extra thin for high sensitivity</li><li><strong>Shape:</strong> Straight-walled with teat end for an easier fit</li><li><strong>Material:</strong> Transparent, lubricated natural latex</li><li><strong>Dimensions:</strong> Length 180mm, Nominal Width 53mm</li></ul><p>Enjoy a seamless experience with an improved grip and comfortable fit. Rigorously tested electronically to ensure premium quality and peace of mind.</p>",
+    "origin": "India",
+    "packSize": "10 Pieces (1 Pack)",
+    "specifications": {
+      "Material": "Premium Natural Rubber Latex",
+      "Thickness": "Extra Thin",
+      "Shape": "Straight-walled",
+      "Width": "53mm",
+      "Length": "180mm"
+    },
+    "tags": [
+      "durex",
+      "extra thin",
+      "natural latex",
+      "premium"
+    ],
+    "metaData": {
+      "metaTitle": "Durex Extra Thin Premium Natural Latex - 10 Pcs Pack",
+      "metaDescription": "Buy Durex Extra Thin Premium Natural Latex 10 Pcs Pack online. Ultra-thin design for maximum sensitivity and natural feel.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "benefits": [],
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      },
+      {
+        "$oid": "6ab81620a561a97a08a0de92"
+      }
+    ],
+    "expiryDate": "2030",
+    "gallery": [],
+    "imageUrl": "/uploads/2610/261029/durex-extra-thin-premium-natural-latex-12-pcs_main_1793273689414.webp",
+    "packageContents": "",
+    "sections": [],
+    "sku": "",
+    "stockStatus": "outofstock",
+    "thumbnailUrl": "/uploads/2610/261029/durex-extra-thin-premium-natural-latex-12-pcs_main_1793273689414.webp",
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367689800"
+      }
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockItem": {
+      "$oid": "6af0d2f46c4261893172a303"
+    },
+    "stockQty": {
+      "$numberInt": "12"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6acb00ae52259e0f0be45c55"
+    },
+    "name": "Xtreme Ultra Thin Premium Condom 9 Pcs (3 Packs Combo)",
+    "slug": "xtreme-ultra-thin-premium-9-pcs-combo",
+    "did": "ea692a5844d344fb",
+    "description": "Xtreme Ultra Thin Premium Condom by SMC Wellness is designed for maximum sensitivity and a natural, skin-to-skin feeling. This 3-pack bundle offers 9 pieces of reliable, ultra-thin condom protection with premium lubrication for enhanced comfort.",
+    "longDescription": "",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "270"
+    },
+    "offerPrice": null,
+    "sku": "SKU-1710",
+    "tags": [
+      "condom",
+      "contraceptive",
+      "smc wellness",
+      "xtreme"
+    ],
+    "metaData": {
+      "metaTitle": "Xtreme Ultra Thin Premium Condom 9 Pcs (3 Packs Combo)",
+      "metaDescription": "Xtreme Ultra Thin Premium Condom by SMC Wellness is designed for maximum sensitivity and a natural, skin-to-skin feeling. This 3-pack bundle offers 9 pieces of",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "f27fa8bd1269cdc9"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261110/xtreme-ultra-thin-premium-9-pcs-combo_main_1794338559673.webp",
+    "thumbnailUrl": "/uploads/2611/261110/xtreme-ultra-thin-premium-9-pcs-combo_main_1794338559673.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "SMC Wellness, Bangladesh",
+    "packSize": "9 Pieces (3 Packs)",
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped Ultra Thin Condoms)",
+    "specifications": [
+      {
+        "key": "Bundle Contents",
+        "value": "3 Full Retail Packs (3 pcs per pack = Total 9 Condoms)"
+      },
+      {
+        "key": "Brand",
+        "value": "Xtreme (SMC Wellness)"
+      },
+      {
+        "key": "Product Type",
+        "value": "Ultra Thin Condom"
+      },
+      {
+        "key": "Material",
+        "value": "Premium Natural Rubber Latex"
+      },
+      {
+        "key": "Design",
+        "value": "Ultra-thin for enhanced sensitivity"
+      },
+      {
+        "key": "Lubrication",
+        "value": "Premium Silicone Lubricant"
+      },
+      {
+        "key": "Usage",
+        "value": "Single use only (Contraceptive barrier)"
+      },
+      {
+        "key": "Quality Standard",
+        "value": "100% Electronically tested"
+      }
+    ],
+    "benefits": [
+      {
+        "title": "Saver Combo Deal (3 Packs)",
+        "desc": "Get 3 full packs (9 condoms total) in one bundle for convenience and uninterrupted supply.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Ultra-Thin Design",
+        "desc": "Significantly thinner than standard condoms to reduce the barrier sensation and provide a closer, more natural feel.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Enhanced Sensitivity",
+        "desc": "Maximizes skin-to-skin contact and warmth transfer for a highly intimate experience.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Premium Lubrication",
+        "desc": "Pre-lubricated to reduce friction, enhance comfort, and prevent dryness during intimacy.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Reliable Protection",
+        "desc": "Acts as a highly effective barrier against unintended pregnancy and STIs when used correctly.",
+        "icon": "shield-check"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose Xtreme Ultra Thin?",
+        "content": "A thinner condom provides greater sensitivity and a less noticeable barrier. Designed for couples who prioritize a close and natural feel without compromising on safety."
+      },
+      {
+        "title": "Safety & Reliability",
+        "content": "Manufactured by SMC Wellness. Each condom is electronically tested for reliability, ensuring leak-proof protection and peace of mind."
+      },
+      {
+        "title": "Usage Guidelines",
+        "content": "Carefully tear the wrapper from the edge. Do not use sharp objects. Ensure correct direction before rolling it down. Single-use only; store in a cool, dry place away from sunlight."
+      }
+    ],
+    "bn": {
+      "name": "এক্সট্রিম আল্ট্রা থিন প্রিমিয়াম কনডম ৯ পিস (৩ প্যাক কম্বো)",
+      "tagline": "৯ পিসের বিশেষ কনডম কম্বো — সুপার সেনসিটিভিটি এবং ন্যাচারাল অনুভূতির জন্য আল্ট্রা থিন ডিজাইন",
+      "description": "এসএমসি ওয়েলনেসের এক্সট্রিম আল্ট্রা থিন কনডম আপনাকে দেবে সর্বাধিক সেনসিটিভিটি এবং প্রাকৃতিক স্কিন-টু-স্কিন অনুভূতি। এই ৩-প্যাক কম্বোতে ৯টি কনডম রয়েছে যা প্রিমিয়াম লুব্রিকেশন সহ সর্বোচ্চ আরাম ও নির্ভরযোগ্য সুরক্ষা নিশ্চিত করে।",
+      "packSize": "৯ পিস (৩টি প্যাক)",
+      "packageContents": "৩টি রিটেইল প্যাক (মোট ৯টি সিল্ড ফয়েল প্যাক)",
+      "specifications": [
+        {
+          "key": "বান্ডেল বিবরণ",
+          "value": "৩টি সম্পূর্ণ রিটেইল প্যাক (প্রতিটিতে ৩ পিস = মোট ৯ পিস)"
+        },
+        {
+          "key": "ব্র্যান্ড",
+          "value": "এক্সট্রিম / Xtreme (SMC Wellness)"
+        },
+        {
+          "key": "ধরণ",
+          "value": "আল্ট্রা থিন কনডম"
+        },
+        {
+          "key": "উপাদান",
+          "value": "প্রিমিয়াম ন্যাচারাল রাবার ল্যাটেক্স"
+        },
+        {
+          "key": "ডিজাইন",
+          "value": "বাড়তি অনুভূতির জন্য আল্ট্রা থিন"
+        },
+        {
+          "key": "লুব্রিকেশন",
+          "value": "প্রিমিয়াম সিলিকন লুব্রিকেন্ট"
+        },
+        {
+          "key": "ব্যবহার",
+          "value": "শুধুমাত্র একবার ব্যবহারের জন্য"
+        },
+        {
+          "key": "কোয়ালিটি টেস্টিং",
+          "value": "১০০% ইলেকট্রনিক লিক টেস্টেড"
+        }
+      ],
+      "benefits": [
+        {
+          "title": "৩ প্যাকের সাশ্রয়ী কম্বো",
+          "desc": "একসাথে ৩টি প্যাক (মোট ৯ পিস), যা বারবার কেনার ঝামেলা কমায় এবং দীর্ঘস্থায়ী স্টক নিশ্চিত করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "আল্ট্রা-থিন ডিজাইন",
+          "desc": "সাধারণ কনডমের তুলনায় অনেক পাতলা, যা সম্পর্কের মাঝে বাধার অনুভূতি কমায় এবং আরও ন্যাচারাল ফিল দেয়।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "সর্বোচ্চ সেনসিটিভিটি",
+          "desc": "স্কিন-টু-স্কিন স্পর্শ এবং উষ্ণতা ঠিক রেখে অন্তরঙ্গ মুহূর্তকে করে তোলে আরও আনন্দদায়ক।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "প্রিমিয়াম লুব্রিকেশন",
+          "desc": "পর্যাপ্ত লুব্রিকেন্ট যুক্ত থাকায় ঘর্ষণজনিত জ্বালাপোড়া বা অস্বস্তি দূর করে ও স্মুথ অভিজ্ঞতা দেয়।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "নির্ভরযোগ্য সুরক্ষা",
+          "desc": "সঠিক নিয়মে ব্যবহারে অনাকাঙ্ক্ষিত গর্ভধারণ ও এসটিআই (STI) থেকে সুরক্ষিত রাখে।",
+          "icon": "shield-check"
+        }
+      ],
+      "sections": [
+        {
+          "title": "এক্সট্রিম আল্ট্রা থিন কেন বেছে নিবেন?",
+          "content": "যারা সুরক্ষার পাশাপাশি একদম স্বাভাবিক অনুভূতি চান, তাদের জন্য এটি সেরা পছন্দ। এর অতি-পাতলা আবরণ আপনাকে কনডম ব্যবহারের অনুভূতি ভুলিয়ে দেবে।"
+        },
+        {
+          "title": "সুরক্ষা ও গুণগত মান",
+          "content": "এসএমসি ওয়েলনেসের প্রতিটি কনডম স্বয়ংক্রিয় মেশিনে ইলেকট্রনিক্যালি টেস্ট করা হয়। ফলে ফেটে যাওয়া বা লিক হওয়ার কোনো ভয় থাকে না।"
+        },
+        {
+          "title": "ব্যবহার ও সংরক্ষণ",
+          "content": "প্যাকেটের এক পাশ থেকে সাবধানে ছিঁড়ুন, দাঁত বা কাঁচি ব্যবহার করবেন না। ব্যবহারের পর ডাস্টবিনে ফেলে দিন। সরাসরি সূর্যালোক থেকে দূরে ঠাণ্ডা ও শুষ্ক স্থানে সংরক্ষণ করুন।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1791688878596"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367689574"
+      }
+    },
+    "expiryDate": "2030",
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6acb00ae52259e0f0be45c56"
+    },
+    "name": "Amore Luxury Black  Ribbed Condom 9 Pcs (3 Packs Combo)",
+    "slug": "amore-luxury-black-9-pcs-combo",
+    "did": "47c98dae5972d134",
+    "description": "Amore Luxury Black Condom offers a premium intimate experience with exotic black-colored, smooth, and lubricated natural rubber latex condoms infused with a subtle vanilla scent. This 3-pack bundle provides 9 pieces for ultimate comfort, pleasure, and reliable protection.",
+    "longDescription": "",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "300"
+    },
+    "offerPrice": null,
+    "sku": "SKU-4637",
+    "tags": [
+      "condom",
+      "contraceptive",
+      "smc wellness",
+      "amore"
+    ],
+    "metaData": {
+      "metaTitle": "Amore Luxury Black Condom 9 Pcs (3 Packs Combo)",
+      "metaDescription": "Amore Luxury Black Condom offers a premium intimate experience with exotic black-colored, smooth, and lubricated natural rubber latex condoms infused with a sub",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "f27fa8bd1269cdc9"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261110/amore-luxury-black-9-pcs-combo_main_1794338575464.webp",
+    "thumbnailUrl": "/uploads/2611/261110/amore-luxury-black-9-pcs-combo_main_1794338575464.webp",
+    "gallery": [
+      "/uploads/2610/261003/amore-luxury-black-9-pcs-combo_main_1791055246378.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "SMC Wellness, Bangladesh",
+    "packSize": "9 Pieces (3 Packs)",
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped Luxury Black Condoms)",
+    "specifications": [
+      {
+        "key": "Bundle Contents",
+        "value": "3 Full Retail Packs (3 pcs per pack = Total 9 Condoms)"
+      },
+      {
+        "key": "Brand",
+        "value": "Amore (SMC Wellness)"
+      },
+      {
+        "key": "Product Line",
+        "value": "Luxury Black Series"
+      },
+      {
+        "key": "Material",
+        "value": "Finest Grade Natural Rubber Latex"
+      },
+      {
+        "key": "Color",
+        "value": "Exotic Black"
+      },
+      {
+        "key": "Surface Texture",
+        "value": "Smooth & Lubricated"
+      },
+      {
+        "key": "Nominal Width",
+        "value": "60mm"
+      },
+      {
+        "key": "Nominal Length",
+        "value": "≥ 180mm"
+      },
+      {
+        "key": "Thickness Profile",
+        "value": "0.065mm - 0.080mm"
+      },
+      {
+        "key": "Flavor / Scent",
+        "value": "Subtle Vanilla Fragrance"
+      },
+      {
+        "key": "Quality Standard",
+        "value": "Premium Quality, Authentic"
+      }
+    ],
+    "benefits": [
+      {
+        "title": "Saver Combo Deal (3 Packs)",
+        "desc": "Get 3 full packs (9 condoms total) in one bundle, ensuring convenience and an uninterrupted supply.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Exotic Black Color",
+        "desc": "Adds a unique, stylish, and highly sensual touch to your intimate moments.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Smooth & Lubricated",
+        "desc": "Generously lubricated to ensure comfortable use, reduce friction, and enhance pleasure.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Vanilla Scented",
+        "desc": "Infused with a subtle vanilla fragrance that elevates the sensory experience and masks any latex odor.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Premium Quality & Safety",
+        "desc": "Made from the finest natural rubber latex for superior durability, providing reliable protection.",
+        "icon": "shield-check"
+      }
+    ],
+    "sections": [
+      {
+        "title": "A Premium Sensual Experience",
+        "content": "The Amore Luxury Black Condom combines safety with a unique sensual aesthetic. Its distinctive black color and smooth texture are crafted for couples looking for a stylish and pleasurable option in the luxury condom category."
+      },
+      {
+        "title": "Comfort & Reliability",
+        "content": "Each condom is carefully designed to provide reliable protection while enhancing closeness. The added lubrication and standard size (180mm x 60mm) ensure a perfect, comfortable fit."
+      },
+      {
+        "title": "Usage Guidelines",
+        "content": "Carefully open the pack and place the condom on an erect penis before any sexual contact. Unroll fully to ensure proper coverage. Use a new condom for each act and dispose of responsibly after use."
+      }
+    ],
+    "bn": {
+      "name": "এমোর লাক্সারি ব্ল্যাক কনডম ৯ পিস (৩ প্যাক কম্বো)",
+      "tagline": "৯ পিসের বিশেষ কনডম কম্বো — এক্সোটিক ব্ল্যাক কালার, ভ্যানিলা সুবাস এবং প্রিমিয়াম মসৃণতার অনন্য মেলবন্ধন",
+      "description": "এসএমসি ওয়েলনেসের এমোর লাক্সারি ব্ল্যাক কনডম আপনাকে দেবে প্রিমিয়াম এবং রোমাঞ্চকর অভিজ্ঞতা। এর এক্সোটিক ব্ল্যাক রং, ভ্যানিলা সুবাস এবং স্মুথ লুব্রিকেশন অন্তরঙ্গ মুহূর্তকে করে তোলে আরও আনন্দদায়ক ও নিরাপদ। এই কম্বোতে পাচ্ছেন মোট ৯টি কনডম।",
+      "packSize": "৯ পিস (৩টি প্যাক)",
+      "packageContents": "৩টি রিটেইল প্যাক (মোট ৯টি সিল্ড ব্ল্যাক ফয়েল প্যাক)",
+      "specifications": [
+        {
+          "key": "বান্ডেল বিবরণ",
+          "value": "৩টি সম্পূর্ণ রিটেইল প্যাক (প্রতিটিতে ৩ পিস = মোট ৯ পিস)"
+        },
+        {
+          "key": "ব্র্যান্ড",
+          "value": "এমোর / Amore (SMC Wellness)"
+        },
+        {
+          "key": "প্রোডাক্ট লাইন",
+          "value": "লাক্সারি ব্ল্যাক সিরিজ"
+        },
+        {
+          "key": "উপাদান",
+          "value": "প্রিমিয়াম ন্যাচারাল রাবার ল্যাটেক্স"
+        },
+        {
+          "key": "রং",
+          "value": "এক্সোটিক ব্ল্যাক (কালো)"
+        },
+        {
+          "key": "সারফেস টেক্সচার",
+          "value": "মসৃণ এবং লুব্রিকেটেড"
+        },
+        {
+          "key": "স্ট্যান্ডার্ড প্রস্থ",
+          "value": "৬০ মিমি"
+        },
+        {
+          "key": "দৈর্ঘ্য",
+          "value": "১৮০ মিমি"
+        },
+        {
+          "key": "পুরুত্ব",
+          "value": "০.০৬৫ মিমি - ০.০৮০ মিমি"
+        },
+        {
+          "key": "সুগন্ধি / ফ্লেভার",
+          "value": "হালকা ভ্যানিলা সুবাস"
+        },
+        {
+          "key": "কোয়ালিটি টেস্টিং",
+          "value": "১০০% নিরাপদ ও নির্ভরযোগ্য"
+        }
+      ],
+      "benefits": [
+        {
+          "title": "৩ প্যাকের সাশ্রয়ী কম্বো",
+          "desc": "একসাথে ৩টি প্যাক (মোট ৯ পিস), যা দীর্ঘস্থায়ী স্টক নিশ্চিত করে এবং বারবার অর্ডার করার ঝামেলা কমায়।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "এক্সোটিক ব্ল্যাক কালার",
+          "desc": "এর অনন্য কালো রং অন্তরঙ্গ মুহূর্তকে করে তোলে আরও আকর্ষণীয় এবং স্টাইলিশ।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "স্মুথ এবং লুব্রিকেটেড",
+          "desc": "পর্যাপ্ত লুব্রিকেন্ট থাকায় এটি অত্যন্ত আরামদায়ক এবং ঘর্ষণজনিত অস্বস্তি সম্পূর্ণভাবে দূর করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "ভ্যানিলা সুবাস",
+          "desc": "এর হালকা ভ্যানিলা সুবাস ল্যাটেক্সের স্বাভাবিক গন্ধ দূর করে একটি সুন্দর পরিবেশ তৈরি করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "প্রিমিয়াম কোয়ালিটি",
+          "desc": "উন্নতমানের ন্যাচারাল ল্যাটেক্সে তৈরি, যা সর্বাধিক সুরক্ষা এবং দীর্ঘস্থায়ী স্থায়িত্ব নিশ্চিত করে।",
+          "icon": "shield-check"
+        }
+      ],
+      "sections": [
+        {
+          "title": "কেন এমোর লাক্সারি ব্ল্যাক বেছে নিবেন?",
+          "content": "যারা সুরক্ষার পাশাপাশি একটি ভিন্নধর্মী এবং প্রিমিয়াম অভিজ্ঞতা চান, তাদের জন্য এটি সেরা পছন্দ। এর কালো রং এবং মসৃণ আবরণ আপনার অন্তরঙ্গ মুহূর্তকে করে তুলবে আরও স্পেশাল।"
+        },
+        {
+          "title": "নিরাপদ ও আরামদায়ক",
+          "content": "প্রতিটি কনডম যত্ন সহকারে তৈরি করা হয়েছে যাতে এটি সঠিক সুরক্ষা দেওয়ার পাশাপাশি সম্পর্কের ঘনিষ্ঠতা বৃদ্ধি করে।"
+        },
+        {
+          "title": "ব্যবহার ও সংরক্ষণ",
+          "content": "সাবধানে প্যাকেট খুলে ব্যবহার করুন। মিলনের পর ব্যবহৃত কনডম ডাস্টবিনে ফেলে দিন। আলো থেকে দূরে ঠাণ্ডা ও শুষ্ক স্থানে সংরক্ষণ করুন।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1791688878599"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367689564"
+      }
+    },
+    "expiryDate": "2030",
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6acb00ae52259e0f0be45c57"
+    },
+    "name": "U & ME Long Love Condom 18 Pcs (6 Packs Combo)",
+    "slug": "u-and-me-long-love-9-pcs-combo",
+    "did": "ac44ead6103b71d1",
+    "description": "<p>U &amp; ME Long Love Condom is engineered for extended intimacy and enhanced mutual pleasure. Featuring an extra sharp dotted texture for heightened stimulation and 4.5% Benzocaine lubricant to prolong performance, this 6 pack bundle provides 18 pieces of reliable, vanilla-scented latex condom protection.</p>",
+    "longDescription": "",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "420"
+    },
+    "offerPrice": null,
+    "sku": "SKU-3100",
+    "tags": [
+      "condom",
+      "contraceptive",
+      "smc wellness",
+      "u"
+    ],
+    "metaData": {
+      "metaTitle": "U & ME Long Love Condom 9 Pcs (3 Packs Combo)",
+      "metaDescription": "U & ME Long Love Condom is engineered for extended intimacy and enhanced mutual pleasure. Featuring an extra sharp dotted texture for heightened stimulation and",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "f27fa8bd1269cdc9"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261003/thumb_u-and-me-long-love-9-pcs-combo_main_1791056729711.webp",
+    "thumbnailUrl": "/uploads/2610/261003/thumb_u-and-me-long-love-9-pcs-combo_main_1791056729711.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "SMC Wellness, Bangladesh",
+    "packSize": "9 Pieces (3 Packs)",
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped Long Love Dotted Condoms)",
+    "specifications": [
+      {
+        "key": "Bundle Contents",
+        "value": "3 Full Retail Packs (3 pcs per pack = Total 9 Condoms)"
+      },
+      {
+        "key": "Brand",
+        "value": "U & ME (SMC Wellness)"
+      },
+      {
+        "key": "Product Line",
+        "value": "Long Love Climax Delay Series"
+      },
+      {
+        "key": "Material",
+        "value": "100% Premium Natural Rubber Latex"
+      },
+      {
+        "key": "Color",
+        "value": "Dark Yellow"
+      },
+      {
+        "key": "Surface Texture",
+        "value": "Extra Sharp Dotted Matrix"
+      },
+      {
+        "key": "Delay Agent",
+        "value": "4.5% Benzocaine Formulation"
+      },
+      {
+        "key": "Nominal Width",
+        "value": "52mm (±2mm)"
+      },
+      {
+        "key": "Nominal Length",
+        "value": "≥ 180mm"
+      },
+      {
+        "key": "Flavor / Scent",
+        "value": "Inviting Vanilla Scent"
+      },
+      {
+        "key": "Lubrication",
+        "value": "Non-Spermicidal Silicone with 4.5% Benzocaine"
+      },
+      {
+        "key": "Testing & Quality",
+        "value": "100% Electronically Tested for Safety & Reliability"
+      },
+      {
+        "key": "Certifications",
+        "value": "ISO 4074 / WHO Standards Compliant"
+      },
+      {
+        "key": "Packaging",
+        "value": "Discreet Triple Pack (9 Foil-Sealed Condoms)"
+      }
+    ],
+    "benefits": [
+      {
+        "title": "Saver Combo Deal (3 Packs)",
+        "desc": "Includes 3 full retail packs (9 condoms total) for extended personal stock and maximum convenience.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Prolonged Intimate Performance",
+        "desc": "Formulated with 4.5% Benzocaine delay lubricant to help manage climax timing and sustain longer-lasting pleasure.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Extra Sharp Dotted Stimulation",
+        "desc": "Intense dotted texture creates elevated friction and heightened sensitivity for maximum partner arousal.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Pleasant Vanilla Aroma",
+        "desc": "Subtly scented with sweet vanilla to eliminate rubber odors and create a romantic mood.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "100% Electronic Safety Testing",
+        "desc": "Manufactured under strict SMC quality controls and individually voltage-tested for leak-proof barrier security.",
+        "icon": "shield-check"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose U & ME Long Love Combo?",
+        "content": "Designed specifically for couples seeking extended playtime and intense stimulation. The combination of delay active ingredients and sharp dots delivers dual-action pleasure for both partners while ensuring consistent supply with this 9-piece bundle."
+      },
+      {
+        "title": "Climax Control & Sensation",
+        "content": "The specialized 4.5% Benzocaine formulation gently desensitizes just enough to delay ejaculation without dulling natural intimacy, paired with textured dots for intensified mutual satisfaction."
+      },
+      {
+        "title": "Usage & Storage Guidelines",
+        "content": "Tear open carefully from the notched edge. Ensure the delay lubricant is positioned inside the tip. Single-use only. Store in a cool, dry place away from direct sunlight and heat."
+      }
+    ],
+    "bn": {
+      "name": "ইউ অ্যান্ড মি লং লাভ কনডম ৯ পিস (৩ প্যাক কম্বো)",
+      "tagline": "৯ পিসের লং লাভ কনডম কম্বো — ৪.৫% বেনজোকেন ডিলে ও এক্সট্রা শার্প ডটেড টেক্সচারে দীর্ঘস্থায়ী রোমাঞ্চ",
+      "description": "এসএমসি ওয়েলনেসের ইউ অ্যান্ড মি লং লাভ কনডম মিলনকে দীর্ঘস্থায়ী এবং আরও আনন্দময় করতে বিশেষভাবে প্রস্তুত। এতে রয়েছে ৪.৫% বেনজোকেন লুব্রিকেন্ট যা দ্রুত বীর্যপাত রোধ করে এবং এক্সট্রা শার্প ডট যা সঙ্গীকে দেয় বাড়তি অনুভূতি। এই কম্বোতে পাচ্ছেন মোট ৯টি কনডম।",
+      "packSize": "৯ পিস (৩টি প্যাক)",
+      "packageContents": "৩টি রিটেইল প্যাক (মোট ৯টি সিল্ড ফয়েল প্যাক)",
+      "specifications": [
+        {
+          "key": "বান্ডেল বিবরণ",
+          "value": "৩টি সম্পূর্ণ রিটেইল প্যাক (প্রতিটিতে ৩ পিস = মোট ৯ পিস)"
+        },
+        {
+          "key": "ব্র্যান্ড",
+          "value": "ইউ অ্যান্ড মি / U & ME (SMC Wellness)"
+        },
+        {
+          "key": "প্রোডাক্ট লাইন",
+          "value": "লং লাভ ডিলে সিরিজ"
+        },
+        {
+          "key": "উপাদান",
+          "value": "১০০% প্রিমিয়াম ন্যাচারাল রাবার ল্যাটেক্স"
+        },
+        {
+          "key": "রং",
+          "value": "ডার্ক ইয়েলো (গাঢ় হলুদ)"
+        },
+        {
+          "key": "সারফেস টেক্সচার",
+          "value": "এক্সট্রা শার্প ডটেড (উঁচু ডটযুক্ত)"
+        },
+        {
+          "key": "ডিলে ফর্মুলেশন",
+          "value": "৪.৫% বেনজোকেন (Benzocaine)"
+        },
+        {
+          "key": "স্ট্যান্ডার্ড প্রস্থ",
+          "value": "৫২ মিমি (±২ মিমি)"
+        },
+        {
+          "key": "দৈর্ঘ্য",
+          "value": "১৮০ মিমি বা তদূর্ধ্ব"
+        },
+        {
+          "key": "সুগন্ধি / ফ্লেভার",
+          "value": "মিষ্টি ভ্যানিলা সুবাস"
+        },
+        {
+          "key": "লুব্রিকেশন",
+          "value": "নন-স্পার্মিসাইডাল লুব্রিকেন্ট + ৪.৫% বেনজোকেন"
+        },
+        {
+          "key": "কোয়ালিটি টেস্টিং",
+          "value": "১০০% ইলেকট্রনিক ভোল্টেজ টেস্টেড"
+        },
+        {
+          "key": "প্যাকেজিং",
+          "value": "গোপন ট্রিপল প্যাক (৯টি ফয়েল)"
+        }
+      ],
+      "benefits": [
+        {
+          "title": "৩ প্যাকের সাশ্রয়ী কম্বো",
+          "desc": "একসাথে ৩টি প্যাক (মোট ৯ পিস), যা বারবার অর্ডার করার ঝামেলা দূর করে এবং দীর্ঘস্থায়ী ব্যবহার নিশ্চিত করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "দীর্ঘস্থায়ী মিলন (লং টাইম)",
+          "desc": "৪.৫% বেনজোকেন লুব্রিকেন্ট মিলনকে দীর্ঘায়িত করতে সাহায্য করে এবং সঙ্গীর সাথে দীর্ঘ সময় উপভোগের সুযোগ দেয়।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "এক্সট্রা শার্প ডটেড স্টিমুলেশন",
+          "desc": "উন্নত শার্প ডটেড টেক্সচার সঙ্গীর জন্য ঘর্ষণ ও উদ্দীপনা বাড়িয়ে আনন্দ বহুগুণ করে তোলে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "মিষ্টি ভ্যানিলা সুবাস",
+          "desc": "রাবারের অস্বস্তিকর গন্ধ দূর করে মিষ্টি ভ্যানিলার মিষ্টি ঘ্রাণ যা ঘনিষ্ঠ পরিবেশকে আরও আকর্ষণীয় করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "১০০% ইলেকট্রনিক ভোল্টেজ পরীক্ষা",
+          "desc": "এসএমসির নিজস্ব মানদণ্ডে শতভাগ ইলেকট্রনিক লিক টেস্টেড, যা গর্ভধারণ ও এসটিআই সুরক্ষায় পূর্ণ আস্থা যোগায়।",
+          "icon": "shield-check"
+        }
+      ],
+      "sections": [
+        {
+          "title": "ইউ অ্যান্ড মি লং লাভ কম্বো কেন স্পেশাল?",
+          "content": "যারা মিলনের সময় বাড়াতে চান এবং একই সাথে সঙ্গীর আনন্দ বৃদ্ধি করতে চান, তাদের জন্য এই ৩-প্যাক কম্বো পারফেক্ট চয়েস। ডিলে ফর্মুলা এবং শার্প ডটের নিখুঁত সমন্বয় প্রতিবারই দেয় অসাধারণ অনুভূতি।"
+        },
+        {
+          "title": "টাইমিং কন্ট্রোল ও নিরাপত্তা",
+          "content": "এর ৪.৫% বেনজোকেন কোনো অসাড়তা বা ক্ষতি ছাড়া স্বাভাবিক আনন্দ বজায় রেখে টাইমিং নিয়ন্ত্রণ করতে সহায়তা করে। শতভাগ প্রিমিয়াম ন্যাচারাল ল্যাটেক্সে তৈরি।"
+        },
+        {
+          "title": "ব্যবহার ও সংরক্ষণ নির্দেশিকা",
+          "content": "প্যাকেটের খাঁজ কাটা অংশ থেকে হাত দিয়ে সাবধানে খুলুন। একক ব্যবহারের জন্য প্রযোজ্য। ঠাণ্ডা ও শুষ্ক জায়গায় সরাসরি সূর্যালোক থেকে দূরে সংরক্ষণ করুন।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1791688878602"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367689559"
+      }
+    },
+    "expiryDate": "2030",
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ad8dda0eff696db832189c7"
+    },
+    "name": "Durex Pleasure Me Condoms 9 Pcs (3 Packs Combo)",
+    "slug": "durex-pleasure-me-condoms9-piece",
+    "description": "Durex Pleasure Me Condoms 9 Pcs Combo pack delivers 3 retail boxes (9 condoms total) featuring a uniquely textured surface of stimulating ribs and raised dots designed for maximum mutual pleasure and heightened sensations.",
+    "longDescription": "<p>Experience heightened intimacy with the Durex Pleasure Me 3-Pack Bundle. Featuring an ergonomic Easy-On shape and strategically positioned ribs and raised dots near the base, this bundle provides long-lasting supply and intensified physical sensation while maintaining rigorous barrier protection.</p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "metaData": {
+      "metaTitle": "Durex Pleasure Me Condoms 9 Pcs (3 Packs Combo) - Surokkha",
+      "metaDescription": "Buy Durex Pleasure Me Condoms 9 Pieces (3 Packs Combo) at Surokkha. Features ribbed and dotted texture for enhanced pleasure with 100% electronic safety testing.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "simple",
+    "price": {
+      "$numberInt": "360"
+    },
+    "offerPrice": {
+      "$numberInt": "300"
+    },
+    "sku": "",
+    "tags": [],
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261101/durex-pleasure-me-condoms9-piece_main_1793533001782.webp",
+    "thumbnailUrl": "/uploads/2611/261101/durex-pleasure-me-condoms9-piece_main_1793533001782.webp",
+    "gallery": [
+      "/uploads/2611/261101/durex-pleasure-me-condoms9-piece_main_1793533022983.webp",
+      "/uploads/2611/261101/durex-pleasure-me-condoms9-piece_main_1793533023930.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Reckitt Benckiser (Durex)",
+    "expiryDate": "2030",
+    "packSize": "9 Pieces (3 Packs)",
+    "benefits": [
+      {
+        "title": "Saver 9-Piece Multi-Pack",
+        "description": "Includes 3 full retail packs (9 condoms total) providing reliable value and consistent stock."
+      },
+      {
+        "title": "Dual Ribbed & Dotted Texture",
+        "description": "Strategically positioned raised dots and contours deliver enhanced tactile stimulation for both partners."
+      },
+      {
+        "title": "Easy-On Ergonomic Fit",
+        "description": "Engineered with Durex Easy-On contours and teat reservoir for smooth roll-on application and a secure hold."
+      },
+      {
+        "title": "Neutralized Latex Aroma",
+        "description": "Manufactured using specialized odor-masking technology that keeps the experience fresh and pleasant."
+      },
+      {
+        "title": "100% Electronically Inspected",
+        "description": "Individually tested under high-voltage electronic screening to guarantee leak-proof contraception and STI protection."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Sensory Stimulation with 9-Pack Convenience",
+        "content": "Durex Pleasure Me combines tactile ribbing and dots with an anatomical design. This 3-pack combo ensures you never run out while delivering intense intimate pleasure."
+      },
+      {
+        "heading": "Certified Strength & Dependability",
+        "content": "Made from premium natural rubber latex meeting strict ISO 4074 standards. Provides high tensile strength and tear prevention."
+      },
+      {
+        "heading": "Usage & Storage Instructions",
+        "content": "Single-use contraceptive only. Carefully tear open the foil packet along the serrated notch. Store in a cool, dry place away from direct heat and sharp objects."
+      }
+    ],
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped Ribbed & Dotted Condoms)",
+    "createdBy": {
+      "$oid": "6acc708e88aa1fe2e393ab02"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "did": "7f2fb289070f7ed1",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792597408981"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367689553"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    },
+    "specifications": {
+      "Bundle Contents": "3 Retail Boxes (3 Condoms per box = Total 9 Condoms)",
+      "Brand": "Durex (Reckitt Benckiser)",
+      "Product Line": "Pleasure Me (Textured Series)",
+      "Material": "Natural Rubber Latex",
+      "Surface Texture": "Stimulating Ribbed & Raised Dotted Pattern",
+      "Shape": "Easy-On Shaped & Teat-Ended",
+      "Nominal Width": "56mm (Regular Fit)",
+      "Nominal Length": "≥ 195mm",
+      "Thickness Profile": "Regular (Approx. 0.065mm - 0.070mm)",
+      "Lubrication": "Silky Medical-Grade Silicone Fluid",
+      "Color": "Transparent",
+      "Testing & Quality": "100% Electronically Tested for Micro-pinholes & Burst Resistance",
+      "Certifications": "ISO 4074 / CE Certified",
+      "Packaging": "Discreet Multi-Pack (9 Individually Sealed Foils)"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ad8e042eff696db83218a4a"
+    },
+    "name": "Durex Thin Feel Condoms 9 Pcs (3 Packs Combo)",
+    "slug": "durex-thin-feel-condoms-9-pieces",
+    "description": "Durex Thin Feel Condoms 9 Pcs Combo bundle offers 3 retail packs (9 condoms total) engineered with an ultra-thin latex profile for maximum sensitivity and a closer skin-on-skin feeling without compromising protection.",
+    "longDescription": "<p>Get closer to your partner with the Durex Thin Feel 9-Piece Value Pack. Thinner than standard condoms, it facilitates natural body warmth transfer and heightened intimate sensitivity, while maintaining the renowned strength and reliability of Durex.</p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "metaData": {
+      "metaTitle": "Durex Thin Feel Condoms 9 Pcs (3 Packs Combo) - Surokkha",
+      "metaDescription": "Buy Durex Thin Feel Condoms 9 Pieces (3 Packs Combo) online at Surokkha. Super thin condoms designed for greater sensitivity and natural skin-on-skin feel.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "simple",
+    "price": {
+      "$numberInt": "360"
+    },
+    "offerPrice": {
+      "$numberInt": "300"
+    },
+    "sku": "",
+    "tags": [],
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261101/durex-thin-feel-condoms-9-pieces_main_1793532985566.webp",
+    "thumbnailUrl": "/uploads/2611/261101/durex-thin-feel-condoms-9-pieces_main_1793532985566.webp",
+    "gallery": [
+      "/uploads/2611/261101/durex-thin-feel-condoms-9-pieces_main_1793533060324.webp",
+      "/uploads/2611/261101/durex-pleasure-me-condoms9-piece_main_1793533023930.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Reckitt Benckiser (Durex)",
+    "expiryDate": "2030",
+    "packSize": "9 Pieces (3 Packs)",
+    "benefits": [
+      {
+        "title": "Super Thin Sensitivity",
+        "description": "Refined thin latex profile maximizes sensitivity and allows a natural skin-on-skin sensation."
+      },
+      {
+        "title": "Saver 9-Piece Value Bundle",
+        "description": "Contains 3 full retail packs (9 condoms total) for extended convenience and value."
+      },
+      {
+        "title": "Silky Frictionless Glide",
+        "description": "Pre-lubricated with clean silicone fluid to ensure an effortless, friction-free glide."
+      },
+      {
+        "title": "Easy-On Ergonomic Shape",
+        "description": "Designed to follow natural body contours for quicker roll-on and a secure, non-slip fit."
+      },
+      {
+        "title": "Rigorous Electronic Safety Inspection",
+        "description": "Each condom is individually tested to exceed international safety standards for leak-proof dependability."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Heightened Sensitivity & Skin-on-Skin Contact",
+        "content": "Durex Thin Feel minimizes the barrier sensation during intimacy. Its ultra-fine construction enhances body warmth transfer and responsiveness between partners."
+      },
+      {
+        "heading": "Dependable International Quality",
+        "content": "Despite its thin profile, Durex Thin Feel provides optimal burst strength, flexibility, and resilience certified by ISO 4074."
+      },
+      {
+        "heading": "Usage & Storage Guidelines",
+        "content": "Single-use latex contraceptive. Handle carefully with clean hands. Store in a cool, dry place away from direct sunlight."
+      }
+    ],
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped Super Thin Condoms)",
+    "createdBy": {
+      "$oid": "6acc708e88aa1fe2e393ab02"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "did": "dca866a6d002b351",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792598082731"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684762"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    },
+    "specifications": {
+      "Bundle Contents": "3 Retail Boxes (3 Condoms per box = Total 9 Condoms)",
+      "Brand": "Durex (Reckitt Benckiser)",
+      "Product Line": "Thin Feel / Ultra Sensitive Series",
+      "Material": "Ultra-Fine Natural Rubber Latex",
+      "Surface Texture": "Ultra-Smooth Classic Finish",
+      "Shape": "Easy-On Shaped & Teat-Ended",
+      "Nominal Width": "56mm (Regular Fit)",
+      "Nominal Length": "≥ 190mm",
+      "Thickness Profile": "Super Thin (Approx. 0.055mm / 55 microns)",
+      "Lubrication": "Silky Silicone-Based Fluid",
+      "Color": "Transparent",
+      "Testing & Quality": "100% Electronically Tested",
+      "Certifications": "ISO 4074 / CE Certified",
+      "Packaging": "Discreet Multi-Pack (9 Individually Sealed Foils)"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6add83cd9ae646707de66f37"
+    },
+    "name": "U & ME Anatomic Condom 18 Pcs (6 Packs Combo)",
+    "slug": "u-and-me-anatomic-condom-18-pcs-combo",
+    "did": "ac44ead6103b71e2",
+    "description": "U & ME Anatomic condom is designed to enhance your intimate experience. Its form-fitted shape ensures a proper fit during lovemaking, providing both comfort and security. The textured surface features dots and contours, offering increased stimulation and friction for a more satisfying and intimate connection, infused with delightful bubblegum fragrance. 6 full retail packs containing 18 condoms.",
+    "longDescription": "<p><strong>U & ME Anatomic Condom — 18 Pieces (6 Packs Combo)</strong></p><p>Experience elevated intimacy with U&Me Anatomic condoms. Featuring a form-fitted contoured design with elevated dots and sweet bubblegum aroma. Meticulously crafted from high-quality natural rubber latex coated with safe non-spermicidal lubricant for maximum safety and comfort.</p>",
+    "type": "simple",
+    "price": {
+      "$numberInt": "420"
+    },
+    "offerPrice": null,
+    "regular_price": {
+      "$numberInt": "420"
+    },
+    "sale_price": {
+      "$numberInt": "420"
+    },
+    "salePrice": {
+      "$numberInt": "420"
+    },
+    "regularPrice": {
+      "$numberInt": "420"
+    },
+    "sku": "SKU-3101",
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "stock": {
+      "$numberInt": "100"
+    },
+    "isActive": true,
+    "status": "active",
+    "visibility": "published",
+    "excludeFromMetaCatalog": false,
+    "origin": "SMC Wellness, Bangladesh",
+    "expiryDate": "2030",
+    "packSize": "18 Pieces (6 Packs)",
+    "packageContents": "6 Retail Packs (18 Individually Foil-Wrapped Anatomic Dotted & Contoured Condoms)",
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "category_id": {
+      "$oid": "6ac6f1692db5a55de377259e"
+    },
+    "brand": [
+      "f27fa8bd1269cdc9"
+    ],
+    "imageUrl": "/uploads/2611/261110/u-and-me-anatomic-condom-18-pcs-combo_main_1794338502452.webp",
+    "thumbnailUrl": "/uploads/2611/261110/u-and-me-anatomic-condom-18-pcs-combo_main_1794338502452.webp",
+    "product_image": "/uploads/2610/261003/thumb_u-and-me-long-love-9-pcs-combo_main_1791056729711.webp",
+    "gallery": [
+      "/uploads/2610/261025/u-and-me-anatomic-condom-18-pcs-combo_main_1792935753794.webp"
+    ],
+    "tags": [
+      "condom",
+      "contraceptive",
+      "smc wellness",
+      "u & me",
+      "anatomic",
+      "bubblegum"
+    ],
+    "specifications": {
+      "Bundle Contents": "6 Full Retail Packs (3 pcs per pack = Total 18 Condoms)",
+      "Brand": "U & ME (SMC Wellness)",
+      "Product Line": "Anatomic Series",
+      "Material": "Finest Grade Natural Rubber Latex",
+      "Color": "Dark Pink",
+      "Surface Texture": "Dotted & Contoured (Form-Fitted)",
+      "Nominal Width": "52mm (±2mm)",
+      "Nominal Length": "≥ 180mm",
+      "Flavor / Scent": "Delightful Bubblegum Fragrance",
+      "Lubrication": "Safe, Non-Spermicidal Silicone Fluid Lubricant",
+      "Testing & Inspection": "100% Electronically Tested for Tensile Strength & Micro-pinholes",
+      "Certifications": "ISO 4074 / WHO Standards Certified",
+      "Packaging": "Discreet Multi-Pack (18 Individual Foils)"
+    },
+    "benefits": [
+      {
+        "title": "Saver Combo Deal (6 Packs)",
+        "desc": "Get 6 full retail packs (18 condoms total) in one value bundle for uninterrupted intimacy and long-lasting stock.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Anatomic Form-Fitted Shape",
+        "desc": "Contoured anatomical design provides a snug, secure fit that moves naturally with your body for superior comfort and confidence.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Dotted & Contoured Texture",
+        "desc": "Textured surface features elevated dots and contoured ribs offering heightened friction and intense stimulation for both partners.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Delightful Bubblegum Fragrance",
+        "desc": "Infused with an enticing bubblegum scent that masks rubber odors and creates a sweet, playful intimate ambiance.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "100% Electronic Safety Screening",
+        "desc": "Rigorously tested under SMC strict international standards to ensure leak-proof contraception and STI protection.",
+        "icon": "shield-check"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose U & ME Anatomic?",
+        "content": "U&Me Anatomic condoms offer a unique experience with their contoured (form-fitted) and dotted design, coupled with a delightful bubblegum scent. Its form-fitted shape ensures a proper fit during lovemaking, providing both comfort and security."
+      },
+      {
+        "title": "Stimulation & Comfort",
+        "content": "The textured surface features dots and contours, offering increased stimulation and friction for a more satisfying and intimate connection. Meticulously crafted from high-quality natural latex and coated with a safe, non-spermicidal lubricant."
+      },
+      {
+        "title": "Usage & Safe Storage Guidelines",
+        "content": "Tear open carefully from the notched edge to prevent damage. Single-use only. Store in a cool, dry place away from direct sunlight and heat."
+      }
+    ],
+    "bn": {
+      "name": "ইউ অ্যান্ড মি অ্যানাটমিক কনডম ১৮ পিস (৬ প্যাক কম্বো)",
+      "tagline": "১৮ পিসের অ্যানাটমিক কনডম কম্বো — ডার্ক পিংক কালার, ডটেড ও কনট্যুরড শেপ এবং মিষ্টি বাবলগাম সুবাস",
+      "description": "এসএমসি ওয়েলনেস-এর ইউ অ্যান্ড মি অ্যানাটমিক কনডম বিশেষ অ্যানাটমিক ফর্ম-ফিটেড (শারীরবৃত্তীয় নিখুঁত ফিটিং) শেপে তৈরি। এতে রয়েছে ডটেড ও কনট্যুরড টেক্সচার যা বাড়তি ঘর্ষণ ও গভীর অনুভূতি দেয়, আর মিষ্টি বাবলগাম সুবাস পরিবেশকে করে তোলে রোমাঞ্চকর। এই কম্বোতে পাচ্ছেন ৬টি প্যাক (মোট ১৮টি কনডম)।",
+      "packSize": "১৮ পিস (৬টি প্যাক)",
+      "packageContents": "৬টি রিটেইল প্যাক (মোট ১৮টি সিল্ড ফয়েল প্যাক)",
+      "specifications": [
+        {
+          "key": "বান্ডেল বিবরণ",
+          "value": "৬টি সম্পূর্ণ রিটেইল প্যাক (প্রতিটিতে ৩ পিস = মোট ১৮ পিস)"
+        },
+        {
+          "key": "ব্র্যান্ড",
+          "value": "ইউ অ্যান্ড মি / U & ME (SMC Wellness)"
+        },
+        {
+          "key": "প্রোডাক্ট লাইন",
+          "value": "অ্যানাটমিক সিরিজ"
+        },
+        {
+          "key": "উপাদান",
+          "value": "১০০% প্রিমিয়াম ন্যাচারাল রাবার ল্যাটেক্স"
+        },
+        {
+          "key": "রং",
+          "value": "ডার্ক পিংক (গাঢ় গোলাপী)"
+        },
+        {
+          "key": "সারফেস টেক্সচার",
+          "value": "ডটেড ও কনট্যুরড (ফর্ম-ফিটেড)"
+        },
+        {
+          "key": "সুগন্ধি / ফ্লেভার",
+          "value": "মিষ্টি বাবলগাম সুবাস"
+        },
+        {
+          "key": "লুব্রিকেশন",
+          "value": "নন-স্পার্মিসাইডাল সেফ সিলিকন লুব্রিকেন্ট"
+        },
+        {
+          "key": "স্ট্যান্ডার্ড প্রস্থ",
+          "value": "৫২ মিমি (±২ মিমি)"
+        },
+        {
+          "key": "দৈর্ঘ্য",
+          "value": "১৮০ মিমি বা তদূর্ধ্ব"
+        },
+        {
+          "key": "কোয়ালিটি টেস্টিং",
+          "value": "১০০% ইলেকট্রনিক ভোল্টেজ টেস্টেড"
+        },
+        {
+          "key": "প্যাকেজিং",
+          "value": "গোপন ও সুরক্ষিত প্যাকেজিং (১৮টি ফয়েল)"
+        }
+      ],
+      "benefits": [
+        {
+          "title": "৬ প্যাকের সাশ্রয়ী কম্বো",
+          "desc": "একসাথে ৬টি প্যাক (মোট ১৮ পিস), যা বারবার অর্ডার করার ঝামেলা দূর করে এবং দীর্ঘস্থায়ী ব্যবহার নিশ্চিত করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "অ্যানাটমিক ফর্ম-ফিটেড শেপ",
+          "desc": "শারীরবৃত্তীয় গঠন অনুযায়ী নিখুঁত ফিটিং নিশ্চিত করে, যা ব্যবহারের সময় খুলে যাওয়ার ভয় দূর করে সর্বোচ্চ আরাম ও নিরাপত্তা দেয়।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "ডটেড ও কনট্যুরড টেক্সচার",
+          "desc": "উঁচু ডট এবং বাঁকানো কনট্যুর মিলনে ঘর্ষণ ও তীব্র উদ্দীপনা বাড়িয়ে সঙ্গীকে দেয় অতুলনীয় তৃপ্তি।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "মিষ্টি বাবলগাম সুবাস",
+          "desc": "রাবারের অস্বস্তিকর গন্ধ দূর করে মিষ্টি বাবলগামের মন মাতানো সুবাস যা ঘনিষ্ঠ পরিবেশকে আরও আনন্দময় করে তোলে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "১০০% ইলেকট্রনিক ভোল্টেজ পরীক্ষা",
+          "desc": "এসএমসির নিজস্ব আন্তর্জাতিক মানদণ্ডে শতভাগ ইলেকট্রনিক লিক টেস্টেড, যা গর্ভধারণ ও এসটিআই সুরক্ষায় পূর্ণ আস্থা যোগায়।",
+          "icon": "shield-check"
+        }
+      ],
+      "sections": [
+        {
+          "title": "ইউ অ্যান্ড মি অ্যানাটমিক কম্বো কেন স্পেশাল?",
+          "content": "ইউ অ্যান্ড মি অ্যানাটমিক কনডমের বিশেষ ফর্ম-ফিটেড শেপ এবং ডটেড টেক্সচার উভয় সঙ্গীর জন্যই আনন্দ বহুগুণ বাড়িয়ে দেয়। এর বাবলগাম সুবাস মিলনের মুহূর্তকে করে তোলে আরো উদ্দীপক ও উপভোগ্য।"
+        },
+        {
+          "title": "সর্বোচ্চ নিরাপত্তা ও কমফোর্ট",
+          "content": "উন্নত মানের প্রাকৃতিক রাবার ল্যাটেক্স এবং নিরাপদ নন-স্পার্মিসাইডাল লুব্রিকেন্টে তৈরি। শতভাগ ইলেকট্রনিক পরীক্ষায় উত্তীর্ণ হওয়ায় নিশ্চিন্তে ব্যবহার করা যায়।"
+        },
+        {
+          "title": "ব্যবহার ও সংরক্ষণ নির্দেশিকা",
+          "content": "প্যাকেটের খাঁজ কাটা অংশ থেকে হাত দিয়ে সাবধানে খুলুন। একক ব্যবহারের জন্য প্রযোজ্য। ঠাণ্ডা ও শুষ্ক জায়গায় সরাসরি সূর্যালোক থেকে দূরে সংরক্ষণ করুন।"
+        }
+      ]
+    },
+    "data_bn": {
+      "name": "ইউ অ্যান্ড মি অ্যানাটমিক কনডম ১৮ পিস (৬ প্যাক কম্বো)",
+      "tagline": "১৮ পিসের অ্যানাটমিক কনডম কম্বো — ডার্ক পিংক কালার, ডটেড ও কনট্যুরড শেপ এবং মিষ্টি বাবলগাম সুবাস",
+      "description": "এসএমসি ওয়েলনেস-এর ইউ অ্যান্ড মি অ্যানাটমিক কনডম বিশেষ অ্যানাটমিক ফর্ম-ফিটেড শেপে তৈরি। এতে রয়েছে ডটেড ও কনট্যুরড টেক্সচার যা বাড়তি ঘর্ষণ ও গভীর অনুভূতি দেয়, আর মিষ্টি বাবলগাম সুবাস পরিবেশকে করে তোলে রোমাঞ্চকর।"
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792902093053"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684774"
+      }
+    },
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ade09e26233b41b34dcef3d"
+    },
+    "name": "Xtreme 3 In 1 Premium Condom 9 Pcs (3 Packs Combo)",
+    "slug": "xtreme-3-in-1-premium-condom-9-pcs-combo",
+    "did": "b845c1a179e830f2",
+    "description": "Xtreme 3 in 1 Premium Condom by SMC Wellness is designed for maximum stimulation and intense pleasure. Featuring super dots, prominent ribs, and a contoured shape, combined with a delightful Peach fragrance, this 3-pack bundle offers 9 pieces of reliable condom protection with premium lubrication for enhanced comfort.",
+    "longDescription": "",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "270"
+    },
+    "offerPrice": null,
+    "sku": "SKU-1711",
+    "tags": [
+      "condom",
+      "contraceptive",
+      "smc wellness",
+      "xtreme",
+      "3 in 1",
+      "dotted",
+      "ribbed",
+      "peach"
+    ],
+    "metaData": {
+      "metaTitle": "Xtreme 3 In 1 Premium Condom 9 Pcs (3 Packs Combo)",
+      "metaDescription": "Xtreme 3 in 1 Premium Condom by SMC Wellness is designed for maximum stimulation and intense pleasure. Featuring super dots, prominent ribs, and contoured shape.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "f27fa8bd1269cdc9"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261110/xtreme-3-in-1-premium-condom-9-pcs-combo_main_1794338517547.webp",
+    "thumbnailUrl": "/uploads/2611/261110/xtreme-3-in-1-premium-condom-9-pcs-combo_main_1794338517547.webp",
+    "gallery": [
+      "/uploads/2610/261025/xtreme-3-in-1-premium-condom-9-pcs-combo_main_1792938544203.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "SMC Wellness, Bangladesh",
+    "packSize": "9 Pieces (3 Packs)",
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped 3-in-1 Condoms)",
+    "expiryDate": "2030",
+    "specifications": {
+      "Bundle Contents": "3 Full Retail Packs (3 pcs per pack = Total 9 Condoms)",
+      "Brand": "Xtreme (SMC Wellness)",
+      "Product Line": "3-in-1 Premium Series",
+      "Color": "Natural",
+      "Surface Texture": "Super Dotted, Super Ribbed & Contoured",
+      "Nominal Width": "52mm (±2mm)",
+      "Nominal Length": "≥ 180mm",
+      "Fragrance / Flavor": "Sweet Peach Aroma",
+      "Material": "Finest Grade Natural Rubber Latex",
+      "Lubrication": "Safe, Non-Spermicidal Silicone Fluid Lubricant",
+      "Testing & Safety": "100% Electronically Tested for Tensile Strength & Micro-pinholes",
+      "Certifications": "ISO 4074 / WHO Standards Certified",
+      "Packaging": "Discreet Multi-Pack (9 Individual Foils)"
+    },
+    "benefits": [
+      {
+        "title": "Saver Combo Deal (3 Packs)",
+        "desc": "Get 3 full retail packs (9 condoms total) in one bundle for convenience and uninterrupted supply.",
+        "description": "Get 3 full retail packs (9 condoms total) in one bundle for convenience and uninterrupted supply.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "3-in-1 Triple Stimulation",
+        "desc": "Super dots, prominent ribs, and contoured shape combine to maximize friction and heighten pleasure.",
+        "description": "Super dots, prominent ribs, and contoured shape combine to maximize friction and heighten pleasure.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Pleasurable Peach Aroma",
+        "desc": "Delightful peach scent creates an enticing atmosphere and masks natural latex scent.",
+        "description": "Delightful peach scent creates an enticing atmosphere and masks natural latex scent.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Smooth Silicone Lubrication",
+        "desc": "Pre-lubricated with skin-safe silicone lubricant to prevent friction, discomfort, and dryness.",
+        "description": "Pre-lubricated with skin-safe silicone lubricant to prevent friction, discomfort, and dryness.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "100% Reliable Protection",
+        "desc": "Manufactured from premium natural rubber latex and electronically tested to ensure maximum protection.",
+        "description": "Manufactured from premium natural rubber latex and electronically tested to ensure maximum protection.",
+        "icon": "shield-check"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose Xtreme 3 in 1?",
+        "heading": "Why Choose Xtreme 3 in 1?",
+        "content": "Xtreme 3 in 1 condoms are specifically crafted for couples who desire intensified sensations. The synchronized trio of dots, ribs, and contoured fit stimulates sensitive nerve endings, while the sweet peach aroma adds warmth and romance to your intimate moments."
+      },
+      {
+        "title": "Quality & Reliability",
+        "heading": "Quality & Reliability",
+        "content": "Produced under strict international quality guidelines by SMC Wellness. Each condom undergoes 100% electronic pinhole and tensile strength testing to provide total reliability against unintended pregnancy and STIs."
+      },
+      {
+        "title": "Usage & Storage Guidelines",
+        "heading": "Usage & Storage Guidelines",
+        "content": "Tear open the wrapper gently using the notched edge. Do not use scissors, teeth, or sharp objects. Check the roll direction and roll down smoothly over the erect penis. Single-use only. Store in a cool, dry place away from direct sunlight."
+      }
+    ],
+    "bn": {
+      "name": "এক্সট্রিম ৩ ইন ১ প্রিমিয়াম কনডম ৯ পিস (৩ প্যাক কম্বো)",
+      "tagline": "৯ পিসের বিশেষ কনডম কম্বো — সুপার ডটেড, রিবড ও কনট্যুরড গঠনের সাথে মিষ্টি পীচ সুবাস",
+      "description": "এসএমসি ওয়েলনেসের এক্সট্রিম ৩ ইন ১ কনডমে রয়েছে সুপার ডটস, রিবড এবং কনট্যুরড টেক্সচারের সমন্বয়, যা মিলনে বাড়তি ঘর্ষণ ও তীব্র উদ্দীপনা সৃষ্টি করে। সাথে এর মিষ্টি পীচ ফ্লেভারের মনোরম সুবাস আপনার অন্তরঙ্গ মুহূর্তকে করে তুলবে আরও মোহময়। ৩-প্যাকের এই কম্বোতে মোট ৯টি কনডম রয়েছে যা প্রিমিয়াম লুব্রিকেশন সহ সর্বোচ্চ আরাম ও ১০০% নির্ভরযোগ্য সুরক্ষা নিশ্চিত করে।",
+      "packSize": "৯ পিস (৩টি প্যাক)",
+      "packageContents": "৩টি রিটেইল প্যাক (মোট ৯টি সিল্ড ফয়েল কনডম)",
+      "specifications": {
+        "বান্ডেল বিবরণ": "৩টি সম্পূর্ণ রিটেইল প্যাক (প্রতিটিতে ৩ পিস = মোট ৯ পিস)",
+        "ব্র্যান্ড": "এক্সট্রিম / Xtreme (SMC Wellness)",
+        "ধরণ": "৩ ইন ১ মাল্টি-টেক্সচারড প্রিমিয়াম কনডম",
+        "রঙ / কালার": "ন্যাচারাল (Natural)",
+        "ডিজাইন ও টেক্সচার": "সুপার ডটেড, সুপার রিবড এবং কনট্যুরড (ফর্ম-ফিটেড)",
+        "ফ্লেভার / সুবাস": "মিষ্টি পীচ (Peach)",
+        "উপাদান": "প্রিমিয়াম কোয়ালিটি ন্যাচারাল রাবার ল্যাটেক্স",
+        "লুব্রিকেশন": "স্মুথ ও নিরাপদ সিলিকন লুব্রিকেন্ট",
+        "কোয়ালিটি টেস্টিং": "১০০% ইলেকট্রনিক্যালি টেস্টেড",
+        "ব্যবহার": "শুধুমাত্র একবার ব্যবহারের জন্য"
+      },
+      "benefits": [
+        {
+          "title": "৩ প্যাকের সাশ্রয়ী কম্বো",
+          "desc": "একসাথে ৩টি প্যাক (মোট ৯ পিস), যা বারবার কেনার ঝামেলা কমায় এবং দীর্ঘস্থায়ী স্টক নিশ্চিত করে।",
+          "description": "একসাথে ৩টি প্যাক (মোট ৯ পিস), যা বারবার কেনার ঝামেলা কমায় এবং দীর্ঘস্থায়ী স্টক নিশ্চিত করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "৩ ইন ১ ট্রিপল স্টিমুলেশন",
+          "desc": "সুপার ডটস, রিবস এবং কনট্যুরড গঠনের সংমিশ্রণ যা ঘর্ষণ বাড়িয়ে দুজনকেই দেয় গভীর অনুভূতি।",
+          "description": "সুপার ডটস, রিবস এবং কনট্যুরড গঠনের সংমিশ্রণ যা ঘর্ষণ বাড়িয়ে দুজনকেই দেয় গভীর অনুভূতি।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "মনোরম পীচ সুবাস",
+          "desc": "মিষ্টি পীচ ফ্লেভারের মোহময় সুবাস ল্যাটেক্সের গন্ধ দূর করে রোমান্টিক আবহ তৈরি করে।",
+          "description": "মিষ্টি পীচ ফ্লেভারের মোহময় সুবাস ল্যাটেক্সের গন্ধ দূর করে রোমান্টিক আবহ তৈরি করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "প্রিমিয়াম সিলিকন লুব্রিকেশন",
+          "desc": "পর্যাপ্ত লুব্রিকেন্ট যুক্ত থাকায় ঘর্ষণজনিত জ্বালাপোড়া বা অস্বস্তি দূর করে ও স্মুথ অভিজ্ঞতা দেয়।",
+          "description": "পর্যাপ্ত লুব্রিকেন্ট যুক্ত থাকায় ঘর্ষণজনিত জ্বালাপোড়া বা অস্বস্তি দূর করে ও স্মুথ অভিজ্ঞতা দেয়।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "১০০% নির্ভরযোগ্য সুরক্ষা",
+          "desc": "এসএমসি ওয়েলনেসের আন্তর্জাতিক মানের ন্যাচারাল ল্যাটেক্স যা ইলেকট্রনিক লিক টেস্টেড ও সম্পূর্ণ নিরাপদ।",
+          "description": "এসএমসি ওয়েলনেসের আন্তর্জাতিক মানের ন্যাচারাল ল্যাটেক্স যা ইলেকট্রনিক লিক টেস্টেড ও সম্পূর্ণ নিরাপদ।",
+          "icon": "shield-check"
+        }
+      ],
+      "sections": [
+        {
+          "title": "এক্সট্রিম ৩ ইন ১ কেন বেছে নিবেন?",
+          "heading": "এক্সট্রিম ৩ ইন ১ কেন বেছে নিবেন?",
+          "content": "সাধারণ কনডমের চেয়ে বেশি রোমাঞ্চ ও অনুভূতি পেতে ডটস, রিবস ও কনট্যুরের এই ট্রিপল কম্বিনেশন অনন্য। এটি মিলনের প্রতিটি মুহূর্তকে আরও উপভোগ্য করে তোলে।"
+        },
+        {
+          "heading": "সুরক্ষা ও গুণগত মান",
+          "title": "সুরক্ষা ও গুণগত মান",
+          "content": "এসএমসি ওয়েলনেসের প্রতিটি কনডম স্বয়ংক্রিয় মেশিনে ইলেকট্রনিক্যালি টেস্ট করা হয়। ফলে ফেটে যাওয়া বা লিক হওয়ার কোনো ঝুঁকি থাকে না।"
+        },
+        {
+          "heading": "ব্যবহার ও সংরক্ষণ",
+          "title": "ব্যবহার ও সংরক্ষণ",
+          "content": "প্যাকেটের এক পাশ থেকে সাবধানে ছিঁড়ুন, দাঁত বা কাঁচি ব্যবহার করবেন না। ব্যবহারের পর ডাস্টবিনে ফেলে দিন। সরাসরি সূর্যালোক থেকে দূরে ঠাণ্ডা ও শুষ্ক স্থানে সংরক্ষণ করুন।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1792936418534"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684734"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfafdb471d9da28cf80290"
+    },
+    "name": "Eazy Jelly Personal Lubricant 50g",
+    "slug": "eazy-gelly-50gm",
+    "did": "bb14c0cceb92b144",
+    "description": "Eazy Jelly Personal Lubricant 50g is a water-soluble, safe, and effective gel designed to ease dryness and discomfort in intimate areas. Formulated with Hydroxyethyl Cellulose and Glycerin by Renata Limited, this colorless, odorless, and non-greasy lubricant mimics natural moisture, making intimate moments and personal care procedures smooth and comfortable.",
+    "longDescription": "Eazy Jelly provides gentle natural lubrication during intimate moments, personal care, or clinical procedures. Its water-soluble formula ensures easy cleanup with water without leaving sticky residue, and it is 100% compatible with latex contraceptives. Free from artificial fragrances, oils, and harsh chemicals, it eliminates friction and discomfort for a safe, soothing experience.",
+    "tagline": "Water-soluble, fragrance-free personal lubricant for smooth and comfortable intimacy",
+    "isActive": true,
+    "excludeFromMetaCatalog": true,
+    "type": "simple",
+    "price": {
+      "$numberInt": "175"
+    },
+    "offerPrice": null,
+    "sku": "SKU-3155",
+    "tags": [
+      "eazy jelly",
+      "personal lubricant",
+      "water based",
+      "intimate gel",
+      "renata",
+      "topical gel",
+      "lubricant"
+    ],
+    "metaData": {
+      "metaTitle": "Eazy Jelly Personal Lubricant 50g | Renata Limited",
+      "metaDescription": "Buy authentic Eazy Jelly 50g topical personal lubricant gel by Renata Limited. Water-soluble, fragrance-free, and condom-safe for smooth comfort.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [],
+    "categories": [
+      {
+        "$oid": "6ac06c4a48d37618fae36c3a"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261029/eazy-gelly-50gm_main_1793297073199.webp",
+    "thumbnailUrl": "/uploads/2610/261029/eazy-gelly-50gm_main_1793297073199.webp",
+    "gallery": [
+      "/uploads/2610/261003/eazy-gelly-50gm_main_1790996174005.webp",
+      "/uploads/2610/261003/eazy-gelly-50gm_main_1790996174325.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "50"
+    },
+    "origin": "Renata Limited, Bangladesh",
+    "expiryDate": "Valid for 3-5 Years",
+    "packSize": "50g Tube",
+    "packageContents": "1 Tube of Eazy Jelly (50g)",
+    "specifications": {
+      "Brand": "Eazy (Renata Limited)",
+      "Manufacturer": "Renata Limited, Bangladesh",
+      "Product Type": "Water-Soluble Personal Lubricating Gel",
+      "Form & Strength": "Topical Gel 50 gm",
+      "Generic Composition": "Hydroxyethyl Cellulose + Glycerin",
+      "Base": "Water-soluble, non-greasy & non-staining",
+      "Fragrance & Color": "100% Fragrance-Free, Colorless & Odorless",
+      "Contraceptive Compatibility": "Fully compatible with natural rubber latex and polyisoprene contraceptives",
+      "Safety & Hypoallergenic": "Non-toxic, pH-balanced & hypoallergenic formulation",
+      "Cleanup": "Easily washes off with plain water without leaving sticky residue",
+      "Storage": "Store below 30°C in a dry place. Protect from light."
+    },
+    "benefits": [
+      {
+        "title": "Natural Moisture Replacement",
+        "desc": "Mimics the body's natural fluids to relieve intimate dryness instantly and restore comfort.",
+        "description": "Mimics the body's natural fluids to relieve intimate dryness instantly and restore comfort.",
+        "icon": "droplet"
+      },
+      {
+        "title": "Friction & Discomfort Relief",
+        "desc": "Eliminates friction and burning sensation, making intimacy smooth and pain-free.",
+        "description": "Eliminates friction and burning sensation, making intimacy smooth and pain-free.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Residue-Free & Water-Soluble",
+        "desc": "Non-sticky, fragrance-free formula that cleans off effortlessly with water without staining.",
+        "description": "Non-sticky, fragrance-free formula that cleans off effortlessly with water without staining.",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Contraceptive & Toy Safe",
+        "desc": "100% safe to use alongside latex contraceptives and silicone adult wellness devices.",
+        "description": "100% safe to use alongside latex contraceptives and silicone adult wellness devices.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Trusted Manufacturer",
+        "desc": "Manufactured by renowned pharmaceutical leader Renata Limited under strict cGMP standards.",
+        "description": "Manufactured by renowned pharmaceutical leader Renata Limited under strict cGMP standards.",
+        "icon": "award"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose Eazy Jelly 50g?",
+        "heading": "Why Choose Eazy Jelly 50g?",
+        "content": "Formulated by Renata Limited with Hydroxyethyl Cellulose and Glycerin, Eazy Jelly mimics natural body fluids to restore comfort and ease friction effortlessly. It is non-greasy, colorless, and odorless for a natural feel."
+      },
+      {
+        "title": "Safe & Hypoallergenic Clinical Formula",
+        "heading": "Safe & Hypoallergenic Clinical Formula",
+        "content": "Specifically developed to be non-irritating, pH-neutral, and hypoallergenic. It contains no oils, parabens, or harsh scents, making it safe for delicate intimate skin and regular use."
+      },
+      {
+        "title": "Directions for Use & Storage",
+        "heading": "Directions for Use & Storage",
+        "content": "Squeeze the desired amount of Eazy Jelly onto intimate areas or onto the outside of a fitted contraceptive before intimacy. Reapply as needed. Snap tube cap tightly closed after use. Store below 30°C away from heat and direct sunlight."
+      }
+    ],
+    "bn": {
+      "name": "ইজি জেলি পার্সোনাল লুব্রিকেন্ট ৫০ গ্রাম",
+      "tagline": "ওয়াটার-সলুয়াবল ও সুবাসহীন — প্রাকৃতিক মসৃণতা ও ব্যথাহীন ঘনিষ্ঠতার সহজ সমাধান",
+      "description": "রেনাটা লিমিটেডের ইজি জেলি একটি নিরাপদ ও ওয়াটার-সলুয়াবল পার্সোনাল লুব্রিকেটিং জেল, যা ঘনিষ্ঠ মুহূর্তের শুষ্কতা ও অস্বস্তি দূর করে প্রাকৃতিক আর্দ্রতা বজায় রাখে। এটি গন্ধহীন, বর্ণহীন এবং ল্যাটেক্স কনট্রাসেপটিভের সাথে শতভাগ নিরাপদ।",
+      "packSize": "৫০ গ্রাম টিউব",
+      "packageContents": "১টি টিউব (৫০ গ্রাম ইজি জেলি)",
+      "specifications": {
+        "ব্র্যান্ড": "ইজি / Eazy (Renata Limited)",
+        "প্রস্তুতকারক": "রেনাটা লিমিটেড, বাংলাদেশ",
+        "ধরণ": "ওয়াটার-সলুয়াবল পার্সোনাল লুব্রিকেন্ট জেল",
+        "পরিমাণ": "৫০ গ্রাম টিউব",
+        "উপাদান": "হাইড্রোক্সিইথাইল সেলুলোজ + গ্লিসারিন",
+        "টেক্সচার": "নন-গ্রিসি, বর্ণহীন ও গন্ধহীন",
+        "কনট্রাসেপটিভ উপযোগিতা": "ন্যাচারাল ল্যাটেক্স কনট্রাসেপটিভের সাথে ১০০% নিরাপদ",
+        "ব্যবহারের ক্ষেত্র": "ব্যক্তিগত ঘনিষ্ঠ মুহূর্ত, ভ্যাজাইনাল শুষ্কতা ও মসৃণতা",
+        "পরিষ্কারের উপায়": "সাধারণ পানি দিয়ে সহজেই ধুয়ে ফেলা যায়",
+        "সংরক্ষণ": "৩০° সেলসিয়াসের নিচে ঠাণ্ডা ও শুষ্ক স্থানে সংরক্ষণ করুন"
+      },
+      "benefits": [
+        {
+          "title": "প্রাকৃতিক আর্দ্রতা বৃদ্ধি",
+          "desc": "শারীরিক স্বাভাবিক আর্দ্রতার মতো কাজ করে দ্রুত শুষ্কতা ও অস্বস্তি দূর করে।",
+          "description": "শারীরিক স্বাভাবিক আর্দ্রতার মতো কাজ করে দ্রুত শুষ্কতা ও অস্বস্তি দূর করে।",
+          "icon": "droplet"
+        },
+        {
+          "title": "ঘর্ষণ ও জ্বালাপোড়া নিরাময়",
+          "desc": "ঘনিষ্ঠ মুহূর্তের ঘর্ষণ ও ব্যথা কমিয়ে সম্পর্ককে করে তোলে স্বাচ্ছন্দ্যময় ও আরামদায়ক।",
+          "description": "ঘনিষ্ঠ মুহূর্তের ঘর্ষণ ও ব্যথা কমিয়ে সম্পর্ককে করে তোলে স্বাচ্ছন্দ্যময় ও আরামদায়ক।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "ওয়াটার-সলুয়াবল ও দাগহীন",
+          "desc": "চটচটে ভাবমুক্ত এবং ব্যবহারের পর কোনো সাবান ছাড়াই শুধু পানি দিয়ে ধুয়ে ফেলা যায়।",
+          "description": "চটচটে ভাবমুক্ত এবং ব্যবহারের পর কোনো সাবান ছাড়াই শুধু পানি দিয়ে ধুয়ে ফেলা যায়।",
+          "icon": "sparkles"
+        },
+        {
+          "title": "ল্যাটেক্স ফ্রেন্ডলি",
+          "desc": "ল্যাটেক্স কনট্রাসেপটিভের সাথে ব্যবহারের উপযোগী, সুরক্ষার কোনো ক্ষতি করে না।",
+          "description": "ল্যাটেক্স কনট্রাসেপটিভের সাথে ব্যবহারের উপযোগী, সুরক্ষার কোনো ক্ষতি করে না।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "রেনাটা লিমিটেডের নির্ভরযোগ্য মান",
+          "desc": "দেশের শীর্ষস্থানীয় ফার্মাসিউটিক্যালস রেনাটা লিমিটেড কর্তৃক আন্তর্জাতিক মানে প্রস্তুতকৃত।",
+          "description": "দেশের শীর্ষস্থানীয় ফার্মাসিউটিক্যালস রেনাটা লিমিটেড কর্তৃক আন্তর্জাতিক মানে প্রস্তুতকৃত।",
+          "icon": "award"
+        }
+      ],
+      "sections": [
+        {
+          "title": "ইজি জেলি কেন ব্যবহার করবেন?",
+          "heading": "ইজি জেলি কেন ব্যবহার করবেন?",
+          "content": "শারীরিক সম্পর্কের সময় শুষ্কতা স্বাভাবিক আনন্দকে ব্যাহত করতে পারে। রেনাটা লিমিটেডের ইজি জেলি কোনো কৃত্রিম গন্ধ বা তেল ছাড়াই প্রাকৃতিক পিচ্ছিলতা ফিরিয়ে এনে ঘনিষ্ঠতাকে করে তোলে মসৃণ ও স্বাচ্ছন্দ্যময়।"
+        },
+        {
+          "title": "ক্লিনিক্যাল সুরক্ষা ও মান",
+          "heading": "ক্লিনিক্যাল সুরক্ষা ও মান",
+          "content": "সংবেদনশীল ত্বকের কথা মাথায় রেখে বিশেষভাবে পিএইচ ব্যালেন্সড ও হাইপোঅ্যালার্জেনিক ফর্মুলায় তৈরি। নিয়মিত ব্যবহারে ত্বকের কোনো পার্শ্বপ্রতিক্রিয়া হয় না।"
+        },
+        {
+          "title": "ব্যবহার ও সংরক্ষণ বিধি",
+          "heading": "ব্যবহার ও সংরক্ষণ বিধি",
+          "content": "প্রয়োজনমতো জেলি আঙুলে নিয়ে কাঙ্ক্ষিত স্থানে বা কনট্রাসেপটিভের বহিরাংশে লাগান। ব্যবহারের পর টিউবের ক্যাপ ভালো করে আটকে রাখুন। ৩০ ডিগ্রি সেলসিয়াসের নিচে সংরক্ষণ করুন।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793044443578"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684783"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfb14c3c436e94527a272f"
+    },
+    "name": "Veet Pure Hair Removal Cream Sensitive Skin (25g)",
+    "slug": "veet-pure-hair-removal-cream-sensitive-skin-25g",
+    "did": "c74886cad326324f",
+    "description": "Veet Pure Hair Removal Cream for Sensitive Skin is formulated with Aloe Vera Extract and Vitamin E to give salon-smooth, hair-free skin in just 5 to 10 minutes. Designed for legs, arms, underarms, and bikini line, it removes even the shortest hair from the root, providing up to 24 hours of lasting hydration with a pleasant fragrance.",
+    "longDescription": "Experience effortless, pain-free hair removal with Veet Pure Hair Removal Cream for Sensitive Skin. Clinically proven and dermatologically tested, this gentle depilatory formula dissolves hair close to the root without shaving cuts or coarse stubble. Enriched with natural Aloe Vera and Vitamin E, it soothes delicate skin, visibly detans, and keeps skin moisturized for up to 24 hours. Comes with an easy-glide ergonomic spatula for clean, mess-free application.",
+    "tagline": "Salon-smooth, touchably soft skin in just 5 minutes with soothing Aloe Vera & Vitamin E",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "110"
+    },
+    "offerPrice": null,
+    "sku": "SKU-VEET-25G",
+    "tags": [
+      "veet",
+      "hair removal cream",
+      "sensitive skin",
+      "aloe vera",
+      "depilatory",
+      "feminine care",
+      "reckitt benckiser"
+    ],
+    "metaData": {
+      "metaTitle": "Veet Pure Hair Removal Cream Sensitive Skin 25g | Surokkha",
+      "metaDescription": "Buy Veet Pure Hair Removal Cream for Sensitive Skin 25g with Aloe Vera & Vitamin E. Quick 5-minute salon-like smoothness for arms, legs, and bikini line.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [],
+    "categories": [
+      {
+        "$oid": "6adfb14c3c436e94527a272e"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261029/veet-pure-hair-removal-cream-sensitive-skin-25g_main_1793297089572.webp",
+    "thumbnailUrl": "/uploads/2610/261029/veet-pure-hair-removal-cream-sensitive-skin-25g_main_1793297089572.webp",
+    "gallery": [
+      "/uploads/2610/261026/veet-pure-hair-removal-cream-sensitive-skin-25g_main_1793046275016.webp",
+      "/uploads/2610/261026/veet-pure-hair-removal-cream-sensitive-skin-25g_main_1793046301137.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "50"
+    },
+    "origin": "Product of India (Marketed by Reckitt Benckiser Bangladesh Ltd)",
+    "expiryDate": "Valid for 2-3 Years from MFG",
+    "packSize": "25g Tube",
+    "packageContents": "1 Tube of Veet Hair Removal Cream (25g) + 1 Application Spatula",
+    "specifications": {
+      "Brand": "Veet (Reckitt Benckiser)",
+      "Product Line": "Veet Pure Depilatory Series",
+      "Form & Strength": "Topical Depilatory Cream (25 gm)",
+      "Skin Type": "Sensitive Skin",
+      "Key Ingredients": "Natural Aloe Vera Extract & Vitamin E",
+      "Action Time": "Effective in 5 - 10 minutes",
+      "Application Areas": "Legs, Arms, Underarms, and Bikini Line",
+      "Benefits": "5-in-1: Visibly brightens, moisturizes up to 24 hrs, exfoliates, smoothens & pleasant fragrance",
+      "Fragrance": "Pleasant fragrance technology (No lingering malodor)",
+      "Clinical Testing": "Dermatologically tested and clinically proven",
+      "Country of Origin": "India (Marketed in Bangladesh by Reckitt Benckiser Bangladesh Ltd)",
+      "Package Inclusions": "1 Cream Tube (25g) with 1 Ergonomic Plastic Spatula"
+    },
+    "benefits": [
+      {
+        "title": "5-Minute Salon Smoothness",
+        "desc": "Removes unwanted hair gently and effectively in just 5-10 minutes without razor cuts or pain.",
+        "description": "Removes unwanted hair gently and effectively in just 5-10 minutes without razor cuts or pain.",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Removes Shortest of Hair",
+        "desc": "Formulated to dissolve fine and short hair close to the root for long-lasting touchable smoothness.",
+        "description": "Formulated to dissolve fine and short hair close to the root for long-lasting touchable smoothness.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Aloe Vera & Vitamin E",
+        "desc": "Enriched with soothing Aloe Vera extract to calm sensitive skin and Vitamin E to detan and visibly brighten.",
+        "description": "Enriched with soothing Aloe Vera extract to calm sensitive skin and Vitamin E to detan and visibly brighten.",
+        "icon": "droplet"
+      },
+      {
+        "title": "24-Hour Deep Hydration",
+        "desc": "Clinically proven to leave your skin intensely moisturized for up to 24 hours.",
+        "description": "Clinically proven to leave your skin intensely moisturized for up to 24 hours.",
+        "icon": "heart"
+      },
+      {
+        "title": "Pleasant Fragrance Technology",
+        "desc": "Breakthrough fragrance formula leaves no lingering chemical malodor during or after application.",
+        "description": "Breakthrough fragrance formula leaves no lingering chemical malodor during or after application.",
+        "icon": "smile"
+      },
+      {
+        "title": "Mess-Free Application",
+        "desc": "Includes a specially contoured spatula designed for smooth application and easy hair removal.",
+        "description": "Includes a specially contoured spatula designed for smooth application and easy hair removal.",
+        "icon": "award"
+      }
+    ],
+    "sections": [
+      {
+        "title": "How to Use",
+        "heading": "How to Use",
+        "content": "1. Apply a thick, even layer of cream using the curved spatula to fully coat hair. Do not rub it in. 2. Leave on for 5 minutes. Use the tip of the spatula to test a small area; if hair comes away easily, remove the rest. Do not exceed 10 minutes total. 3. Rinse your skin thoroughly with water to remove cream completely, then pat dry with a soft towel."
+      },
+      {
+        "title": "Safety Measures & Precautions",
+        "heading": "Safety Measures & Precautions",
+        "content": "Always conduct a 24-hour patch test over a small area on your inner elbow before each use. Do not use on irritated, sunburned, inflamed, or broken skin. Always leave at least 72 hours between hair removal sessions."
+      },
+      {
+        "title": "About the Manufacturer",
+        "heading": "About the Manufacturer",
+        "content": "Veet is a flagship brand of Reckitt Benckiser Group PLC, globally renowned as the #1 depilatory brand. Veet products in Bangladesh are manufactured in India and officially marketed by Reckitt Benckiser Bangladesh Limited."
+      }
+    ],
+    "bn": {
+      "name": "ভীট পিওর হেয়ার রিমুভাল ক্রিম সেনসিটিভ স্কিন ২৫ গ্রাম",
+      "tagline": "অ্যালোভেরা ও ভিটামিন-ই সমৃদ্ধ — মাত্র ৫ মিনিটে সংবেদনশীল ত্বকের অবাঞ্ছিত লোম দূর করার নিরাপদ সমাধান",
+      "description": "ভীট পিওর হেয়ার রিমুভাল ক্রিম সংবেদনশীল (সেনসিটিভ) ত্বকের জন্য বিশেষভাবে প্রস্তুতকৃত। অ্যালোভেরা এক্সট্র্যাক্ট ও ভিটামিন-ই সমৃদ্ধ এই ক্রিম মাত্র ৫-১০ মিনিটে হাত, পা, আন্ডারআর্ম ও বিকিনি লাইনের অতি ক্ষুদ্র লোমও গোড়া থেকে সহজে দূর করে। ত্বককে রাখে ২৪ ঘণ্টা পর্যন্ত মসৃণ, কোমল ও আর্দ্র।",
+      "packSize": "২৫ গ্রাম টিউব",
+      "packageContents": "১টি ২৫ গ্রাম ভীট ক্রিম টিউব ও ১টি স্প্যাচুলা",
+      "specifications": {
+        "ব্র্যান্ড": "ভীট / Veet (Reckitt Benckiser)",
+        "প্রোডাক্ট টাইপ": "হেয়ার রিমুভাল ক্রিম (ডিপিলটরি)",
+        "পরিমাণ": "২৫ গ্রাম টিউব",
+        "ত্বকের ধরণ": "সেনসিটিভ স্কিন (সংবেদনশীল ত্বকের উপযোগী)",
+        "প্রধান উপাদান": "অ্যালোভেরা এক্সট্র্যাক্ট ও ভিটামিন-ই",
+        "কার্যকারিতা সময়": "৫ থেকে সর্বোচ্চ ১০ মিনিট",
+        "ব্যবহারযোগ্য অঙ্গ": "হাত, পা, আন্ডারআর্ম এবং বিকিনি লাইন",
+        "সুগন্ধি প্রযুক্তি": "প্লিজেন্ট ফ্র্যাগ্রেন্স প্রযুক্তি (রাসায়নিক দুর্গন্ধমুক্ত)",
+        "নিরাপত্তা পরীক্ষা": "ডার্মাটোলজিক্যালি টেস্টেড ও ক্লিনিক্যালি প্রমাণিত",
+        "উৎপাদনকারী ও বাজারজাতকারী": "ভারত (রেকটি বেনকিজার বাংলাদেশ লিঃ)",
+        "প্যাকেজিং অন্তর্ভুক্ত": "১টি ২৫ গ্রাম ক্রিম টিউব ও ১টি স্প্যাচুলা"
+      },
+      "benefits": [
+        {
+          "title": "মাত্র ৫ মিনিটে সেলুন ফিনিশ",
+          "desc": "রেজারের ঝুঁকি ও ব্যথা ছাড়া মাত্র ৫-১০ মিনিটে ঘরে বসেই পান মসৃণ ও উজ্জ্বল ত্বক।",
+          "description": "রেজারের ঝুঁকি ও ব্যথা ছাড়া মাত্র ৫-১০ মিনিটে ঘরে বসেই পান মসৃণ ও উজ্জ্বল ত্বক।",
+          "icon": "sparkles"
+        },
+        {
+          "title": "ক্ষুদ্রাতিক্ষুদ্র লোমও গোড়া থেকে দূর করে",
+          "desc": "রেজারের মতো বারবার শেভ করার ঝামেলা নেই, লোমের গোড়া নরম করে সহজেই পরিষ্কার করে।",
+          "description": "রেজারের মতো বারবার শেভ করার ঝামেলা নেই, লোমের গোড়া নরম করে সহজেই পরিষ্কার করে।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "অ্যালোভেরা ও ভিটামিন-ই এর যত্ন",
+          "desc": "সংবেদনশীল ত্বককে রাখে শান্ত, জ্বালাপোড়া বা লালচে ভাব দূর করে এবং ত্বকের দাগ দূর করতে সাহায্য করে।",
+          "description": "সংবেদনশীল ত্বককে রাখে শান্ত, জ্বালাপোড়া বা লালচে ভাব দূর করে এবং ত্বকের দাগ দূর করতে সাহায্য করে।",
+          "icon": "droplet"
+        },
+        {
+          "title": "২৪ ঘণ্টা স্থায়ী আর্দ্রতা",
+          "desc": "ত্বককে কোনোভাবেই শুষ্ক হতে দেয় না, ডার্মাটোলজিক্যালি প্রমাণিত ২৪ ঘণ্টা ডিপ ময়েশ্চারাইজেশন দেয়।",
+          "description": "ত্বককে কোনোভাবেই শুষ্ক হতে দেয় না, ডার্মাটোলজিক্যালি প্রমাণিত ২৪ ঘণ্টা ডিপ ময়েশ্চারাইজেশন দেয়।",
+          "icon": "heart"
+        },
+        {
+          "title": "মনোরম সুবাস প্রযুক্তি",
+          "desc": "বিশেষ ফ্র্যাগ্রেন্স ফর্মুলা নিশ্চিত করে কোনো অস্বস্তিকর রাসায়নিক গন্ধ ছাড়াই চমৎকার সুবাস।",
+          "description": "বিশেষ ফ্র্যাগ্রেন্স ফর্মুলা নিশ্চিত করে কোনো অস্বস্তিকর রাসায়নিক গন্ধ ছাড়াই চমৎকার সুবাস।",
+          "icon": "smile"
+        },
+        {
+          "title": "সহজ ও পরিচ্ছন্ন ব্যবহার",
+          "desc": "সাথে থাকা বাঁকানো স্প্যাচুলা দিয়ে সহজে ও নিখুঁতভাবে ক্রিম লাগানো ও লোম তুলে ফেলা যায়।",
+          "description": "সাথে থাকা বাঁকানো স্প্যাচুলা দিয়ে সহজে ও নিখুঁতভাবে ক্রিম লাগানো ও লোম তুলে ফেলা যায়।",
+          "icon": "award"
+        }
+      ],
+      "sections": [
+        {
+          "title": "ব্যবহারবিধি",
+          "heading": "ব্যবহারবিধি",
+          "content": "১. স্প্যাচুলার সাহায্যে ত্বকে ক্রিমের একটি সমান পুরু স্তর লাগান যাতে লোমগুলো ভালোভাবে ঢেকে যায় (ঘষবেন না)। ২. ৫ মিনিট অপেক্ষা করুন। এরপর স্প্যাচুলার মাথা দিয়ে একটি ছোট অংশে পরীক্ষা করুন। যদি লোম সহজে উঠে আসে তবে স্প্যাচুলা দিয়ে বাকি ক্রিম আলতোভাবে তুলে ফেলুন। কোনো অবস্থাতেই ১০ মিনিটের বেশি রাখবেন না। ৩. পানি দিয়ে ভালো করে ত্বক ধুয়ে ফেলুন এবং নরম তোয়ালে দিয়ে মুছে নিন।"
+        },
+        {
+          "title": "নিরাপত্তা সতর্কতা",
+          "heading": "নিরাপত্তা সতর্কতা",
+          "content": "প্রতিবার ব্যবহারের আগে আপনার কনুইয়ের ভেতরের ত্বকে সামান্য ক্রিম লাগিয়ে ২৪ ঘণ্টার জন্য প্যাচ টেস্ট করুন। কাটা, ফোড়া বা পোড়া ত্বকে ব্যবহার করবেন না। প্রতি ব্যবহারের মাঝে অন্তত ৭২ ঘণ্টার বিরতি রাখুন।"
+        },
+        {
+          "title": "প্রস্তুতকারক সম্পর্কে",
+          "heading": "প্রস্তুতকারক সম্পর্কে",
+          "content": "ভীট হলো বিশ্বখ্যাত রিকিট বেনকিজার গ্রুপ পিএলসি (Reckitt Benckiser)-এর অন্যতম শীর্ষস্থানীয় ব্র্যান্ড। বাংলাদেশে বাজারজাতকৃত পণ্যটি ভারতে প্রস্তুতকৃত এবং রিকিট বেনকিজার বাংলাদেশ লিমিটেড কর্তৃক বিপণনকৃত।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793044812699"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684744"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfb1ad7963c9c6bacddcc4"
+    },
+    "name": "Gleazy Jelly Personal Lubricant 50g",
+    "slug": "gleazy-jelly-lubricant-50gm",
+    "did": "d89f2fa46beb5222",
+    "description": "Gleazy Jelly Lubricant 50gm is a medical-grade water-based personal lubricant manufactured by Square Pharmaceuticals PLC. Designed to reduce friction and eliminate dryness, it ensures smooth comfort during intimate moments, post-menopausal care, and gynecological examinations. Non-greasy, clear, and 100% safe for use with latex contraceptives.",
+    "longDescription": "Gleazy Jelly Lubricant 50gm by Square Pharmaceuticals PLC provides gentle, long-lasting moisture to ease friction and prevent irritation during intimate activity or clinical procedures. Specifically formulated with high-purity water-soluble lubricating agents, it replicates natural physiological moisture and is ideal for sensitive tissues and post-menopausal dryness. Completely safe with natural rubber latex and polyisoprene contraceptives, non-staining, and washes off effortlessly with water.",
+    "tagline": "Medical-grade water-based personal lubricant for friction-free comfort and gentle intimacy",
+    "isActive": true,
+    "excludeFromMetaCatalog": true,
+    "type": "simple",
+    "price": {
+      "$numberInt": "175"
+    },
+    "offerPrice": null,
+    "sku": "SKU-3156",
+    "tags": [
+      "gleazy jelly",
+      "square pharmaceuticals",
+      "personal lubricant",
+      "water based",
+      "intimate gel",
+      "lubricant"
+    ],
+    "metaData": {
+      "metaTitle": "Gleazy Jelly Lubricant 50gm | Square Pharmaceuticals",
+      "metaDescription": "Buy authentic Gleazy Jelly Personal Lubricant 50g by Square Pharmaceuticals PLC. Medical-grade water-based lubricant for friction-free comfort and intimate care.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [],
+    "categories": [
+      {
+        "$oid": "6ac06c4a48d37618fae36c3a"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261029/gleazy-jelly-lubricant-50gm_main_1793297052090.webp",
+    "thumbnailUrl": "/uploads/2610/261029/gleazy-jelly-lubricant-50gm_main_1793297052090.webp",
+    "gallery": [
+      "/uploads/2610/261026/gleazy-jelly-lubricant-50gm_main_1793046343892.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "50"
+    },
+    "origin": "Square Pharmaceuticals PLC, Bangladesh",
+    "expiryDate": "Valid for 3-5 Years from MFG",
+    "packSize": "50g Tube",
+    "packageContents": "1 Tube of Gleazy Jelly (50g)",
+    "specifications": {
+      "Brand": "Gleazy (Square Pharmaceuticals PLC)",
+      "Manufacturer": "Square Pharmaceuticals PLC, Bangladesh",
+      "Product Type": "Medical-Grade Water-Based Personal Lubricant",
+      "Form & Strength": "Topical Lubricating Jelly 50 gm",
+      "Base": "Water-Soluble, Non-Greasy & Transparent",
+      "Color & Fragrance": "Clear, Colorless & Fragrance-Free",
+      "Contraceptive Compatibility": "Fully compatible with natural rubber latex & polyisoprene contraceptives",
+      "Safety & pH": "Hypoallergenic, non-toxic & gentle on sensitive mucous membranes",
+      "Applications": "Personal intimacy, post-menopausal dryness relief, vaginal examinations & clinical catheterization",
+      "Cleanup": "Easily washes away with plain water without leaving sticky residue or staining",
+      "Storage": "Store in a cool, dry place below 30°C. Protect from light and freezing."
+    },
+    "benefits": [
+      {
+        "title": "Friction & Irritation Relief",
+        "desc": "Reduces friction and relieves painful burning sensations during intimate moments.",
+        "description": "Reduces friction and relieves painful burning sensations during intimate moments.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Long-Lasting Smooth Glide",
+        "desc": "Gentle water-based formula provides extended lubrication without drying out quickly.",
+        "description": "Gentle water-based formula provides extended lubrication without drying out quickly.",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Post-Menopausal Dryness Care",
+        "desc": "Effectively supplements natural moisture for women experiencing post-menopausal or hormonal dryness.",
+        "description": "Effectively supplements natural moisture for women experiencing post-menopausal or hormonal dryness.",
+        "icon": "heart"
+      },
+      {
+        "title": "100% Contraceptive Safe",
+        "desc": "Perfectly safe to use with all latex and non-latex contraceptives without risk of degradation.",
+        "description": "Perfectly safe to use with all latex and non-latex contraceptives without risk of degradation.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Square Pharmaceuticals Quality",
+        "desc": "Manufactured under strict cGMP pharmaceutical standards by Bangladesh's #1 healthcare brand.",
+        "description": "Manufactured under strict cGMP pharmaceutical standards by Bangladesh's #1 healthcare brand.",
+        "icon": "award"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose Gleazy Jelly 50g?",
+        "heading": "Why Choose Gleazy Jelly 50g?",
+        "content": "Formulated to meet the highest pharmaceutical standards, Gleazy Jelly by Square Pharmaceuticals relieves dryness and friction effortlessly. It respects sensitive tissues, leaving skin feeling soft, hydrated, and naturally comfortable."
+      },
+      {
+        "title": "Medical & Clinical Utility",
+        "heading": "Medical & Clinical Utility",
+        "content": "Besides personal intimacy, Gleazy is widely trusted in hospitals and clinics for painless gynecological examinations, endoscopic catheterization, and other clinical procedures requiring sterile, gentle lubrication."
+      },
+      {
+        "title": "Directions for Use",
+        "heading": "Directions for Use",
+        "content": "Squeeze the required amount of jelly directly onto intimate areas or onto the outside of a fitted contraceptive before use. Reapply as needed. Replace cap tightly after use. Store below 30°C away from direct sunlight."
+      }
+    ],
+    "bn": {
+      "name": "গ্লিজি জেলি পার্সোনাল লুব্রিকেন্ট ৫০ গ্রাম",
+      "tagline": "স্কয়ার ফার্মাসিউটিক্যালসের মেডিকেল-গ্রেড লুব্রিকেন্ট — প্রাকৃতিক মসৃণতা ও ব্যথাহীন ঘনিষ্ঠতার নিরাপদ সমাধান",
+      "description": "স্কয়ার ফার্মাসিউটিক্যালস পিএলসির গ্লিজি জেলি একটি উচ্চমানের মেডিকেল-গ্রেড পার্সোনাল লুব্রিকেটিং জেল। এটি শারীরিক মিলনের সময় অতিরিক্ত ঘর্ষণ ও শুষ্কতা দূর করে মসৃণতা এনে দেয়। পোস্ট-মেনোপজাল শুষ্কতা নিরাময় ও গাইনোকোলজিক্যাল পরীক্ষায় ব্যবহারের জন্য এটি আদর্শ। বর্ণহীন, গন্ধহীন ও ন্যাচারাল ল্যাটেক্স কনট্রাসেপটিভের সাথে শতভাগ নিরাপদ।",
+      "packSize": "৫০ গ্রাম টিউব",
+      "packageContents": "১টি ৫০ গ্রাম গ্লিজি জেলি টিউব",
+      "specifications": {
+        "ব্র্যান্ড": "গ্লিজি / Gleazy (Square Pharmaceuticals PLC)",
+        "প্রস্তুতকারক": "স্কয়ার ফার্মাসিউটিক্যালস পিএলসি, বাংলাদেশ",
+        "ধরণ": "মেডিকেল-গ্রেড ওয়াটার-বেসড পার্সোনাল লুব্রিকেন্ট",
+        "পরিমাণ": "৫০ গ্রাম টিউব",
+        "বেস ও টেক্সচার": "পানিতে দ্রবণীয়, নন-গ্রিসি, বর্ণহীন ও গন্ধহীন",
+        "কনট্রাসেপটিভ উপযোগিতা": "ন্যাচারাল ল্যাটেক্স কনট্রাসেপটিভের সাথে ১০০% নিরাপদ",
+        "নিরাপত্তা ও পিএইচ": "হাইপোঅ্যালার্জেনিক ও সংবেদনশীল ত্বকে নিরাপদ",
+        "ব্যবহারের ক্ষেত্র": "ব্যক্তিগত ঘনিষ্ঠ মুহূর্ত, পোস্ট-মেনোপজাল শুষ্কতা ও গাইনোকোলজিক্যাল পরীক্ষা",
+        "পরিষ্কারের উপায়": "কোনো সাবান ছাড়া সাধারণ পানি দিয়েই সম্পূর্ণ পরিষ্কার হয়",
+        "সংরক্ষণ": "৩০° সেলসিয়াসের নিচে ঠাণ্ডা ও শুষ্ক স্থানে সংরক্ষণ করুন"
+      },
+      "benefits": [
+        {
+          "title": "ঘর্ষণ ও জ্বালাপোড়া নিরাময়",
+          "desc": "শারীরিক মিলনে ঘর্ষণজনিত ব্যথা ও জ্বালাপোড়া দূর করে স্বাচ্ছন্দ্যময় অভিজ্ঞতা দেয়।",
+          "description": "শারীরিক মিলনে ঘর্ষণজনিত ব্যথা ও জ্বালাপোড়া দূর করে স্বাচ্ছন্দ্যময় অভিজ্ঞতা দেয়।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "দীর্ঘস্থায়ী মসৃণতা",
+          "desc": "ওয়াটার-বেসড ফর্মুলা যা দ্রুত শুকিয়ে যায় না এবং দীর্ঘ সময় সিল্কি মসৃণতা বজায় রাখে।",
+          "description": "ওয়াটার-বেসড ফর্মুলা যা দ্রুত শুকিয়ে যায় না এবং দীর্ঘ সময় সিল্কি মসৃণতা বজায় রাখে।",
+          "icon": "sparkles"
+        },
+        {
+          "title": "পোস্ট-মেনোপজাল শুষ্কতা দূরীকরণ",
+          "desc": "মেনোপজ পরবর্তী শুষ্কতা বা স্বাভাবিক আর্দ্রতার ঘাটতি পূরণে অত্যন্ত কার্যকর।",
+          "description": "মেনোপজ পরবর্তী শুষ্কতা বা স্বাভাবিক আর্দ্রতার ঘাটতি পূরণে অত্যন্ত কার্যকর।",
+          "icon": "heart"
+        },
+        {
+          "title": "ল্যাটেক্স কনট্রাসেপটিভ ফ্রেন্ডলি",
+          "desc": "ল্যাটেক্স কনট্রাসেপটিভের কোনো ক্ষতি করে না, সুরক্ষার সাথে ১০০% মানানসই।",
+          "description": "ল্যাটেক্স কনট্রাসেপটিভের কোনো ক্ষতি করে না, সুরক্ষার সাথে ১০০% মানানসই।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "স্কয়ার ফার্মাসিউটিক্যালসের নির্ভরযোগ্যতা",
+          "desc": "দেশের শীর্ষ ওষুধ প্রস্তুতকারক স্কয়ার ফার্মাসিউটিক্যালস কর্তৃক আন্তর্জাতিক মানের ক্লিনিক্যাল ফর্মুলেশনে প্রস্তুত।",
+          "description": "দেশের শীর্ষ ওষুধ প্রস্তুতকারক স্কয়ার ফার্মাসিউটিক্যালস কর্তৃক আন্তর্জাতিক মানের ক্লিনিক্যাল ফর্মুলেশনে প্রস্তুত।",
+          "icon": "award"
+        }
+      ],
+      "sections": [
+        {
+          "title": "গ্লিজি জেলি কেন বেছে নেবেন?",
+          "heading": "গ্লিজি জেলি কেন বেছে নেবেন?",
+          "content": "শারীরিক ঘনিষ্ঠতার সময় স্বাভাবিক আর্দ্রতার অভাব মিলনকে ব্যথাদায়ক করতে পারে। স্কয়ার ফার্মাসিউটিক্যালসের গ্লিজি জেলি কোনো রাসায়নিক উগ্রতা ছাড়াই প্রাকৃতিক পিচ্ছিলতা ফিরিয়ে এনে সম্পর্ককে করে তোলে মধুর ও ব্যথাহীন।"
+        },
+        {
+          "title": "ক্লিনিক্যাল ও মেডিকেল ব্যবহার",
+          "heading": "ক্লিনিক্যাল ও মেডিকেল ব্যবহার",
+          "content": "ঘনিষ্ঠ মুহূর্ত ছাড়াও চিকিৎসকদের বিভিন্ন শারীরিক পরীক্ষা (গাইনোকোলজিক্যাল এক্সামিনেশন), ক্যাথেটারাইজেশন ও এন্ডোস্কোপিতে লুব্রিকেন্ট হিসেবে এটি অত্যন্ত নিরাপদ ও নির্ভরযোগ্য।"
+        },
+        {
+          "title": "ব্যবহারবিধি ও সংরক্ষণ",
+          "heading": "ব্যবহারবিধি ও সংরক্ষণ",
+          "content": "আঙুলে প্রয়োজনমতো জেলি নিয়ে কাঙ্ক্ষিত স্থানে বা কনট্রাসেপটিভের বাইরের অংশে লাগান। ব্যবহারের পর টিউবের মুখ ভালো করে বন্ধ করে ৩০° সেলসিয়াসের নিচে সংরক্ষণ করুন।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793044909019"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684752"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6adfb212b080ab7ee173d90a"
+    },
+    "name": "B.Tech Expert Brightening Hair Remover Cream 30g",
+    "slug": "b-tech-expert-brightening-hair-remover-cream-30g",
+    "did": "e168c2567a8fc42c",
+    "description": "B.Tech Expert Brightening Hair Remover Cream 30g is an advanced fast-acting depilatory cream enriched with natural Aloe Vera Extract, Licorice, Saffron Oil, and Sandalwood Oil. It effortlessly removes unwanted hair from legs, underarms, and bikini line within just 3 to 5 minutes, nourishing and hydrating deep into the skin while restoring a bright, lustrous glow to dull skin.",
+    "longDescription": "Enjoy touchably silky, smooth skin with long-lasting hydration in only 3 to 5 minutes with B.Tech Expert Brightening Hair Remover Cream. Formulated with unique skin brightening technology, Vitamin E Acetate, and herbal extracts (Licorice, Saffron, and Sandalwood Oil), it gently dissolves hair from close to the root without shaving cuts or roughness. Designed specifically for legs, underarms, and bikini line, it leaves skin deeply nourished, luminous, and moisturized. Includes a custom ergonomic spatula for easy, hygienic application.",
+    "tagline": "Quick 3-5 minute silky hair removal with Brightening Technology, Aloe Vera, Saffron & Sandalwood Oil",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "200"
+    },
+    "offerPrice": null,
+    "sku": "SKU-BTECH-30G",
+    "tags": [
+      "b.tech expert",
+      "hair remover cream",
+      "brightening cream",
+      "aloe vera",
+      "depilatory",
+      "feminine care",
+      "saffron oil",
+      "sandalwood oil"
+    ],
+    "metaData": {
+      "metaTitle": "B.Tech Expert Brightening Hair Remover Cream 30g | Surokkha",
+      "metaDescription": "Buy B.Tech Expert Brightening Hair Remover Cream 30g with Aloe Vera, Saffron & Sandalwood Oil. Fast 3-5 min hair removal with skin brightening technology.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [],
+    "categories": [
+      {
+        "$oid": "6adfb14c3c436e94527a272e"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261029/b-tech-expert-brightening-hair-remover-cream-30g_main_1793297034775.webp",
+    "thumbnailUrl": "/uploads/2610/261029/b-tech-expert-brightening-hair-remover-cream-30g_main_1793297034775.webp",
+    "gallery": [
+      "/uploads/2610/261026/b-tech-expert-brightening-hair-remover-cream-30g_main_1793046367141.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "50"
+    },
+    "origin": "India Imported",
+    "expiryDate": "Valid for 2-3 Years from MFG",
+    "packSize": "30g Tube",
+    "packageContents": "1 Tube of B.Tech Expert Brightening Hair Remover Cream (30g) + 1 Application Spatula",
+    "specifications": {
+      "Brand": "B.Tech Expert",
+      "Product Line": "Brightening Hair Removal Series",
+      "Form & Strength": "Depilatory Cream (30 gm)",
+      "Skin Type": "All Skin Types / Dull & Uneven Skin",
+      "Key Herbal Actives": "Aloe Vera Extract, Licorice Extract, Saffron Oil, Sandalwood Oil & Vitamin E Acetate",
+      "Action Time": "Fast action in 3 - 5 minutes (Maximum 6 minutes)",
+      "Application Areas": "Legs, Underarms, and Bikini Line",
+      "Benefits": "Quick hair removal, skin brightening, deep hydration & lustrous glow",
+      "Package Inclusions": "1 Cream Tube (30g) + 1 Custom Applicator Spatula",
+      "Usage Warning": "External use only. Leave a 72-hour gap between applications.",
+      "Storage": "Store in a cool, dry place away from heat and direct sunlight."
+    },
+    "benefits": [
+      {
+        "title": "Fast 3-5 Minute Action",
+        "desc": "Gently and effortlessly removes hair in just 3-5 minutes without any razor cuts or pain.",
+        "description": "Gently and effortlessly removes hair in just 3-5 minutes without any razor cuts or pain.",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Skin Brightening Technology",
+        "desc": "Infused with Saffron, Sandalwood Oil, and Licorice extract to remove tan and add a natural radiant glow to dull skin.",
+        "description": "Infused with Saffron, Sandalwood Oil, and Licorice extract to remove tan and add a natural radiant glow to dull skin.",
+        "icon": "heart"
+      },
+      {
+        "title": "Deep Moisture & Hydration",
+        "desc": "Aloe Vera and Vitamin E deliver deep, long-lasting hydration, preventing post-removal dryness.",
+        "description": "Aloe Vera and Vitamin E deliver deep, long-lasting hydration, preventing post-removal dryness.",
+        "icon": "droplet"
+      },
+      {
+        "title": "Root-Level Hair Removal",
+        "desc": "Dissolves even short, stubborn hair close to the root, leaving skin touchably soft and silky.",
+        "description": "Dissolves even short, stubborn hair close to the root, leaving skin touchably soft and silky.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "Easy & Mess-Free Application",
+        "desc": "Includes a specially designed spatula for uniform spreading and clean, hygienic removal.",
+        "description": "Includes a specially designed spatula for uniform spreading and clean, hygienic removal.",
+        "icon": "award"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Direction for Use",
+        "heading": "Direction for Use",
+        "content": "1. Apply cream directly onto the skin with the specially designed spatula; spread evenly to cover hair fully. 2. Leave cream on skin for 3-5 minutes, then use the head of the spatula to test a small area. If hair comes off easily, remove the remaining cream. Do not exceed 6 minutes. 3. Rinse skin thoroughly with clean water and pat dry with a soft towel."
+      },
+      {
+        "title": "Precautions & Safety Measures",
+        "heading": "Precautions & Safety Measures",
+        "content": "Do not use immediately after a hot bath. Specially designed for legs, underarms, and bikini line. Avoid using antiperspirants, perfumes, swimming, or sunbathing for 24 hours after application. A 72-hour gap between two sessions is required. Avoid contact with eyes, burns, or infected skin. Keep out of reach of children."
+      },
+      {
+        "title": "Skin Sensitivity Test",
+        "heading": "Skin Sensitivity Test",
+        "content": "Always perform a patch test on a 5 cm² area on your inner elbow 24 hours prior to use. If no irritation or rash appears after 24 hours, continue using. If any stinging or discomfort occurs, rinse thoroughly with cold water immediately."
+      }
+    ],
+    "bn": {
+      "name": "বি.টেক এক্সপার্ট ব্রাইটেনিং হেয়ার রিমুভার ক্রিম ৩০ গ্রাম",
+      "tagline": "৩-৫ মিনিটে দ্রুত হেয়ার রিমুভাল — অ্যালোভেরা, জাফরান ও চন্দন তেলের ব্রাইটেনিং কেয়ার",
+      "description": "বি.টেক এক্সপার্ট ব্রাইটেনিং হেয়ার রিমুভার ক্রিম মাত্র ৩ থেকে ৫ মিনিটে হাত, পা, আন্ডারআর্ম ও বিকিনি লাইনের অবাঞ্ছিত লোম ব্যথাহীনভাবে দূর করে। এতে রয়েছে অ্যালোভেরা, জাফরান তেল, চন্দন তেল ও ভিটামিন-ই যা লোম অপসারণের পাশাপাশি ত্বকের ডার্ক স্পট দূর করে উজ্জ্বল ও উজ্জ্বল দীপ্তিময় আভা এনে দেয়।",
+      "packSize": "৩০ গ্রাম টিউব",
+      "packageContents": "১টি ৩০ গ্রাম ক্রিম টিউব ও ১টি স্প্যাচুলা",
+      "specifications": {
+        "ব্র্যান্ড": "বি.টেক এক্সপার্ট / B.Tech Expert",
+        "প্রোডাক্ট টাইপ": "ব্রাইটেনিং হেয়ার রিমুভার ক্রিম",
+        "পরিমাণ": "৩০ গ্রাম টিউব",
+        "ত্বকের ধরণ": "সকল ত্বকের উপযোগী / ডাল ও সংবেদনশীল ত্বক",
+        "প্রধান উপাদান": "অ্যালোভেরা এক্সট্র্যাক্ট, লিকোরিস, জাফরান তেল, চন্দন তেল ও ভিটামিন-ই",
+        "কার্যকারিতা সময়": "৩ থেকে ৫ মিনিট (সর্বোচ্চ ৬ মিনিট)",
+        "ব্যবহারযোগ্য অঙ্গ": "হাত, পা, আন্ডারআর্মস এবং বিকিনি লাইন",
+        "বিশেষ প্রযুক্তি": "স্কিন ব্রাইটেনিং ফর্মুলেশন ও ডিপ ময়েশ্চারাইজেশন",
+        "প্যাকেজিং অন্তর্ভুক্ত": "১টি ৩০ গ্রাম ক্রিম টিউব ও ১টি স্প্যাচুলা",
+        "সংরক্ষণ": "আলো থেকে দূরে ঠাণ্ডা ও শুষ্ক স্থানে সংরক্ষণ করুন"
+      },
+      "benefits": [
+        {
+          "title": "মাত্র ৩-৫ মিনিটে দ্রুত সমাধান",
+          "desc": "রেজারের ঝামেলা বা ব্যথা ছাড়াই মাত্র ৩ থেকে ৫ মিনিটে অবাঞ্ছিত লোম সহজে দূর করে।",
+          "description": "রেজারের ঝামেলা বা ব্যথা ছাড়াই মাত্র ৩ থেকে ৫ মিনিটে অবাঞ্ছিত লোম সহজে দূর করে।",
+          "icon": "sparkles"
+        },
+        {
+          "title": "স্কিন ব্রাইটেনিং ফর্মুলা",
+          "desc": "জাফরান তেল, চন্দন তেল ও লিকোরিস এক্সট্র্যাক্ট ত্বকের কালো দাগ ও রোদে পোড়া ভাব দূর করে উজ্জ্বলতা বাড়ায়।",
+          "description": "জাফরান তেল, চন্দন তেল ও লিকোরিস এক্সট্র্যাক্ট ত্বকের কালো দাগ ও রোদে পোড়া ভাব দূর করে উজ্জ্বলতা বাড়ায়।",
+          "icon": "heart"
+        },
+        {
+          "title": "অ্যালোভেরা ও ভিটামিন-ই এর পুষ্টি",
+          "desc": "ত্বককে ভেতর থেকে ময়েশ্চারাইজ করে এবং দীর্ঘস্থায়ী কোমলতা ও আর্দ্রতা বজায় রাখে।",
+          "description": "ত্বককে ভেতর থেকে ময়েশ্চারাইজ করে এবং দীর্ঘস্থায়ী কোমলতা ও আর্দ্রতা বজায় রাখে।",
+          "icon": "droplet"
+        },
+        {
+          "title": "গোড়া থেকে নিখুঁত লোম অপসারণ",
+          "desc": "ক্ষুদ্রাতিক্ষুদ্র লোমও গোড়া থেকে আলতোভাবে গলিয়ে দেয়, ফলে ত্বক থাকে সিল্কি ও মসৃণ।",
+          "description": "ক্ষুদ্রাতিক্ষুদ্র লোমও গোড়া থেকে আলতোভাবে গলিয়ে দেয়, ফলে ত্বক থাকে সিল্কি ও মসৃণ।",
+          "icon": "shield-check"
+        },
+        {
+          "title": "সহজ ও পরিচ্ছন্ন ব্যবহার",
+          "desc": "সাথে থাকা বিশেষ স্প্যাচুলা দিয়ে হাত নোংরা না করে সহজেই ক্রিম লাগানো ও লোম তুলে ফেলা যায়।",
+          "description": "সাথে থাকা বিশেষ স্প্যাচুলা দিয়ে হাত নোংরা না করে সহজেই ক্রিম লাগানো ও লোম তুলে ফেলা যায়।",
+          "icon": "award"
+        }
+      ],
+      "sections": [
+        {
+          "title": "ব্যবহারবিধি",
+          "heading": "ব্যবহারবিধি",
+          "content": "১. স্প্যাচুলার সাহায্যে ত্বকে ক্রিমটি সমানভাবে লাগান যাতে লোমগুলো ভালোভাবে ঢেকে যায় (ঘষবেন না)। ২. ৩ থেকে ৫ মিনিট অপেক্ষা করুন। এরপর স্প্যাচুলার মাথা দিয়ে একটি ছোট অংশে পরীক্ষা করুন। লোম সহজে উঠে আসলে বাকি ক্রিম স্প্যাচুলা দিয়ে তুলে ফেলুন। কোনো অবস্থাতেই ৬ মিনিটের বেশি রাখবেন না। ৩. পরিষ্কার ঠান্ডা পানি দিয়ে ত্বক ভালো করে ধুয়ে ফেলুন এবং নরম তোয়ালে দিয়ে মুছে নিন।"
+        },
+        {
+          "title": "সতর্কতা ও নির্দেশিকা",
+          "heading": "সতর্কতা ও নির্দেশিকা",
+          "content": "গরম পানিতে গোসলের পরপরই ব্যবহার করবেন না। ব্যবহারের পর ২৪ ঘণ্টার মধ্যে পারফিউম, ডিওডোরেন্ট বা সরাসরি রোদে যাওয়া এড়িয়ে চলুন। প্রতিবার ব্যবহারের মাঝে অন্তত ৭২ ঘণ্টার বিরতি রাখুন। চোখের সংস্পর্শ ও ক্ষতস্থান এড়িয়ে চলুন। শুধুমাত্র বাহ্যিক ব্যবহারের জন্য।"
+        },
+        {
+          "title": "স্কিন সেনসিটিভিটি টেস্ট",
+          "heading": "স্কিন সেনসিটিভিটি টেস্ট",
+          "content": "ব্যবহারের পূর্বে কনুইয়ের ভেতরের ত্বকে সামান্য ক্রিম লাগিয়ে ২৪ ঘণ্টার জন্য প্যাচ টেস্ট করে নিন। যদি কোনো র‍্যাশ বা জ্বালাপোড়া না হয়, তবে নিশ্চিন্তে ব্যবহার করুন। আলো থেকে দূরে ঠান্ডা ও শুষ্ক স্থানে এবং শিশুদের নাগালের বাইরে রাখুন।"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793045010245"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684720"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ae2eb5a61133c9ac0bc2d5a"
+    },
+    "name": "Durex Extra Time Condom 10pcs",
+    "slug": "durex-extra-time-condom-10pcs",
+    "did": "20165cc9f803b553",
+    "type": "simple",
+    "price": {
+      "$numberInt": "700"
+    },
+    "offerPrice": {
+      "$numberInt": "650"
+    },
+    "sku": "DUREX-EXT-10",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "99"
+    },
+    "origin": "India (Marketed in Bangladesh by Reckitt Benckiser Bangladesh Ltd)",
+    "packSize": "10 Pcs Pack",
+    "expiryDate": "2030",
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      },
+      {
+        "$oid": "6ab81620a561a97a08a0de92"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261029/product_condom-box-and-foil-packets-84597cca_1793271011457.webp",
+    "thumbnailUrl": "/uploads/2610/261029/product_condom-box-and-foil-packets-84597cca_1793271011457.webp",
+    "gallery": [
+      "/uploads/2610/261029/durex-extra-time-condom-10pcs_main_1793273184849.webp",
+      "/uploads/2610/261029/durex-extra-time-condom-10pcs_main_1793273185423.webp"
+    ],
+    "description": "Durex Extra Time Condom is designed to provide greater sensitivity, a sleeker feel, and prolonged intimacy during sexual intercourse. Formulated with a special climax-delaying lubricant, it helps intercourse last longer while delivering 100% electronically tested barrier protection against unintended pregnancy and STIs.",
+    "longDescription": "<p><strong>Durex Extra Time Condom (10 Pieces Pack)</strong></p><p>Durex Extra Time Condoms are specifically formulated with a special climax-delaying lubricant containing active benzocaine, designed to help delay ejaculation and prolong love-making sessions for couples. Made of fine-quality natural rubber latex, each condom is rigorously tested against breakage to offer heightened sensitivity without sacrificing safety or peace of mind.</p><ul><li><p><strong>Special Delay Lubricant:</strong> Contains active time-delay fluid to extend pleasure and stamina.</p></li><li><p><strong>Straight-Walled &amp; Teat-Ended:</strong> Ergonomically shaped for an easier, comfortable, and secure fit.</p></li><li><p><strong>High-Grade Natural Rubber Latex:</strong> Transparent and smooth finish for a natural skin-to-skin feeling.</p></li><li><p><strong>Dimensions:</strong> Length 180 ± 2 mm; Nominal Width 53 ± 2 mm.</p></li><li><p><strong>100% Electronically Tested:</strong> Provides superior burst strength and certified barrier defense against HIV/AIDS, syphilis, gonorrhea, and other STDs as well as unwanted pregnancy.</p></li></ul><p></p>",
+    "specifications": {
+      "Brand": "Durex (Reckitt Benckiser)",
+      "Product Line": "Extra Time Climax Delay Series",
+      "Pack Size": "10 Pcs Pack (1 Retail Box)",
+      "Item Type": "Latex Contraceptive",
+      "Material": "Fine-Quality Natural Rubber Latex",
+      "Special Feature": "Special Climax-Delaying Lubricant for Extended Pleasure",
+      "Shape & Design": "Straight-Walled, Teat-Ended for Easy Fit",
+      "Nominal Width": "53mm (± 2 mm)",
+      "Nominal Length": "180mm (± 2 mm)",
+      "Color & Clarity": "Transparent Natural Rubber",
+      "Lubrication": "Silky Medical-Grade Silicone Fluid with Delay Agent",
+      "Safety Testing": "100% Electronically Tested for Tensile Strength & Micro-pinholes",
+      "Certifications": "ISO 4074 / CE International Quality Standards",
+      "Manufacturer": "Reckitt Benckiser Bangladesh Ltd.",
+      "Country of Origin": "India"
+    },
+    "benefits": [
+      {
+        "title": "Last Longer with Active Delay Lubricant",
+        "desc": "Contains a special active lubricant to delay climax and prolong intimacy for extended love-making sessions.",
+        "description": "Contains a special active lubricant to delay climax and prolong intimacy for extended love-making sessions.",
+        "icon": "clock"
+      },
+      {
+        "title": "Natural Feel & Heightened Sensitivity",
+        "desc": "Engineered with fine-quality raw latex to deliver a sleeker feel and high sensitivity during intercourse.",
+        "description": "Engineered with fine-quality raw latex to deliver a sleeker feel and high sensitivity during intercourse.",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Comfortable Straight-Walled Shape",
+        "desc": "Straight-walled with a teat end designed for easier application, comfortable grip, and leak-proof security.",
+        "description": "Straight-walled with a teat end designed for easier application, comfortable grip, and leak-proof security.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "100% Electronically Tested Safety",
+        "desc": "Every single piece is rigorously tested electronically against pinholes and breakage for complete peace of mind.",
+        "description": "Every single piece is rigorously tested electronically against pinholes and breakage for complete peace of mind.",
+        "icon": "award"
+      },
+      {
+        "title": "Reliable Protection Against STDs & Pregnancy",
+        "desc": "Provides certified barrier protection to prevent unintended pregnancy and sexually transmitted infections including HIV/AIDS.",
+        "description": "Provides certified barrier protection to prevent unintended pregnancy and sexually transmitted infections including HIV/AIDS.",
+        "icon": "heart"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose Durex Extra Time?",
+        "heading": "Why Choose Durex Extra Time?",
+        "content": "Durex Extra Time condoms are ideal for men and couples looking to enhance their intimate moments and last longer in bed. The special lubricant works gently to control over-sensitivity, helping delay climax so you and your partner can enjoy a more synchronized, fulfilling sexual experience."
+      },
+      {
+        "title": "Directions for Use",
+        "heading": "Directions for Use",
+        "content": "1. Carefully open the foil wrapper along the notched tear line without using sharp objects or teeth. 2. Ensure the roll is on the outside. Gently pinch the teat end to expel any trapped air. 3. Place the condom on the tip of the erect penis and unroll it smoothly down to the base. 4. Soon after ejaculation and while still erect, hold the condom firmly at the base and withdraw carefully to prevent slippage."
+      },
+      {
+        "title": "Safety & Storage Guidelines",
+        "heading": "Safety & Storage Guidelines",
+        "content": "For single use only. Store at room temperature in a cool, dry place away from direct sunlight, pets, and children. The lubricant on the condom can cause a mild tingling or numbing sensation; do not get it into eyes and wash hands thoroughly after use. If irritation occurs, discontinue use and consult a doctor."
+      }
+    ],
+    "tags": [
+      "durex",
+      "extra time",
+      "delay condom",
+      "long last",
+      "contraceptive",
+      "reckitt benckiser",
+      "sexual wellbeing",
+      "10pcs"
+    ],
+    "metaData": {
+      "metaTitle": "Durex Extra Time Condom 10pcs - Buy Online in Bangladesh",
+      "metaDescription": "Buy authentic Durex Extra Time Condom 10pcs at Surokkha. Special climax-delay lubricant for long-lasting intimacy, natural sensitivity, and 100% tested protection.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "bn": {},
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793256282860"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1794338348093"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "packageContents": "",
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ae32e1a61133c9ac0bc2d6c"
+    },
+    "name": "Skore Not Out Climax Delay Dotted Condoms 10pcs Pack",
+    "slug": "skore-not-out-climax-delay-dotted-condoms-10pcs",
+    "did": "8a71d4b2e9c0f315",
+    "type": "simple",
+    "price": {
+      "$numberInt": "500"
+    },
+    "offerPrice": null,
+    "sku": "SKORE-NOTOUT-10",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "India (Made in India)",
+    "packSize": "10 Pcs Pack",
+    "expiryDate": "2030",
+    "brand": [
+      "fd38f667b175c979"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      },
+      {
+        "$oid": "6ab81620a561a97a08a0de92"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261029/skore-not-out-climax-delay-dotted-condoms-10pcs_main_1793273605237.webp",
+    "thumbnailUrl": "/uploads/2610/261029/skore-not-out-climax-delay-dotted-condoms-10pcs_main_1793273605237.webp",
+    "gallery": [
+      "/uploads/2610/261029/skore-not-out-climax-delay-dotted-condoms-10pcs_main_1793273632032.webp",
+      "/uploads/2610/261029/skore-not-out-climax-delay-dotted-condoms-10pcs_main_1793273632857.webp",
+      "/uploads/2610/261029/skore-not-out-climax-delay-dotted-condoms-10pcs_main_1793273633817.webp",
+      "/uploads/2610/261029/skore-not-out-climax-delay-dotted-condoms-10pcs_main_1793273634889.webp"
+    ],
+    "description": "Skore Not Out Climax Delay Dotted Condoms 10pcs Pack is designed for men seeking prolonged performance and enhanced sensation. Featuring a specialized Benzocaine climax-delay lubricant and over 1500 raised dots, it delivers heightened stimulation for your partner while helping you last longer with 100% electronically tested protection.",
+    "longDescription": "<p><strong>Skore Not Out Climax Delay Dotted Condoms 10pcs Pack (Made in India)</strong></p><p>Skore Not Out Climax Delay Dotted Condoms are engineered to deliver the ultimate combination of extended endurance and intense stimulation. Formulated with a special climax-delay lubricant containing Benzocaine, these condoms help you stay in the game longer while 1500+ strategically placed raised dots provide thrilling texture and heightened pleasure for your partner.</p><ul><li><p><strong>Climax Delay Formula:</strong> Infused with skin-safe Benzocaine delay lubricant to help control premature climax and prolong performance.</p></li><li><p><strong>1500 Raised Dots:</strong> Specially textured with over 1500 distinct dots to maximize friction, arousal, and mutual satisfaction.</p></li><li><p><strong>Premium Natural Rubber Latex:</strong> Transparent, high-grade latex offering silky comfort, natural body warmth, and a secure standard fit.</p></li><li><p><strong>Electronically Tested Reliability:</strong> 100% electronically tested to meet rigorous international safety standards against unintended pregnancy and STIs.</p></li></ul><p></p>",
+    "specifications": {
+      "Brand": "Skore",
+      "Product Line": "Not Out Climax Delay Dotted Series",
+      "Pack Size": "10 Pieces (1 Retail Box)",
+      "Item Type": "Textured Latex Contraceptive",
+      "Material": "Premium Natural Rubber Latex",
+      "Texture": "1500+ Raised Dots for Enhanced Stimulation",
+      "Special Feature": "Climax-Delay Lubricant with Benzocaine for Prolonged Performance",
+      "Nominal Width": "53mm (± 2 mm)",
+      "Nominal Length": "180mm (± 2 mm)",
+      "Lubrication": "Silky Silicone Fluid with Active Delay Agent",
+      "Color & Clarity": "Transparent Natural Rubber",
+      "Safety Testing": "100% Electronically Tested for Tensile Strength & Micro-pinholes",
+      "Certifications": "ISO 4074 / WHO Standards Certified",
+      "Country of Origin": "India"
+    },
+    "benefits": [
+      {
+        "title": "Last Longer with Climax Delay Formula",
+        "desc": "Infused with specialized Benzocaine delay lubricant to control sensitivity and extend performance.",
+        "description": "Infused with specialized Benzocaine delay lubricant to control sensitivity and extend performance.",
+        "icon": "clock"
+      },
+      {
+        "title": "1500 Raised Dots for Heightened Stimulation",
+        "desc": "Over 1500 distinct raised dots deliver intense sensory friction and enhanced partner satisfaction.",
+        "description": "Over 1500 distinct raised dots deliver intense sensory friction and enhanced partner satisfaction.",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Dual Advantage of Pleasure & Protection",
+        "desc": "Perfect harmony of long-lasting endurance and maximum pleasure without sacrificing safety.",
+        "description": "Perfect harmony of long-lasting endurance and maximum pleasure without sacrificing safety.",
+        "icon": "shield-check"
+      },
+      {
+        "title": "100% Electronically Screened for Safety",
+        "desc": "Each condom undergoes rigorous electronic testing against micro-pinholes and tears for total peace of mind.",
+        "description": "Each condom undergoes rigorous electronic testing against micro-pinholes and tears for total peace of mind.",
+        "icon": "award"
+      },
+      {
+        "title": "Reliable Defense Against STDs & Pregnancy",
+        "desc": "Provides certified barrier protection against unwanted pregnancy and sexually transmitted infections including HIV/AIDS.",
+        "description": "Provides certified barrier protection against unwanted pregnancy and sexually transmitted infections including HIV/AIDS.",
+        "icon": "heart"
+      }
+    ],
+    "sections": [
+      {
+        "title": "Why Choose Skore Not Out?",
+        "heading": "Why Choose Skore Not Out?",
+        "content": "Skore Not Out condoms are created for couples who want to elevate their intimate sessions. The combination of 1500 raised dots for intensified partner stimulation and an active climax-delaying agent allows you to pace intimacy and achieve shared ecstasy together."
+      },
+      {
+        "title": "Directions for Use",
+        "heading": "Directions for Use",
+        "content": "1. Open foil packaging carefully along the easy-tear notch. Avoid scissors or sharp fingernails. 2. Verify the roll is on the outside. Gently pinch the teat end to expel any trapped air. 3. Place the condom on the erect penis and unroll smoothly down to the base. 4. Soon after ejaculation, withdraw while still erect, holding the condom firmly at the base to prevent slippage."
+      },
+      {
+        "title": "Safety & Storage Guidelines",
+        "heading": "Safety & Storage Guidelines",
+        "content": "Single-use contraceptive only. Store in a cool, dry place away from heat and direct sunlight. Avoid eye contact with the delay lubricant and wash hands after use. Discontinue use if irritation or discomfort occurs."
+      }
+    ],
+    "tags": [
+      "skore",
+      "not out",
+      "delay condom",
+      "dotted condom",
+      "1500 dots",
+      "long last",
+      "contraceptive",
+      "india",
+      "10pcs"
+    ],
+    "metaData": {
+      "metaTitle": "Skore Not Out Climax Delay Dotted Condoms 10pcs - Buy Online in Bangladesh",
+      "metaDescription": "Buy authentic Skore Not Out Climax Delay Dotted Condoms 10pcs at Surokkha. 1500 raised dots with Benzocaine delay lubricant for prolonged intimacy and intense pleasure.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "bn": {},
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793273340000"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684796"
+      }
+    },
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "packageContents": "",
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "extraStock": [],
+    "stockItem": {
+      "$oid": "6af0d3eb6c4261893172a479"
+    },
+    "stockQty": {
+      "$numberInt": "10"
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6ae243abbfaa227a68f27f28"
+    },
+    "brand": [
+      "f7aa5d4f778c66e8",
+      "75f239cb02a8b720",
+      "fd38f667b175c979"
+    ],
+    "categories": [
+      {
+        "$oid": "6ab81620a561a97a08a0de92"
+      }
+    ],
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1793213355000"
+      }
+    },
+    "description": "<p>সুরক্ষা ট্রায়াল প্যাক — ৬ ভ্যারিয়েন্টের ১২ পিস প্রিমিয়াম ল্যাটেক্স কনট্রাসেপটিভ। সাথে ফ্রি হোম ডেলিভারি।</p><ul><li><p>২ পিস MO Ultra Ribbed Condom</p></li><li><p>২ পিস MO Ultra Thin Condom</p></li><li><p>২ পিস MO Ultra Ribbed Condom</p></li><li><p>২ পিস Durex Bubblegum Condom</p></li><li><p>২ পিস Durex pleasure me, thin feel condom</p></li><li><p>২ পিস Skore Not out Condom</p></li></ul><p></p>",
+    "did": "d4e5bb9933b56966",
+    "excludeFromMetaCatalog": false,
+    "expiryDate": "2030",
+    "gallery": [],
+    "imageUrl": "/uploads/2610/261029/surokkha-trial-pack_main_1793258192821.webp",
+    "isActive": true,
+    "metaData": {
+      "metaTitle": "Surokkha Trial Pack - 12 Pcs Premium Pack",
+      "metaDescription": "সুরক্ষা ট্রায়াল প্যাক — ৬ ভ্যারিয়েন্টের ১২ পিস প্রিমিয়াম ল্যাটেক্স কনট্রাসেপটিভ।",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "name": "Surokkha Trial Pack",
+    "offerPrice": null,
+    "origin": "China Imported",
+    "packSize": "১২ পিস (৬ ভ্যারিয়েন্ট)",
+    "packageContents": "৬টি ভিন্ন ভ্যারিয়েন্টের মোট ১২টি কনডম। ১০০% গোপন ও নিরাপদ প্যাকেজিং।",
+    "price": {
+      "$numberInt": "550"
+    },
+    "slug": "surokkha-trial-pack",
+    "stockAmount": {
+      "$numberInt": "101"
+    },
+    "stockQty": {
+      "$numberInt": "2"
+    },
+    "stockStatus": "outofstock",
+    "thumbnailUrl": "/uploads/2610/261029/surokkha-trial-pack_main_1793258192821.webp",
+    "type": "simple",
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684801"
+      }
+    },
+    "benefits": [],
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [
+      {
+        "stockItem": {
+          "$oid": "6aef6912784909aea30efe5a"
+        },
+        "stockQty": {
+          "$numberInt": "2"
+        }
+      },
+      {
+        "stockItem": {
+          "$oid": "6aef6a40784909aea30f001c"
+        },
+        "stockQty": {
+          "$numberInt": "2"
+        }
+      },
+      {
+        "stockItem": {
+          "$oid": "6aef68d0784909aea30efdea"
+        },
+        "stockQty": {
+          "$numberInt": "2"
+        }
+      },
+      {
+        "stockItem": {
+          "$oid": "6aef6a21784909aea30effd5"
+        },
+        "stockQty": {
+          "$numberInt": "1"
+        }
+      }
+    ],
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "longDescription": "",
+    "sections": [],
+    "sku": "",
+    "stockItem": {
+      "$oid": "6af0d2f46c4261893172a303"
+    },
+    "tags": [],
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6af3699e6ca71ea02775ee87"
+    },
+    "name": "Surokkha Trial Pack 2",
+    "slug": "surokkha-trial-pack-2",
+    "description": "<p>সুরক্ষা ট্রায়াল প্যাক — ৭ ভ্যারিয়েন্টের ১৪ পিস। সাথে ফ্রি হোম ডেলিভারি।</p>",
+    "longDescription": "",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "simple",
+    "price": {
+      "$numberInt": "650"
+    },
+    "offerPrice": null,
+    "sku": "",
+    "groupOffer": {
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": [],
+      "conditions": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "tags": [],
+    "brand": [],
+    "categories": [
+      {
+        "$oid": "6ab81620a561a97a08a0de93"
+      },
+      {
+        "$oid": "6aee35d514f92514cd8c7458"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261110/surokkha-trial-pack-2_main_1794336987761.webp",
+    "thumbnailUrl": "/uploads/2611/261110/surokkha-trial-pack-2_main_1794336987761.webp",
+    "gallery": [],
+    "stockStatus": "instock",
+    "stockAmount": {
+      "$numberInt": "0"
+    },
+    "stockItem": null,
+    "stockQty": {
+      "$numberInt": "2"
+    },
+    "extraStock": [],
+    "origin": "China Imported",
+    "expiryDate": "2030",
+    "packSize": "",
+    "benefits": [],
+    "sections": [],
+    "packageContents": "",
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "did": "8c5e84fa18642aa8",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1794337182175"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795539611300"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6aef11eb691f3ca91ee3240d"
+    },
+    "name": "Nivea Men Silver Protect 72H Anti-Perspirant Roll-On 50ml",
+    "slug": "nivea-men-silver-protect-roll-on-50ml",
+    "did": "e478146814d11bc1",
+    "sku": "NIVEA-MEN-SILVER-50ML",
+    "description": "Nivea Men Silver Protect Anti-Perspirant Roll-On delivers powerful 72-hour derma active protection against sweat and body odor. Its advanced antibacterial formula with silver ions fights odor-causing bacteria before body odor can develop, keeping you feeling dry and fresh all day long.",
+    "longDescription": "<p><strong>Nivea Men Silver Protect 72H Anti-Perspirant Roll-On (50ml)</strong></p><p>Engineered with modern antibacterial silver technology, Nivea Men Silver Protect reduces odor-causing bacteria by up to 99% while providing reliable 72-hour sweat protection. Dermatologically proven for skin tolerance with a clean, masculine fragrance.</p><ul><li><p><strong>Silver Ion Formula:</strong> Fights bacteria at the source to prevent body odor.</p></li><li><p><strong>72H Active Protection:</strong> Long-lasting antiperspirant dryness through busy days and workouts.</p></li><li><p><strong>Skin Friendly:</strong> No ethyl alcohol, dermatologically tested for all skin types.</p></li></ul><p></p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "400"
+    },
+    "offerPrice": null,
+    "tags": [
+      "nivea",
+      "nivea men",
+      "silver protect",
+      "roll-on",
+      "deodorant",
+      "mens care",
+      "antiperspirant"
+    ],
+    "metaData": {
+      "metaTitle": "Nivea Men Silver Protect 72H Anti-Perspirant Roll-On 50ml - Surokkha",
+      "metaDescription": "Nivea Men Silver Protect Anti-Perspirant Roll-On delivers powerful 72-hour derma active protection against sweat and body odor. Its advanced antibacterial formu",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "81a150aa564b5e25",
+      "f1c371a333308157"
+    ],
+    "categories": [
+      {
+        "$oid": "6aee35d514f92514cd8c7458"
+      },
+      {
+        "$oid": "6aee35d514f92514cd8c7457"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261107/nivea-men-silver-protect-roll-on-50ml_main_1794085643589.webp",
+    "thumbnailUrl": "/uploads/2611/261107/nivea-men-silver-protect-roll-on-50ml_main_1794085643589.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Beiersdorf AG, Germany",
+    "expiryDate": "2029",
+    "packSize": "50ml",
+    "packageContents": "1 Glass Roll-On Bottle of 50ml Anti-Perspirant Deodorant",
+    "specifications": {
+      "Brand": "Nivea Men",
+      "Parent Brand": "Nivea (Beiersdorf AG)",
+      "Manufacturer": "Beiersdorf AG, Hamburg, Germany",
+      "Volume": "50ml",
+      "Protection Period": "72 Hours Active Sweat & Odor Protection",
+      "Key Active": "Antibacterial Silver Ions Formula",
+      "Alcohol Content": "0% Ethyl Alcohol",
+      "Skin Tolerance": "Dermatologically Tested & Proven"
+    },
+    "benefits": [
+      {
+        "title": "72H Derma Active Defense",
+        "desc": "Clinically proven antiperspirant protection that lasts up to 3 full days.",
+        "description": "Clinically proven antiperspirant protection that lasts up to 3 full days."
+      },
+      {
+        "title": "Silver Ion Antibacterial Formula",
+        "desc": "Neutralizes 99% of bacteria responsible for sweat odor at the source.",
+        "description": "Neutralizes 99% of bacteria responsible for sweat odor at the source."
+      },
+      {
+        "title": "Gentle 0% Alcohol Care",
+        "desc": "Leaves underarms comfortable without burning or irritation.",
+        "description": "Leaves underarms comfortable without burning or irritation."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Advanced Anti-Odor Silver Technology",
+        "heading": "Advanced Anti-Odor Silver Technology",
+        "content": "Nivea Men Silver Protect uses active silver ions to neutralize odor-causing bacteria while keeping underarms dry, clean, and fresh."
+      }
+    ],
+    "bn": {
+      "name": "নিভিয়া মেন সিলভার প্রটেক্ট ৭২ ঘণ্টা অ্যান্টি-পারস্পিরেন্ট রোল-অন (৫০ মিলি)",
+      "tagline": "সিলভার আয়নের অ্যান্টিব্যাকটেরিয়াল শক্তিতে ৭২ ঘণ্টার সতেজতা",
+      "description": "নিভিয়া মেন সিলভার প্রটেক্ট রোল-অনের আধুনিক সিলভার আয়ন ফর্মুলা ঘামের দুর্গন্ধ সৃষ্টিকারী ব্যাকটেরিয়ার বিরুদ্ধে লড়াই করে এবং টানা ৭২ ঘণ্টা সুরক্ষা প্রদান করে।",
+      "longDescription": "<p>নিভিয়া মেন সিলভার প্রটেক্ট রোল-অন সিলভার আয়নসমৃদ্ধ অ্যান্টিব্যাকটেরিয়াল ফর্মুলায় তৈরি, যা ঘাম ও দুর্গন্ধ দূর করে ৭২ ঘণ্টা পর্যন্ত সতেজ রাখে। এতে কোনো ক্ষতিকর অ্যালকোহল নেই এবং এটি চর্মরোগ বিশেষজ্ঞ দ্বারা পরীক্ষিত।</p>",
+      "packSize": "৫০ মিলি",
+      "packageContents": "১টি ৫০ মিলি গ্লাস রোল-অন বোতল",
+      "benefits": [
+        {
+          "title": "৭২ ঘণ্টা অ্যাক্টিভ সুরক্ষা",
+          "description": "দীর্ঘ সময় ঘাম ও দুর্গন্ধ থেকে সুরক্ষা দেয়।"
+        },
+        {
+          "title": "সিলভার আয়ন প্রযুক্তি",
+          "description": "দুর্গন্ধ সৃষ্টিকারী ব্যাকটেরিয়া ধ্বংস করে।"
+        }
+      ],
+      "specifications": [
+        {
+          "key": "ব্র্যান্ড",
+          "value": "Nivea Men"
+        },
+        {
+          "key": "পরিমাণ",
+          "value": "৫০ মিলি"
+        },
+        {
+          "key": "সুরক্ষা",
+          "value": "৭২ ঘণ্টা"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1794085669878"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1794052587169"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6aef11eb691f3ca91ee3240e"
+    },
+    "name": "Nivea Men Fresh Active 72H Anti-Perspirant Roll-On 50ml",
+    "slug": "nivea-men-fresh-active-roll-on-50ml",
+    "did": "3554e165525de973",
+    "sku": "NIVEA-MEN-FRESH-50ML",
+    "description": "Nivea Men Fresh Active Roll-On with natural ocean extracts provides invigorating freshness and reliable 72-hour antiperspirant protection. Featuring Infinifresh antibacterial action, it eliminates body odor and delivers an enduring clean marine breeze feeling.",
+    "longDescription": "<p><strong>Nivea Men Fresh Active 72H Anti-Perspirant Roll-On (50ml)</strong></p><p>Infused with refreshing ocean extracts, Nivea Men Fresh Active delivers instant cooling freshness alongside 72-hour antiperspirant care. Its Infinifresh formula actively fights odor-causing bacteria rather than simply masking scent.</p><ul><li><p><strong>Natural Ocean Extracts:</strong> Crisp, masculine aquatic freshness all day.</p></li><li><p><strong>72H Sweat &amp; Odor Control:</strong> Reliable protection for active lifestyles.</p></li><li><p><strong>0% Ethyl Alcohol:</strong> Non-irritating dermatologically tested formula.</p></li></ul><p></p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "400"
+    },
+    "offerPrice": null,
+    "tags": [
+      "nivea",
+      "nivea men",
+      "fresh active",
+      "roll-on",
+      "deodorant",
+      "mens care",
+      "antiperspirant"
+    ],
+    "metaData": {
+      "metaTitle": "Nivea Men Fresh Active 72H Anti-Perspirant Roll-On 50ml - Surokkha",
+      "metaDescription": "Nivea Men Fresh Active Roll-On with natural ocean extracts provides invigorating freshness and reliable 72-hour antiperspirant protection. Featuring Infinifresh",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "81a150aa564b5e25",
+      "f1c371a333308157"
+    ],
+    "categories": [
+      {
+        "$oid": "6aee35d514f92514cd8c7458"
+      },
+      {
+        "$oid": "6aee35d514f92514cd8c7457"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261106/nivea-men-silver-protect-roll-on-50ml_main_1793999821214.webp",
+    "thumbnailUrl": "/uploads/2611/261106/nivea-men-silver-protect-roll-on-50ml_main_1793999821214.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Beiersdorf AG, Germany",
+    "expiryDate": "2029",
+    "packSize": "50ml",
+    "packageContents": "1 Glass Roll-On Bottle of 50ml Anti-Perspirant Deodorant",
+    "specifications": {
+      "Brand": "Nivea Men",
+      "Parent Brand": "Nivea (Beiersdorf AG)",
+      "Manufacturer": "Beiersdorf AG, Hamburg, Germany",
+      "Volume": "50ml",
+      "Protection Period": "72 Hours Active Protection",
+      "Technology": "Infinifresh Antibacterial Derma Protection",
+      "Key Ingredients": "Natural Ocean Marine Extracts",
+      "Alcohol Content": "0% Ethyl Alcohol"
+    },
+    "benefits": [
+      {
+        "title": "Oceanic Crisp Freshness",
+        "desc": "Formulated with ocean extracts for an energizing, fresh marine scent.",
+        "description": "Formulated with ocean extracts for an energizing, fresh marine scent."
+      },
+      {
+        "title": "72H Long-Lasting Dryness",
+        "desc": "Guards against sweat patches and damp underarms through active days.",
+        "description": "Guards against sweat patches and damp underarms through active days."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Energizing Everyday Freshness",
+        "heading": "Energizing Everyday Freshness",
+        "content": "Step out in full confidence with Nivea Men Fresh Active, combining cool ocean freshness with a 72-hour clinical antiperspirant shield."
+      }
+    ],
+    "bn": {
+      "name": "নিভিয়া মেন ফ্রেশ অ্যাক্টিভ ৭২ ঘণ্টা অ্যান্টি-পারস্পিরেন্ট রোল-অন (৫০ মিলি)",
+      "tagline": "সমুদ্রের সতেজতায় ৭২ ঘণ্টার ঘামহীন আত্মবিশ্বাস",
+      "description": "নিভিয়া মেন ফ্রেশ অ্যাক্টিভ রোল-অন প্রাকৃতিক সমুদ্রের নির্যাস ও ইনফিনিফ্রেশ প্রযুক্তির মাধ্যমে ঘামের দুর্গন্ধ দূর করে দীর্ঘ ৭২ ঘণ্টা শরীরকে রাখে প্রাণবন্ত ও সতেজ।",
+      "longDescription": "<p>প্রাকৃতিক ওশান এক্সট্র্যাক্ট সমৃদ্ধ নিভিয়া মেন ফ্রেশ অ্যাক্টিভ রোল-অন সারাদিন সতেজ অনুভূতি ও ৭২ ঘণ্টা ঘাম থেকে সুরক্ষা নিশ্চিত করে।</p>",
+      "packSize": "৫০ মিলি",
+      "packageContents": "১টি ৫০ মিলি গ্লাস রোল-অন বোতল",
+      "benefits": [
+        {
+          "title": "ওশান এক্সট্র্যাক্ট সতেজতা",
+          "description": "প্রাকৃতিক সামুদ্রিক নির্যাসে দীর্ঘস্থায়ী ফ্রেশনেস।"
+        },
+        {
+          "title": "৭২ ঘণ্টা ঘাম নিয়ন্ত্রণ",
+          "description": "ব্যস্ত দিনেও আন্ডারআর্ম রাখে শুষ্ক ও দুর্গন্ধমুক্ত।"
+        }
+      ],
+      "specifications": [
+        {
+          "key": "ব্র্যান্ড",
+          "value": "Nivea Men"
+        },
+        {
+          "key": "পরিমাণ",
+          "value": "৫০ মিলি"
+        },
+        {
+          "key": "সুরক্ষা",
+          "value": "৭২ ঘণ্টা"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1794085669888"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1794052587173"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6aef11eb691f3ca91ee3240f"
+    },
+    "name": "Nivea Pearl & Beauty 72H Anti-Perspirant Roll-On 50ml",
+    "slug": "nivea-pearl-and-beauty-roll-on-50ml",
+    "did": "6c53a6d17e0a985a",
+    "sku": "NIVEA-PEARL-BEAUTY-50ML",
+    "description": "Nivea Pearl & Beauty Anti-Perspirant Roll-On is enriched with precious pearl extracts and avocado oil. Specially crafted for women to smoothen underarm skin, promote an even skin tone, and deliver 72-hour sweat protection with 0% ethyl alcohol.",
+    "longDescription": "<p><strong>Nivea Pearl &amp; Beauty 72H Anti-Perspirant Roll-On (50ml)</strong></p><p>Give your underarms gentle, luxurious care with Nivea Pearl &amp; Beauty. Enriched with hydrolyzed pearl extracts and nourishing avocado oil, it leaves delicate underarm skin soft, radiant, and protected from sweat and odor for 72 hours.</p><ul><li><p><strong>Precious Pearl Extract:</strong> Helps achieve smooth, even-toned underarms.</p></li><li><p><strong>0% Alcohol:</strong> Gentle enough to apply after shaving or hair removal.</p></li><li><p><strong>Velvety Floral Fragrance:</strong> Subtle, feminine scent that lasts all day.</p></li></ul><p></p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "400"
+    },
+    "offerPrice": null,
+    "tags": [
+      "nivea",
+      "pearl and beauty",
+      "roll-on",
+      "womens care",
+      "deodorant",
+      "underarm care"
+    ],
+    "metaData": {
+      "metaTitle": "Nivea Pearl & Beauty 72H Anti-Perspirant Roll-On 50ml - Surokkha",
+      "metaDescription": "Nivea Pearl & Beauty Anti-Perspirant Roll-On is enriched with precious pearl extracts and avocado oil. Specially crafted for women to smoothen underarm skin, pr",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "f1c371a333308157"
+    ],
+    "categories": [
+      {
+        "$oid": "6aee35d514f92514cd8c7459"
+      },
+      {
+        "$oid": "6aee35d514f92514cd8c7457"
+      },
+      {
+        "$oid": "6adfb14c3c436e94527a272e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261107/nivea-pearl-and-beauty-roll-on-50ml_main_1794085616798.webp",
+    "thumbnailUrl": "/uploads/2611/261107/nivea-pearl-and-beauty-roll-on-50ml_main_1794085616798.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Beiersdorf AG, Germany",
+    "expiryDate": "2029",
+    "packSize": "50ml",
+    "packageContents": "1 Glass Roll-On Bottle of 50ml Women's Anti-Perspirant Deodorant",
+    "specifications": {
+      "Brand": "Nivea",
+      "Manufacturer": "Beiersdorf AG, Hamburg, Germany",
+      "Volume": "50ml",
+      "Protection Period": "72 Hours Anti-Perspirant",
+      "Key Active Ingredients": "Precious Pearl Extracts & Avocado Oil",
+      "Alcohol Content": "0% Ethyl Alcohol (Gentle on Skin)"
+    },
+    "benefits": [
+      {
+        "title": "Smooth & Radiant Underarms",
+        "desc": "Pearl extract and avocado oil nourish delicate skin for softer, even-toned underarms.",
+        "description": "Pearl extract and avocado oil nourish delicate skin for softer, even-toned underarms."
+      },
+      {
+        "title": "0% Alcohol Gentle Formula",
+        "desc": "Non-irritating formula ideal for use even after shaving or waxing.",
+        "description": "Non-irritating formula ideal for use even after shaving or waxing."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Pearl Soft Underarm Care",
+        "heading": "Pearl Soft Underarm Care",
+        "content": "Specially formulated for women, Nivea Pearl & Beauty ensures your underarms stay dry, fragrant, and silky smooth."
+      }
+    ],
+    "bn": {
+      "name": "নিভিয়া পার্ল অ্যান্ড বিউটি ৭২ ঘণ্টা অ্যান্টি-পারস্পিরেন্ট রোল-অন (৫০ মিলি)",
+      "tagline": "মুক্তোর নির্যাসে কোমল, উজ্জ্বল ও সুগন্ধময় আন্ডারআর্ম",
+      "description": "নিভিয়া পার্ল অ্যান্ড বিউটি রোল-অন আসল মুক্তার নির্যাস ও অ্যাভোকাডো অয়েলে সমৃদ্ধ। এটি আন্ডারআর্মকে রাখে কোমল ও মসৃণ এবং ০% অ্যালকোহল ফর্মুলায় ৭২ ঘণ্টা ঘাম প্রতিরোধ করে।",
+      "longDescription": "<p>নারীদের সংবেদনশীল ত্বকের যত্নে তৈরি নিভিয়া পার্ল অ্যান্ড বিউটি রোল-অন মুক্তার নির্যাস ও অ্যাভোকাডো অয়েলের গুণে আন্ডারআর্মকে করে মসৃণ ও উজ্জ্বল।</p>",
+      "packSize": "৫০ মিলি",
+      "packageContents": "১টি ৫০ মিলি গ্লাস রোল-অন বোতল",
+      "benefits": [
+        {
+          "title": "মুক্তার নির্যাসে উজ্জ্বল ত্বক",
+          "description": "আন্ডারআর্মের ত্বক কোমল ও মসৃণ রাখে।"
+        },
+        {
+          "title": "০% অ্যালকোহল ফর্মুলা",
+          "description": "শেভিং বা ওয়াক্সিংয়ের পরেও জ্বালাপোড়া করে না।"
+        }
+      ],
+      "specifications": [
+        {
+          "key": "ব্র্যান্ড",
+          "value": "Nivea"
+        },
+        {
+          "key": "পরিমাণ",
+          "value": "৫০ মিলি"
+        },
+        {
+          "key": "অ্যালকোহল",
+          "value": "০%"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1794085669863"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1794052587175"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6aef11eb691f3ca91ee32410"
+    },
+    "name": "Comely Non-Sticky Glycerin Enriched with Aloe Vera 100g",
+    "slug": "comely-non-sticky-glycerin-aloe-vera-100g",
+    "did": "f87e3d4dfcfc1640",
+    "sku": "COMELY-GLYCERIN-100G",
+    "description": "Comely Non-Sticky Glycerin by Radiant Care Limited is an innovative ready-to-use moisturizer enriched with pure aloe vera extract. Unlike traditional sticky glycerins, this fast-absorbing formulation heals dry skin, hydrates rough patches, and softens hands, feet, and body without greasiness.",
+    "longDescription": "<p><strong>Comely Non-Sticky Glycerin Enriched with Aloe Vera (100g)</strong></p><p>Say goodbye to messy dilution and sticky residue. Comely Non-Sticky Glycerin comes in an easy-squeeze tube ready for direct application on face, hands, and body. Enriched with soothing Aloe Vera, it locks in deep hydration without attracting dust.</p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "150"
+    },
+    "offerPrice": null,
+    "tags": [
+      "comely",
+      "glycerin",
+      "aloe vera",
+      "skincare",
+      "moisturizer",
+      "winter care"
+    ],
+    "metaData": {
+      "metaTitle": "Comely Non-Sticky Glycerin Enriched with Aloe Vera 100g - Surokkha",
+      "metaDescription": "Comely Non-Sticky Glycerin by Radiant Care Limited is an innovative ready-to-use moisturizer enriched with pure aloe vera extract. Unlike traditional sticky gly",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "469ed572a00c5105"
+    ],
+    "categories": [
+      {
+        "$oid": "6aee35d514f92514cd8c745a"
+      },
+      {
+        "$oid": "6aee35d514f92514cd8c7457"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261107/comely-non-sticky-glycerin-aloe-vera-100g_main_1794085593475.webp",
+    "thumbnailUrl": "/uploads/2611/261107/comely-non-sticky-glycerin-aloe-vera-100g_main_1794085593475.webp",
+    "gallery": [
+      "/uploads/2611/261107/comely-non-sticky-glycerin-aloe-vera-100g_main_1794085580982.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Radiant Care Limited, Dhaka, Bangladesh",
+    "expiryDate": "2029",
+    "packSize": "100g",
+    "packageContents": "1 Squeeze Tube of 100g Non-Sticky Ready-to-Use Glycerin",
+    "specifications": {
+      "Brand": "Comely",
+      "Manufacturer": "Radiant Care Limited, Dhaka, Bangladesh",
+      "Net Weight": "100g",
+      "Key Active Ingredients": "Glycerin, Aloe Vera Extract, Aqua, Cyclopentasiloxane",
+      "Texture": "Non-Sticky, Lightweight Ready-to-Use Gel-Cream",
+      "Barcode": "8941175030206"
+    },
+    "benefits": [
+      {
+        "title": "Non-Sticky Ready-to-Use Formula",
+        "desc": "No need to mix with water or rosewater; applies directly and absorbs effortlessly.",
+        "description": "No need to mix with water or rosewater; applies directly and absorbs effortlessly."
+      },
+      {
+        "title": "Enriched with Pure Aloe Vera",
+        "desc": "Soothes irritated dry skin, repairs cracked heels, and seals in moisture.",
+        "description": "Soothes irritated dry skin, repairs cracked heels, and seals in moisture."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Modern Non-Greasy Hydration",
+        "heading": "Modern Non-Greasy Hydration",
+        "content": "Traditional glycerin leaves skin sticky. Comely Non-Sticky Glycerin delivers deep hydration with a clean, velvety finish."
+      }
+    ],
+    "bn": {
+      "name": "কোমলি নন-স্টিকি গ্লিসারিন অ্যালোভেরা সমৃদ্ধ ১০০ গ্রাম",
+      "tagline": "অ্যালোভেরা সমৃদ্ধ নন-স্টিকি রেডি টু ইউজ গ্লিসারিন",
+      "description": "রেডিয়েন্ট কেয়ার লিমিটেডের কোমলি নন-স্টিকি গ্লিসারিন সরাসরি ব্যবহারের উপযোগী। অ্যালোভেরা সমৃদ্ধ হওয়ায় এটি ত্বকের শুষ্কতা ও ফাটা ভাব দূর করে কোনো প্রকার চিটচিটে ভাব ছাড়াই।",
+      "longDescription": "<p>পানি মেশানোর ঝামেলা ছাড়াই সরাসরি ব্যবহারযোগ্য কোমলি নন-স্টিকি গ্লিসারিন ত্বককে রাখে নরম, কোমল ও আর্দ্র।</p>",
+      "packSize": "১০০ গ্রাম",
+      "packageContents": "১টি ১০০ গ্রাম স্কুইজ টিউব",
+      "benefits": [
+        {
+          "title": "চিটচিটে ভাবমুক্ত",
+          "description": "পানি ছাড়াই সরাসরি ত্বকে দ্রুত শোষিত হয়।"
+        },
+        {
+          "title": "অ্যালোভেরা সমৃদ্ধ",
+          "description": "শুষ্ক ও ফাটা ত্বক দ্রুত কোমল করে।"
+        }
+      ],
+      "specifications": [
+        {
+          "key": "ব্র্যান্ড",
+          "value": "Comely"
+        },
+        {
+          "key": "ওজন",
+          "value": "১০০ গ্রাম"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1794085669860"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1794052587179"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6aef11eb691f3ca91ee32411"
+    },
+    "name": "Parasoft Ointment White Soft Paraffin & Liquid Paraffin 100g",
+    "slug": "parasoft-ointment-100g",
+    "did": "a132f64b95e9c01e",
+    "sku": "PARASOFT-OINTMENT-100G",
+    "description": "Parasoft Ointment is a specialized dermatological moisture locker containing White Soft Paraffin BP 50% w/w and Liquid Paraffin BP 50% w/w. It creates an occlusive emollient barrier that locks in moisture and relieves extreme dryness, eczema, chapped skin, and cracked heels.",
+    "longDescription": "<p><strong>Parasoft Ointment (100g) — White Soft Paraffin &amp; Liquid Paraffin</strong></p><p>Formulated by ACI Limited with a clinical 50:50 blend of White Soft Paraffin BP and Liquid Paraffin BP, Parasoft Ointment restores the skin barrier and prevents trans-epidermal water loss for severely dry, flaky, or sensitive skin.</p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "350"
+    },
+    "offerPrice": null,
+    "tags": [
+      "parasoft",
+      "ointment",
+      "paraffin",
+      "dry skin",
+      "eczema",
+      "skincare",
+      "moisturizer"
+    ],
+    "metaData": {
+      "metaTitle": "Parasoft Ointment White Soft Paraffin & Liquid Paraffin 100g - Surokkha",
+      "metaDescription": "Parasoft Ointment is a specialized dermatological moisture locker containing White Soft Paraffin BP 50% w/w and Liquid Paraffin BP 50% w/w. It creates an occlus",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "46dfd4342e5a4b84"
+    ],
+    "categories": [
+      {
+        "$oid": "6aee35d514f92514cd8c745a"
+      },
+      {
+        "$oid": "6aee35d514f92514cd8c7457"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261107/parasoft-ointment-100g_main_1794085556587.webp",
+    "thumbnailUrl": "/uploads/2611/261107/parasoft-ointment-100g_main_1794085556587.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "ACI Limited, Dhaka, Bangladesh",
+    "expiryDate": "2028",
+    "packSize": "100g",
+    "packageContents": "1 Pack containing 100g Moisture Locker Ointment Tube",
+    "specifications": {
+      "Brand": "Parasoft",
+      "Manufacturer": "ACI Limited, Bangladesh",
+      "Active Formulation": "White Soft Paraffin BP 50% w/w & Liquid Paraffin BP 50% w/w",
+      "Net Weight": "100g",
+      "Skin Type": "Very Dry, Rough, Flaky & Sensitive Skin"
+    },
+    "benefits": [
+      {
+        "title": "Intense Moisture Locker Barrier",
+        "desc": "Forms an occlusive protective shield that prevents moisture loss.",
+        "description": "Forms an occlusive protective shield that prevents moisture loss."
+      },
+      {
+        "title": "Relieves Severe Dryness & Cracked Skin",
+        "desc": "Proven 50:50 paraffin ratio softens rough elbows, heels, and dry patches.",
+        "description": "Proven 50:50 paraffin ratio softens rough elbows, heels, and dry patches."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Clinical Hydration Therapy",
+        "heading": "Clinical Hydration Therapy",
+        "content": "Parasoft Ointment rehydrates damaged skin layers, restoring comfort and suppleness to severely dry skin."
+      }
+    ],
+    "bn": {
+      "name": "প্যারাসফ্ট অয়েন্টমেন্ট হোয়াইট সফট প্যারাফিন ও লিকুইড প্যারাফিন ১০০ গ্রাম",
+      "tagline": "চরম শুষ্কতা ও ফাটা ত্বকের যত্নে কার্যকর আর্দ্রতা সংরক্ষক",
+      "description": "প্যারাসফ্ট অয়েন্টমেন্টে রয়েছে ৫০% হোয়াইট সফট প্যারাফিন এবং ৫০% লিকুইড প্যারাফিন। এটি ত্বকে আর্দ্রতা ধরে রেখে চরম শুষ্কতা ও ফাটা গোড়ালির উপশমে কার্যকর।",
+      "longDescription": "<p>অতিরিক্ত শুষ্ক, খসখসে ও ফাটা ত্বকের সুরক্ষায় প্যারাসফ্ট অয়েন্টমেন্ট দীর্ঘসময় আর্দ্রতা লক করে রাখে।</p>",
+      "packSize": "১০০ গ্রাম",
+      "packageContents": "১টি ১০০ গ্রাম অয়েন্টমেন্ট টিউব ও বক্স",
+      "benefits": [
+        {
+          "title": "গভীর আর্দ্রতা সংরক্ষণ",
+          "description": "ত্বক থেকে পানি শুকিয়ে যাওয়া রোধ করে।"
+        },
+        {
+          "title": "ফাটা ত্বক ও গোড়ালির যত্ন",
+          "description": "শুষ্ক ও খসখসে ত্বক দ্রুত নরম করে।"
+        }
+      ],
+      "specifications": [
+        {
+          "key": "ব্র্যান্ড",
+          "value": "Parasoft"
+        },
+        {
+          "key": "ওজন",
+          "value": "১০০ গ্রাম"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1794085669900"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1794052587183"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6aef11eb691f3ca91ee32412"
+    },
+    "name": "B.Tech Expert Virgin Superior Moisturising Stretch Mark Lotion 100ml",
+    "slug": "btech-expert-virgin-stretch-mark-lotion-100ml",
+    "did": "be233b6e4fb2c98e",
+    "sku": "BTECH-VIRGIN-LOTION-100ML",
+    "description": "B.Tech Expert Virgin Superior Moisturising Stretch Mark Lotion is an intensive botanical lotion formulated for pregnancy, postpartum, and body skincare. Blending Rose Hip, Evening Primrose, and Wheat Germ oils with Shea and Cocoa Butters to prevent stretch marks and restore skin elasticity.",
+    "longDescription": "<p><strong>B.Tech Expert Virgin Superior Moisturising Stretch Mark Lotion (100ml)</strong></p><p>Enriched with nourishing Rose Hip Oil, Evening Primrose Oil, Wheat Germ Oil, Shea Butter, and Cocoa Butter, this rich yet fast-absorbing lotion keeps stretching skin supple, hydrated, and resilient during and after pregnancy or weight changes.</p>",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "type": "simple",
+    "price": {
+      "$numberInt": "380"
+    },
+    "offerPrice": null,
+    "tags": [
+      "btech expert",
+      "virgin",
+      "stretch mark lotion",
+      "womens care",
+      "mother care",
+      "skincare"
+    ],
+    "metaData": {
+      "metaTitle": "B.Tech Expert Virgin Superior Moisturising Stretch Mark Lotion 100ml - Surokkha",
+      "metaDescription": "B.Tech Expert Virgin Superior Moisturising Stretch Mark Lotion is an intensive botanical lotion formulated for pregnancy, postpartum, and body skincare. Blendin",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "brand": [
+      "1d7ecfdc1a3d7514"
+    ],
+    "categories": [
+      {
+        "$oid": "6aee35d514f92514cd8c7459"
+      },
+      {
+        "$oid": "6aee35d514f92514cd8c7457"
+      },
+      {
+        "$oid": "6adfb14c3c436e94527a272e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261107/btech-expert-virgin-stretch-mark-lotion-100ml_main_1794085535081.webp",
+    "thumbnailUrl": "/uploads/2611/261107/btech-expert-virgin-stretch-mark-lotion-100ml_main_1794085535081.webp",
+    "gallery": [
+      "/uploads/2611/261107/btech-expert-virgin-stretch-mark-lotion-100ml_main_1794085522015.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Brother's Technologies Inc., Savar, Dhaka, Bangladesh",
+    "expiryDate": "2029",
+    "packSize": "100ml",
+    "packageContents": "1 Pack containing 100ml Stretch Mark Lotion",
+    "specifications": {
+      "Brand": "B.Tech Expert",
+      "Product Line": "Virgin Superior Moisturising",
+      "Manufacturer": "Brother's Technologies Inc., Dhaka, Bangladesh",
+      "Volume": "100ml",
+      "Active Botanicals": "Rose Hip Oil, Evening Primrose Oil, Wheat Germ Oil, Shea Butter, Cocoa Butter"
+    },
+    "benefits": [
+      {
+        "title": "Stretch Mark Defense & Repair",
+        "desc": "Deeply nourishes skin to expand comfortably and visibly fade stretch marks.",
+        "description": "Deeply nourishes skin to expand comfortably and visibly fade stretch marks."
+      },
+      {
+        "title": "Rich Botanical Oils & Butters",
+        "desc": "Infused with Rose Hip, Wheat Germ, and Shea Butter to restore elasticity.",
+        "description": "Infused with Rose Hip, Wheat Germ, and Shea Butter to restore elasticity."
+      }
+    ],
+    "sections": [
+      {
+        "title": "Gentle Care for Smooth Skin",
+        "heading": "Gentle Care for Smooth Skin",
+        "content": "Massage gently twice daily over abdomen, hips, and thighs to maintain smooth, firm, and well-nourished skin."
+      }
+    ],
+    "bn": {
+      "name": "বি.টেক এক্সপার্ট ভার্জিন স্ট্রেচ মার্ক লোশন ১০০ মিলি",
+      "tagline": "গর্ভাবস্থায় ও প্রসব পরবর্তী ত্বকের দাগ ও স্ট্রেচ মার্ক দূরীকরণে কার্যকর",
+      "description": "বি.টেক এক্সপার্ট ভার্জিন স্ট্রেচ মার্ক লোশনে রয়েছে রোজ হিপ, হুইট জার্ম, শিয়া বাটার ও কোকো বাটার। এটি ত্বকের স্থিতিস্থাপকতা বজায় রাখে ও স্ট্রেচ মার্ক দূর করতে সাহায্য করে।",
+      "longDescription": "<p>প্রাকৃতিক তেল ও বাটারের পুষ্টিতে সমৃদ্ধ এই লোশন ত্বকের টানটান ভাব ও আর্দ্রতা রক্ষা করে স্ট্রেচ মার্ক প্রতিরোধ করে।</p>",
+      "packSize": "১০০ মিলি",
+      "packageContents": "১টি ১০০ মিলি লোশন প্যাক",
+      "benefits": [
+        {
+          "title": "স্ট্রেচ মার্ক প্রতিরোধ",
+          "description": "গর্ভাবস্থা ও ওজন পরিবর্তনের দাগ হালকা করতে সহায়ক।"
+        },
+        {
+          "title": "প্রাকৃতিক বাটার ও অয়েল",
+          "description": "শিয়া বাটার ও রোজ হিপ অয়েল ত্বক রাখে কোমল।"
+        }
+      ],
+      "specifications": [
+        {
+          "key": "ব্র্যান্ড",
+          "value": "B.Tech Expert"
+        },
+        {
+          "key": "পরিমাণ",
+          "value": "১০০ মিলি"
+        }
+      ]
+    },
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1794085669893"
+      }
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1794052587185"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6afece12f0e9b43bdcc3a8ed"
+    },
+    "name": "Amore Luxury Gold Condoms 9 prices",
+    "slug": "amore-luxury-gold-condoms-9-prices",
+    "description": "<ul><li><p>Name: Amore Luxury Condom (Gold)</p></li><li><p>Brand: Amore</p></li><li><p>Dimensions: 180mm x 60mm x 0.65-0.08mm(thickness)</p></li><li><p>Premium quality</p></li><li><p>Exotic Gold colored</p></li><li><p>Sensual smooth and lubricated natural rubber latex condoms for the first time in Bangladesh</p></li><li><p>Made of finest natural latex designed for ultimate smooth and pleasure with Vanilla.</p></li></ul><p></p>",
+    "longDescription": "",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "metaData": {
+      "metaTitle": "",
+      "metaDescription": "",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "type": "simple",
+    "price": {
+      "$numberInt": "300"
+    },
+    "offerPrice": null,
+    "sku": "",
+    "groupOffer": {
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": [],
+      "conditions": []
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "tags": [],
+    "brand": [
+      "f27fa8bd1269cdc9"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2610/261003/amore-luxury-gold-9-pcs-combo_main_1791056976620.webp",
+    "thumbnailUrl": "/uploads/2610/261003/amore-luxury-gold-9-pcs-combo_main_1791056976620.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "0"
+    },
+    "stockItem": null,
+    "stockQty": {
+      "$numberInt": "1"
+    },
+    "extraStock": [],
+    "origin": "China Imported",
+    "expiryDate": "2030",
+    "packSize": "",
+    "benefits": [],
+    "sections": [],
+    "packageContents": "",
+    "createdBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "did": "fd3e311181d55ba8",
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1795083794107"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684722"
+      }
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6b0027c82bc2cade3cddcda6"
+    },
+    "name": "Durex Strawberry Flavored Condoms 9 Pcs (3 Packs Combo)",
+    "slug": "durex-strawberry-flavored-condoms-9-pcs-combo",
+    "did": "aebd47a6cf777166",
+    "type": "simple",
+    "price": {
+      "$numberInt": "360"
+    },
+    "offerPrice": {
+      "$numberInt": "300"
+    },
+    "sku": "",
+    "tags": [],
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261120/durex-strawberry-flavored-condoms-9-pcs-combo_main_1795193690925.webp",
+    "thumbnailUrl": "/uploads/2611/261120/durex-strawberry-flavored-condoms-9-pcs-combo_main_1795193690925.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Reckitt Benckiser (Durex)",
+    "expiryDate": "2030",
+    "packSize": "9 Pieces (3 Packs)",
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped Strawberry Flavored Condoms)",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "description": "Durex Strawberry Flavored Condoms 9 Pcs Combo pack delivers 3 retail boxes (9 condoms total) infused with sweet strawberry flavor and enticing aroma, masking latex odor and adding delicious excitement to intimate play.",
+    "longDescription": "<p>Add sweet, fruity fun to your intimate moments with the Durex Strawberry 9-Piece Combo. Formulated with sweet strawberry-scented silicone lubricant and a smooth latex finish, this bundle ensures a delightfully fragrant experience with certified Durex protection.</p>",
+    "specifications": {
+      "Bundle Contents": "3 Retail Boxes (3 Condoms per box = Total 9 Condoms)",
+      "Brand": "Durex (Reckitt Benckiser)",
+      "Product Line": "Flavors & Fun (Strawberry Edition)",
+      "Material": "Natural Rubber Latex",
+      "Surface Texture": "Ultra-Smooth Classic Finish",
+      "Flavor / Aroma": "Sweet Wild Strawberry",
+      "Color": "Coloured (Translucent Pink/Red)",
+      "Shape": "Straight-Walled & Teat-Ended",
+      "Nominal Width": "53mm (±2mm)",
+      "Nominal Length": "≥ 180mm",
+      "Thickness Profile": "Regular (Approx. 0.065mm)",
+      "Lubrication": "Strawberry-Infused Silicone Lubricant",
+      "Testing & Quality": "100% Electronically Tested",
+      "Certifications": "ISO 4074 / CE Certified",
+      "Packaging": "Discreet Multi-Pack (9 Individually Sealed Foils)"
+    },
+    "benefits": [
+      {
+        "title": "Saver 9-Piece Flavor Bundle",
+        "description": "Supplied in 3 full retail packs (9 condoms total) for extended pleasure and long-lasting stock."
+      },
+      {
+        "title": "Aromatic Strawberry Flavor",
+        "description": "Sweet strawberry scent and taste that eliminates rubber odor and creates a fun, playful atmosphere."
+      },
+      {
+        "title": "Smooth Frictionless Glide",
+        "description": "Pre-lubricated with body-safe, fruit-scented silicone lubricant for smooth and irritation-free comfort."
+      },
+      {
+        "title": "Comfortable 53mm Fit",
+        "description": "Straight-walled shape with teat reservoir ensures a snug, comfortable, and slip-free fit."
+      },
+      {
+        "title": "Tested Barrier Safety",
+        "description": "Individually electronically screened to guarantee reliable barrier defense against STIs and unwanted pregnancies."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Sensual Fruity Experience",
+        "content": "Durex Strawberry brings sensory playfulness to the bedroom. The sweet aroma and taste enhance closeness while keeping intimacy fun and vibrant."
+      },
+      {
+        "heading": "High Standards of Reliability",
+        "content": "Constructed from top-tier natural latex meeting strict ISO international criteria to ensure high tear and puncture resistance."
+      },
+      {
+        "heading": "Usage & Handling Instructions",
+        "content": "Single-use contraceptive. Handle gently and unroll onto erect anatomy. Store in a clean, cool, and dry place away from heat."
+      }
+    ],
+    "metaData": {
+      "metaTitle": "Durex Strawberry Flavored Condoms 9 Pcs (3 Packs Combo) - Surokkha",
+      "metaDescription": "Buy Durex Strawberry Flavored Condoms 9 Pieces (3 Packs Combo) at Surokkha. Sweet strawberry aroma and flavor with reliable Durex safety.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "createdBy": {
+      "$oid": "6acc708e88aa1fe2e393ab02"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1795172295552"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684694"
+      }
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6b0027c82bc2cade3cddcda7"
+    },
+    "name": "Durex Extra Safe Condoms 9 Pcs (3 Packs Combo)",
+    "slug": "durex-extra-safe-condoms-9-pcs-combo",
+    "did": "f2d326c65c91eafa",
+    "type": "simple",
+    "price": {
+      "$numberInt": "360"
+    },
+    "offerPrice": {
+      "$numberInt": "300"
+    },
+    "sku": "",
+    "tags": [],
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261120/durex-extra-safe-condoms-9-pcs-combo_main_1795193676791.webp",
+    "thumbnailUrl": "/uploads/2611/261120/durex-extra-safe-condoms-9-pcs-combo_main_1795193676791.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Reckitt Benckiser (Durex)",
+    "expiryDate": "2030",
+    "packSize": "9 Pieces (3 Packs)",
+    "packageContents": "3 Retail Packs (9 Individually Foil-Wrapped Extra Safe Condoms)",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "description": "Durex Extra Safe Condoms 9 Pcs Combo pack includes 3 retail boxes (9 condoms total) engineered with slightly thicker latex and extra silicone lubrication, designed for those seeking ultimate reassurance and peace of mind.",
+    "longDescription": "<p>Enjoy total confidence and peace of mind with the Durex Extra Safe 9-Piece Bundle. Designed with reinforced latex thickness and generous extra lubrication, it offers unmatched durability and barrier security without sacrificing comfort.</p>",
+    "specifications": {
+      "Bundle Contents": "3 Retail Boxes (3 Condoms per box = Total 9 Condoms)",
+      "Brand": "Durex (Reckitt Benckiser)",
+      "Product Line": "Extra Safe (Maximum Protection)",
+      "Material": "Reinforced Natural Rubber Latex",
+      "Surface Texture": "Ultra-Smooth Classic Finish",
+      "Shape": "Easy-On Shaped & Teat-Ended",
+      "Nominal Width": "56mm (Regular Fit)",
+      "Nominal Length": "≥ 190mm",
+      "Thickness Profile": "Thicker / Enhanced Security (Approx. 0.075mm / 75 microns)",
+      "Lubrication": "Extra Silicone-Based Fluid",
+      "Color": "Transparent",
+      "Testing & Quality": "100% Electronically Tested for Superior Burst Strength",
+      "Certifications": "ISO 4074 / CE Certified",
+      "Packaging": "Discreet Multi-Pack (9 Individually Sealed Foils)"
+    },
+    "benefits": [
+      {
+        "title": "Saver 9-Piece Value Bundle",
+        "description": "Includes 3 full retail boxes (9 condoms total) providing long-lasting supply and convenience."
+      },
+      {
+        "title": "Enhanced Latex Thickness",
+        "description": "Formulated with slightly thicker walls (75 microns) to provide maximum tear resistance and security."
+      },
+      {
+        "title": "Extra Lubricated Formulation",
+        "description": "Generously coated with extra silicone lubricant to minimize friction and prevent dryness during use."
+      },
+      {
+        "title": "Easy-On Ergonomic Fit",
+        "description": "Designed with a 56mm regular width and Easy-On contours for a natural and comfortable fit."
+      },
+      {
+        "title": "Maximum Peace of Mind",
+        "description": "The ultimate choice for partners who prioritize dependable protection and zero-worry intimacy."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Engineered for Utmost Security",
+        "content": "Durex Extra Safe is specially developed for peace of mind. The slightly thicker latex combined with extra lubrication ensures effortless, worry-free intimacy."
+      },
+      {
+        "heading": "Comfortable 56mm Fit",
+        "content": "Features Durex Easy-On anatomical contours that roll on smoothly and fit comfortably without feeling constrictive."
+      },
+      {
+        "heading": "Usage & Safe Handling",
+        "content": "Single-use natural latex contraceptive. Open carefully from the notched edge. Store below 30°C in a dry environment."
+      }
+    ],
+    "metaData": {
+      "metaTitle": "Durex Extra Safe Condoms 9 Pcs (3 Packs Combo) - Surokkha",
+      "metaDescription": "Buy Durex Extra Safe Condoms 9 Pieces (3 Packs Combo) at Surokkha. Thicker latex with extra lubrication for ultimate reassurance and protection.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "createdBy": {
+      "$oid": "6acc708e88aa1fe2e393ab02"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1795172295552"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684707"
+      }
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6b0027c82bc2cade3cddcda8"
+    },
+    "name": "Durex 4-in-1 Ultimate Variety Pack Condoms 12 Pcs (4 Packs Combo)",
+    "slug": "durex-4-in-1-variety-pack-condoms-12-pcs-combo",
+    "did": "85d1ed1d16064c0f",
+    "type": "simple",
+    "price": {
+      "$numberInt": "480"
+    },
+    "offerPrice": {
+      "$numberInt": "380"
+    },
+    "sku": "",
+    "tags": [
+      "combo",
+      "durex",
+      "variety"
+    ],
+    "brand": [
+      "f7aa5d4f778c66e8"
+    ],
+    "categories": [
+      {
+        "$oid": "6ab81620a561a97a08a0de93"
+      },
+      {
+        "$oid": "6ac6f1692db5a55de377259e"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261120/durex-4-in-1-variety-pack-condoms-12-pcs-combo_main_1795193656958.webp",
+    "thumbnailUrl": "/uploads/2611/261120/durex-4-in-1-variety-pack-condoms-12-pcs-combo_main_1795193656958.webp",
+    "gallery": [],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Reckitt Benckiser (Durex)",
+    "expiryDate": "2030",
+    "packSize": "12 Pieces (4 Packs)",
+    "packageContents": "4 Retail Packs (1x Pleasure Me + 1x Strawberry + 1x Extra Safe + 1x Thin Feel = 12 Condoms Total)",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "description": "Durex 4-in-1 Ultimate Variety Pack brings together 4 distinct sensations in one mega bundle (12 condoms total): textured stimulation with Pleasure Me, fruity sweetness with Strawberry, reinforced security with Extra Safe, and close skin-on-skin intimacy with Thin Feel.",
+    "longDescription": "<p>Discover the full spectrum of intimacy with the Durex 4-in-1 Variety Pack. This 4-box bundle includes 12 premium condoms across 4 signature Durex formulations: Ribbed & Dotted Pleasure Me, Wild Strawberry Flavored, Reinforced Extra Safe, and Ultra-Sensitive Thin Feel. Perfect for couples who want variety, excitement, and uncompromised barrier safety at exceptional value.</p>",
+    "specifications": {
+      "Bundle Contents": "4 Full Retail Packs (3 Condoms per box = Total 12 Condoms)",
+      "Included Variants": "1x Pleasure Me (3 Pcs), 1x Strawberry (3 Pcs), 1x Extra Safe (3 Pcs), 1x Thin Feel (3 Pcs)",
+      "Brand": "Durex (Reckitt Benckiser)",
+      "Product Line": "Signature Variety Collection",
+      "Material": "Finest Grade Natural Rubber Latex",
+      "Surface Textures": "Ribbed & Dotted (Pleasure Me), Ultra-Smooth (Strawberry, Extra Safe, Thin Feel)",
+      "Shapes": "Easy-On & Teat-Ended (Pleasure Me, Extra Safe, Thin Feel); Straight-Walled (Strawberry)",
+      "Nominal Widths": "56mm Regular Fit (Pleasure Me, Extra Safe, Thin Feel) / 53mm (Strawberry)",
+      "Nominal Lengths": "180mm - 205mm",
+      "Lubrication Profiles": "Silicone Fluid, Extra Silicone (Extra Safe), Sweet Strawberry Flavored Silicone (Strawberry)",
+      "Quality Standards": "100% Electronically Tested for Tensile Strength & Micro-Defects",
+      "Certifications": "ISO 4074 / CE Certified",
+      "Packaging": "Discreet Multi-Box Bundle (12 Individually Sealed Foils)"
+    },
+    "benefits": [
+      {
+        "title": "4 Distinct Sensations in 1 Deal",
+        "description": "Switch between ribbed stimulation, sweet strawberry aroma, extra safe reassurance, and ultra-thin closeness whenever mood strikes."
+      },
+      {
+        "title": "Mega Saver 12-Piece Pack",
+        "description": "Get 4 full retail boxes (12 condoms total) at an exclusive combo price of 300 BDT (Regular 480 BDT)."
+      },
+      {
+        "title": "Dual Stimulation with Pleasure Me",
+        "description": "Raised dots and contoured ribs designed to maximize sensory thrills for both partners."
+      },
+      {
+        "title": "Fruity Fun with Strawberry",
+        "description": "Sweet strawberry flavor and scent eliminates latex aroma and makes intimacy fragrant and fun."
+      },
+      {
+        "title": "Maximum Peace of Mind with Extra Safe",
+        "description": "Thicker latex construction combined with extra silicone lube for total worry-free confidence."
+      },
+      {
+        "title": "Skin-on-Skin Closeness with Thin Feel",
+        "description": "Super-thin profile designed for heightened body heat transfer and natural intimacy."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Why Choose the Durex 4-in-1 Variety Bundle?",
+        "content": "Why settle for just one feeling when you can experience all four? This variety bundle allows partners to explore different textures, flavors, and sensitivity levels, keeping your intimate life fresh, thrilling, and safe."
+      },
+      {
+        "heading": "The 4 Signature Experiences",
+        "content": "1. Pleasure Me: Ribbed & dotted for intensified tactile friction.\n2. Strawberry: Delicious fruity aroma and sweet taste for playful passion.\n3. Extra Safe: Enhanced thickness & extra lubrication for ultimate peace of mind.\n4. Thin Feel: Super thin construction for genuine skin-on-skin sensitivity."
+      },
+      {
+        "heading": "Usage & Safe Storage",
+        "content": "Single-use natural latex contraceptives. Tear open foil packs gently with fingers along the serrated notch. Store in a cool, dry place away from direct heat and sharp objects."
+      }
+    ],
+    "metaData": {
+      "metaTitle": "Durex 4-in-1 Variety Pack Condoms 12 Pcs (4 Packs Combo) - Surokkha",
+      "metaDescription": "Buy Durex 4-in-1 Variety Pack Condoms 12 Pcs Combo (Pleasure Me, Strawberry, Extra Safe, Thin Feel) at Surokkha. 4 packs for only 300 BDT.",
+      "keywords": [],
+      "ogImage": ""
+    },
+    "createdBy": {
+      "$oid": "6acc708e88aa1fe2e393ab02"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1795172295552"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684929"
+      }
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6b015d40f7038e7fc6e5cbbc"
+    },
+    "name": "MO Mini Pack Latex Contraceptive (6 Pcs)",
+    "slug": "mo-mini-pack-6-pcs",
+    "did": "bd3ca87e8e86ba48",
+    "type": "simple",
+    "price": {
+      "$numberInt": "240"
+    },
+    "offerPrice": null,
+    "sku": "",
+    "tags": [
+      "mo",
+      "mini-pack",
+      "combo",
+      "contraceptive",
+      "micro-thin",
+      "micro-ribbed",
+      "micro-texture"
+    ],
+    "brand": [
+      "75f239cb02a8b720"
+    ],
+    "categories": [
+      {
+        "$oid": "6ab81620a561a97a08a0de93"
+      },
+      {
+        "$oid": "6ab81620a561a97a08a0de92"
+      }
+    ],
+    "imageUrl": "/uploads/2611/261116/mo-smart-pack-15-pcs_main_1794796181110.webp",
+    "thumbnailUrl": "/uploads/2611/261116/mo-smart-pack-15-pcs_main_1794796181110.webp",
+    "gallery": [
+      "/uploads/2610/261029/mo-micro-thin-latex-contraceptive-20-pcs-combo_main_1793310934958.webp",
+      "/uploads/2610/261029/mo-micro-ribbed-natural-latex-contraceptive-20-pcs-combo_main_1793310893028.webp",
+      "/uploads/2611/261118/multi-textured-contraceptive_main_1795035288391.webp"
+    ],
+    "stockStatus": "outofstock",
+    "stockAmount": {
+      "$numberInt": "100"
+    },
+    "origin": "Authentic MO",
+    "expiryDate": "2030",
+    "packSize": "6 Pieces (3 in 1 Mini Pack)",
+    "packageContents": "6 Individually Foil-Wrapped Contraceptives (2x Micro-Thin, 2x Micro-Ribbed, 2x Micro-Texture)",
+    "isActive": true,
+    "excludeFromMetaCatalog": false,
+    "description": "MO Mini Pack (6 Pcs) is a 3-in-1 sampler bundle featuring 2 pieces of Micro Thin, 2 pieces of Micro Ribbed, and 2 pieces of Micro Texture. Crafted from premium natural rubber latex for ultimate intimacy and certified barrier protection.",
+    "longDescription": "<p>Discover your preferred intimate sensation with the MO Mini Pack (6 Pcs). This compact sampler pack brings together three distinct signature textures: 2x Micro Thin for natural skin-on-skin warmth, 2x Micro Ribbed for enhanced frictional stimulation, and 2x Micro Texture for heightened tactile thrills. Designed for couples seeking variety, convenience, and dependable ISO-certified protection at an accessible price of 240 BDT.</p>",
+    "specifications": {
+      "Bundle Variety": "3-in-1 Mini Sampler Pack",
+      "Total Quantity": "6 Pieces (2x Micro-Thin + 2x Micro-Ribbed + 2x Micro-Texture)",
+      "Brand": "MO",
+      "Material": "100% Medical-Grade Natural Rubber Latex",
+      "Textures Included": "Micro-Thin (Smooth), Micro-Ribbed (Contoured Ridges), Micro-Texture (Multi-Textured)",
+      "Nominal Width": "52mm (±2mm)",
+      "Nominal Length": "≥ 180mm",
+      "Lubrication": "Silky Medical-Grade Neutral Silicone Fluid",
+      "Quality Standard": "100% Electronically Tested, ISO 4074 Compliant",
+      "Packaging": "Discreet Multi-Variety Mini Pack"
+    },
+    "benefits": [
+      {
+        "title": "3-in-1 Texture Variety",
+        "description": "Includes 2 pieces each of Micro-Thin, Micro-Ribbed, and Micro-Texture to experience diverse sensations in one mini pack."
+      },
+      {
+        "title": "Micro Thin (2 Pcs)",
+        "description": "Ultra-thin profile engineered for natural body warmth transfer and a close skin-on-skin feeling."
+      },
+      {
+        "title": "Micro Ribbed (2 Pcs)",
+        "description": "Precision raised ribs placed strategically along the contours for intensified tactile friction."
+      },
+      {
+        "title": "Micro Texture (2 Pcs)",
+        "description": "Multi-textured surface designed for enhanced sensory thrills and heightened mutual pleasure."
+      },
+      {
+        "title": "100% Electronic Safety Screening",
+        "description": "Each piece is individually tested to provide reliable barrier protection against STIs and unintended pregnancy."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Why Choose the MO Mini Pack?",
+        "content": "The MO Mini Pack is the ideal sampler bundle. Containing 2 pieces of Micro Thin, 2 pieces of Micro Ribbed, and 2 pieces of Micro Texture, it lets you explore different sensations without buying large bulk packs."
+      },
+      {
+        "heading": "Uncompromising Quality & Comfort",
+        "content": "Manufactured from premium natural rubber latex and generously lubricated with smooth silicone fluid, complying strictly with ISO 4074 standards."
+      },
+      {
+        "heading": "Usage & Safe Storage",
+        "content": "Single-use latex contraceptive. Tear open the foil pack carefully along the serrated notch. Store in a cool, dry place away from direct sunlight."
+      }
+    ],
+    "metaData": {
+      "metaTitle": "MO Mini Pack Latex Contraceptive (6 Pcs) - Surokkha",
+      "metaDescription": "Buy MO Mini Pack (6 Pcs) at Surokkha for 240 BDT. Includes 2x Micro Thin, 2x Micro Ribbed, and 2x Micro Texture condoms.",
+      "keywords": [
+        "mo mini pack",
+        "mo condoms",
+        "micro thin",
+        "micro ribbed",
+        "micro texture",
+        "surokkha"
+      ],
+      "ogImage": "/uploads/2611/261116/mo-smart-pack-15-pcs_main_1794796181110.webp"
+    },
+    "createdBy": {
+      "$oid": "6acc708e88aa1fe2e393ab02"
+    },
+    "updatedBy": {
+      "$oid": "6ab2c988721c81cc891e69d2"
+    },
+    "createdAt": {
+      "$date": {
+        "$numberLong": "1795251520272"
+      }
+    },
+    "updatedAt": {
+      "$date": {
+        "$numberLong": "1795367684690"
+      }
+    },
+    "combo": {
+      "discountType": "none",
+      "discountValue": {
+        "$numberInt": "0"
+      },
+      "pieces": []
+    },
+    "extraStock": [],
+    "groupOffer": {
+      "conditions": [],
+      "fixedDiscount": {
+        "discountType": "percentage",
+        "discountValue": {
+          "$numberInt": "0"
+        }
+      },
+      "minOrderAmount": {
+        "$numberInt": "250"
+      },
+      "minPerProduct": {
+        "$numberInt": "2"
+      },
+      "pricingMode": "fixed",
+      "products": []
+    },
+    "stockQty": {
+      "$numberInt": "1"
+    }
+  }
+]

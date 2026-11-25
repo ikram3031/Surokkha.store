@@ -14,6 +14,9 @@ import {
   pixelTrack,
   saveCheckoutLead,
   resetCheckoutSession,
+  newEventId,
+  trackAddToCart,
+  trackViewContent,
 } from '../special-offer/storeCompat.js';
 
 const OFFER = {
@@ -71,7 +74,7 @@ const phoneWrongSoFar = (v) => {
 const waLink = (text) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 
 // Sends a Meta pixel event
-const track = (ev, data) => pixelTrack(ev, data);
+const track = (ev, data, eventId) => pixelTrack(ev, data, eventId);
 
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
@@ -162,9 +165,15 @@ const ThreeInOneView = () => {
 
   const waOrderLink = useMemo(() => waLink(`আমি Surokkha 7 in 1 Pack (১৪ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
 
+  const pageTrackedRef = useRef(false);
   useEffect(() => {
+    if (pageTrackedRef.current) return;
+    pageTrackedRef.current = true;
     trackSitePage('3-in-1');
-    track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: OFFER.offerPrice, currency: 'BDT' });
+    const vcEventId = newEventId('vc');
+    track('PageView');
+    trackViewContent({ productDid: OFFER.did, productName: OFFER.name, price: OFFER.offerPrice, eventId: vcEventId });
+    track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: OFFER.offerPrice, currency: 'BDT' }, vcEventId);
   }, []);
 
   useEffect(() => {
@@ -182,7 +191,9 @@ const ThreeInOneView = () => {
   const changeAddon = (a, delta) => {
     setAddonQty((prev) => ({ ...prev, [a.key]: Math.max(0, Math.min(MAX_ADDON, prev[a.key] + delta)) }));
     if (delta > 0) {
-      track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
+      const eventId = newEventId('atc');
+      trackAddToCart({ productDid: a.did, productName: a.fullName, price: a.price, qty: 1, eventId });
+      track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' }, eventId);
       trackProductEvents([{ eventType: 'add_to_cart', productKey: a.slug, productName: a.fullName, quantity: 1, value: a.price }]);
     }
   };
@@ -219,7 +230,9 @@ const ThreeInOneView = () => {
   const onOrderClick = () => {
     if (cartedRef.current) return;
     cartedRef.current = true;
-    track('AddToCart', { value: OFFER.offerPrice, currency: 'BDT', content_ids: [OFFER.did], content_name: OFFER.name, content_type: 'product' });
+    const eventId = newEventId('atc');
+    trackAddToCart({ productDid: OFFER.did, productName: OFFER.name, price: OFFER.offerPrice, qty: 1, eventId });
+    track('AddToCart', { value: OFFER.offerPrice, currency: 'BDT', content_ids: [OFFER.did], content_name: OFFER.name, content_type: 'product' }, eventId);
     trackProductEvents([{ eventType: 'add_to_cart', productKey: OFFER.slug, productName: OFFER.name, quantity: 1, value: OFFER.offerPrice }]);
   };
 
@@ -227,7 +240,7 @@ const ThreeInOneView = () => {
   const onFormFocus = () => {
     if (startedRef.current) return;
     startedRef.current = true;
-    track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [OFFER.did], content_type: 'product' });
+    track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [OFFER.did], content_type: 'product' }, `ic_${getCheckoutSessionId()}`);
     trackProductEvents([
       { eventType: 'checkout', productKey: OFFER.slug, productName: OFFER.name, quantity: qty, value: qty * OFFER.offerPrice },
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ eventType: 'checkout', productKey: a.slug, productName: a.fullName, quantity: addonQty[a.key], value: addonQty[a.key] * a.price })),
@@ -288,6 +301,7 @@ const ThreeInOneView = () => {
       fbc: getFbc() || undefined,
       fb_login_id: getFbLoginId() || undefined,
       externalId: getExternalId() || undefined,
+      eventSourceUrl: window.location.href,
       siteKey: SITE_CONFIG.siteKey,
       clientDomain: SITE_CONFIG.domain,
       orderPrefix: SITE_CONFIG.orderPrefix,

@@ -243,7 +243,8 @@ export function CheckoutPage() {
     const next: Record<string, string> = {}
     if (!form.fullName.trim()) next.fullName = L('Enter your name', 'আপনার নাম লিখুন')
     if (!isValidPhone(form.phone)) next.phone = L('Enter a valid mobile number (e.g. 01XXXXXXXXX)', '১১ ডিজিটের সঠিক মোবাইল নম্বর দিন (যেমন: 01XXXXXXXXX)')
-    if (form.email.trim() && !isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
+    if (!form.email.trim()) next.email = L('Enter your email', 'আপনার ইমেইল লিখুন')
+    else if (!isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
     if (form.address.trim().length < 5) next.address = L('Enter your full address with house, road and area', 'বাড়ি, রোড ও এলাকাসহ পূর্ণ ঠিকানা লিখুন')
     if (!form.district) next.district = L('Select a district', 'জেলা নির্বাচন করুন')
     if (!sameAsBilling) {
@@ -383,6 +384,7 @@ export function CheckoutPage() {
         paymentDetails: null,
         timestamp: new Date().toISOString(),
         checkoutSessionId: getCheckoutSessionId(),
+        eventSourceUrl: window.location.href,
         ...getFbIdentifiers(),
       }
 
@@ -406,6 +408,11 @@ export function CheckoutPage() {
         'Purchase',
         {
           content_ids: lines.map((l) => l.product.did ?? l.product.slug ?? String(l.product.id)),
+          contents: lines.map((l) => ({
+            id: l.product.did ?? l.product.slug ?? String(l.product.id),
+            quantity: l.qty,
+            item_price: l.product.price,
+          })),
           content_type: 'product',
           num_items: count,
           value: totals.total,
@@ -470,7 +477,7 @@ export function CheckoutPage() {
                   placeholder="01XXXXXXXXX"
                 />
               </Field>
-              <Field label={`${L('Email', 'ইমেইল')} ${L('(optional)', '(ঐচ্ছিক)')}`} error={errors.email} htmlFor="email">
+              <Field label={L('Email', 'ইমেইল')} required error={errors.email} htmlFor="email">
                 <input
                   id="email"
                   type="email"

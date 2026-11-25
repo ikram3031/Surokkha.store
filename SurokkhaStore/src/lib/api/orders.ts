@@ -53,6 +53,8 @@ export interface NewOrderPayload {
   fbc?: string
   /** Visitor id (_sk_ext_id) the pixel uses as external_id */
   externalId?: string
+  /** Full storefront page URL for Meta CAPI event_source_url */
+  eventSourceUrl?: string
 }
 
 export interface Order {

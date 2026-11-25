@@ -72,17 +72,17 @@ const MATCH_KEY = '_sk_pixel_ud'
 let activePixelId = ''
 type MatchData = Record<string, string>
 
-function loadMatchData(): MatchData {
+const loadMatchData = (): MatchData => {
   let saved: MatchData = {}
   try {
     saved = JSON.parse(localStorage.getItem(MATCH_KEY) || '{}') || {}
   } catch {
-    /* storage blocked */
+    saved = {}
   }
-  return { country: 'bd', ct: 'dhaka', st: 'dhaka', ...saved }
+  return { country: 'bd', ...saved }
 }
 
-function toMatchData(c: { phone?: string; email?: string; fullName?: string; district?: string }): MatchData {
+const toMatchData = (c: { phone?: string; email?: string; fullName?: string; district?: string }): MatchData => {
   const out: MatchData = {}
   let ph = String(c.phone || '').replace(/\D/g, '').replace(/^0+/, '')
   if (ph.startsWith('1')) ph = `880${ph}`
@@ -95,15 +95,15 @@ function toMatchData(c: { phone?: string; email?: string; fullName?: string; dis
     out.ln = parts.slice(1).join(' ') || parts[0]
   }
   const place = String(c.district || '').toLowerCase().replace(/[^a-z]/g, '')
-  if (place) {
+  if (place && place !== 'outsidedhaka') {
     out.ct = place
     out.st = place
   }
   return out
 }
 
-/** Hands the customer's checkout details to the pixel (and remembers them) so the next event, e.g. Purchase, carries them. */
-export function setPixelUserData(customer: { phone?: string; email?: string; fullName?: string; district?: string }) {
+// Persists checkout user details and updates active pixel advanced matching before Purchase
+export const setPixelUserData = (customer: { phone?: string; email?: string; fullName?: string; district?: string }) => {
   try {
     const data = { ...loadMatchData(), ...toMatchData(customer) }
     try {
@@ -111,32 +111,34 @@ export function setPixelUserData(customer: { phone?: string; email?: string; ful
     } catch {
       /* storage blocked */
     }
-    // Already-running pixel: merge into its userData (a second fbq('init') would duplicate every event)
-    const inst = (window.fbq as unknown as { instance?: { pixelsByID?: Record<string, { userData?: MatchData }> } })?.instance
-    const pixel = activePixelId ? inst?.pixelsByID?.[activePixelId] : undefined
-    if (pixel) pixel.userData = { ...(pixel.userData || {}), ...data, external_id: getExternalId() }
+    if (activePixelId && window.fbq) {
+      window.fbq('init', activePixelId, { ...data, external_id: getExternalId() })
+    }
   } catch {
     /* tracking must never break the storefront */
   }
 }
 
-export function initPixel() {
+// Starts pixel initialization once after resolving pixel id from site-config
+export const initPixel = () => {
   if (starting || typeof window === 'undefined') return
   starting = true
+  captureFbclid()
   resolvePixelId()
     .catch(() => STORE_FALLBACK_PIXEL_ID)
     .then((pixelId) => {
       const queued = pending ?? []
       pending = null
-      if (!pixelId) return // browser pixel disabled in the dashboard: drop queued events
+      if (!pixelId) return
       bootstrap(pixelId)
       queued.forEach((args) => window.fbq?.(...args))
     })
 }
 
-export function pixelTrack(event: string, data?: Record<string, unknown>, eventId?: string) {
+// Tracks a standard Meta pixel event with optional deduplication eventID
+export const pixelTrack = (event: string, data?: Record<string, unknown>, eventId?: string) => {
   try {
-    const args: unknown[] = ['track', event, data ?? {}, eventId ? { eventID: eventId } : undefined]
+    const args: unknown[] = eventId ? ['track', event, data ?? {}, { eventID: eventId }] : ['track', event, data ?? {}]
     if (pending) {
       pending.push(args)
       initPixel()
@@ -148,24 +150,37 @@ export function pixelTrack(event: string, data?: Record<string, unknown>, eventI
   }
 }
 
-function cookie(name: string): string {
+// Reads a single cookie value by name
+const cookie = (name: string): string => {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-/** _fbp / _fbc / external_id let the server-side event match this browser session. */
-export function getFbIdentifiers(): { fbp?: string; fbc?: string; externalId?: string } {
+// Captures fbclid from the landing URL into the _fbc cookie before SPA navigation strips query params
+export const captureFbclid = (): string => {
   try {
-    let fbc = cookie('_fbc')
-    if (!fbc) {
-      const fbclid = new URLSearchParams(window.location.search).get('fbclid')
-      if (fbclid) {
-        fbc = `fb.1.${Date.now()}.${fbclid}`
-        document.cookie = `_fbc=${encodeURIComponent(fbc)}; path=/; max-age=7776000; SameSite=Lax`
-      }
+    if (typeof window === 'undefined') return ''
+    const existing = cookie('_fbc')
+    const fbclid = new URLSearchParams(window.location.search).get('fbclid')?.trim()
+    if (fbclid && !existing.endsWith(`.${fbclid}`)) {
+      const fbc = `fb.1.${Date.now()}.${fbclid}`
+      document.cookie = `_fbc=${encodeURIComponent(fbc)}; path=/; max-age=7776000; SameSite=Lax`
+      return fbc
     }
+    return existing
+  } catch {
+    return ''
+  }
+}
+
+// Returns _fbp, _fbc, and external_id so server-side CAPI events match this browser session
+export const getFbIdentifiers = (): { fbp?: string; fbc?: string; externalId?: string } => {
+  try {
+    const fbc = captureFbclid()
     return { fbp: cookie('_fbp') || undefined, fbc: fbc || undefined, externalId: getExternalId() }
   } catch {
     return { externalId: getExternalId() }
   }
 }
+
+captureFbclid()
