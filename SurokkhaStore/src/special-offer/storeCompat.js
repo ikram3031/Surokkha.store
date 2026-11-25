@@ -2,6 +2,8 @@ import { getExternalId, getFbIdentifiers, pixelTrack, pixelTrackCustom, setPixel
 import { newEventId, trackAddToCart, trackViewContent } from '@/lib/api/events';
 import { trackPageView, trackProductEvents } from '@/lib/api/productEvents';
 import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead as storeSaveCheckoutLead } from '@/lib/api/checkoutLeads';
+import { deliveryFee } from '@/lib/checkout';
+import { forgotPassword, verifyEmail } from '@/lib/api/customer-auth';
 import { DISTRICT_NAMES, DISTRICT_BN } from '@/data/districts';
 
 // Store versions of the helpers the special offer page was written against in SurokkhaShop
@@ -15,7 +17,10 @@ export const SITE_CONFIG = {
 
 export const DISTRICTS = DISTRICT_NAMES.map((name) => ({ name }));
 
-export { DISTRICT_BN, getCheckoutSessionId, resetCheckoutSession, getExternalId, trackProductEvents, pixelTrack, newEventId, trackAddToCart, trackViewContent };
+export { DISTRICT_BN, getCheckoutSessionId, resetCheckoutSession, getExternalId, trackProductEvents, pixelTrack, newEventId, trackAddToCart, trackViewContent, forgotPassword, verifyEmail };
+
+// Returns the delivery charge for a district and address string
+export const getDeliveryCharge = (district, address) => deliveryFee(district, address);
 
 export const getFbp = () => getFbIdentifiers().fbp || '';
 
