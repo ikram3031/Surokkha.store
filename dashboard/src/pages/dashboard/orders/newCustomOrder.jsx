@@ -319,6 +319,16 @@ const LEAD_REASONS = {
   bundle: "Bundle offer, add it manually",
 };
 
+// Which site's Meta pixel a checkout belongs to, read from the page it was started on
+const siteFromUrl = (url) => {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host.includes("store") ? "store" : "shop";
+  } catch (_) {
+    return "";
+  }
+};
+
 const isOutOfStockStatus = (s) => s === "outofstock" || s === "out_of_stock";
 
 const resolveImageUrl = (raw) => {
@@ -521,6 +531,11 @@ const NewCustomOrderPage = () => {
         if (lead.address) setBillingAddress(lead.address);
         if (lead.district) setBillingDistrict(lead.district);
         if (lead.thana) setBillingThana(lead.thana);
+
+        // Abandoned checkouts are reported to Meta by default, on the pixel of the site the customer checked out on
+        setReportToMeta(true);
+        const leadSite = siteFromUrl(lead.sourceUrl);
+        if (leadSite) setMetaSite(leadSite);
 
         if (lead.customer?.phone) {
           try {
@@ -839,6 +854,9 @@ const NewCustomOrderPage = () => {
         orderNotes: orderNotes.trim(),
         reportToMeta,
         metaSite: reportToMeta ? metaSite : null,
+        // Reported orders send Meta Lead now and Purchase once the order is confirmed
+        setNewOrderAsLead: reportToMeta,
+        checkoutLeadId: reportToMeta && leadId ? leadId : undefined,
         giftWrap: false,
         items: cart.map((item) => ({
           name: item.name,
@@ -1898,9 +1916,10 @@ const NewCustomOrderPage = () => {
                 className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary accent-primary cursor-pointer"
               />
               <span>
-                <span className="block font-semibold uppercase tracking-wider">Report to Meta as a confirmed order</span>
+                <span className="block font-semibold uppercase tracking-wider">Report to Meta</span>
                 <span className="block text-[11px] text-muted-foreground mt-0.5">
-                  For orders from the Facebook inbox or catalog. Sends one ConfirmedOrder event (server only, no Purchase) once the order is processing.
+                  Sends a Lead event when the order is created, then Purchase and ConfirmedOrder (server only) once it is confirmed (processing).
+                  {leadInfo?.leadId ? " Uses the customer's checkout details and time from the abandoned checkout." : ""}
                 </span>
               </span>
             </label>

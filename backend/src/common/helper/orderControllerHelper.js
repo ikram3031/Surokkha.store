@@ -244,6 +244,8 @@ export const buildOrderDocument = async (payload, req = null) => {
     orderType: resolvedOrderType,
     reportToMeta: isCustom && payload.reportToMeta === true,
     metaSite: isCustom && payload.reportToMeta === true && ['store', 'shop'].includes(payload.metaSite) ? payload.metaSite : null,
+    // Website orders opt in from the page payload; custom orders only when staff report them to Meta
+    setNewOrderAsLead: payload.setNewOrderAsLead === true && (isCustom ? payload.reportToMeta === true : !isInstore),
     items: await normalizeOrderItems(payload.items),
     totals: {
       subtotal: Number(payload.subtotal || payload.subTotal || 0),

@@ -186,6 +186,12 @@ const orderSchema = new Schema(
     metaConfirmedSentAt: { type: Date, default: null },
     // Staff opted this custom (inbox / catalog) order into the Meta ConfirmedOrder signal
     reportToMeta: { type: Boolean, default: false },
+    // Page asked for Meta Lead when the order is placed and Purchase only once staff confirm it
+    setNewOrderAsLead: { type: Boolean, default: false },
+    // When the customer first reached checkout (abandoned checkout orders); Meta event times use it
+    leadAt: { type: Date, default: null },
+    // Set once the confirmed Purchase for a setNewOrderAsLead order has been dispatched
+    metaPurchaseSentAt: { type: Date, default: null },
     // Which site's Meta pixel a reported custom order belongs to; custom orders are otherwise filed under the shop
     metaSite: { type: String, enum: ["store", "shop", null], default: null },
     // Storefront checkout fingerprint: browser visitor id plus the device it was placed from

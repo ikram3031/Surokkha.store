@@ -28,7 +28,8 @@ const { Types } = mongoose;
 import { sendOrderEmailsAsynchronously } from '../../common/utils/orderDelivery.js';
 import { notifyOrderStatusChange } from "../../common/utils/orderStatusNotification.js";
 
-import { sendServerPurchaseEvent, sendServerConfirmedOrderEvent } from '../../common/services/facebookCapi.service.js';
+import { sendServerPurchaseEvent, sendServerConfirmedOrderEvent, sendServerOrderPlacedEvent, sendServerConfirmedPurchaseEvent } from '../../common/services/facebookCapi.service.js';
+import { CheckoutLeadModel } from '../../common/models/checkoutLead.model.js';
 import { getSmtpTransport, getWebmailAddress } from '../../common/services/smtpConfig.service.js';
 import { buildOrderInvoiceEmailHtml } from '../../common/templates/orderInvoiceEmailTemplate.js';
 import { sendTikTokServerPurchaseEvent } from '../../common/services/tiktokEventsApi.service.js';
@@ -45,7 +46,29 @@ const dispatchConfirmedOrderEvents = async (orderIds = []) => {
       { new: true },
     ).lean().catch(() => null);
     if (claimed) sendServerConfirmedOrderEvent(claimed);
+    // Lead-first orders send their Purchase only now, once per order
+    const purchase = await OrderModel.findOneAndUpdate(
+      { _id: id, status: 'processing', setNewOrderAsLead: true, metaPurchaseSentAt: null },
+      { $set: { metaPurchaseSentAt: new Date() } },
+      { new: true },
+    ).lean().catch(() => null);
+    if (purchase) sendServerConfirmedPurchaseEvent(purchase);
   }
+};
+
+// Copies the abandoned checkout's browser details onto a Meta-reported custom order so Meta can match the customer
+const applyCheckoutLeadTracking = async (orderData, leadId) => {
+  if (!orderData.setNewOrderAsLead || !leadId) return;
+  const lead = await CheckoutLeadModel.findById(String(leadId)).lean().catch(() => null);
+  if (!lead) return;
+  orderData.leadAt = lead.createdAt || null;
+  orderData.tracking = {
+    ipAddress: lead.ipAddress || null,
+    userAgent: lead.userAgent || '',
+    fbp: lead.fbp || '',
+    fbc: lead.fbc || '',
+    pageUrl: lead.sourceUrl || '',
+  };
 };
 
 // Create a new order from checkout payload and sync related payment/member data.
@@ -175,6 +198,7 @@ export const createOrder = async (req, res, next) => {
     }
 
     const orderData = await buildOrderDocument(payload, req);
+    await applyCheckoutLeadTracking(orderData, payload.checkoutLeadId);
     const createdOrder = await OrderModel.create(orderData);
 
     await syncOrderStock(createdOrder, { init: true, actor: req.user?.name || req.user?.did || 'staff' });
@@ -187,6 +211,9 @@ export const createOrder = async (req, res, next) => {
 
     // Safely trigger non-blocking email notifications for Customer and Admin
     sendOrderEmailsAsynchronously(createdOrder, { actorName: req.user?.name || "" });
+
+    // Meta-reported custom orders send Lead now and Purchase once confirmed (staff request details are not the customer's)
+    if (createdOrder.setNewOrderAsLead) sendServerOrderPlacedEvent(createdOrder.toObject(), null);
 
     if (createdOrder.reportToMeta && createdOrder.status === 'processing') {
       await dispatchConfirmedOrderEvents([createdOrder._id]);

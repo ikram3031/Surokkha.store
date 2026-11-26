@@ -24,14 +24,15 @@ export const getFbLoginId = () => '';
 
 export const trackSitePage = (pageType) => trackPageView(pageType);
 
-// Purchase pixel event (eventID = order number, so Meta dedupes it with the server CAPI event) plus product funnel lines
+// Order pixel event (eventID = order number, so Meta dedupes it with the server CAPI event) plus product funnel lines.
+// Lead instead of Purchase when the server saved the order as setNewOrderAsLead; Purchase then follows from the server on confirm
 export const trackPurchase = (order, products = {}) => {
   const entries = Object.entries(order.items || {});
   if (!entries.length) return;
   if (order.customer) {
     setPixelUserData({ phone: order.customer.mobile, email: order.customer.email, fullName: order.customer.name, district: order.customer.district });
   }
-  pixelTrack('Purchase', {
+  pixelTrack(order.setNewOrderAsLead ? 'Lead' : 'Purchase', {
     content_ids: entries.map(([did]) => did),
     contents: entries.map(([did, qty]) => ({ id: did, quantity: qty, item_price: Number(products[did]?.price) || 0 })),
     content_type: 'product',

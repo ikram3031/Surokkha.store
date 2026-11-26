@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import '../special-offer/specialOffer.css';
 import './comboOffer.css';
+import boxImg from './box.webp';
 import DistrictPicker from '../special-offer/SpecialOfferDistrictPicker.jsx';
 import logoImg from '../special-offer/logo.png';
 import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
@@ -19,9 +20,10 @@ const OFFER = {
 };
 
 const ADDONS = [
-  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
-  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
-  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
+  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 3 Pcs', pcs: 3, price: 90, img: 'skh-i-white', color: '#f1f5f9' },
+  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 3 Pcs', pcs: 3, price: 90, img: 'skh-i-pink', color: '#f4a7c4' },
+  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 3 Pcs', pcs: 3, price: 90, img: 'skh-i-blue', color: '#38bdf8' },
+  { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 280, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
 ];
 
 const MAX_ADDON = 5;
@@ -65,7 +67,6 @@ const IconCheck = ({ w = 2.4 }) => (<svg viewBox="0 0 24 24" fill="none" stroke=
 const IconLock = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>);
 const IconTruck = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>);
 const IconShield = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>);
-const IconCash = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>);
 const IconBox = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/></svg>);
 const IconGrid = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>);
 const IconTag = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>);
@@ -84,7 +85,7 @@ const EMPTY_FORM = { name: '', phone: '', email: '', district: '', address: '', 
 const ComboOfferView = () => {
   useCampaignFonts();
   const [qty, setQty] = useState(1);
-  const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0 });
+  const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0, ky: 0 });
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [sending, setSending] = useState(false);
@@ -102,7 +103,6 @@ const ComboOfferView = () => {
   const phoneBlocked = blockedPhone && blockedPhone.phone === cleanPhone(form.phone) ? blockedPhone : null;
 
   const addonTotal = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.price, 0);
-  const addonPcs = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.pcs, 0);
   const sub = qty * OFFER.offerPrice + addonTotal;
   const save = qty * (OFFER.regularPrice - OFFER.offerPrice) + NORMAL_DELIVERY;
   const total = sub;
@@ -241,7 +241,7 @@ const ComboOfferView = () => {
   const buildItems = () => [
     { productDid: OFFER.did, itemType: 'product', name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice, size: 'Combo Offer' },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({
-      productDid: a.did, itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Combo Offer Add-on (2 Pcs)',
+      productDid: a.did, itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Combo Offer Add-on (3 Pcs)',
     })),
   ];
 
@@ -270,6 +270,8 @@ const ComboOfferView = () => {
       siteKey: SITE_CONFIG.siteKey,
       clientDomain: SITE_CONFIG.domain,
       orderPrefix: SITE_CONFIG.orderPrefix,
+      // Meta gets Lead when this order is placed and Purchase only once staff confirm it
+      setNewOrderAsLead: true,
       giftWrap: false,
       orderNotes: [form.note.trim(), 'Combo offer page (free delivery)'].filter(Boolean).join(' | '),
       paymentMethod: 'cod',
@@ -313,6 +315,7 @@ const ComboOfferView = () => {
         });
         trackPurchase({
           orderNumber,
+          setNewOrderAsLead: json?.data?.setNewOrderAsLead === true,
           items,
           totals: { subtotal: sub, grandTotal: total },
           customer: { name: v.name, mobile: v.phone, email: v.email, district: v.district, address: v.address },
@@ -323,7 +326,7 @@ const ComboOfferView = () => {
       resetCheckoutSession();
       touchedRef.current = {};
       setQty(1);
-      setAddonQty({ white: 0, pink: 0, blue: 0 });
+      setAddonQty({ white: 0, pink: 0, blue: 0, ky: 0 });
     } catch (err) {
       setFailed(fallbackLink(v));
     } finally {
@@ -363,7 +366,6 @@ const ComboOfferView = () => {
                 <div className="price-now"><sup>৳</sup>{bn(OFFER.offerPrice.toLocaleString('en-IN'))}</div>
                 <div className="price-tags"><span className="price-old">{tk(OFFER.regularPrice)}</span></div>
                 <div className="price-tags">
-                  <span className="ptag ptag-save">{tk(OFFER.regularPrice - OFFER.offerPrice)} সেভ</span>
                   <span className="ptag ptag-free"><IconCheck />ফ্রি ডেলিভারি</span>
                 </div>
               </div>
@@ -382,7 +384,7 @@ const ComboOfferView = () => {
 
             <div className="visual co-visual" aria-hidden="true">
               <div className="glow" /><div className="ring" />
-              <div className="co-box" style={{ backgroundImage: `url('${OFFER.image}')` }} />
+              <div className="co-box" style={{ backgroundImage: `url('${boxImg}')` }} />
               <div className="co-orbit">
                 <div className="co-orb" style={{ '--a': '0deg' }}><div className="co-pk"><div className="skh-img skh-i-blue" style={{ '--t': '-12deg', '--d': '0s' }} /></div></div>
                 <div className="co-orb" style={{ '--a': '120deg' }}><div className="co-pk"><div className="skh-img skh-i-pink" style={{ '--t': '10deg', '--d': '-1s' }} /></div></div>
@@ -466,7 +468,7 @@ const ComboOfferView = () => {
                   </div>
                 </div>
                 <div className="addons">
-                  <div className="addons-head">সাথে আরও MO নিন <small>অফার মূল্যে</small></div>
+                  <div className="addons-head">সাথে আরও নিন <small>অফার মূল্যে</small></div>
                   <div className="addon-list">
                     {ADDONS.map((a) => {
                       const n = addonQty[a.key];
@@ -495,15 +497,10 @@ const ComboOfferView = () => {
                   {ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => (
                     <div key={a.key} className="line line-add"><span>{a.name} {bn(addonQty[a.key] * a.pcs)} পিস</span><b>{tk(addonQty[a.key] * a.price)}</b></div>
                   ))}
-                  <div className="line"><span>মোট পিস</span><b>{bn(qty * OFFER.pcs + addonPcs)} পিস</b></div>
                   <div className="line"><span>ডেলিভারি চার্জ</span><span><s>{tk(NORMAL_DELIVERY)}</s><span className="free">ফ্রি</span></span></div>
                   <div className="line line-save"><span>আপনার সেভ</span><b>{tk(save)}</b></div>
                 </div>
                 <div className="grand"><span>সর্বমোট</span><b>{tk(total)}</b></div>
-                <div className="sum-note">
-                  <span><IconCash />পণ্য হাতে পেয়ে টাকা পরিশোধ করুন</span>
-                  <span><IconBox />সুরক্ষিত প্রিমিয়াম প্যাকেজিং</span>
-                </div>
               </aside>
 
               <form className="form" noValidate onSubmit={onSubmit} onFocus={onFormFocus}>
@@ -524,6 +521,7 @@ const ComboOfferView = () => {
                     <label htmlFor="fEmail">ইমেইল <em>*</em></label>
                     <input id="fEmail" ref={reg('email')} onBlur={() => onFieldBlur('email')} type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={(e) => setField('email', e.target.value)} />
                     <div className="msg">সঠিক ইমেইল ঠিকানা দিন</div>
+                    <div className="co-member-note">মেম্বারশিপ রেজিস্ট্রেশন করে অতিরিক্ত ৫% ({tk(Math.round(sub * 0.05))}) ডিসকাউন্ট উপভোগ করুন</div>
                   </div>
                   <div className={`field${errors.district ? ' err' : ''}`}>
                     <label htmlFor="fDistrict">জেলা <em>*</em></label>

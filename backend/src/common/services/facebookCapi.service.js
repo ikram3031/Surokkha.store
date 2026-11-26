@@ -266,6 +266,14 @@ export const extractClientIp = (req) => {
 // In-memory deduplication cache for server-side purchase events (prevents duplicate dispatches within 60s)
 const recentServerPurchases = new Map();
 const PURCHASE_DEDUPLICATION_WINDOW_MS = 60 * 1000;
+// Meta rejects server events whose event_time is more than 7 days old
+const MAX_EVENT_AGE_SEC = 7 * 24 * 60 * 60;
+
+// When the order's Meta events happened: checkout time for abandoned checkout orders, else when it was placed
+export const orderEventTime = (order) => {
+  const ms = new Date(order?.leadAt || order?.createdAt || Date.now()).getTime();
+  return Math.floor((Number.isFinite(ms) ? ms : Date.now()) / 1000);
+};
 
 // Sends server-side Purchase event to Meta Conversions API asynchronously
 export const sendServerPurchaseEvent = async (order, req = null, options = {}) => {
@@ -309,6 +317,13 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
     const metaConfig = await getMetaPixelConfig(site);
     const { pixelId, accessToken, testEventCode, advancedMatching } = metaConfig;
     const skipBase = { eventName, eventId, orderNumber: resolvedOrderNumber, site, pixelId: pixelId || "" };
+    const nowSec = Math.floor(now / 1000);
+    const eventTime = Math.min(Number(options.eventTime) || nowSec, nowSec);
+
+    if (nowSec - eventTime > MAX_EVENT_AGE_SEC) {
+      await recordCapiSkip({ ...skipBase, reason: `The ${eventName} event time is more than 7 days old, so Meta would reject it.` });
+      return;
+    }
 
     if (!metaConfig.isEnabled || !metaConfig.enableCapi) {
       await recordCapiSkip({ ...skipBase, reason: `Conversions API is turned off for the ${site} pixel in Settings → Meta Pixel.` });
@@ -534,7 +549,7 @@ export const sendServerPurchaseEvent = async (order, req = null, options = {}) =
 
     const eventPayload = {
       event_name: eventName,
-      event_time: Math.floor(Date.now() / 1000),
+      event_time: eventTime,
       event_id: eventId,
       action_source: actionSource,
       event_source_url: req?.body?.eventSourceUrl || req?.headers?.referer || req?.headers?.origin || tracking.pageUrl || clientConfig?.sites?.[site]?.storefrontUrl || undefined,
@@ -571,6 +586,19 @@ export const sendServerConfirmedOrderEvent = (order) => {
   const isReportedCustomOrder = order.orderType === "custom" && order.reportToMeta === true;
   if (!isWebsiteOrder && !isReportedCustomOrder) return;
   return sendServerPurchaseEvent(order, null, { eventName: "ConfirmedOrder", eventIdPrefix: "confirmed_" });
+};
+
+// Event a new order sends to Meta when it is placed: Lead if its page set setNewOrderAsLead, else Purchase
+export const sendServerOrderPlacedEvent = (order, req = null) => {
+  if (!order) return;
+  if (!order.setNewOrderAsLead) return sendServerPurchaseEvent(order, req);
+  return sendServerPurchaseEvent(order, req, { eventName: "Lead", eventTime: orderEventTime(order) });
+};
+
+// Purchase for a setNewOrderAsLead order once staff confirm it, timed to when the order was placed
+export const sendServerConfirmedPurchaseEvent = (order) => {
+  if (!order?.setNewOrderAsLead) return;
+  return sendServerPurchaseEvent(order, null, { eventName: "Purchase", eventTime: orderEventTime(order) });
 };
 
 // Sends server-side ViewContent event to Meta Conversions API asynchronously with IPv6 preservation
