@@ -292,7 +292,7 @@ export const InvestorsPage = () => {
             <p className="text-xs text-muted-foreground font-medium">Total Registered Investors</p>
             <p className="text-xl font-bold tracking-tight text-foreground mt-0.5">{allInvestors.length} Investors</p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Users className="h-4 w-4" />
           </div>
         </div>
@@ -303,7 +303,7 @@ export const InvestorsPage = () => {
               {allInvestors.filter((i) => i.status === 'Active').length} Active
             </p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <UserCheck className="h-4 w-4" />
           </div>
         </div>
@@ -577,7 +577,7 @@ export const InvestorsPage = () => {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <Users className="w-5 h-5 text-purple-600" />
+              <Users className="w-5 h-5 text-primary" />
               {editingInvestor ? 'Edit Investor Profile' : 'Add New Investor'}
             </DialogTitle>
             <DialogDescription className="text-xs">

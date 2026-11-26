@@ -124,9 +124,9 @@ export const AttachmentUploader = ({ kind, value = [], onChange }) => {
           {value.map((file) => (
             <li key={file.url} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-xs">
               {isImage(file) ? (
-                <ImageIcon className="w-4 h-4 shrink-0 text-blue-500" />
+                <ImageIcon className="w-4 h-4 shrink-0 text-primary" />
               ) : (
-                <FileText className="w-4 h-4 shrink-0 text-amber-500" />
+                <FileText className="w-4 h-4 shrink-0 text-primary" />
               )}
               <a
                 href={resolveImageUrl(file.url)}

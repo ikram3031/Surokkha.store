@@ -6,7 +6,7 @@ export default function CatalogPreferencesTab() {
     <Card className="border shadow-xs w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold flex items-center gap-2">
-          <Sliders className="h-5 w-5 text-blue-500" />
+          <Sliders className="h-5 w-5 text-primary" />
           Catalog Display Preferences
         </CardTitle>
       </CardHeader>

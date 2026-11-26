@@ -451,7 +451,7 @@ const TrashPage = () => {
               disabled={isProcessing}
               className="h-8 text-xs font-semibold flex items-center gap-1.5"
             >
-              <RotateCcw className="h-3.5 w-3.5 text-emerald-600" />
+              <RotateCcw className="h-3.5 w-3.5 text-primary" />
               Restore Selected
             </Button>
             <Button

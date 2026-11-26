@@ -157,7 +157,7 @@ export const AdminSidebar = ({ ...props }) => {
   }
 
   return (
-    <Sidebar collapsible="icon" style={{ backgroundColor: 'var(--theme-sidebar, #ffffff)' }} {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
           {state === "expanded" || isMobile ? (
@@ -575,7 +575,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname.startsWith("/admin/settings/smtp")}
                       render={<Link to="/admin/settings/smtp" />}
                     >
-                      <Mail className="h-3.5 w-3.5 text-indigo-500" />
+                      <Mail className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.email_server_setup", "Mail (SMTP & IMAP)")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -586,7 +586,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname.startsWith("/admin/settings/admin-view/styles")}
                       render={<Link to="/admin/settings/admin-view/styles" />}
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.admin_view_styles", "Admin View Styles")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -600,7 +600,7 @@ export const AdminSidebar = ({ ...props }) => {
                         }
                         render={<Link to="/admin/settings/templates" />}
                       >
-                        <Receipt className="h-3.5 w-3.5 text-blue-500" />
+                        <Receipt className="h-3.5 w-3.5 text-primary" />
                         <span>{t("nav.templates", "Invoice & Templates")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
@@ -640,7 +640,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname === "/admin/accounts/balance" || pathname === "/admin/accounts" || pathname === "/admin/billing"}
                       render={<Link to="/admin/accounts/balance" />}
                     >
-                      <Scale className="h-3.5 w-3.5 text-blue-500" />
+                      <Scale className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.account_balance", "Account Balance")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -663,7 +663,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname === "/admin/accounts/bills/types"}
                       render={<Link to="/admin/accounts/bills/types" />}
                     >
-                      <Tag className="h-3.5 w-3.5 text-amber-500" />
+                      <Tag className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.bill_types", "Bill Types")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -677,7 +677,7 @@ export const AdminSidebar = ({ ...props }) => {
                       }
                       render={<Link to="/admin/accounts/payments/methods" />}
                     >
-                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
+                      <CreditCard className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.payment_methods", "Payment Methods")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -700,7 +700,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname === "/admin/accounts/payments/new"}
                       render={<Link to="/admin/accounts/payments/new" />}
                     >
-                      <PlusCircle className="h-3.5 w-3.5 text-emerald-500" />
+                      <PlusCircle className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.add_payment", "Add New")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -714,7 +714,7 @@ export const AdminSidebar = ({ ...props }) => {
                       }
                       render={<Link to="/admin/accounts/payments/methods" />}
                     >
-                      <CreditCard className="h-3.5 w-3.5 text-emerald-500" />
+                      <CreditCard className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.payment_methods", "Payment Methods")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -723,7 +723,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname === "/admin/accounts/payments" || pathname === "/admin/billing/payments"}
                       render={<Link to="/admin/accounts/payments" />}
                     >
-                      <Receipt className="h-3.5 w-3.5 text-emerald-500" />
+                      <Receipt className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.all_payments", "All Payments")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -737,7 +737,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname === "/admin/accounts/investors"}
                       render={<Link to="/admin/accounts/investors" />}
                     >
-                      <Users className="h-3.5 w-3.5 text-purple-500" />
+                      <Users className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.investors", "Investors")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -746,7 +746,7 @@ export const AdminSidebar = ({ ...props }) => {
                       isActive={pathname === "/admin/accounts/investments"}
                       render={<Link to="/admin/accounts/investments" />}
                     >
-                      <TrendingUp className="h-3.5 w-3.5 text-purple-500" />
+                      <TrendingUp className="h-3.5 w-3.5 text-primary" />
                       <span>{t("nav.investments_list", "Investments")}</span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
@@ -833,8 +833,8 @@ export const AdminSidebar = ({ ...props }) => {
                         isActive={pathname.startsWith("/admin/cpanel")}
                         render={<Link to="/admin/cpanel" />}
                       >
-                        <Terminal className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="text-emerald-400 font-medium">{t("nav.cpanel", "PPanel / cPanel")}</span>
+                        <Terminal className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-primary font-medium">{t("nav.cpanel", "PPanel / cPanel")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   )}
@@ -893,7 +893,7 @@ export const AdminSidebar = ({ ...props }) => {
                         isActive={pathname.startsWith("/admin/cloudflare-analytics") || pathname.startsWith("/admin/tools/cloudflare-analytics") || pathname.startsWith("/admin/cloudflare")}
                         render={<Link to="/admin/cloudflare-analytics" />}
                       >
-                        <LineChart className="h-3.5 w-3.5 text-blue-500" />
+                        <LineChart className="h-3.5 w-3.5 text-primary" />
                         <span>{t("nav.cloudflare_analytics", "Cloudflare Analytics")}</span>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>

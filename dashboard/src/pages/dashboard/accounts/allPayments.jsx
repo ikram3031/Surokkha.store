@@ -277,7 +277,7 @@ export const AllPaymentsPage = () => {
             <p className="text-xs text-muted-foreground font-medium">Total Collected</p>
             <p className="text-xl font-bold tracking-tight text-emerald-600 mt-0.5">{formatCurrency(summary.totalCollected)}</p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <CheckCircle2 className="h-4 w-4" />
           </div>
         </div>
@@ -286,7 +286,7 @@ export const AllPaymentsPage = () => {
             <p className="text-xs text-muted-foreground font-medium">Pending Approvals</p>
             <p className="text-xl font-bold tracking-tight text-amber-600 mt-0.5">{formatCurrency(summary.totalPending)}</p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Clock className="h-4 w-4" />
           </div>
         </div>
@@ -476,7 +476,7 @@ export const AllPaymentsPage = () => {
                             className="cursor-pointer gap-2"
                             onClick={() => navigate(`/finance/payments/new?edit=${p.id}`)}
                           >
-                            <Edit className="w-3.5 h-3.5 text-blue-500" />
+                            <Edit className="w-3.5 h-3.5 text-primary" />
                             <span>Edit Payment</span>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -554,7 +554,7 @@ export const AllPaymentsPage = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base font-bold">
-              <CreditCard className="w-5 h-5 text-emerald-600" />
+              <CreditCard className="w-5 h-5 text-primary" />
               Payment Transaction Details
             </DialogTitle>
             <DialogDescription className="text-xs">

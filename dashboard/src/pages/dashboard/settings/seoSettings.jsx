@@ -89,7 +89,7 @@ const SEOSettingsPage = ({ site = 'shop' }) => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <Search className="h-7 w-7 text-emerald-500" />
+            <Search className="h-7 w-7 text-primary" />
             Search Engine Optimization (SEO)
           </h2>
           <p className="text-sm text-muted-foreground mt-1">

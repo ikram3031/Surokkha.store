@@ -1,23 +1,21 @@
 import { useState } from 'react';
-import { Sparkles, Tag, TrendingUp, Sliders, ShieldCheck, Palette } from 'lucide-react';
+import { Sparkles, Tag, TrendingUp, Sliders, ShieldCheck } from 'lucide-react';
 import FeaturedProductsTab from './FeaturedProductsTab';
 import OnSaleProductsTab from './OnSaleProductsTab';
 import BestSellingProductsTab from './BestSellingProductsTab';
 import CatalogPreferencesTab from './CatalogPreferencesTab';
 import SecurityAccessTab from './SecurityAccessTab';
-import AppearanceTab from './AppearanceTab';
 
 // Displays product showcase curation tabs for featured, on sale, and bestseller products
 const ProductShowcasesPage = () => {
   const [activeTab, setActiveTab] = useState('featured');
 
   const tabs = [
-    { id: 'featured', label: 'Featured Products', icon: Sparkles, iconColor: 'text-amber-500' },
-    { id: 'onsale', label: 'On Sale Products', icon: Tag, iconColor: 'text-rose-500' },
-    { id: 'bestseller', label: 'Best Selling Products', icon: TrendingUp, iconColor: 'text-emerald-500' },
-    { id: 'catalog-preferences', label: 'Catalog Display', icon: Sliders, iconColor: 'text-blue-500' },
-    { id: 'advanced-security', label: 'Security & Access', icon: ShieldCheck, iconColor: 'text-purple-500' },
-    { id: 'appearance', label: 'Appearance', icon: Palette, iconColor: 'text-pink-500' },
+    { id: 'featured', label: 'Featured Products', icon: Sparkles, iconColor: 'text-primary' },
+    { id: 'onsale', label: 'On Sale Products', icon: Tag, iconColor: 'text-primary' },
+    { id: 'bestseller', label: 'Best Selling Products', icon: TrendingUp, iconColor: 'text-primary' },
+    { id: 'catalog-preferences', label: 'Catalog Display', icon: Sliders, iconColor: 'text-primary' },
+    { id: 'advanced-security', label: 'Security & Access', icon: ShieldCheck, iconColor: 'text-primary' },
   ];
 
   return (
@@ -59,7 +57,6 @@ const ProductShowcasesPage = () => {
         {activeTab === 'bestseller' && <BestSellingProductsTab />}
         {activeTab === 'catalog-preferences' && <CatalogPreferencesTab />}
         {activeTab === 'advanced-security' && <SecurityAccessTab />}
-        {activeTab === 'appearance' && <AppearanceTab />}
       </div>
     </div>
   );

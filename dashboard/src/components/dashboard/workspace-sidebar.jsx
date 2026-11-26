@@ -31,7 +31,7 @@ const BackToDashboard = () => {
       <Link
         to="/dashboard"
         title={t("workspace.back_to_dashboard", "Back to Dashboard")}
-        className="flex h-9 items-center gap-2 rounded-md bg-blue-600 px-3 text-sm font-semibold text-white shadow-sm outline-none transition-colors hover:bg-blue-500 focus-visible:ring-2 focus-visible:ring-blue-400 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+        className="flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-sm outline-none transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
       >
         <ArrowLeft className="h-4 w-4 shrink-0" />
         <span className="group-data-[collapsible=icon]:hidden">{t("workspace.back_to_dashboard", "Back to Dashboard")}</span>

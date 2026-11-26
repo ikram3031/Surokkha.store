@@ -575,7 +575,7 @@ export const MemberDetails = () => {
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Lifetime Spend
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <CreditCard className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -617,7 +617,7 @@ export const MemberDetails = () => {
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Average Order Value
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <TrendingUp className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -635,7 +635,7 @@ export const MemberDetails = () => {
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Delivery Success
             </CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <Truck className="h-4 w-4" />
             </div>
           </CardHeader>
@@ -1083,7 +1083,7 @@ export const MemberDetails = () => {
                   {/* Shipping Address Box */}
                   <div className="p-4 rounded-xl border bg-muted/20 space-y-3">
                     <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-                      <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                      <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                         <Truck className="h-4 w-4" />
                       </div>
                       <div>

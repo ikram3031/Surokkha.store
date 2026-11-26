@@ -418,7 +418,7 @@ export const InvestmentsListPage = () => {
             <p className="text-xs text-muted-foreground font-medium">Total Taken Capital</p>
             <p className="text-xl font-bold tracking-tight text-foreground mt-0.5">{formatCurrency(summary.totalTaken)}</p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Landmark className="h-4 w-4" />
           </div>
         </div>
@@ -427,7 +427,7 @@ export const InvestmentsListPage = () => {
             <p className="text-xs text-muted-foreground font-medium">Returned Capital</p>
             <p className="text-xl font-bold tracking-tight text-emerald-600 mt-0.5">{formatCurrency(summary.totalReturned)}</p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <CheckCircle2 className="h-4 w-4" />
           </div>
         </div>
@@ -685,7 +685,7 @@ export const InvestmentsListPage = () => {
                               className="cursor-pointer gap-2"
                               onClick={() => handleOpenEdit(inv)}
                             >
-                              <Edit className="w-3.5 h-3.5 text-blue-500" />
+                              <Edit className="w-3.5 h-3.5 text-primary" />
                               <span>Edit Investment</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -764,7 +764,7 @@ export const InvestmentsListPage = () => {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <Landmark className="w-5 h-5 text-purple-600" />
+              <Landmark className="w-5 h-5 text-primary" />
               {editingInv ? 'Edit Investment Record' : 'Record New Investment Tranche'}
             </DialogTitle>
             <DialogDescription className="text-xs">
@@ -990,7 +990,7 @@ export const InvestmentsListPage = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-amber-600" />
+              <DollarSign className="w-5 h-5 text-primary" />
               Pay Profit to {profitTarget?.investorName}
             </DialogTitle>
             <DialogDescription className="text-xs">

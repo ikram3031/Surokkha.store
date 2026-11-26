@@ -584,7 +584,7 @@ export function TemplatesPage() {
               <CardHeader className="p-4 pb-3 border-b bg-muted/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <Sparkles className="h-4 w-4 text-primary" />
                     <CardTitle className="text-xs font-bold uppercase tracking-wider">
                       Designer Presets
                     </CardTitle>
@@ -1274,7 +1274,7 @@ export function TemplatesPage() {
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <FileText className="h-3.5 w-3.5 text-blue-500" />
+                    <FileText className="h-3.5 w-3.5 text-primary" />
                     <span>A4 Printable Invoice</span>
                   </button>
 
@@ -1287,7 +1287,7 @@ export function TemplatesPage() {
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <Mail className="h-3.5 w-3.5 text-purple-500" />
+                    <Mail className="h-3.5 w-3.5 text-primary" />
                     <span>Customer Email</span>
                   </button>
                 </div>

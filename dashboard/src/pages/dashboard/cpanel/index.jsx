@@ -108,7 +108,7 @@ const CPanelManager = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Terminal className="h-6 w-6 text-emerald-400" />
+              <Terminal className="h-6 w-6 text-primary" />
               PPanel Operations & VPS Telemetry
             </h1>
             <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
@@ -134,7 +134,7 @@ const CPanelManager = () => {
 
           <Button
             size="sm"
-            className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
             onClick={() => window.open(cpanelHost, '_blank')}
           >
             <ExternalLink className="h-4 w-4" />
@@ -200,7 +200,7 @@ const CPanelManager = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-                <Server className="h-5 w-5 text-emerald-400" />
+                <Server className="h-5 w-5 text-primary" />
                 Managed Micro-Services & Containers
               </CardTitle>
               <CardDescription className="text-sm text-slate-400">

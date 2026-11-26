@@ -171,7 +171,7 @@ const TikTokPixelPage = () => {
             </Badge>
           ) : (
             <Badge variant="outline" className="text-muted-foreground flex items-center gap-1.5 px-3 py-1">
-              <Activity className="h-3.5 w-3.5 text-amber-500" />
+              <Activity className="h-3.5 w-3.5 text-primary" />
               Untested
             </Badge>
           )}
@@ -277,7 +277,7 @@ const TikTokPixelPage = () => {
         <Card className="border-border/60 shadow-xs">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Zap className="h-4 w-4 text-amber-500" />
+              <Zap className="h-4 w-4 text-primary" />
               Tracking Options &amp; Pipelines
             </CardTitle>
             <CardDescription className="text-xs">
@@ -327,7 +327,7 @@ const TikTokPixelPage = () => {
         <Card className="border-border/60 shadow-xs bg-muted/10">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <HelpCircle className="h-4 w-4 text-blue-500" />
+              <HelpCircle className="h-4 w-4 text-primary" />
               TikTok Pixel &amp; Events API Setup Guide
             </CardTitle>
           </CardHeader>

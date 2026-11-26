@@ -1992,7 +1992,7 @@ const NewCustomOrderPage = () => {
           <div className="bg-card border rounded-2xl p-5 shadow-xs space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider flex items-center justify-between text-foreground border-b border-border/60 pb-2">
               <span className="flex items-center gap-1.5">
-                <Percent className="h-4 w-4 text-emerald-600" /> Custom Discount
+                <Percent className="h-4 w-4 text-primary" /> Custom Discount
               </span>
               {discountAmount > 0 && (
                 <span className="text-xs font-bold text-emerald-600 font-mono">
@@ -2242,7 +2242,7 @@ const NewCustomOrderPage = () => {
                   disabled={sendingWhatsApp}
                   onClick={handleSendWhatsApp}
                 >
-                  {sendingWhatsApp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />}
+                  {sendingWhatsApp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5 text-primary" />}
                   Send via WhatsApp (Invoice Image)
                 </Button>
                 <Button

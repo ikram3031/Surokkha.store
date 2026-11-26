@@ -142,7 +142,7 @@ const MetaPixelPage = ({ site = 'shop' }) => {
     }
     return (
       <Badge variant="outline" className="text-muted-foreground flex items-center gap-1.5 px-3 py-1">
-        <Activity className="h-3.5 w-3.5 text-amber-500" />
+        <Activity className="h-3.5 w-3.5 text-primary" />
         Untested
       </Badge>
     );
@@ -153,7 +153,7 @@ const MetaPixelPage = ({ site = 'shop' }) => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <Share2 className="h-7 w-7 text-blue-600" />
+            <Share2 className="h-7 w-7 text-primary" />
             Meta Pixel & Conversions API (CAPI)
           </h2>
           <p className="text-sm text-muted-foreground mt-1">

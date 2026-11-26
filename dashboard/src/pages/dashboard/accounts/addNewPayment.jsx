@@ -306,7 +306,7 @@ export const AddNewPaymentPage = () => {
           <Card className="border-border/70 shadow-sm">
             <CardHeader className="pb-3 border-b bg-muted/20">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-emerald-500" />
+                <CreditCard className="w-4 h-4 text-primary" />
                 Payment Transaction Details
               </CardTitle>
             </CardHeader>
@@ -437,7 +437,7 @@ export const AddNewPaymentPage = () => {
             <CardHeader className="pb-3 border-b bg-muted/30">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
                 <span>Payment Receipt Preview</span>
-                <CreditCard className="w-4 h-4 text-emerald-600" />
+                <CreditCard className="w-4 h-4 text-primary" />
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5 space-y-4 text-xs">
@@ -486,7 +486,7 @@ export const AddNewPaymentPage = () => {
               <div className="pt-3 border-t space-y-2">
                 <Button
                   type="submit"
-                  className="w-full text-xs gap-1.5 shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="w-full text-xs gap-1.5 shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground"
                   disabled={isCreating || isUpdating}
                 >
                   <Save className="w-3.5 h-3.5" />

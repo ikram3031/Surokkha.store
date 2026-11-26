@@ -914,7 +914,7 @@ const SizeChartsPage = () => {
 
                 <div className="pt-2">
                   <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3 text-amber-500" />
+                    <Sparkles className="h-3 w-3 text-primary" />
                     Quick Suggestions:
                   </p>
                   <div className="flex flex-wrap gap-1.5">

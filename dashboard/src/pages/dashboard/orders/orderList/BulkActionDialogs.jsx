@@ -43,7 +43,7 @@ export function BulkActionDialogs({ list }) {
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium cursor-pointer"
               onClick={bulk.confirmStatus}
               disabled={bulk.isUpdating}
             >
@@ -66,7 +66,7 @@ export function BulkActionDialogs({ list }) {
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium cursor-pointer"
               onClick={bulk.confirmPayment}
               disabled={bulk.isUpdating}
             >

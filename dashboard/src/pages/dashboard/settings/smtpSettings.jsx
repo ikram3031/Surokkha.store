@@ -195,7 +195,7 @@ const EmailServerSettingsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <Mail className="h-7 w-7 text-indigo-600" />
+            <Mail className="h-7 w-7 text-primary" />
             Mail Settings
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -209,7 +209,7 @@ const EmailServerSettingsPage = () => {
         <CardHeader className="pb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="space-y-1">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Mail className="h-4 w-4 text-indigo-600" />
+              <Mail className="h-4 w-4 text-primary" />
               SMTP (Outgoing Mail)
             </CardTitle>
             <CardDescription className="text-xs">
@@ -223,7 +223,7 @@ const EmailServerSettingsPage = () => {
             </Badge>
           ) : (
             <Badge variant="outline" className="text-muted-foreground flex items-center gap-1.5 px-3 py-1 shrink-0">
-              <Activity className="h-3.5 w-3.5 text-amber-500" />
+              <Activity className="h-3.5 w-3.5 text-primary" />
               {smtpTestStatus === 'failed' ? 'Connection Failed' : 'Untested'}
             </Badge>
           )}
@@ -378,7 +378,7 @@ const EmailServerSettingsPage = () => {
       <Card className="border-border/60 shadow-xs">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Inbox className="h-4 w-4 text-indigo-600" />
+            <Inbox className="h-4 w-4 text-primary" />
             IMAP (Webmail Mailbox)
           </CardTitle>
           <CardDescription className="text-xs">

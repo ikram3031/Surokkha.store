@@ -321,7 +321,7 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
             <p className="text-xs text-muted-foreground font-medium">Paid Volume</p>
             <p className="text-xl font-bold tracking-tight text-emerald-600 mt-0.5">{formatCurrency(summary.totalPaid)}</p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <CheckCircle2 className="h-4 w-4" />
           </div>
         </div>
@@ -330,7 +330,7 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
             <p className="text-xs text-muted-foreground font-medium">Pending Dues</p>
             <p className="text-xl font-bold tracking-tight text-amber-600 mt-0.5">{formatCurrency(summary.totalPending)}</p>
           </div>
-          <div className="h-9 w-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Clock className="h-4 w-4" />
           </div>
         </div>
@@ -532,7 +532,7 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
                             className="cursor-pointer gap-2"
                             onClick={() => navigate(`/finance/bills/new?edit=${b.id}`)}
                           >
-                            <Edit className="w-3.5 h-3.5 text-blue-500" />
+                            <Edit className="w-3.5 h-3.5 text-primary" />
                             <span>Edit Bill</span>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

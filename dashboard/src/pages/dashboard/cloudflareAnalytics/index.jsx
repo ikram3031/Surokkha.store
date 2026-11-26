@@ -188,7 +188,7 @@ const CloudflareTrafficOverviewPage = () => {
   if (!isAccessAllowed) {
     return (
       <div className="p-8 max-w-3xl mx-auto text-center space-y-4">
-        <div className="h-14 w-14 rounded-2xl bg-amber-500/10 text-amber-500 mx-auto flex items-center justify-center">
+        <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
           <Lock className="h-7 w-7" />
         </div>
         <h2 className="text-xl font-bold text-foreground">Traffic Overview Restricted</h2>

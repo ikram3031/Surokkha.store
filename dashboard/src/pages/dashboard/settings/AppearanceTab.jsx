@@ -19,7 +19,7 @@ const DEFAULT_COLOR = COLOR_PRESETS[0].value;
 const DEFAULT_RADIUS = RADIUS_OPTIONS[1].value;
 
 // Personal dashboard look: brand colour and corner roundness, applied live and kept for this user's account
-export default function AppearanceTab() {
+const AppearanceTab = () => {
   const { user, updateUser } = useAuth();
   const saved = user?.preferences?.appearance || {};
   const savedColor = saved.primaryColor || '';
@@ -69,7 +69,7 @@ export default function AppearanceTab() {
     <Card className="border shadow-xs w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold flex items-center gap-2">
-          <Palette className="h-5 w-5 text-pink-500" />
+          <Palette className="h-5 w-5 text-primary" />
           Appearance
         </CardTitle>
         <CardDescription>
@@ -168,3 +168,5 @@ export default function AppearanceTab() {
     </Card>
   );
 }
+
+export default AppearanceTab;

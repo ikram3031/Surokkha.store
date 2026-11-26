@@ -431,17 +431,17 @@ export const AppSidebar = ({ ...props }) => {
           )}
           {isAllowed("orders.pathao") && (
             <NavGroup id="pathao" icon={Truck} label={t("nav.pathao", "Pathao")} active={activeGroup === "pathao"} open={openMenu === "pathao"} onToggle={toggleMenu}>
-              <NavSub to="/dashboard/pathao" active={pathname === "/dashboard/pathao"} icon={LayoutDashboard} iconClass="text-red-500">
+              <NavSub to="/dashboard/pathao" active={pathname === "/dashboard/pathao"} icon={LayoutDashboard} iconClass="text-primary">
                 {t("nav.pathao_overview", "Overview")}
               </NavSub>
-              <NavSub to="/dashboard/pathao/parcels" active={pathname === "/dashboard/pathao/parcels"} icon={Package} iconClass="text-red-500">
+              <NavSub to="/dashboard/pathao/parcels" active={pathname === "/dashboard/pathao/parcels"} icon={Package} iconClass="text-primary">
                 {t("nav.pathao_parcels", "Parcels")}
               </NavSub>
-              <NavSub to="/dashboard/pathao/same-day" active={pathname === "/dashboard/pathao/same-day"} icon={Zap} iconClass="text-red-500">
+              <NavSub to="/dashboard/pathao/same-day" active={pathname === "/dashboard/pathao/same-day"} icon={Zap} iconClass="text-primary">
                 {t("nav.pathao_same_day", "Same Day Order")}
               </NavSub>
               {canManagePathaoWebhook && (
-                <NavSub to="/dashboard/pathao/webhook" active={pathname === "/dashboard/pathao/webhook"} icon={Webhook} iconClass="text-red-500">
+                <NavSub to="/dashboard/pathao/webhook" active={pathname === "/dashboard/pathao/webhook"} icon={Webhook} iconClass="text-primary">
                   {t("nav.pathao_webhook", "Webhook Activity")}
                 </NavSub>
               )}
@@ -587,7 +587,7 @@ export const AppSidebar = ({ ...props }) => {
                   to="/dashboard/cloudflare-analytics"
                   active={pathname.startsWith("/dashboard/cloudflare-analytics") || pathname.startsWith("/dashboard/tools/cloudflare-analytics") || pathname.startsWith("/dashboard/cloudflare")}
                   icon={LineChart}
-                  iconClass="text-blue-500"
+                  iconClass="text-primary"
                 >
                   {t("nav.cloudflare_analytics", "Cloudflare Analytics")}
                 </NavSub>
@@ -603,7 +603,7 @@ export const AppSidebar = ({ ...props }) => {
                 </NavSub>
               )}
               {isAllowed("cpanel") && (
-                <NavSub to="/dashboard/cpanel" active={pathname.startsWith("/dashboard/cpanel")} icon={Terminal} iconClass="text-emerald-400" className="text-emerald-400 font-medium">
+                <NavSub to="/dashboard/cpanel" active={pathname.startsWith("/dashboard/cpanel")} icon={Terminal} iconClass="text-primary" className="text-primary font-medium">
                   {t("nav.cpanel", "PPanel / cPanel")}
                 </NavSub>
               )}

@@ -58,7 +58,7 @@ export const GA4ConfigModal = ({ open, onOpenChange, brandName = 'Store', onSett
       <DialogContent className="sm:max-w-[620px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
-            <div className="h-8 w-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500">
+            <div className="h-8 w-8 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-primary">
               <Settings2 className="h-4 w-4" />
             </div>
             <div>
@@ -179,7 +179,7 @@ export const GA4ConfigModal = ({ open, onOpenChange, brandName = 'Store', onSett
           <div className="space-y-1.5 pt-2 border-t border-border/50">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
                 <span>Storefront Tag Script (gtag.js)</span>
               </label>
               <Button

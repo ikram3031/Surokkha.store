@@ -227,7 +227,7 @@ export default function SystemLogs() {
             onClick={() => setIsPaused(!isPaused)}
             className="shadow-2xs text-xs"
           >
-            {isPaused ? <Play className="h-3.5 w-3.5 mr-1.5 text-emerald-500" /> : <Pause className="h-3.5 w-3.5 mr-1.5 text-amber-500" />}
+            {isPaused ? <Play className="h-3.5 w-3.5 mr-1.5 text-primary" /> : <Pause className="h-3.5 w-3.5 mr-1.5 text-primary" />}
             {isPaused ? "Resume Live" : "Pause Stream"}
           </Button>
 

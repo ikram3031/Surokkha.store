@@ -331,7 +331,7 @@ export const PaymentTypesPage = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
             onClick={handleOpenAdd}
-            className="h-9 text-xs gap-1.5 shadow-sm bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 cursor-pointer"
+            className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-emerald-600 dark:hover:bg-emerald-700 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>{t('accounts.add_payment_method_btn', 'Add Payment Method')}</span>
@@ -791,7 +791,7 @@ export const PaymentTypesPage = () => {
           <form onSubmit={handleSave} className="space-y-4">
             <DialogHeader>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-emerald-500" />
+                <CreditCard className="w-4 h-4 text-primary" />
                 {editingType ? 'Edit Payment Method' : 'Add New Payment Method'}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -803,7 +803,7 @@ export const PaymentTypesPage = () => {
               {/* General Information */}
               <div className="bg-muted/30 p-3 rounded-lg border space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-500" />
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
                   General Information
                 </h4>
 
@@ -858,7 +858,7 @@ export const PaymentTypesPage = () => {
               {/* Charges / Fees */}
               <div className="bg-muted/30 p-3 rounded-lg border space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Banknote className="w-3.5 h-3.5 text-amber-500" />
+                  <Banknote className="w-3.5 h-3.5 text-primary" />
                   Charges & Fees
                 </h4>
                 <PaymentFeesEditor
@@ -872,7 +872,7 @@ export const PaymentTypesPage = () => {
               {/* Account Details */}
               <div className="bg-muted/30 p-3 rounded-lg border space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-blue-500" />
+                  <Building2 className="w-3.5 h-3.5 text-primary" />
                   Account & Banking Details
                 </h4>
 
@@ -1003,7 +1003,7 @@ export const PaymentTypesPage = () => {
                 type="submit"
                 size="sm"
                 disabled={isAdding || isUpdating}
-                className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
               >
                 {isAdding || isUpdating ? 'Saving...' : editingType ? 'Update Method' : 'Create Method'}
               </Button>
@@ -1117,7 +1117,7 @@ export const PaymentTypesPage = () => {
                     setDetailsModalOpen(false);
                     handleOpenEdit(viewingMethod);
                   }}
-                  className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                  className="text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                 >
                   Edit Details
                 </Button>

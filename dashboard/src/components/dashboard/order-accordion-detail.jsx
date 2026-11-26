@@ -180,7 +180,7 @@ export const OrderAccordionDetail = ({ order }) => {
           </span>
           {order.couponCode && (
             <Badge variant="outline" className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono font-bold text-[11px] py-0.5 px-2">
-              <Tag className="h-3 w-3 text-emerald-500" />
+              <Tag className="h-3 w-3 text-primary" />
               {t('categories_brands.coupon_code', 'Coupon')}: {order.couponCode}
             </Badge>
           )}
@@ -294,7 +294,7 @@ export const OrderAccordionDetail = ({ order }) => {
                         </a>
                         <a
                           href={`tel:+880${cleanPhone}`}
-                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                           title="Call Phone"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -315,7 +315,7 @@ export const OrderAccordionDetail = ({ order }) => {
                           href={getWhatsAppLink(phoneNum)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                           title="Message on WhatsApp"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -340,7 +340,7 @@ export const OrderAccordionDetail = ({ order }) => {
                         </a>
                         <a
                           href={`mailto:${emailAddr}`}
-                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
+                          className="inline-flex items-center justify-center h-5 w-5 rounded bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                           title="Send Email"
                           onClick={(e) => e.stopPropagation()}
                         >

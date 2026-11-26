@@ -507,7 +507,7 @@ export const ProductsTable = ({
               {t('common.cancel')}
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium cursor-pointer"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium cursor-pointer"
               onClick={handleUpdateStockStatus}
               disabled={isUpdatingStock}
             >

@@ -36,7 +36,7 @@ export function DynamicTokenChips({ onInsertToken, className = '' }) {
   return (
     <div className={`space-y-2.5 p-3 rounded-xl bg-muted/40 border border-border/70 ${className}`}>
       <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-        <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
         <span>Dynamic Interpolation Tokens</span>
       </div>
       <p className="text-[11px] text-muted-foreground leading-relaxed">

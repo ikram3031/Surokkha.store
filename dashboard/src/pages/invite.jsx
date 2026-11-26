@@ -150,7 +150,7 @@ export default function InvitePage() {
           {/* STATE 2: ALREADY REGISTERED */}
           {verifyStatus === 'already_registered' && (
             <div className="text-center space-y-4 py-3">
-              <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+              <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
                 <UserCheck className="h-6 w-6" />
               </div>
 
@@ -305,7 +305,7 @@ export default function InvitePage() {
           {/* STATE 5: SUCCESS CONFIRMATION */}
           {isSuccess && (
             <div className="text-center space-y-3 py-4">
-              <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto animate-bounce">
+              <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto animate-bounce">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
               <h3 className="font-bold text-base text-foreground">

@@ -103,7 +103,7 @@ export const LookerStudioSetup = ({
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+              <div className="h-10 w-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
@@ -152,7 +152,7 @@ export const LookerStudioSetup = ({
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <div className="h-7 w-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                <div className="h-7 w-7 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-primary">
                   <BarChart3 className="h-4 w-4" />
                 </div>
                 <CardTitle className="text-lg font-bold">
@@ -222,7 +222,7 @@ export const LookerStudioSetup = ({
           {/* Quick Connect URL Input Form */}
           <form onSubmit={handleSubmit} className="p-4 rounded-xl bg-muted/40 border border-border/70 space-y-3">
             <label className="text-xs font-semibold text-foreground flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500" />
+              <Sparkles className="h-4 w-4 text-primary" />
               <span>Paste Looker Studio Embed URL</span>
             </label>
 

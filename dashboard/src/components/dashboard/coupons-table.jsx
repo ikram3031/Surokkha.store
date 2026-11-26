@@ -246,11 +246,11 @@ export function CouponsTable({
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {coupon.discountType === 'free_shipping' ? (
-                        <Truck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                        <Truck className="h-3.5 w-3.5 text-primary shrink-0" />
                       ) : coupon.discountType === 'percentage' ? (
-                        <Percent className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                        <Percent className="h-3.5 w-3.5 text-primary shrink-0" />
                       ) : (
-                        <Tag className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                        <Tag className="h-3.5 w-3.5 text-primary shrink-0" />
                       )}
                       <span className={`font-medium ${coupon.discountType === 'free_shipping' ? 'text-teal-700 dark:text-teal-300 font-semibold' : ''}`}>
                         {formatDiscount(coupon.discountType, coupon.discountValue)}

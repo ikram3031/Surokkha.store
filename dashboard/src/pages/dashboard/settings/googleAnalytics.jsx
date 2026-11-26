@@ -140,7 +140,7 @@ const GoogleAnalyticsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <BarChart3 className="h-7 w-7 text-amber-500" />
+            <BarChart3 className="h-7 w-7 text-primary" />
             Google Analytics 4 & Tag Manager
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -157,7 +157,7 @@ const GoogleAnalyticsPage = () => {
             </Badge>
           ) : (
             <Badge variant="outline" className="text-muted-foreground flex items-center gap-1.5 px-3 py-1 text-xs">
-              <Activity className="h-3.5 w-3.5 text-amber-500" />
+              <Activity className="h-3.5 w-3.5 text-primary" />
               <span>{!isEnabled ? 'Disabled' : 'Pending Configuration'}</span>
             </Badge>
           )}
@@ -178,7 +178,7 @@ const GoogleAnalyticsPage = () => {
       <Card className="border-emerald-500/30 bg-emerald-500/5">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <div className="h-10 w-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div>

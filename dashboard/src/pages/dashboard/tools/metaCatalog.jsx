@@ -976,7 +976,7 @@ const MetaCatalogGenerator = () => {
             size="sm"
             onClick={() => handleDownloadSiteCsv(storeSite)}
             disabled={catalogRows.length === 0}
-            className="shadow-xs text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="shadow-xs text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Download className="h-3.5 w-3.5 mr-1.5" />
             Download Store CSV
@@ -990,7 +990,7 @@ const MetaCatalogGenerator = () => {
             size="sm"
             onClick={() => handleDownloadSiteCsv(shopSite)}
             disabled={catalogRows.length === 0}
-            className="shadow-xs text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white"
+            className="shadow-xs text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Download className="h-3.5 w-3.5 mr-1.5" />
             Download Shop CSV
@@ -1007,7 +1007,7 @@ const MetaCatalogGenerator = () => {
               disabled={catalogRows.length === 0}
               className="shadow-2xs text-xs"
             >
-              <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+              <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5 text-primary" />
               Excel / ZIP
               <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-70" />
             </Button>
@@ -1017,7 +1017,7 @@ const MetaCatalogGenerator = () => {
                 onClick={() => handleDownloadSiteXlsx(storeSite)}
                 className="flex items-center w-full px-2.5 py-1.5 rounded text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
               >
-                <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-emerald-600" />
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-primary" />
                 Store Excel (.xlsx)
               </button>
               <button
@@ -1025,7 +1025,7 @@ const MetaCatalogGenerator = () => {
                 onClick={() => handleDownloadSiteXlsx(shopSite)}
                 className="flex items-center w-full px-2.5 py-1.5 rounded text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
               >
-                <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-amber-600" />
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-primary" />
                 Shop Excel (.xlsx)
               </button>
               <div className="border-t my-1" />
@@ -1042,7 +1042,7 @@ const MetaCatalogGenerator = () => {
                 onClick={() => handleDownloadDualZip('xlsx')}
                 className="flex items-center w-full px-2.5 py-1.5 rounded text-left hover:bg-muted text-foreground transition-colors cursor-pointer"
               >
-                <Archive className="h-3.5 w-3.5 mr-2 text-emerald-600" />
+                <Archive className="h-3.5 w-3.5 mr-2 text-primary" />
                 Download Both Sites (Excel ZIP)
               </button>
             </div>
@@ -1112,7 +1112,7 @@ const MetaCatalogGenerator = () => {
             onClick={() => setActiveTab('staged')}
             className="text-xs h-8 relative"
           >
-            <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+            <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-primary" />
             Selected in Catalog
             <Badge className="ml-1.5 bg-emerald-500 text-white h-4 px-1.5 text-[10px]">
               {stagedMap.size}
@@ -1629,7 +1629,7 @@ const MetaCatalogGenerator = () => {
                 size="sm"
                 onClick={() => handleDownloadSiteCsv(storeSite)}
                 disabled={catalogRows.length === 0}
-                className="h-8 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                className="h-8 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
               >
                 <Download className="h-3.5 w-3.5 mr-1" />
                 Store CSV ({catalogRows.length})
@@ -1638,7 +1638,7 @@ const MetaCatalogGenerator = () => {
                 size="sm"
                 onClick={() => handleDownloadSiteCsv(shopSite)}
                 disabled={catalogRows.length === 0}
-                className="h-8 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                className="h-8 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
               >
                 <Download className="h-3.5 w-3.5 mr-1" />
                 Shop CSV ({catalogRows.length})
@@ -1650,7 +1650,7 @@ const MetaCatalogGenerator = () => {
                 disabled={catalogRows.length === 0}
                 className="h-8 text-xs cursor-pointer"
               >
-                <FileSpreadsheet className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-1 text-primary" />
                 {activeSite.key === 'shop' ? 'Shop' : 'Store'} Excel (.xlsx)
               </Button>
             </div>

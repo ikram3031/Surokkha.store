@@ -144,7 +144,7 @@ const R2StorageSettingsPage = () => {
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div>
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-          <HardDrive className="h-7 w-7 text-orange-400" />
+          <HardDrive className="h-7 w-7 text-primary" />
           R2 Storage
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -159,7 +159,7 @@ const R2StorageSettingsPage = () => {
           </Badge>
         ) : (
           <Badge variant="outline" className="text-muted-foreground flex items-center gap-1.5 px-3 py-1">
-            <Activity className="h-3.5 w-3.5 text-amber-500" />
+            <Activity className="h-3.5 w-3.5 text-primary" />
             {data?.lastTestStatus === 'failed' ? 'Connection failed' : 'Untested'}
           </Badge>
         )}

@@ -33,7 +33,7 @@ const BillingPage = () => {
                 <p className="text-2xl font-bold tracking-tight mt-0.5">৳{totalBilled.toLocaleString()}</p>
               )}
             </div>
-            <div className="h-10 w-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <Receipt className="h-5 w-5" />
             </div>
           </CardContent>
@@ -49,7 +49,7 @@ const BillingPage = () => {
                 <p className="text-2xl font-bold tracking-tight mt-0.5">{totalBillsCount}</p>
               )}
             </div>
-            <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <FileText className="h-5 w-5" />
             </div>
           </CardContent>
@@ -65,7 +65,7 @@ const BillingPage = () => {
                 <p className="text-2xl font-bold tracking-tight text-emerald-600 mt-0.5">৳{totalCollected.toLocaleString()}</p>
               )}
             </div>
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <DollarSign className="h-5 w-5" />
             </div>
           </CardContent>
@@ -81,7 +81,7 @@ const BillingPage = () => {
                 <p className="text-2xl font-bold tracking-tight mt-0.5">{totalPaymentsCount}</p>
               )}
             </div>
-            <div className="h-10 w-10 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
               <CreditCard className="h-5 w-5" />
             </div>
           </CardContent>
@@ -93,8 +93,8 @@ const BillingPage = () => {
           <div className="bg-card border rounded-xl p-6 shadow-sm hover:shadow-md hover:border-primary/40 transition-all h-full flex flex-col justify-between">
             <div>
               <div className="flex items-start justify-between mb-4">
-                <div className="h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-blue-500" />
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-primary" />
                 </div>
                 <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
               </div>
@@ -119,8 +119,8 @@ const BillingPage = () => {
           <div className="bg-card border rounded-xl p-6 shadow-sm hover:shadow-md hover:border-primary/40 transition-all h-full flex flex-col justify-between">
             <div>
               <div className="flex items-start justify-between mb-4">
-                <div className="h-12 w-12 rounded-xl bg-violet-500/10 flex items-center justify-center">
-                  <CreditCard className="h-6 w-6 text-violet-500" />
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <CreditCard className="h-6 w-6 text-primary" />
                 </div>
                 <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
               </div>

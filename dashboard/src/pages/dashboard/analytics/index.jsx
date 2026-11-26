@@ -102,7 +102,7 @@ const AnalyticsPage = () => {
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <BarChart3 className="h-7 w-7 text-amber-500" />
+              <BarChart3 className="h-7 w-7 text-primary" />
               <span>Google Analytics</span>
             </h2>
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-2.5 py-1 text-xs">

@@ -628,7 +628,7 @@ const OrderDetailsPage = () => {
                 {getPaymentBadge(order.paymentStatus || (effectivePending === 0 && effectiveTotal > 0 ? "Paid" : effectivePaid > 0 ? "Partial" : "Pending"))}
                 {order.couponCode && (
                   <Badge variant="outline" className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono font-bold text-xs py-1 px-2.5">
-                    <Tag className="h-3 w-3 text-emerald-500" />
+                    <Tag className="h-3 w-3 text-primary" />
                     Coupon: {order.couponCode}
                   </Badge>
                 )}
@@ -768,7 +768,7 @@ const OrderDetailsPage = () => {
                 {order.couponCode ? (
                   <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium py-1.5 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                     <span className="flex items-center gap-1.5 text-xs font-semibold">
-                      <Tag className="h-3.5 w-3.5 text-emerald-500" />
+                      <Tag className="h-3.5 w-3.5 text-primary" />
                       Coupon Applied (<span className="font-mono uppercase font-bold">{order.couponCode}</span>)
                     </span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">
@@ -835,7 +835,7 @@ const OrderDetailsPage = () => {
                           </a>
                           <a
                             href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
-                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                             title="Call Customer"
                           >
                             <PhoneCall className="h-3.5 w-3.5" />
@@ -852,7 +852,7 @@ const OrderDetailsPage = () => {
                             href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                             title="Message on WhatsApp"
                           >
                             <WhatsAppIcon className="h-3.5 w-3.5" />
@@ -875,7 +875,7 @@ const OrderDetailsPage = () => {
                           </a>
                           <a
                             href={`mailto:${order.billingInfo?.email}`}
-                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
+                            className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                             title="Send Email"
                           >
                             <Mail className="h-3.5 w-3.5" />
@@ -930,7 +930,7 @@ const OrderDetailsPage = () => {
                             </a>
                             <a
                               href={`tel:${order.billingInfo?.phone || order.customer?.phone}`}
-                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                               title="Call Customer"
                             >
                               <PhoneCall className="h-3.5 w-3.5" />
@@ -947,7 +947,7 @@ const OrderDetailsPage = () => {
                               href={getWhatsAppLink(order.billingInfo?.phone || order.customer?.phone)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                               title="Message on WhatsApp"
                             >
                               <WhatsAppIcon className="h-3.5 w-3.5" />
@@ -972,7 +972,7 @@ const OrderDetailsPage = () => {
                             </a>
                             <a
                               href={`mailto:${order.billingInfo?.email}`}
-                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all hover:scale-105 shrink-0"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                               title="Send Email"
                             >
                               <Mail className="h-3.5 w-3.5" />
@@ -1050,7 +1050,7 @@ const OrderDetailsPage = () => {
                             </a>
                             <a
                               href={`tel:${order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone}`}
-                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all hover:scale-105 shrink-0"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                               title="Call Customer"
                             >
                               <PhoneCall className="h-3.5 w-3.5" />
@@ -1067,7 +1067,7 @@ const OrderDetailsPage = () => {
                               href={getWhatsAppLink(order.shippingInfo?.phone || order.billingInfo?.phone || order.customer?.phone)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all hover:scale-105 shrink-0"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all hover:scale-105 shrink-0"
                               title="Message on WhatsApp"
                             >
                               <WhatsAppIcon className="h-3.5 w-3.5" />
@@ -1157,7 +1157,7 @@ const OrderDetailsPage = () => {
                   <div>
                     <span className="text-xs text-muted-foreground block">Applied Coupon</span>
                     <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-0.5">
-                      <Tag className="h-4 w-4 text-emerald-500" />
+                      <Tag className="h-4 w-4 text-primary" />
                       {order.couponCode}
                       {(order.discountTotalAmount || 0) > 0 && (
                         <span className="text-xs font-normal text-muted-foreground">
@@ -1706,7 +1706,7 @@ const OrderDetailsPage = () => {
                   {order?.couponCode && (
                     <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium py-1.5 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                       <span className="flex items-center gap-1.5 text-xs font-semibold">
-                        <Tag className="h-3.5 w-3.5 text-emerald-500" />
+                        <Tag className="h-3.5 w-3.5 text-primary" />
                         Coupon Applied (<span className="font-mono uppercase font-bold">{order.couponCode}</span>)
                       </span>
                       <span className="font-bold">-{formatBDT(discountAmount)}</span>

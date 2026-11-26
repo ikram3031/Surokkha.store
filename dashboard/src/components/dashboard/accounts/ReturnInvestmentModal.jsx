@@ -177,7 +177,7 @@ export const ReturnInvestmentModal = ({
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
         <DialogHeader className="p-5 pb-4 border-b bg-gradient-to-r from-emerald-500/10 via-background to-purple-500/10">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+            <div className="h-9 w-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center border border-primary/20">
               <CornerDownLeft className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -411,7 +411,7 @@ export const ReturnInvestmentModal = ({
               type="submit"
               size="sm"
               disabled={isSubmitting || !selectedInvestorId || !returnAmount}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm cursor-pointer"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-sm cursor-pointer"
             >
               <CornerDownLeft className="w-4 h-4" />
               <span>{isSubmitting ? 'Recording...' : 'Confirm Return Payment'}</span>
