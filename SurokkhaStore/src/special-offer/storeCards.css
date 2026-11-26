@@ -1,0 +1,15 @@
+.mo30-grid{margin-top:0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:640px){.mo30-grid{grid-template-columns:1fr;gap:12px;max-width:340px;margin-left:auto;margin-right:auto}}
+.mo30-grid button[aria-label*="কার্টে"],.mo30-grid button[aria-label*="cart"]{display:none}
+.mo30-grid h3{font-size:19px;min-height:0}
+.mo30-grid h3 ~ div,.mo30-grid h3{margin-top:0}
+.mo30-grid p:first-child{display:none}
+.mo30-grid h3 + div{padding-top:8px}
+.mo30-grid div:has(> h3){display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:10px}
+.mo30-grid div:has(> h3) > h3{grid-column:1 / -1}
+.mo30-grid div:has(> h3) > h3 + div{padding-top:0;margin-top:8px}
+.mo30-grid div:has(> h3) > button{margin-top:8px;width:auto;padding:0 16px}
+.mo30-grid div:has(> h3) > h3 + div{align-self:center;margin-top:10px}
+.mo30-grid div:has(> h3) > button{align-self:center;margin-top:10px;height:42px;padding:0 20px;font-size:15px}
+.mo30-grid .font-price{font-size:22px}
+.mo30-grid h3{text-align:left}

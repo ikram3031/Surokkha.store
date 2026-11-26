@@ -7,9 +7,7 @@ import { bn, tk, cleanPhone, phoneWrongSoFar, FIELD_OK, OFFER_DISTRICT_NAMES as 
 import { SITE_CONFIG, trackSitePage, trackProductEvents, pixelTrack } from './storeCompat.js';
 import { getProduct } from '@/lib/api/products';
 import { mapApiProduct } from '@/lib/api/mappers';
-import '@/index.css';
-import { CartProvider } from '@/context/CartContext';
-import { ProductCard } from '@/components/shop/ProductCard';
+import StoreCards from './StoreCards.jsx';
 import { placeOrder, trackAddToCart, trackInitiateCheckout, minDelay, useCheckoutLead } from '@/lib/checkout-core';
 
 const OFFER = {
@@ -33,11 +31,6 @@ const useMo30Products = () => {
     Promise.all(MO_30.map((p) => getProduct(p.slug).then((res) => mapApiProduct(res?.data ?? res)).catch(() => null))).then((list) => setItems(list.filter(Boolean)));
   }, []);
   return items;
-};
-
-// The store card navigates inside the main app; on this standalone page that needs a full page load
-const followStoreLink = () => {
-  setTimeout(() => { if (window.location.pathname !== '/special-offer') window.location.reload(); }, 0);
 };
 
 const MAX_ADDON = 5;
@@ -522,11 +515,7 @@ const SpecialOfferView = () => {
 
         <section className="sec final mo30">
           <div className="container">
-            <CartProvider>
-              <div className="mo30-grid" onClickCapture={followStoreLink}>
-              {mo30.map((p) => <ProductCard key={p.slug} product={p} />)}
-            </div>
-            </CartProvider>
+            <StoreCards products={mo30} />
           </div>
         </section>
       </main>
