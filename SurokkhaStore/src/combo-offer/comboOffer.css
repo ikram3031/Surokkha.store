@@ -14,4 +14,18 @@
 .co-amore{background:linear-gradient(135deg,#3f3f46,#09090b);font-style:italic;font-size:20px}
 .co-member-note{margin-top:8px;padding:8px 12px;border-radius:10px;background:#dcfce7;border:1px solid #bbf7d0;color:#166534;font-size:14px;font-weight:600;line-height:1.5}
 .photo{background-size:cover;background-position:center}
+/* Mobile: WhatsApp lives in the fixed footer bar, left of the order button, instead of floating */
+.co-sticky-actions{display:flex;align-items:center;gap:10px}
+.co-sticky-wa{width:48px;height:48px;border-radius:14px;background:#25d366;display:grid;place-items:center;flex-shrink:0;box-shadow:0 8px 20px -8px rgba(37,211,102,.7)}
+.co-sticky-wa svg{width:26px;height:26px;color:#fff}
+/* Final CTA: order and WhatsApp side by side, equal width */
+.co-final-ctas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;max-width:560px;margin-left:auto;margin-right:auto}
+.co-final-ctas .btn{width:100%;justify-content:center;white-space:nowrap}
+@media (max-width:640px){
+  .wa-float,.co-footer{display:none}
+  .final{padding-bottom:calc(var(--sticky-h,72px) + 40px)}
+  .co-final-ctas{gap:10px}
+  .co-final-ctas .btn{padding:0 8px;font-size:14px;gap:6px;min-width:0}
+  .co-final-ctas .btn svg{width:18px;height:18px}
+}
 @media (prefers-reduced-motion:reduce){.co-orbit,.co-orb .co-pk,.co-orb .skh-img,.co-box{animation:none}}

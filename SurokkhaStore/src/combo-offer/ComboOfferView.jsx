@@ -149,14 +149,10 @@ const ComboOfferView = () => {
   }, []);
 
   useEffect(() => {
-    let pastHero = false;
-    let atOrder = false;
-    const upd = () => setShowSticky(pastHero && !atOrder);
-    const o1 = new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting; upd(); });
-    const o2 = new IntersectionObserver(([e]) => { atOrder = e.isIntersecting; upd(); }, { threshold: 0.15 });
+    // Mobile footer bar stays fixed once the visitor scrolls past the hero
+    const o1 = new IntersectionObserver(([e]) => setShowSticky(!e.isIntersecting));
     if (heroRef.current) o1.observe(heroRef.current);
-    if (orderRef.current) o2.observe(orderRef.current);
-    return () => { o1.disconnect(); o2.disconnect(); };
+    return () => o1.disconnect();
   }, []);
 
   // Changes one add-on count within its limits and tracks additions
@@ -571,7 +567,7 @@ const ComboOfferView = () => {
           <div className="container">
             <h2>৩ ব্র্যান্ড, ৫০ পিস, মাত্র <span>{tk(OFFER.offerPrice)}</span></h2>
             <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
-            <div className="ctas">
+            <div className="ctas co-final-ctas">
               <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
               <a href={waOrderLink} target="_blank" rel="noopener noreferrer" className="btn btn-wa"><IconWa />WhatsApp-এ অর্ডার</a>
             </div>
@@ -579,7 +575,7 @@ const ComboOfferView = () => {
         </section>
       </main>
 
-      <footer>
+      <footer className="co-footer">
         <div className="container">
           <b>Surokkha<span>.</span></b>
           <a href={waOrderLink} target="_blank" rel="noopener noreferrer">WhatsApp-এ যোগাযোগ</a>
@@ -591,7 +587,10 @@ const ComboOfferView = () => {
 
       <div className={`sticky${showSticky ? ' show' : ''}`}>
         <div className="sp"><b>{tk(OFFER.offerPrice)}</b><small><s>{tk(OFFER.regularPrice)}</s> ফ্রি ডেলিভারি</small></div>
-        <a href="#order" onClick={onOrderClick} className="btn btn-primary">অর্ডার করুন</a>
+        <div className="co-sticky-actions">
+          <a className="co-sticky-wa" href={waOrderLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ মেসেজ দিন"><IconWa /></a>
+          <a href="#order" onClick={onOrderClick} className="btn btn-primary">অর্ডার করুন</a>
+        </div>
       </div>
 
       <div className={`modal${success ? ' show' : ''}`} role="dialog" aria-modal="true" aria-labelledby="okTitle" onClick={(e) => { if (e.target === e.currentTarget) setSuccess(null); }}>
