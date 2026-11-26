@@ -7,7 +7,8 @@ import DistrictPicker from '../special-offer/SpecialOfferDistrictPicker.jsx';
 import logoImg from '../special-offer/logo.png';
 import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
 import { bn, tk, cleanPhone, phoneWrongSoFar, FIELD_OK, OFFER_DISTRICT_NAMES as DISTRICT_NAMES } from '@/lib/offerCheckout';
-import { SITE_CONFIG, getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, pixelTrack, saveCheckoutLead, resetCheckoutSession } from '../special-offer/storeCompat.js';
+import { SITE_CONFIG, trackSitePage, trackProductEvents, pixelTrack } from '../special-offer/storeCompat.js';
+import { placeOrder, trackAddToCart, trackInitiateCheckout, minDelay, useCheckoutLead } from '@/lib/checkout-core';
 
 const OFFER = {
   did: '6f05d71e4bd60d2e',
@@ -92,14 +93,16 @@ const ComboOfferView = () => {
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState('');
   const [blockedPhone, setBlockedPhone] = useState(null);
+  const [agree, setAgree] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
+  const [honeypot, setHoneypot] = useState('');
   // Dev only: ?previewSuccess opens the order confirmation modal with sample data, without placing an order or firing any pixel/CAPI event
   const [isPreview] = useState(() => import.meta.env.DEV && new URLSearchParams(window.location.search).has('previewSuccess'));
   const [success, setSuccess] = useState(() => (import.meta.env.DEV && isPreview
     ? { phone: '01700000000', email: 'preview@example.com', orderNumber: 'ST-PREVIEW', subtotal: 1850, total: 1850, bonus: { amount: 93, percent: 5 } }
     : null));
   const [showSticky, setShowSticky] = useState(false);
-  const startedRef = useRef(false);
-  const cartedRef = useRef(false);
   const heroRef = useRef(null);
   const orderRef = useRef(null);
   const fieldRefs = useRef({});
@@ -113,9 +116,7 @@ const ComboOfferView = () => {
   const total = sub;
 
   // Keeps what the customer has typed so an abandoned checkout is saved, like the main checkout does
-  const leadRef = useRef(null);
-  const submittingRef = useRef(false);
-  leadRef.current = () => ({
+  const submittingRef = useCheckoutLead(() => ({
     fullName: form.name.trim(),
     phone: cleanPhone(form.phone),
     email: form.email.trim(),
@@ -127,23 +128,24 @@ const ComboOfferView = () => {
       { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice },
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
-  });
-  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, qty, addonQty]);
-  useEffect(() => {
-    if (!form.name.trim() && !form.phone.trim() && !form.email.trim()) return undefined;
-    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 2000);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leadSig]);
-  useEffect(() => {
-    const flush = () => {
-      if (submittingRef.current) return;
-      const lead = leadRef.current();
-      if (lead.phone || lead.fullName || lead.email) saveCheckoutLead(lead, true);
-    };
-    window.addEventListener('pagehide', flush);
-    return () => window.removeEventListener('pagehide', flush);
-  }, []);
+  }), [form.name, form.phone, form.email, form.address, form.district, qty, addonQty]);
+
+  // Lists the current order lines for the pixel and product funnel events
+  const trackLines = () => [
+    { id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty },
+    ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ id: a.did, slug: a.slug, name: a.fullName, price: a.price, qty: addonQty[a.key] })),
+  ];
+
+  // Runs a cart change behind a short forced loading so repeated rapid clicks are ignored
+  const guarded = async (change) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    await minDelay(null);
+    change();
+    busyRef.current = false;
+    setBusy(false);
+  };
 
   const waOrderLink = useMemo(() => waLink(`আমি Surokkha All In One Pack (৫০ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
 
@@ -161,13 +163,16 @@ const ComboOfferView = () => {
   }, []);
 
   // Changes one add-on count within its limits and tracks additions
-  const changeAddon = (a, delta) => {
+  const changeAddon = (a, delta) => guarded(() => {
     setAddonQty((prev) => ({ ...prev, [a.key]: Math.max(0, Math.min(MAX_ADDON, prev[a.key] + delta)) }));
-    if (delta > 0) {
-      track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
-      trackProductEvents([{ eventType: 'add_to_cart', productKey: a.slug, productName: a.fullName, quantity: 1, value: a.price }]);
-    }
-  };
+    if (delta > 0) trackAddToCart({ id: a.did, slug: a.slug, name: a.fullName, price: a.price, qty: 1 });
+  });
+
+  // Changes the main pack count within its limits
+  const changeQty = (delta) => guarded(() => {
+    setQty((q) => Math.max(1, Math.min(OFFER.maxQty, q + delta)));
+    if (delta > 0) trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty: 1 });
+  });
 
   // Asks the backend whether a complete phone number is on the spam / fake list
   const checkPhoneListed = async (raw) => {
@@ -198,24 +203,11 @@ const ComboOfferView = () => {
     if (bad !== !!errors[k]) setErrors((prev) => ({ ...prev, [k]: bad }));
   };
 
-  // Fires AddToCart for the main pack the first time any order button is pressed
-  const onOrderClick = () => {
-    if (cartedRef.current) return;
-    cartedRef.current = true;
-    track('AddToCart', { value: OFFER.offerPrice, currency: 'BDT', content_ids: [OFFER.did], content_name: OFFER.name, content_type: 'product' });
-    trackProductEvents([{ eventType: 'add_to_cart', productKey: OFFER.slug, productName: OFFER.name, quantity: 1, value: OFFER.offerPrice }]);
-  };
+  // Fires AddToCart for the main pack when an order button is pressed
+  const onOrderClick = () => trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty: 1 });
 
-  // Fires InitiateCheckout the first time the form gets focus
-  const onFormFocus = () => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-    track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [OFFER.did], content_type: 'product' });
-    trackProductEvents([
-      { eventType: 'checkout', productKey: OFFER.slug, productName: OFFER.name, quantity: qty, value: qty * OFFER.offerPrice },
-      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ eventType: 'checkout', productKey: a.slug, productName: a.fullName, quantity: addonQty[a.key], value: addonQty[a.key] * a.price })),
-    ]);
-  };
+  // Fires InitiateCheckout when the form gets focus
+  const onFormFocus = () => trackInitiateCheckout(trackLines(), total);
 
   // Checks every mandatory field and focuses the first invalid one
   const validate = () => {
@@ -228,6 +220,7 @@ const ComboOfferView = () => {
     };
     const bad = Object.fromEntries(Object.keys(FIELD_OK).map((k) => [k, !FIELD_OK[k](form[k])]));
     if (phoneBlocked) bad.phone = true;
+    bad.agree = !agree;
     Object.keys(FIELD_OK).forEach((k) => { touchedRef.current[k] = true; });
     setErrors(bad);
     const first = Object.keys(bad).find((k) => bad[k]);
@@ -258,72 +251,29 @@ const ComboOfferView = () => {
     setFailed('');
     const v = validate();
     if (!v) return;
-    const nowIso = new Date().toISOString();
-    const payload = {
-      checkoutSessionId: getCheckoutSessionId(),
-      billingInfo: { fullName: v.name, phone: v.phone, email: v.email, address: v.address, city: v.district, thana: '', district: v.district, state: v.district, division: v.district, zip: '' },
-      shippingInfo: null,
-      shipToDifferentAddress: false,
-      fbp: getFbp() || undefined,
-      fbc: getFbc() || undefined,
-      fb_login_id: getFbLoginId() || undefined,
-      externalId: getExternalId() || undefined,
-      siteKey: SITE_CONFIG.siteKey,
-      clientDomain: SITE_CONFIG.domain,
-      orderPrefix: SITE_CONFIG.orderPrefix,
-      // Meta gets Lead when this order is placed and Purchase only once staff confirm it
-      setNewOrderAsLead: true,
-      giftWrap: false,
-      orderNotes: [form.note.trim(), 'Combo offer page (free delivery)'].filter(Boolean).join(' | '),
-      paymentMethod: 'cod',
-      subtotal: sub,
-      shippingFee: 0,
-      shippingTotalAmount: 0,
-      tax: 0,
-      discountTotalAmount: 0,
-      couponCode: null,
-      total,
-      items: buildItems(),
-      paymentDetails: null,
-      timestamp: nowIso,
-      createdAt: nowIso,
-    };
     setSending(true);
     submittingRef.current = true;
     try {
-      const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
-      const res = await fetch(`${base}/orders/new-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
+      const res = await placeOrder({
+        customer: { name: v.name, phone: v.phone, email: v.email, address: v.address, district: v.district },
+        items: buildItems(),
+        trackLines: trackLines(),
+        subtotal: sub,
+        shippingFee: 0,
+        total,
+        notes: [form.note.trim(), 'Combo offer page (free delivery)'].filter(Boolean).join(' | '),
+        asLead: true,
+        honeypot,
       });
-      const json = await res.json().catch(() => null);
-      if (res.status === 403 && json?.code === 'CONTACT_REQUIRED') {
+      if (!res.ok && res.reason === 'contact_required') {
         setBlockedPhone({ phone: v.phone, message: SPAM_PHONE_MSG });
         fieldRefs.current.phone?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-      if (!res.ok) throw new Error(json?.errors?.join(', ') || json?.message || `HTTP ${res.status}`);
-      const orderNumber = String(json?.data?.orderNumber || json?.data?.id || json?.orderNumber || '').trim();
-      if (orderNumber) {
-        const items = { [OFFER.did]: qty };
-        const products = { [OFFER.did]: { did: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice } };
-        ADDONS.forEach((a) => {
-          if (addonQty[a.key] > 0) {
-            items[a.did] = addonQty[a.key];
-            products[a.did] = { did: a.did, slug: a.slug, name: a.fullName, price: a.price };
-          }
-        });
-        trackPurchase({
-          orderNumber,
-          setNewOrderAsLead: json?.data?.setNewOrderAsLead === true,
-          items,
-          totals: { subtotal: sub, grandTotal: total },
-          customer: { name: v.name, mobile: v.phone, email: v.email, district: v.district, address: v.address },
-        }, products);
-      }
+      if (!res.ok) throw new Error(res.message);
+      const orderNumber = res.orderNumber;
       // memberBonus comes back only when the email is not a member yet; it drives the verify-email step
-      const memberBonus = json?.data?.memberBonus;
+      const memberBonus = res.data.memberBonus;
       setSuccess({
         phone: v.phone,
         email: v.email,
@@ -333,7 +283,7 @@ const ComboOfferView = () => {
         bonus: memberBonus?.amount > 0 ? { amount: Number(memberBonus.amount), percent: Number(memberBonus.percent) || 5 } : null,
       });
       setForm(EMPTY_FORM);
-      resetCheckoutSession();
+      setAgree(false);
       touchedRef.current = {};
       setQty(1);
       setAddonQty({ white: 0, pink: 0, blue: 0, ky: 0 });
@@ -472,9 +422,9 @@ const ComboOfferView = () => {
                 <div className="qty">
                   <label htmlFor="qtyOut">পরিমাণ (বক্স)</label>
                   <div className="qty-ctl">
-                    <button type="button" aria-label="কমান" onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
+                    <button type="button" aria-label="কমান" disabled={busy} onClick={() => changeQty(-1)}>−</button>
                     <output id="qtyOut">{bn(qty)}</output>
-                    <button type="button" aria-label="বাড়ান" onClick={() => setQty((q) => Math.min(OFFER.maxQty, q + 1))}>+</button>
+                    <button type="button" aria-label="বাড়ান" disabled={busy} onClick={() => changeQty(1)}>+</button>
                   </div>
                 </div>
                 <div className="addons">
@@ -488,12 +438,12 @@ const ComboOfferView = () => {
                           <div><div className="addon-name"><i style={{ background: a.color }} />{a.name}</div><div className="addon-meta">+{bn(a.pcs)} পিস · {tk(a.price)}</div></div>
                           <div>
                             {n === 0
-                              ? <button type="button" className="addon-add" onClick={() => changeAddon(a, 1)}>+ যোগ করুন</button>
+                              ? <button type="button" className="addon-add" disabled={busy} onClick={() => changeAddon(a, 1)}>+ যোগ করুন</button>
                               : (
                                 <div className="qty-ctl">
-                                  <button type="button" aria-label="কমান" onClick={() => changeAddon(a, -1)}>−</button>
+                                  <button type="button" aria-label="কমান" disabled={busy} onClick={() => changeAddon(a, -1)}>−</button>
                                   <output>{bn(n)}</output>
-                                  <button type="button" aria-label="বাড়ান" onClick={() => changeAddon(a, 1)}>+</button>
+                                  <button type="button" aria-label="বাড়ান" disabled={busy} onClick={() => changeAddon(a, 1)}>+</button>
                                 </div>
                               )}
                           </div>
@@ -547,6 +497,11 @@ const ComboOfferView = () => {
                     <label htmlFor="fNote">বিশেষ নির্দেশনা (ঐচ্ছিক)</label>
                     <input id="fNote" value={form.note} onChange={(e) => setField('note', e.target.value)} />
                   </div>
+                  <input className="hp-field" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
+                  <label className={`agree${errors.agree ? ' err' : ''}`}>
+                    <input type="checkbox" checked={agree} onChange={(e) => { setAgree(e.target.checked); if (e.target.checked && errors.agree) setErrors((p) => ({ ...p, agree: false })); }} />
+                    <span>আমি অর্ডারের তথ্য সঠিক দিয়েছি এবং শর্তাবলীতে সম্মত আছি</span>
+                  </label>
                 </div>
 
                 <button type="submit" className={`btn btn-primary submit${sending ? ' loading' : ''}`} disabled={sending}>

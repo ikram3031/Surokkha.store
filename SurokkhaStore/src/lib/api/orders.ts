@@ -31,8 +31,13 @@ export interface NewOrderPayload {
   shippingInfo: OrderAddress | null
   shipToDifferentAddress: boolean
   orderPrefix: 'ST'
+  /** Server saves the order as a lead first; Purchase follows when staff confirm it */
+  setNewOrderAsLead?: boolean
+  siteKey?: string
+  clientDomain?: string
+  clientSignals?: Record<string, unknown>
   orderNotes: string
-  paymentMethod: 'cod'
+  paymentMethod: 'Cash on Delivery'
   giftWrap: boolean
   subtotal: number
   shippingFee: number

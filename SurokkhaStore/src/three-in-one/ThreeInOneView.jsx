@@ -269,7 +269,7 @@ const ThreeInOneView = () => {
       orderPrefix: SITE_CONFIG.orderPrefix,
       giftWrap: false,
       orderNotes: [form.note.trim(), `Landing 3-in-1 / 7-in-1 (${form.area === 'inside_dhaka' ? 'Inside Dhaka' : 'Outside Dhaka'})`].filter(Boolean).join(' | '),
-      paymentMethod: 'cod',
+      paymentMethod: 'Cash on Delivery',
       subtotal: sub,
       shippingFee: del,
       shippingTotalAmount: del,

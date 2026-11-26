@@ -271,7 +271,7 @@ const SpecialOfferView = () => {
       orderPrefix: SITE_CONFIG.orderPrefix,
       giftWrap: false,
       orderNotes: [form.note.trim(), 'Special offer page (free delivery)'].filter(Boolean).join(' | '),
-      paymentMethod: 'cod',
+      paymentMethod: 'Cash on Delivery',
       subtotal: sub,
       shippingFee: 0,
       shippingTotalAmount: 0,

@@ -359,7 +359,7 @@ export function CheckoutPage() {
         shipToDifferentAddress: !sameAsBilling,
         orderPrefix: 'ST',
         orderNotes: form.notes.trim(),
-        paymentMethod: 'cod',
+        paymentMethod: 'Cash on Delivery',
         giftWrap: false,
         subtotal,
         shippingFee: totals.fee,
