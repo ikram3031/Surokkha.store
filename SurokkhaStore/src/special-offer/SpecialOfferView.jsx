@@ -3,7 +3,8 @@ import './specialOffer.css';
 import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from './logo.png';
 import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
-import { SITE_CONFIG, DISTRICTS, getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, pixelTrack, saveCheckoutLead, resetCheckoutSession } from './storeCompat.js';
+import { bn, tk, cleanPhone, phoneWrongSoFar, FIELD_OK, OFFER_DISTRICT_NAMES as DISTRICT_NAMES } from '@/lib/offerCheckout';
+import { SITE_CONFIG, getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, pixelTrack, saveCheckoutLead, resetCheckoutSession } from './storeCompat.js';
 
 const OFFER = {
   did: 'd5a81e97721c8101',
@@ -25,39 +26,6 @@ const ADDONS = [
 const MAX_ADDON = 5;
 const NORMAL_DELIVERY = 120;
 const WHATSAPP = STORE_WHATSAPP_NUMBER;
-const DISTRICT_NAMES = DISTRICTS.map((d) => d.name).sort((a, b) => a.localeCompare(b));
-
-// Converts western digits in a value to Bangla digits
-const bn = (n) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d]);
-
-// Formats an amount as a Bangla taka string
-const tk = (n) => '৳' + bn(Number(n).toLocaleString('en-IN'));
-
-// Converts Bangla digits to western digits
-const toEnDigits = (s) => s.replace(/[০-৯]/g, (d) => '০১২৩৪৫৬৭৮৯'.indexOf(d));
-
-// Normalises a typed phone number to the local 01XXXXXXXXX form
-const cleanPhone = (v) => {
-  const p = toEnDigits(v).replace(/[^\d]/g, '');
-  return p.startsWith('880') ? p.slice(2) : p;
-};
-
-// Tells whether each mandatory field value is acceptable
-const FIELD_OK = {
-  name: (v) => v.trim().length >= 2,
-  phone: (v) => /^01[3-9]\d{8}$/.test(cleanPhone(v)),
-  email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
-  district: (v) => DISTRICT_NAMES.includes(v),
-  address: (v) => v.trim().length >= 5,
-};
-
-// Flags a phone number that is already wrong while it is still being typed
-const phoneWrongSoFar = (v) => {
-  const p = cleanPhone(v);
-  if (!p || '880'.startsWith(p)) return false;
-  return !/^0(1([3-9]\d{0,8})?)?$/.test(p);
-};
-
 const SPAM_PHONE_MSG = 'আপনার এই নম্বরটি আমাদের স্প্যাম লিস্টে আছে। দয়া করে আমাদের সাথে যোগাযোগ করুন।';
 const FAKE_PHONE_MSG = 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।';
 

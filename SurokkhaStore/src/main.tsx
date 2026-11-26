@@ -11,6 +11,7 @@ const SITE_CONFIG_TIMEOUT_MS = 1500
 const pathname = window.location.pathname.replace(/\/$/, '')
 const isSpecialOffer = pathname === '/special-offer'
 const isThreeInOne = pathname === '/3-in-1'
+const isComboOffer = pathname === '/combo-offer'
 
 const loadRoot = async (): Promise<ComponentType> => {
   if (isSpecialOffer) {
@@ -20,6 +21,10 @@ const loadRoot = async (): Promise<ComponentType> => {
   if (isThreeInOne) {
     // @ts-ignore -- plain JSX page, no type declarations
     return (await import('./three-in-one/ThreeInOneView.jsx')).default as ComponentType
+  }
+  if (isComboOffer) {
+    // @ts-ignore -- plain JSX page, no type declarations
+    return (await import('./combo-offer/ComboOfferView.jsx')).default as ComponentType
   }
   const [app] = await Promise.all([import('./App.tsx'), import('./index.css')])
   return app.default

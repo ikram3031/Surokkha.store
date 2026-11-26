@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './threeInOne.css';
 import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
+import { bn, tk, cleanPhone, phoneOk, phoneWrongSoFar } from '@/lib/offerCheckout';
 import {
   SITE_CONFIG,
   getCheckoutSessionId,
@@ -41,31 +42,6 @@ const MAX_ADDON = 5;
 const WHATSAPP = STORE_WHATSAPP_NUMBER;
 const SPAM_PHONE_MSG = 'আপনার এই নম্বরটি আমাদের স্প্যাম লিস্টে আছে। দয়া করে আমাদের সাথে যোগাযোগ করুন।';
 const FAKE_PHONE_MSG = 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।';
-
-// Converts western digits in a value to Bangla digits
-const bn = (n) => String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[d]);
-
-// Formats an amount as a Bangla taka string
-const tk = (n) => '৳' + bn(Number(n).toLocaleString('en-IN'));
-
-// Converts Bangla digits to western digits
-const toEnDigits = (s) => s.replace(/[০-৯]/g, (d) => '০১২৩৪৫৬৭৮৯'.indexOf(d));
-
-// Normalises a typed phone number to the local 01XXXXXXXXX form
-const cleanPhone = (v) => {
-  const p = toEnDigits(v).replace(/[^\d]/g, '');
-  return p.startsWith('880') ? p.slice(2) : p;
-};
-
-// Validates a clean local mobile number
-const phoneOk = (p) => /^01[3-9]\d{8}$/.test(p);
-
-// Flags an invalid phone number while typing
-const phoneWrongSoFar = (v) => {
-  const p = cleanPhone(v);
-  if (!p || '880'.startsWith(p)) return false;
-  return !/^0(1([3-9]\d{0,8})?)?$/.test(p);
-};
 
 // Builds a WhatsApp chat link with a prefilled message
 const waLink = (text) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
