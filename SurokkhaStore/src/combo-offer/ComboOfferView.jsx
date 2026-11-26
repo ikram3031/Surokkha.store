@@ -441,7 +441,7 @@ const ComboOfferView = () => {
           </div>
         </section>
 
-        <section className="sec">
+        <section className="sec co-steps">
           <div className="container">
             <div className="steps">
               <div className="step"><div className="step-n">১</div><h3>অর্ডার করুন</h3><p>নিচের ফর্মে নাম, নম্বর আর ঠিকানা দিন। এক মিনিটও লাগবে না।</p></div>
