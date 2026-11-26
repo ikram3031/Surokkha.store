@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import '../special-offer/specialOffer.css';
 import './comboOffer.css';
 import boxImg from './box.webp';
+import OrderSuccessModal from './OrderSuccessModal.jsx';
 import DistrictPicker from '../special-offer/SpecialOfferDistrictPicker.jsx';
 import logoImg from '../special-offer/logo.png';
 import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
@@ -91,7 +92,11 @@ const ComboOfferView = () => {
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState('');
   const [blockedPhone, setBlockedPhone] = useState(null);
-  const [success, setSuccess] = useState(null);
+  // Dev only: ?previewSuccess opens the order confirmation modal with sample data, without placing an order or firing any pixel/CAPI event
+  const [isPreview] = useState(() => import.meta.env.DEV && new URLSearchParams(window.location.search).has('previewSuccess'));
+  const [success, setSuccess] = useState(() => (import.meta.env.DEV && isPreview
+    ? { phone: '01700000000', email: 'preview@example.com', orderNumber: 'ST-PREVIEW', subtotal: 1850, total: 1850, bonus: { amount: 93, percent: 5 } }
+    : null));
   const [showSticky, setShowSticky] = useState(false);
   const startedRef = useRef(false);
   const cartedRef = useRef(false);
@@ -317,7 +322,16 @@ const ComboOfferView = () => {
           customer: { name: v.name, mobile: v.phone, email: v.email, district: v.district, address: v.address },
         }, products);
       }
-      setSuccess({ phone: v.phone, orderNumber });
+      // memberBonus comes back only when the email is not a member yet; it drives the verify-email step
+      const memberBonus = json?.data?.memberBonus;
+      setSuccess({
+        phone: v.phone,
+        email: v.email,
+        orderNumber,
+        subtotal: sub,
+        total,
+        bonus: memberBonus?.amount > 0 ? { amount: Number(memberBonus.amount), percent: Number(memberBonus.percent) || 5 } : null,
+      });
       setForm(EMPTY_FORM);
       resetCheckoutSession();
       touchedRef.current = {};
@@ -593,15 +607,7 @@ const ComboOfferView = () => {
         </div>
       </div>
 
-      <div className={`modal${success ? ' show' : ''}`} role="dialog" aria-modal="true" aria-labelledby="okTitle" onClick={(e) => { if (e.target === e.currentTarget) setSuccess(null); }}>
-        <div className="modal-box">
-          <div className="tick"><IconCheck w={2.6} /></div>
-          <h3 id="okTitle">ধন্যবাদ, অর্ডার পেয়েছি!</h3>
-          <p>আমাদের টিম শীঘ্রই <b>{success ? bn(success.phone) : ''}</b> নম্বরে কল করে আপনার অর্ডার কনফার্ম করবে। ফোনটা কাছে রাখুন।</p>
-          {success?.orderNumber ? <div className="order-id">অর্ডার আইডি: <b>{success.orderNumber}</b></div> : null}
-          <button type="button" className="btn btn-primary" onClick={() => setSuccess(null)}>ঠিক আছে</button>
-        </div>
-      </div>
+      <OrderSuccessModal success={success} onClose={() => setSuccess(null)} preview={isPreview} />
     </>
   );
 };
