@@ -81,7 +81,7 @@ const Stack = ({ cls, img }) => (
   </div>
 );
 
-const EMPTY_FORM = { name: '', phone: '', email: '', district: '', address: '', note: '' };
+const EMPTY_FORM = { name: '', phone: '', email: '', district: '', thana: '', address: '', note: '' };
 
 // Standalone All In One Pack campaign page with its own order form and free delivery
 const ComboOfferView = () => {
@@ -122,13 +122,13 @@ const ComboOfferView = () => {
     email: form.email.trim(),
     address: form.address.trim(),
     district: form.district,
-    thana: '',
+    thana: form.thana.trim(),
     cartTotal: total,
     items: [
       { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice },
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
-  }), [form.name, form.phone, form.email, form.address, form.district, qty, addonQty]);
+  }), [form.name, form.phone, form.email, form.address, form.district, form.thana, qty, addonQty]);
 
   // Lists the current order lines for the pixel and product funnel events
   const trackLines = () => [
@@ -255,7 +255,7 @@ const ComboOfferView = () => {
     submittingRef.current = true;
     try {
       const res = await placeOrder({
-        customer: { name: v.name, phone: v.phone, email: v.email, address: v.address, district: v.district },
+        customer: { name: v.name, phone: v.phone, email: v.email, address: v.address, district: v.district, thana: form.thana.trim() },
         items: buildItems(),
         trackLines: trackLines(),
         subtotal: sub,
@@ -483,10 +483,17 @@ const ComboOfferView = () => {
                     <div className="msg">সঠিক ইমেইল ঠিকানা দিন</div>
                     <div className="co-member-note">মেম্বারশিপ রেজিস্ট্রেশন করে অতিরিক্ত ৫% ({tk(Math.round(sub * 0.05))}) ডিসকাউন্ট উপভোগ করুন</div>
                   </div>
-                  <div className={`field${errors.district ? ' err' : ''}`}>
-                    <label htmlFor="fDistrict">জেলা <em>*</em></label>
-                    <DistrictPicker id="fDistrict" ref={reg('district')} value={form.district} options={DISTRICT_NAMES} onSelect={(d) => setField('district', d)} onDismiss={() => onFieldBlur('district')} />
-                    <div className="msg">তালিকা থেকে আপনার জেলা নির্বাচন করুন</div>
+                  <div className="field-row">
+                    <div className={`field${errors.district ? ' err' : ''}`}>
+                      <label htmlFor="fDistrict">জেলা <em>*</em></label>
+                      <DistrictPicker id="fDistrict" ref={reg('district')} value={form.district} options={DISTRICT_NAMES} onSelect={(d) => setField('district', d)} onDismiss={() => onFieldBlur('district')} />
+                      <div className="msg">তালিকা থেকে আপনার জেলা নির্বাচন করুন</div>
+                    </div>
+                    <div className={`field${errors.thana ? ' err' : ''}`}>
+                      <label htmlFor="fThana">থানা / উপজেলা <em>*</em></label>
+                      <input id="fThana" ref={reg('thana')} onBlur={() => onFieldBlur('thana')} placeholder="যেমন: মিরপুর" value={form.thana} onChange={(e) => setField('thana', e.target.value)} />
+                      <div className="msg">থানা / উপজেলার নাম লিখুন</div>
+                    </div>
                   </div>
                   <div className={`field${errors.address ? ' err' : ''}`}>
                     <label htmlFor="fAddress">সম্পূর্ণ ঠিকানা <em>*</em></label>

@@ -270,3 +270,8 @@ footer a{text-decoration:none;color:rgba(255,245,247,.8)}
   .sticky .btn{height:48px;padding:0 20px;font-size:16px}
 }
 @media (prefers-reduced-motion:reduce){.ftag{animation:none}html{scroll-behavior:auto}}
+.hp-field{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.agree{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14px;line-height:1.5;cursor:pointer}
+.agree input{width:18px;height:18px;margin-top:2px;flex-shrink:0;accent-color:currentColor}
+.agree.err span{color:#dc2626}
+button:disabled{cursor:wait}

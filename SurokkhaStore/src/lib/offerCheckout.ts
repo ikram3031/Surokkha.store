@@ -43,5 +43,6 @@ export const FIELD_OK: Record<string, (value: string) => boolean> = {
   phone: (v) => phoneOk(v),
   email: (v) => isValidEmail(v),
   district: (v) => OFFER_DISTRICT_NAMES.includes(v),
+  thana: (v) => v.trim().length >= 2,
   address: (v) => v.trim().length >= 5,
 }

@@ -31,6 +31,8 @@ export interface PlaceOrderInput {
   promo?: NewOrderPayload['promo']
   token?: string | null
   honeypot?: string
+  shipToBilling?: boolean
+  extra?: Record<string, unknown>
 }
 
 export type PlaceOrderResult =
@@ -56,7 +58,7 @@ export const placeOrder = async (input: PlaceOrderInput): Promise<PlaceOrderResu
   const { fbp, fbc, externalId } = getFbIdentifiers()
   const payload: NewOrderPayload = {
     billingInfo: toAddress(input.customer),
-    shippingInfo: input.shipping ? toAddress(input.shipping) : null,
+    shippingInfo: input.shipping ? toAddress(input.shipping) : input.shipToBilling ? toAddress(input.customer) : null,
     shipToDifferentAddress: !!input.shipping,
     orderPrefix: ORDER_PREFIX,
     orderNotes: input.notes?.trim() || '',
@@ -81,6 +83,7 @@ export const placeOrder = async (input: PlaceOrderInput): Promise<PlaceOrderResu
     clientSignals: collectClientSignals(input.honeypot),
     ...(input.asLead ? { setNewOrderAsLead: true } : {}),
     ...(input.promo ? { promo: input.promo } : {}),
+    ...(input.extra || {}),
   }
   try {
     const res = await minDelay(createOrder(payload, input.token))

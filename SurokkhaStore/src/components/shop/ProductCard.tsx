@@ -69,8 +69,8 @@ export function ProductCard({ product }: { product: Product }) {
         </h3>
         <div className="mt-auto flex items-center justify-between gap-2 pt-3">
           <span className="flex min-w-0 items-baseline gap-x-2 tabular-nums">
-            <span className="font-product text-lg font-bold text-zinc-950">{taka(product.price)}</span>
-            {onSale && <s className="truncate font-product text-sm font-semibold text-zinc-800 line-through decoration-red-600 decoration-2">{taka(product.regularPrice!)}</s>}
+            <span className="font-price text-lg font-bold text-zinc-950">{taka(product.price)}</span>
+            {onSale && <s className="truncate font-price text-sm font-semibold text-zinc-800 line-through decoration-red-600 decoration-2">{taka(product.regularPrice!)}</s>}
           </span>
           <Button
             size="icon"

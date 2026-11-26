@@ -13,8 +13,8 @@ import LocationSelect from '@/components/checkout/LocationSelect'
 import { useCart } from '@/context/CartContext'
 import { ApiError } from '@/lib/api/client'
 import { getCoupon } from '@/lib/api/catalog'
-import { checkPhone, createOrder, type NewOrderPayload, type OrderAddress } from '@/lib/api/orders'
-import { fetchCheckoutDetails, getCustomerToken } from '@/lib/api/customer-auth'
+import { checkPhone } from '@/lib/api/orders'
+import { fetchCheckoutDetails } from '@/lib/api/customer-auth'
 import {
   comboSubtotal,
   couponDiscount,
@@ -31,9 +31,8 @@ import {
 } from '@/lib/checkout'
 import { bn, taka } from '@/lib/bn'
 import { navigate } from '@/lib/router'
-import { getFbIdentifiers, pixelTrack, setPixelUserData } from '@/lib/pixel'
-import { productKeyOf, trackProductEvents, type ProductEventType } from '@/lib/api/productEvents'
-import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
+import { productKeyOf } from '@/lib/api/productEvents'
+import { placeOrder, trackInitiateCheckout, useCheckoutLead, type TrackLine } from '@/lib/checkout-core'
 import { L } from '@/lib/i18n'
 // Orders above this subtotal are taken on WhatsApp (the backend caps website orders at the same amount)
 
@@ -86,7 +85,8 @@ export function CheckoutPage() {
   const [sameAsBilling] = useState(true)
   const [ship, setShip] = useState({ fullName: '', phone: '', address: '', district: '', thana: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [agreed, setAgreed] = useState(true)
+  const [agreed, setAgreed] = useState(false)
+  const [honeypot, setHoneypot] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const submittingRef = useRef(false)
   const phoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -128,38 +128,15 @@ export function CheckoutPage() {
     setErrors((e) => ({ ...e, [key]: '' }))
   }
 
-  // One funnel row per product in the cart, like the shop sends
-  const productEventLines = (eventType: ProductEventType) =>
-    lines.map(({ product, qty }) => ({
-      eventType,
-      productKey: productKeyOf(product),
-      productName: product.apiName ?? product.name,
-      quantity: qty,
-      value: product.price * qty,
-    }))
+  // Lists the cart lines for the pixel and product funnel events
+  const trackLines = (): TrackLine[] => lines.map((l) => ({ id: l.product.did ?? l.product.slug ?? String(l.product.id), slug: productKeyOf(l.product), name: l.product.apiName ?? l.product.name, price: l.product.price, qty: l.qty }))
 
-  const checkoutTracked = useRef(false)
-  const initiateData = useRef<Record<string, unknown> | undefined>(undefined)
   useEffect(() => {
-    if (count === 0 || checkoutTracked.current) return
-    checkoutTracked.current = true
-    const data = {
-      content_ids: lines.map((l) => l.product.did ?? l.product.slug ?? String(l.product.id)),
-      contents: lines.map((l) => ({ id: l.product.did ?? l.product.slug ?? String(l.product.id), quantity: l.qty, item_price: l.product.price })),
-      content_type: 'product',
-      num_items: count,
-      value: subtotal,
-      currency: 'BDT',
-    }
-    initiateData.current = data
-    // Same event id the server sends once a phone number is known, so Meta merges the pair
-    pixelTrack('InitiateCheckout', data, `ic_${getCheckoutSessionId()}`)
-    trackProductEvents(productEventLines('checkout'))
+    if (count > 0) trackInitiateCheckout(trackLines(), subtotal)
   }, [count, lines, subtotal])
 
-  // Keep what the customer has typed so far (abandoned checkout capture); debounced, and flushed when they leave
-  const leadRef = useRef<() => CheckoutLeadPayload>(() => ({ fullName: '', phone: '', email: '', address: '', district: '', thana: '', cartTotal: 0, items: [] }))
-  leadRef.current = () => ({
+  // Keep what the customer has typed so far (abandoned checkout capture), shared with every checkout
+  const leadSubmitting = useCheckoutLead(() => ({
     fullName: form.fullName,
     phone: form.phone,
     email: form.email,
@@ -173,26 +150,7 @@ export function CheckoutPage() {
       quantity: qty,
       unitPrice: product.price,
     })),
-    customData: initiateData.current,
-    ...getFbIdentifiers(),
-  })
-  const leadSig = JSON.stringify([form.fullName, form.phone, form.email, form.address, form.district, form.thana, subtotal, lines.map((l) => `${l.product.id}:${l.qty}`).join(',')])
-  useEffect(() => {
-    if (submittingRef.current || (!form.phone && !form.fullName && !form.email)) return
-    const timer = setTimeout(() => {
-      if (!submittingRef.current) saveCheckoutLead(leadRef.current())
-    }, 1200)
-    return () => clearTimeout(timer)
-  }, [leadSig])
-  useEffect(() => {
-    const flush = () => {
-      if (submittingRef.current) return
-      const lead = leadRef.current()
-      if (lead.items.length > 0 && (lead.phone || lead.fullName || lead.email)) saveCheckoutLead(lead, true)
-    }
-    window.addEventListener('pagehide', flush)
-    return () => window.removeEventListener('pagehide', flush)
-  }, [])
+  }), [form.fullName, form.phone, form.email, form.address, form.district, form.thana, subtotal, lines.map((l) => `${l.product.id}:${l.qty}`).join(',')])
 
   // An empty cart has nothing to check out
   useEffect(() => {
@@ -246,6 +204,7 @@ export function CheckoutPage() {
     if (form.email.trim() && !isValidEmail(form.email)) next.email = L('Enter a valid email', 'সঠিক ইমেইল লিখুন')
     if (form.address.trim().length < 5) next.address = L('Enter your full address with house, road and area', 'বাড়ি, রোড ও এলাকাসহ পূর্ণ ঠিকানা লিখুন')
     if (!form.district) next.district = L('Select a district', 'জেলা নির্বাচন করুন')
+    if (form.thana.trim().length < 2) next.thana = L('Enter the thana / upazila', 'থানা / উপজেলার নাম লিখুন')
     if (!sameAsBilling) {
       if (!ship.fullName.trim()) next.ship_fullName = L('Enter the recipient name', 'প্রাপকের নাম লিখুন')
       if (!isValidPhone(ship.phone)) next.ship_phone = L('Enter a valid recipient mobile number', 'প্রাপকের সঠিক মোবাইল নম্বর দিন')
@@ -308,6 +267,7 @@ export function CheckoutPage() {
     if (!agreed) return toast.error(L('Please accept the terms to continue', 'অর্ডার করতে শর্তাবলীতে সম্মতি প্রদান করুন।'))
 
     submittingRef.current = true
+    leadSubmitting.current = true
     setSubmitting(true)
     try {
       const phone = normalizePhone(form.phone)
@@ -329,99 +289,52 @@ export function CheckoutPage() {
       }
 
       const district = form.district.trim()
-      const billing: OrderAddress = {
-        fullName: form.fullName.trim(),
-        phone,
-        email: form.email.trim(),
-        address: form.address.trim(),
-        city: district,
-        thana: form.thana.trim(),
-        district,
-        state: district,
-        division: district,
-        zip: '',
-      }
-      const payload: NewOrderPayload = {
-        billingInfo: billing,
-        shippingInfo: sameAsBilling
-          ? null
-          : {
-              fullName: ship.fullName.trim(),
-              phone: normalizePhone(ship.phone),
-              address: ship.address.trim(),
-              city: ship.district,
-              thana: ship.thana.trim(),
-              district: ship.district,
-              state: ship.district,
-              division: ship.district,
-              zip: '',
-            },
-        shipToDifferentAddress: !sameAsBilling,
-        orderPrefix: 'ST',
-        orderNotes: form.notes.trim(),
-        paymentMethod: 'Cash on Delivery',
-        giftWrap: false,
-        subtotal,
-        shippingFee: totals.fee,
-        shippingTotalAmount: totals.fee,
-        tax: 0,
-        discountTotalAmount: totals.discount,
-        couponCode: coupon ? coupon.code : null,
-        // Only claimed when no other offer already made delivery free
-        total: totals.total,
+      const billing = { name: form.fullName, phone, email: form.email, address: form.address, district, thana: form.thana }
+      const res = await placeOrder({
+        customer: billing,
+        shipping: sameAsBilling ? null : { name: ship.fullName, phone: ship.phone, address: ship.address, district: ship.district, thana: ship.thana },
         items: lines.map(({ product, qty }) => ({
           productId: product.itemType === 'item' ? undefined : product.apiId,
           itemId: product.itemType === 'item' ? product.apiId : undefined,
           productDid: product.did ?? product.slug,
-          itemType: product.itemType === 'item' ? 'item' : 'product',
+          itemType: product.itemType === 'item' ? 'item' as const : 'product' as const,
           name: product.apiName ?? product.name,
           image: product.image,
           quantity: qty,
           unitPrice: product.price,
           size: product.groupOffer ? `Group Offer: ${product.groupOffer.name}` : 'Standard Pack',
         })),
-        paymentDetails: null,
-        timestamp: new Date().toISOString(),
-        checkoutSessionId: getCheckoutSessionId(),
-        ...getFbIdentifiers(),
-      }
-
-      const res = await createOrder(payload, payload.promo ? getCustomerToken() : null)
+        trackLines: trackLines(),
+        subtotal,
+        shippingFee: totals.fee,
+        discount: totals.discount,
+        couponCode: coupon ? coupon.code : null,
+        total: totals.total,
+        notes: form.notes,
+        honeypot,
+      })
+      if (!res.ok) throw new Error(res.reason === 'contact_required' ? 'CONTACT_REQUIRED' : res.message)
+      const orderNumber = res.orderNumber
       saveLastOrder({
-        orderNumber: String(res.data?.orderNumber ?? ''),
-        name: sameAsBilling ? billing.fullName : ship.fullName.trim(),
-        phone: sameAsBilling ? billing.phone : normalizePhone(ship.phone),
-        address: sameAsBilling ? billing.address : ship.address.trim(),
-        district: sameAsBilling ? billing.district : ship.district,
-        thana: sameAsBilling ? billing.thana : ship.thana.trim(),
+        orderNumber,
+        name: (sameAsBilling ? billing.name : ship.fullName).trim(),
+        phone: sameAsBilling ? phone : normalizePhone(ship.phone),
+        address: (sameAsBilling ? billing.address : ship.address).trim(),
+        district: sameAsBilling ? district : ship.district,
+        thana: (sameAsBilling ? billing.thana : ship.thana).trim(),
         items: lines.map(({ product, qty }) => ({ name: product.name, qty, price: product.price })),
         subtotal,
         shipping: totals.fee,
         discount: totals.discount,
         total: totals.total,
       })
-      const orderNumber = String(res.data?.orderNumber ?? '')
-      setPixelUserData(billing)
-      pixelTrack(
-        'Purchase',
-        {
-          content_ids: lines.map((l) => l.product.did ?? l.product.slug ?? String(l.product.id)),
-          content_type: 'product',
-          num_items: count,
-          value: totals.total,
-          currency: 'BDT',
-        },
-        orderNumber || undefined,
-      )
-      trackProductEvents(productEventLines('purchase'))
-      resetCheckoutSession()
       clear()
       navigate('/order-confirmed', { replace: true })
     } catch (err) {
       submittingRef.current = false
+      leadSubmitting.current = false
       setSubmitting(false)
-      const body = err instanceof ApiError ? (err.body as { code?: string; message?: string } | null) : null
-      if (body?.code === 'CONTACT_REQUIRED') {
+      if (err instanceof Error && err.message === 'CONTACT_REQUIRED') {
         toast.error(L('Sorry, this order cannot be placed online. Please contact us.', 'দুঃখিত, এই অর্ডারটি অনলাইনে করা যাচ্ছে না। অনুগ্রহ করে আমাদের সাথে যোগাযোগ করুন।'))
       } else {
         toast.error(err instanceof Error ? err.message : L('Could not place the order. Please try again.', 'অর্ডার সম্পন্ন করা যায়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।'))
@@ -506,7 +419,7 @@ export function CheckoutPage() {
                   error={errors.district}
                 />
               </Field>
-              <Field label={`${L('Thana / Upazila', 'থানা / উপজেলা')} ${L('(optional)', '(ঐচ্ছিক)')}`} error={errors.thana} htmlFor="billingThana">
+              <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} error={errors.thana} htmlFor="billingThana">
                 <input
                   id="billingThana"
                   className={fieldClass(errors.thana)}
@@ -683,6 +596,7 @@ export function CheckoutPage() {
             <label className="flex cursor-pointer select-none items-start gap-3 text-base">
               <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-primary" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
               <span>{L('I agree to the terms and refund policy.', 'আমি নিশ্চিত করছি যে আমি শর্তাবলী ও রিফান্ড পলিসি মেনে নিচ্ছি।')}</span>
+              <input className="absolute -left-[9999px] size-px opacity-0" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
             </label>
 
             <Button type="submit" size="lg" className="h-12 w-full rounded-full text-lg" disabled={submitting}>

@@ -10,6 +10,7 @@ export interface OrderItemInput {
   quantity: number
   unitPrice: number
   size?: string
+  sku?: string
 }
 
 export interface OrderAddress {

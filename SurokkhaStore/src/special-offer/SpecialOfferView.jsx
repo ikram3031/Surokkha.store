@@ -4,24 +4,41 @@ import DistrictPicker from './SpecialOfferDistrictPicker.jsx';
 import logoImg from './logo.png';
 import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
 import { bn, tk, cleanPhone, phoneWrongSoFar, FIELD_OK, OFFER_DISTRICT_NAMES as DISTRICT_NAMES } from '@/lib/offerCheckout';
-import { SITE_CONFIG, getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, pixelTrack, saveCheckoutLead, resetCheckoutSession } from './storeCompat.js';
+import { SITE_CONFIG, trackSitePage, trackProductEvents, pixelTrack } from './storeCompat.js';
+import { getProduct } from '@/lib/api/products';
+import { mapApiProduct } from '@/lib/api/mappers';
+import '@/index.css';
+import { CartProvider } from '@/context/CartContext';
+import { ProductCard } from '@/components/shop/ProductCard';
+import { placeOrder, trackAddToCart, trackInitiateCheckout, minDelay, useCheckoutLead } from '@/lib/checkout-core';
 
 const OFFER = {
   did: 'd5a81e97721c8101',
   slug: 'mo-smart-pack-18-pcs',
-  name: 'MO 3-in-1 Smart Pack (18 Pcs)',
+  name: 'MO 3 in 1 Combo (18pcs)',
   regularPrice: 810,
-  offerPrice: 720,
+  offerPrice: 760,
   pcs: 18,
   maxQty: 5,
 };
 
-const ADDONS = [
-  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 2 Pcs', pcs: 2, price: 70, img: 'skh-i-white', color: '#f1f5f9' },
-  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 70, img: 'skh-i-pink', color: '#f4a7c4' },
-  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 70, img: 'skh-i-blue', color: '#38bdf8' },
-  { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 300, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
-];
+const ADDONS = [];
+
+const MO_30 = [{ slug: 'multi-textured-10-pcs' }, { slug: 'micro-ribbed10-pcs' }, { slug: 'micro-thin-10pcs' }];
+
+// Loads the live store price and image of each MO 10 pcs pack so the cards match the product pages
+const useMo30Products = () => {
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    Promise.all(MO_30.map((p) => getProduct(p.slug).then((res) => mapApiProduct(res?.data ?? res)).catch(() => null))).then((list) => setItems(list.filter(Boolean)));
+  }, []);
+  return items;
+};
+
+// The store card navigates inside the main app; on this standalone page that needs a full page load
+const followStoreLink = () => {
+  setTimeout(() => { if (window.location.pathname !== '/special-offer') window.location.reload(); }, 0);
+};
 
 const MAX_ADDON = 5;
 const NORMAL_DELIVERY = 120;
@@ -49,7 +66,7 @@ const track = (ev, data) => pixelTrack(ev, data);
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
   useEffect(() => {
-    document.title = 'MO Smart Pack — ৩ ধরনের ১৮ পিস, মাত্র ৳৭২০ | Surokkha';
+    document.title = 'MO 3 in 1 Combo — ৩ ধরনের ১৮ পিস, মাত্র ৳৭৬০ | Surokkha';
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
     link.id = 'so-fonts';
@@ -77,11 +94,12 @@ const Stack = ({ cls, img }) => (
   </div>
 );
 
-const EMPTY_FORM = { name: '', phone: '', email: '', district: '', address: '', note: '' };
+const EMPTY_FORM = { name: '', phone: '', email: '', district: '', thana: '', address: '', note: '' };
 
-// Standalone MO Smart Pack campaign page with its own order form and free delivery
+// Standalone MO 3 in 1 Combo campaign page with its own order form and free delivery
 const SpecialOfferView = () => {
   useCampaignFonts();
+  const mo30 = useMo30Products();
   const [qty, setQty] = useState(1);
   const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0, ky: 0 });
   const [form, setForm] = useState(EMPTY_FORM);
@@ -89,10 +107,12 @@ const SpecialOfferView = () => {
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState('');
   const [blockedPhone, setBlockedPhone] = useState(null);
+  const [agree, setAgree] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
+  const [honeypot, setHoneypot] = useState('');
   const [success, setSuccess] = useState(null);
   const [showSticky, setShowSticky] = useState(false);
-  const startedRef = useRef(false);
-  const cartedRef = useRef(false);
   const heroRef = useRef(null);
   const orderRef = useRef(null);
   const fieldRefs = useRef({});
@@ -107,39 +127,35 @@ const SpecialOfferView = () => {
   const total = sub;
 
   // Keeps what the customer has typed so an abandoned checkout is saved, like the main checkout does
-  const leadRef = useRef(null);
-  const submittingRef = useRef(false);
-  leadRef.current = () => ({
+  const submittingRef = useCheckoutLead(() => ({
     fullName: form.name.trim(),
     phone: cleanPhone(form.phone),
     email: form.email.trim(),
     address: form.address.trim(),
     district: form.district,
-    thana: '',
+    thana: form.thana.trim(),
     cartTotal: total,
     items: [
       { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice },
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
-  });
-  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, qty, addonQty]);
-  useEffect(() => {
-    if (!form.name.trim() && !form.phone.trim() && !form.email.trim()) return undefined;
-    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 2000);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leadSig]);
-  useEffect(() => {
-    const flush = () => {
-      if (submittingRef.current) return;
-      const lead = leadRef.current();
-      if (lead.phone || lead.fullName || lead.email) saveCheckoutLead(lead, true);
-    };
-    window.addEventListener('pagehide', flush);
-    return () => window.removeEventListener('pagehide', flush);
-  }, []);
+  }), [form.name, form.phone, form.email, form.address, form.district, form.thana, qty, addonQty]);
 
-  const waOrderLink = useMemo(() => waLink(`আমি MO Smart Pack (১৮ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
+  // Lists the current order lines for the pixel and product funnel events
+  const trackLines = () => buildItems().map((i) => ({ id: i.productDid, name: i.name, price: i.unitPrice, qty: i.quantity }));
+
+  // Runs a cart change behind a short forced loading so repeated rapid clicks are ignored
+  const guarded = async (change) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    await minDelay(null);
+    change();
+    busyRef.current = false;
+    setBusy(false);
+  };
+
+  const waOrderLink = useMemo(() => waLink(`আমি MO 3 in 1 Combo (১৮ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
 
   useEffect(() => {
     trackSitePage('special-offer');
@@ -159,13 +175,16 @@ const SpecialOfferView = () => {
   }, []);
 
   // Changes one add-on count within its limits and tracks additions
-  const changeAddon = (a, delta) => {
+  const changeAddon = (a, delta) => guarded(() => {
     setAddonQty((prev) => ({ ...prev, [a.key]: Math.max(0, Math.min(MAX_ADDON, prev[a.key] + delta)) }));
-    if (delta > 0) {
-      track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
-      trackProductEvents([{ eventType: 'add_to_cart', productKey: a.slug, productName: a.fullName, quantity: 1, value: a.price }]);
-    }
-  };
+    if (delta > 0) trackAddToCart({ id: a.did, slug: a.slug, name: a.fullName, price: a.price, qty: 1 });
+  });
+
+  // Changes the main pack count within its limits
+  const changeQty = (delta) => guarded(() => {
+    setQty((q) => Math.max(1, Math.min(OFFER.maxQty, q + delta)));
+    if (delta > 0) trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty: 1 });
+  });
 
   // Asks the backend whether a complete phone number is on the spam / fake list
   const checkPhoneListed = async (raw) => {
@@ -197,23 +216,10 @@ const SpecialOfferView = () => {
   };
 
   // Fires AddToCart for the main pack the first time any order button is pressed
-  const onOrderClick = () => {
-    if (cartedRef.current) return;
-    cartedRef.current = true;
-    track('AddToCart', { value: OFFER.offerPrice, currency: 'BDT', content_ids: [OFFER.did], content_name: OFFER.name, content_type: 'product' });
-    trackProductEvents([{ eventType: 'add_to_cart', productKey: OFFER.slug, productName: OFFER.name, quantity: 1, value: OFFER.offerPrice }]);
-  };
+  const onOrderClick = () => trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty: 1 });
 
   // Fires InitiateCheckout the first time the form gets focus
-  const onFormFocus = () => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-    track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [OFFER.did], content_type: 'product' });
-    trackProductEvents([
-      { eventType: 'checkout', productKey: OFFER.slug, productName: OFFER.name, quantity: qty, value: qty * OFFER.offerPrice },
-      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ eventType: 'checkout', productKey: a.slug, productName: a.fullName, quantity: addonQty[a.key], value: addonQty[a.key] * a.price })),
-    ]);
-  };
+  const onFormFocus = () => trackInitiateCheckout(trackLines(), total);
 
   // Checks every mandatory field and focuses the first invalid one
   const validate = () => {
@@ -227,6 +233,7 @@ const SpecialOfferView = () => {
     const bad = Object.fromEntries(Object.keys(FIELD_OK).map((k) => [k, !FIELD_OK[k](form[k])]));
     if (phoneBlocked) bad.phone = true;
     Object.keys(FIELD_OK).forEach((k) => { touchedRef.current[k] = true; });
+    bad.agree = !agree;
     setErrors(bad);
     const first = Object.keys(bad).find((k) => bad[k]);
     if (first) {
@@ -246,7 +253,7 @@ const SpecialOfferView = () => {
 
   // Builds a WhatsApp fallback message from the current order
   const fallbackLink = (v) => waLink(
-    `অর্ডার: MO Smart Pack × ${qty}${ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => `\n+ ${a.fullName} × ${addonQty[a.key]}`).join('')}\nনাম: ${v.name}\nফোন: ${v.phone}\nইমেইল: ${v.email}\nজেলা: ${v.district}\nঠিকানা: ${v.address}\nমোট: ৳${total}`,
+    `অর্ডার: MO 3 in 1 Combo × ${qty}${ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => `\n+ ${a.fullName} × ${addonQty[a.key]}`).join('')}\nনাম: ${v.name}\nফোন: ${v.phone}\nইমেইল: ${v.email}\nজেলা: ${v.district}\nঠিকানা: ${v.address}\nমোট: ৳${total}`,
   );
 
   // Sends the order to the shop order API with free delivery
@@ -256,70 +263,29 @@ const SpecialOfferView = () => {
     setFailed('');
     const v = validate();
     if (!v) return;
-    const nowIso = new Date().toISOString();
-    const payload = {
-      checkoutSessionId: getCheckoutSessionId(),
-      billingInfo: { fullName: v.name, phone: v.phone, email: v.email, address: v.address, city: v.district, thana: '', district: v.district, state: v.district, division: v.district, zip: '' },
-      shippingInfo: null,
-      shipToDifferentAddress: false,
-      fbp: getFbp() || undefined,
-      fbc: getFbc() || undefined,
-      fb_login_id: getFbLoginId() || undefined,
-      externalId: getExternalId() || undefined,
-      siteKey: SITE_CONFIG.siteKey,
-      clientDomain: SITE_CONFIG.domain,
-      orderPrefix: SITE_CONFIG.orderPrefix,
-      giftWrap: false,
-      orderNotes: [form.note.trim(), 'Special offer page (free delivery)'].filter(Boolean).join(' | '),
-      paymentMethod: 'Cash on Delivery',
-      subtotal: sub,
-      shippingFee: 0,
-      shippingTotalAmount: 0,
-      tax: 0,
-      discountTotalAmount: 0,
-      couponCode: null,
-      total,
-      items: buildItems(),
-      paymentDetails: null,
-      timestamp: nowIso,
-      createdAt: nowIso,
-    };
     setSending(true);
     submittingRef.current = true;
     try {
-      const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
-      const res = await fetch(`${base}/orders/new-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
+      const res = await placeOrder({
+        customer: { name: v.name, phone: v.phone, email: v.email, address: v.address, district: v.district, thana: form.thana.trim() },
+        items: buildItems(),
+        trackLines: trackLines(),
+        subtotal: sub,
+        shippingFee: 0,
+        total,
+        notes: [form.note.trim(), 'Special offer page (free delivery)'].filter(Boolean).join(' | '),
+        honeypot,
       });
-      const json = await res.json().catch(() => null);
-      if (res.status === 403 && json?.code === 'CONTACT_REQUIRED') {
+      if (!res.ok && res.reason === 'contact_required') {
         setBlockedPhone({ phone: v.phone, message: SPAM_PHONE_MSG });
         fieldRefs.current.phone?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-      if (!res.ok) throw new Error(json?.errors?.join(', ') || json?.message || `HTTP ${res.status}`);
-      const orderNumber = String(json?.data?.orderNumber || json?.data?.id || json?.orderNumber || '').trim();
-      if (orderNumber) {
-        const items = { [OFFER.did]: qty };
-        const products = { [OFFER.did]: { did: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice } };
-        ADDONS.forEach((a) => {
-          if (addonQty[a.key] > 0) {
-            items[a.did] = addonQty[a.key];
-            products[a.did] = { did: a.did, slug: a.slug, name: a.fullName, price: a.price };
-          }
-        });
-        trackPurchase({
-          orderNumber,
-          items,
-          totals: { subtotal: sub, grandTotal: total },
-          customer: { name: v.name, mobile: v.phone, email: v.email, district: v.district, address: v.address },
-        }, products);
-      }
+      if (!res.ok) throw new Error(res.message);
+      const orderNumber = res.orderNumber;
       setSuccess({ phone: v.phone, orderNumber });
       setForm(EMPTY_FORM);
-      resetCheckoutSession();
+      setAgree(false);
       touchedRef.current = {};
       setQty(1);
       setAddonQty({ white: 0, pink: 0, blue: 0, ky: 0 });
@@ -336,7 +302,7 @@ const SpecialOfferView = () => {
 
   return (
     <>
-      <div className="topbar">আজকের অফার: MO Smart Pack <b>৳৭২০</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
+      <div className="topbar">আজকের অফার: MO 3 in 1 Combo <b>৳৭৬০</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
 
       <header className="hero" ref={heroRef}>
         <div className="container">
@@ -359,10 +325,7 @@ const SpecialOfferView = () => {
               </div>
 
               <div className="price-row">
-                <div className="price-now"><sup>৳</sup>৭২০</div>
-                <div className="price-tags"><span className="price-old">৳৮১০</span></div>
                 <div className="price-tags">
-                  <span className="ptag ptag-save">৳৯০ সেভ</span>
                   <span className="ptag ptag-free"><IconCheck />ফ্রি ডেলিভারি</span>
                 </div>
               </div>
@@ -405,8 +368,8 @@ const SpecialOfferView = () => {
               <h2 className="sec-title">৩ ধরনের MO, প্রতিটা ৬ পিস</h2>
             </div>
             <div className="inside-grid">
-              <div className="photo skh-i-photo" role="img" aria-label="MO Smart Pack-এর ১৮টি প্যাকেট">
-                <div className="photo-badge">MO 3-in-1 Smart Pack<small>১৮ পিস · ৩ ভ্যারিয়েন্ট</small></div>
+              <div className="photo skh-i-photo" role="img" aria-label="MO 3 in 1 Combo-এর ১৮টি প্যাকেট">
+                <div className="photo-badge">MO 3 in 1 Combo<small>১৮ পিস · ৩ ভ্যারিয়েন্ট</small></div>
               </div>
               <div className="variants">
                 <div className="variant">
@@ -430,7 +393,7 @@ const SpecialOfferView = () => {
           </div>
         </section>
 
-        <section className="sec">
+        <section className="sec so-steps">
           <div className="container">
             <div className="steps">
               <div className="step"><div className="step-n">১</div><h3>অর্ডার করুন</h3><p>নিচের ফর্মে নাম, নম্বর আর ঠিকানা দিন। এক মিনিটও লাগবে না।</p></div>
@@ -448,7 +411,7 @@ const SpecialOfferView = () => {
           <div className="container">
             <div className="sec-head">
               <span className="kicker">অর্ডার করুন</span>
-              <h2 className="sec-title">অফার থাকতেই আপনার Smart Pack নিন</h2>
+              <h2 className="sec-title">অফার থাকতেই আপনার MO 3 in 1 Combo নিন</h2>
               <p className="sec-sub">কোনো অগ্রিম পেমেন্ট নেই। অর্ডারের পর আমরা কল করে কনফার্ম করব।</p>
             </div>
 
@@ -456,43 +419,18 @@ const SpecialOfferView = () => {
               <aside className="summary">
                 <div className="sum-prod">
                   <div className="sum-thumb skh-i-thumb" />
-                  <div><h3>MO 3-in-1 Smart Pack</h3><p>১৮ পিস · MO White, MO Pink, MO Blue</p></div>
+                  <div><h3>MO 3 in 1 Combo</h3><p>১৮ পিস · MO White, MO Pink, MO Blue</p></div>
                 </div>
                 <div className="qty">
                   <label htmlFor="qtyOut">পরিমাণ (বক্স)</label>
                   <div className="qty-ctl">
-                    <button type="button" aria-label="কমান" onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
+                    <button type="button" aria-label="কমান" disabled={busy} onClick={() => changeQty(-1)}>−</button>
                     <output id="qtyOut">{bn(qty)}</output>
-                    <button type="button" aria-label="বাড়ান" onClick={() => setQty((q) => Math.min(OFFER.maxQty, q + 1))}>+</button>
-                  </div>
-                </div>
-                <div className="addons">
-                  <div className="addons-head">সাথে আরও নিন <small>অফার মূল্যে</small></div>
-                  <div className="addon-list">
-                    {ADDONS.map((a) => {
-                      const n = addonQty[a.key];
-                      return (
-                        <div key={a.key} className={`addon${n > 0 ? ' on' : ''}`}>
-                          <div className={`addon-img skh-img ${a.img}`} />
-                          <div><div className="addon-name"><i style={{ background: a.color }} />{a.name}</div><div className="addon-meta">+{bn(a.pcs)} পিস · {tk(a.price)}</div></div>
-                          <div>
-                            {n === 0
-                              ? <button type="button" className="addon-add" onClick={() => changeAddon(a, 1)}>+ যোগ করুন</button>
-                              : (
-                                <div className="qty-ctl">
-                                  <button type="button" aria-label="কমান" onClick={() => changeAddon(a, -1)}>−</button>
-                                  <output>{bn(n)}</output>
-                                  <button type="button" aria-label="বাড়ান" onClick={() => changeAddon(a, 1)}>+</button>
-                                </div>
-                              )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    <button type="button" aria-label="বাড়ান" disabled={busy} onClick={() => changeQty(1)}>+</button>
                   </div>
                 </div>
                 <div className="lines">
-                  <div className="line"><span>দাম ({bn(qty)} × ৳৭২০)</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
+                  <div className="line"><span>দাম ({bn(qty)} × ৳৭৬০)</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
                   {ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => (
                     <div key={a.key} className="line line-add"><span>{a.name} {bn(addonQty[a.key] * a.pcs)} পিস</span><b>{tk(addonQty[a.key] * a.price)}</b></div>
                   ))}
@@ -526,10 +464,17 @@ const SpecialOfferView = () => {
                     <input id="fEmail" ref={reg('email')} onBlur={() => onFieldBlur('email')} type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={(e) => setField('email', e.target.value)} />
                     <div className="msg">সঠিক ইমেইল ঠিকানা দিন</div>
                   </div>
-                  <div className={`field${errors.district ? ' err' : ''}`}>
-                    <label htmlFor="fDistrict">জেলা <em>*</em></label>
-                    <DistrictPicker id="fDistrict" ref={reg('district')} value={form.district} options={DISTRICT_NAMES} onSelect={(d) => setField('district', d)} onDismiss={() => onFieldBlur('district')} />
-                    <div className="msg">তালিকা থেকে আপনার জেলা নির্বাচন করুন</div>
+                  <div className="field-row">
+                    <div className={`field${errors.district ? ' err' : ''}`}>
+                      <label htmlFor="fDistrict">জেলা <em>*</em></label>
+                      <DistrictPicker id="fDistrict" ref={reg('district')} value={form.district} options={DISTRICT_NAMES} onSelect={(d) => setField('district', d)} onDismiss={() => onFieldBlur('district')} />
+                      <div className="msg">তালিকা থেকে আপনার জেলা নির্বাচন করুন</div>
+                    </div>
+                    <div className={`field${errors.thana ? ' err' : ''}`}>
+                      <label htmlFor="fThana">থানা / উপজেলা <em>*</em></label>
+                      <input id="fThana" ref={reg('thana')} onBlur={() => onFieldBlur('thana')} placeholder="যেমন: মিরপুর" value={form.thana} onChange={(e) => setField('thana', e.target.value)} />
+                      <div className="msg">থানা / উপজেলার নাম লিখুন</div>
+                    </div>
                   </div>
                   <div className={`field${errors.address ? ' err' : ''}`}>
                     <label htmlFor="fAddress">সম্পূর্ণ ঠিকানা <em>*</em></label>
@@ -540,6 +485,11 @@ const SpecialOfferView = () => {
                     <label htmlFor="fNote">বিশেষ নির্দেশনা (ঐচ্ছিক)</label>
                     <input id="fNote" value={form.note} onChange={(e) => setField('note', e.target.value)} />
                   </div>
+                  <input className="hp-field" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
+                  <label className={`agree${errors.agree ? ' err' : ''}`}>
+                    <input type="checkbox" checked={agree} onChange={(e) => { setAgree(e.target.checked); if (e.target.checked && errors.agree) setErrors((p) => ({ ...p, agree: false })); }} />
+                    <span>আমি অর্ডারের তথ্য সঠিক দিয়েছি এবং শর্তাবলীতে সম্মত আছি</span>
+                  </label>
                 </div>
 
                 <button type="submit" className={`btn btn-primary submit${sending ? ' loading' : ''}`} disabled={sending}>
@@ -565,19 +515,18 @@ const SpecialOfferView = () => {
               <details><summary>পেমেন্ট কীভাবে করব?</summary><p>ক্যাশ অন ডেলিভারি। প্রোডাক্ট হাতে পেয়ে ডেলিভারিম্যানকে টাকা দেবেন, আগে কিছু দিতে হবে না।</p></details>
               <details><summary>ডেলিভারি চার্জ কত?</summary><p>এই অফারে ডেলিভারি সম্পূর্ণ ফ্রি, ঢাকার ভেতরে (সাধারণত ৳৭০) এবং ঢাকার বাইরে (সাধারণত ৳১২০) দুই জায়গাতেই।</p></details>
               <details><summary>অর্ডারের পর কী হবে?</summary><p>আমাদের টিম আপনার দেওয়া নম্বরে কল করে অর্ডার কনফার্ম করবে এবং ডেলিভারির সময় জানিয়ে দেবে।</p></details>
-              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>Smart Pack-এ MO White, MO Pink এবং MO Blue — তিনটি ভ্যারিয়েন্টই ৬ পিস করে আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
+              <details><summary>তিন ধরনের মধ্যে পার্থক্য কী?</summary><p>MO 3 in 1 Combo-তে MO White, MO Pink এবং MO Blue — তিনটি ভ্যারিয়েন্টই ৬ পিস করে আছে, তাই ট্রাই করে নিজেই বুঝতে পারবেন কোনটা আপনার পছন্দ।</p></details>
             </div>
           </div>
         </section>
 
-        <section className="sec final">
+        <section className="sec final mo30">
           <div className="container">
-            <h2>৩ ধরনের MO, ১৮ পিস, মাত্র <span>৳৭২০</span></h2>
-            <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
-            <div className="ctas">
-              <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
-              <a href={waOrderLink} target="_blank" rel="noopener noreferrer" className="btn btn-wa"><IconWa />WhatsApp-এ অর্ডার</a>
+            <CartProvider>
+              <div className="mo30-grid" onClickCapture={followStoreLink}>
+              {mo30.map((p) => <ProductCard key={p.slug} product={p} />)}
             </div>
+            </CartProvider>
           </div>
         </section>
       </main>
@@ -593,7 +542,7 @@ const SpecialOfferView = () => {
       <a className="wa-float" href={waOrderLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ মেসেজ দিন"><IconWa /></a>
 
       <div className={`sticky${showSticky ? ' show' : ''}`}>
-        <div className="sp"><b>৳৭২০</b><small><s>৳৮১০</s> ফ্রি ডেলিভারি</small></div>
+        <div className="sp"><b>৳৭৬০</b><small><s>৳৮১০</s> ফ্রি ডেলিভারি</small></div>
         <a href="#order" onClick={onOrderClick} className="btn btn-primary">অর্ডার করুন</a>
       </div>
 

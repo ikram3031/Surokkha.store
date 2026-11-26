@@ -27,13 +27,13 @@ import {
   type OfferVariant,
 } from '@/data/offerProducts'
 
-import { api, ApiError } from '@/lib/api/client'
+import { api } from '@/lib/api/client'
 import { checkPhone } from '@/lib/api/orders'
-import { getCheckoutSessionId, resetCheckoutSession, saveCheckoutLead, type CheckoutLeadPayload } from '@/lib/api/checkoutLeads'
 import { normalizePhone, toEnDigits } from '@/lib/checkout'
-import { getFbIdentifiers, pixelTrack as track, setPixelUserData } from '@/lib/pixel'
+import { pixelTrack as track } from '@/lib/pixel'
+import { firstTime, noteAction, placeOrder, trackInitiateCheckout, useCheckoutLead, type TrackLine } from '@/lib/checkout-core'
 import { newEventId, trackAddToCart, trackViewContent } from '@/lib/api/events'
-import { trackProductEvents, trackProductView, type ProductEventType } from '@/lib/api/productEvents'
+import { trackProductEvents, trackProductView } from '@/lib/api/productEvents'
 import { bn, taka } from '@/lib/bn'
 import { L } from '@/lib/i18n'
 
@@ -113,8 +113,7 @@ const RULES: Record<FieldKey, (v: string) => string | true> = {
   phone: (v) => /^01[3-9]\d{8}$/.test(v) || L('Enter a valid mobile number (01XXXXXXXXX, 11 digits)', '১১ ডিজিটের সঠিক মোবাইল নম্বর দিন (01XXXXXXXXX)'),
   email: (v) => (!v.trim() ? L('Enter your email', 'ইমেইল দিন') : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || L('Enter a valid email', 'সঠিক ইমেইল দিন')),
   district: (v) => !!v || L('Select a district', 'জেলা নির্বাচন করুন'),
-  // Thana is optional
-  thana: () => true,
+  thana: (v) => !!v.trim() || L('Select a thana / upazila', 'থানা / উপজেলা নির্বাচন করুন'),
   address: (v) => v.trim().length >= 5 || L('Enter your full address (house, road, area)', 'পূর্ণ ঠিকানা লিখুন (বাড়ি, রোড, এলাকা)'),
 }
 
@@ -133,7 +132,6 @@ const TRIAL_GROUP_SLUG = 'surokkha-trial-pack'
 /** Trial Pack pieces are added one at a time; the order needs this many in total */
 const TRIAL_MIN_PIECES = 6
 
-const trackedOrders = new Set<string>()
 
 
 export function OfferHome() {
@@ -165,7 +163,7 @@ export function OfferHome() {
   const captchaRef = useRef<TurnstileHandle>(null)
 
   const validate = (key: FieldKey, value = form[key]) => {
-    const res = RULES[key](value)
+    const res = key === 'thana' && form.district && !thanasLoading && thanas.length === 0 ? true : RULES[key](value)
     setErrors((e) => ({ ...e, [key]: res === true ? undefined : res }))
     return res === true
   }
@@ -211,6 +209,9 @@ export function OfferHome() {
   const [submitting, setSubmitting] = useState(false)
   const submitLock = useRef(false)
   const [placed, setPlaced] = useState<string | null>(null)
+  const [agree, setAgree] = useState(false)
+  const [agreeErr, setAgreeErr] = useState(false)
+  const [honeypot, setHoneypot] = useState('')
   const checkoutRef = useRef<HTMLElement>(null)
 
   const qtyOf = (productId: string, variantId?: string) => qty[keyOf(productId, variantId)] ?? 0
@@ -251,25 +252,16 @@ export function OfferHome() {
 
   // Add to cart, the same way the main site sends it: pixel and server CAPI with one event id, plus dashboard analytics
   const sendAddToCart = (contentId: string, productKey: string, name: string, unitPrice: number, qtyAdded: number) => {
+    noteAction('cart')
+    if (!firstTime(`atc:${contentId}`)) return
     const eventId = newEventId('atc')
     trackAddToCart({ productDid: contentId, productName: name, price: unitPrice, qty: qtyAdded, eventId })
     trackProductEvents([{ eventType: 'add_to_cart', productKey, productName: name, quantity: qtyAdded, value: unitPrice * qtyAdded }])
     track('AddToCart', { content_ids: [contentId], content_name: name, content_type: 'product', value: unitPrice * qtyAdded, currency: 'BDT' }, eventId)
   }
 
-  // One dashboard funnel row per product line in the order, like the main checkout sends
-  const orderEventLines = (eventType: ProductEventType) => [
-    ...lines.map((l) => ({ eventType, productKey: l.product.slug || l.product.id, productName: l.product.name, quantity: l.qty, value: l.unitPrice * l.qty })),
-    ...trialLines.map((l) => ({ eventType, productKey: l.product.slug || l.product.did, productName: l.product.name, quantity: l.qty, value: l.product.unitPrice * l.qty })),
-  ]
 
-  const checkoutTracked = useRef(false)
-  // Dashboard checkout step, once per checkout session
-  const sendCheckoutAnalytics = () => {
-    if (checkoutTracked.current || !count) return
-    checkoutTracked.current = true
-    trackProductEvents(orderEventLines('checkout'))
-  }
+
 
   // Opening a product's quick view counts as a product view, as a product page does on the main site
   useEffect(() => {
@@ -308,9 +300,7 @@ export function OfferHome() {
 
   const goCheckout = () => {
     if (!count) return toast.error(L('Please select at least one product first', 'অনুগ্রহ করে আগে অন্তত একটি প্রোডাক্ট নির্বাচন করুন'))
-    // Same event id as the main checkout, so the server's CAPI InitiateCheckout merges with this one
-    track('InitiateCheckout', { value: subtotal - discount, currency: 'BDT', num_items: count }, `ic_${getCheckoutSessionId()}`)
-    sendCheckoutAnalytics()
+    trackInitiateCheckout(trackLines(), subtotal - discount)
     checkoutRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
@@ -418,12 +408,17 @@ export function OfferHome() {
     })),
   ]
 
-  // Abandoned-checkout capture, same as the main checkout: what the customer typed so far, debounced and flushed on leave
-  const leadRef = useRef<() => CheckoutLeadPayload>(null!)
-  leadRef.current = () => ({
-    fullName: form.name,
-    phone: form.phone,
-    email: form.email,
+  // Lists the order lines for the pixel and product funnel events
+  const trackLines = (): TrackLine[] => [
+    ...lines.map((l) => ({ id: l.variant?.sku || l.product.sku || l.product.id, slug: l.product.slug || l.product.id, name: l.product.name, price: l.unitPrice, qty: l.qty })),
+    ...trialLines.map((l) => ({ id: l.product.did, slug: l.product.slug || l.product.did, name: l.product.name, price: l.product.unitPrice, qty: l.qty })),
+  ]
+
+  // Abandoned-checkout capture, shared with every checkout through the checkout core
+  const leadSubmitting = useCheckoutLead(() => ({
+    fullName: count ? form.name : '',
+    phone: count ? form.phone : '',
+    email: count ? form.email : '',
     address: form.address,
     district: form.district,
     thana: form.thana,
@@ -437,26 +432,7 @@ export function OfferHome() {
       })),
       ...trialLines.map(({ product: p, qty: q }) => ({ slug: p.did, name: p.name, quantity: q, unitPrice: p.unitPrice })),
     ],
-    ...getFbIdentifiers(),
-  })
-  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, form.thana, subtotal, count])
-  useEffect(() => {
-    if (submitLock.current || !count || (!form.phone && !form.name && !form.email)) return
-    const timer = setTimeout(() => {
-      if (!submitLock.current) saveCheckoutLead(leadRef.current())
-    }, 1200)
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leadSig])
-  useEffect(() => {
-    const flush = () => {
-      if (submitLock.current) return
-      const lead = leadRef.current()
-      if (lead.items.length > 0 && (lead.phone || lead.fullName || lead.email)) saveCheckoutLead(lead, true)
-    }
-    window.addEventListener('pagehide', flush)
-    return () => window.removeEventListener('pagehide', flush)
-  }, [])
+  }), [form.name, form.phone, form.email, form.address, form.district, form.thana, subtotal, count])
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -468,24 +444,17 @@ export function OfferHome() {
       setTimeout(() => document.querySelector('[data-error]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0)
       return
     }
+    if (!agree) {
+      setAgreeErr(true)
+      return toast.error(L('Please agree to the terms to place the order', 'অর্ডার করতে শর্তাবলীতে সম্মতি দিন'))
+    }
     if (CHECKOUT_CAPTCHA && !captcha) return toast.error(L('Please complete the "I am not a robot" check before ordering', 'অর্ডারের আগে "আমি রোবট নই" যাচাই সম্পন্ন করুন'))
 
     const phone = normalizePhone(form.phone)
-    const info = {
-      fullName: form.name.trim(),
-      phone,
-      email: form.email.trim(),
-      address: form.address.trim(),
-      city: form.district,
-      thana: form.thana,
-      district: form.district,
-      state: form.district,
-      division: form.district,
-      zip: '',
-    }
     // Ref guard: state-based `disabled` lags a render, so a double tap could place (and track) the order twice
     if (submitLock.current) return
     submitLock.current = true
+    leadSubmitting.current = true
     setSubmitting(true)
     try {
       // Same spam / fake-order check as the main checkout: blocked by phone or email, never by IP
@@ -505,18 +474,13 @@ export function OfferHome() {
         }
       }
 
-      const res = await api.post<{ data?: { orderNumber?: string } }>('/orders/new-order', {
-        // A normal store order (main Orders list), same as the regular checkout
-        orderType: 'online',
-        orderPrefix: 'ST',
-        paymentMethod: 'Cash on Delivery',
-        ...getFbIdentifiers(),
-        checkoutSessionId: getCheckoutSessionId(),
-        turnstileToken: captcha,
-        billingInfo: info,
-        shippingInfo: info,
-        shipToDifferentAddress: false,
-        orderNotes: form.note.trim(),
+      const res = await placeOrder({
+        customer: { name: form.name, phone, email: form.email, address: form.address, district: form.district, thana: form.thana },
+        shipToBilling: true,
+        notes: form.note,
+        trackLines: trackLines(),
+        honeypot,
+        extra: { orderType: 'online', turnstileToken: captcha },
         // Real store products, so the backend checks stock and the dashboard links each line
         items: [
           ...lines.map((l) => ({
@@ -540,49 +504,26 @@ export function OfferHome() {
             productId: p.id,
             itemId: '',
             productDid: p.did,
-            itemType: 'product',
+            itemType: 'product' as const,
             sku: p.did,
             image: p.image,
           })),
         ],
         subtotal,
-        discountTotalAmount: discount,
+        discount,
         shippingFee: shipping,
-        shippingTotalAmount: shipping,
-        tax: 0,
         total,
       })
-      const orderNumber = res?.data?.orderNumber ?? ''
-      setPixelUserData(info)
-      // Fire Purchase once per order; the eventID matches the server CAPI event_id so Meta dedupes the pair
-      if (!orderNumber || !trackedOrders.has(orderNumber)) track(
-        'Purchase',
-        {
-          content_ids: [...lines.map((l) => l.variant?.sku || l.product.sku || l.product.id), ...trialLines.map((l) => l.product.did)],
-          contents: [
-            ...lines.map((l) => ({ id: l.variant?.sku || l.product.sku || l.product.id, quantity: l.qty, item_price: l.unitPrice })),
-            ...trialLines.map((l) => ({ id: l.product.did, quantity: l.qty, item_price: l.product.unitPrice })),
-          ],
-          content_type: 'product',
-          num_items: count,
-          value: total,
-          currency: 'BDT',
-        },
-        orderNumber || undefined,
-      )
-      if (orderNumber) trackedOrders.add(orderNumber)
-      sendCheckoutAnalytics()
-      trackProductEvents(orderEventLines('purchase'))
-      checkoutTracked.current = false
-      resetCheckoutSession()
+      if (!res.ok) throw new Error(res.reason === 'contact_required' ? 'CONTACT_REQUIRED' : res.message)
+      const orderNumber = res.orderNumber
+      setAgree(false)
       setPlaced(orderNumber)
       setQty({})
       setTrialQty({})
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
-      const body = err instanceof ApiError ? (err.body as { code?: string } | null) : null
       toast.error(
-        body?.code === 'CONTACT_REQUIRED'
+        err instanceof Error && err.message === 'CONTACT_REQUIRED'
           ? L('Sorry, this order cannot be placed online. Please contact us.', 'দুঃখিত, এই অর্ডারটি অনলাইনে করা যাচ্ছে না। অনুগ্রহ করে আমাদের সাথে যোগাযোগ করুন।')
           : err instanceof Error ? err.message : L('Could not place the order, please try again', 'অর্ডার সম্পন্ন করা যায়নি, আবার চেষ্টা করুন'),
       )
@@ -590,6 +531,7 @@ export function OfferHome() {
       captchaRef.current?.reset()
     } finally {
       submitLock.current = false
+      leadSubmitting.current = false
       setSubmitting(false)
     }
   }
@@ -764,7 +706,7 @@ export function OfferHome() {
                         }}
                         onClear={() => setForm((f) => ({ ...f, district: '', thana: '' }))} />
                     </Field>
-                    <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} optional error={errors.thana}>
+                    <Field label={L('Thana / Upazila', 'থানা / উপজেলা')} required error={errors.thana}>
                       <SearchableSelect value={form.thana} options={thanas} invalid={!!errors.thana}
                         disabled={!form.district || thanasLoading}
                         placeholder={!form.district ? L('Select a district first', 'আগে জেলা নির্বাচন করুন') : thanasLoading ? L('Loading…', 'লোড হচ্ছে…') : L('Select a thana', 'থানা নির্বাচন করুন')}
@@ -910,7 +852,11 @@ export function OfferHome() {
                     {submitting && <Loader2 className="size-4 animate-spin" />}
                     {submitting ? L('Placing order…', 'অর্ডার প্রক্রিয়াধীন…') : `${L('Confirm order', 'অর্ডার কনফার্ম করুন')} — ${taka(total)}`}
                   </button>
-                  <p className="mt-3 text-center text-xs text-gray-400">{L('By placing an order you agree to our terms.', 'অর্ডার করার মাধ্যমে আপনি আমাদের শর্তাবলীতে সম্মত হচ্ছেন।')}</p>
+                  <input className="absolute -left-[9999px] size-px opacity-0" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
+                  <label className={`mt-3 flex cursor-pointer items-start gap-2 text-xs ${agreeErr ? 'text-[#dc2626]' : 'text-gray-500'}`}>
+                    <input type="checkbox" className="mt-0.5 size-4 shrink-0 accent-[#dc143c]" checked={agree} onChange={(e) => { setAgree(e.target.checked); if (e.target.checked) setAgreeErr(false) }} />
+                    <span>{L('I confirm my details are correct and I agree to the terms', 'আমি অর্ডারের তথ্য সঠিক দিয়েছি এবং শর্তাবলীতে সম্মত আছি')}</span>
+                  </label>
                 </div>
               </aside>
             </form>
