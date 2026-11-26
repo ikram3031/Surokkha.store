@@ -10,6 +10,24 @@ const QUICK_LINKS = [
   { label: L('FAQ', 'সাধারণ জিজ্ঞাসা'), path: '/faq' },
 ]
 
+const SOCIAL_LINKS = [
+  {
+    label: 'Facebook',
+    href: 'https://www.facebook.com/surokkha.shop2',
+    icon: 'M13.5 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.6 1.6-1.6h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.2h2.8V22h3.4z',
+  },
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/surokkha_store/',
+    icon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM17.2 5.6a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zM21.9 8c-.1-1.6-.4-3-1.6-4.2C19.1 2.6 17.6 2.2 16 2.1 14.4 2 9.6 2 8 2.1c-1.6.1-3 .4-4.2 1.6C2.6 4.9 2.2 6.4 2.1 8 2 9.6 2 14.4 2.1 16c.1 1.6.4 3 1.6 4.2 1.2 1.2 2.6 1.6 4.2 1.6 1.6.1 6.4.1 8 0 1.6-.1 3-.4 4.2-1.6 1.2-1.2 1.6-2.6 1.6-4.2.1-1.6.1-6.4.2-8zm-2.1 9.7a3.3 3.3 0 0 1-1.8 1.8c-1.3.5-4.3.4-5.7.4s-4.4.1-5.7-.4a3.3 3.3 0 0 1-1.8-1.8c-.5-1.3-.4-4.3-.4-5.7s-.1-4.4.4-5.7A3.3 3.3 0 0 1 6.6 4.5c1.3-.5 4.3-.4 5.7-.4s4.4-.1 5.7.4a3.3 3.3 0 0 1 1.8 1.8c.5 1.3.4 4.3.4 5.7s.1 4.4-.4 5.7z',
+  },
+  {
+    label: 'Email',
+    href: 'mailto:surokkha.store@gmail.com',
+    icon: 'M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4.2-8 5-8-5V6l8 5 8-5v2.2z',
+  },
+]
+
 export function Footer() {
   return (
     <footer className="dark hidden bg-header text-white md:block">
@@ -17,6 +35,21 @@ export function Footer() {
         <div>
           <img src="/surokkha_store_logo_dark.png" alt={L('Surokkha Store', 'সুরক্ষা স্টোর')} className="h-10 w-auto" />
           <p className="mt-3 text-sm text-white/70">{L('Safe today, tomorrow too.', 'আজও নিরাপদ, আগামীকালও।')}</p>
+          <div className="mt-4 flex gap-3">
+            {SOCIAL_LINKS.map(({ label, href, icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                title={label}
+                className="flex size-9 items-center justify-center rounded-full border border-white/20 text-white/80 transition hover:border-primary hover:bg-primary hover:text-white"
+              >
+                <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden="true"><path d={icon} /></svg>
+              </a>
+            ))}
+          </div>
         </div>
         <div id="contact" className="scroll-mt-24 text-sm">
           <h3 className="font-semibold text-white">{L('Contact', 'যোগাযোগ')}</h3>
