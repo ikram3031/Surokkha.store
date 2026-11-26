@@ -30,7 +30,7 @@ const OrderSuccessModal = ({ success, onClose, preview = false }) => {
 
   if (!success) return null;
   const bonus = success.bonus && success.email ? success.bonus : null;
-  const api = preview ? previewApi : { send: (email) => forgotPassword(email), verify: (p) => verifyEmail(p) };
+  const api = preview ? previewApi : { send: (email) => forgotPassword(email, 'membership'), verify: (p) => verifyEmail(p) };
 
   // Emails the 6-digit code and opens the code screen
   const sendCode = async (resend = false) => {

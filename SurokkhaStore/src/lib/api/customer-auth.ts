@@ -92,9 +92,10 @@ export async function login(payload: { email: string; password: string }) {
   return startSession(await api.post<SessionResponse>('/customer-auth/login', payload))
 }
 
-/** POST /store/v1/customer-auth/forgot-password — emails a 6-digit code (same answer whether or not the account exists). */
-export function forgotPassword(email: string) {
-  return api.post<{ message: string }>('/customer-auth/forgot-password', { email })
+/** POST /store/v1/customer-auth/forgot-password — emails a 6-digit code (same answer whether or not the account exists).
+ *  purpose picks the email: 'password-reset' (default) or 'membership' for the post-order member claim. */
+export function forgotPassword(email: string, purpose: 'password-reset' | 'membership' = 'password-reset') {
+  return api.post<{ message: string }>('/customer-auth/forgot-password', purpose === 'membership' ? { email, purpose } : { email })
 }
 
 /** POST /store/v1/customer-auth/reset-password — also logs the customer in. */

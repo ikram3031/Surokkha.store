@@ -1,4 +1,4 @@
-import { buildOtpEmailHtml } from "../templates/otpEmailTemplate.js";
+import { buildOtpEmailHtml, otpEmailCopy } from "../templates/otpEmailTemplate.js";
 import { buildPasswordChangedEmailHtml } from "../templates/passwordChangedEmailTemplate.js";
 import { config } from "../config/index.js";
 import { getSmtpTransport, getSmtpConfig, getWebmailAddress, copyToWebmailInbox } from "../services/smtpConfig.service.js";
@@ -27,13 +27,15 @@ export const sendOtpEmail = async ({
   }
 
   const brandName = smtpConfig.fromName || config.brandName || "Surokkha";
-  const isForgotPassword = type === "forgot-password";
-  const subject = isForgotPassword
-    ? `Your ${brandName} Password Reset Code`
-    : `Your ${brandName} OTP verification code`;
-  const text = isForgotPassword
-    ? `Hello ${name || "there"},\n\nUse this OTP to reset your ${brandName} password: ${otp}\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.`
-    : `Hello ${name || "there"},\n\nYour OTP verification code is ${otp}.\nThis code will expire in 10 minutes.\n\nThank you for choosing ${brandName}.`;
+  // Subject and wording follow the OTP purpose (registration, forgot-password, membership)
+  const copy = otpEmailCopy(type);
+  const subject = copy.subject(brandName);
+  const text = `Hello ${name || "there"},
+
+Use this code to ${copy.action}: ${otp}
+This code will expire in 10 minutes.
+
+If you did not request this, please ignore this email.`;
 
   const logoUrl = config.logoUrl || "https://admin.surokkha.store/surokkha_logo.png";
   const html = buildOtpEmailHtml({ name, otp, type, logoUrl });

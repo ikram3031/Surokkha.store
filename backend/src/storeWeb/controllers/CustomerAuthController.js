@@ -268,6 +268,8 @@ export const login = async (req, res, next) => {
 export const forgotPassword = async (req, res, next) => {
   try {
     const email = cleanEmail(req.body?.email);
+    // Same code flow, different email: "membership" for the post-order member claim, else a password reset
+    const purpose = req.body?.purpose === "membership" ? "membership" : "forgot-password";
     if (!EMAIL_RE.test(email)) return res.status(400).json({ status: "error", message: "Please enter a valid email address" });
     if (!allowHit(`forgot:${clientIp(req)}`, { max: 5, windowMs: 15 * 60 * 1000 })) return tooMany(res);
 
@@ -279,8 +281,8 @@ export const forgotPassword = async (req, res, next) => {
       member.emailOtpExpiresAt = new Date(Date.now() + OTP_TTL_MS);
       await member.save();
       clearHits(`reset:${email}`);
-      const sent = await sendOtpEmail({ toEmail: email, otp, name: member.name, type: "forgot-password", log: logger });
-      if (!sent.delivered) logger.warn({ email, reason: sent.reason }, "Customer password reset email was not delivered");
+      const sent = await sendOtpEmail({ toEmail: email, otp, name: member.name, type: purpose, log: logger });
+      if (!sent.delivered) logger.warn({ email, purpose, reason: sent.reason }, "Customer OTP email was not delivered");
     }
 
     res.json({
