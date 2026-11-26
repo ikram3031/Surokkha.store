@@ -1,4 +1,4 @@
-import { Truck, Zap } from 'lucide-react'
+import { Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSectionBackground } from '@/hooks/useSectionBackground'
 import { L } from '@/lib/i18n'
@@ -40,10 +40,6 @@ export const HomeHero = () => {
             </Button>
           </div>
         </div>
-        <p className="mt-3 flex items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-[#1c0c13] px-4 py-2.5 text-sm font-semibold text-amber-200 shadow-xs">
-          <Truck className="h-4 w-4 shrink-0 text-amber-300" aria-hidden="true" />
-          {L('Free delivery on orders over ৳1,000', '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি')}
-        </p>
       </div>
     </section>
   )

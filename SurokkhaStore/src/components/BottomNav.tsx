@@ -50,7 +50,7 @@ export function BottomNav({ onCartOpen }: { onCartOpen: () => void }) {
           {L('Cart', 'কার্ট')}
         </button>
         <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={`${itemBase} ${off}`}>
-          <WhatsAppIcon className="h-5 w-5" />
+          <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
           {L('Contact', 'যোগাযোগ')}
         </a>
       </div>

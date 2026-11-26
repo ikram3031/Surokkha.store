@@ -2,7 +2,6 @@
 const MESSAGES = [
   { icon: '⚡', text: 'নভেম্বর ফ্ল্যাশ সেল চলছে, বেশিরভাগ প্রোডাক্টে ছাড়' },
   { icon: '🚚', text: 'রেজিস্ট্রেশন করলে প্রথম অর্ডারে ফ্রি ডেলিভারি' },
-  { icon: '🎁', text: '১০০০ টাকার উপরে অর্ডারে ফ্রি ডেলিভারি' },
 ]
 
 /* Each half of the track repeats the messages enough to be wider than any
