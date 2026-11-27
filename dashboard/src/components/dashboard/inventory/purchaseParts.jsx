@@ -193,7 +193,7 @@ export const PurchaseDetailDialog = ({ purchaseId, onOpenChange }) => {
                   <span className="flex items-center gap-1">
                     {taka(x.amount)}
                     {open && (
-                      <Button size="icon-sm" variant="ghost" title="Remove payment" className="text-destructive hover:text-destructive" disabled={busy} onClick={() => removePayment.mutate({ id: p.id, paymentId: x._id })}>
+                      <Button size="icon-sm" variant="cancel" title="Remove payment" className="" disabled={busy} onClick={() => removePayment.mutate({ id: p.id, paymentId: x._id })}>
                         <Trash2 />
                       </Button>
                     )}

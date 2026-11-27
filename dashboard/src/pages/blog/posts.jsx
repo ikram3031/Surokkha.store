@@ -134,7 +134,7 @@ const BlogPosts = () => {
                       <a href={viewUrl(post.slug)} target="_blank" rel="noreferrer" className={buttonVariants({ variant: 'ghost', size: 'icon' })} title="View on site"><ExternalLink /></a>
                     )}
                     <Link to={`/blog/posts/${post.id}`} className={buttonVariants({ variant: 'ghost', size: 'icon' })} title="Edit"><Pencil /></Link>
-                    <Button variant="ghost" size="icon" className="hover:text-destructive" title={post.status === 'trash' ? 'Delete forever' : 'Move to trash'} onClick={() => (post.status === 'trash' ? setConfirm({ type: 'one', id: post.id }) : remove.mutate(post.id))}><Trash2 /></Button>
+                    <Button variant="cancel" size="icon" className="" title={post.status === 'trash' ? 'Delete forever' : 'Move to trash'} onClick={() => (post.status === 'trash' ? setConfirm({ type: 'one', id: post.id }) : remove.mutate(post.id))}><Trash2 /></Button>
                   </RowActions>
                 </TableCell>
               </TableRow>

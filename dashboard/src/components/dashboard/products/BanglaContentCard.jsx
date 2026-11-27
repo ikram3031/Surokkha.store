@@ -147,7 +147,7 @@ export const BanglaContentCard = ({ bn, setBn }) => {
               <Input placeholder="যেমন: উপাদান" value={s.key} onChange={(e) => updateRow("specifications", i, "key", e.target.value)} />
               <Input placeholder="যেমন: প্রাকৃতিক ল্যাটেক্স" value={s.value} onChange={(e) => updateRow("specifications", i, "value", e.target.value)} />
             </div>
-            <Button type="button" variant="ghost" size="icon" onClick={() => removeRow("specifications", i)}>
+            <Button type="button" variant="cancel" size="icon" onClick={() => removeRow("specifications", i)}>
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
           </div>

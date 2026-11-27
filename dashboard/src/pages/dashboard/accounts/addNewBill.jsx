@@ -43,6 +43,7 @@ import { useInvestors } from '@/hooks/use-investors';
 import { toast } from 'sonner';
 import { calculateFeeAmount, formatFeeRate } from '@/components/dashboard/accounts/PaymentFeesEditor';
 import { AttachmentUploader } from '@/components/dashboard/accounts/AttachmentUploader';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
@@ -303,14 +304,10 @@ export const AddNewBillPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {editId ? 'Edit Bill Record' : t('accounts.add_new_bill', 'Add New Bill')}
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Record invoices, utilities, rent, vendor bills, and operational expenses.
-            </p>
-          </div>
+          <PageHeader
+            title={editId ? 'Edit Bill Record' : t('accounts.add_new_bill', 'Add New Bill')}
+            description="Record invoices, utilities, rent, vendor bills, and operational expenses."
+          />
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api-client';
 import { formatDateTime } from '@/utils/dateHelper';
+import { PageHeader } from '@/components/ui/page-header';
 
 // 32 random bytes as 64 hex characters
 const generateKey = () => {
@@ -48,15 +49,11 @@ export default function PlexiviaSyncSettingsPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Link2 className="size-5" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Plexivia Sync</h1>
-          <p className="text-xs text-muted-foreground">Lets the Plexivia dashboard read the daily payment and bill summaries.</p>
-        </div>
-      </div>
+      <PageHeader
+          icon={<Link2 />}
+          title="Plexivia Sync"
+          description="Lets the Plexivia dashboard read the daily payment and bill summaries."
+        />
 
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">

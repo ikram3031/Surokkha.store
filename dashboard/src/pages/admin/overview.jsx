@@ -1,11 +1,12 @@
 import React from 'react';
+import { PageHeader } from '@/components/ui/page-header';
 
 const AdminOverview = () => {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Admin Overview</h1>
-      <p>Welcome to the config-based admin layout.</p>
-    </div>
+    <PageHeader
+      title="Admin Overview"
+      description="Welcome to the config-based admin layout."
+    />
   );
 };
 

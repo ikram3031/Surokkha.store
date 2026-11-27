@@ -14,6 +14,7 @@ import { apiClient } from '@/lib/api-client';
 import { useCmsAssets } from '@/lib/use-cms-assets';
 import { toast } from 'sonner';
 import { useSiteConfigEditor, SiteConfigSectionPanel, countChanges } from './siteConfig';
+import { PageHeader } from '@/components/ui/page-header';
 
 const DASHBOARD_LOGO_SLOT = { key: 'dashboard-logo', label: 'Dashboard Logo', filename: 'dashboard-logo.webp', recommendedSize: '500x200' };
 
@@ -166,13 +167,11 @@ const BusinessSettingsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-          <Building2 className="h-7 w-7 text-primary" />
-          Settings
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">Business settings and site config. Only the store Owner can change these.</p>
-      </div>
+      <PageHeader
+        icon={<Building2 />}
+        title="Settings"
+        description="Business settings and site config. Only the store Owner can change these."
+      />
 
       <InpageSectionNav sections={sections} activeId={active.id} onChange={setActive}>
         {panel}

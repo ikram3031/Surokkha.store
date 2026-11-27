@@ -36,6 +36,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { DateRangeFilter, getDateRangeBounds } from '@/components/dashboard/accounts/DateRangeFilter';
 import { Link } from 'react-router-dom';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatCurrency = (amount) => {
   const num = Number(amount) || 0;
@@ -108,30 +109,21 @@ export const BalanceOverview = () => {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Top Header Bar with Title and Date Filter */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
-              <Scale className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {t('accounts.balance_overview_title', 'Account Balance & Financial Overview')}
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {t('accounts.balance_overview_subtitle', 'Real-time financial metrics, business asset calculation, receipts, and expense tracking.')}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
+      <PageHeader
+              icon={<Scale />}
+              title={t('accounts.balance_overview_title', 'Account Balance & Financial Overview')}
+              description={t('accounts.balance_overview_subtitle', 'Real-time financial metrics, business asset calculation, receipts, and expense tracking.')}
+              actions={
+                <>
+                  <div className="flex flex-wrap items-center gap-2.5">
           <DateRangeFilter
             value="thisMonth"
             onChange={(range) => setDateFilter(range)}
           />
         </div>
-      </div>
+                </>
+              }
+            />
 
       {/* Top Section - 4 Metric Cards (4 Columns) */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">

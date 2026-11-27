@@ -4,6 +4,7 @@ import { useBillings } from '@/hooks/use-billings';
 import { usePayments } from '@/hooks/use-payments';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the overview hub for bills, invoices, and payment transactions
 const BillingPage = () => {
@@ -17,10 +18,10 @@ const BillingPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Billing & Payments</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage your bills, invoices, and payment transactions</p>
-      </div>
+      <PageHeader
+        title="Billing & Payments"
+        description="Manage your bills, invoices, and payment transactions"
+      />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-sm">

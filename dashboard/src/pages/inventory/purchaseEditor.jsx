@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageHeader } from '@/components/ui/page-header';
 
 const NEW_VENDOR = '__new__';
 const UNIT = 'unit';
@@ -175,13 +176,10 @@ const PurchaseEditorPage = () => {
         <Button variant="outline" size="icon-lg" aria-label="Back to purchases" render={<Link to="/inventory/purchases" />}>
           <ArrowLeft />
         </Button>
-        <div className="min-w-0 flex-1">
-          <h1 className="flex items-center gap-2 text-2xl font-semibold">
-            {existing ? `Edit ${existing.purchaseNumber}` : 'New Purchase'}
-            {existing && <PurchaseStatusBadge status={existing.status} />}
-          </h1>
-          <p className="text-sm text-muted-foreground">What you bought, from whom and at what price. Receiving it adds the units to Stock Items.</p>
-        </div>
+        <PageHeader
+          title={<>{existing ? `Edit ${existing.purchaseNumber}` : 'New Purchase'} {existing && <PurchaseStatusBadge status={existing.status} />}</>}
+          description="What you bought, from whom and at what price. Receiving it adds the units to Stock Items."
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
@@ -260,7 +258,7 @@ const PurchaseEditorPage = () => {
                   </div>
                   <div className="col-span-12 flex items-center justify-end gap-1 md:col-span-2">
                     <span className="text-sm font-semibold">{taka(r.total)}</span>
-                    <Button type="button" variant="ghost" size="icon" aria-label="Remove item" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((l) => l.key !== r.key))}>
+                    <Button type="button" variant="cancel" size="icon" aria-label="Remove item" disabled={lines.length === 1} onClick={() => setLines((ls) => ls.filter((l) => l.key !== r.key))}>
                       <Trash2 />
                     </Button>
                   </div>
@@ -291,7 +289,7 @@ const PurchaseEditorPage = () => {
               {payments.map((p) => (
                 <div key={p.key} className="flex items-start gap-2 rounded-lg border p-3">
                   <div className="flex-1"><PaymentFields value={p} onChange={(next) => setPayment(p.key, next)} methods={paymentMethods} /></div>
-                  <Button type="button" variant="ghost" size="icon" aria-label="Remove payment" onClick={() => setPayments((ps) => ps.filter((x) => x.key !== p.key))}>
+                  <Button type="button" variant="cancel" size="icon" aria-label="Remove payment" onClick={() => setPayments((ps) => ps.filter((x) => x.key !== p.key))}>
                     <Trash2 />
                   </Button>
                 </div>

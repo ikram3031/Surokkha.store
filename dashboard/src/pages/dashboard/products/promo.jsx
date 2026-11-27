@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { MediaPickerModal } from '@/components/dashboard/media-picker-modal';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 const EMPTY = {
   banner: { isActive: false, imageUrl: '', text: '', link: '' },
@@ -59,15 +60,17 @@ export default function PromoPage() {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Promo</h2>
-          <p className="text-sm text-muted-foreground mt-1">Promotional banner and preset offers for surokkha.shop and surokkhastore.shop.</p>
-        </div>
-        <Button onClick={save} disabled={saving} className="shadow cursor-pointer">
+      <PageHeader
+        title="Promo"
+        description="Promotional banner and preset offers for surokkha.shop and surokkhastore.shop."
+        actions={
+          <>
+            <Button onClick={save} disabled={saving} className="shadow cursor-pointer">
           {saving ? 'Saving...' : 'Save'}
         </Button>
-      </div>
+          </>
+        }
+      />
 
       {/* Promotional banner */}
       <div className="bg-card text-card-foreground shadow-sm border rounded-lg p-6 space-y-4">

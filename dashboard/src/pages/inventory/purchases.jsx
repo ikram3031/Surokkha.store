@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageHeader } from '@/components/ui/page-header';
 
 const STATUS_FILTERS = [
   { value: 'all', label: 'All statuses' },
@@ -48,13 +49,15 @@ const PurchasesPage = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Purchases</h1>
-          <p className="text-sm text-muted-foreground">Stock bought from vendors. Receiving a purchase adds its units to Stock Items, and a Product Purchase bill is kept in step.</p>
-        </div>
-        <Button render={<Link to="/inventory/purchases/new" />}><Plus className="mr-1.5 h-4 w-4" />New purchase</Button>
-      </div>
+      <PageHeader
+        title="Purchases"
+        description="Stock bought from vendors. Receiving a purchase adds its units to Stock Items, and a Product Purchase bill is kept in step."
+        actions={
+          <>
+            <Button render={<Link to="/inventory/purchases/new" />}><Plus className="mr-1.5 h-4 w-4" />New purchase</Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard icon={ShoppingCart} label="Purchased (ordered + received)" value={taka(summary.total)} />

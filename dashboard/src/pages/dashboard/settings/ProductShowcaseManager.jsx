@@ -438,8 +438,8 @@ export const ProductShowcaseManager = ({ showcaseKey, title, icon: TagIcon, icon
                         <TableCell className="text-right">
                           <Button
                             size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                            variant="cancel"
+                            className="h-8 w-8 cursor-pointer"
                             title={`Remove from ${title}`}
                             onClick={() => handleRemoveProduct(pId)}
                           >

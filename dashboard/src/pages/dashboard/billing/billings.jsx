@@ -30,6 +30,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { useBillings } from '@/hooks/use-billings';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the bills and invoices management page with status filtering and export
 const BillingsPage = () => {
@@ -95,16 +96,18 @@ const BillingsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t('admin.invoices')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t('admin.billing')}</p>
-        </div>
-        <Button variant="outline" className={EXPORT_BUTTON_CLASS}>
+      <PageHeader
+        title={t('admin.invoices')}
+        description={t('admin.billing')}
+        actions={
+          <>
+            <Button variant="outline" className={EXPORT_BUTTON_CLASS}>
           <Download className="size-4" />
           {t('common.export')}
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
         <div className="flex flex-col sm:flex-row gap-3 p-4 border-b bg-muted/30">

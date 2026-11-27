@@ -15,6 +15,7 @@ import { apiClient, baseURL } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { useAuth } from '@/lib/auth-context';
 import { isReadOnlyRole } from '@/lib/rbac';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ACTION_BTN = 'cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
 const STATUS_ITEMS = [
@@ -65,16 +66,19 @@ const CombosPage = () => {
   });
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight"><Layers className="h-7 w-7 text-primary" /> Group Products</h2>
-          <p className="text-sm text-muted-foreground">Combos: set pieces sold together, with one discount on the whole group. Selling one takes its catalog pieces out of stock.</p>
-        </div>
-        {!readOnly && (
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        icon={<Layers />}
+        title="Group Products"
+        description="Combos: set pieces sold together, with one discount on the whole group. Selling one takes its catalog pieces out of stock."
+        actions={
+          <>
+            {!readOnly && (
           <Button className={ACTION_BTN} onClick={() => navigate('/dashboard/products/combos/new')}><Plus className="mr-1.5 h-4 w-4" /> New group product</Button>
         )}
-      </div>
+          </>
+        }
+      />
 
       <Card>
         <CardContent className="space-y-3 p-4">
@@ -144,7 +148,7 @@ const CombosPage = () => {
                         <TableActionMenu>
                           <Button size="icon" variant="ghost" title="Edit" onClick={() => navigate(`/dashboard/products/combos/${c.id}`)}><Pencil className="h-4 w-4" /></Button>
                           {!readOnly && <Button size="icon" variant="ghost" title="Duplicate" onClick={() => navigate(`/dashboard/products/combos/new?copy=${c.id}`)}><Copy className="h-4 w-4" /></Button>}
-                          {!readOnly && <Button size="icon" variant="ghost" title="Delete" onClick={() => setDeleting(c)}><Trash2 className="h-4 w-4 text-red-600" /></Button>}
+                          {!readOnly && <Button size="icon" variant="cancel" title="Delete" onClick={() => setDeleting(c)}><Trash2 className="h-4 w-4 text-red-600" /></Button>}
                         </TableActionMenu>
                       </TableCell>
                     </TableRow>

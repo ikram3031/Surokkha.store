@@ -63,7 +63,7 @@ export const BenefitsEditor = ({ label, rows, onChange, titlePlaceholder, descPl
             onChange={(e) => onChange(rows.map((r, j) => (j === i ? { ...r, description: e.target.value } : r)))}
           />
         </div>
-        <Button type="button" variant="ghost" size="icon" onClick={() => onChange(rows.filter((_, j) => j !== i))}>
+        <Button type="button" variant="cancel" size="icon" onClick={() => onChange(rows.filter((_, j) => j !== i))}>
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </div>
@@ -101,7 +101,7 @@ export const SectionsEditor = ({ label, rows, onChange, headingPlaceholder, cont
             className={textareaClass}
           />
         </div>
-        <Button type="button" variant="ghost" size="icon" onClick={() => onChange(rows.filter((_, j) => j !== i))}>
+        <Button type="button" variant="cancel" size="icon" onClick={() => onChange(rows.filter((_, j) => j !== i))}>
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </div>

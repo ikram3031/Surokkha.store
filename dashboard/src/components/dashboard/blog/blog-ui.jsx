@@ -30,16 +30,7 @@ export const scoreTone = (score) => (score >= 80 ? 'green' : score >= 50 ? 'ambe
 // Badge showing an SEO score in its matching tone
 export const ScoreBadge = ({ score }) => <ToneBadge tone={scoreTone(score)}>{score}</ToneBadge>;
 
-// Page title row with optional action buttons on the right
-export const PageHeader = ({ title, description, children }) => (
-  <div className="flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h1 className="text-xl font-bold">{title}</h1>
-      {description && <p className="text-sm text-muted-foreground">{description}</p>}
-    </div>
-    {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
-  </div>
-);
+export { PageHeader } from '@/components/ui/page-header';
 
 // Labelled form control wrapper matching the SEO overview card labels
 export const Field = ({ label, right, className, children }) => (

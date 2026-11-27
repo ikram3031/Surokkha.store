@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { PageHeader } from '@/components/ui/page-header';
 
 const TABS = [
   { key: 'stock', label: 'Stock', icon: Boxes },
@@ -158,7 +159,7 @@ const AdjustDialog = ({ row, onClose, onSaved }) => {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="cancel" onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={() => mutation.mutate()} disabled={mutation.isPending || quantity === ''}>
@@ -466,15 +467,11 @@ export default function InventoryPage() {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Boxes className="h-8 w-8" />
-          {t('nav.inventory', 'Inventory')}
-        </h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          Stock goes down when an order is placed, comes back when it is cancelled, marked fake or returned.
-        </p>
-      </div>
+      <PageHeader
+        icon={<Boxes />}
+        title={t('nav.inventory', 'Inventory')}
+        description="Stock goes down when an order is placed, comes back when it is cancelled, marked fake or returned."
+      />
 
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-6">
         {cards.map((c) => (

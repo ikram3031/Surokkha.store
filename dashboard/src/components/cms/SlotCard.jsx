@@ -119,9 +119,9 @@ const SlotCard = ({ slot, currentAsset, cms }) => {
               <Download className="h-3.5 w-3.5" />
             </Button>
             <Button
-              size="icon" variant="ghost"
+              size="icon" variant="cancel"
               onClick={() => cms.setDeleteTarget(currentAsset.filename)}
-              className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+              className="h-8 w-8 cursor-pointer"
               title="Delete"
             >
               <Trash2 className="h-3.5 w-3.5" />

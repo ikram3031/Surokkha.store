@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api-client';
 import {
   COLOR_PRESETS,
+  BACKGROUND_PRESETS,
   RADIUS_OPTIONS,
   applyAppearance,
   isValidColor,
@@ -24,21 +25,24 @@ const AppearanceTab = () => {
   const saved = user?.preferences?.appearance || {};
   const savedColor = saved.primaryColor || '';
   const savedRadius = saved.radius || '';
+  const savedBackground = saved.background || '';
 
   const [color, setColor] = useState(savedColor);
   const [radius, setRadius] = useState(savedRadius);
+  const [background, setBackground] = useState(savedBackground);
   const [isSaving, setIsSaving] = useState(false);
 
   const effectiveColor = color || DEFAULT_COLOR;
-  const hasChanges = color !== savedColor || radius !== savedRadius;
+  const hasChanges = color !== savedColor || radius !== savedRadius || background !== savedBackground;
+  const customBackground = isValidColor(background) ? background : '';
 
   useEffect(() => {
-    applyAppearance({ primaryColor: color, radius });
-  }, [color, radius]);
+    applyAppearance({ primaryColor: color, radius, background });
+  }, [color, radius, background]);
 
   useEffect(
-    () => () => applyAppearance({ primaryColor: savedColor, radius: savedRadius }),
-    [savedColor, savedRadius],
+    () => () => applyAppearance({ primaryColor: savedColor, radius: savedRadius, background: savedBackground }),
+    [savedColor, savedRadius, savedBackground],
   );
 
   const save = async () => {
@@ -49,7 +53,7 @@ const AppearanceTab = () => {
     setIsSaving(true);
     try {
       const res = await apiClient.put('/api/v1/users/me', {
-        preferences: { appearance: { primaryColor: color, radius } },
+        preferences: { appearance: { primaryColor: color, radius, background } },
       });
       if (res.data?.data) updateUser(res.data.data);
       toast.success('Appearance saved');
@@ -63,6 +67,7 @@ const AppearanceTab = () => {
   const reset = () => {
     setColor('');
     setRadius('');
+    setBackground('');
   };
 
   return (
@@ -73,7 +78,7 @@ const AppearanceTab = () => {
           Appearance
         </CardTitle>
         <CardDescription>
-          Pick your own colour and corner style. It changes the whole dashboard right away and stays with your account whenever you log in.
+          Pick your own brand colour, background and corner style. It changes the whole dashboard right away and stays with your account whenever you log in.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -118,6 +123,49 @@ const AppearanceTab = () => {
         </section>
 
         <section className="space-y-3">
+          <h3 className="text-sm font-semibold">Background colour</h3>
+          <div className="flex flex-wrap gap-2">
+            {BACKGROUND_PRESETS.map((preset) => {
+              const active = (background || 'neutral') === preset.key;
+              return (
+                <button
+                  key={preset.key}
+                  type="button"
+                  onClick={() => setBackground(preset.key)}
+                  aria-pressed={active}
+                  className={`flex w-24 flex-col items-center gap-2 rounded-md border p-2 text-xs font-medium transition-colors cursor-pointer ${
+                    active ? 'border-primary bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span className="flex h-7 w-16 overflow-hidden rounded border border-border">
+                    <span className="w-1/2" style={{ background: preset.light || `color-mix(in oklch, #ffffff, ${effectiveColor} 6%)` }} />
+                    <span className="w-1/2" style={{ background: preset.dark || `color-mix(in oklch, #0f0f10, ${effectiveColor} 12%)` }} />
+                  </span>
+                  {preset.label}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={customBackground || '#ffffff'}
+              onChange={(e) => setBackground(e.target.value)}
+              className="h-9 w-12 cursor-pointer rounded-md border border-input bg-transparent p-1"
+              aria-label="Custom background colour"
+            />
+            <Input
+              value={customBackground}
+              placeholder="Custom #ffffff"
+              onChange={(e) => setBackground(e.target.value.trim())}
+              className="h-9 w-32 font-mono text-xs"
+              maxLength={7}
+            />
+            <span className="text-xs text-muted-foreground">Custom colour applies in light and dark mode</span>
+          </div>
+        </section>
+
+        <section className="space-y-3">
           <h3 className="text-sm font-semibold">Corner style</h3>
           <div className="flex flex-wrap gap-2">
             {RADIUS_OPTIONS.map((option) => {
@@ -149,6 +197,9 @@ const AppearanceTab = () => {
           <div className="flex flex-wrap items-center gap-3 rounded-lg border p-4">
             <Button size="sm">Primary button</Button>
             <Button size="sm" variant="outline">Outline</Button>
+            <Button size="sm" variant="cancel">Cancel</Button>
+            <Button size="sm" variant="destructive">Delete</Button>
+            <Button size="sm" variant="reset">Reset</Button>
             <Badge>Badge</Badge>
             <Input placeholder="Input field" className="h-8 w-40 text-xs" readOnly />
           </div>
@@ -159,7 +210,7 @@ const AppearanceTab = () => {
             {isSaving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
             Save appearance
           </Button>
-          <Button variant="outline" onClick={reset} disabled={isSaving || (!color && !radius)} className="gap-2">
+          <Button variant="reset" onClick={reset} disabled={isSaving || (!color && !radius && !background)} className="gap-2">
             <RotateCcw className="size-4" />
             Reset to default
           </Button>

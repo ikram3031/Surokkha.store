@@ -184,7 +184,7 @@ export const ImportJsonDialog = ({ open, onOpenChange, onApply, categories = [] 
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="cursor-pointer">
+          <Button type="button" variant="cancel" onClick={() => onOpenChange(false)} className="cursor-pointer">
             Cancel
           </Button>
           <Button type="button" onClick={apply} disabled={!preview?.data} className="cursor-pointer">

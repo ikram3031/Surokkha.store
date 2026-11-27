@@ -69,6 +69,7 @@ import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter
 import { AttachmentLightbox, isImageFile } from '@/components/dashboard/accounts/AttachmentLightbox';
 import { resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
@@ -273,16 +274,10 @@ export const AllBillsPage = ({ pathaoOnly = false }) => {
             <div className="p-2 rounded-xl bg-red-500/10 text-red-600 border border-red-500/20">
               <Receipt className="w-5 h-5" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {pathaoOnly ? t('accounts.pathao_bills_title', 'Pathao Bills') : t('accounts.all_bills_title', 'All Bills')}
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {pathaoOnly
-                  ? t('accounts.pathao_bills_subtitle', 'Pathao delivery and return charges, synced automatically from Pathao payouts.')
-                  : t('accounts.all_bills_subtitle', 'Manage company invoices, vendor expenses, utilities, and operational costs.')}
-              </p>
-            </div>
+            <PageHeader
+              title={pathaoOnly ? t('accounts.pathao_bills_title', 'Pathao Bills') : t('accounts.all_bills_title', 'All Bills')}
+              description={pathaoOnly ? t('accounts.pathao_bills_subtitle', 'Pathao delivery and return charges, synced automatically from Pathao payouts.') : t('accounts.all_bills_subtitle', 'Manage company invoices, vendor expenses, utilities, and operational costs.')}
+            />
           </div>
         </div>
 

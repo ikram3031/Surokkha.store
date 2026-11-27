@@ -33,6 +33,7 @@ import {
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the customers directory page with pagination, search, segment filtering, and bulk actions
 const MembersPage = () => {
@@ -142,15 +143,11 @@ const MembersPage = () => {
   };
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t('admin.customer_list')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('common.showing')} {totalCustomers} {t('common.entries')}
-          </p>
-        </div>
-      </div>
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        title={t('admin.customer_list')}
+        description={<>{t('common.showing')} {totalCustomers} {t('common.entries')}</>}
+      />
 
       <div className="flex flex-col sm:flex-row items-center gap-4">
         <div className="relative flex-1 w-full max-w-sm">

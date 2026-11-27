@@ -48,7 +48,7 @@ const BlogCategories = () => {
         <Card className="self-start">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>{editing ? 'Edit Category' : 'Add Category'}</CardTitle>
-            {editing && <Button variant="ghost" size="sm" onClick={reset}><X />Cancel</Button>}
+            {editing && <Button variant="cancel" size="sm" onClick={reset}><X />Cancel</Button>}
           </CardHeader>
           <CardContent className="space-y-3">
             <Field label="Name"><Input placeholder="e.g. Care Tips" value={form.name} onChange={(e) => onName(e.target.value)} /></Field>
@@ -87,7 +87,7 @@ const BlogCategories = () => {
                   <TableCell>
                     <RowActions>
                       <Button variant="ghost" size="icon" title="Edit" onClick={() => edit(c)}><Pencil /></Button>
-                      <Button variant="ghost" size="icon" className="hover:text-destructive" title="Delete" onClick={() => setToDelete(c)}><Trash2 /></Button>
+                      <Button variant="cancel" size="icon" className="" title="Delete" onClick={() => setToDelete(c)}><Trash2 /></Button>
                     </RowActions>
                   </TableCell>
                 </TableRow>

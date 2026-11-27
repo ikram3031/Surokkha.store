@@ -23,6 +23,7 @@ import { useProducts } from '@/hooks/use-products';
 import { useCategories, useBrands } from '@/lib/category-cache';
 import { clientConfig } from '@/clientConfig';
 import styles from '@/styles/styles.json';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the product stock management dashboard with stock status breakdown and filter controls
 const StockManagementPage = () => {
@@ -75,10 +76,10 @@ const StockManagementPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">{t('products.stock_management')}</h2>
-        <p className="text-muted-foreground text-sm mt-1">{t('products.subtitle')}</p>
-      </div>
+      <PageHeader
+        title={t('products.stock_management')}
+        description={t('products.subtitle')}
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <button

@@ -41,6 +41,7 @@ import {
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { toast } from 'sonner';
 import { formatDateTime } from '@/utils/dateHelper';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ActivityLogsPage = () => {
   const queryClient = useQueryClient();
@@ -163,22 +164,15 @@ const ActivityLogsPage = () => {
   };
 
   return (
-    <div className="page-container flex-1 space-y-5 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-            <Activity className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Activity Logs</h2>
-            <p className="text-xs text-muted-foreground">
-              Audit trail of user actions, order events, updates, and system activities ({totalItems} total).
-            </p>
-          </div>
-        </div>
-
-        <Button
+      <PageHeader
+            icon={<Activity />}
+            title="Activity Logs"
+            description={<>Audit trail of user actions, order events, updates, and system activities ({totalItems} total).</>}
+            actions={
+              <>
+                <Button
           size="sm"
           variant="outline"
           onClick={() => refetch()}
@@ -187,7 +181,9 @@ const ActivityLogsPage = () => {
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh
         </Button>
-      </div>
+              </>
+            }
+          />
 
       {/* Toolbar / Search & Filter */}
       <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -425,10 +421,10 @@ const ActivityLogsPage = () => {
                     <TableCell className="text-right">
                       <Button
                         size="sm"
-                        variant="ghost"
+                        variant="cancel"
                         onClick={() => setSingleDeleteTarget(log)}
                         title="Delete log entry (soft delete)"
-                        className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 cursor-pointer"
+                        className="h-8 w-8 p-0 cursor-pointer"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>

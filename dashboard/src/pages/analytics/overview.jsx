@@ -10,6 +10,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RangeBar, ProductDrawer, useAnalyticsRange, formatMoney, tooltipStyle } from './shared';
+import { PageHeader } from '@/components/ui/page-header';
 
 const VIEW_COLOR = '#2563eb';
 const ORDER_COLOR = '#16a34a';
@@ -282,18 +283,16 @@ export default function AnalyticsOverview() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-            <LayoutDashboard className="h-8 w-8" />
-            {t('analytics.overview_title', 'Analytics Overview')}
-          </h2>
-          <p className="text-muted-foreground">
-            {t('analytics.overview_short', 'Store performance at a glance, compared with the previous period.')}
-          </p>
-        </div>
-        <RangeBar range={range} />
-      </div>
+      <PageHeader
+        icon={<LayoutDashboard />}
+        title={t('analytics.overview_title', 'Analytics Overview')}
+        description={t('analytics.overview_short', 'Store performance at a glance, compared with the previous period.')}
+        actions={
+          <>
+            <RangeBar range={range} />
+          </>
+        }
+      />
 
       {isError && <p className="text-sm text-destructive">{t('analytics.error', 'Error loading analytics.')}</p>}
 

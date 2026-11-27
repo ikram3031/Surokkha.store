@@ -98,10 +98,10 @@ export const PaymentFeesEditor = ({ enabled, onEnabledChange, fees, onChange }) 
               />
               <Button
                 type="button"
-                variant="ghost"
+                variant="cancel"
                 size="icon"
                 onClick={() => removeRow(index)}
-                className="h-8 w-8 text-muted-foreground hover:text-destructive cursor-pointer"
+                className="h-8 w-8 cursor-pointer"
                 aria-label="Remove fee"
               >
                 <Trash2 className="h-3.5 w-3.5" />

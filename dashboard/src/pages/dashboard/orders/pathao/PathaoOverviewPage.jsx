@@ -66,7 +66,7 @@ export default function PathaoOverviewPage() {
   const settlement = summary?.settlement;
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <PathaoHeader
         title={t('nav.pathao_overview', 'Pathao Overview')}
         description="Delivery buckets as in Pathao's merchant panel."

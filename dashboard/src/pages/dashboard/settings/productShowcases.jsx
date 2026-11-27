@@ -5,6 +5,7 @@ import OnSaleProductsTab from './OnSaleProductsTab';
 import BestSellingProductsTab from './BestSellingProductsTab';
 import CatalogPreferencesTab from './CatalogPreferencesTab';
 import SecurityAccessTab from './SecurityAccessTab';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Displays product showcase curation tabs for featured, on sale, and bestseller products
 const ProductShowcasesPage = () => {
@@ -20,12 +21,10 @@ const ProductShowcasesPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Products Showcases</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Curate featured, on sale, and best selling product collections highlighted across your storefront.
-        </p>
-      </div>
+      <PageHeader
+        title="Products Showcases"
+        description="Curate featured, on sale, and best selling product collections highlighted across your storefront."
+      />
 
       <div className="border-b border-border pb-3">
         <div className="inline-flex flex-wrap items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/50">

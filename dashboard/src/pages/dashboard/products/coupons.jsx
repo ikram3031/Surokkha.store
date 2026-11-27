@@ -25,6 +25,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the coupons management page with discount rules, status filters, and creation dialog
 const CouponsPage = () => {
@@ -90,18 +91,18 @@ const CouponsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t('categories_brands.coupon_title')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('products.subtitle')}
-          </p>
-        </div>
-        <Button onClick={handleOpenAddDialog} className="shadow transition-all hover:scale-[1.02] cursor-pointer">
+      <PageHeader
+        title={t('categories_brands.coupon_title')}
+        description={t('products.subtitle')}
+        actions={
+          <>
+            <Button onClick={handleOpenAddDialog} className="shadow transition-all hover:scale-[1.02] cursor-pointer">
           <Plus className="mr-2 h-4 w-4" />
           {t('categories_brands.add_coupon')}
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex flex-col sm:flex-row items-center gap-4">
         <div className="relative flex-1 w-full max-w-sm">

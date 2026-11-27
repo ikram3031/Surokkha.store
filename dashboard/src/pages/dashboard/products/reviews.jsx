@@ -21,6 +21,7 @@ import { apiClient } from '@/lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the product reviews management interface with moderation approval and deletion controls
 const ReviewsPage = () => {
@@ -74,14 +75,10 @@ const ReviewsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t('categories_brands.reviews_title')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('products.subtitle')}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={t('categories_brands.reviews_title')}
+        description={t('products.subtitle')}
+      />
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex flex-1 items-center space-x-2 w-full sm:max-w-sm relative">

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Unified Mail Settings: single SMTP server (all outgoing system emails) and single IMAP mailbox (Webmail)
 const EmailServerSettingsPage = () => {
@@ -192,17 +193,11 @@ const EmailServerSettingsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-4xl">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <Mail className="h-7 w-7 text-primary" />
-            Mail Settings
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Configure the outgoing SMTP server for all system emails (store, shop, and dashboard) and the incoming IMAP mailbox for Webmail. Changes take effect immediately without a restart or deploy.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon={<Mail />}
+        title="Mail Settings"
+        description="Configure the outgoing SMTP server for all system emails (store, shop, and dashboard) and the incoming IMAP mailbox for Webmail. Changes take effect immediately without a restart or deploy."
+      />
 
       {/* Card 1: Outgoing SMTP */}
       <Card className="border-border/60 shadow-xs">

@@ -87,6 +87,7 @@ import { CartPriceInput, CustomItemDialog, CustomItemCard } from "@/components/o
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from '@/utils/dateHelper';
 import { getStatusOptionClass } from '@/utils/statusColors';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -608,22 +609,11 @@ const OrderDetailsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b pb-6">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/dashboard/orders")}
-            className="h-9 w-9 border-border/80 cursor-pointer"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-                Order {order.orderNumber}
-              </h2>
-              <div className="flex items-center gap-1.5 flex-wrap">
+      <PageHeader
+        back={() => window.history.length > 1 ? navigate(-1) : navigate("/dashboard/orders")}
+        title={`Order ${order.orderNumber}`}
+        badge={
+          <div className="flex items-center gap-1.5 flex-wrap">
                 {getFulfillmentBadge(order.status || order.orderStatus || "")}
                 {getPaymentBadge(order.paymentStatus || (effectivePending === 0 && effectiveTotal > 0 ? "Paid" : effectivePaid > 0 ? "Partial" : "Pending"))}
                 {order.couponCode && (
@@ -633,15 +623,10 @@ const OrderDetailsPage = () => {
                   </Badge>
                 )}
               </div>
-            </div>
-            <p className="text-muted-foreground text-xs mt-1 flex items-center gap-1.5">
-              <Calendar className="h-3 w-3" />
-              Placed on {formatDateTime(order.createdAt || order.date)}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+        }
+        description={<span className="flex items-center gap-1.5"><Calendar className="h-3 w-3" /> Placed on {formatDateTime(order.createdAt || order.date)}</span>}
+        actions={
+          <div className="flex items-center gap-2">
           {isEditMode ? (
             <>
               <Button variant="outline" className="gap-1.5" onClick={() => setIsEditMode(false)}>
@@ -688,7 +673,8 @@ const OrderDetailsPage = () => {
             </div>
           )}
         </div>
-      </div>
+        }
+      />
 
       {!isEditMode ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -7,6 +7,7 @@ import { Image as ImageIcon, Save, UploadCloud, Loader2, Info } from 'lucide-rea
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const buttonClass =
   'cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
@@ -109,7 +110,7 @@ const SectionBackgroundsPage = ({ site = 'store' }) => {
 
   if (isLoading) {
     return (
-      <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
         <Skeleton className="h-10 w-72" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -118,26 +119,22 @@ const SectionBackgroundsPage = ({ site = 'store' }) => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-border pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <ImageIcon className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Section Backgrounds</h1>
-            <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
+      <PageHeader
+        icon={<ImageIcon />}
+        title="Section Backgrounds"
+        badge={<><Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
               {site === 'store' ? 'surokkhastore.shop' : 'Shop'}
-            </Badge>
-          </div>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Set a background image for homepage sections. Sections without an image keep their plain colour.
-          </p>
-        </div>
-        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !dirty} className={`h-9 gap-1.5 ${buttonClass}`}>
+            </Badge></>}
+        description="Set a background image for homepage sections. Sections without an image keep their plain colour."
+        actions={
+          <>
+            <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !dirty} className={`h-9 gap-1.5 ${buttonClass}`}>
           {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           <span>{dirty ? 'Save Changes' : 'Saved'}</span>
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex items-start gap-3 p-3.5 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
         <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />

@@ -55,6 +55,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import { PageHeader } from '@/components/ui/page-header';
 
 const reportsConfig = clientConfig?.reports || {
   enableInStoreFilter: true,
@@ -371,22 +372,13 @@ const ReportsV2Page = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <BarChart3 className="w-5 h-5" />
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Reports & Analytics</h2>
-          </div>
-          <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-2">
-            <span>Real-time performance metrics</span>
-            <span className="h-1 w-1 rounded-full bg-muted-foreground" />
-            <span className="font-medium text-foreground/80">{dateRangeDescription}</span>
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
+      <PageHeader
+        title="Reports & Analytics"
+        icon={<BarChart3 />}
+        description={<span className="flex items-center gap-2">Real-time performance metrics <span className="h-1 w-1 rounded-full bg-muted-foreground" /> <span className="font-medium text-foreground/80">{dateRangeDescription}</span></span>}
+        actions={
+          <>
+            <div className="flex flex-wrap items-center gap-2.5">
           <Select value={range} onValueChange={handleRangeChange}>
             <SelectTrigger className="w-[155px] h-9 text-xs">
               <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
@@ -453,7 +445,9 @@ const ReportsV2Page = () => {
             </Button>
           )}
         </div>
-      </div>
+          </>
+        }
+      />
 
       <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
         <DialogContent className="sm:max-w-md">

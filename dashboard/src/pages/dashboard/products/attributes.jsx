@@ -27,6 +27,7 @@ import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 function slugify(text) {
   return text
@@ -325,25 +326,19 @@ const AttributesPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-            <Sliders className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              Product Attributes
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Manage variation attributes and per-value images (e.g. Size, Volume, Color).
-            </p>
-          </div>
-        </div>
-        <Button onClick={openAddDialog} className="cursor-pointer gap-2 font-semibold">
+      <PageHeader
+            icon={<Sliders />}
+            title="Product Attributes"
+            description="Manage variation attributes and per-value images (e.g. Size, Volume, Color)."
+            actions={
+              <>
+                <Button onClick={openAddDialog} className="cursor-pointer gap-2 font-semibold">
           <Plus className="h-4 w-4" />
           Add Attribute
         </Button>
-      </div>
+              </>
+            }
+          />
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
@@ -413,8 +408,8 @@ const AttributesPage = () => {
                       </Button>
                       <Button
                         size="icon"
-                        variant="outline"
-                        className="h-8 w-8 rounded-full text-destructive border-destructive/30 hover:bg-destructive/15 hover:text-destructive hover:border-destructive/50 cursor-pointer transition-all"
+                        variant="cancel"
+                        className="h-8 w-8 rounded-full cursor-pointer transition-all"
                         title="Delete Attribute"
                         onClick={() => setDeleteTarget(attr)}
                       >
@@ -680,8 +675,8 @@ const AttributesPage = () => {
                       <Button
                         type="button"
                         size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer rounded-lg transition-colors"
+                        variant="cancel"
+                        className="h-8 w-8 shrink-0 cursor-pointer rounded-lg transition-colors"
                         title="Delete Value"
                         onClick={() => removeValue(idx)}
                       >

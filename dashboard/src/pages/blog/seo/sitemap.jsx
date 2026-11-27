@@ -61,7 +61,7 @@ const SeoSitemap = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2"><Bot className="h-4 w-4 text-primary" />robots.txt</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setRobots(info.defaultRobots)}><RotateCcw />Reset</Button>
+            <Button variant="reset" size="sm" onClick={() => setRobots(info.defaultRobots)}><RotateCcw />Reset</Button>
           </CardHeader>
           <CardContent className="space-y-3">
             <Textarea rows={12} className="font-mono text-xs leading-relaxed" value={robots} onChange={(e) => setRobots(e.target.value)} />

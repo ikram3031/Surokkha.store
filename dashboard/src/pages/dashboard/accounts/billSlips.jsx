@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useBillings } from '@/hooks/use-billings';
+import { PageHeader } from '@/components/ui/page-header';
 
 const SHOP_KEY = 'billSlips.shop';
 const SAVED_KEY = 'billSlips.saved';
@@ -286,7 +287,7 @@ export const BillSlipsPage = () => {
   const input = 'h-9 text-xs';
 
   return (
-    <div className="page-container flex-1 space-y-5 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <style>{`
         @media print {
           @page { size: A4; margin: 10mm; }
@@ -301,10 +302,10 @@ export const BillSlipsPage = () => {
           <Button asChild variant="ghost" size="icon" className="h-8 w-8">
             <Link to="/finance/bills"><ArrowLeft className="h-4 w-4" /></Link>
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Receipt & Invoice</h1>
-            <p className="text-xs text-muted-foreground">Fill in the left side, the print-ready slip appears on the right.</p>
-          </div>
+          <PageHeader
+            title="Receipt & Invoice"
+            description="Fill in the left side, the print-ready slip appears on the right."
+          />
         </div>
         <div className="flex items-center gap-2">
           <div className="inline-flex rounded-lg border p-0.5 bg-muted/30">
@@ -358,7 +359,7 @@ export const BillSlipsPage = () => {
                       <b>{s.no}</b> · {s.data.party} · {money(s.total)}
                       {s.billId ? <span className="ml-1 text-emerald-600">(in Bills)</span> : null}
                     </button>
-                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => persistSaved(saved.filter((x) => x.no !== s.no))}>
+                    <Button type="button" variant="cancel" size="icon" className="h-6 w-6" onClick={() => persistSaved(saved.filter((x) => x.no !== s.no))}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
@@ -421,7 +422,7 @@ export const BillSlipsPage = () => {
                     <Input type="number" min="0" className={input} placeholder="Qty" value={it.qty} onChange={(e) => setItem(i, 'qty', e.target.value)} />
                     <Input type="number" min="0" className={input} placeholder="Price" value={it.price} onChange={(e) => setItem(i, 'price', e.target.value)} />
                     <Button
-                      type="button" variant="ghost" size="icon" className="h-8 w-8"
+                      type="button" variant="cancel" size="icon" className="h-8 w-8"
                       disabled={v.items.length === 1}
                       onClick={() => setV((s) => ({ ...s, items: s.items.filter((_, idx) => idx !== i) }))}
                     >

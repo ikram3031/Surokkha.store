@@ -32,6 +32,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 function slugify(text) {
   return text
@@ -190,17 +191,17 @@ const CategoriesPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between border-b pb-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight">{t('categories_brands.category_title')}</h2>
-          <p className="text-sm text-muted-foreground">
-            {t('products.subtitle')}
-          </p>
-        </div>
-        <Button onClick={openAddDialog}>
+      <PageHeader
+        title={t('categories_brands.category_title')}
+        description={t('products.subtitle')}
+        actions={
+          <>
+            <Button onClick={openAddDialog}>
           <Plus className="mr-2 h-4 w-4" /> {t('categories_brands.add_category')}
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="relative max-w-sm">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -261,10 +262,10 @@ const CategoriesPage = () => {
                         <Edit2 className="h-3.5 w-3.5" />
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="cancel"
                         size="sm"
                         onClick={() => setDeleteTarget({ did: cat.did, name: cat.name })}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                        className="h-8 w-8 p-0"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

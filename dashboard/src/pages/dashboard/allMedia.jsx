@@ -37,6 +37,7 @@ import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { formatDate, formatDateTime } from '@/utils/dateHelper';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the all media assets gallery with grid preview, copy direct URL, and modal inspection
 const AllMediaPage = () => {
@@ -148,22 +149,13 @@ const AllMediaPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-            <ImageIcon className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              {t('admin.all_media')}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {totalFiles} {t('common.entries')}
-            </p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2 w-full sm:w-80">
+      <PageHeader
+            icon={<ImageIcon />}
+            title={t('admin.all_media')}
+            description={<>{totalFiles} {t('common.entries')}</>}
+            actions={
+              <>
+                <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2 w-full sm:w-80">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -178,7 +170,9 @@ const AllMediaPage = () => {
             {t('common.search')}
           </Button>
         </form>
-      </div>
+              </>
+            }
+          />
 
       {mediaList.length > 0 && (
         <div className="flex items-center justify-between flex-wrap gap-2 rounded-xl border bg-card px-3 py-2">
@@ -201,7 +195,7 @@ const AllMediaPage = () => {
                   Delete ({selectedUrls.length})
                 </Button>
               )}
-              <Button type="button" size="sm" variant="cancel" onClick={() => setSelectedUrls([])} className="text-xs gap-1 cursor-pointer">
+              <Button type="button" size="sm" variant="reset" onClick={() => setSelectedUrls([])} className="text-xs gap-1 cursor-pointer">
                 <X className="h-3.5 w-3.5" />
                 Clear
               </Button>

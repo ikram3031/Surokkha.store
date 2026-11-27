@@ -16,6 +16,7 @@ import {
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 function slugify(text) {
   return text
@@ -267,14 +268,10 @@ export default function EditAttributePage() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              Edit Attribute: <span className="text-primary">{name}</span>
-            </h2>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Manage variation details, value list, and per-value 1:1 image assets.
-            </p>
-          </div>
+          <PageHeader
+            title={<>Edit Attribute: <span className="text-primary">{name}</span></>}
+            description="Manage variation details, value list, and per-value 1:1 image assets."
+          />
         </div>
 
         <Button
@@ -508,8 +505,8 @@ export default function EditAttributePage() {
                       <Button
                         type="button"
                         size="icon"
-                        variant="ghost"
-                        className="h-10 w-10 text-destructive/70 hover:text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer rounded-xl transition-colors"
+                        variant="cancel"
+                        className="h-10 w-10 shrink-0 cursor-pointer rounded-xl transition-colors"
                         title="Delete Value"
                         onClick={() => removeValue(idx)}
                       >

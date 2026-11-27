@@ -24,6 +24,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const buttonClass =
   'cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
@@ -194,7 +195,7 @@ const HeroSliderPage = ({ site = 'shop' }) => {
 
   if (isLoading) {
     return (
-      <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
         <Skeleton className="h-10 w-72" />
         <Skeleton className="h-48 w-full" />
         <Skeleton className="h-96 w-full" />
@@ -204,26 +205,22 @@ const HeroSliderPage = ({ site = 'shop' }) => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-border pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <GalleryHorizontal className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Hero Slider</h1>
-            <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
+      <PageHeader
+        icon={<GalleryHorizontal />}
+        title="Hero Slider"
+        badge={<><Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
               {site === 'store' ? 'surokkhastore.shop' : 'Shop'} · {activeCount}/{slides.length} active
-            </Badge>
-          </div>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Manage the homepage hero slides, their content and the autoplay speed. Changes go live as soon as you save.
-          </p>
-        </div>
-        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !dirty} className={`h-9 gap-1.5 ${buttonClass}`}>
+            </Badge></>}
+        description="Manage the homepage hero slides, their content and the autoplay speed. Changes go live as soon as you save."
+        actions={
+          <>
+            <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !dirty} className={`h-9 gap-1.5 ${buttonClass}`}>
           {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           <span>{dirty ? 'Save Changes' : 'Saved'}</span>
         </Button>
-      </div>
+          </>
+        }
+      />
 
       {!docId && (
         <div className="flex items-start gap-3 p-3.5 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
@@ -326,7 +323,7 @@ const HeroSliderPage = ({ site = 'shop' }) => {
                   <Button size="icon" variant="ghost" className="h-8 w-8 cursor-pointer" onClick={() => duplicateSlide(index)} title="Duplicate">
                     <Copy className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer" onClick={() => setDeleteIndex(index)} title="Delete">
+                  <Button size="icon" variant="cancel" className="h-8 w-8 cursor-pointer" onClick={() => setDeleteIndex(index)} title="Delete">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

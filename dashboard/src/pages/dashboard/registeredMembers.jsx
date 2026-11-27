@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table-v2';
 import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
+import { PageHeader } from '@/components/ui/page-header';
 
 const LIMIT = 15;
 
@@ -86,16 +87,12 @@ export default function RegisteredMembers() {
   };
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <UserCheck className="h-6 w-6" />
-          {t('nav.members', 'Members')}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('members.description', 'People who created an account on the website.')} · {t('common.showing', 'Showing')} {meta.total} {t('common.entries', 'entries')}
-        </p>
-      </div>
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        icon={<UserCheck />}
+        title={t('nav.members', 'Members')}
+        description={<>{t('members.description', 'People who created an account on the website.')} · {t('common.showing', 'Showing')} {meta.total} {t('common.entries', 'entries')}</>}
+      />
 
       <div className="relative w-full max-w-sm">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

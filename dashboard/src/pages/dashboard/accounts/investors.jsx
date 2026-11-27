@@ -65,6 +65,7 @@ import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter
 import { ReturnInvestmentModal } from '@/components/dashboard/accounts/ReturnInvestmentModal';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/dateHelper';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
@@ -251,14 +252,10 @@ export const InvestorsPage = () => {
             <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/20">
               <Users className="w-5 h-5" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {t('accounts.investors_title', 'Investors Directory')}
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {t('accounts.investors_subtitle', 'Manage angel investors, institutional partners, and stakeholder capital profiles.')}
-              </p>
-            </div>
+            <PageHeader
+              title={t('accounts.investors_title', 'Investors Directory')}
+              description={t('accounts.investors_subtitle', 'Manage angel investors, institutional partners, and stakeholder capital profiles.')}
+            />
           </div>
         </div>
 
@@ -502,9 +499,9 @@ export const InvestorsPage = () => {
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="cancel"
                             size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="h-8 w-8"
                             onClick={() => setDeleteTarget(inv)}
                             title="Delete Investor"
                           >

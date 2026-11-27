@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import {
   RangeBar, StatCard, ProductDrawer, METRICS, makeColorFor, useAnalyticsRange, formatMoney, tooltipStyle,
 } from './shared';
+import { PageHeader } from '@/components/ui/page-header';
 
 const STEP_COLORS = { view: '#2563eb', add_to_cart: '#f97316', checkout: '#9333ea', orders: '#16a34a' };
 
@@ -302,18 +303,16 @@ export default function AnalyticsConversion() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-            <Filter className="h-8 w-8" />
-            {t('analytics.conversion_title', 'Conversion Details')}
-          </h2>
-          <p className="text-muted-foreground">
-            {t('analytics.conversion_desc', 'Step-by-step funnel, hour-by-hour trend and every product in detail. Data is kept for 90 days.')}
-          </p>
-        </div>
-        <RangeBar range={range} />
-      </div>
+      <PageHeader
+        icon={<Filter />}
+        title={t('analytics.conversion_title', 'Conversion Details')}
+        description={t('analytics.conversion_desc', 'Step-by-step funnel, hour-by-hour trend and every product in detail. Data is kept for 90 days.')}
+        actions={
+          <>
+            <RangeBar range={range} />
+          </>
+        }
+      />
 
       {isError && <p className="text-sm text-destructive">{t('analytics.error', 'Error loading analytics.')}</p>}
 

@@ -37,6 +37,7 @@ import { InvoicePaperPreview } from './components/InvoicePaperPreview';
 import { EmailPreviewCard } from './components/EmailPreviewCard';
 import { SendTestEmailModal } from './components/SendTestEmailModal';
 import invoiceLogo from '@/assets/surokkha_logo.png';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Built-in presets matching backend defaults
 const TEMPLATE_PRESETS = {
@@ -492,40 +493,26 @@ export function TemplatesPage() {
   return (
     <div className="space-y-6 pb-24">
       {/* Top Toolbar Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/70 pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-xs">
-              <LayoutTemplate className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-                  Invoice & Email Templates Studio
-                </h1>
-                <Badge
+      <PageHeader
+              icon={<LayoutTemplate />}
+              title="Invoice & Email Templates Studio"
+              badge={<><Badge
                   variant={config.isActive ? 'default' : 'secondary'}
                   className={config.isActive ? 'bg-emerald-600 font-bold' : ''}
                 >
                   {config.isActive ? 'Active Engine' : 'Legacy Fallback'}
-                </Badge>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                Customize printable A4 vector invoices, packing slips, and transactional customer emails with real-time live preview.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
+                </Badge></>}
+              description="Customize printable A4 vector invoices, packing slips, and transactional customer emails with real-time live preview."
+              actions={
+                <>
+                  <div className="flex items-center gap-2 flex-wrap">
           <Button
             type="button"
-            variant="outline"
+            variant="reset"
             size="sm"
             onClick={() => resetMutation.mutate()}
             disabled={resetMutation.isPending || saveMutation.isPending}
-            className="text-xs h-9 cursor-pointer gap-1.5 hover:text-destructive"
+            className="text-xs h-9 cursor-pointer gap-1.5"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset</span>
@@ -564,7 +551,9 @@ export function TemplatesPage() {
             <span>{saveMutation.isPending ? 'Saving...' : 'Save Settings'}</span>
           </Button>
         </div>
-      </div>
+                </>
+              }
+            />
 
       {/* Main Studio Grid */}
       <div

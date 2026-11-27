@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the standard TikTok musical note brand icon
 const TikTokBrandIcon = ({ className = "h-7 w-7" }) => (
@@ -144,21 +145,12 @@ const TikTokPixelPage = () => {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <span className="p-1.5 rounded-lg bg-black text-white dark:bg-zinc-800 dark:text-zinc-100 flex items-center justify-center">
-              <TikTokBrandIcon className="h-6 w-6" />
-            </span>
-            TikTok Pixel & Events API
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Track customer journeys, power TikTok ad targeting, and dispatch resilient server-side CompletePayment events.
-          </p>
-        </div>
-
-        {/* Verification Status Badge */}
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title={<><span className="p-1.5 rounded-lg bg-black text-white dark:bg-zinc-800 dark:text-zinc-100 flex items-center justify-center"> <TikTokBrandIcon className="h-6 w-6" /> </span> TikTok Pixel & Events API</>}
+        description="Track customer journeys, power TikTok ad targeting, and dispatch resilient server-side CompletePayment events."
+        actions={
+          <>
+            <div className="flex items-center gap-2">
           {isConnected ? (
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-3 py-1">
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -176,7 +168,9 @@ const TikTokPixelPage = () => {
             </Badge>
           )}
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Last Verified Status Alert Banner if available */}
       {pixelData?.lastVerifiedAt && (

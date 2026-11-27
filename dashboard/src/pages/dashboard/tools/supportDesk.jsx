@@ -32,6 +32,7 @@ import { clientConfig } from "@/clientConfig";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
 import axios from "axios";
+import { PageHeader } from '@/components/ui/page-header';
 
 // Safely resolves hosting alerts without direct cross-origin browser requests
 const fetchBillingAlerts = async () => null;
@@ -401,24 +402,17 @@ export const SupportDesk = () => {
   const selectedSla = selected ? slaInfo(selected) : null;
 
   return (
-    <div className="page-container space-y-6 p-2 sm:p-4 animate-in fade-in duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card border border-border p-6 rounded-2xl shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
-            <LifeBuoy className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-foreground">Support & Engineering Desk</h1>
-              <Badge variant="outline" className="text-[11px] font-mono font-medium">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+            icon={<LifeBuoy />}
+            title="Support & Engineering Desk"
+            badge={<><Badge variant="outline" className="text-[11px] font-mono font-medium">
                 {brandName}
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5 font-mono">{domain}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+              </Badge></>}
+            description={domain}
+            actions={
+              <>
+                <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -439,7 +433,9 @@ export const SupportDesk = () => {
             Report Issue / Bug
           </Button>
         </div>
-      </div>
+              </>
+            }
+          />
 
       {billingInfo?.showWarningBanner && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-in fade-in duration-200">

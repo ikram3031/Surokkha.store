@@ -78,7 +78,7 @@ const SeoKeywords = () => {
                 </TableCell>
                 <TableCell className="text-right">{r.volume ? r.volume.toLocaleString() : '—'}</TableCell>
                 <TableCell>{r.trend.length > 1 ? <Sparkline points={r.trend} /> : <span className="text-muted-foreground">—</span>}</TableCell>
-                <TableCell><RowActions><Button variant="ghost" size="icon" className="hover:text-destructive" title="Stop tracking" onClick={() => remove.mutate(r.id)}><Trash2 /></Button></RowActions></TableCell>
+                <TableCell><RowActions><Button variant="cancel" size="icon" className="" title="Stop tracking" onClick={() => remove.mutate(r.id)}><Trash2 /></Button></RowActions></TableCell>
               </TableRow>
             ))}
           </TableBody>

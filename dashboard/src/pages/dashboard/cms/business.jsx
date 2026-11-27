@@ -6,6 +6,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { Building2, RefreshCw } from 'lucide-react';
 import { useCmsAssets } from '@/lib/use-cms-assets';
 import SlotCard from '@/components/cms/SlotCard';
+import { PageHeader } from '@/components/ui/page-header';
 
 const BUSINESS_SLOTS = [
   { key: 'logo', label: 'Business Logo', filename: 'logo.webp', recommendedSize: '500x200' },
@@ -17,21 +18,13 @@ const CmsBusinessPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-border pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <Building2 className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              Business
-            </h1>
-          </div>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Upload your business logo and site icon (favicon). These appear across your storefront and browser tabs.
-          </p>
-        </div>
-        <Button
+      <PageHeader
+        title="Business"
+        icon={<Building2 />}
+        description="Upload your business logo and site icon (favicon). These appear across your storefront and browser tabs."
+        actions={
+          <>
+            <Button
           variant="outline" size="sm"
           onClick={() => cms.refetchAssets()}
           disabled={cms.isAssetsFetching}
@@ -40,7 +33,9 @@ const CmsBusinessPage = () => {
           <RefreshCw className={`h-3.5 w-3.5 ${cms.isAssetsFetching ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <Card className="border shadow-xs">
         <CardHeader className="pb-3 border-b border-border/50">

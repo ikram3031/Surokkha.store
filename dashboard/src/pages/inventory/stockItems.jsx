@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ACTION_BTN = 'bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
 
@@ -155,7 +156,7 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
                 <span className="text-sm text-muted-foreground">=</span>
                 <Input className="w-24" type="number" min={1} step={1} value={p.unitsPerPack} onChange={(e) => setPack(i, 'unitsPerPack', e.target.value)} />
                 <span className="w-10 text-sm text-muted-foreground">{form.unit || 'pcs'}</span>
-                <Button type="button" size="icon" variant="ghost" onClick={() => removePack(i)} aria-label="Remove pack size"><Trash2 className="h-4 w-4" /></Button>
+                <Button type="button" size="icon" variant="cancel" onClick={() => removePack(i)} aria-label="Remove pack size"><Trash2 className="h-4 w-4" /></Button>
               </div>
             ))}
           </div>
@@ -211,7 +212,7 @@ const ItemDialog = ({ open, onOpenChange, item, onSave, saving }) => {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="cancel" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" className={ACTION_BTN} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
           </DialogFooter>
         </form>
@@ -289,7 +290,7 @@ const AdjustDialog = ({ item, onOpenChange, onSave, onUndo, saving }) => {
           <RecentHandChanges rows={recent.data?.data || []} unit={unit} loading={recent.isLoading} onUndo={onUndo} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="cancel" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             className={ACTION_BTN}
             disabled={saving || change === 0 || next < 0}
@@ -337,13 +338,15 @@ const StockItemsPage = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Stock Items</h1>
-          <p className="text-sm text-muted-foreground">What you actually hold, counted in single units. Received purchases add here automatically.</p>
-        </div>
-        <Button className={ACTION_BTN} onClick={() => setEditing({ item: null })}><Plus className="mr-1.5 h-4 w-4" />New stock item</Button>
-      </div>
+      <PageHeader
+        title="Stock Items"
+        description="What you actually hold, counted in single units. Received purchases add here automatically."
+        actions={
+          <>
+            <Button className={ACTION_BTN} onClick={() => setEditing({ item: null })}><Plus className="mr-1.5 h-4 w-4" />New stock item</Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard icon={Boxes} label="Active items" value={summary.items ?? 0} />
@@ -413,7 +416,7 @@ const StockItemsPage = () => {
                       <Button size="icon" variant="ghost" title="Adjust stock" onClick={() => setAdjusting(r)}><SlidersHorizontal className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="History" render={<Link to={`/inventory/movements?refId=${r.id}&name=${encodeURIComponent(r.shortName)}`} />}><History className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="Edit" onClick={() => setEditing({ item: r })}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" title="Delete" className="text-destructive hover:text-destructive" onClick={() => setDeleting(r)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="cancel" title="Delete" className="" onClick={() => setDeleting(r)}><Trash2 className="h-4 w-4" /></Button>
                     </TableActionMenu>
                   </TableCell>
                 </TableRow>
@@ -449,7 +452,7 @@ const StockItemsPage = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button variant="cancel" onClick={() => setDeleting(null)}>Cancel</Button>
             <Button variant="destructive" disabled={remove.isPending} onClick={() => remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}>
               {remove.isPending ? 'Deleting…' : 'Delete'}
             </Button>

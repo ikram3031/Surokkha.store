@@ -322,7 +322,7 @@ export const CustomItemDialog = ({ open, onClose, onAdd }) => {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => { reset(); onClose(); }}>Cancel</Button>
+          <Button variant="cancel" onClick={() => { reset(); onClose(); }}>Cancel</Button>
           <Button onClick={handleAdd}>Add Item</Button>
         </DialogFooter>
       </DialogContent>

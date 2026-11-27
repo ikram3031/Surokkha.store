@@ -52,6 +52,7 @@ import { useBillTypes } from '@/hooks/use-bill-types';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/dateHelper';
+import { PageHeader } from '@/components/ui/page-header';
 
 export const BillTypesPage = () => {
   const { t } = useTranslation();
@@ -187,24 +188,13 @@ export const BillTypesPage = () => {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
-              <Tag className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {t('accounts.bill_types_title', 'Bill Types & Categories')}
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {t('accounts.bill_types_subtitle', 'Configure categories for expense tracking, tax accounting, and budget management.')}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
+      <PageHeader
+              icon={<Tag />}
+              title={t('accounts.bill_types_title', 'Bill Types & Categories')}
+              description={t('accounts.bill_types_subtitle', 'Configure categories for expense tracking, tax accounting, and budget management.')}
+              actions={
+                <>
+                  <div className="flex flex-wrap items-center gap-2.5">
           <Button
             onClick={handleOpenAdd}
             className="h-9 text-xs gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
@@ -213,7 +203,9 @@ export const BillTypesPage = () => {
             <span>{t('accounts.add_bill_type_btn', 'Add Bill Type')}</span>
           </Button>
         </div>
-      </div>
+                </>
+              }
+            />
 
       {/* Table Container */}
       <div className="bg-card border rounded-xl shadow-sm overflow-hidden">
@@ -397,9 +389,9 @@ export const BillTypesPage = () => {
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="cancel"
                             size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                            className="h-8 w-8 cursor-pointer"
                             onClick={() => setDeleteTarget(type)}
                             title="Delete Category"
                           >

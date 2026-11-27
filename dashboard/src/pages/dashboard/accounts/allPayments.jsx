@@ -64,6 +64,7 @@ import { usePayments } from '@/hooks/use-payments';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { resolveImageUrl } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const METHOD_COLORS = {
   bKash: 'bg-pink-500/10 text-pink-600 border-pink-500/30',
@@ -246,14 +247,10 @@ export const AllPaymentsPage = () => {
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
               <CreditCard className="w-5 h-5" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {t('accounts.all_payments_title', 'All Payments')}
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {t('accounts.all_payments_subtitle', 'Track all incoming customer transactions and payment settlements.')}
-              </p>
-            </div>
+            <PageHeader
+              title={t('accounts.all_payments_title', 'All Payments')}
+              description={t('accounts.all_payments_subtitle', 'Track all incoming customer transactions and payment settlements.')}
+            />
           </div>
         </div>
 

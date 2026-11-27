@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PageHeader } from '@/components/ui/page-header';
 
 const EMPTY = { name: '', phone: '', email: '', address: '', notes: '' };
 
@@ -61,7 +62,7 @@ const VendorDialog = ({ vendor, onOpenChange, onSave, saving }) => {
           </div>
         </form>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="cancel" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="submit" form="vendor-form" disabled={saving || !form.name.trim()}>{saving ? 'Saving…' : 'Save'}</Button>
         </DialogFooter>
       </DialogContent>
@@ -85,13 +86,15 @@ const VendorsPage = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Vendors</h1>
-          <p className="text-sm text-muted-foreground">Who you buy stock from. Pick them on a purchase; totals and dues come from ordered and received purchases.</p>
-        </div>
-        <Button onClick={() => setEditing({})}><Plus className="mr-1.5 h-4 w-4" />New vendor</Button>
-      </div>
+      <PageHeader
+        title="Vendors"
+        description="Who you buy stock from. Pick them on a purchase; totals and dues come from ordered and received purchases."
+        actions={
+          <>
+            <Button onClick={() => setEditing({})}><Plus className="mr-1.5 h-4 w-4" />New vendor</Button>
+          </>
+        }
+      />
 
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -137,7 +140,7 @@ const VendorsPage = () => {
                   <TableCell>
                     <TableActionMenu>
                       <Button size="icon" variant="ghost" title="Edit" onClick={() => setEditing(v)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" title="Remove" className="text-destructive hover:text-destructive" onClick={() => setRemoving(v)}><Trash2 className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="cancel" title="Remove" className="" onClick={() => setRemoving(v)}><Trash2 className="h-4 w-4" /></Button>
                     </TableActionMenu>
                   </TableCell>
                 </TableRow>

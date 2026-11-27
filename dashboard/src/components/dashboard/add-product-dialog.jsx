@@ -405,9 +405,9 @@ export function AddProductDialog() {
                     </div>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="cancel"
                       size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      className="h-8 w-8 p-0"
                       onClick={() => removeVariant(i)}
                       disabled={variants.length <= 1}
                     >

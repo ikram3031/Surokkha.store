@@ -11,7 +11,7 @@ const UserAppearance = () => {
   useLayoutEffect(() => {
     if (appearance) applyAppearance(appearance);
     else clearAppearance();
-  }, [appearance?.primaryColor, appearance?.radius]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [appearance?.primaryColor, appearance?.radius, appearance?.background]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;
 };

@@ -41,6 +41,7 @@ import {
   Sparkles,
   Check,
 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 
 const COMMON_COLUMN_SUGGESTIONS = [
   'Chest',
@@ -410,27 +411,16 @@ const SizeChartsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b pb-5">
-        <div className="flex items-center gap-3.5">
-          <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-xs">
-            <Ruler className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                Category Size Charts
-              </h2>
-              <Badge variant="outline" className="font-semibold text-xs bg-primary/5 text-primary border-primary/20">
+      <PageHeader
+            icon={<Ruler />}
+            title="Category Size Charts"
+            badge={<><Badge variant="outline" className="font-semibold text-xs bg-primary/5 text-primary border-primary/20">
                 Parent Categories
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Define measurement metrics, dimensions, and size variations for each parent category.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-semibold">
+              </Badge></>}
+            description="Define measurement metrics, dimensions, and size variations for each parent category."
+            actions={
+              <>
+                <div className="flex items-center gap-2 text-xs font-semibold">
           <div className="px-3 py-1.5 rounded-lg bg-muted/60 border flex items-center gap-2">
             <Layers className="h-4 w-4 text-muted-foreground" />
             <span>Total Categories:</span>
@@ -442,7 +432,9 @@ const SizeChartsPage = () => {
             <span className="font-bold">{configuredCount}</span>
           </div>
         </div>
-      </div>
+              </>
+            }
+          />
 
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="relative flex-1 max-w-md">
@@ -519,8 +511,8 @@ const SizeChartsPage = () => {
                     {isConfigured && (
                       <Button
                         size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        variant="cancel"
+                        className="h-8 w-8 rounded-full cursor-pointer shrink-0"
                         title="Delete Size Chart"
                         onClick={() =>
                           setDeleteTarget({
@@ -801,10 +793,10 @@ const SizeChartsPage = () => {
                         {selectedSizes.length > 0 && (
                           <Button
                             type="button"
-                            variant="cancel"
+                            variant="reset"
                             size="sm"
                             onClick={handleClearAllSizes}
-                            className="h-7 text-xs px-2 text-muted-foreground hover:text-destructive cursor-pointer"
+                            className="h-7 text-xs px-2 text-muted-foreground cursor-pointer"
                           >
                             Clear
                           </Button>

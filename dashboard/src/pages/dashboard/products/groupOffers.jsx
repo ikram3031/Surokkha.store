@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { apiClient } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 const EMPTY_DISCOUNT = { discountType: 'percentage', discountValue: '' };
 
@@ -326,12 +327,12 @@ const GroupOffersPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Group Offers</h2>
-          <p className="text-sm text-muted-foreground mt-1">Bundle products by the piece and discount the whole group.</p>
-        </div>
-        <Button
+      <PageHeader
+        title="Group Offers"
+        description="Bundle products by the piece and discount the whole group."
+        actions={
+          <>
+            <Button
           onClick={() => {
             setEditing(null);
             setDialogOpen(true);
@@ -341,7 +342,9 @@ const GroupOffersPage = () => {
           <Plus className="mr-2 h-4 w-4" />
           Add Group Offer
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="bg-card text-card-foreground shadow-sm border rounded-lg p-6">
         {isLoading ? (
@@ -386,7 +389,7 @@ const GroupOffersPage = () => {
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setToDelete(o)}>
+                    <Button variant="cancel" size="icon" onClick={() => setToDelete(o)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>

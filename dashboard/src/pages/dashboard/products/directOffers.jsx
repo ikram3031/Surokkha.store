@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ALL_CATEGORIES = '__all__';
 
@@ -207,7 +208,7 @@ const DirectOfferDialog = ({ open, onOpenChange, offerToEdit }) => {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
               <span className={label}>Products ({form.products.length} selected)</span>
               {form.products.length > 0 && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => patch({ products: [] })} disabled={saving}>
+                <Button type="button" variant="reset" size="sm" onClick={() => patch({ products: [] })} disabled={saving}>
                   Clear selection
                 </Button>
               )}
@@ -334,12 +335,12 @@ const DirectOffersPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Direct Offers</h2>
-          <p className="text-sm text-muted-foreground mt-1">Discount many products at once, or give them free delivery.</p>
-        </div>
-        <Button
+      <PageHeader
+        title="Direct Offers"
+        description="Discount many products at once, or give them free delivery."
+        actions={
+          <>
+            <Button
           onClick={() => {
             setEditing(null);
             setDialogOpen(true);
@@ -349,7 +350,9 @@ const DirectOffersPage = () => {
           <Plus className="mr-2 h-4 w-4" />
           Add Direct Offer
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="bg-card text-card-foreground shadow-sm border rounded-lg p-6 overflow-x-auto">
         {isLoading ? (
@@ -387,7 +390,7 @@ const DirectOffersPage = () => {
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setToDelete(o)}>
+                    <Button variant="cancel" size="icon" onClick={() => setToDelete(o)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>

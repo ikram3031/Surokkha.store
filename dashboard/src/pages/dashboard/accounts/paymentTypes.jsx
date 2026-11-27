@@ -65,6 +65,7 @@ import { usePayments } from '@/hooks/use-payments';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { toast } from 'sonner';
 import { PaymentFeesEditor, cleanFees, formatFeeRate } from '@/components/dashboard/accounts/PaymentFeesEditor';
+import { PageHeader } from '@/components/ui/page-header';
 
 const CATEGORY_OPTIONS = [
   { value: 'mfs', label: 'MFS / Mobile Wallet', icon: Smartphone, color: 'text-pink-500 bg-pink-500/10 border-pink-500/20' },
@@ -317,14 +318,10 @@ export const PaymentTypesPage = () => {
             <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
               <CreditCard className="w-6 h-6" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                {t('accounts.payment_methods_title', 'Payment Methods & Types')}
-              </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                {t('accounts.payment_methods_subtitle', 'Configure, add, edit, and manage payment methods, bank accounts, and wallet details.')}
-              </p>
-            </div>
+            <PageHeader
+              title={t('accounts.payment_methods_title', 'Payment Methods & Types')}
+              description={t('accounts.payment_methods_subtitle', 'Configure, add, edit, and manage payment methods, bank accounts, and wallet details.')}
+            />
           </div>
         </div>
 
@@ -717,9 +714,9 @@ export const PaymentTypesPage = () => {
                             <Edit className="w-3.5 h-3.5" />
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="cancel"
                             size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                            className="h-7 w-7 cursor-pointer"
                             onClick={() => setDeleteTarget(type)}
                             title="Delete"
                           >

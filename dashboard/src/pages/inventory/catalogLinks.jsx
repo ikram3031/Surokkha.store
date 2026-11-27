@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ACTION_BTN = 'bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
 
@@ -134,13 +135,15 @@ export default function CatalogLinks({ entity = 'product' }) {
 
   return (
     <div className="space-y-4 p-4 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">{copy.title}</h1>
-          <p className="text-sm text-muted-foreground">Link each {copy.noun} (or each variation) to the inventory piece it sells. Orders take stock only from linked {copy.noun}s; the rest are not tracked.</p>
-        </div>
-        <Button className={ACTION_BTN} nativeButton={false} render={<Link to={copy.add} />}><Plus className="mr-1.5 h-4 w-4" />Add {copy.noun}</Button>
-      </div>
+      <PageHeader
+        title={copy.title}
+        description={<>Link each {copy.noun} (or each variation) to the inventory piece it sells. Orders take stock only from linked {copy.noun}s; the rest are not tracked.</>}
+        actions={
+          <>
+            <Button className={ACTION_BTN} nativeButton={false} render={<Link to={copy.add} />}><Plus className="mr-1.5 h-4 w-4" />Add {copy.noun}</Button>
+          </>
+        }
+      />
 
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">

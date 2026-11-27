@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/ui/page-header';
 
 const money = (v) => `৳${Number(v || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 const fmtDate = (v) => (v ? new Date(v).toLocaleDateString('en-US', { dateStyle: 'medium' }) : '-');
@@ -55,12 +56,10 @@ const StockReceiptsPage = () => {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Received Purchases</h1>
-        <p className="text-sm text-muted-foreground">
-          Every received purchase as applied to stock, whether recorded here under Purchases or in Plexivia. Edits and cancellations of a purchase update this list and the stock.
-        </p>
-      </div>
+      <PageHeader
+        title="Received Purchases"
+        description="Every received purchase as applied to stock, whether recorded here under Purchases or in Plexivia. Edits and cancellations of a purchase update this list and the stock."
+      />
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

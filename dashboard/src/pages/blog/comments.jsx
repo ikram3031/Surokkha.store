@@ -69,7 +69,7 @@ const BlogComments = () => {
                   <Textarea rows={3} placeholder="Write a reply…" value={replyText} onChange={(e) => setReplyText(e.target.value)} />
                   <div className="flex gap-2">
                     <Button onClick={sendReply} disabled={!replyText.trim() || reply.isPending}>Post reply</Button>
-                    <Button variant="ghost" onClick={() => setReplyTo(null)}>Cancel</Button>
+                    <Button variant="cancel" onClick={() => setReplyTo(null)}>Cancel</Button>
                   </div>
                 </div>
               )}

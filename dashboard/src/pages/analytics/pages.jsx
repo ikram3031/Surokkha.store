@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RangeBar, StatCard, useAnalyticsRange, tooltipStyle } from './shared';
+import { PageHeader } from '@/components/ui/page-header';
 
 const VIEW_COLOR = '#2563eb';
 
@@ -71,17 +72,13 @@ export default function AnalyticsPages() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-            <FileText className="h-8 w-8" />
-            {t('analytics.pages_title', 'Pages')}
-          </h2>
-          <p className="text-muted-foreground">
-            {t('analytics.pages_desc', 'Page views and landing pages. Product and checkout pages are counted under products.')}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+      <PageHeader
+        icon={<FileText />}
+        title={t('analytics.pages_title', 'Pages')}
+        description={t('analytics.pages_desc', 'Page views and landing pages. Product and checkout pages are counted under products.')}
+        actions={
+          <>
+            <div className="flex flex-wrap items-center gap-2">
           <div className="flex gap-1">
             {SITES.map((s) => (
               <Button key={s.id} size="sm" variant={site === s.id ? 'default' : 'outline'} onClick={() => setSite(s.id)}>
@@ -91,7 +88,9 @@ export default function AnalyticsPages() {
           </div>
           <RangeBar range={range} />
         </div>
-      </div>
+          </>
+        }
+      />
 
       {isError ? (
         <p className="py-10 text-center text-destructive">{t('analytics.error', 'Error loading analytics.')}</p>

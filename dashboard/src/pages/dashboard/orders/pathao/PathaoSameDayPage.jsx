@@ -15,6 +15,7 @@ import { getApiErrorMessage } from '@/lib/error-handler';
 import { useCourierEnabled } from '@/hooks/use-couriers';
 import { PathaoPickupStore } from '@/components/dashboard/orders/pathaoParcel';
 import { ACTION_BTN, money } from './pathaoUtils';
+import { PageHeader } from '@/components/ui/page-header';
 
 const WEIGHTS = ['0.5', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 const ITEM_TYPES = [
@@ -245,14 +246,12 @@ export default function PathaoSameDayPage() {
   };
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Truck className="h-8 w-8 text-red-500" />
-          {t('nav.pathao_same_day', 'Same Day Order')}
-        </h2>
-        <p className="text-muted-foreground text-sm">Create a Same Day delivery on Pathao. Pick-up entry closes at 12:00 PM; inside Dhaka only.</p>
-      </div>
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        icon={<Truck />}
+        title={t('nav.pathao_same_day', 'Same Day Order')}
+        description="Create a Same Day delivery on Pathao. Pick-up entry closes at 12:00 PM; inside Dhaka only."
+      />
 
       {!pathaoEnabled && (
         <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
@@ -417,7 +416,7 @@ export default function PathaoSameDayPage() {
               {createMutation.isPending && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
               Save
             </Button>
-            <Button type="button" variant="outline" className="cursor-pointer" onClick={() => pickOrder("")}>
+            <Button type="button" variant="cancel" className="cursor-pointer" onClick={() => pickOrder("")}>
               Cancel
             </Button>
           </div>

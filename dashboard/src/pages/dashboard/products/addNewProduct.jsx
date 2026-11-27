@@ -26,6 +26,7 @@ import {
   benefitsPayload,
   sectionsPayload,
 } from "@/components/dashboard/products";
+import { PageHeader } from '@/components/ui/page-header';
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
@@ -740,21 +741,12 @@ const AddNewProduct = () => {
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header Actions */}
-        <div className="flex items-center justify-between border-b pb-4">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard/products"
-              className="p-2 border rounded-lg bg-card hover:bg-muted/50 transition-colors"
-              title="Back to products"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Link>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              {draftSourceName ? 'Duplicate Product' : 'Add New Product'}
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2">
+        <PageHeader
+          back="/dashboard/products"
+          title={draftSourceName ? 'Duplicate Product' : 'Add New Product'}
+          actions={
+            <>
+              <div className="flex items-center gap-2">
             <Button
               variant="outline"
               type="button"
@@ -793,7 +785,9 @@ const AddNewProduct = () => {
               {isCreating ? "Publishing..." : "Publish"}
             </Button>
           </div>
-        </div>
+            </>
+          }
+        />
 
         {importedFromJson && (
           <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/8 px-4 py-2.5 text-sm">

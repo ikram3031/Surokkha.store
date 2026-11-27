@@ -65,6 +65,7 @@ import {
 import { SendOrderInvoiceModal } from "@/components/dashboard/orders/SendOrderInvoiceModal";
 import { CartPriceInput, CustomItemCard } from "@/components/orders/CartLineEditors";
 import { shareInvoiceOnWhatsApp } from "@/utils/invoiceImage";
+import { PageHeader } from '@/components/ui/page-header';
 
 // Modal dialog for selecting product variation & quantity
 const ProductAddDialog = ({ product, onClose, onAddToCart }) => {
@@ -998,15 +999,10 @@ const NewCustomOrderPage = () => {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            {t("nav.new_custom_order", "New Custom Order")}
-          </h2>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            {t("orders.custom_orders_subtitle", "Create a tailored customer order with automated delivery charge & custom discount")} •{" "}
-            <span className="font-mono font-semibold text-primary">CO</span> ID Prefix
-          </p>
-        </div>
+        <PageHeader
+          title={t("nav.new_custom_order", "New Custom Order")}
+          description={<>{t("orders.custom_orders_subtitle", "Create a tailored customer order with automated delivery charge & custom discount")} •{" "} <span className="font-mono font-semibold text-primary">CO</span> ID Prefix</>}
+        />
       </div>
 
       {leadInfo && !leadInfo.loading && !leadInfo.failed && (

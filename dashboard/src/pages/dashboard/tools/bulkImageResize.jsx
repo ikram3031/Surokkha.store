@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const PRESETS = [
   {
@@ -386,20 +387,15 @@ export default function BulkImageResize() {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-3xl font-bold tracking-tight">Bulk Image Resize</h2>
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+      <PageHeader
+        title="Bulk Image Resize"
+        badge={<><Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               Client-Side (0% Bandwidth)
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Resize, compress, and convert product images locally in your browser with ultra-fast canvas processing.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+            </Badge></>}
+        description="Resize, compress, and convert product images locally in your browser with ultra-fast canvas processing."
+        actions={
+          <>
+            <div className="flex items-center gap-2">
           {files.length > 0 && (
             <>
               <Button
@@ -407,7 +403,7 @@ export default function BulkImageResize() {
                 size="sm"
                 onClick={clearAllFiles}
                 disabled={isProcessing}
-                className="text-muted-foreground hover:text-destructive"
+                className=""
               >
                 <Trash2 className="h-4 w-4 mr-1.5" />
                 Clear Queue
@@ -436,7 +432,9 @@ export default function BulkImageResize() {
             </>
           )}
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Settings Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -751,9 +749,9 @@ export default function BulkImageResize() {
 
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="cancel"
                     onClick={() => removeFile(item.id)}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    className="h-8 w-8 p-0"
                     title="Remove from queue"
                   >
                     <Trash2 className="h-3.5 w-3.5" />

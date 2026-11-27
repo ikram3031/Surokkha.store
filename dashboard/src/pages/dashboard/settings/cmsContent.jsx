@@ -25,6 +25,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, resolveImageUrl } from '@/lib/api-client';
 import clientConfig from '@/clientConfig';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_VIDEO_SIZE_BYTES = 100 * 1024 * 1024;
@@ -272,29 +273,16 @@ const CMSContentPage = ({ site = 'shop' }) => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-border pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <FolderArchive className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              CMS Content & Assets
-            </h1>
-            <Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
+      <PageHeader
+        icon={<FolderArchive />}
+        title="CMS Content & Assets"
+        badge={<><Badge variant="outline" className="text-xs font-semibold px-2.5 py-0.5 bg-muted">
               {site === 'store' ? 'surokkhastore.shop' : (clientConfig?.brandName || 'Store')} Assets
-            </Badge>
-          </div>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Manage {site === 'store' ? 'surokkhastore.shop' : 'storefront'} banners, hero slider carousel, and brand assets stored in{' '}
-            <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">
-              {assetsBasePath}
-            </code>
-            . Upload up to 5MB images with automatic lossless WebP compression to ~230KB keeping 100% full resolution.
-          </p>
-        </div>
-
-        <Button
+            </Badge></>}
+        description={<>Manage {site === 'store' ? 'surokkhastore.shop' : 'storefront'} banners, hero slider carousel, and brand assets stored in{' '} <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary"> {assetsBasePath} </code> . Upload up to 5MB images with automatic lossless WebP compression to ~230KB keeping 100% full resolution.</>}
+        actions={
+          <>
+            <Button
           variant="outline"
           size="sm"
           onClick={() => refetchAssets()}
@@ -304,7 +292,9 @@ const CMSContentPage = ({ site = 'shop' }) => {
           <RefreshCw className={`h-3.5 w-3.5 ${isAssetsFetching ? 'animate-spin' : ''}`} />
           <span>Refresh</span>
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex items-start gap-3 p-3.5 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
         <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -536,9 +526,9 @@ const CMSContentPage = ({ site = 'shop' }) => {
 
                           <Button
                             size="icon"
-                            variant="ghost"
+                            variant="cancel"
                             onClick={() => setDeleteTarget(currentAsset.filename)}
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                            className="h-8 w-8 cursor-pointer"
                             title="Delete Asset"
                           >
                             <Trash2 className="h-3.5 w-3.5" />

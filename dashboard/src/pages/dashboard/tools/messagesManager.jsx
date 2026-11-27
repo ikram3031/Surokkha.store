@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate, formatDateTime } from '@/utils/dateHelper';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Calculates relative time strings
 const formatTimeAgo = (dateStr) => {
@@ -403,22 +404,13 @@ const MessagesManager = () => {
   return (
     <div className="space-y-4 w-full min-w-0 max-w-full overflow-hidden">
       {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-border/60">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-xs">
-            <Mail className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              Webmail & Inquiries
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Official store webmail client and customer communication desk.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+            icon={<Mail />}
+            title="Webmail & Inquiries"
+            description="Official store webmail client and customer communication desk."
+            actions={
+              <>
+                <div className="flex items-center gap-2">
           <Button
             size="sm"
             onClick={() => setIsComposeOpen(true)}
@@ -440,7 +432,9 @@ const MessagesManager = () => {
             {syncMutation.isPending ? 'Syncing...' : 'Sync Mailbox'}
           </Button>
         </div>
-      </div>
+              </>
+            }
+          />
 
       {/* Main Webmail 3-Pane / Split-Pane Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-[640px] rounded-xl border border-border bg-card overflow-hidden shadow-xs w-full min-w-0 max-w-full">
@@ -560,10 +554,10 @@ const MessagesManager = () => {
                       <Mail className="h-3.5 w-3.5" />
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="cancel"
                       size="icon"
                       onClick={() => batchActionMutation.mutate({ ids: checkedIds, action: 'trash' })}
-                      className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                      className="h-7 w-7"
                       title="Move to Trash"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -819,10 +813,10 @@ const MessagesManager = () => {
                   )}
 
                   <Button
-                    variant="ghost"
+                    variant="cancel"
                     size="icon"
                     onClick={() => setDeleteTargetId(activeMessage.id || activeMessage.did)}
-                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                    className="h-8 w-8 cursor-pointer"
                     title="Delete Message"
                   >
                     <Trash2 className="h-4 w-4" />

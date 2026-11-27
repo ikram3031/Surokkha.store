@@ -171,7 +171,7 @@ export const AdminSidebar = ({ ...props }) => {
               <button
                 type="button"
                 onClick={handleCloseSidebar}
-                className="h-7 w-7 rounded-full bg-[#DC143C] hover:bg-[#B01030] text-white transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                className="h-7 w-7 rounded-full bg-primary hover:bg-primary/85 text-primary-foreground transition-all flex items-center justify-center shrink-0 cursor-pointer"
                 title="Close Sidebar"
               >
                 <X className="h-3.5 w-3.5" />

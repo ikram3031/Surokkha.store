@@ -367,7 +367,7 @@ export const MediaPickerModal = ({
                 </p>
                 <div className="mt-4 flex items-center gap-2">
                   {activeSearch && (
-                    <Button type="button" variant="outline" size="lg" onClick={() => setSearchQuery("")} className="cursor-pointer">
+                    <Button type="button" variant="reset" size="lg" onClick={() => setSearchQuery("")} className="cursor-pointer">
                       Clear search
                     </Button>
                   )}

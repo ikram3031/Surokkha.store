@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VisitorJourney, OrderRows } from '@/components/dashboard/analytics/VisitorJourney';
 import { formatDateTime, formatMoney } from '@/pages/analytics/shared';
+import { PageHeader } from '@/components/ui/page-header';
 
 const Row = ({ label, value }) => (
   <div className="flex justify-between gap-4 border-b py-1.5 text-sm last:border-0">
@@ -30,12 +31,11 @@ const OrderTracking = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Link to="/dashboard/orders" className="rounded-md p-1.5 hover:bg-muted"><ArrowLeft className="size-5" /></Link>
-        <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <Fingerprint className="size-6" /> Tracking · #{order.orderNumber}
-        </h2>
-      </div>
+      <PageHeader
+        back="/dashboard/orders"
+        icon={<Fingerprint />}
+        title={<>Tracking · #{order.orderNumber}</>}
+      />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

@@ -29,6 +29,7 @@ import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { formatDateTime } from '@/utils/dateHelper';
 import PathaoWebhookCard from './PathaoWebhookCard';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function PathaoCourierSettingsPage() {
   const queryClient = useQueryClient();
@@ -285,22 +286,13 @@ export default function PathaoCourierSettingsPage() {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/80 pb-6">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
-              <Truck className="h-6 w-6" />
-            </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Pathao Courier Integration</h2>
-              <p className="text-muted-foreground text-sm">
-                Connect your Pathao Merchant account to automate order dispatches, consignment generation, and live delivery tracking.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+              icon={<Truck />}
+              title="Pathao Courier Integration"
+              description="Connect your Pathao Merchant account to automate order dispatches, consignment generation, and live delivery tracking."
+              actions={
+                <>
+                  <div className="flex items-center gap-2">
           <Button
             variant="outline"
             onClick={() => testMutation.mutate()}
@@ -328,7 +320,9 @@ export default function PathaoCourierSettingsPage() {
             Save Configuration
           </Button>
         </div>
-      </div>
+                </>
+              }
+            />
 
       {/* Connection Status Banner */}
       <Card className={`border ${isConnected ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-amber-500/5 border-amber-500/30'}`}>

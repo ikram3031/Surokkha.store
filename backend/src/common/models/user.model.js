@@ -35,6 +35,7 @@ const userSchema = new Schema(
       appearance: {
         primaryColor: { type: String, trim: true, default: "" },
         radius: { type: String, trim: true, default: "" },
+        background: { type: String, trim: true, default: "" },
       },
     },
     refreshTokens: {

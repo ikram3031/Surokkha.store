@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { clientConfig } from '@/clientConfig';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Generates the official gtag.js script snippet for storefront implementation
 const generateGtagScript = (measurementId) => {
@@ -137,18 +138,13 @@ const GoogleAnalyticsPage = () => {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* 1. Header with Live Status Indicator */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <BarChart3 className="h-7 w-7 text-primary" />
-            Google Analytics 4 & Tag Manager
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Real-time event pipeline and Google Analytics stream integration for {brandName} storefront.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
+      <PageHeader
+        icon={<BarChart3 />}
+        title="Google Analytics 4 & Tag Manager"
+        description={<>Real-time event pipeline and Google Analytics stream integration for {brandName} storefront.</>}
+        actions={
+          <>
+            <div className="flex items-center gap-2 flex-wrap">
           {isConfigured && isEnabled ? (
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-3 py-1 text-xs">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -172,7 +168,9 @@ const GoogleAnalyticsPage = () => {
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* 2. Verified Data Stream Status Banner */}
       <Card className="border-emerald-500/30 bg-emerald-500/5">

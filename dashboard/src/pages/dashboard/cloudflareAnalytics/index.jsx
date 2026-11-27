@@ -35,6 +35,7 @@ import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 import { clientConfig } from '@/clientConfig';
 import { apiClient } from '@/lib/api-client';
+import { PageHeader } from '@/components/ui/page-header';
 
 const CF_BLUE = '#0051C3';
 const CF_ACCENT_BLUE = '#1E88E5';
@@ -244,24 +245,16 @@ const CloudflareTrafficOverviewPage = () => {
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-[1440px] mx-auto bg-background min-h-screen font-sans text-foreground">
       {/* 1. Multi-Domain Switcher & Top Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-1 border-b border-border/60 pb-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-foreground">
-              Cloudflare Traffic Overview
-            </h1>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+      <PageHeader
+        title="Cloudflare Traffic Overview"
+        badge={<><span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live Edge
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Real-time multi-domain CDN metrics, DDoS shielding, and edge caching analytics.
-          </p>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
+            </span></>}
+        description="Real-time multi-domain CDN metrics, DDoS shielding, and edge caching analytics."
+        actions={
+          <>
+            <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={handlePurgeCache}
             disabled={isPurging}
@@ -298,7 +291,9 @@ const CloudflareTrafficOverviewPage = () => {
             <span>Visit {currentSite?.domain}</span>
           </a>
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* 2. Multi-Domain Tabs & Filter Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-muted/40 p-2.5 rounded-xl border border-border">

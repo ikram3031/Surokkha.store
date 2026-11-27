@@ -42,6 +42,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 const METHOD_COLORS = {
   bKash: 'bg-pink-500/10 text-pink-600 border-pink-500/30',
@@ -184,16 +185,18 @@ const PaymentsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
-          <p className="text-sm text-muted-foreground mt-1">Track all payment transactions</p>
-        </div>
-        <Button variant="outline" className={EXPORT_BUTTON_CLASS}>
+      <PageHeader
+        title="Payments"
+        description="Track all payment transactions"
+        actions={
+          <>
+            <Button variant="outline" className={EXPORT_BUTTON_CLASS}>
           <Download className="size-4" />
           Export
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <div className="bg-card border rounded-xl p-5 shadow-sm flex items-center gap-4">

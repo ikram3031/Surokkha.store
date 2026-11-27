@@ -17,6 +17,7 @@ import {
   SEOOverviewCard,
   SidebarCards,
 } from "@/components/dashboard/products";
+import { PageHeader } from '@/components/ui/page-header';
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
@@ -703,21 +704,12 @@ const AddNewItem = () => {
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header Actions */}
-        <div className="flex items-center justify-between border-b pb-4">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/dashboard/items"
-              className="p-2 border rounded-lg bg-card hover:bg-muted/50 transition-colors"
-              title="Back to products"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Link>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              {draftSourceName ? 'Duplicate Item' : 'Add New Product'}
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2">
+        <PageHeader
+          back="/dashboard/items"
+          title={draftSourceName ? 'Duplicate Item' : 'Add New Product'}
+          actions={
+            <>
+              <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               type="button"
@@ -748,7 +740,9 @@ const AddNewItem = () => {
               {isCreating ? "Publishing..." : "Publish"}
             </Button>
           </div>
-        </div>
+            </>
+          }
+        />
 
         {/* Content Layout Grid */}
         {draftSourceName && (

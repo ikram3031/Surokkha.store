@@ -38,6 +38,7 @@ import { clientConfig } from '@/clientConfig';
 import { useAuth } from '@/lib/auth-context';
 import { isReadOnlyRole } from '@/lib/rbac';
 import styles from '@/styles/styles.json';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the items management interface with search, filters, pagination, and bulk stock controls
 const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null }) => {
@@ -183,10 +184,12 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
   const resolvedTitle = pageTitle || t('items.title', 'Items');
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">{resolvedTitle}</h2>
-        {!isReadOnly && (
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        title={resolvedTitle}
+        actions={
+          <>
+            {!isReadOnly && (
           <Link
             to={
               fixedCategory
@@ -199,7 +202,9 @@ const ItemsPage = ({ fixedCategory = null, fixedOnSale = false, pageTitle = null
             {t('items.add_new_item', 'Add New Item')}
           </Link>
         )}
-      </div>
+          </>
+        }
+      />
 
       <div className="flex flex-col sm:flex-row items-center gap-4">
         <div className="relative flex-1 w-full max-w-sm">

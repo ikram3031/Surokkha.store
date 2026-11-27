@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PageHeader } from '@/components/ui/page-header';
 
 const MOVEMENT_LABELS = {
   purchase_receive: { label: 'Purchase received', tone: 'text-emerald-600' },
@@ -43,10 +44,10 @@ const StockMovementsPage = () => {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Stock History</h1>
-        <p className="text-sm text-muted-foreground">Purchases and manual corrections, one line per change.</p>
-      </div>
+      <PageHeader
+        title="Stock History"
+        description="Purchases and manual corrections, one line per change."
+      />
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

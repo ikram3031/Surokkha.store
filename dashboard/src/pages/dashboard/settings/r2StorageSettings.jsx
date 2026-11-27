@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api-client';
 import { formatDateTime } from '@/utils/dateHelper';
+import { PageHeader } from '@/components/ui/page-header';
 
 const SCHEDULE_PRESETS = [
   { label: 'Daily 3:00 AM', cron: '0 3 * * *' },
@@ -142,15 +143,11 @@ const R2StorageSettingsPage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-          <HardDrive className="h-7 w-7 text-primary" />
-          R2 Storage
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Cloudflare R2 bucket for automatic database and uploads backups.
-        </p>
-      </div>
+      <PageHeader
+        icon={<HardDrive />}
+        title="R2 Storage"
+        description="Cloudflare R2 bucket for automatic database and uploads backups."
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         {isConnected ? (

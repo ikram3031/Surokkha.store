@@ -51,6 +51,7 @@ import {
   SelectedCustomerBanner,
 } from "@/components/orders/CustomerLookup";
 import { CartPriceInput, CustomItemDialog } from "@/components/orders/CartLineEditors";
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the modal dialog for selecting product variant and quantity before adding to cart
 const ProductAddDialog = ({
@@ -582,15 +583,10 @@ const NewInStoreOrderPage = () => {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            {t("nav.new_in_store_order", "New In-Store Order")}
-          </h2>
-          <p className="text-muted-foreground text-sm mt-0.5">
-            {t("orders.pos_title", "Walk-in counter sale — order ID prefixed with")}{" "}
-            <span className="font-mono font-semibold text-primary">S</span>
-          </p>
-        </div>
+        <PageHeader
+          title={t("nav.new_in_store_order", "New In-Store Order")}
+          description={<>{t("orders.pos_title", "Walk-in counter sale — order ID prefixed with")}{" "} <span className="font-mono font-semibold text-primary">S</span></>}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

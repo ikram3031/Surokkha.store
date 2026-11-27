@@ -68,6 +68,7 @@ import { useInvestors } from '@/hooks/use-investors';
 import { DateRangeFilter } from '@/components/dashboard/accounts/DateRangeFilter';
 import { ReturnInvestmentModal } from '@/components/dashboard/accounts/ReturnInvestmentModal';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
@@ -378,17 +379,12 @@ export const InvestmentsListPage = () => {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-5">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            {t('accounts.investments_title', 'Investments Portfolio')}
-          </h1>
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-            {t('accounts.investments_subtitle', 'Track all capital tranches taken, repayment terms, and return status.')}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5">
+      <PageHeader
+        title={t('accounts.investments_title', 'Investments Portfolio')}
+        description={t('accounts.investments_subtitle', 'Track all capital tranches taken, repayment terms, and return status.')}
+        actions={
+          <>
+            <div className="flex flex-wrap items-center gap-2.5">
           <Button
             onClick={() => {
               setReturnTarget(null);
@@ -409,7 +405,9 @@ export const InvestmentsListPage = () => {
             <span>{t('accounts.add_investment_btn', 'Add Investment')}</span>
           </Button>
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* KPI Stats Mini-cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RangeBar, ProductDrawer, METRICS, makeColorFor, useAnalyticsRange, formatMoney } from './shared';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Gold, silver, bronze for the top three; plain muted badge after that
 const RANK_STYLES = ['bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400', 'bg-slate-200 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300', 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400'];
@@ -38,18 +39,16 @@ export default function AnalyticsProducts() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-            <Package className="h-8 w-8" />
-            {t('analytics.products_title', 'Product Rankings')}
-          </h2>
-          <p className="text-muted-foreground">
-            {t('analytics.products_desc', 'Which products are viewed, carted, taken to checkout and bought the most.')}
-          </p>
-        </div>
-        <RangeBar range={range} />
-      </div>
+      <PageHeader
+        icon={<Package />}
+        title={t('analytics.products_title', 'Product Rankings')}
+        description={t('analytics.products_desc', 'Which products are viewed, carted, taken to checkout and bought the most.')}
+        actions={
+          <>
+            <RangeBar range={range} />
+          </>
+        }
+      />
 
       <Card>
         <CardHeader className="gap-3 md:flex-row md:items-center md:justify-between">

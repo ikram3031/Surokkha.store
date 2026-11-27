@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EVENT_LABELS, formatTime, tooltipStyle } from './shared';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { VisitorJourney } from '@/components/dashboard/analytics/VisitorJourney';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Side panel with one visitor's full history
 const VisitorSheet = ({ visitorId, onClose }) => {
@@ -67,20 +68,11 @@ export default function AnalyticsLive() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-          <Radio className="h-8 w-8" />
-          {t('analytics.live_title', 'Live Today')}
-        </h2>
-        <p className="flex items-center gap-2 text-muted-foreground">
-          <span className="relative flex size-2.5">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
-            <span className="relative inline-flex size-2.5 rounded-full bg-green-500" />
-          </span>
-          <span className="font-semibold tabular-nums text-foreground">{data?.activeNow ?? 0}</span>
-          {t('analytics.active_now', 'visitors active in the last 5 minutes')}
-        </p>
-      </div>
+      <PageHeader
+        icon={<Radio />}
+        title={t('analytics.live_title', 'Live Today')}
+        description={<><span className="relative flex size-2.5"> <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" /> <span className="relative inline-flex size-2.5 rounded-full bg-green-500" /> </span> <span className="font-semibold tabular-nums text-foreground">{data?.activeNow ?? 0}</span> {t('analytics.active_now', 'visitors active in the last 5 minutes')}</>}
+      />
 
       <Card>
         <CardHeader>

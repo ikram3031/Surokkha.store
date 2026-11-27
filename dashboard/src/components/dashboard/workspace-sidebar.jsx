@@ -68,7 +68,7 @@ export const WorkspaceSidebar = ({ title, children, ...props }) => {
               <button
                 type="button"
                 onClick={closeSidebar}
-                className="h-8 w-8 rounded-lg bg-[#DC143C] text-white hover:bg-[#B01030] hover:text-white transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                className="h-8 w-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                 title="Close Sidebar"
               >
                 <X className="h-4 w-4" />

@@ -143,7 +143,7 @@ export default function InvoiceImportDialog({ open, onOpenChange }) {
         )}
 
         <DialogFooter>
-          <Button type="button" variant="outline" className="cursor-pointer" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="cancel" className="cursor-pointer" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           {!preview ? (

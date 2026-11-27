@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-context';
 import { apiClient, getApiBaseUrl } from '@/lib/api-client';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 const TIMEZONES = [
   { value: 'Asia/Dhaka', label: '(GMT+6) Dhaka' },
@@ -219,13 +220,11 @@ export default function UserProfile() {
   const initials = (displayName || user?.email || '?').charAt(0).toUpperCase();
 
   return (
-    <div className="page-container flex-1 space-y-5 p-4 md:p-8 pt-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('profile.title', 'Profile')}</h1>
-        <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-          {t('profile.subtitle', 'Manage the identity and regional details shared across your workspace.')}
-        </p>
-      </div>
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        title={t('profile.title', 'Profile')}
+        description={t('profile.subtitle', 'Manage the identity and regional details shared across your workspace.')}
+      />
 
       {!bannerDismissed && (
         <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5">
@@ -271,11 +270,11 @@ export default function UserProfile() {
                 {user?.avatar && (
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="cancel"
                     size="icon"
                     onClick={handleAvatarRemove}
                     disabled={isUploading}
-                    className="h-7 w-7 text-destructive hover:text-destructive cursor-pointer"
+                    className="h-7 w-7 cursor-pointer"
                     aria-label={t('profile.remove_picture', 'Remove picture')}
                   >
                     <Trash2 className="h-3.5 w-3.5" />

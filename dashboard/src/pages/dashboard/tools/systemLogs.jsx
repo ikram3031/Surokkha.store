@@ -18,6 +18,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function SystemLogs() {
   const { user } = useAuth();
@@ -206,21 +207,16 @@ export default function SystemLogs() {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-3xl font-bold tracking-tight">System & API Logs</h2>
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 flex items-center gap-1">
+      <PageHeader
+        title="System & API Logs"
+        badge={<><Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live Stream
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Realtime monitoring of live backend API requests, status codes, and server execution logs.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
+            </Badge></>}
+        description="Realtime monitoring of live backend API requests, status codes, and server execution logs."
+        actions={
+          <>
+            <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -235,7 +231,7 @@ export default function SystemLogs() {
             variant="cancel"
             size="sm"
             onClick={() => setLogs([])}
-            className="shadow-2xs text-xs text-muted-foreground hover:text-destructive"
+            className="shadow-2xs text-xs"
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             Clear
@@ -252,7 +248,9 @@ export default function SystemLogs() {
             {isDownloading ? "Downloading..." : "Database Backup"}
           </Button>
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Filter Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">

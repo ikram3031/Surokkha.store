@@ -12,7 +12,7 @@ export default function PathaoWebhookPage() {
   if (role !== 'owner' && role !== 'admin') return <NotFound />;
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <PathaoHeader title={t('nav.pathao_webhook', 'Pathao Webhook')} description="Events Pathao has pushed to the store." />
       <WebhookEventsTab />
     </div>

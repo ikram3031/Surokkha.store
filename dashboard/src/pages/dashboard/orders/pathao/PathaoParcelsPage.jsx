@@ -9,7 +9,7 @@ export default function PathaoParcelsPage() {
   const [range, setRange] = useState({ from: '', to: '' });
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <PathaoHeader
         title={t('nav.pathao_parcels', 'Pathao Parcels')}
         description="Parcel status, courier charges and payouts."

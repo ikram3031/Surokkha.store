@@ -18,6 +18,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders integrated cPanel and VPS Node Agent operational telemetry micro-frontend
 const CPanelManager = () => {
@@ -104,23 +105,16 @@ const CPanelManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Terminal className="h-6 w-6 text-primary" />
-              PPanel Operations & VPS Telemetry
-            </h1>
-            <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+      <PageHeader
+        icon={<Terminal />}
+        title="PPanel Operations & VPS Telemetry"
+        badge={<><Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
               Agent Connected
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Real-time multi-tenant host telemetry and container lifecycle management
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+            </Badge></>}
+        description="Real-time multi-tenant host telemetry and container lifecycle management"
+        actions={
+          <>
+            <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -141,7 +135,9 @@ const CPanelManager = () => {
             Launch Full PPanel
           </Button>
         </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-sidebar-border bg-sidebar/50">

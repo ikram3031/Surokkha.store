@@ -259,7 +259,7 @@ const RedxCourierCardInner = ({
             </div>
           )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button type="button" variant="cancel" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || loadingAreas} className="gap-2">

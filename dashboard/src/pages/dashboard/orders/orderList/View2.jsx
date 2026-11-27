@@ -14,6 +14,7 @@ import { OrderQuickView } from './view2/OrderQuickView';
 import { PathaoSyncPill } from './view2/PathaoSyncPill';
 import { StatCards } from './view2/StatCards';
 import { Toolbar } from './view2/Toolbar';
+import { PageHeader } from '@/components/ui/page-header';
 
 // View 2 — card-style layout with quick view sheet, fixed-width table and compact pagination.
 // Mobile: title + New order on one row, no Pathao bar / stats / Export, filters in a 2-column grid.
@@ -23,11 +24,13 @@ const View2 = ({ list }) => {
   const { title, showStats, newOrderAction, exporter, pathao, stats, data, pagination, orderActions } = list;
 
   return (
-    <div className="page-container flex-1 space-y-5 p-4 pt-6 md:p-8">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{t(title.key, title.label)}</h2>
-          <div className="flex gap-2">
+        <PageHeader
+          title={t(title.key, title.label)}
+          actions={
+            <>
+              <div className="flex gap-2">
             {newOrderAction && (
               <Button
                 nativeButton={false}
@@ -48,7 +51,9 @@ const View2 = ({ list }) => {
               {t('common.export', 'Export')}
             </Button>
           </div>
-        </div>
+            </>
+          }
+        />
         <PathaoSyncPill pathao={pathao} className="hidden sm:inline-flex" />
       </div>
 

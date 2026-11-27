@@ -16,6 +16,7 @@ import {
   SEOOverviewCard,
   SidebarCards,
 } from "@/components/dashboard/products";
+import { PageHeader } from '@/components/ui/page-header';
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
@@ -726,24 +727,12 @@ const EditProductPage = () => {
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header Actions */}
-        <div className="flex items-center justify-between border-b pb-4">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              type="button"
-              onClick={() => window.history.length > 1 ? navigate(-1) : navigate("/dashboard/items")}
-              className="h-9 w-9 border rounded-lg bg-card hover:bg-muted/50 transition-colors cursor-pointer"
-              title="Back to products"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              Edit Product
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2">
+        <PageHeader
+          back={() => window.history.length > 1 ? navigate(-1) : navigate("/dashboard/items")}
+          title="Edit Product"
+          actions={
+            <>
+              <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               type="button"
@@ -771,7 +760,9 @@ const EditProductPage = () => {
               {isUpdating ? "Updating..." : "Update"}
             </Button>
           </div>
-        </div>
+            </>
+          }
+        />
 
         {/* Content Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">

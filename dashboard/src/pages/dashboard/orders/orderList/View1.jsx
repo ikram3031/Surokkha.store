@@ -34,6 +34,7 @@ import {
   PAYMENT_FILTER_OPTIONS,
   STATUS_ALL,
 } from './constants';
+import { PageHeader } from '@/components/ui/page-header';
 
 // View 1 — the original orders list layout (expandable rows via the shared OrdersTable).
 // All state and actions come from useOrderList via `list`.
@@ -44,13 +45,13 @@ const View1 = ({ list }) => {
   const optionLabel = (opt) => (opt.labelKey ? t(opt.labelKey, opt.label) : opt.label);
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">{t('orders.title', 'Orders Management')}</h2>
-          <PathaoSyncBar />
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        title={t('orders.title', 'Orders Management')}
+        description={<><PathaoSyncBar /></>}
+        actions={
+          <>
+            <div className="flex items-center gap-2">
           {newOrderAction && (
             <Button size="lg" className="h-9 px-4" nativeButton={false} render={<Link to={newOrderAction.to} />}>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -67,7 +68,9 @@ const View1 = ({ list }) => {
             {t('common.export', 'Export')}
           </Button>
         </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
         <div className="relative flex-1 w-full max-w-sm">

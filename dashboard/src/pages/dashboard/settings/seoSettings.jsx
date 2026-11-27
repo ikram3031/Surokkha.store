@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const SEO_SITES = {
   shop: { domain: 'surokkha.shop', label: 'Shop', apiBase: '/api/v1/settings/seo' },
@@ -86,24 +87,21 @@ const SEOSettingsPage = ({ site = 'shop' }) => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <Search className="h-7 w-7 text-primary" />
-            Search Engine Optimization (SEO)
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Configure default meta tags, search snippets, social share previews, and crawler indexing for {siteInfo.domain}.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        icon={<Search />}
+        title="Search Engine Optimization (SEO)"
+        description={<>Configure default meta tags, search snippets, social share previews, and crawler indexing for {siteInfo.domain}.</>}
+        actions={
+          <>
+            <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-3 py-1">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Active Meta Headers
           </Badge>
         </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 space-y-6">

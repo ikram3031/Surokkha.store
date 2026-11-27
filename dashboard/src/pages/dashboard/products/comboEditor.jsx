@@ -21,6 +21,7 @@ import { effectivePrice } from '@/utils/orderHelper';
 import { taka } from './combos';
 import { useStockItems } from '@/hooks/use-stock-items';
 import { RichTextEditor } from '@/components/dashboard/rich-text-editor';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ACTION_BTN = 'cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90';
 const API_BASE = (baseURL || '').replace(/\/$/, '');
@@ -345,14 +346,15 @@ const ComboEditor = () => {
   }
 
   return (
-    <form onSubmit={save} className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <form onSubmit={save} className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button type="button" variant="outline" size="icon" render={<Link to="/dashboard/products/combos" />}><ChevronLeft className="h-4 w-4" /></Button>
-          <div>
-            <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight"><Layers className="h-6 w-6 text-primary" /> {isNew ? (copyId ? 'Duplicate group product' : 'New group product') : `Edit ${source?.name || ''}`}</h2>
-            <p className="text-sm text-muted-foreground">Set pieces sold together. One discount on the whole group.</p>
-          </div>
+          <PageHeader
+            icon={<Layers />}
+            title={<>{isNew ? (copyId ? 'Duplicate group product' : 'New group product') : `Edit ${source?.name || ''}`}</>}
+            description="Set pieces sold together. One discount on the whole group."
+          />
         </div>
         {!readOnly && (
           <Button type="submit" className={ACTION_BTN} disabled={saving}>
@@ -439,7 +441,7 @@ const ComboEditor = () => {
                       ৳<Input type="number" min={0} step="any" className="h-8 w-24" value={p.unitPrice} onChange={(e) => setPiece(p.key, { unitPrice: e.target.value })} />
                     </label>
                     <span className="w-20 text-right text-sm font-semibold">{taka(lineTotal)}</span>
-                    <Button type="button" size="icon" variant="ghost" className="h-8 w-8" aria-label="Remove piece" onClick={() => set({ pieces: form.pieces.filter((x) => x.key !== p.key) })}><Trash2 className="h-4 w-4" /></Button>
+                    <Button type="button" size="icon" variant="cancel" className="h-8 w-8" aria-label="Remove piece" onClick={() => set({ pieces: form.pieces.filter((x) => x.key !== p.key) })}><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 );
               })}

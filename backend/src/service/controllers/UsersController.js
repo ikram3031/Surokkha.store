@@ -475,11 +475,13 @@ const PROFILE_WEEK_STARTS = ["saturday", "sunday", "monday"];
 const PROFILE_LANGUAGES = ["en", "bn"];
 const PROFILE_TIME_FORMATS = ["12h", "24h"];
 const APPEARANCE_RADII = ["0rem", "0.25rem", "0.5rem", "0.75rem", "1rem"];
+const APPEARANCE_BACKGROUNDS = ["neutral", "tint", "warm", "cool"];
 
-// Keeps only a valid hex colour and one of the allowed corner radii; anything else clears the choice
+// Keeps only valid hex colours, allowed corner radii and background presets; anything else clears the choice
 const sanitizeAppearance = (value = {}) => ({
   primaryColor: /^#[0-9a-f]{6}$/i.test(String(value.primaryColor || "")) ? String(value.primaryColor) : "",
   radius: APPEARANCE_RADII.includes(value.radius) ? value.radius : "",
+  background: APPEARANCE_BACKGROUNDS.includes(value.background) || /^#[0-9a-f]{6}$/i.test(String(value.background || "")) ? String(value.background) : "",
 });
 
 // Accepts a single "avatar" image up to 10MB, kept in memory for resizing

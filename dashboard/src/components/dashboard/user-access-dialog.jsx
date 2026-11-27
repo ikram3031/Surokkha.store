@@ -107,7 +107,7 @@ export function UserAccessDialog({ open, onOpenChange, user, onSuccess }) {
         )}
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="cancel" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="button" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Access'}</Button>
         </div>
       </DialogContent>

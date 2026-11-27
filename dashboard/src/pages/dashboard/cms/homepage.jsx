@@ -6,6 +6,7 @@ import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { Home, RefreshCw, Plus, Info } from 'lucide-react';
 import { useCmsAssets } from '@/lib/use-cms-assets';
 import SlotCard from '@/components/cms/SlotCard';
+import { PageHeader } from '@/components/ui/page-header';
 
 const DEFAULT_SLIDER_SLOTS = [
   { key: 'slider-1', label: 'Slide 1', filename: 'slider-1.webp', recommendedSize: '1920x650' },
@@ -51,21 +52,13 @@ const CmsHomepagePage = () => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 border-b border-border pb-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <Home className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              Homepage
-            </h1>
-          </div>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Manage the hero slider carousel displayed on your storefront homepage.
-          </p>
-        </div>
-        <Button
+      <PageHeader
+        title="Homepage"
+        icon={<Home />}
+        description="Manage the hero slider carousel displayed on your storefront homepage."
+        actions={
+          <>
+            <Button
           variant="outline" size="sm"
           onClick={() => cms.refetchAssets()}
           disabled={cms.isAssetsFetching}
@@ -74,7 +67,9 @@ const CmsHomepagePage = () => {
           <RefreshCw className={`h-3.5 w-3.5 ${cms.isAssetsFetching ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex items-start gap-3 p-3.5 rounded-lg border border-primary/20 bg-primary/5 text-xs text-muted-foreground">
         <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />

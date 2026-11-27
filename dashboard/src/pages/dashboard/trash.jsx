@@ -47,6 +47,7 @@ import { toast } from 'sonner';
 import { useNavigate, Link } from 'react-router-dom';
 import { formatDate, formatDateTime } from '@/utils/dateHelper';
 import { StatusChip } from '@/pages/dashboard/orders/orderList/view2/StatusChip';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatTime = (value) => {
   if (!value) return '';
@@ -264,19 +265,17 @@ const TrashPage = () => {
   };
 
   return (
-    <div className="page-container flex-1 space-y-5 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center">
             <Trash2 className="h-5 w-5" />
           </div>
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Trash & Inactive Archive</h2>
-            <p className="text-xs text-muted-foreground">
-              Restore or permanently remove deleted (inactive) products, items and orders.
-            </p>
-          </div>
+          <PageHeader
+            title="Trash & Inactive Archive"
+            description="Restore or permanently remove deleted (inactive) products, items and orders."
+          />
         </div>
 
         {/* Radio Selector for Trash Type */}
@@ -604,10 +603,10 @@ const TrashPage = () => {
                           </Button>
                           <Button
                             size="sm"
-                            variant="ghost"
+                            variant="cancel"
                             onClick={() => setDeleteTarget(product)}
                             title={`Permanently Delete ${catalogNoun}`}
-                            className="h-8 px-2 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
+                            className="h-8 px-2 text-xs cursor-pointer"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

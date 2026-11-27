@@ -41,6 +41,7 @@ import {
   downloadDualSiteZip,
   generateCsvString as serializeCsv,
 } from '@/lib/excel-export';
+import { PageHeader } from '@/components/ui/page-header';
 
 const META_CSV_COLUMNS = [
   'id',
@@ -933,22 +934,17 @@ const MetaCatalogGenerator = () => {
   };
 
   return (
-    <div className="page-container flex-1 space-y-5 p-4 md:p-8 pt-6">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Header Bar */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-3xl font-bold tracking-tight">Meta Catalog Feed</h2>
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+      <PageHeader
+        title="Meta Catalog Feed"
+        badge={<><Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
               Selected in Feed: {stagedMap.size} Items
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Generate and export Meta Pixel & Commerce Manager compliant product catalogs for Surokkha Store and Shop.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
+            </Badge></>}
+        description="Generate and export Meta Pixel & Commerce Manager compliant product catalogs for Surokkha Store and Shop."
+        actions={
+          <>
+            <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -971,7 +967,7 @@ const MetaCatalogGenerator = () => {
             Copy {activeSite.key === 'shop' ? 'Shop' : 'Store'} CSV
           </Button>
 
-          {/* Dedicated Download Store CSV Button */}
+          
           <Button
             size="sm"
             onClick={() => handleDownloadSiteCsv(storeSite)}
@@ -985,7 +981,7 @@ const MetaCatalogGenerator = () => {
             </span>
           </Button>
 
-          {/* Dedicated Download Shop CSV Button */}
+          
           <Button
             size="sm"
             onClick={() => handleDownloadSiteCsv(shopSite)}
@@ -999,7 +995,7 @@ const MetaCatalogGenerator = () => {
             </span>
           </Button>
 
-          {/* Excel & ZIP Download Dropdown */}
+          
           <div className="relative group">
             <Button
               variant="outline"
@@ -1048,7 +1044,9 @@ const MetaCatalogGenerator = () => {
             </div>
           </div>
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Dual Site Switcher Card Banner */}
       <div className="rounded-xl border bg-card/60 backdrop-blur-xs p-3 shadow-2xs">
@@ -1528,9 +1526,9 @@ const MetaCatalogGenerator = () => {
                           <td className="p-3 text-center">
                             <Button
                               size="sm"
-                              variant="ghost"
+                              variant="cancel"
                               onClick={() => removeStagedItem(idVal)}
-                              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive cursor-pointer"
+                              className="h-7 w-7 p-0 cursor-pointer"
                               title="Remove from feed"
                             >
                               <Trash2 className="h-3.5 w-3.5" />

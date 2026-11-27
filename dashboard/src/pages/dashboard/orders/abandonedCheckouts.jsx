@@ -22,6 +22,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { cn } from '@/lib/utils';
 import { WhatsAppIcon, handleCopyText } from '@/utils/orderDetailsHelper';
 import { LIGHT_BUTTON_CLASS, PRIMARY_BUTTON_CLASS } from './orderList/constants';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatMoney = (v) => `৳${Number(v || 0).toLocaleString('en-US')}`;
 
@@ -357,16 +358,12 @@ export default function AbandonedCheckouts() {
   };
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <ShoppingCart className="h-8 w-8" />
-          {t('nav.abandoned_checkouts', 'Abandoned Checkouts')}
-        </h2>
-        <p className="text-muted-foreground">
-          {t('abandoned.description', 'People who started checkout but did not place an order. Call them to complete it.')}
-        </p>
-      </div>
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        icon={<ShoppingCart />}
+        title={t('nav.abandoned_checkouts', 'Abandoned Checkouts')}
+        description={t('abandoned.description', 'People who started checkout but did not place an order. Call them to complete it.')}
+      />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Card>

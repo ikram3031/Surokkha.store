@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Shop and store each keep their own pixel data behind their own API
 const SITES = {
@@ -150,17 +151,11 @@ const MetaPixelPage = ({ site = 'shop' }) => {
 
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <Share2 className="h-7 w-7 text-primary" />
-            Meta Pixel & Conversions API (CAPI)
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage the Meta Pixel dataset and CAPI credentials for {siteInfo.domain}.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon={<Share2 />}
+        title="Meta Pixel & Conversions API (CAPI)"
+        description={<>Manage the Meta Pixel dataset and CAPI credentials for {siteInfo.domain}.</>}
+      />
 
       <form onSubmit={handleSave} className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20">

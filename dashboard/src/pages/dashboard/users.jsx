@@ -37,6 +37,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import styles from '@/styles/styles.json';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the system users and staff management dashboard with invite modal and role controls
 const UsersPage = () => {
@@ -169,10 +170,12 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">{t('admin.system_users')}</h2>
-        <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        title={t('admin.system_users')}
+        actions={
+          <>
+            <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
           <DialogTrigger
             render={
               <Button>
@@ -261,7 +264,9 @@ const UsersPage = () => {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+          </>
+        }
+      />
       
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
         <div className="relative flex-1 w-full max-w-sm">

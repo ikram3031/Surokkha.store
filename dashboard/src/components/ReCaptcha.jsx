@@ -198,7 +198,7 @@ export const ReCaptcha = ({ onVerify, verified }) => {
                       type="button"
                       variant="cancel"
                       size="xs"
-                      className="text-slate-400 hover:text-white text-[11px]"
+                      className="text-[11px]"
                       onClick={() => {
                         setShowChallenge(false);
                         setSelectedIds([]);

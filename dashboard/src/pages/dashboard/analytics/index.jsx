@@ -22,6 +22,7 @@ import { LookerStudioSetup } from './components/LookerStudioSetup';
 import { GA4DirectReportsTab } from './components/GA4DirectReportsTab';
 import { GA4SetupTab } from './components/GA4SetupTab';
 import { GA4ConfigModal } from './components/GA4ConfigModal';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Main Google Analytics dashboard page integrating Google Looker Studio Live GA4 Embed
 const AnalyticsPage = () => {
@@ -98,26 +99,18 @@ const AnalyticsPage = () => {
   return (
     <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
       {/* Top Header & Quick Actions Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              <BarChart3 className="h-7 w-7 text-primary" />
-              <span>Google Analytics</span>
-            </h2>
-            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-2.5 py-1 text-xs">
+      <PageHeader
+        icon={<BarChart3 />}
+        title="Google Analytics"
+        badge={<><Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 px-2.5 py-1 text-xs">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Stream Active (Past 48h)</span>
-            </Badge>
-          </div>
-          <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            Official Google Analytics 4 (Property <strong className="text-foreground font-mono">{currentConfig.propertyId}</strong>) live reporting and embedded Looker Studio dashboard for {brandName}.
-          </p>
-        </div>
-
-        {/* Top Header Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
+            </Badge></>}
+        description={<>Official Google Analytics 4 (Property <strong className="text-foreground font-mono">{currentConfig.propertyId}</strong>) live reporting and embedded Looker Studio dashboard for {brandName}.</>}
+        actions={
+          <>
+            <div className="flex items-center gap-2 flex-wrap">
           <Button
             type="button"
             variant="outline"
@@ -151,7 +144,9 @@ const AnalyticsPage = () => {
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Tab Navigation Pill Bar */}
       <div className="border-b border-border pb-3">

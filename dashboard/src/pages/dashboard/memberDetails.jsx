@@ -68,6 +68,7 @@ import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/error-handler';
 import { toLocalBdPhone, isValidBdPhone } from '@/utils/phone';
 import { DistrictCombobox, ThanaCombobox } from '@/components/orders/LocationCombobox';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Helper to format currency
 const formatBDT = (amount = 0) => `৳${Number(amount || 0).toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -379,12 +380,10 @@ export const MemberDetails = () => {
         <div className="h-16 w-16 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
           <AlertCircle className="h-8 w-8" />
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground">Customer Not Found</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {error instanceof Error ? error.message : 'The requested customer profile could not be retrieved.'}
-          </p>
-        </div>
+        <PageHeader
+          title="Customer Not Found"
+          description={error instanceof Error ? error.message : 'The requested customer profile could not be retrieved.'}
+        />
         <Button onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/dashboard/members')} className="mt-2">
           <ArrowLeft className="h-4 w-4 mr-1.5" /> Return to Members
         </Button>

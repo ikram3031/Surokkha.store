@@ -48,7 +48,7 @@ const SeoRedirects = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{editing ? 'Edit redirect' : 'Add redirect'}</CardTitle>
-          {(editing || form.from) && <Button variant="ghost" size="sm" onClick={reset}><X />Clear</Button>}
+          {(editing || form.from) && <Button variant="reset" size="sm" onClick={reset}><X />Clear</Button>}
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-[1fr_1fr_160px_auto] md:items-end">
           <Field label="From"><Input className="font-mono text-xs" placeholder="/old-url" value={form.from} onChange={(e) => set('from', e.target.value)} /></Field>
@@ -87,7 +87,7 @@ const SeoRedirects = () => {
                     <TableCell>
                       <RowActions>
                         <Button variant="ghost" size="icon" title="Edit" onClick={() => edit(r)}><Pencil /></Button>
-                        <Button variant="ghost" size="icon" className="hover:text-destructive" title="Delete" onClick={() => remove.mutate(r.id)}><Trash2 /></Button>
+                        <Button variant="cancel" size="icon" className="" title="Delete" onClick={() => remove.mutate(r.id)}><Trash2 /></Button>
                       </RowActions>
                     </TableCell>
                   </TableRow>

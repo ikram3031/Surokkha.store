@@ -69,7 +69,7 @@ const BlogTags = () => {
                 <span className="text-xs text-muted-foreground">Merge {picked.length} tags into</span>
                 <Input className="!h-7 !w-44 text-xs" placeholder={picked[0]} value={target} onChange={(e) => setTarget(e.target.value)} />
                 <Button size="sm" onClick={runMerge} disabled={merge.isPending}><GitMerge />Merge</Button>
-                <Button size="sm" variant="ghost" onClick={() => setPicked([])}>Clear</Button>
+                <Button size="sm" variant="reset" onClick={() => setPicked([])}>Clear</Button>
               </div>
             )}
             <div className="flex flex-wrap gap-2">

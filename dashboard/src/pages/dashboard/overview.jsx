@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/lib/auth-context';
 import { hasMenuAccess } from '@/lib/rbac';
 import { clientConfig } from '@/clientConfig';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Renders the main store metrics overview page with sales charts and KPI indicators
 const DashboardPage = () => {
@@ -35,10 +36,14 @@ const DashboardPage = () => {
 
   return (
     <div className="flex-1 space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t('nav.overview', 'Dashboard')}</h2>
-        <DashboardRangePicker value={filter} onChange={setFilter} />
-      </div>
+      <PageHeader
+        title={t('nav.overview', 'Dashboard')}
+        actions={
+          <>
+            <DashboardRangePicker value={filter} onChange={setFilter} />
+          </>
+        }
+      />
       
       <OrdersInsight filter={filter} />
 

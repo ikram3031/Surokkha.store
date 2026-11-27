@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { getApiErrorMessage } from '@/lib/error-handler';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function SpamList() {
   const { t } = useTranslation();
@@ -121,22 +122,20 @@ export default function SpamList() {
   };
 
   return (
-    <div className="page-container flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <ShieldAlert className="h-8 w-8 text-red-500" />
-            {t('nav.spam_list', 'Spam List')}
-          </h2>
-          <p className="text-muted-foreground">
-            {t('spam.description', 'Manage and view blocked emails and phone numbers from fake orders.')}
-          </p>
-        </div>
-        <Button type="button" onClick={() => setIsAddOpen(true)} className="gap-1.5 cursor-pointer">
+    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <PageHeader
+        icon={<ShieldAlert />}
+        title={t('nav.spam_list', 'Spam List')}
+        description={t('spam.description', 'Manage and view blocked emails and phone numbers from fake orders.')}
+        actions={
+          <>
+            <Button type="button" onClick={() => setIsAddOpen(true)} className="gap-1.5 cursor-pointer">
           <Plus className="h-4 w-4" />
           {t('spam.add_new', 'Add New')}
         </Button>
-      </div>
+          </>
+        }
+      />
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="sm:max-w-md">

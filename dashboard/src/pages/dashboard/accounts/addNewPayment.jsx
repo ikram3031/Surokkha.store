@@ -32,6 +32,7 @@ import { useMembers } from '@/hooks/use-members';
 import { useSystemUsers } from '@/hooks/use-users';
 import { AttachmentUploader } from '@/components/dashboard/accounts/AttachmentUploader';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/page-header';
 
 const formatCurrency = (val) => {
   const n = Number(val) || 0;
@@ -182,14 +183,10 @@ export const AddNewPaymentPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {editId ? 'Edit Payment Record' : t('accounts.add_new_payment', 'Add New Payment')}
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Record manual customer settlements, POS transactions, or gateway collections.
-            </p>
-          </div>
+          <PageHeader
+            title={editId ? 'Edit Payment Record' : t('accounts.add_new_payment', 'Add New Payment')}
+            description="Record manual customer settlements, POS transactions, or gateway collections."
+          />
         </div>
       </div>
 
