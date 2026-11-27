@@ -58,11 +58,16 @@ const PACKS = [
 ];
 
 const ADDONS = [
-  { key: 'white', did: '091bfca429b96b19', slug: 'mo-white-5-pcs', name: 'MO White', fullName: 'Mo White 2 Pcs', pcs: 2, price: 60, img: 'skh-i-white', color: '#f1f5f9' },
-  { key: 'pink', did: '6bb5a600017c619b', slug: 'mo-pink-5-pcs', name: 'MO Pink', fullName: 'Mo Pink 2 Pcs', pcs: 2, price: 60, img: 'skh-i-pink', color: '#f4a7c4' },
-  { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 2 Pcs', pcs: 2, price: 60, img: 'skh-i-blue', color: '#38bdf8' },
-  { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 270, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
+  { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 330, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
+  { key: 'durex', sku: 'GC-ADDON-02', name: 'Durex Bubblegum', fullName: 'Durex Bubblegum 3 Pcs', pcs: 3, price: 120, color: '#f472b6', itemType: 'custom', size: 'Special Offer Add-on (3 Pcs)' },
+  { key: 'skore', sku: 'GC-ADDON-03', name: 'Skore Not Out', fullName: 'Skore Not Out 3 Pcs', pcs: 3, price: 120, color: '#a855f7', itemType: 'custom', size: 'Special Offer Add-on (3 Pcs)' },
+  { key: 'amore', sku: 'GC-ADDON-04', name: 'Amore Gold', fullName: 'Amore Gold 3 Pcs', pcs: 3, price: 100, color: '#eab308', itemType: 'custom', size: 'Special Offer Add-on (3 Pcs)' },
 ];
+
+// The neutral name and id Meta sees for every add-on, so no product names reach the pixel
+const META_ADDON_NAME = 'Gift Combo Add-on';
+const metaAddonId = (a) => a.did || a.sku;
+const EMPTY_ADDONS = Object.fromEntries(ADDONS.map((a) => [a.key, 0]));
 
 const DEFAULT_PACK = PACKS[1];
 const MAX_ADDON = 5;
@@ -169,7 +174,7 @@ const SpecialOfferView = () => {
   useCampaignFonts();
   const [packKey, setPackKey] = useState('18');
   const [qty, setQty] = useState(1);
-  const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0, ky: 0 });
+  const [addonQty, setAddonQty] = useState(EMPTY_ADDONS);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [sending, setSending] = useState(false);
@@ -212,7 +217,7 @@ const SpecialOfferView = () => {
     cartTotal: total,
     items: [
       { slug: activePack.slug, name: activePack.name, quantity: qty, unitPrice: activePack.offerPrice },
-      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
+      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug || a.sku, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
   });
   useCheckoutLead(() => leadRef.current(), [form.name, form.phone, form.email, form.address, form.district, packKey, qty, addonQty], submittingRef);
@@ -240,8 +245,8 @@ const SpecialOfferView = () => {
   const changeAddon = (a, delta) => {
     setAddonQty((prev) => ({ ...prev, [a.key]: Math.max(0, Math.min(MAX_ADDON, prev[a.key] + delta)) }));
     if (delta > 0) {
-      track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [a.did], content_type: 'product' });
-      trackProductEvents([{ eventType: 'add_to_cart', productKey: a.slug, productName: a.fullName, quantity: 1, value: a.price }]);
+      track('AddToCart', { value: a.price, currency: 'BDT', content_ids: [metaAddonId(a)], content_name: META_ADDON_NAME, content_type: 'product' });
+      trackProductEvents([{ eventType: 'add_to_cart', productKey: a.slug || a.sku, productName: a.fullName, quantity: 1, value: a.price }]);
     }
   };
 
@@ -295,7 +300,7 @@ const SpecialOfferView = () => {
     track('InitiateCheckout', { value: total, currency: 'BDT', content_ids: [activePack.did], content_type: 'product' });
     trackProductEvents([
       { eventType: 'checkout', productKey: activePack.slug, productName: activePack.name, quantity: qty, value: qty * activePack.offerPrice },
-      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ eventType: 'checkout', productKey: a.slug, productName: a.fullName, quantity: addonQty[a.key], value: addonQty[a.key] * a.price })),
+      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ eventType: 'checkout', productKey: a.slug || a.sku, productName: a.fullName, quantity: addonQty[a.key], value: addonQty[a.key] * a.price })),
     ]);
   };
 
@@ -324,7 +329,7 @@ const SpecialOfferView = () => {
   const buildItems = () => [
     { productDid: activePack.did, itemType: 'product', name: activePack.name, quantity: qty, unitPrice: activePack.offerPrice, size: `${activePack.pcs} Pcs Special Offer` },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({
-      productDid: a.did, itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Special Offer Add-on (2 Pcs)',
+      ...(a.did ? { productDid: a.did } : { sku: a.sku }), itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Special Offer Add-on (2 Pcs)',
     })),
   ];
 
@@ -375,8 +380,8 @@ const SpecialOfferView = () => {
         const products = { [activePack.did]: { did: activePack.did, slug: activePack.slug, name: activePack.name, price: activePack.offerPrice } };
         ADDONS.forEach((a) => {
           if (addonQty[a.key] > 0) {
-            items[a.did] = addonQty[a.key];
-            products[a.did] = { did: a.did, slug: a.slug, name: a.fullName, price: a.price };
+            items[metaAddonId(a)] = addonQty[a.key];
+            products[metaAddonId(a)] = { did: metaAddonId(a), slug: a.slug || a.sku, name: META_ADDON_NAME, price: a.price };
           }
         });
         trackOrderPlaced({
@@ -404,7 +409,7 @@ const SpecialOfferView = () => {
       setForm(EMPTY_FORM);
       touchedRef.current = {};
       setQty(1);
-      setAddonQty({ white: 0, pink: 0, blue: 0, ky: 0 });
+      setAddonQty(EMPTY_ADDONS);
     } catch (err) {
       setFailed(fallbackLink(v));
     } finally {
@@ -597,7 +602,7 @@ const SpecialOfferView = () => {
                       const n = addonQty[a.key];
                       return (
                         <div key={a.key} className={`addon${n > 0 ? ' on' : ''}`}>
-                          <div className={`addon-img skh-img ${a.img}`} />
+                          <div className={`addon-img skh-img ${a.img || ''}`} style={a.img ? undefined : { background: a.color }} />
                           <div><div className="addon-name"><i style={{ background: a.color }} />{a.name}</div><div className="addon-meta">+{bn(a.pcs)} পিস · {tk(a.price)}</div></div>
                           <div>
                             {n === 0
