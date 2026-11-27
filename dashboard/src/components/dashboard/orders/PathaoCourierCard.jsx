@@ -196,9 +196,10 @@ const PathaoCourierCardInner = ({
 
     // Load Pathao config (the pickup store always comes from settings) and cities
     try {
-      const [configRes, citiesRes] = await Promise.all([
+      const [configRes, citiesRes, districtsRes] = await Promise.all([
         apiClient.get("/api/v1/courier/pathao/config").catch(() => ({ data: {} })),
         apiClient.get("/api/v1/courier/pathao/cities").catch(() => ({ data: {} })),
+        apiClient.get("/api/v1/courier/districts").catch(() => ({ data: {} })),
       ]);
 
       const cfg = configRes.data?.data || {};
@@ -217,26 +218,44 @@ const PathaoCourierCardInner = ({
       setDeliveryType(effectiveDelType);
       setItemType(effectiveItmType);
 
-      // Auto-match city & zone from destination shipping address (or billing fallback)
+      // Auto-match city & zone from the order's district (shipping, then billing, then customer)
       const targetDistrict = (
         sInfo.district ||
         bInfo.district ||
+        order?.customer?.district ||
         sInfo.city ||
         bInfo.city ||
-        "Dhaka"
+        ""
       )
         .toLowerCase()
         .trim();
 
+      if (!targetDistrict) {
+        toast.warning("Order has no district — please select the Pathao city.");
+      }
+
       if (targetDistrict && cityList.length > 0) {
+        // 1) Our district table stores each district's Pathao city ID, so match by ID (spelling-proof)
+        const DISTRICT_ALIASES = { comilla: "cumilla", "rangamati hill": "rangamati", chattogram: "chittagong" };
+        const lookupName = DISTRICT_ALIASES[targetDistrict] || targetDistrict;
+        const districtList = districtsRes.data?.data || [];
+        const district = districtList.find(
+          (d) =>
+            String(d.name || "").toLowerCase().trim() === lookupName ||
+            String(d.bnName || "").trim() === targetDistrict
+        );
+        const byId = district ? cityList.find((c) => String(c.city_id) === String(district.cityId)) : null;
+
+        // 2) Fallback: exact Pathao city name, then a partial name match. Never silently default to Dhaka.
+        const norm = (v) => String(v || "").toLowerCase().trim();
         const matchedCity =
-          cityList.find(
-            (c) =>
-              c.city_name.toLowerCase().trim() === targetDistrict ||
-              c.city_name.toLowerCase().includes(targetDistrict) ||
-              targetDistrict.includes(c.city_name.toLowerCase())
-          ) ||
-          cityList.find((c) => c.city_name.toLowerCase().includes("dhaka"));
+          byId ||
+          cityList.find((c) => norm(c.city_name) === lookupName) ||
+          cityList.find((c) => norm(c.city_name).includes(lookupName) || lookupName.includes(norm(c.city_name)));
+
+        if (!matchedCity) {
+          toast.warning(`Pathao city not found for "${targetDistrict}" — please select it manually.`);
+        }
 
         if (matchedCity) {
           const matchedCityId = String(matchedCity.city_id);
