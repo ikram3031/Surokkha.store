@@ -10,6 +10,7 @@ import { STORE_WHATSAPP_NUMBER } from '@/lib/siteConfig';
 import { bn, tk, cleanPhone, phoneWrongSoFar, FIELD_OK, OFFER_DISTRICT_NAMES as DISTRICT_NAMES } from '@/lib/offerCheckout';
 import { SITE_CONFIG, trackSitePage, trackProductEvents, pixelTrack } from '../special-offer/storeCompat.js';
 import { placeOrder, trackAddToCart, trackInitiateCheckout, minDelay, useCheckoutLead } from '@/lib/checkout-core';
+import { deliveryFee } from '@/lib/checkout';
 
 const OFFER = {
   did: '6f05d71e4bd60d2e',
@@ -41,7 +42,6 @@ const BOX_CONTENTS = [
 const BOX_TOTAL = BOX_CONTENTS.reduce((s, c) => s + c.pcs, 0);
 
 const MAX_ADDON = 5;
-const NORMAL_DELIVERY = 120;
 const WHATSAPP = STORE_WHATSAPP_NUMBER;
 const SPAM_PHONE_MSG = 'আপনার এই নম্বরটি আমাদের স্প্যাম লিস্টে আছে। দয়া করে আমাদের সাথে যোগাযোগ করুন।';
 const FAKE_PHONE_MSG = 'অনুগ্রহ করে অন্য একটি বৈধ ফোন নম্বর ব্যবহার করুন।';
@@ -66,7 +66,7 @@ const track = (ev, data) => pixelTrack(ev, data);
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
   useEffect(() => {
-    document.title = 'Surokkha All In One Pack — ৩৬ পিস, মাত্র ৳১,৩৭০ | Surokkha';
+    document.title = 'Surokkha All In One Pack — ৩৬ পিস | Surokkha';
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
     link.id = 'so-fonts';
@@ -95,7 +95,7 @@ const Stack = ({ cls, img }) => (
 
 const EMPTY_FORM = { name: '', phone: '', email: '', district: '', thana: '', address: '', note: '' };
 
-// Standalone All In One Pack campaign page with its own order form and free delivery
+// Standalone All In One Pack campaign page with its own order form, priced live from the product API
 const ComboOfferView = () => {
   useCampaignFonts();
   const [qty, setQty] = useState(1);
@@ -120,12 +120,31 @@ const ComboOfferView = () => {
   const fieldRefs = useRef({});
   const touchedRef = useRef({});
 
+  const [price, setPrice] = useState({ regular: OFFER.regularPrice, offer: OFFER.offerPrice });
+
+  useEffect(() => {
+    const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
+    fetch(`${base}/products/${OFFER.slug}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        const p = json?.data || json;
+        const regular = Number(p?.price);
+        const offer = Number(p?.offerPrice);
+        if (regular > 0) setPrice({ regular, offer: offer > 0 && offer < regular ? offer : regular });
+      })
+      .catch(() => {});
+  }, []);
+
+  const discount = Math.max(0, price.regular - price.offer);
+  const discountPct = price.regular > 0 ? Math.round((discount / price.regular) * 100) : 0;
+  const shipping = DISTRICT_NAMES.includes(form.district) ? deliveryFee(form.district, form.thana || '') : 0;
+
   const phoneBlocked = blockedPhone && blockedPhone.phone === cleanPhone(form.phone) ? blockedPhone : null;
 
   const addonTotal = ADDONS.reduce((s, a) => s + addonQty[a.key] * a.price, 0);
-  const sub = qty * OFFER.offerPrice + addonTotal;
-  const save = qty * (OFFER.regularPrice - OFFER.offerPrice) + NORMAL_DELIVERY;
-  const total = sub;
+  const sub = qty * price.offer + addonTotal;
+  const save = qty * discount;
+  const total = sub + shipping;
 
   // Keeps what the customer has typed so an abandoned checkout is saved, like the main checkout does
   const submittingRef = useCheckoutLead(() => ({
@@ -137,14 +156,14 @@ const ComboOfferView = () => {
     thana: form.thana.trim(),
     cartTotal: total,
     items: [
-      { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice },
+      { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: price.offer },
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
   }), [form.name, form.phone, form.email, form.address, form.district, form.thana, qty, addonQty]);
 
   // Lists the current order lines for the pixel and product funnel events
   const trackLines = () => [
-    { id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty },
+    { id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: price.offer, qty },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ id: a.did, slug: a.slug, name: a.fullName, price: a.price, qty: addonQty[a.key] })),
   ];
 
@@ -159,12 +178,12 @@ const ComboOfferView = () => {
     setBusy(false);
   };
 
-  const waOrderLink = useMemo(() => waLink(`আমি Surokkha All In One Pack (৩৬ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
+  const waOrderLink = useMemo(() => waLink(`আমি Surokkha All In One Pack (৩৬ পিস, ৳${price.offer}) অর্ডার করতে চাই।`), [price.offer]);
 
   useEffect(() => {
     trackSitePage('combo-offer');
     trackComboView();
-    track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: OFFER.offerPrice, currency: 'BDT' });
+    track('ViewContent', { content_ids: [OFFER.did], content_type: 'product', content_name: OFFER.name, value: price.offer, currency: 'BDT' });
   }, []);
 
   useEffect(() => {
@@ -183,7 +202,7 @@ const ComboOfferView = () => {
   // Changes the main pack count within its limits
   const changeQty = (delta) => guarded(() => {
     setQty((q) => Math.max(1, Math.min(OFFER.maxQty, q + delta)));
-    if (delta > 0) trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty: 1 });
+    if (delta > 0) trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: price.offer, qty: 1 });
   });
 
   // Asks the backend whether a complete phone number is on the spam / fake list
@@ -216,7 +235,7 @@ const ComboOfferView = () => {
   };
 
   // Fires AddToCart for the main pack when an order button is pressed
-  const onOrderClick = () => trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty: 1 });
+  const onOrderClick = () => trackAddToCart({ id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: price.offer, qty: 1 });
 
   // Fires InitiateCheckout when the form gets focus
   const onFormFocus = () => trackInitiateCheckout(trackLines(), total);
@@ -245,7 +264,7 @@ const ComboOfferView = () => {
 
   // Builds the order line items for the backend
   const buildItems = () => [
-    { productDid: OFFER.did, itemType: 'product', name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice, size: 'Combo Offer' },
+    { productDid: OFFER.did, itemType: 'product', name: OFFER.name, quantity: qty, unitPrice: price.offer, size: 'Combo Offer' },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({
       productDid: a.did, itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Combo Offer Add-on (3 Pcs)',
     })),
@@ -256,7 +275,7 @@ const ComboOfferView = () => {
     `অর্ডার: All In One Pack × ${qty}${ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => `\n+ ${a.fullName} × ${addonQty[a.key]}`).join('')}\nনাম: ${v.name}\nফোন: ${v.phone}\nইমেইল: ${v.email}\nজেলা: ${v.district}\nঠিকানা: ${v.address}\nমোট: ৳${total}`,
   );
 
-  // Sends the order to the shop order API with free delivery
+  // Sends the order to the shop order API
   const onSubmit = async (e) => {
     e.preventDefault();
     if (sending) return;
@@ -271,9 +290,9 @@ const ComboOfferView = () => {
         items: buildItems(),
         trackLines: trackLines(),
         subtotal: sub,
-        shippingFee: 0,
+        shippingFee: shipping,
         total,
-        notes: [form.note.trim(), 'Combo offer page (free delivery)'].filter(Boolean).join(' | '),
+        notes: [form.note.trim(), 'Combo offer page'].filter(Boolean).join(' | '),
         asLead: true,
         honeypot,
       });
@@ -312,7 +331,7 @@ const ComboOfferView = () => {
 
   return (
     <>
-      <div className="topbar">আজকের অফার: Surokkha All In One Pack <b>{tk(OFFER.offerPrice)}</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
+      <div className="topbar">আজকের অফার: Surokkha All In One Pack <b>{tk(price.offer)}</b>{discount > 0 && <> · <b>{tk(discount)} ছাড় ({bn(discountPct)}%)</b></>}</div>
 
       <section className="co-banner">
         <img className="co-banner-img" src={flatlayImg} alt="Surokkha গিফট বক্স ও ভেতরের প্যাকগুলো" />
@@ -350,11 +369,13 @@ const ComboOfferView = () => {
               </div>
 
               <div className="price-row">
-                <div className="price-now"><sup>৳</sup>{bn(OFFER.offerPrice.toLocaleString('en-IN'))}</div>
-                <div className="price-tags"><span className="price-old">{tk(OFFER.regularPrice)}</span></div>
-                <div className="price-tags">
-                  <span className="ptag ptag-free"><IconCheck />ফ্রি ডেলিভারি</span>
-                </div>
+                <div className="price-now"><sup>৳</sup>{bn(price.offer.toLocaleString('en-IN'))}</div>
+                <div className="price-tags"><span className="price-old">{tk(price.regular)}</span></div>
+                {discount > 0 && (
+                  <div className="price-tags">
+                    <span className="ptag ptag-free"><IconCheck />{tk(discount)} ছাড় · {bn(discountPct)}%</span>
+                  </div>
+                )}
               </div>
 
               <div className="ctas">
@@ -484,12 +505,12 @@ const ComboOfferView = () => {
                   </div>
                 </div>
                 <div className="lines">
-                  <div className="line"><span>দাম ({bn(qty)} × {tk(OFFER.offerPrice)})</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
+                  <div className="line"><span>দাম ({bn(qty)} × {tk(price.offer)})</span><span><s>{tk(qty * price.regular)}</s><b>{tk(qty * price.offer)}</b></span></div>
                   {ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => (
                     <div key={a.key} className="line line-add"><span>{a.name} {bn(addonQty[a.key] * a.pcs)} পিস</span><b>{tk(addonQty[a.key] * a.price)}</b></div>
                   ))}
-                  <div className="line"><span>ডেলিভারি চার্জ</span><span><s>{tk(NORMAL_DELIVERY)}</s><span className="free">ফ্রি</span></span></div>
-                  <div className="line line-save"><span>আপনার সেভ</span><b>{tk(save)}</b></div>
+                  <div className="line"><span>ডেলিভারি চার্জ</span>{shipping > 0 ? <b>{tk(shipping)}</b> : <span>জেলা বেছে নিন</span>}</div>
+                  {save > 0 && <div className="line line-save"><span>আপনার সেভ ({bn(discountPct)}%)</span><b>{tk(save)}</b></div>}
                 </div>
                 <div className="grand"><span>সর্বমোট</span><b>{tk(total)}</b></div>
               </aside>
@@ -563,7 +584,7 @@ const ComboOfferView = () => {
             <div className="faq">
               <details open><summary>প্যাকেজিং কি নিরাপদ ও সুরক্ষিত হবে?</summary><p>হ্যাঁ। আমরা প্রতিটি অর্ডার মজবুত ও প্রিমিয়াম প্যাকেজিংয়ে পাঠাই, যাতে কুরিয়ার বা হোম ডেলিভারিতে পণ্যের কোনো ড্যামেজ না হয়।</p></details>
               <details><summary>পেমেন্ট কীভাবে করব?</summary><p>ক্যাশ অন ডেলিভারি। প্রোডাক্ট হাতে পেয়ে ডেলিভারিম্যানকে টাকা দেবেন, আগে কিছু দিতে হবে না।</p></details>
-              <details><summary>ডেলিভারি চার্জ কত?</summary><p>এই অফারে ডেলিভারি সম্পূর্ণ ফ্রি, ঢাকার ভেতরে এবং ঢাকার বাইরে দুই জায়গাতেই।</p></details>
+              <details><summary>ডেলিভারি চার্জ কত?</summary><p>ঢাকা সিটিতে ৳৭০, ঢাকার আশেপাশে (সাভার, গাজীপুর, নারায়ণগঞ্জ) ৳৯০, আর ঢাকার বাইরে ৳১২০।</p></details>
               <details><summary>অর্ডারের পর কী হবে?</summary><p>আমাদের টিম আপনার দেওয়া নম্বরে কল করে অর্ডার কনফার্ম করবে এবং ডেলিভারির সময় জানিয়ে দেবে।</p></details>
               <details><summary>এই প্যাকে কোন কোন ব্র্যান্ড আছে?</summary><p>MO (White, Pink, Blue), Skore, Durex আর Amore, প্রতিটি ৬ পিস করে মোট ৩৬ পিস। সব প্রোডাক্ট ১০০% অরিজিনাল।</p></details>
             </div>
@@ -572,8 +593,8 @@ const ComboOfferView = () => {
 
         <section className="sec final">
           <div className="container">
-            <h2>৪ ব্র্যান্ড, ৩৬ পিস, মাত্র <span>{tk(OFFER.offerPrice)}</span></h2>
-            <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
+            <h2>৬ ব্র্যান্ড, ৩৬ পিস, মাত্র <span>{tk(price.offer)}</span></h2>
+            <p>{discount > 0 ? `${tk(discount)} ছাড় · ` : ''}ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
             <div className="ctas co-final-ctas">
               <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
               <a href={waOrderLink} target="_blank" rel="noopener noreferrer" className="btn btn-wa"><IconWa />WhatsApp-এ অর্ডার</a>
@@ -593,7 +614,7 @@ const ComboOfferView = () => {
       <a className="wa-float" href={waOrderLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ মেসেজ দিন"><IconWa /></a>
 
       <div className={`sticky${showSticky ? ' show' : ''}`}>
-        <div className="sp"><b>{tk(OFFER.offerPrice)}</b><small><s>{tk(OFFER.regularPrice)}</s> ফ্রি ডেলিভারি</small></div>
+        <div className="sp"><b>{tk(price.offer)}</b><small><s>{tk(price.regular)}</s>{discount > 0 ? ` ${tk(discount)} ছাড়` : ''}</small></div>
         <div className="co-sticky-actions">
           <a className="co-sticky-wa" href={waOrderLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ মেসেজ দিন"><IconWa /></a>
           <a href="#order" onClick={onOrderClick} className="btn btn-primary">অর্ডার করুন</a>

@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { SITE_CONFIG } from '../config/siteConfig';
 import { useStore } from '../store/useStore';
 import './comboHomeHero.css';
 import boxImg from '../views/combo-offer/box.webp';
@@ -24,6 +25,21 @@ export default function ComboHomeHero() {
     e.preventDefault();
     navigateTo('product', PRODUCT_SLUG);
   };
+  const [price, setPrice] = useState({ regular: OFFER.regularPrice, offer: OFFER.offerPrice });
+  useEffect(() => {
+    const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
+    fetch(`${base}/api/v1/products/${PRODUCT_SLUG}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        const p = json?.data || json;
+        const regular = Number(p?.price);
+        const offer = Number(p?.offerPrice);
+        if (regular > 0) setPrice({ regular, offer: offer > 0 && offer < regular ? offer : regular });
+      })
+      .catch(() => {});
+  }, []);
+  const discount = Math.max(0, price.regular - price.offer);
+  const discountPct = price.regular > 0 ? Math.round((discount / price.regular) * 100) : 0;
   useEffect(() => {
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
@@ -56,11 +72,13 @@ export default function ComboHomeHero() {
             </div>
 
             <div className="price-row">
-              <div className="price-now"><sup>৳</sup>{bn(OFFER.offerPrice.toLocaleString('en-IN'))}</div>
-              <div className="price-tags"><span className="price-old">{tk(OFFER.regularPrice)}</span></div>
-              <div className="price-tags">
-                <span className="ptag ptag-free"><IconCheck />ফ্রি ডেলিভারি</span>
-              </div>
+              <div className="price-now"><sup>৳</sup>{bn(price.offer.toLocaleString('en-IN'))}</div>
+              <div className="price-tags"><span className="price-old">{tk(price.regular)}</span></div>
+              {discount > 0 && (
+                <div className="price-tags">
+                  <span className="ptag ptag-free"><IconCheck />{tk(discount)} ছাড় · {bn(discountPct)}%</span>
+                </div>
+              )}
             </div>
 
             <div className="ctas">
