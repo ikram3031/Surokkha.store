@@ -14,8 +14,8 @@ const OFFER = {
   did: 'd5a81e97721c8101',
   slug: 'mo-smart-pack-18-pcs',
   name: 'MO 3 in 1 Combo (18pcs)',
-  regularPrice: 810,
-  offerPrice: 760,
+  regularPrice: 900,
+  offerPrice: 800,
   pcs: 18,
   maxQty: 5,
 };
@@ -59,7 +59,7 @@ const track = (ev, data) => pixelTrack(ev, data);
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
   useEffect(() => {
-    document.title = 'MO 3 in 1 Combo — ৩ ধরনের ১৮ পিস, মাত্র ৳৭৬০ | Surokkha';
+    document.title = 'MO 3 in 1 Combo — ৩ ধরনের ১৮ পিস, মাত্র ৳৮০০ | Surokkha';
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
     link.id = 'so-fonts';
@@ -94,7 +94,7 @@ const SpecialOfferView = () => {
   useCampaignFonts();
   const mo30 = useMo30Products();
   const [qty, setQty] = useState(1);
-  const [addonQty, setAddonQty] = useState({ white: 0, pink: 0, blue: 0, ky: 0 });
+  const [addonQty, setAddonQty] = useState(EMPTY_ADDONS);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [sending, setSending] = useState(false);
@@ -130,12 +130,15 @@ const SpecialOfferView = () => {
     cartTotal: total,
     items: [
       { slug: OFFER.slug, name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice },
-      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
+      ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug || a.sku, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
   }), [form.name, form.phone, form.email, form.address, form.district, form.thana, qty, addonQty]);
 
   // Lists the current order lines for the pixel and product funnel events
-  const trackLines = () => buildItems().map((i) => ({ id: i.productDid, name: i.name, price: i.unitPrice, qty: i.quantity }));
+  const trackLines = () => [
+    { id: OFFER.did, slug: OFFER.slug, name: OFFER.name, price: OFFER.offerPrice, qty },
+    ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ id: metaAddonId(a), slug: metaAddonId(a), name: META_ADDON_NAME, price: a.price, qty: addonQty[a.key] })),
+  ];
 
   // Runs a cart change behind a short forced loading so repeated rapid clicks are ignored
   const guarded = async (change) => {
@@ -170,7 +173,7 @@ const SpecialOfferView = () => {
   // Changes one add-on count within its limits and tracks additions
   const changeAddon = (a, delta) => guarded(() => {
     setAddonQty((prev) => ({ ...prev, [a.key]: Math.max(0, Math.min(MAX_ADDON, prev[a.key] + delta)) }));
-    if (delta > 0) trackAddToCart({ id: a.did, slug: a.slug, name: a.fullName, price: a.price, qty: 1 });
+    if (delta > 0) trackAddToCart({ id: metaAddonId(a), slug: metaAddonId(a), name: META_ADDON_NAME, price: a.price, qty: 1 });
   });
 
   // Changes the main pack count within its limits
@@ -240,7 +243,7 @@ const SpecialOfferView = () => {
   const buildItems = () => [
     { productDid: OFFER.did, itemType: 'product', name: OFFER.name, quantity: qty, unitPrice: OFFER.offerPrice, size: 'Special Offer' },
     ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({
-      productDid: a.did, itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Special Offer Add-on (2 Pcs)',
+      ...(a.did ? { productDid: a.did } : { sku: a.sku }), itemType: a.itemType || 'product', name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price, size: a.size || 'Special Offer Add-on (2 Pcs)',
     })),
   ];
 
@@ -281,7 +284,7 @@ const SpecialOfferView = () => {
       setAgree(false);
       touchedRef.current = {};
       setQty(1);
-      setAddonQty({ white: 0, pink: 0, blue: 0, ky: 0 });
+      setAddonQty(EMPTY_ADDONS);
     } catch (err) {
       setFailed(fallbackLink(v));
     } finally {
@@ -295,7 +298,7 @@ const SpecialOfferView = () => {
 
   return (
     <>
-      <div className="topbar">আজকের অফার: MO 3 in 1 Combo <b>৳৭৬০</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
+      <div className="topbar">আজকের অফার: MO 3 in 1 Combo <b>৳৮০০</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
 
       <header className="hero" ref={heroRef}>
         <div className="container">
@@ -422,8 +425,33 @@ const SpecialOfferView = () => {
                     <button type="button" aria-label="বাড়ান" disabled={busy} onClick={() => changeQty(1)}>+</button>
                   </div>
                 </div>
+                <div className="addons">
+                  <div className="addons-head">সাথে আরও নিন <small>অফার মূল্যে</small></div>
+                  <div className="addon-list">
+                    {ADDONS.map((a) => {
+                      const n = addonQty[a.key];
+                      return (
+                        <div key={a.key} className={`addon${n > 0 ? ' on' : ''}`}>
+                          <div className={`addon-img skh-img ${a.img || ''}`} style={a.img ? undefined : { background: a.color }} />
+                          <div><div className="addon-name"><i style={{ background: a.color }} />{a.name}</div><div className="addon-meta">+{bn(a.pcs)} পিস · {tk(a.price)}</div></div>
+                          <div>
+                            {n === 0
+                              ? <button type="button" className="addon-add" disabled={busy} onClick={() => changeAddon(a, 1)}>+ যোগ করুন</button>
+                              : (
+                                <div className="qty-ctl">
+                                  <button type="button" aria-label="কমান" disabled={busy} onClick={() => changeAddon(a, -1)}>−</button>
+                                  <output>{bn(n)}</output>
+                                  <button type="button" aria-label="বাড়ান" disabled={busy} onClick={() => changeAddon(a, 1)}>+</button>
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
                 <div className="lines">
-                  <div className="line"><span>দাম ({bn(qty)} × ৳৭৬০)</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
+                  <div className="line"><span>দাম ({bn(qty)} × ৳৮০০)</span><span><s>{tk(qty * OFFER.regularPrice)}</s><b>{tk(qty * OFFER.offerPrice)}</b></span></div>
                   {ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => (
                     <div key={a.key} className="line line-add"><span>{a.name} {bn(addonQty[a.key] * a.pcs)} পিস</span><b>{tk(addonQty[a.key] * a.price)}</b></div>
                   ))}
@@ -531,7 +559,7 @@ const SpecialOfferView = () => {
       <a className="wa-float" href={waOrderLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp-এ মেসেজ দিন"><IconWa /></a>
 
       <div className={`sticky${showSticky ? ' show' : ''}`}>
-        <div className="sp"><b>৳৭৬০</b><small><s>৳৮১০</s> ফ্রি ডেলিভারি</small></div>
+        <div className="sp"><b>৳৮০০</b><small><s>৳৯০০</s> ফ্রি ডেলিভারি</small></div>
         <a href="#order" onClick={onOrderClick} className="btn btn-primary">অর্ডার করুন</a>
       </div>
 
