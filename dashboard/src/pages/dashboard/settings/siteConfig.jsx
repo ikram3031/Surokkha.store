@@ -50,6 +50,45 @@ const ArrayInput = ({ value, baseValue, onChange }) => {
   return <Input value={text} onChange={(e) => setText(e.target.value)} onBlur={commit} className="h-9 text-sm" />;
 };
 
+const COLOR_RE = /^\s*(#[0-9a-f]{3,8}|(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\(.*\))\s*$/i;
+const isColorValue = (v) => typeof v === 'string' && COLOR_RE.test(v);
+
+// Any CSS colour (oklch, hsl, …) -> #rrggbb by painting one canvas pixel; alpha is dropped
+const toHex = (color) => {
+  try {
+    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    ctx.fillStyle = '#000';
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
+  } catch {
+    return '#000000';
+  }
+};
+
+// Text field for a colour, with a live swatch that opens the colour picker
+const ColorInput = ({ value, onChange }) => {
+  const shown = isColorValue(value) ? value : 'transparent';
+  return (
+    <div className="flex items-center gap-2">
+      <label
+        className="relative h-9 w-9 shrink-0 cursor-pointer overflow-hidden rounded-md border border-border shadow-xs bg-[repeating-conic-gradient(#ccc_0_25%,#fff_0_50%)] bg-size-[10px_10px]"
+        title="Pick a colour"
+      >
+        <span className="absolute inset-0" style={{ background: shown }} />
+        <input
+          type="color"
+          value={toHex(shown)}
+          onChange={(e) => onChange(e.target.value)}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        />
+      </label>
+      <Input value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="h-9 text-sm font-mono" />
+    </div>
+  );
+};
+
 const Field = ({ name, path, value, baseValue, onChange }) => {
   const changed = !same(value, baseValue);
   let control;
@@ -66,6 +105,8 @@ const Field = ({ name, path, value, baseValue, onChange }) => {
     );
   } else if (Array.isArray(baseValue)) {
     control = <ArrayInput value={value} baseValue={baseValue} onChange={(v) => onChange(path, v)} />;
+  } else if (isColorValue(baseValue)) {
+    control = <ColorInput value={value} onChange={(v) => onChange(path, v)} />;
   } else {
     control = <Input value={value ?? ''} onChange={(e) => onChange(path, e.target.value)} className="h-9 text-sm" />;
   }

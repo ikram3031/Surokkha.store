@@ -1,8 +1,19 @@
+import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 // Two-column in-page navigation: a menu of sections on the left, the active section's panel on the right.
 // sections: [{ id, label, icon?, group?, badge? }]; on small screens the menu becomes a horizontal scroller.
 export function InpageSectionNav({ sections, activeId, onChange, children, className }) {
+  const navRef = useRef(null);
+
+  // Keep the active item visible when the menu is a horizontal scroller (small screens)
+  useEffect(() => {
+    const nav = navRef.current;
+    const btn = nav?.querySelector('[aria-current="page"]');
+    if (!nav || !btn || nav.scrollWidth <= nav.clientWidth) return;
+    nav.scrollLeft = btn.offsetLeft - (nav.clientWidth - btn.offsetWidth) / 2;
+  }, [activeId, sections.length]);
+
   const groups = [];
   for (const section of sections) {
     const key = section.group || '';
@@ -14,8 +25,9 @@ export function InpageSectionNav({ sections, activeId, onChange, children, class
   return (
     <div className={cn('grid gap-4 lg:grid-cols-[240px_1fr] lg:items-start', className)}>
       <nav
+        ref={navRef}
         aria-label="Section navigation"
-        className="flex flex-row gap-1 overflow-x-auto pb-1 lg:sticky lg:top-2 lg:flex-col lg:overflow-visible lg:rounded-xl lg:border lg:border-border/60 lg:bg-card lg:p-2 lg:pb-2"
+        className="relative flex flex-row gap-1 overflow-x-auto pb-1 lg:sticky lg:top-2 lg:flex-col lg:overflow-visible lg:rounded-xl lg:border lg:border-border/60 lg:bg-card lg:p-2 lg:pb-2"
       >
         {groups.map((group) => (
           <div key={group.key || 'default'} className="contents lg:flex lg:flex-col lg:gap-1 lg:[&:not(:first-child)]:mt-2">
