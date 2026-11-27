@@ -74,7 +74,8 @@ export const fetchMyPromo = async () => {
   }
 };
 export const loginCustomer = async (payload) => startSession(await request('/login', { method: 'POST', body: payload }));
-export const forgotPassword = (email) => request('/forgot-password', { method: 'POST', body: { email } });
+// purpose 'membership' sends the membership OTP email instead of a password reset
+export const forgotPassword = (email, purpose = 'password-reset') => request('/forgot-password', { method: 'POST', body: purpose === 'membership' ? { email, purpose } : { email } });
 export const resetPassword = async (payload) => startSession(await request('/reset-password', { method: 'POST', body: payload }));
 
 /** The logged-in customer, or null when there is no valid session (a stale token is dropped). */
