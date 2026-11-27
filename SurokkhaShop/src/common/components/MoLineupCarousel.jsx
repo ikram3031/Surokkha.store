@@ -17,6 +17,16 @@ const isExcluded = (p, key) => {
   return EXCLUDED_SLUG_PREFIXES.some((prefix) => slug.startsWith(prefix));
 };
 
+// Combos shown after the first three MO products, in this order (each only while it is active)
+const LINEUP_COMBOS = [
+  'all-in-one-special',
+  '3-in-1-smart-pack-18-pcs',
+  '30-piece-combo-mo-micro-ribbed',
+  '30-pieces-combo-mo-micro-thin',
+  'ultimate-3-in-1-pack-30-pcs',
+];
+const COMBO_POSITION = 3;
+
 const GRID_CLASS = 'grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6 content-start';
 
 // Every MO-brand product except the combos above, shown together in one grid (no carousel)
@@ -38,6 +48,10 @@ const MoLineupCarousel = () => {
       seen.add(id);
       out.push(key);
     }
+    const comboKeys = LINEUP_COMBOS
+      .map((slug) => (productKeys || []).find((k) => k === slug || products[k]?.slug === slug))
+      .filter((k) => k && products[k].isActive !== false && products[k].status !== 'inactive' && !out.includes(k));
+    out.splice(Math.min(COMBO_POSITION, out.length), 0, ...comboKeys);
     return out;
   }, [productKeys, products]);
 

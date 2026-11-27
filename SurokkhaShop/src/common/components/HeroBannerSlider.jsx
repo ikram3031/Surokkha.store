@@ -5,6 +5,7 @@ import ProtectionComboHero from './ProtectionComboHero';
 import CmsHeroSlide from './CmsHeroSlide';
 import SurokkhaTrialPackHero from './SurokkhaTrialPackHero';
 import TodayOfferHero, { isTodayOfferLive } from './TodayOfferHero';
+import ComboHomeHero from './ComboHomeHero';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { useStore, TRIAL_PACK_SLUG } from '../store/useStore';
 
@@ -87,9 +88,12 @@ export default function HeroBannerSlider({ useCms = true }) {
         .filter(({ key }) => key !== TRIAL_PACK_SLUG || (trialPack && trialPack.isActive !== false))
         .map(({ key, Component, props }) => ({ key, render: () => <Component {...props} /> }));
   // Today-only MO Smart Pack offer goes first while it is live
-  const allSlides = isTodayOfferLive()
-    ? [{ key: 'today-offer', render: () => <TodayOfferHero /> }, ...baseSlides]
-    : baseSlides;
+  // The All In One combo hero leads, then the today-only offer while it is live
+  const allSlides = [
+    { key: 'combo-offer', render: () => <ComboHomeHero /> },
+    ...(isTodayOfferLive() ? [{ key: 'today-offer', render: () => <TodayOfferHero /> }] : []),
+    ...baseSlides,
+  ];
   // For now the hero shows only the first (offer) slide; set SINGLE_SLIDE to false to bring the rest back
   const slides = SINGLE_SLIDE ? allSlides.slice(0, 1) : allSlides;
 
