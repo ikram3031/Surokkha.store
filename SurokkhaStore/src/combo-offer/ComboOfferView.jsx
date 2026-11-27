@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import '../special-offer/specialOffer.css';
 import './comboOffer.css';
 import boxImg from './box.webp';
+import flatlayImg from './box-flatlay.jpg';
 import OrderSuccessModal from './OrderSuccessModal.jsx';
 import DistrictPicker from '../special-offer/SpecialOfferDistrictPicker.jsx';
 import logoImg from '../special-offer/logo.png';
@@ -13,10 +14,10 @@ import { placeOrder, trackAddToCart, trackInitiateCheckout, minDelay, useCheckou
 const OFFER = {
   did: '6f05d71e4bd60d2e',
   slug: 'all-in-one-special',
-  name: 'Surokkha All In One Pack (50 Pcs)',
-  regularPrice: 1970,
-  offerPrice: 1570,
-  pcs: 50,
+  name: 'Surokkha All In One Pack (36 Pcs)',
+  regularPrice: 1540,
+  offerPrice: 1370,
+  pcs: 36,
   maxQty: 3,
   image: 'https://web.surokkha.store/uploads/2611/261125/all-in-one-special_main_1795641253344.webp',
 };
@@ -27,6 +28,17 @@ const ADDONS = [
   { key: 'blue', did: '1c54b907d7a216dc', slug: 'mo-blue-5-pcs', name: 'MO Blue', fullName: 'Mo Blue 3 Pcs', pcs: 3, price: 90, img: 'skh-i-blue', color: '#38bdf8' },
   { key: 'ky', did: '5f3afc27eaaef962', slug: 'ky-jelly-personal-lubricant-gel-50g', name: 'KY Gel', fullName: 'KY Jelly Personal Lubricant Gel 50g', pcs: 1, price: 280, img: 'skh-i-ky', color: '#0ea5e9', itemType: 'item', size: '50g Tube' },
 ];
+
+// What the gift box holds: one small box of 6 per type
+const BOX_CONTENTS = [
+  { name: 'MO White', pcs: 6 },
+  { name: 'MO Pink', pcs: 6 },
+  { name: 'MO Blue', pcs: 6 },
+  { name: 'Skore', pcs: 6 },
+  { name: 'Durex', pcs: 6 },
+  { name: 'Amore', pcs: 6 },
+];
+const BOX_TOTAL = BOX_CONTENTS.reduce((s, c) => s + c.pcs, 0);
 
 const MAX_ADDON = 5;
 const NORMAL_DELIVERY = 120;
@@ -54,7 +66,7 @@ const track = (ev, data) => pixelTrack(ev, data);
 // Adds the template fonts to the document head once
 const useCampaignFonts = () => {
   useEffect(() => {
-    document.title = 'Surokkha All In One Pack — ৫০ পিস, মাত্র ৳১,৫৭০ | Surokkha';
+    document.title = 'Surokkha All In One Pack — ৩৬ পিস, মাত্র ৳১,৩৭০ | Surokkha';
     if (document.getElementById('so-fonts')) return;
     const link = document.createElement('link');
     link.id = 'so-fonts';
@@ -147,7 +159,7 @@ const ComboOfferView = () => {
     setBusy(false);
   };
 
-  const waOrderLink = useMemo(() => waLink(`আমি Surokkha All In One Pack (৫০ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
+  const waOrderLink = useMemo(() => waLink(`আমি Surokkha All In One Pack (৩৬ পিস, ৳${OFFER.offerPrice}) অর্ডার করতে চাই।`), []);
 
   useEffect(() => {
     trackSitePage('combo-offer');
@@ -302,24 +314,39 @@ const ComboOfferView = () => {
     <>
       <div className="topbar">আজকের অফার: Surokkha All In One Pack <b>{tk(OFFER.offerPrice)}</b> + <b>ফ্রি ডেলিভারি</b> সারা বাংলাদেশে</div>
 
+      <section className="co-banner">
+        <img className="co-banner-img" src={flatlayImg} alt="Surokkha গিফট বক্স ও ভেতরের প্যাকগুলো" />
+        <div className="co-banner-text">
+          <span className="co-banner-kicker">Surokkha গিফট বক্স</span>
+          <h2 className="co-banner-title">একটি বক্সে <em>{bn(BOX_CONTENTS.length)} ধরনের</em> পছন্দ</h2>
+          <p className="co-banner-sub">প্রতিটি ধরন আলাদা ছোট বক্সে, {bn(BOX_CONTENTS[0].pcs)} পিস করে। মোট {bn(BOX_TOTAL)} পিস, প্রাইভেট প্যাকিংয়ে ডেলিভারি।</p>
+          <ul className="co-banner-list">
+            {BOX_CONTENTS.map((c) => <li key={c.name}><b>{c.name}</b><span>{bn(c.pcs)} পিস</span></li>)}
+          </ul>
+          <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
+        </div>
+      </section>
+
       <header className="hero" ref={heroRef}>
         <div className="container">
           <div className="hero-logo"><img src={logoImg} alt="Surokkha" /></div>
           <div className="hero-grid">
             <div>
-              <span className="eyebrow"><b>COMBO</b> তিন ব্র্যান্ড, এক বক্সে</span>
+              <span className="eyebrow"><b>COMBO</b> চার ব্র্যান্ড, এক বক্সে</span>
               <div className="brandline">Surokkha Store</div>
               <h1 className="hero-title">All In <em>One</em></h1>
-              <p className="hero-sub"><strong>MO, Xtreme আর Amore</strong>, তিনটি বিশ্বস্ত ব্র্যান্ড এক প্যাকে। মোট ৫০ পিস, বারবার অর্ডারের ঝামেলা নেই।</p>
+              <p className="hero-sub"><strong>MO, Skore, Durex আর Amore</strong>, চারটি বিশ্বস্ত ব্র্যান্ড এক বক্সে। ৬ ধরন, মোট ৩৬ পিস, বারবার অর্ডারের ঝামেলা নেই।</p>
 
               <div className="mix">
                 <span className="chip"><i style={{ background: 'linear-gradient(135deg,#f1f5f9 33%,#f4a7c4 33% 66%,#38bdf8 66%)' }} />MO</span>
                 <span className="op">+</span>
-                <span className="chip"><i style={{ background: 'linear-gradient(135deg,#ef4444,#1d4ed8)' }} />Xtreme</span>
+                <span className="chip"><i style={{ background: '#dc2626' }} />Skore</span>
+                <span className="op">+</span>
+                <span className="chip"><i style={{ background: '#1d4ed8' }} />Durex</span>
                 <span className="op">+</span>
                 <span className="chip"><i style={{ background: '#18181b' }} />Amore</span>
                 <span className="op">=</span>
-                <span className="total">৫০ <small>পিস</small></span>
+                <span className="total">৩৬ <small>পিস</small></span>
               </div>
 
               <div className="price-row">
@@ -350,7 +377,7 @@ const ComboOfferView = () => {
                 <div className="co-orb" style={{ '--a': '120deg' }}><div className="co-pk"><div className="skh-img skh-i-pink" style={{ '--t': '10deg', '--d': '-1s' }} /></div></div>
                 <div className="co-orb" style={{ '--a': '240deg' }}><div className="co-pk"><div className="skh-img skh-i-white" style={{ '--t': '-6deg', '--d': '-2s' }} /></div></div>
               </div>
-              <div className="seal"><div><b>৫০ পিস</b>কম্বো</div></div>
+              <div className="seal"><div><b>৩৬ পিস</b>কম্বো</div></div>
               <div className="ftag">
                 <div className="ic"><IconBox /></div>
                 <div><b>প্রিমিয়াম প্যাকেজিং</b><small>ডেলিভারিতে কোনো ড্যামেজ হবে না</small></div>
@@ -365,27 +392,31 @@ const ComboOfferView = () => {
           <div className="container">
             <div className="sec-head">
               <span className="kicker">বক্সে যা আছে</span>
-              <h2 className="sec-title">৩টি বিশ্বস্ত ব্র্যান্ড, এক কম্বোতে</h2>
-              <p className="sec-sub">MO, Xtreme আর Amore, সব একসাথে। মোট ৫০ পিস।</p>
+              <h2 className="sec-title">৬ ধরন, ৪টি বিশ্বস্ত ব্র্যান্ড, এক বক্সে</h2>
+              <p className="sec-sub">প্রতিটি ধরন আলাদা ছোট বক্সে, ৬ পিস করে। মোট ৩৬ পিস।</p>
             </div>
             <div className="inside-grid">
               <div className="photo" style={{ backgroundImage: `url('${OFFER.image}')` }} role="img" aria-label="Surokkha All In One Pack">
-                <div className="photo-badge">Surokkha All In One Pack<small>MO · Xtreme · Amore · ৫০ পিস</small></div>
+                <div className="photo-badge">Surokkha All In One Pack<small>MO · Skore · Durex · Amore · ৩৬ পিস</small></div>
               </div>
               <div className="variants">
                 <div className="variant">
                   <div className="v-img skh-img skh-i-blue" style={{ '--bg': '#e0f2fe' }} />
-                  <div><div className="v-name"><i style={{ background: '#38bdf8' }} />MO</div><p className="v-desc">MO Multi-Texture, তিন ভ্যারিয়েন্ট।</p></div>
+                  <div><div className="v-name"><i style={{ background: '#38bdf8' }} />MO</div><p className="v-desc">White, Pink আর Blue, তিন ধরন, ৬ পিস করে মোট ১৮ পিস।</p></div>
                 </div>
                 <div className="variant">
-                  <div className="v-img co-tile co-x">X</div>
-                  <div><div className="v-name"><i style={{ background: '#ef4444' }} />Xtreme</div><p className="v-desc">Xtreme ব্র্যান্ড, কম্বোতে যুক্ত।</p></div>
+                  <div className="v-img co-tile co-x">S</div>
+                  <div><div className="v-name"><i style={{ background: '#dc2626' }} />Skore</div><p className="v-desc">Skore, ৬ পিস।</p></div>
+                </div>
+                <div className="variant">
+                  <div className="v-img co-tile co-durex">D</div>
+                  <div><div className="v-name"><i style={{ background: '#1d4ed8' }} />Durex</div><p className="v-desc">Durex, ৬ পিস।</p></div>
                 </div>
                 <div className="variant">
                   <div className="v-img co-tile co-amore">Amore</div>
-                  <div><div className="v-name"><i style={{ background: '#18181b' }} />Amore</div><p className="v-desc">Amore ব্র্যান্ড, কম্বোতে যুক্ত।</p></div>
+                  <div><div className="v-name"><i style={{ background: '#18181b' }} />Amore</div><p className="v-desc">Amore, ৬ পিস।</p></div>
                 </div>
-                <div className="inside-total"><span>মোট এক বক্সে</span><b>৫০ পিস</b></div>
+                <div className="inside-total"><span>মোট এক বক্সে</span><b>৩৬ পিস</b></div>
               </div>
             </div>
           </div>
@@ -417,7 +448,7 @@ const ComboOfferView = () => {
               <aside className="summary">
                 <div className="sum-prod">
                   <div className="sum-thumb" style={{ backgroundImage: `url('${OFFER.image}')` }} />
-                  <div><h3>Surokkha All In One Pack</h3><p>৫০ পিস · MO, Xtreme, Amore</p></div>
+                  <div><h3>Surokkha All In One Pack</h3><p>৩৬ পিস · MO, Skore, Durex, Amore</p></div>
                 </div>
                 <div className="qty">
                   <label htmlFor="qtyOut">পরিমাণ (বক্স)</label>
@@ -534,14 +565,14 @@ const ComboOfferView = () => {
               <details><summary>পেমেন্ট কীভাবে করব?</summary><p>ক্যাশ অন ডেলিভারি। প্রোডাক্ট হাতে পেয়ে ডেলিভারিম্যানকে টাকা দেবেন, আগে কিছু দিতে হবে না।</p></details>
               <details><summary>ডেলিভারি চার্জ কত?</summary><p>এই অফারে ডেলিভারি সম্পূর্ণ ফ্রি, ঢাকার ভেতরে এবং ঢাকার বাইরে দুই জায়গাতেই।</p></details>
               <details><summary>অর্ডারের পর কী হবে?</summary><p>আমাদের টিম আপনার দেওয়া নম্বরে কল করে অর্ডার কনফার্ম করবে এবং ডেলিভারির সময় জানিয়ে দেবে।</p></details>
-              <details><summary>এই প্যাকে কোন কোন ব্র্যান্ড আছে?</summary><p>MO, Xtreme আর Amore, মোট ৫০ পিস। সব প্রোডাক্ট ১০০% অরিজিনাল।</p></details>
+              <details><summary>এই প্যাকে কোন কোন ব্র্যান্ড আছে?</summary><p>MO (White, Pink, Blue), Skore, Durex আর Amore, প্রতিটি ৬ পিস করে মোট ৩৬ পিস। সব প্রোডাক্ট ১০০% অরিজিনাল।</p></details>
             </div>
           </div>
         </section>
 
         <section className="sec final">
           <div className="container">
-            <h2>৩ ব্র্যান্ড, ৫০ পিস, মাত্র <span>{tk(OFFER.offerPrice)}</span></h2>
+            <h2>৪ ব্র্যান্ড, ৩৬ পিস, মাত্র <span>{tk(OFFER.offerPrice)}</span></h2>
             <p>ফ্রি ডেলিভারি · ক্যাশ অন ডেলিভারি · প্রিমিয়াম প্যাকেজিং</p>
             <div className="ctas co-final-ctas">
               <a href="#order" onClick={onOrderClick} className="btn btn-primary"><IconCart />এখনই অর্ডার করুন</a>
