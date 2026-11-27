@@ -57,6 +57,8 @@ const ProductDetailView = () => {
         brand: baseProduct ? ((baseProduct.brandNames || []).join(', ') || baseProduct.brand) : '',
         // Prices stay as the store resolved them (bad offer prices dropped), so the page matches the cart
         ...(baseProduct ? { price: baseProduct.price, regularPrice: baseProduct.regularPrice, offerPrice: baseProduct.offerPrice } : {}),
+        // Stock also stays as the store resolved it, so an in-stock product with an untracked amount of 0 is not shown as sold out
+        ...(baseProduct ? { stockStatus: baseProduct.stockStatus, isOutOfStock: baseProduct.isOutOfStock, stockAmount: baseProduct.stockAmount } : {}),
       }
     : baseProduct;
 
@@ -66,7 +68,7 @@ const ProductDetailView = () => {
     product?.isOutOfStock ||
     product?.stockStatus === 'outofstock' ||
     product?.stockStatus === 'out_of_stock' ||
-    (!hasVariants && product?.stockAmount === 0)
+    (!hasVariants && product?.stockStatus !== 'instock' && product?.stockAmount === 0)
   );
 
   const stockAmount = Number(product?.stockAmount != null ? product.stockAmount : (product?.stock != null ? product.stock : 50));
