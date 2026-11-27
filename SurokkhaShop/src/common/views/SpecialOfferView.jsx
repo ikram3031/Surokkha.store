@@ -6,7 +6,8 @@ import { SITE_CONFIG } from '../config/siteConfig';
 import { DISTRICTS } from '../data/districts';
 import { getDeliveryCharge } from '../utils/deliveryCharge';
 import { forgotPassword, verifyEmail } from '../utils/customerAuth';
-import { getCheckoutSessionId, getFbp, getFbc, getExternalId, getFbLoginId, trackPurchase, trackSitePage, trackProductEvents, saveCheckoutLead, resetCheckoutSession } from '../utils/analytics';
+import { trackSitePage, trackProductEvents } from '../utils/analytics';
+import { sendOrder, trackOrderPlaced, useCheckoutLead } from '../checkout-core';
 
 const PACKS = [
   {
@@ -214,21 +215,7 @@ const SpecialOfferView = () => {
       ...ADDONS.filter((a) => addonQty[a.key] > 0).map((a) => ({ slug: a.slug, name: a.fullName, quantity: addonQty[a.key], unitPrice: a.price })),
     ],
   });
-  const leadSig = JSON.stringify([form.name, form.phone, form.email, form.address, form.district, packKey, qty, addonQty]);
-  useEffect(() => {
-    if (!form.name.trim() && !form.phone.trim() && !form.email.trim()) return undefined;
-    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 2000);
-    return () => clearTimeout(timer);
-  }, [leadSig]);
-  useEffect(() => {
-    const flush = () => {
-      if (submittingRef.current) return;
-      const lead = leadRef.current();
-      if (lead.phone || lead.fullName || lead.email) saveCheckoutLead(lead, true);
-    };
-    window.addEventListener('pagehide', flush);
-    return () => window.removeEventListener('pagehide', flush);
-  }, []);
+  useCheckoutLead(() => leadRef.current(), [form.name, form.phone, form.email, form.address, form.district, packKey, qty, addonQty], submittingRef);
 
   const waOrderLink = useMemo(() => waLink(`আমি ${activePack.name} অর্ডার করতে চাই।`), [activePack.name]);
 
@@ -355,54 +342,34 @@ const SpecialOfferView = () => {
     if (!v) return;
     const finalDelivery = isFreeDelivery ? 0 : getDeliveryCharge(v.district, v.address);
     const finalTotal = sub + finalDelivery;
-    const nowIso = new Date().toISOString();
     const orderNoteTag = isFreeDelivery
       ? `Special offer page (${activePack.pcs} pcs - free delivery)`
       : `Special offer page (${activePack.pcs} pcs)`;
     const payload = {
-      checkoutSessionId: getCheckoutSessionId(),
       billingInfo: { fullName: v.name, phone: v.phone, email: v.email, address: v.address, city: v.district, thana: '', district: v.district, state: v.district, division: v.district, zip: '' },
       shippingInfo: null,
       shipToDifferentAddress: false,
-      fbp: getFbp() || undefined,
-      fbc: getFbc() || undefined,
-      fb_login_id: getFbLoginId() || undefined,
-      externalId: getExternalId() || undefined,
-      siteKey: SITE_CONFIG.siteKey,
-      clientDomain: SITE_CONFIG.domain,
-      orderPrefix: SITE_CONFIG.orderPrefix,
-      giftWrap: false,
       orderNotes: [form.note.trim(), orderNoteTag].filter(Boolean).join(' | '),
-      paymentMethod: 'cod',
       subtotal: sub,
       shippingFee: finalDelivery,
       shippingTotalAmount: finalDelivery,
-      tax: 0,
       discountTotalAmount: 0,
       couponCode: null,
       total: finalTotal,
       items: buildItems(),
-      paymentDetails: null,
-      timestamp: nowIso,
-      createdAt: nowIso,
     };
     setSending(true);
     submittingRef.current = true;
     try {
-      const base = (SITE_CONFIG.apiBaseUrl || '').replace(/\/$/, '');
-      const res = await fetch(`${base}/api/v1/orders/new-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const json = await res.json().catch(() => null);
-      if (res.status === 403 && json?.code === 'CONTACT_REQUIRED') {
+      const result = await sendOrder(payload);
+      if (result.reason === 'contact_required') {
         setBlockedPhone({ phone: v.phone, message: SPAM_PHONE_MSG });
         fieldRefs.current.phone?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-      if (!res.ok) throw new Error(json?.errors?.join(', ') || json?.message || `HTTP ${res.status}`);
-      const orderNumber = String(json?.data?.orderNumber || json?.data?.id || json?.orderNumber || '').trim();
+      if (!result.ok) throw new Error(result.message);
+      const { orderNumber } = result;
+      const json = { data: result.data };
       if (orderNumber) {
         const items = { [activePack.did]: qty };
         const products = { [activePack.did]: { did: activePack.did, slug: activePack.slug, name: activePack.name, price: activePack.offerPrice } };
@@ -412,12 +379,12 @@ const SpecialOfferView = () => {
             products[a.did] = { did: a.did, slug: a.slug, name: a.fullName, price: a.price };
           }
         });
-        trackPurchase({
+        trackOrderPlaced({
           orderNumber,
           items,
           totals: { subtotal: sub, grandTotal: finalTotal },
           customer: { name: v.name, mobile: v.phone, email: v.email, district: v.district, address: v.address },
-        }, products);
+        }, products, result.asLead);
       }
       const discountAmount = Number(json?.data?.memberBonus?.amount) || Math.round(sub * 0.05);
       setOtpCode('');
@@ -435,7 +402,6 @@ const SpecialOfferView = () => {
       });
       forgotPassword(v.email).catch(() => null);
       setForm(EMPTY_FORM);
-      resetCheckoutSession();
       touchedRef.current = {};
       setQty(1);
       setAddonQty({ white: 0, pink: 0, blue: 0, ky: 0 });

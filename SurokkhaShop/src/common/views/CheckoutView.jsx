@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { useStore, isGroupPieceKey } from '../store/useStore';
 import { DISTRICTS } from '../data/districts';
 import LocationSelect, { useThanas } from '../components/LocationSelect';
-import { trackInitiateCheckout, trackAddPaymentInfo, saveCheckoutLead } from '../utils/analytics';
+import { trackInitiateCheckout, trackAddPaymentInfo } from '../utils/analytics';
+import { useCheckoutLead, noteCheckoutAction } from '../checkout-core';
 import { useTranslation } from '../i18n/useTranslation';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { getCustomerToken } from '../utils/customerAuth';
@@ -93,6 +94,7 @@ const CheckoutView = () => {
 
   useEffect(() => {
     if (totals.itemCount > 0) {
+      noteCheckoutAction();
       trackInitiateCheckout(cart, products, totals);
       trackAddPaymentInfo('Cash on Delivery', totals, cartKeys, products);
     }
@@ -113,22 +115,8 @@ const CheckoutView = () => {
       return { slug: cartKey, name: prod?.name || cartKey, quantity: cart[cartKey], unitPrice: Number(prod?.price) || 0 };
     })
   });
+  useCheckoutLead(() => leadRef.current(), [shippingInfo.fullName, shippingInfo.phone, shippingInfo.email, shippingInfo.address, shippingInfo.district, shippingInfo.thana, totals.grandTotal, cartKeys.join(',')], isSubmittingRef);
   leadRef.current = buildLead;
-  const leadSig = JSON.stringify([shippingInfo.fullName, shippingInfo.phone, shippingInfo.email, shippingInfo.address, shippingInfo.district, shippingInfo.thana, totals.grandTotal, cartKeys.join(',')]);
-  useEffect(() => {
-    if (!shippingInfo.phone && !shippingInfo.fullName && !shippingInfo.email) return;
-    const timer = setTimeout(() => saveCheckoutLead(leadRef.current()), 2000);
-    return () => clearTimeout(timer);
-  }, [leadSig]);
-  useEffect(() => {
-    const flush = () => {
-      if (isSubmittingRef.current) return;
-      const lead = leadRef.current();
-      if (lead.phone || lead.fullName || lead.email) saveCheckoutLead(lead, true);
-    };
-    window.addEventListener('pagehide', flush);
-    return () => window.removeEventListener('pagehide', flush);
-  }, []);
 
   // Make absolutely sure all cart items are loaded from the backend
   // so we don't fall back to default pricing

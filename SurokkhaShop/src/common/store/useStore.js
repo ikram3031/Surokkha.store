@@ -1,4 +1,3 @@
-import { getCustomerToken } from '../utils/customerAuth';
 import { create } from 'zustand';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { getDeliveryCharge } from '../utils/deliveryCharge';
@@ -6,15 +5,9 @@ import {
   trackPageView,
   trackAddToCart,
   trackAddComboToCart,
-  trackPurchase,
-  getCheckoutSessionId,
-  resetCheckoutSession,
-  getFbp,
-  getFbc,
-  getExternalId,
-  getFbLoginId,
   syncMetaUserProperties
 } from '../utils/analytics';
+import { sendOrder, trackOrderPlaced, noteCartAction } from '../checkout-core';
 
 const API_BASE_URL = SITE_CONFIG.apiBaseUrl;
 
@@ -957,6 +950,7 @@ export const useStore = create((set, get) => ({
         [cartKey]: (state.cart[cartKey] || 0) + quantity,
       }
     }));
+    noteCartAction();
     trackAddToCart(prod, quantity);
     if (showToastNotification) {
       const isBn = get().language === 'bn';
@@ -995,6 +989,7 @@ export const useStore = create((set, get) => ({
       return { cart: newCart };
     });
 
+    noteCartAction();
     trackAddToCart(prod, totalQuantity);
     
     if (showToastNotification) {
@@ -1033,6 +1028,7 @@ export const useStore = create((set, get) => ({
         [resolvedKey]: (state.cart[resolvedKey] || 0) + 1,
       }
     }));
+    noteCartAction();
     trackAddToCart(comboProd, 1);
     const isBn = get().language === 'bn';
     get().showToast(isBn ? `কম্বো প্যাক সফলভাবে কার্টে যোগ করা হয়েছে!` : `Combo Pack successfully added to cart!`);
@@ -1234,7 +1230,6 @@ export const useStore = create((set, get) => ({
     const nowIso = new Date().toISOString();
 
     const orderPayload = customPayload || {
-      checkoutSessionId: getCheckoutSessionId(),
       billingInfo: {
         fullName: (shippingInfo.fullName || '').trim(),
         phone: (shippingInfo.phone || '').trim(),
@@ -1259,20 +1254,10 @@ export const useStore = create((set, get) => ({
         zip: (shippingAddress.zip || '').trim()
       } : null,
       shipToDifferentAddress: !sameAsBilling,
-      fbp: getFbp() || undefined,
-      fbc: getFbc() || undefined,
-      fb_login_id: getFbLoginId() || undefined,
-      externalId: getExternalId() || undefined,
-      siteKey: SITE_CONFIG.siteKey,
-      clientDomain: SITE_CONFIG.domain,
-      orderPrefix: SITE_CONFIG.orderPrefix,
-      giftWrap: false,
       orderNotes: (orderNotes || '').trim(),
-      paymentMethod: 'cod',
       subtotal: totals.subtotal,
       shippingFee: totals.deliveryFee,
       shippingTotalAmount: totals.deliveryFee,
-      tax: 0,
       discountTotalAmount: totals.discountAmount || 0,
       couponCode: appliedCoupon ? String(appliedCoupon.code).trim().toUpperCase() : null,
       total: totals.grandTotal,
@@ -1296,58 +1281,21 @@ export const useStore = create((set, get) => ({
             unitPrice: variant?.price || prod?.price || (cartKey.includes('combo') ? 900 : 0),
             size: prod?.groupOffer ? `Group Offer: ${prod.groupOffer.name}` : (variant?.size || variantSize || prod?.size || 'Standard Pack')
           };
-        }),
-      paymentDetails: null,
-      timestamp: nowIso,
-      createdAt: nowIso
+        })
     };
 
-    const cleanApiBase = (API_BASE_URL || 'https://api.surokkha.store').replace(/\/$/, '');
-    const endpoint = `${cleanApiBase}/api/v1/orders/new-order`;
-
-    let responseData = null;
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          // The server checks the new customer free delivery against this customer
-          ...(orderPayload.promo && getCustomerToken() ? { Authorization: `Bearer ${getCustomerToken()}` } : {})
-        },
-        body: JSON.stringify(orderPayload)
-      });
-
-      const json = await res.json().catch(() => null);
-
-      if (res.ok) {
-        responseData = json;
-      } else {
-        const errMsg = json?.errors?.join(', ') || json?.message || `Server returned error ${res.status}`;
-        const error = new Error(errMsg);
-        if (json?.code) {
-          error.code = json.code;
-          error.reason = json.reason;
-        }
-        throw error;
+    // Sent through the shared checkout core: common fields, bot signals, session reset
+    const result = await sendOrder(orderPayload, { withToken: !!orderPayload.promo });
+    if (!result.ok) {
+      const error = new Error(result.message || 'Failed to reach order server. Please check your connection.');
+      if (result.code) {
+        error.code = result.code;
+        error.reason = result.contactReason;
       }
-    } catch (err) {
-      if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
-        throw err;
-      }
-      throw new Error('Failed to reach order server. Please check your connection.');
+      throw error;
     }
-
-    if (!responseData) {
-      throw new Error('Failed to reach order server. Please check your connection.');
-    }
-
-    const resolvedOrderNumber = String(
-      responseData?.data?.orderNumber ||
-      responseData?.data?.id ||
-      responseData?.orderNumber ||
-      ('SS-' + Math.floor(100000 + Math.random() * 900000))
-    ).trim();
+    const sentPayload = result.payload;
+    const resolvedOrderNumber = result.orderNumber || ('SS-' + Math.floor(100000 + Math.random() * 900000));
 
     const newOrder = {
       orderId: resolvedOrderNumber,
@@ -1371,14 +1319,13 @@ export const useStore = create((set, get) => ({
       } : null,
       shipToDifferentAddress: orderPayload.shipToDifferentAddress,
       orderNotes: orderPayload.orderNotes,
-      payload: orderPayload,
+      payload: sentPayload,
       items: { ...get().cart },
       totals,
-      serverData: responseData?.data || null
+      serverData: result.data || null
     };
 
-    trackPurchase(newOrder, get().products);
-    resetCheckoutSession();
+    trackOrderPlaced(newOrder, get().products, result.asLead);
 
     set({
       lastOrder: newOrder,
@@ -1389,6 +1336,6 @@ export const useStore = create((set, get) => ({
     });
 
     get().navigateTo('confirmation');
-    return { success: true, orderNumber: resolvedOrderNumber, data: responseData?.data };
+    return { success: true, orderNumber: resolvedOrderNumber, data: result.data };
   }
 }));
