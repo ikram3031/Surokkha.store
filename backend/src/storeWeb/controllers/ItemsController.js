@@ -130,7 +130,8 @@ export const getMetaCatalogCsv = async (req, res, next) => {
       const title = p.name ? p.name.replace(/"/g, '""') : '';
       const cleanDesc = (p.description || '').replace(/<[^>]*>/g, '').replace(/"/g, '""').trim();
       const description = cleanDesc ? `"${cleanDesc}"` : '""';
-      const isOut = p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || (p.type === 'simple' && p.stockAmount === 0);
+      // An explicit in-stock status wins over an untracked stock amount of 0
+      const isOut = p.stockStatus === 'outofstock' || p.stockStatus === 'out_of_stock' || (p.stockStatus !== 'instock' && p.type === 'simple' && p.stockAmount === 0);
       const availability = isOut ? 'out of stock' : 'in stock';
       const condition = 'new';
       
