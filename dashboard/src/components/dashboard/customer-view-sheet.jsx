@@ -1,11 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, Phone, ShoppingBag } from 'lucide-react';
+import { Copy, Mail, MapPin, Phone, ShoppingBag } from 'lucide-react';
 
 import { apiClient } from '@/lib/api-client';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/utils/dateHelper';
+import { handleCopyText } from '@/utils/orderDetailsHelper';
+
+const CopyBtn = ({ value, label }) => (
+  <button
+    type="button"
+    onClick={() => handleCopyText(value, label)}
+    className="ml-auto inline-flex size-6 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground transition-colors hover:text-foreground"
+    title={`Copy ${label.toLowerCase()}`}
+  >
+    <Copy className="size-3" />
+  </button>
+);
 
 const formatMoney = (v) => `৳${Number(v || 0).toLocaleString('en-US')}`;
 
@@ -46,15 +58,21 @@ export function CustomerViewSheet({ customer, onClose }) {
               </div>
               <div className="space-y-2.5 rounded-lg border p-4">
                 {c.phone && (
-                  <a href={`tel:${c.phone}`} className="flex items-center gap-2.5 hover:underline">
-                    <Phone className="size-4 text-muted-foreground" /> {c.phone}
-                  </a>
+                  <div className="flex items-center gap-2.5">
+                    <a href={`tel:${c.phone}`} className="flex items-center gap-2.5 hover:underline">
+                      <Phone className="size-4 text-muted-foreground" /> {c.phone}
+                    </a>
+                    <CopyBtn value={c.phone} label="Phone number" />
+                  </div>
                 )}
                 {c.email && (
-                  <a href={`mailto:${c.email}`} className="flex items-center gap-2.5 hover:underline">
-                    <Mail className="size-4 text-muted-foreground" />
-                    <span className="truncate">{c.email}</span>
-                  </a>
+                  <div className="flex items-center gap-2.5">
+                    <a href={`mailto:${c.email}`} className="flex min-w-0 items-center gap-2.5 hover:underline">
+                      <Mail className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{c.email}</span>
+                    </a>
+                    <CopyBtn value={c.email} label="Email" />
+                  </div>
                 )}
                 {isLoading ? (
                   <Skeleton className="h-4 w-48" />

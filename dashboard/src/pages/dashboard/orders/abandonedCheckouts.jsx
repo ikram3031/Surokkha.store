@@ -133,10 +133,20 @@ const LeadDrawer = ({ lead, onClose, onCreateOrder }) => {
                       </div>
                     )}
                     {shown.email && (
-                      <a href={`mailto:${shown.email}`} className="flex items-center gap-2.5 hover:underline">
+                      <div className="flex items-center gap-2.5">
                         <Mail className="size-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate">{shown.email}</span>
-                      </a>
+                        <a href={`mailto:${shown.email}`} className="truncate hover:underline">{shown.email}</a>
+                        <span className="ml-auto flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(shown.email, 'Email')}
+                            className={cn(contactBtn, 'border-border bg-muted text-muted-foreground hover:text-foreground')}
+                            title="Copy email"
+                          >
+                            <Copy className="size-3" />
+                          </button>
+                        </span>
+                      </div>
                     )}
                     {address && (
                       <p className="flex items-start gap-2.5">
