@@ -345,7 +345,7 @@ export const AppSidebar = ({ ...props }) => {
               <button
                 type="button"
                 onClick={handleCloseSidebar}
-                className="h-8 w-8 rounded-lg border border-sidebar-border/80 dark:border-white/15 bg-sidebar-accent/50 dark:bg-white/5 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground dark:hover:bg-white/10 transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                className="h-8 w-8 rounded-lg bg-[#DC143C] text-white hover:bg-[#B01030] hover:text-white transition-colors flex items-center justify-center shrink-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                 title="Close Sidebar"
               >
                 <X className="h-4 w-4" />

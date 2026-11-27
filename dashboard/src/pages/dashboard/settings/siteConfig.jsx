@@ -1,15 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, RotateCcw, Save, SlidersHorizontal } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { RotateCcw, Save } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { apiClient } from '@/lib/api-client';
-import { applyConfigOverrides } from '@/clientConfig';
 import { toast } from 'sonner';
+import { applyConfigOverrides } from '@/clientConfig';
 
 const API = '/api/v1/settings/site-config';
 
@@ -23,8 +21,6 @@ const deepMerge = (base, override) => {
   return result;
 };
 
-const getAt = (obj, path) => path.reduce((cur, key) => (cur == null ? undefined : cur[key]), obj);
-
 const setAt = (obj, path, value) => {
   const [key, ...rest] = path;
   const copy = Array.isArray(obj) ? [...obj] : { ...obj };
@@ -35,7 +31,7 @@ const setAt = (obj, path, value) => {
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // "supportEmail" -> "Support Email", "--sidebar-primary" -> "Sidebar Primary"
-const humanize = (key) =>
+export const humanize = (key) =>
   String(key)
     .replace(/^-+/, '')
     .replace(/[-_]+/g, ' ')
@@ -120,37 +116,13 @@ const FieldGroup = ({ path, value, baseValue, onChange }) => {
   );
 };
 
-const countChanges = (value, base) => {
+export const countChanges = (value, base) => {
   if (isPlainObject(base)) return Object.keys(base).reduce((n, k) => n + countChanges(value?.[k], base[k]), 0);
   return same(value, base) ? 0 : 1;
 };
 
-const Section = ({ title, path, value, baseValue, onChange, defaultOpen = false }) => {
-  const [open, setOpen] = useState(defaultOpen);
-  const changes = countChanges(value, baseValue);
-  return (
-    <Card className="border-border/60 shadow-xs py-0 gap-0">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center justify-between gap-3 px-6 py-4 text-left cursor-pointer">
-        <div className="flex items-center gap-2">
-          <span className="text-base font-semibold text-foreground">{title}</span>
-          {changes > 0 && <Badge variant="secondary" className="text-[11px]">{changes} changed</Badge>}
-        </div>
-        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <CardContent className="pb-6 pt-1">
-          <FieldGroup path={path} value={value} baseValue={baseValue} onChange={onChange} />
-        </CardContent>
-      )}
-    </Card>
-  );
-};
-
-// Owner-only: edit config.json values from the dashboard; anything not changed here comes from config.json
-const SITE_LABELS = { shop: 'Shop', store: 'Store' };
-
-const SiteConfigPage = ({ site = 'shop' }) => {
-  const siteLabel = SITE_LABELS[site] || 'Shop';
+// Loads config.json + saved overrides and tracks the edits made in the dashboard
+export const useSiteConfigEditor = () => {
   const queryClient = useQueryClient();
   const [values, setValues] = useState(null);
   const [resetOpen, setResetOpen] = useState(false);
@@ -160,7 +132,7 @@ const SiteConfigPage = ({ site = 'shop' }) => {
     queryFn: async () => (await apiClient.get(API)).data?.data || { base: {}, overrides: {} },
   });
 
-  const base = data?.base || {};
+  const base = useMemo(() => data?.base || {}, [data]);
   useEffect(() => {
     if (data) setValues(deepMerge(data.base || {}, data.overrides || {}));
   }, [data]);
@@ -168,8 +140,8 @@ const SiteConfigPage = ({ site = 'shop' }) => {
   const saveMutation = useMutation({
     mutationFn: async (config) => (await apiClient.put(API, { config })).data,
     onSuccess: (res) => {
-      applyConfigOverrides(res.data?.overrides || {});
       queryClient.setQueryData(['site-config'], res.data);
+      applyConfigOverrides(res.data?.overrides || {});
       setResetOpen(false);
       toast.success('Site config saved. Reload the page to see it everywhere.');
     },
@@ -178,40 +150,51 @@ const SiteConfigPage = ({ site = 'shop' }) => {
 
   const handleChange = (path, value) => setValues((prev) => setAt(prev || {}, path, value));
 
-  // This site's own block (sites.shop / sites.store) first; everything else is shared by both sites
-  const { siteBase, generalBase, sections } = useMemo(() => {
+  // Each site's own block (sites.shop / sites.store) first, then values shared by both sites:
+  // "General" holds the top-level scalars; every other nested object becomes its own section
+  const sections = useMemo(() => {
+    const list = Object.entries(base.sites || {})
+      .filter(([, v]) => isPlainObject(v))
+      .map(([site, siteBase]) => ({ key: `${site}-site`, title: `${humanize(site)} Site`, path: ['sites', site], baseValue: siteBase }));
     const entries = Object.entries(base).filter(([key]) => key !== 'sites');
-    return {
-      siteBase: base.sites?.[site] || null,
-      generalBase: Object.fromEntries(entries.filter(([, v]) => !isPlainObject(v))),
-      sections: entries.filter(([, v]) => isPlainObject(v)),
-    };
-  }, [base, site]);
+    const general = Object.fromEntries(entries.filter(([, v]) => !isPlainObject(v)));
+    if (Object.keys(general).length) list.push({ key: '', title: 'General (Shared)', path: [], baseValue: general });
+    for (const [key, sectionBase] of entries.filter(([, v]) => isPlainObject(v))) {
+      list.push({ key, title: humanize(key), path: [key], baseValue: sectionBase });
+    }
+    return list;
+  }, [base]);
 
-  const totalChanges = values ? countChanges(values, base) : 0;
-  const savedChanges = data ? countChanges(deepMerge(base, data.overrides || {}), base) : 0;
-  const dirty = values && data ? !same(values, deepMerge(base, data.overrides || {})) : false;
+  const saved = data ? deepMerge(base, data.overrides || {}) : null;
+  const savedChanges = saved ? countChanges(saved, base) : 0;
+  const dirty = values && saved ? !same(values, saved) : false;
+
+  return { values, base, sections, isLoading: isLoading || !values, handleChange, saveMutation, savedChanges, dirty, resetOpen, setResetOpen };
+};
+
+const valueAt = (obj, path) => path.reduce((acc, key) => acc?.[key], obj);
+
+// One site config section with its own Save / Reset all actions
+export const SiteConfigSectionPanel = ({ editor, section }) => {
+  const { values, handleChange, saveMutation, savedChanges, dirty, resetOpen, setResetOpen } = editor;
+  const value = section.path.length ? valueAt(values, section.path) : values;
+  const changes = countChanges(value, section.baseValue);
 
   return (
-    <div className="page-container flex-1 space-y-6 p-4 md:p-8 pt-6">
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-            <SlidersHorizontal className="h-7 w-7 text-primary" />
-            Site Config — {siteLabel}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Change the values from config.json. Anything you don&apos;t change here keeps using config.json.
-          </p>
-        </div>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          {changes} value{changes === 1 ? '' : 's'} in this section differ from config.json{dirty ? ' · unsaved changes' : ''}.
+        </p>
         <div className="flex items-center gap-2">
           {savedChanges > 0 && (
-            <Button type="button" variant="outline" onClick={() => setResetOpen(true)} className="cursor-pointer gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => setResetOpen(true)} className="cursor-pointer gap-2">
               <RotateCcw className="h-4 w-4" /> Reset all
             </Button>
           )}
           <Button
             type="button"
+            size="sm"
             disabled={!dirty || saveMutation.isPending}
             onClick={() => saveMutation.mutate(values)}
             className="cursor-pointer gap-2 font-semibold"
@@ -221,26 +204,7 @@ const SiteConfigPage = ({ site = 'shop' }) => {
         </div>
       </div>
 
-      {isLoading || !values ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : (
-        <div className="space-y-4">
-          <p className="text-xs text-muted-foreground">
-            {totalChanges} value{totalChanges === 1 ? '' : 's'} differ from config.json{dirty ? ' (unsaved changes)' : ''}.
-          </p>
-          {siteBase && (
-            <Section title={`${siteLabel} Site`} path={['sites', site]} value={values.sites?.[site]} baseValue={siteBase} onChange={handleChange} defaultOpen />
-          )}
-          <div className="pt-2">
-            <h3 className="text-sm font-semibold text-foreground">Shared by Shop and Store</h3>
-            <p className="text-xs text-muted-foreground">These values are the same on both sites; changing them here changes both.</p>
-          </div>
-          <Section title="General" path={[]} value={values} baseValue={generalBase} onChange={handleChange} />
-          {sections.map(([key, sectionBase]) => (
-            <Section key={key} title={humanize(key)} path={[key]} value={values[key]} baseValue={sectionBase} onChange={handleChange} />
-          ))}
-        </div>
-      )}
+      <FieldGroup path={section.path} value={value} baseValue={section.baseValue} onChange={handleChange} />
 
       <ConfirmDeleteDialog
         open={resetOpen}
@@ -253,5 +217,3 @@ const SiteConfigPage = ({ site = 'shop' }) => {
     </div>
   );
 };
-
-export default SiteConfigPage;

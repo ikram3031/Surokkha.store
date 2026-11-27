@@ -41,7 +41,6 @@ import CouriersSettingsPage from './pages/dashboard/settings/couriers';
 import RedxCourierSettingsPage from './pages/dashboard/settings/redxCourier';
 import SmtpSettingsPage from './pages/dashboard/settings/smtpSettings';
 import BusinessSettingsPage from './pages/dashboard/settings/businessSettings';
-import SiteConfigPage from './pages/dashboard/settings/siteConfig';
 import R2StorageSettingsPage from './pages/dashboard/settings/r2StorageSettings';
 import PlexiviaSyncSettingsPage from './pages/dashboard/settings/plexiviaSyncSettings';
 import TemplatesPage from './pages/dashboard/templates/index';
@@ -1007,23 +1006,9 @@ const settingsRoutes = [
       </RoleGuard>
     ),
   },
-  { path: 'site-config', element: <Navigate to="shop" replace /> },
-  {
-    path: 'site-config/shop',
-    element: (
-      <RoleGuard menuKey="settings.business">
-        <SiteConfigPage key="shop" site="shop" />
-      </RoleGuard>
-    ),
-  },
-  {
-    path: 'site-config/store',
-    element: (
-      <RoleGuard menuKey="settings.business">
-        <SiteConfigPage key="store" site="store" />
-      </RoleGuard>
-    ),
-  },
+  { path: 'site-config', element: <Navigate to="/settings/business?tab=site-shop-site" replace /> },
+  { path: 'site-config/shop', element: <Navigate to="/settings/business?tab=site-shop-site" replace /> },
+  { path: 'site-config/store', element: <Navigate to="/settings/business?tab=site-store-site" replace /> },
   {
     path: 'r2-storage',
     element: (
